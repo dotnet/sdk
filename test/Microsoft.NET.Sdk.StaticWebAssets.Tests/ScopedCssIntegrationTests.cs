@@ -585,6 +585,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     {
         protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget");
         [TestMethod]
+        [Ignore("https://github.com/dotnet/roslyn/issues/85132")]
         public void ScopedCss_IsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

@@ -376,6 +376,23 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        var command = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "-p:SingleDevice=true")
+            .Should().Pass();
+    }
+
+    [TestMethod]
     public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -519,9 +536,33 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             });
 
         // Verify no props file was created (since opt-in is false)
-        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
         var build = BinaryLog.ReadBuild(buildBinlogPath);
         var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
         propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
+    }
+
+    [TestMethod]
+    public void ItHonorsRuntimeEnvironmentVariableChangesFromTargetsWhenRunningApp()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarRunHonored")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+
+        // A target (_ModifyRuntimeEnvironmentVariable) changes RUNE_FOO and injects RUNE_INJECTED
+        // before ComputeRunArguments. The launched app should observe those changes.
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
+                     "-e", "RUNE_FOO=original",
+                     "-p:ModifyRuntimeEnvironmentVariable=true");
+
+        result.Should().Pass()
+            // The value changed by the target wins over the original -e value.
+            .And.HaveStdOutContaining("EnvVar: RUNE_FOO=modified-by-target")
+            // A variable added by the target is passed to the app.
+            .And.HaveStdOutContaining("EnvVar: RUNE_INJECTED=injected-by-target");
+
+        result.Should().NotHaveStdOutContaining("EnvVar: RUNE_FOO=original");
     }
 }

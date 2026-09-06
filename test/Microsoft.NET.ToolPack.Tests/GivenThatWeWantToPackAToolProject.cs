@@ -327,6 +327,116 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [TestMethod]
+        public void Non_AOT_tools_can_pack_all_requested_runtime_identifiers()
+        {
+            ComputeToolPackageRuntimeIdentifiersToPack(
+                publishAot: false,
+                hostRuntimeIdentifier: "linux-x64")
+                .Should().Be("win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64");
+        }
+
+        [TestMethod]
+        [DataRow("win-x64", "win-x64;win-arm64")]
+        [DataRow("win-arm64", "win-arm64")]
+        [DataRow("osx-x64", "osx-x64;osx-arm64")]
+        [DataRow("osx-arm64", "osx-x64;osx-arm64")]
+        [DataRow("linux-x64", "linux-x64")]
+        [DataRow("linux-arm64", "linux-arm64")]
+        public void AOT_tools_only_pack_runtime_identifiers_supported_by_the_host(
+            string hostRuntimeIdentifier,
+            string expectedRuntimeIdentifiers)
+        {
+            ComputeToolPackageRuntimeIdentifiersToPack(
+                publishAot: true,
+                hostRuntimeIdentifier)
+                .Should().Be(expectedRuntimeIdentifiers);
+        }
+
+        [TestMethod]
+        public void Predefined_items_prevent_default_tool_package_runtime_identifier_computation()
+        {
+            ComputeToolPackageRuntimeIdentifiersToPack(
+                publishAot: true,
+                hostRuntimeIdentifier: "linux-x64",
+                predefinedRuntimeIdentifiersToPack: "win-arm64;osx-arm64")
+                .Should().Be("win-arm64;osx-arm64");
+        }
+
+        [TestMethod]
+        public void Custom_target_can_override_tool_package_runtime_identifiers_to_pack()
+        {
+            ComputeToolPackageRuntimeIdentifiersToPack(
+                publishAot: true,
+                hostRuntimeIdentifier: "linux-x64",
+                customTargetRuntimeIdentifiersToPack: "win-arm64;osx-arm64")
+                .Should().Be("win-arm64;osx-arm64");
+        }
+
+        private string ComputeToolPackageRuntimeIdentifiersToPack(
+            bool publishAot,
+            string hostRuntimeIdentifier,
+            string predefinedRuntimeIdentifiersToPack = null,
+            string customTargetRuntimeIdentifiersToPack = null,
+            [CallerMemberName] string callingMethod = "")
+        {
+            TestAsset testAsset = TestAssetsManager
+                .CopyTestAsset("PortableTool", $"{callingMethod}-{hostRuntimeIdentifier}")
+                .WithSource();
+
+            testAsset.WithProjectChanges(project =>
+            {
+                XNamespace ns = project.Root.Name.Namespace;
+                XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                propertyGroup.SetElementValue(
+                    ns + "ToolPackageRuntimeIdentifiers",
+                    "win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64");
+
+                if (predefinedRuntimeIdentifiersToPack is not null)
+                {
+                    project.Root.Add(
+                        new XElement(
+                            ns + "ItemGroup",
+                            new XElement(
+                                ns + "ToolPackageRuntimeIdentifiersToPack",
+                                new XAttribute("Include", predefinedRuntimeIdentifiersToPack))));
+                }
+
+                if (customTargetRuntimeIdentifiersToPack is not null)
+                {
+                    project.Root.Add(
+                        new XElement(
+                            ns + "Target",
+                            new XAttribute("Name", "OverrideToolPackageRuntimeIdentifiersToPack"),
+                            new XAttribute("BeforeTargets", "ComputeToolPackageRuntimeIdentifiersToPack"),
+                            new XElement(
+                                ns + "ItemGroup",
+                                new XElement(
+                                    ns + "ToolPackageRuntimeIdentifiersToPack",
+                                    new XAttribute("Include", customTargetRuntimeIdentifiersToPack)))));
+                }
+            });
+
+            List<string> arguments =
+            [
+                $"/p:PublishAot={publishAot}",
+                $"/p:NETCoreSdkPortableRuntimeIdentifier={hostRuntimeIdentifier}",
+                "/p:RuntimeIdentifier=",
+                "-getItem:ToolPackageRuntimeIdentifiersToPack",
+                $"/bl:{callingMethod}-{hostRuntimeIdentifier}.binlog",
+            ];
+
+            CommandResult result = new MSBuildCommand(
+                testAsset,
+                "ComputeToolPackageRuntimeIdentifiersToPack;_ComputeDefaultToolPackageRuntimeIdentifiersToPack")
+                .ExecuteWithoutRestore([.. arguments]);
+            result.Should().Pass();
+            return string.Join(
+                ";",
+                JObject.Parse(result.StdOut)["Items"]["ToolPackageRuntimeIdentifiersToPack"]
+                    .Select(item => item["Identity"].Value<string>()));
+        }
+
+        [TestMethod]
         public void It_packs_with_RuntimeIdentifier()
         {
             var testProject = new TestProject("ToolWithRuntimeIdentifier")

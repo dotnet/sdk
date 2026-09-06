@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
-using Xunit;
 
 namespace Test.Utilities.CodeMetrics
 {
@@ -75,11 +74,11 @@ namespace Test.Utilities.CodeMetrics
             var diagnostics = compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error);
             if (expectDiagnostics)
             {
-                Assert.True(diagnostics.Any());
+                Assert.IsTrue(diagnostics.Any());
             }
             else
             {
-                Assert.Collection(diagnostics, Array.Empty<Action<Diagnostic>>());
+                Assert.IsEmpty(diagnostics);
             }
 
             var actualMetricsText = GetMetricsDataString(compilation).Trim();
@@ -109,7 +108,7 @@ namespace Test.Utilities.CodeMetrics
             if (!success)
             {
                 // Dump the entire expected and actual lines for easy update to baseline.
-                Assert.True(false, $"Expected:\r\n{expectedMetricsText}\r\n\r\nActual:\r\n{actualMetricsText}");
+                Assert.Fail($"Expected:\r\n{expectedMetricsText}\r\n\r\nActual:\r\n{actualMetricsText}");
             }
         }
 

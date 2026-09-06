@@ -141,7 +141,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
                 // Compute replacements
-                var editor = new SyntaxEditor(root, solution.Workspace);
+                var editor = new SyntaxEditor(root, solution.Workspace.Services);
                 foreach (var referenceLocation in referenceLocationGroup)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

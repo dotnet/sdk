@@ -15,7 +15,6 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     }
 
     [TestClass]
-    [DoNotParallelize]
     public class LocalizationTests : BootstrapperTestBase
     {
         public TestContext TestContext { get; set; } = null!;

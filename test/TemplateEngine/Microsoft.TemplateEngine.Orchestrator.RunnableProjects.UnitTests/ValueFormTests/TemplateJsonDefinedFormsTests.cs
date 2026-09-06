@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class TemplateJsonDefinedFormsTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;

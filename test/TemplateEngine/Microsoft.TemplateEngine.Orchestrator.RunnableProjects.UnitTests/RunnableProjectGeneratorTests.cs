@@ -15,7 +15,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class RunnableProjectGeneratorTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;

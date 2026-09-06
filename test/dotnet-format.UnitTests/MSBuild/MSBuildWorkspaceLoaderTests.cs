@@ -133,7 +133,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var binaryLogPath = Path.ChangeExtension(projectFilePath, ".binlog");
 
-            using var workspace = (MSBuildWorkspace)await MSBuildWorkspaceLoader.LoadAsync(projectFilePath, WorkspaceType.Project, binaryLogPath, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
+            using var loadedWorkspace = await MSBuildWorkspaceLoader.LoadAsync(projectFilePath, WorkspaceType.Project, binaryLogPath, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
+            var workspace = (MSBuildWorkspace)loadedWorkspace.Workspace;
 
             Assert.IsEmpty(workspace.Diagnostics);
 

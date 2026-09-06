@@ -4,143 +4,153 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableHTTPHeaderChecking,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableHTTPHeaderCheckingTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var httpRuntimeSection = new HttpRuntimeSection();
-        httpRuntimeSection.EnableHeaderChecking = false;
-    }
-}",
+                using System;
+                using System.Web.Configuration;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var httpRuntimeSection = new HttpRuntimeSection();
+                        httpRuntimeSection.EnableHeaderChecking = false;
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        const bool flag = false;
-        var httpRuntimeSection = new HttpRuntimeSection();
-        httpRuntimeSection.EnableHeaderChecking = flag;
-    }
-}",
+                using System;
+                using System.Web.Configuration;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        const bool flag = false;
+                        var httpRuntimeSection = new HttpRuntimeSection();
+                        httpRuntimeSection.EnableHeaderChecking = flag;
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var httpRuntimeSection = new HttpRuntimeSection
-        {
-            EnableHeaderChecking = false
-        };
-    }
-}",
+                using System;
+                using System.Web.Configuration;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var httpRuntimeSection = new HttpRuntimeSection
+                        {
+                            EnableHeaderChecking = false
+                        };
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 13));
         }
 
         //Ideally, we would generate a diagnostic in this case.
-        [Fact]
+        [TestMethod]
         public async Task TestVariableNoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Web.Configuration;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var flag = false;
-        var httpRuntimeSection = new HttpRuntimeSection();
-        httpRuntimeSection.EnableHeaderChecking = flag;
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var flag = false;
+                        var httpRuntimeSection = new HttpRuntimeSection();
+                        httpRuntimeSection.EnableHeaderChecking = flag;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralNoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Web.Configuration;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var httpRuntimeSection = new HttpRuntimeSection();
-        httpRuntimeSection.EnableHeaderChecking = true;
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var httpRuntimeSection = new HttpRuntimeSection();
+                        httpRuntimeSection.EnableHeaderChecking = true;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantNoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Web.Configuration;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        const bool flag = true;
-        var httpRuntimeSection = new HttpRuntimeSection();
-        httpRuntimeSection.EnableHeaderChecking = flag;
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        const bool flag = true;
+                        var httpRuntimeSection = new HttpRuntimeSection();
+                        httpRuntimeSection.EnableHeaderChecking = flag;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerNoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Web.Configuration;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Web.Configuration;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var httpRuntimeSection = new HttpRuntimeSection
-        {
-            EnableHeaderChecking = true
-        };
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var httpRuntimeSection = new HttpRuntimeSection
+                        {
+                            EnableHeaderChecking = true
+                        };
+                    }
+                }
+                """);
         }
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -156,7 +166,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

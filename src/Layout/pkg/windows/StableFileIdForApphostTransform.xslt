@@ -1,9 +1,7 @@
 <xsl:stylesheet version="1.0"
             xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-            xmlns:msxsl="urn:schemas-microsoft-com:xslt"
-            exclude-result-prefixes="msxsl"
-            xmlns:wix="http://schemas.microsoft.com/wix/2006/wi"
-            xmlns:my="my:my">
+            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
+            exclude-result-prefixes="wix">
 
     <xsl:output method="xml" indent="yes" />
 
@@ -15,12 +13,10 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[contains(@Source, "AppHostTemplate\apphost.exe")]'>
+    <xsl:template match="wix:Directory[@Name='AppHostTemplate']/wix:Component/wix:File">
         <xsl:copy>
-            <xsl:apply-templates select="@*"/>
-            <xsl:attribute name="Id">
-                <xsl:text>apphosttemplateapphostexe</xsl:text>
-            </xsl:attribute>
+            <xsl:attribute name="Id">apphosttemplateapphostexe</xsl:attribute>
+            <xsl:apply-templates select="@*[name() != 'Id']|node()"/>
         </xsl:copy>
     </xsl:template>
 </xsl:stylesheet>

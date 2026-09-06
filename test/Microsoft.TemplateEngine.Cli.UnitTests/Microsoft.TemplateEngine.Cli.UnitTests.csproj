@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" Aliases="global,TemplateEngineCli" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

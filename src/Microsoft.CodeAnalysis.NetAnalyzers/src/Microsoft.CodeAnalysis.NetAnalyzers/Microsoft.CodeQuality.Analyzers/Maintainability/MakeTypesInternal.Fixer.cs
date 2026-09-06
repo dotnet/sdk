@@ -2,35 +2,36 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
-    public abstract class MakeTypesInternalFixer : CodeFixProvider
+    public abstract class MakeTypesInternalFixer : SyntaxEditorBasedCodeFixProvider
     {
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var node = root.FindNode(context.Span);
-
-            var codeAction = CodeAction.Create(
+            RegisterCodeFix(
+                context,
                 MicrosoftCodeQualityAnalyzersResources.MakeTypesInternalCodeFixTitle,
-                _ =>
-                {
-                    var newNode = MakeInternal(node);
-                    var newRoot = root.ReplaceNode(node, newNode.WithTriviaFrom(node));
-
-                    return Task.FromResult(context.Document.WithSyntaxRoot(newRoot));
-                },
                 MicrosoftCodeQualityAnalyzersResources.MakeTypesInternalCodeFixTitle);
-            context.RegisterCodeFix(codeAction, context.Diagnostics);
+            return Task.CompletedTask;
         }
 
-        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            var node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+
+            // Types nest, so an enclosing type's replacement has to be built from the node as already rewritten -
+            // rebuilding it from the original would re-emit a nested type from its pre-fix form.
+            editor.ReplaceNode(node, (currentNode, _) => MakeInternal(currentNode).WithTriviaFrom(currentNode));
+            return Task.CompletedTask;
+        }
 
         protected abstract SyntaxNode MakeInternal(SyntaxNode node);
 

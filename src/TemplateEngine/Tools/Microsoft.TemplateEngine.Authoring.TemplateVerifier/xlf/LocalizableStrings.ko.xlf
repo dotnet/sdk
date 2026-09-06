@@ -7,6 +7,11 @@
         <target state="translated">템플릿 설치는 통과해야 하지만 종료 코드 '{0}'이(가) 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerificationEngine_Error_NoDirectoryVerifier">
+        <source>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</source>
+        <target state="new">No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">
         <source>File extension passed to scrubber should not start with dot.</source>
         <target state="translated">스크러버에 전달된 파일 확장자는 점으로 시작하지 않아야 합니다.</target>

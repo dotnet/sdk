@@ -69,7 +69,7 @@ internal class MsiPayload(string manifestPath, string msiPath)
     {
         get
         {
-            _manifest ??= JsonSerializer.Deserialize(File.ReadAllText(ManifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
+            _manifest ??= JsonSerializer.Deserialize(File.ReadAllText(ManifestPath), MsiManifestJsonSerializerContext.Default.MsiManifest);
 
             return _manifest;
         }

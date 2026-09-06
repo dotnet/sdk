@@ -117,6 +117,27 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
+        public void Install_CanParsePrereleaseOption()
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse($"new install source --prerelease");
+            InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsTrue(args.Prerelease);
+            Assert.HasCount(1, args.TemplatePackages);
+            Assert.Contains("source", args.TemplatePackages);
+
+            parseResult = myCommand.Parse($"new install source");
+            args = new InstallCommandArgs((InstallCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsFalse(args.Prerelease);
+            Assert.HasCount(1, args.TemplatePackages);
+            Assert.Contains("source", args.TemplatePackages);
+        }
+
+        [TestMethod]
         public void Install_CanParseMultipleArgs()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));

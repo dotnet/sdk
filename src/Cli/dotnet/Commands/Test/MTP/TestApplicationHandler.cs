@@ -11,17 +11,29 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
+    private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
+    private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
 
-    public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
+    public TestApplicationHandler(
+        TerminalTestReporter output,
+        TestModule module,
+        TestOptions options,
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+        TestRunPolicy? testRunPolicy = null)
     {
         _output = output;
         _module = module;
         _options = options;
+        _artifactPostProcessingManager = artifactPostProcessingManager;
+        _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+        _testRunPolicy = testRunPolicy;
     }
 
     /// <summary>
@@ -61,9 +73,19 @@ internal sealed class TestApplicationHandler
         var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
         var currentHandshakeInfo = (tfm, arch, executionId!);
 
+        if (_options.IsArtifactPostProcessing
+            && hostType != HandshakeMessageHostTypes.ArtifactPostProcessor)
+        {
+            ReportHandshakeFailure(string.Format(
+                CliCommandStrings.MismatchingHandshakeHostType,
+                hostType,
+                HandshakeMessageHostTypes.ArtifactPostProcessor));
+            return false;
+        }
+
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         string? instanceId = null;
-        if (hostType == "TestHost"
+        if (hostType == HandshakeMessageHostTypes.TestHost
             && !TryGetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.InstanceId, out instanceId, out validationError))
         {
             ReportHandshakeFailure(validationError!);
@@ -80,14 +102,30 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
-        if (hostType == "TestHost")
+        if (hostType == HandshakeMessageHostTypes.TestHost)
         {
+            int? attemptNumber = null;
+            // Invalid values fall back to legacy instance-based inference. Testfx normalizes malformed
+            // environment values to attempt 1 before sending them, and older hosts omit this property.
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.AttemptNumber, out string? attemptNumberValue) &&
+                int.TryParse(attemptNumberValue, out int parsedAttemptNumber) &&
+                parsedAttemptNumber > 0)
+            {
+                attemptNumber = parsedAttemptNumber;
+            }
+
             _receivedTestHostHandshake = true;
-            // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
-            // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
-            // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
+            // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
+            // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
+            if (attemptNumber.HasValue)
+            {
+                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
+            }
+            else
+            {
+                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
+            }
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -105,12 +143,23 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
+        if (!_options.IsArtifactPostProcessing)
+        {
+            _artifactPostProcessingManager?.RecordCapabilities(
+                _module,
+                _module.TargetFramework ?? tfm,
+                arch,
+                handshakeMessage);
+        }
+
         return true;
     }
 
     private bool IsExpectedExecutionMode(string reportedMode, out string expectedMode)
     {
-        expectedMode = _options.IsHelp
+        expectedMode = _options.IsArtifactPostProcessing
+            ? HandshakeMessageExecutionModes.Tool
+            : _options.IsHelp
             ? HandshakeMessageExecutionModes.Help
             : _options.IsDiscovery
                 ? HandshakeMessageExecutionModes.Discover
@@ -131,7 +180,14 @@ internal sealed class TestApplicationHandler
     // HandshakeFailure with no actionable context. Explicit programmatic rejections here (unsupported
     // protocol version, missing required property, mismatching handshake info, mismatching execution
     // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
-    private void ReportHandshakeFailure(string failureMessage) =>
+    private void ReportHandshakeFailure(string failureMessage)
+    {
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            _artifactPostProcessingInvocation.RecordFailure(failureMessage);
+            return;
+        }
+
         _output.HandshakeFailure(
             _module.TargetPath,
             string.Empty,
@@ -139,6 +195,7 @@ internal sealed class TestApplicationHandler
             failureMessage,
             string.Empty,
             reportEvenWhenHelp: true);
+    }
 
     private static bool TryGetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId, out string? value, out string? failureMessage)
     {
@@ -182,6 +239,11 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
             HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
             HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
+            HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
+            HandshakeMessagePropertyNames.SupportedPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorKinds),
+            HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
             _ => string.Empty,
         };
 
@@ -220,10 +282,16 @@ internal sealed class TestApplicationHandler
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
         {
             _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
-                ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
-                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
-                test.FilePath,
-                test.LineNumber);
+                new DiscoveredTestInfo(
+                    ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
+                    ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
+                    test.FilePath,
+                    test.LineNumber,
+                    test.Namespace,
+                    test.TypeName,
+                    test.MethodName,
+                    test.ParameterTypeFullNames,
+                    [.. test.Traits.Select(t => (t.Key, t.Value))]));
         }
     }
 
@@ -289,11 +357,13 @@ internal sealed class TestApplicationHandler
                 ToOutcome(testResult.State),
                 testResult.Duration.HasValue ? TimeSpan.FromTicks(testResult.Duration.Value) : null,
                 exceptions: [.. (testResult.Exceptions ?? []).Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
-                expected: null,
-                actual: null,
+                expected: testResult.Expected,
+                actual: testResult.Actual,
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }
+
+        _testRunPolicy?.ReportFailedTests(testResultMessage.FailedTestMessages.Length);
     }
 
     internal void OnTestInProgressReceived(TestInProgressMessages testInProgressMessages)
@@ -344,7 +414,9 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(FileArtifactMessages)));
         }
 
-        if (!_receivedTestHostHandshake)
+        if (_options.IsArtifactPostProcessing
+            ? _artifactPostProcessingInvocation is null
+            : !_receivedTestHostHandshake)
         {
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(FileArtifactMessages)));
         }
@@ -368,10 +440,28 @@ internal sealed class TestApplicationHandler
                 nameof(FileArtifactMessage.FullPath),
                 nameof(FileArtifactMessage));
 
-            _output.ArtifactAdded(
-                outOfProcess: false,
-                _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                artifact.TestDisplayName, fullPath);
+            if (_artifactPostProcessingInvocation is not null)
+            {
+                _artifactPostProcessingInvocation.RecordOutput(
+                    _module,
+                    handshakeInfo.TargetFramework,
+                    handshakeInfo.Architecture,
+                    handshakeInfo.ExecutionId,
+                    artifact with { FullPath = fullPath });
+            }
+            else
+            {
+                _artifactPostProcessingManager?.RecordArtifact(
+                    _module,
+                    _module.TargetFramework ?? handshakeInfo.TargetFramework,
+                    handshakeInfo.Architecture,
+                    handshakeInfo.ExecutionId,
+                    artifact with { FullPath = fullPath });
+                _output.ArtifactAdded(
+                    outOfProcess: false,
+                    _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                    artifact.TestDisplayName, fullPath);
+            }
         }
     }
 
@@ -434,6 +524,60 @@ internal sealed class TestApplicationHandler
         }
     }
 
+    internal void OnAzureDevOpsLogReceived(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        LogAzureDevOpsLog(azureDevOpsLogMessage);
+
+        // These messages carry verbatim Azure DevOps logging commands (e.g. ##[group] / ##[endgroup] / ##vso[...])
+        // that must reach the terminal unchanged so the AzDO agent can render them. They are informational and are
+        // not tied to a session, so - unlike the test-result handlers - we do not require a handshake and we are
+        // lenient about missing/empty content (we simply skip it) instead of failing the run.
+        if (!string.IsNullOrEmpty(azureDevOpsLogMessage.LogText))
+        {
+            // WriteMessage appends the payload verbatim without a trailing newline (the process-output streaming
+            // path supplies its own newlines). An Azure DevOps logging command must sit on its own line to be
+            // recognized, so terminate the line here without otherwise altering the payload.
+            _output.WriteMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
+        }
+    }
+
+    internal void OnDisplayMessageReceived(DisplayMessage displayMessage)
+    {
+        LogDisplayMessage(displayMessage);
+
+        // Generic host diagnostics (hang/crash dump, retry summaries, extension/framework warnings and errors)
+        // forwarded outside of test results. They are informational and not tied to a session, so we do not require
+        // a handshake and we stay lenient about missing content.
+        if (string.IsNullOrEmpty(displayMessage.Text))
+        {
+            return;
+        }
+
+        switch (displayMessage.Level)
+        {
+            case DisplayMessageLevels.Warning:
+                // WriteWarningMessage/WriteErrorMessage terminate the line themselves (AppendLine).
+                _output.WriteWarningMessage(displayMessage.Text);
+                break;
+
+            case DisplayMessageLevels.Error:
+                _output.WriteErrorMessage(displayMessage.Text);
+                break;
+
+            default:
+                // The information path uses the verbatim WriteMessage, which does not append a newline, so
+                // terminate the line here to keep it from running together with subsequent terminal output.
+                _output.WriteMessage(EnsureTrailingNewLine(displayMessage.Text));
+                break;
+        }
+    }
+
+    // WriteMessage writes text verbatim (no trailing newline). Forwarded host messages arrive as individual
+    // lines without a terminator, so ensure one is present - but leave already-terminated payloads untouched
+    // to avoid introducing blank lines.
+    private static string EnsureTrailingNewLine(string text)
+        => text.EndsWith('\n') ? text : text + Environment.NewLine;
+
     private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
     {
         _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
@@ -473,6 +617,14 @@ internal sealed class TestApplicationHandler
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
+        if (_options.IsArtifactPostProcessing)
+        {
+            WriteMessage(outputData);
+            WriteMessage(errorData);
+            LogTestProcessExit(exitCode, outputData, errorData);
+            return;
+        }
+
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
             // If we received a handshake from TestHostController but not from TestHost,
@@ -605,7 +757,8 @@ internal sealed class TestApplicationHandler
         {
             logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}");
+                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}, " +
+                $"InputArtifactPaths=[{string.Join(", ", fileArtifactMessage.InputArtifactPaths ?? [])}]");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
@@ -650,6 +803,37 @@ internal sealed class TestApplicationHandler
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
         logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogAzureDevOpsLog(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.ExecutionId: {azureDevOpsLogMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.InstanceId: {azureDevOpsLogMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.LogText: {azureDevOpsLogMessage.LogText}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogDisplayMessage(DisplayMessage displayMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"DisplayMessage.ExecutionId: {displayMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.InstanceId: {displayMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Level: {displayMessage.Level}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Text: {displayMessage.Text}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }

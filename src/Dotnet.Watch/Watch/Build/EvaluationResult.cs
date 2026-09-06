@@ -44,7 +44,6 @@ internal sealed class EvaluationResult(
 
         return BuildUtilities.ParseBuildProperties(buildArguments)
             .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
-            .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
@@ -183,13 +182,9 @@ internal sealed class EvaluationResult(
             {
                 staticWebAssetManifestsBuilder.Add(projectInstance.GetId(), manifest);
 
-                // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
-                foreach (var (relativeUrl, filePath) in manifest.UrlToPathMap)
+                foreach (var (filePath, relativeUrl) in manifest.GetFilesToWatch())
                 {
-                    if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
-                    {
-                        AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
-                    }
+                    AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
                 }
             }
 

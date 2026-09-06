@@ -253,8 +253,10 @@ public partial class HelpBuilder
 
             var isSingleArgument = defaultArguments.Length == 1;
             var argumentDefaultValues = defaultArguments
-                .Select(argument => GetArgumentDefaultValue(symbol, argument, isSingleArgument, context));
-            return $"[{string.Join(", ", argumentDefaultValues)}]";
+                .Select(argument => GetArgumentDefaultValue(symbol, argument, isSingleArgument, context))
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .ToArray();
+            return argumentDefaultValues.Length == 0 ? "" : $"[{string.Join(", ", argumentDefaultValues)}]";
         }
     }
 

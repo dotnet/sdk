@@ -132,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                                 break;
                             default:
-                                foreach (var childOperation in operation.Children)
+                                foreach (var childOperation in operation.ChildOperations)
                                 {
                                     visitInitializerValue(childOperation);
                                 }

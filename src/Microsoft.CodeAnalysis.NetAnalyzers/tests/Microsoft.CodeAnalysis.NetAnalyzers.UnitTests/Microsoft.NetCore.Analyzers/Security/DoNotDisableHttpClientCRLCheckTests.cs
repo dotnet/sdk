@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableHttpClientCRLCheck,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotDisableHttpClientCRLCheckTests
     {
         private static readonly DiagnosticDescriptor DefinitelyRule = DoNotDisableHttpClientCRLCheck.DefinitelyDisableHttpClientCRLCheckRule;
@@ -28,313 +28,339 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_NotSet_DefaultWrong_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(10, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HttpClientHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var httpClientHandler = new HttpClientHandler();
-        httpClientHandler.CheckCertificateRevocationList = false;
-        var httpClient = new HttpClient(httpClientHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.CheckCertificateRevocationList = false;
+                        var httpClient = new HttpClient(httpClientHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(10, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HttpClientWithHttpMessageHandlerAndBooleanParameters_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod(bool disposeHandler)
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        var httpClient = new HttpClient(winHttpHandler, disposeHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod(bool disposeHandler)
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        var httpClient = new HttpClient(winHttpHandler, disposeHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(10, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_PropertyInitializer_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler() { CheckCertificateRevocationList = false };
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler() { CheckCertificateRevocationList = false };
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrRight_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod(bool checkCertificateRevocationList)
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
-        Random r = new Random();
+                using System;
+                using System.Net.Http;
 
-        if (r.Next(6) == 4)
-        {
-            winHttpHandler.CheckCertificateRevocationList = true;
-        }
+                class TestClass
+                {
+                    void TestMethod(bool checkCertificateRevocationList)
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
+                        Random r = new Random();
 
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                        if (r.Next(6) == 4)
+                        {
+                            winHttpHandler.CheckCertificateRevocationList = true;
+                        }
+
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(18, 26, MaybeRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_Null_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        winHttpHandler.ServerCertificateValidationCallback = null;
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                using System.Net.Http;
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        winHttpHandler.ServerCertificateValidationCallback = null;
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 26, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_MaybeNull_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        Random r = new Random();
+                using System;
+                using System.Net.Http;
 
-        if (r.Next(6) == 4)
-        {
-            winHttpHandler.ServerCertificateValidationCallback = (HttpRequestMessage,X509Certificate2,X509Chain,SslPolicyErrors) => true;
-        }
-        
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        Random r = new Random();
+
+                        if (r.Next(6) == 4)
+                        {
+                            winHttpHandler.ServerCertificateValidationCallback = (HttpRequestMessage,X509Certificate2,X509Chain,SslPolicyErrors) => true;
+                        }
+
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(18, 26, MaybeRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_NotNull_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System;
+                using System.Net.Http;
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        winHttpHandler.ServerCertificateValidationCallback = (HttpRequestMessage,X509Certificate2,X509Chain,SslPolicyErrors) => true;
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}");
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        winHttpHandler.ServerCertificateValidationCallback = (HttpRequestMessage,X509Certificate2,X509Chain,SslPolicyErrors) => true;
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrWrong_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod(bool checkCertificateRevocationList)
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
-        Random r = new Random();
+                using System;
+                using System.Net.Http;
 
-        if (r.Next(6) == 4)
-        {
-            winHttpHandler.CheckCertificateRevocationList = false;
-        }
+                class TestClass
+                {
+                    void TestMethod(bool checkCertificateRevocationList)
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
+                        Random r = new Random();
 
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                        if (r.Next(6) == 4)
+                        {
+                            winHttpHandler.CheckCertificateRevocationList = false;
+                        }
+
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(18, 26, MaybeRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_WrongOrRight_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        Random r = new Random();
+                using System;
+                using System.Net.Http;
 
-        if (r.Next(6) == 4)
-        {
-            winHttpHandler.CheckCertificateRevocationList = true;
-        }
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        Random r = new Random();
 
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}",
+                        if (r.Next(6) == 4)
+                        {
+                            winHttpHandler.CheckCertificateRevocationList = true;
+                        }
+
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(18, 26, MaybeRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DerivedClassOfHttpClient_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class DerivedClass : HttpClient
-{
-    public DerivedClass (HttpMessageHandler handler)
-    {
-    }
-}
+                using System.Net.Http;
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        var derivedClass = new DerivedClass(winHttpHandler);
-    }
-}",
+                class DerivedClass : HttpClient
+                {
+                    public DerivedClass (HttpMessageHandler handler)
+                    {
+                    }
+                }
+
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        var derivedClass = new DerivedClass(winHttpHandler);
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, DefinitelyRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HttpClientConstructorWithoutParameter_handlerSetByDefault_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.Net.Http;
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = false;
-        var httpClient = new HttpClient();
-    }
-}");
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = false;
+                        var httpClient = new HttpClient();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Right_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.Net.Http;
 
-class TestClass
-{
-    void TestMethod()
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = true;
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}");
+                class TestClass
+                {
+                    void TestMethod()
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = true;
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Unknown_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.Net.Http;
 
-class TestClass
-{
-    void TestMethod(bool checkCertificateRevocationList)
-    {
-        var winHttpHandler = new WinHttpHandler();
-        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
-        var httpClient = new HttpClient(winHttpHandler);
-    }
-}");
+                class TestClass
+                {
+                    void TestMethod(bool checkCertificateRevocationList)
+                    {
+                        var winHttpHandler = new WinHttpHandler();
+                        winHttpHandler.CheckCertificateRevocationList = checkCertificateRevocationList;
+                        var httpClient = new HttpClient(winHttpHandler);
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Test.Utilities
 {
@@ -55,7 +54,7 @@ namespace Test.Utilities
         public static async Task RunTestAsync(Test test, params DiagnosticResult[] expected)
         {
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

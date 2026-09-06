@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Channels;
@@ -12,24 +12,49 @@ internal class TestApplicationActionQueue
 {
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
+    private readonly CancellationToken _cancellationToken;
 
     private int? _aggregateExitCode;
 
     private readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    public TestApplicationActionQueue(
+        int degreeOfParallelism,
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager,
+        TestRunPolicy testRunPolicy,
+        CancellationToken cancellationToken)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
+        _cancellationToken = cancellationToken;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC));
+            _readers[i] = Task.Run(async () => await Read(
+                buildOptions,
+                testOptions,
+                resultsDirectoryResolver,
+                output,
+                onHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager,
+                testRunPolicy));
         }
     }
 
     public void Enqueue(ParallelizableTestModuleGroupWithSequentialInnerModules testApplication)
     {
+        if (_cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         if (!_channel.Writer.TryWrite(testApplication))
         {
             throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication}");
@@ -48,18 +73,34 @@ internal class TestApplicationActionQueue
         return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    private async Task Read(
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager,
+        TestRunPolicy testRunPolicy)
     {
         try
         {
-            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(ctrlC.Token))
+            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(_cancellationToken))
             {
                 foreach (var module in nonParallelizedGroup)
                 {
-                    ctrlC.Token.ThrowIfCancellationRequested();
+                    _cancellationToken.ThrowIfCancellationRequested();
 
                     int result = ExitCode.GenericFailure;
-                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                    var testApp = new TestApplication(
+                        module,
+                        buildOptions,
+                        testOptions,
+                        resultsDirectoryResolver,
+                        output,
+                        onHelpRequested,
+                        artifactPostProcessingManager,
+                        testRunPolicy: testRunPolicy);
                     try
                     {
                         using (testApp)
@@ -75,10 +116,14 @@ internal class TestApplicationActionQueue
                         result = ExitCode.GenericFailure;
                     }
 
-                    if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
-                    {
-                        result = ExitCode.GenericFailure;
-                    }
+                    // A module that ran zero tests (exit code 8) is not, by itself, a whole-run failure.
+                    // With --test-modules or a global --filter, some modules may legitimately match no tests.
+                    // Normalize it to success here; the aggregate "zero tests ran" verdict is decided once at
+                    // the whole-run level in MicrosoftTestingPlatformTestCommand from the total test count. A
+                    // stricter per-module minimum requested via -- --minimum-expected-tests N still fails that
+                    // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
+                    // See https://github.com/microsoft/testfx/issues/7457.
+                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose);
 
                     lock (_lock)
                     {
@@ -110,13 +155,25 @@ internal class TestApplicationActionQueue
                     }
                 }
             }
+
         }
-        catch (OperationCanceledException) when (ctrlC.Token.IsCancellationRequested)
+        catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
         {
-            // Stop scheduling new test apps once the user has pressed Ctrl+C the first time.
+            // Stop scheduling new test apps once cancellation is requested.
             // Already-running test apps are left alone so they can gracefully cancel themselves
-            // (and report final session state via IPC); a second Ctrl+C is what force-kills them
-            // via the CtrlCCancellationManager.
+            // and report final session state via IPC.
         }
+    }
+
+    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
+    {
+        if (result == ExitCode.ZeroTests)
+        {
+            result = ExitCode.Success;
+        }
+
+        return result == ExitCode.Success && hasFailureDuringDispose
+            ? ExitCode.GenericFailure
+            : result;
     }
 }

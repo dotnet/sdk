@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class RegexMacroTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;

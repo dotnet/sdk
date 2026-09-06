@@ -3,211 +3,225 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerBinaryFormatterMethods,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseInsecureDeserializerBinaryFormatterMethodsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task UnsafeDeserialize_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
-                TestCode = @"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+                TestCode = """
 
-namespace Blah
-{
-    public class Program
-    {
-        public object BfUnsafeDeserialize(byte[] bytes)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.UnsafeDeserialize(new MemoryStream(bytes), null);
-        }
-    }
-}",
+                    using System.IO;
+                    using System.Runtime.Serialization.Formatters.Binary;
+
+                    namespace Blah
+                    {
+                        public class Program
+                        {
+                            public object BfUnsafeDeserialize(byte[] bytes)
+                            {
+                                BinaryFormatter formatter = new BinaryFormatter();
+                                return formatter.UnsafeDeserialize(new MemoryStream(bytes), null);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"),
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnsafeDeserializeMethodResponse_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
-                TestCode = @"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+                TestCode = """
 
-namespace Blah
-{
-    public class Program
-    {
-        public object BfUnsafeDeserialize(byte[] bytes)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.UnsafeDeserializeMethodResponse(new MemoryStream(bytes), null, null);
-        }
-    }
-}",
+                    using System.IO;
+                    using System.Runtime.Serialization.Formatters.Binary;
+
+                    namespace Blah
+                    {
+                        public class Program
+                        {
+                            public object BfUnsafeDeserialize(byte[] bytes)
+                            {
+                                BinaryFormatter formatter = new BinaryFormatter();
+                                return formatter.UnsafeDeserializeMethodResponse(new MemoryStream(bytes), null, null);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(byte[] bytes)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(byte[] bytes)
+                        {
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            return formatter.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 20, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_HeaderHandler_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
-                TestCode = @"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+                TestCode = """
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(byte[] bytes)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.Deserialize(new MemoryStream(bytes), null);
-        }
-    }
-}",
+                    using System.IO;
+                    using System.Runtime.Serialization.Formatters.Binary;
+
+                    namespace Blah
+                    {
+                        public class Program
+                        {
+                            public object D(byte[] bytes)
+                            {
+                                BinaryFormatter formatter = new BinaryFormatter();
+                                return formatter.Deserialize(new MemoryStream(bytes), null);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeMethodResponse_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
-                TestCode = @"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+                TestCode = """
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(byte[] bytes)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.DeserializeMethodResponse(new MemoryStream(bytes), null, null);
-        }
-    }
-}",
+                    using System.IO;
+                    using System.Runtime.Serialization.Formatters.Binary;
+
+                    namespace Blah
+                    {
+                        public class Program
+                        {
+                            public object D(byte[] bytes)
+                            {
+                                BinaryFormatter formatter = new BinaryFormatter();
+                                return formatter.DeserializeMethodResponse(new MemoryStream(bytes), null, null);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.DeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_Reference_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate object Des(Stream s);
-        public Des GetDeserializer()
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.Deserialize;
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate object Des(Stream s);
+                        public Des GetDeserializer()
+                        {
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            return formatter.Deserialize;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 20, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Blah
-{
-    public class Program
-    {
-        public byte[] S(object o)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            MemoryStream ms = new MemoryStream();
-            formatter.Serialize(ms, o);
-            return ms.ToArray();
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public byte[] S(object o)
+                        {
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            MemoryStream ms = new MemoryStream();
+                            formatter.Serialize(ms, o);
+                            return ms.ToArray();
+                        }
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_Reference_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate void Ser(Stream s, object o);
-        public Ser GetSerializer()
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return formatter.Serialize;
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate void Ser(Stream s, object o);
+                        public Ser GetSerializer()
+                        {
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            return formatter.Serialize;
+                        }
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
