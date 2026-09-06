@@ -271,7 +271,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var config = new TaskConfiguration
             {
-                TargetFrameworkVersion = "11.0",
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
                 EnableRuntimePackDownload = true,
                 NETCoreSdkRuntimeIdentifier = "win-x64",
                 NETCoreSdkPortableRuntimeIdentifier = "win-x64",
@@ -314,7 +314,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var config = new TaskConfiguration
             {
-                TargetFrameworkVersion = "11.0",
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
                 EnableRuntimePackDownload = true,
                 NETCoreSdkRuntimeIdentifier = "win-x64",
                 NETCoreSdkPortableRuntimeIdentifier = "win-x64",
@@ -355,7 +355,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var config = new TaskConfiguration
             {
-                TargetFrameworkVersion = "11.0",
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
                 EnableRuntimePackDownload = true,
                 NETCoreSdkRuntimeIdentifier = "win-x64",
                 NETCoreSdkPortableRuntimeIdentifier = "win-x64",
