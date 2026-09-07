@@ -285,6 +285,144 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
         #endregion
 
+        #region Custom guards and type/member merging across the ios/maccatalyst pair
+
+        // A *custom* versioned guard property for ios guards the ios API, but it does not make a
+        // maccatalyst-only API reachable. This matches the built-in 'OperatingSystem.IsIOS()' guard,
+        // which deliberately does not imply Mac Catalyst reachability (see 'IosGuardsMacCatalystAsync').
+        [TestMethod]
+        public async Task CustomVersionedIosGuardDoesNotGuardMacCatalystOnlyApi()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                class TestType
+                {
+                    [SupportedOSPlatform("ios15.0")]
+                    public static void IosApi() { }
+
+                    [SupportedOSPlatform("maccatalyst15.0")]
+                    public static void MacCatalystApi() { }
+
+                    [SupportedOSPlatformGuard("ios15.0")]
+                    static bool IsIos15 => true;
+
+                    static void Caller()
+                    {
+                        if (IsIos15)
+                        {
+                            IosApi();
+                            {|#0:MacCatalystApi()|};
+                        }
+                    }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0)
+                    .WithArguments("TestType.MacCatalystApi()", "'maccatalyst' 15.0 and later", "'ios' 15.0 and later"));
+        }
+
+        // A member level maccatalyst attribute narrows the maccatalyst range inferred from a type level
+        // ios attribute; the ios range itself is untouched, so an ios call site only warns because it is
+        // also reachable on Mac Catalyst.
+        [TestMethod]
+        public async Task MemberLevelMacCatalystNarrowsTypeLevelIosInferredSupport()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                [SupportedOSPlatform("ios13.0")]
+                class IosType
+                {
+                    [SupportedOSPlatform("maccatalyst15.0")]
+                    public static void MacCatalystNarrowed() { }
+
+                    public static void JustIos() { }
+                }
+
+                class Caller
+                {
+                    [SupportedOSPlatform("maccatalyst14.0")]
+                    static void MacCatalyst14() { {|#0:IosType.MacCatalystNarrowed()|}; IosType.JustIos(); }
+
+                    [SupportedOSPlatform("ios14.0")]
+                    static void Ios14() { {|#1:IosType.MacCatalystNarrowed()|}; IosType.JustIos(); }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0)
+                    .WithArguments("IosType.MacCatalystNarrowed()", "'maccatalyst' 15.0 and later", "'maccatalyst' 14.0 and later"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(1)
+                    .WithArguments("IosType.MacCatalystNarrowed()", "'maccatalyst' 15.0 and later", "'ios' 14.0 and later, 'maccatalyst' 14.0 and later"));
+        }
+
+        // A member level Supported attribute cannot re-enable a platform that the type level deny list
+        // turned off. This holds for the maccatalyst entry inferred from ios exactly as it does for an
+        // explicitly written one, see 'MemberSupportDoesNotReEnableExplicitlyUnsupportedMacCatalyst'.
+        [TestMethod]
+        public async Task MemberSupportDoesNotReEnableMacCatalystUnsupportedThroughIos()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                [UnsupportedOSPlatform("ios")]
+                class NoIosType
+                {
+                    [SupportedOSPlatform("maccatalyst14.0")]
+                    public static void MacCatalystOnly() { }
+
+                    public static void Inherited() { }
+                }
+
+                class Caller
+                {
+                    [SupportedOSPlatform("maccatalyst14.0")]
+                    static void MacCatalyst14() { {|#0:NoIosType.MacCatalystOnly()|}; {|#1:NoIosType.Inherited()|}; }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0)
+                    .WithArguments("NoIosType.MacCatalystOnly()", "'maccatalyst' all versions", "'maccatalyst' 14.0 and later"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1)
+                    .WithArguments("NoIosType.Inherited()", "'maccatalyst' all versions", "'maccatalyst' 14.0 and later"));
+        }
+
+        // The control for the test above: writing the maccatalyst deny list explicitly gives the exact
+        // same result, which is what makes the inferred entry correct rather than a quirk.
+        [TestMethod]
+        public async Task MemberSupportDoesNotReEnableExplicitlyUnsupportedMacCatalyst()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                [UnsupportedOSPlatform("maccatalyst")]
+                class NoMcType
+                {
+                    [SupportedOSPlatform("maccatalyst14.0")]
+                    public static void MacCatalystOnly() { }
+                }
+
+                class Caller
+                {
+                    [SupportedOSPlatform("maccatalyst14.0")]
+                    static void MacCatalyst14() { {|#0:NoMcType.MacCatalystOnly()|}; }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0)
+                    .WithArguments("NoMcType.MacCatalystOnly()", "'maccatalyst' all versions", "'maccatalyst' 14.0 and later"));
+        }
+
+        #endregion
+
         #region Explicit maccatalyst attributes versus the inferred ones
 
         // An explicit maccatalyst attribute does not replace the inferred one, it is merged with it, and
