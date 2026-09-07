@@ -884,7 +884,7 @@ class C
 
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
-            var publishCommand = new PublishCommand(testAsset);
+            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PublishCommand;
             publishCommand.Execute(PublishSingleFile, "/bl:" + binlogDestPath)
                 .Should()
                 .Pass();

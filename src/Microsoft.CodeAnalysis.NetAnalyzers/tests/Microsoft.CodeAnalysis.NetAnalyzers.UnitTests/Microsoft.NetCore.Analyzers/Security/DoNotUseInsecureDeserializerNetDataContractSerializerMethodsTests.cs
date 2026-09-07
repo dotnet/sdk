@@ -19,209 +19,227 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-public class ExampleClass
-{
-    public object MyDeserialize(byte[] bytes)
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
-        return serializer.Deserialize(new MemoryStream(bytes));
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                public class ExampleClass
+                {
+                    public object MyDeserialize(byte[] bytes)
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                        return serializer.Deserialize(new MemoryStream(bytes));
+                    }
+                }
+                """,
                 GetCSharpResultAt(10, 16, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
 
-Public Class ExampleClass
-    Public Function MyDeserialize(bytes As Byte()) As Object
-        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
-        Return serializer.Deserialize(New MemoryStream(bytes))
-    End Function
-End Class",
+                Imports System.IO
+                Imports System.Runtime.Serialization
+
+                Public Class ExampleClass
+                    Public Function MyDeserialize(bytes As Byte()) As Object
+                        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
+                        Return serializer.Deserialize(New MemoryStream(bytes))
+                    End Function
+                End Class
+                """,
                 GetBasicResultAt(8, 16, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
         [TestMethod]
         public async Task Deserialize_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 20, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task Deserialize_Reference_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate object Des(Stream s);
-        public Des GetDeserializer()
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.Deserialize;
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate object Des(Stream s);
+                        public Des GetDeserializer()
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.Deserialize;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 20, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject(new MemoryStream(bytes));
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 20, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_Reference_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate object Des(Stream s);
-        public Des D()
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject;
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate object Des(Stream s);
+                        public Des D()
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 20, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(XmlReader xmlReader)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject(xmlReader);
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(XmlReader xmlReader)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject(xmlReader);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 20, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_Reference_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate object Des(XmlReader r);
-        public Des D()
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject;
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate object Des(XmlReader r);
+                        public Des D()
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(14, 20, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
         [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public byte[] S(object o)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            MemoryStream ms = new MemoryStream();
-            serializer.Serialize(ms, o);
-            return ms.ToArray();
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public byte[] S(object o)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            MemoryStream ms = new MemoryStream();
+                            serializer.Serialize(ms, o);
+                            return ms.ToArray();
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Serialize_Reference_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public delegate void Ser(Stream s, object o);
-        public Ser GetSerializer()
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.Serialize;
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public delegate void Ser(Stream s, object o);
+                        public Ser GetSerializer()
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.Serialize;
+                        }
+                    }
+                }
+                """);
         }
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)

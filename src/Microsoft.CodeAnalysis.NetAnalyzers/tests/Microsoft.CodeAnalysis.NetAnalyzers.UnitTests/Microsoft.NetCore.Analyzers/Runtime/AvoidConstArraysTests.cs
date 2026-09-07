@@ -20,462 +20,462 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task IdentifyConstArrays_ImplicitInitialization()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine({|CA1861:new[]{ 1, 2, 3 }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            Console.WriteLine({|CA1861:new[]{ 1, 2, 3 }|});
+            private static readonly int[] value = new[]{ 1, 2, 3 };
+
+            public void B()
+            {
+                Console.WriteLine(value);
+            }
         }
     }
-}
-", @"
-using System;
+    """);
 
-namespace Z
-{
-    public class A
-    {
-        private static readonly int[] value = new[]{ 1, 2, 3 };
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-        public void B()
-        {
-            Console.WriteLine(value);
-        }
-    }
-}
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Console.WriteLine({|CA1861:{1, 2, 3}|})
+                        End Sub
+                    End Class
+                End Namespace
+                """, """
+    Imports System
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Console.WriteLine({|CA1861:{1, 2, 3}|})
-        End Sub
-    End Class
-End Namespace
-", @"
-Imports System
-
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly value As Integer() = {1, 2, 3}
-        Public Sub B()
-            Console.WriteLine(value)
-        End Sub
-    End Class
-End Namespace
-");
+    Namespace Z
+        Public Class A
+            Private Shared ReadOnly value As Integer() = {1, 2, 3}
+            Public Sub B()
+                Console.WriteLine(value)
+            End Sub
+        End Class
+    End Namespace
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_ExplicitInitialization()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine({|CA1861:new int[]{ 1, 2, 3 }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            Console.WriteLine({|CA1861:new int[]{ 1, 2, 3 }|});
+            private static readonly int[] value = new int[]{ 1, 2, 3 };
+
+            public void B()
+            {
+                Console.WriteLine(value);
+            }
         }
     }
-}
-", @"
-using System;
+    """);
 
-namespace Z
-{
-    public class A
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine({|CA1861:new int[]{ 1, 2, 3 }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        private static readonly int[] value = new int[]{ 1, 2, 3 };
-
-        public void B()
+        public class A
         {
-            Console.WriteLine(value);
+            private static readonly int[] value = new int[]{ 1, 2, 3 };
+
+            public void B()
+            {
+                Console.WriteLine(value);
+            }
         }
     }
-}
-");
+    """);
 
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            Console.WriteLine({|CA1861:new int[]{ 1, 2, 3 }|});
-        }
-    }
-}
-", @"
-using System;
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Console.WriteLine({|CA1861:New Integer() {1, 2, 3}|})
+                        End Sub
+                    End Class
+                End Namespace
+                """, """
+    Imports System
 
-namespace Z
-{
-    public class A
-    {
-        private static readonly int[] value = new int[]{ 1, 2, 3 };
-
-        public void B()
-        {
-            Console.WriteLine(value);
-        }
-    }
-}
-");
-
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Console.WriteLine({|CA1861:New Integer() {1, 2, 3}|})
-        End Sub
-    End Class
-End Namespace
-", @"
-Imports System
-
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly value As Integer() = New Integer() {1, 2, 3}
-        Public Sub B()
-            Console.WriteLine(value)
-        End Sub
-    End Class
-End Namespace
-");
+    Namespace Z
+        Public Class A
+            Private Shared ReadOnly value As Integer() = New Integer() {1, 2, 3}
+            Public Sub B()
+                Console.WriteLine(value)
+            End Sub
+        End Class
+    End Namespace
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_NestedArgs()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine(string.Join(" ", {|CA1861:new[] { "Cake", "is", "good" }|}));
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            Console.WriteLine(string.Join("" "", {|CA1861:new[] { ""Cake"", ""is"", ""good"" }|}));
+            private static readonly string[] value = new[] { "Cake", "is", "good" };
+
+            public void B()
+            {
+                Console.WriteLine(string.Join(" ", value));
+            }
         }
     }
-}
-", @"
-using System;
+    """);
 
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] value = new[] { ""Cake"", ""is"", ""good"" };
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-        public void B()
-        {
-            Console.WriteLine(string.Join("" "", value));
-        }
-    }
-}
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Console.WriteLine(String.Join(" "c, {|CA1861:{"Cake", "is", "good"}|}))
+                        End Sub
+                    End Class
+                End Namespace
+                """, """
+    Imports System
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Console.WriteLine(String.Join("" ""c, {|CA1861:{""Cake"", ""is"", ""good""}|}))
-        End Sub
-    End Class
-End Namespace
-", @"
-Imports System
-
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly value As String() = {""Cake"", ""is"", ""good""}
-        Public Sub B()
-            Console.WriteLine(String.Join("" ""c, value))
-        End Sub
-    End Class
-End Namespace
-");
+    Namespace Z
+        Public Class A
+            Private Shared ReadOnly value As String() = {"Cake", "is", "good"}
+            Public Sub B()
+                Console.WriteLine(String.Join(" "c, value))
+            End Sub
+        End Class
+    End Namespace
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_TriviaTest()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine(string.Join(
+                                "a",
+                                {|CA1861:new[] { "b", "c" }|}, /* test comment */
+                                "d"
+                            ));
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            Console.WriteLine(string.Join(
-                ""a"",
-                {|CA1861:new[] { ""b"", ""c"" }|}, /* test comment */
-                ""d""
-            ));
+            private static readonly string[] values = new[] { "b", "c" };
+
+            public void B()
+            {
+                Console.WriteLine(string.Join(
+                    "a",
+                    values, /* test comment */
+                    "d"
+                ));
+            }
         }
     }
-}
-", @"
-using System;
-
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] values = new[] { ""b"", ""c"" };
-
-        public void B()
-        {
-            Console.WriteLine(string.Join(
-                ""a"",
-                values, /* test comment */
-                ""d""
-            ));
-        }
-    }
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_LambdaArrayCreation()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-using System.Linq;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.Linq;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            var x = new string[] { "a", "b" };
+                            var y = x.Select(z => {|CA1861:new[] { "c" }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+    using System.Linq;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select(z => {|CA1861:new[] { ""c"" }|});
+            private static readonly string[] stringArray = new[] { "c" };
+
+            public void B()
+            {
+                var x = new string[] { "a", "b" };
+                var y = x.Select(z => stringArray);
+            }
         }
     }
-}
-", @"
-using System;
-using System.Linq;
-
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] stringArray = new[] { ""c"" };
-
-        public void B()
-        {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select(z => stringArray);
-        }
-    }
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_LambdaArrayCreationTwoParams()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-using System.Linq;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.Linq;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            var x = new string[] { "a", "b" };
+                            var y = x.Select((z1, z2) => {|CA1861:new[] { "c" }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+    using System.Linq;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select((z1, z2) => {|CA1861:new[] { ""c"" }|});
+            private static readonly string[] selector = new[] { "c" };
+
+            public void B()
+            {
+                var x = new string[] { "a", "b" };
+                var y = x.Select((z1, z2) => selector);
+            }
         }
     }
-}
-", @"
-using System;
-using System.Linq;
-
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] selector = new[] { ""c"" };
-
-        public void B()
-        {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select((z1, z2) => selector);
-        }
-    }
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_LambdaInvokedArrayCreation()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-using System.Linq;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.Linq;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            var x = new string[] { "a", "b" };
+                            var y = x.Select(z => {|CA1861:new[] { "c" }|}.First());
+                        }
+                    }
+                }
+                """, """
+    using System;
+    using System.Linq;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select(z => {|CA1861:new[] { ""c"" }|}.First());
+            private static readonly string[] sourceArray = new[] { "c" };
+
+            public void B()
+            {
+                var x = new string[] { "a", "b" };
+                var y = x.Select(z => sourceArray.First());
+            }
         }
     }
-}
-", @"
-using System;
-using System.Linq;
-
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] sourceArray = new[] { ""c"" };
-
-        public void B()
-        {
-            var x = new string[] { ""a"", ""b"" };
-            var y = x.Select(z => sourceArray.First());
-        }
-    }
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_ExtensionMethod()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-using System.Linq;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.Linq;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            string y = {|CA1861:new[] { "a", "b", "c" }|}.First();
+                            Console.WriteLine(y);
+                        }
+                    }
+                }
+                """, """
+    using System;
+    using System.Linq;
+
+    namespace Z
     {
-        public void B()
+        public class A
         {
-            string y = {|CA1861:new[] { ""a"", ""b"", ""c"" }|}.First();
-            Console.WriteLine(y);
+            private static readonly string[] sourceArray = new[] { "a", "b", "c" };
+
+            public void B()
+            {
+                string y = sourceArray.First();
+                Console.WriteLine(y);
+            }
         }
     }
-}
-", @"
-using System;
-using System.Linq;
+    """);
 
-namespace Z
-{
-    public class A
-    {
-        private static readonly string[] sourceArray = new[] { ""a"", ""b"", ""c"" };
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Imports System.Linq
 
-        public void B()
-        {
-            string y = sourceArray.First();
-            Console.WriteLine(y);
-        }
-    }
-}
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Dim y As String = {|CA1861:{"a", "b", "c"}|}.First()
+                            Console.WriteLine(y)
+                        End Sub
+                    End Class
+                End Namespace
+                """, """
+    Imports System
+    Imports System.Linq
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-Imports System.Linq
-
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Dim y As String = {|CA1861:{""a"", ""b"", ""c""}|}.First()
-            Console.WriteLine(y)
-        End Sub
-    End Class
-End Namespace
-", @"
-Imports System
-Imports System.Linq
-
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly stringArray As String() = {""a"", ""b"", ""c""}
-        Public Sub B()
-            Dim y As String = stringArray.First()
-            Console.WriteLine(y)
-        End Sub
-    End Class
-End Namespace
-");
+    Namespace Z
+        Public Class A
+            Private Shared ReadOnly stringArray As String() = {"a", "b", "c"}
+            Public Sub B()
+                Dim y As String = stringArray.First()
+                Console.WriteLine(y)
+            End Sub
+        End Class
+    End Namespace
+    """);
         }
 
         [TestMethod]
         public async Task IdentifyConstArrays_ParamsArrayOfLiterals()
         {
             // A params argument passed as an array of literals
-            await VerifyCS.VerifyCodeFixAsync(@"
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            C({|CA1861:new bool[] { true, false }|});
-        }
+            await VerifyCS.VerifyCodeFixAsync("""
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            C({|CA1861:new bool[] { true, false }|});
+                        }
 
-        private void C(params bool[] booleans)
+                        private void C(params bool[] booleans)
+                        {
+                        }
+                    }
+                }
+                """, """
+    namespace Z
+    {
+        public class A
         {
+            private static readonly bool[] booleanArray = new bool[] { true, false };
+
+            public void B()
+            {
+                C(booleanArray);
+            }
+
+            private void C(params bool[] booleans)
+            {
+            }
         }
     }
-}
-", @"
-namespace Z
-{
-    public class A
-    {
-        private static readonly bool[] booleanArray = new bool[] { true, false };
-
-        public void B()
-        {
-            C(booleanArray);
-        }
-
-        private void C(params bool[] booleans)
-        {
-        }
-    }
-}
-");
+    """);
         }
 
         [TestMethod]
@@ -485,41 +485,41 @@ namespace Z
             // Doubles as test for batch fix and two or more errors on same line
             await new VerifyCS.Test()
             {
-                TestCode = @"
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            C({|CA1861:new bool[] { true, false }|}, {|CA1861:new bool[] { false, true }|});
-        }
+                TestCode = """
+                    namespace Z
+                    {
+                        public class A
+                        {
+                            public void B()
+                            {
+                                C({|CA1861:new bool[] { true, false }|}, {|CA1861:new bool[] { false, true }|});
+                            }
 
-        private void C(params bool[][] booleans)
-        {
-        }
-    }
-}
-",
-                FixedCode = @"
-namespace Z
-{
-    public class A
-    {
-        private static readonly bool[] booleanArray = new bool[] { true, false };
-        private static readonly bool[] booleanArray0 = new bool[] { false, true };
+                            private void C(params bool[][] booleans)
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    namespace Z
+                    {
+                        public class A
+                        {
+                            private static readonly bool[] booleanArray = new bool[] { true, false };
+                            private static readonly bool[] booleanArray0 = new bool[] { false, true };
 
-        public void B()
-        {
-            C(booleanArray, booleanArray0);
-        }
+                            public void B()
+                            {
+                                C(booleanArray, booleanArray0);
+                            }
 
-        private void C(params bool[][] booleans)
-        {
-        }
-    }
-}
-"
+                            private void C(params bool[][] booleans)
+                            {
+                            }
+                        }
+                    }
+                    """
             }.RunAsync(CancellationToken.None);
         }
 
@@ -528,32 +528,32 @@ namespace Z
         {
             await new VerifyVB.Test()
             {
-                TestCode = @"
-Namespace Z
-    Public Class A
-        Public Sub B()
-            C({|CA1861:New Boolean() { True, False }|}, {|CA1861:New Boolean() { False, True }|})
-        End Sub
+                TestCode = """
+                    Namespace Z
+                        Public Class A
+                            Public Sub B()
+                                C({|CA1861:New Boolean() { True, False }|}, {|CA1861:New Boolean() { False, True }|})
+                            End Sub
 
-        Private Sub C(ParamArray booleans As Boolean()())
-        End Sub
-    End Class
-End Namespace
-",
-                FixedCode = @"
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly booleanArray As Boolean() = New Boolean() { True, False }
-        Private Shared ReadOnly booleanArray0 As Boolean() = New Boolean() { False, True }
-        Public Sub B()
-            C(booleanArray, booleanArray0)
-        End Sub
+                            Private Sub C(ParamArray booleans As Boolean()())
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
+                FixedCode = """
+                    Namespace Z
+                        Public Class A
+                            Private Shared ReadOnly booleanArray As Boolean() = New Boolean() { True, False }
+                            Private Shared ReadOnly booleanArray0 As Boolean() = New Boolean() { False, True }
+                            Public Sub B()
+                                C(booleanArray, booleanArray0)
+                            End Sub
 
-        Private Sub C(ParamArray booleans As Boolean()())
-        End Sub
-    End Class
-End Namespace
-"
+                            Private Sub C(ParamArray booleans As Boolean()())
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             }.RunAsync(CancellationToken.None);
         }
 
@@ -561,261 +561,262 @@ End Namespace
         public async Task IdentifyConstArrays_MemberExtractionTest()
         {
             // Member extraction tests
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
+                namespace Z
+                {
+                    public class A
+                    {
+                        private static readonly string value = "hello";
+                        private static readonly int[] valueArray = new[]{ -2, -1, 0 };
+                        private static readonly bool[] valueArray1 = new[]{ true, false, true };
+
+                        private static readonly int x = 1;
+
+                        public void B()
+                        {
+                            Console.WriteLine({|CA1861:new[]{ 1, 2, 3 }|});
+                        }
+                    }
+                }
+                """, """
+    using System;
+
+    namespace Z
     {
-        private static readonly string value = ""hello"";
-        private static readonly int[] valueArray = new[]{ -2, -1, 0 };
-        private static readonly bool[] valueArray1 = new[]{ true, false, true };
-
-        private static readonly int x = 1;
-
-        public void B()
+        public class A
         {
-            Console.WriteLine({|CA1861:new[]{ 1, 2, 3 }|});
+            private static readonly string value = "hello";
+            private static readonly int[] valueArray = new[]{ -2, -1, 0 };
+            private static readonly bool[] valueArray1 = new[]{ true, false, true };
+
+            private static readonly int x = 1;
+            private static readonly int[] valueArray0 = new[]{ 1, 2, 3 };
+
+            public void B()
+            {
+                Console.WriteLine(valueArray0);
+            }
         }
     }
-}
-", @"
-using System;
+    """);
 
-namespace Z
-{
-    public class A
-    {
-        private static readonly string value = ""hello"";
-        private static readonly int[] valueArray = new[]{ -2, -1, 0 };
-        private static readonly bool[] valueArray1 = new[]{ true, false, true };
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-        private static readonly int x = 1;
-        private static readonly int[] valueArray0 = new[]{ 1, 2, 3 };
+                Namespace Z
+                    Public Class A
+                        Private Shared ReadOnly value As String = "hello"
+                        Private Shared ReadOnly valueArray As Integer() = {-2, -1, 0}
+                        Private Shared ReadOnly valueArray1 As Boolean() = {True, False, True}
+                        Private Shared ReadOnly x As Integer = 1
 
-        public void B()
-        {
-            Console.WriteLine(valueArray0);
-        }
-    }
-}
-");
+                        Public Sub B()
+                            Console.WriteLine({|CA1861:{1, 2, 3}|})
+                        End Sub
+                    End Class
+                End Namespace
+                """, """
+    Imports System
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+    Namespace Z
+        Public Class A
+            Private Shared ReadOnly value As String = "hello"
+            Private Shared ReadOnly valueArray As Integer() = {-2, -1, 0}
+            Private Shared ReadOnly valueArray1 As Boolean() = {True, False, True}
+            Private Shared ReadOnly x As Integer = 1
+            Private Shared ReadOnly valueArray0 As Integer() = {1, 2, 3}
 
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly value As String = ""hello""
-        Private Shared ReadOnly valueArray As Integer() = {-2, -1, 0}
-        Private Shared ReadOnly valueArray1 As Boolean() = {True, False, True}
-        Private Shared ReadOnly x As Integer = 1
-
-        Public Sub B()
-            Console.WriteLine({|CA1861:{1, 2, 3}|})
-        End Sub
-    End Class
-End Namespace
-", @"
-Imports System
-
-Namespace Z
-    Public Class A
-        Private Shared ReadOnly value As String = ""hello""
-        Private Shared ReadOnly valueArray As Integer() = {-2, -1, 0}
-        Private Shared ReadOnly valueArray1 As Boolean() = {True, False, True}
-        Private Shared ReadOnly x As Integer = 1
-        Private Shared ReadOnly valueArray0 As Integer() = {1, 2, 3}
-
-        Public Sub B()
-            Console.WriteLine(valueArray0)
-        End Sub
-    End Class
-End Namespace
-");
+            Public Sub B()
+                Console.WriteLine(valueArray0)
+            End Sub
+        End Class
+    End Namespace
+    """);
         }
 
         [TestMethod]
         public async Task IgnoreOtherArgs_NoDiagnostic()
         {
             // A string
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            Console.WriteLine(""Lorem ipsum"");
-        }
-    }
-}
-");
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine("Lorem ipsum");
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Console.WriteLine(""Lorem ipsum"")
-        End Sub
-    End Class
-End Namespace
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Console.WriteLine("Lorem ipsum")
+                        End Sub
+                    End Class
+                End Namespace
+                """);
 
             // Test another type to be extra safe
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            Console.WriteLine(123);
-        }
-    }
-}
-");
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            Console.WriteLine(123);
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Console.WriteLine(123)
-        End Sub
-    End Class
-End Namespace
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Console.WriteLine(123)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
 
             // Non-literal array
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            string str = ""Lorem ipsum"";
-            Console.WriteLine(new[] { str });
-        }
-    }
-}
-");
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            string str = "Lorem ipsum";
+                            Console.WriteLine(new[] { str });
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace Z
-    Public Class A
-        Public Sub B()
-            Dim str As String = ""Lorem ipsum""
-            Console.WriteLine({ str })
-        End Sub
-    End Class
-End Namespace
-");
+                Namespace Z
+                    Public Class A
+                        Public Sub B()
+                            Dim str As String = "Lorem ipsum"
+                            Console.WriteLine({ str })
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task IgnoreReadonlySpan_NoDiagnostic()
         {
             // A ReadOnlySpan, which is already optimized
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            C(new bool[] { true, false });
-        }
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            C(new bool[] { true, false });
+                        }
 
-        private void C(ReadOnlySpan<bool> span)
-        {
-        }
-    }
-}
-");
+                        private void C(ReadOnlySpan<bool> span)
+                        {
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task IgnoreParams_NoDiagnostic()
         {
             // Params arguments
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace Z
-{
-    public class A
-    {
-        public void B()
-        {
-            C(true, false);
-        }
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace Z
+                {
+                    public class A
+                    {
+                        public void B()
+                        {
+                            C(true, false);
+                        }
 
-        private void C(params bool[] booleans)
-        {
-        }
-    }
-}
-");
+                        private void C(params bool[] booleans)
+                        {
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task IgnoreReadonlyFieldAssignment_NoDiagnostic()
         {
             // Ignore when we're an argument used in a method/constructor that is assigned to a readonly field
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace Z
-{
-    public class A
-    {
-        private static readonly B s = new B(new string[] { ""a"" });
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace Z
+                {
+                    public class A
+                    {
+                        private static readonly B s = new B(new string[] { "a" });
+                    }
 
-    public class B
-    {
-        public B(string[] s)
-        {
-        }
-    }
-}
-");
+                    public class B
+                    {
+                        public B(string[] s)
+                        {
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task IgnoreReadOnlyProperties_NoDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
 
-public class A
-{
-    public readonly List<string> Field1 = GetValues(new string[] { ""close"" });
-    public static readonly A Field; 
-    public static List<string> Property { get; } = GetValues(new string[] { ""close"" });
-    public static string[] Property2 { get; } = new string[] { ""close"" };
+                public class A
+                {
+                    public readonly List<string> Field1 = GetValues(new string[] { "close" });
+                    public static readonly A Field;
+                    public static List<string> Property { get; } = GetValues(new string[] { "close" });
+                    public static string[] Property2 { get; } = new string[] { "close" };
 
-    static A() // Exclude initialization in static constructors
-    {
-        Property = GetValues(new string[] { ""close"" });
-        Field = new A(new string[] { ""close"" });
-    }
-    public A(string[] arr) { }
-    private static List<string> GetValues(string[] arr) => null;
-}");
+                    static A() // Exclude initialization in static constructors
+                    {
+                        Property = GetValues(new string[] { "close" });
+                        Field = new A(new string[] { "close" });
+                    }
+                    public A(string[] arr) { }
+                    private static List<string> GetValues(string[] arr) => null;
+                }
+                """);
         }
 
         [TestMethod, WorkItem(6629, "https://github.com/dotnet/roslyn-analyzers/issues/6629")]
@@ -823,19 +824,20 @@ public class A
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-#nullable enable
-using System.Collections.ObjectModel;
+                TestCode = """
+                    #nullable enable
+                    using System.Collections.ObjectModel;
 
-public class Test
-{
-    private static ReadOnlyCollection<string>? s_errorPayloadNames;
+                    public class Test
+                    {
+                        private static ReadOnlyCollection<string>? s_errorPayloadNames;
 
-    private void M(string eventName, string msg)
-    {
-        s_errorPayloadNames ??= new ReadOnlyCollection<string>(new string[] { ""message"" });
-    }
-}",
+                        private void M(string eventName, string msg)
+                        {
+                            s_errorPayloadNames ??= new ReadOnlyCollection<string>(new string[] { "message" });
+                        }
+                    }
+                    """,
                 LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync(CancellationToken.None);
         }
@@ -845,12 +847,14 @@ public class Test
         {
             return new VerifyCS.Test
             {
-                TestCode = @"using System.Collections.Generic;
+                TestCode = """
+                    using System.Collections.Generic;
 
-public class MyClass
-{
-    public List<object> Cases => new() { new object[0] };
-}",
+                    public class MyClass
+                    {
+                        public List<object> Cases => new() { new object[0] };
+                    }
+                    """,
                 LanguageVersion = LanguageVersion.CSharp10
             }.RunAsync(CancellationToken.None);
         }
@@ -858,17 +862,18 @@ public class MyClass
         [TestMethod, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
         public async Task ArrayWithoutInitializer_NoDiagnostic2()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class MyClass
-{
-    public void M1(Type[] types) { }
-    public void M2(int length)
-    {
-         M1(new Type[length]);
-    }
-}");
+                public class MyClass
+                {
+                    public void M1(Type[] types) { }
+                    public void M2(int length)
+                    {
+                         M1(new Type[length]);
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
@@ -887,7 +892,7 @@ public class MyClass
                                        class Sample
                                        {
                                            internal static readonly char[] separatorArray0 = new char[] { 'a', 'b' };
-                                       
+
                                            void A(char separator, char separatorArray)
                                            {
                                                "".Split(separatorArray0);
@@ -916,7 +921,7 @@ public class MyClass
                                        class Sample
                                        {
                                            internal static readonly char[] separatorArray0 = new char[] { 'a', 'b' };
-                                       
+
                                            void A()
                                            {
                                                object separator = null;
@@ -982,7 +987,7 @@ public class MyClass
                                            private string separator;
                                            private string separatorArray;
                                            internal static readonly char[] separatorArray1 = new char[] { 'a', 'b' };
-                                       
+
                                            void A(char separatorArray0)
                                            {
                                                "".Split(separatorArray1);
@@ -998,7 +1003,7 @@ public class MyClass
         {
             const string source = """
                                   using System;
-                                  
+
                                   class Sample
                                   {
                                       [MyAttribute(new[] {"a", "b", "c"})]
@@ -1006,7 +1011,7 @@ public class MyClass
                                       {
                                       }
                                   }
-                                  
+
                                   class MyAttribute : Attribute
                                   {
                                       public MyAttribute(string[] array) {}
@@ -1021,7 +1026,7 @@ public class MyClass
         {
             const string source = """
                                   using System;
-                                  
+
                                   class Sample
                                   {
                                       [MyAttribute(Values = new[] {"a", "b", "c"})]
@@ -1029,7 +1034,7 @@ public class MyClass
                                       {
                                       }
                                   }
-                                  
+
                                   class MyAttribute : Attribute
                                   {
                                       public string[] Values { get; set; }
@@ -1068,7 +1073,7 @@ public class MyClass
                                   """;
             const string fixedSource = """
                                        using System;
-                                       
+
                                        _ = "a".Split(separator, StringSplitOptions.None);
 
                                        partial class Program
@@ -1108,11 +1113,11 @@ public class MyClass
                                      {
                                          public Class1(int[] arr) { }
                                      }
-                                     
+
                                      public class Class2 : Class1
                                      {
                                          private static readonly int[] arr = new int[] { 1, 2, 3 };
-                                     
+
                                          public Class2()
                                              : base(arr) { }
                                      }

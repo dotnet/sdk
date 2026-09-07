@@ -1443,21 +1443,29 @@ There";
         [DataRow("zh-CHT", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
         public void VerifyIfElseEndifConditionUsesDouble(string culture, string value, string expected)
         {
-            if (!string.IsNullOrEmpty(culture))
+            CultureInfo currentCulture = CultureInfo.CurrentCulture;
+            try
             {
-                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                if (!string.IsNullOrEmpty(culture))
+                {
+                    CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                }
+
+                byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+                MemoryStream input = new MemoryStream(valueBytes);
+                MemoryStream output = new MemoryStream();
+
+                VariableCollection vc = new VariableCollection();
+                IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+                //Changes should be made
+                bool changed = processor.Run(input, output, 28);
+                Verify(Encoding.UTF8, output, changed, value, expected);
             }
-
-            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
-            MemoryStream input = new MemoryStream(valueBytes);
-            MemoryStream output = new MemoryStream();
-
-            VariableCollection vc = new VariableCollection();
-            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
-
-            //Changes should be made
-            bool changed = processor.Run(input, output, 28);
-            Verify(Encoding.UTF8, output, changed, value, expected);
+            finally
+            {
+                CultureInfo.CurrentCulture = currentCulture;
+            }
         }
 
         [TestMethod]

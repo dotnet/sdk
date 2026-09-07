@@ -18,6 +18,7 @@
   <PropertyGroup>
     <GlobalTriggerPaths>
       eng/Version.Details.xml;
+      src/Layout/redist/targets/GenerateBundledVersions.targets;
       test/Microsoft.NET.TestFramework/**;
       test/Microsoft.NET.TestFramework.MSTest/**
     </GlobalTriggerPaths>
