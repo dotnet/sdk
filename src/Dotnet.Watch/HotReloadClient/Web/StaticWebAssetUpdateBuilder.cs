@@ -94,9 +94,19 @@ internal abstract class StaticWebAssetUpdateBuilder
 
                         if (!manifest.TryGetBundleFilePath(bundleFileName, out var bundleFilePath))
                         {
-                            // Shouldn't happen.
-                            applicationProjectLogger.Log(LogEvents.ScopedCssBundleFileNotFound, bundleFileName);
-                            continue;
+                            // A hosted Blazor WebAssembly client exposes its application bundle even though
+                            // it is referenced by the running server project.
+                            var applicationBundleFileName = StaticWebAsset.GetScopedCssBundleFileName(
+                                applicationProjectFilePath: containingProjectInstanceInfo.Id.ProjectPath,
+                                containingProjectFilePath: containingProjectInstanceInfo.Id.ProjectPath);
+
+                            if (!manifest.TryGetBundleFilePath(applicationBundleFileName, out bundleFilePath))
+                            {
+                                applicationProjectLogger.Log(LogEvents.ScopedCssBundleFileNotFound, bundleFileName);
+                                continue;
+                            }
+
+                            bundleFileName = applicationBundleFileName;
                         }
 
                         filePath = bundleFilePath;
