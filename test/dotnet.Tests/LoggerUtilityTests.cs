@@ -58,6 +58,10 @@ namespace dotnet.Tests
         [DataRow("-multithreaded:true", "-multithreaded:true")]
         [DataRow("--multiThreaded:false", "--multiThreaded:false")]
         [DataRow("--multiThreaded:", "--multiThreaded:")]
+        [DataRow("-mt:\"true\"", "-mt:\"true\"")]
+        [DataRow("-mt:\"false\"", "-mt:\"false\"")]
+        [DataRow("--multiThreaded:\"False\"", "--multiThreaded:\"False\"")]
+        [DataRow("/mt:\"true\"", "/mt:\"true\"")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -84,6 +88,9 @@ namespace dotnet.Tests
         [DataRow("-mt:on")]
         [DataRow("-mtx")]
         [DataRow("--multithreadedextra")]
+        [DataRow("-mt:\"invalid\"")]
+        [DataRow("-mt:\\\"false\\\"")]
+        [DataRow("-mt:'false'")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -124,6 +131,8 @@ namespace dotnet.Tests
         [DataRow("--multiThreaded")]
         [DataRow("--multiThreaded:")]
         [DataRow("/mt")]
+        [DataRow("-mt:\"true\"")]
+        [DataRow("-mt:\"false\"")]
         public void GetBuildOptions_ForwardsMultiThreadedArgToMSBuild_NotToTestApplication(string multiThreadedArg)
         {
             // -mt configures the MSBuild engine used for the build that precedes the test run, so it has
@@ -144,6 +153,8 @@ namespace dotnet.Tests
         [DataRow(new[] { "-mt:false", "-mt" }, true)]
         [DataRow(new[] { "-mt:false", "-mt:" }, true)]
         [DataRow(new[] { "-mt", "-mt:false" }, false)]
+        [DataRow(new[] { "-mt:\"false\"", "-mt:\"true\"" }, true)]
+        [DataRow(new[] { "-mt", "-mt:\"false\"" }, false)]
         public void MultiThreadedValue_LastSwitchWins(string[] args, bool expected)
         {
             LoggerUtility.GetMultiThreadedValue(args).Should().Be(expected);

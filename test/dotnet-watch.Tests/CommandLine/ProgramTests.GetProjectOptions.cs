@@ -214,14 +214,16 @@ public class Program_GetProjectOptionsTests
     }
 
     [TestMethod]
-    public void CSharpFileSpecifiedAfterMultiThreadedOption()
+    [DataRow("-mt")]
+    [DataRow("-mt:\"true\"")]
+    [DataRow("-mt:\"false\"")]
+    public void CSharpFileSpecifiedAfterMultiThreadedOption(string option)
     {
         var tempDir = CreateTempDirectory();
         var csFilePath = Path.Combine(tempDir, "App.cs");
         File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
 
-        // dotnet watch -mt App.cs
-        var options = ParseOptions(["-mt", csFilePath]);
+        var options = ParseOptions([option, csFilePath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.IsNotNull(result);

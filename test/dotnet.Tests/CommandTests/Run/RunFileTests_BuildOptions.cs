@@ -763,6 +763,27 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     }
 
     [TestMethod]
+    [DataRow("true")]
+    [DataRow("false")]
+    public void MultiThreadedArgument_ResponseFile(string value)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: value);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "mt.rsp"), $"-mt:\"{value}\"");
+
+        new DotnetCommand(Log, "build", "Program.cs", "@mt.rsp")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs", "@mt.rsp")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [TestMethod]
     public void NoConsoleLogger_Run_SuppressesBuildOutput()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

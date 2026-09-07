@@ -45,6 +45,7 @@ internal sealed class CommandLineOptions
 
     /// <summary>
     /// <see cref="CommandArguments"/> excluding MSBuild-only options that would interfere with positional file discovery.
+    /// Workaround for https://github.com/dotnet/sdk/issues/49989.
     /// </summary>
     public required IReadOnlyList<string> CommandArgumentsForFileDiscovery { get; init; }
 
@@ -355,7 +356,17 @@ internal sealed class CommandLineOptions
                 token[name.Length] == ':')
             {
                 var value = token[(name.Length + 1)..];
-                return value.Length == 0 || bool.TryParse(value, out _);
+                if (value.Length == 0)
+                {
+                    return true;
+                }
+
+                if (value is ['"', .., '"'])
+                {
+                    value = value[1..^1];
+                }
+
+                return bool.TryParse(value, out _);
             }
         }
 

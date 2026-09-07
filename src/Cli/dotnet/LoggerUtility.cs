@@ -199,6 +199,12 @@ internal static class LoggerUtility
             return true;
         }
 
+        // Response-file arguments can retain quotes around the boolean value.
+        if (switchValue is ['"', .., '"'])
+        {
+            switchValue = switchValue[1..^1];
+        }
+
         return bool.TryParse(switchValue, out value);
     }
 
