@@ -68,8 +68,8 @@ namespace Microsoft.DotNet.Installer.Windows
 
         public static void Validate(FileSystemSecurity security, string path)
         {
-            SecurityIdentifier owner = security.GetOwner(typeof(SecurityIdentifier)) as SecurityIdentifier;
-            if (owner == null || !s_trustedSids.Contains(owner))
+            if (security.GetOwner(typeof(SecurityIdentifier)) is not SecurityIdentifier owner ||
+                !s_trustedSids.Contains(owner))
             {
                 ThrowUntrusted(path);
             }
@@ -87,8 +87,7 @@ namespace Microsoft.DotNet.Installer.Windows
                     continue;
                 }
 
-                SecurityIdentifier sid = rule.IdentityReference as SecurityIdentifier;
-                if (sid == null)
+                if (rule.IdentityReference is not SecurityIdentifier sid)
                 {
                     ThrowUntrusted(path);
                     continue;
