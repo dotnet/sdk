@@ -2126,18 +2126,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     attributes[platformName] = new Versions();
                 }
 
-                if (!AddAttribute(attribute, version, attributes[platformName]))
+                var added = AddAttribute(attribute, version, attributes[platformName]);
+                if (!added)
                 {
                     attributes.Remove(platformName);
                 }
-                else if (relatedPlatforms.TryGetValue(platformName, out var relation) && relation.isSubset)
-                {
-                    if (!attributes.TryGetValue(relation.relatedPlatform, out var _))
-                    {
-                        attributes[relation.relatedPlatform] = new Versions();
-                    }
 
-                    AddAttribute(attribute, version, attributes[relation.relatedPlatform]);
+                if (relatedPlatforms.TryGetValue(platformName, out var relation) && relation.isSubset)
+                {
+                    if (added)
+                    {
+                        if (!attributes.TryGetValue(relation.relatedPlatform, out var _))
+                        {
+                            attributes[relation.relatedPlatform] = new Versions();
+                        }
+
+                        AddAttribute(attribute, version, attributes[relation.relatedPlatform]);
+                    }
+                    // A 'Supported' and an 'Unsupported' attribute naming the same version cancel each other out,
+                    // and 'AddAttribute' reports that by returning false so the platform can be dropped. The related
+                    // platform was given a copy of the earlier attribute, so it has to be cancelled as well -
+                    // otherwise '[UnsupportedOSPlatform("ios12.0"), SupportedOSPlatform("ios12.0")]' would clear 'ios'
+                    // but strand 'maccatalyst' with the unsupported 12.0 that was only ever inferred from 'ios'.
+                    // Nothing is created here: with the primary platform cancelled there would be nothing to mirror.
+                    else if (attributes.TryGetValue(relation.relatedPlatform, out var relatedVersions) &&
+                        !AddAttribute(attribute, version, relatedVersions))
+                    {
+                        attributes.Remove(relation.relatedPlatform);
+                    }
                 }
 
                 return true;
