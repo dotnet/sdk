@@ -22,9 +22,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     //
     // Two rules carry most of the weight and are asserted repeatedly below:
     //
-    //   1. Unrelated platforms must never influence each other. An attribute for macOS says nothing about
-    //      tvOS. Violations of this rule are what https://github.com/dotnet/roslyn-analyzers/issues/7665
-    //      was about.
+    //   1. Unrelated platforms must never borrow each other's *versions*. The version range an attribute
+    //      establishes for macOS must not end up applied to tvOS. Violations of this rule are what
+    //      https://github.com/dotnet/roslyn-analyzers/issues/7665 was about.
+    //      This is not the same thing as saying an attribute for macOS has no effect on tvOS. It does:
+    //      a single 'SupportedOSPlatform' turns the API into an allow list, so every platform without its
+    //      own 'SupportedOSPlatform' becomes unsupported. That is the intended, platform agnostic
+    //      behaviour of allow lists, and it is orthogonal to the per platform version ranges asserted
+    //      here; the tests below always give each platform under test its own attribute so that the
+    //      allow list effect does not mask a leaked version.
     //   2. maccatalyst is the one exception: 'TryAddValidAttribute' mirrors every ios attribute onto
     //      maccatalyst, because code compiled for Mac Catalyst runs the iOS surface. The mirroring has to
     //      hold for *every* attribute kind and for the cancelling case, not just the simple ones.
@@ -528,6 +534,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         #endregion
 
         #region Unrelated platforms stay independent
+
+        // The other half of rule 1 in the header: a lone macOS 'SupportedOSPlatform' *does* affect tvOS,
+        // by making the API an allow list that tvOS is not on. That is intended and platform agnostic,
+        // and it is why every test in this region gives each platform its own attribute.
+        [TestMethod]
+        public async Task LoneSupportedAttributeMakesEveryOtherPlatformUnsupported()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                class TestType
+                {
+                    [SupportedOSPlatform("macos11.0")]
+                    public static void Api() { }
+
+                    [SupportedOSPlatform("tvos13.0")]
+                    static void TvOsCaller() { {|#0:Api()|}; }
+
+                    [SupportedOSPlatform("macos12.0")]
+                    static void MacOsCaller() { Api(); }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_platformsWithTvOs,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0)
+                    .WithArguments("TestType.Api()", "'macOS/OSX' 11.0 and later", "'tvos' 13.0 and later"));
+        }
 
         // ios -> maccatalyst is the only inference. macOS and tvOS attributes on the same API must be
         // evaluated separately: the macOS call site is fine, and only the tvOS one below 13.0 warns.
