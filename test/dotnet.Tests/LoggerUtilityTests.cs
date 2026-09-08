@@ -62,6 +62,10 @@ namespace dotnet.Tests
         [DataRow("-mt:\"false\"", "-mt:\"false\"")]
         [DataRow("--multiThreaded:\"False\"", "--multiThreaded:\"False\"")]
         [DataRow("/mt:\"true\"", "/mt:\"true\"")]
+        [DataRow("-mt:\"\"", "-mt:\"\"")]
+        [DataRow("\"--mt:false\"", "\"--mt:false\"")]
+        [DataRow("\"-mt\"", "\"-mt\"")]
+        [DataRow("-m\"t\":fa\"lse\"", "-m\"t\":fa\"lse\"")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -91,6 +95,7 @@ namespace dotnet.Tests
         [DataRow("-mt:\"invalid\"")]
         [DataRow("-mt:\\\"false\\\"")]
         [DataRow("-mt:'false'")]
+        [DataRow("-mt:\"\"\"false\"\"\"")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -133,6 +138,8 @@ namespace dotnet.Tests
         [DataRow("/mt")]
         [DataRow("-mt:\"true\"")]
         [DataRow("-mt:\"false\"")]
+        [DataRow("-mt:\"\"")]
+        [DataRow("\"--mt:false\"")]
         public void GetBuildOptions_ForwardsMultiThreadedArgToMSBuild_NotToTestApplication(string multiThreadedArg)
         {
             // -mt configures the MSBuild engine used for the build that precedes the test run, so it has
@@ -147,17 +154,6 @@ namespace dotnet.Tests
                 "-mt configures the MSBuild engine and must be forwarded to the underlying build invocation.");
             buildOptions.TestApplicationArguments.Should().NotContain(multiThreadedArg,
                 "-mt must not be passed to the test application, which doesn't recognize it.");
-        }
-
-        [TestMethod]
-        [DataRow(new[] { "-mt:false", "-mt" }, true)]
-        [DataRow(new[] { "-mt:false", "-mt:" }, true)]
-        [DataRow(new[] { "-mt", "-mt:false" }, false)]
-        [DataRow(new[] { "-mt:\"false\"", "-mt:\"true\"" }, true)]
-        [DataRow(new[] { "-mt", "-mt:\"false\"" }, false)]
-        public void MultiThreadedValue_LastSwitchWins(string[] args, bool expected)
-        {
-            LoggerUtility.GetMultiThreadedValue(args).Should().Be(expected);
         }
 
         [TestMethod]

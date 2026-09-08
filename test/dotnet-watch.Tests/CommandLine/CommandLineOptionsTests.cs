@@ -324,6 +324,9 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"false\"")]
     [DataRow("--multiThreaded:\"False\"")]
     [DataRow("/mt:\"true\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
+    [DataRow("-m\"t\":fa\"lse\"")]
     public void MultiThreadedOption(string option)
     {
         var options = VerifyOptions([option]);
@@ -348,6 +351,9 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"false\"")]
     [DataRow("--multiThreaded:\"False\"")]
     [DataRow("/mt:\"true\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
+    [DataRow("-m\"t\":fa\"lse\"")]
     public void MultiThreadedOption_AfterDashDash(string option)
     {
         var options = VerifyOptions(["--", option]);
@@ -365,6 +371,7 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"invalid\"")]
     [DataRow("-mt:\\\"false\\\"")]
     [DataRow("-mt:'false'")]
+    [DataRow("-mt:\"\"\"false\"\"\"")]
     public void MultiThreadedOption_Invalid(string option)
     {
         var options = VerifyOptions([option]);
@@ -372,6 +379,16 @@ public class CommandLineOptionsTests
         AssertEx.SequenceEqual([option], options.CommandArguments);
         AssertEx.SequenceEqual([option], options.CommandArgumentsForFileDiscovery);
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+    }
+
+    [TestMethod]
+    public void MultiThreadedOption_PreservesEmptyDuplicates()
+    {
+        var options = VerifyOptions(["-mt:false", "-mt:", "-mt:\"\"", "--", "\"--mt:true\""]);
+
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false", "-mt:false", "-mt:", "-mt:\"\""], options.BuildArguments);
+        AssertEx.SequenceEqual(["-mt:false", "-mt:", "-mt:\"\"", "--", "\"--mt:true\""], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", "\"--mt:true\""], options.CommandArgumentsForFileDiscovery);
     }
 
     [TestMethod]

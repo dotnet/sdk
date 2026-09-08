@@ -217,6 +217,8 @@ public class Program_GetProjectOptionsTests
     [DataRow("-mt")]
     [DataRow("-mt:\"true\"")]
     [DataRow("-mt:\"false\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
     public void CSharpFileSpecifiedAfterMultiThreadedOption(string option)
     {
         var tempDir = CreateTempDirectory();

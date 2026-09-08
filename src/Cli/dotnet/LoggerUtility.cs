@@ -112,7 +112,8 @@ internal static class LoggerUtility
     private static bool TryGetMSBuildArgument(string arg, [NotNullWhen(true)] out string? msbuildArg)
     {
         msbuildArg = arg;
-        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg))
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg) ||
+            MSBuildArgumentParser.IsMultiThreadedSwitch(arg))
         {
             return true;
         }
@@ -147,13 +148,6 @@ internal static class LoggerUtility
             return true;
         }
 
-        // -mt/-multiThreaded configures the MSBuild engine, so it has to reach MSBuild rather than being
-        // handed to the launched process as an unrecognized argument.
-        if (TryGetMultiThreadedValue(arg, out _))
-        {
-            return true;
-        }
-
         if (switchName.Equals("tlp", comp) || switchName.Equals("terminalLoggerParameters", comp) ||
             switchName.Equals("clp", comp) || switchName.Equals("consoleLoggerParameters", comp))
         {
@@ -165,47 +159,6 @@ internal static class LoggerUtility
 
         msbuildArg = null;
         return false;
-    }
-
-    internal static bool? GetMultiThreadedValue(IEnumerable<string>? args)
-    {
-        bool? result = null;
-
-        foreach (var arg in args ?? [])
-        {
-            if (TryGetMultiThreadedValue(arg, out bool value))
-            {
-                result = value;
-            }
-        }
-
-        return result;
-    }
-
-    internal static bool TryGetMultiThreadedValue(string arg, out bool value)
-    {
-        value = false;
-
-        if (!TryParseSwitch(arg, out _, out string? switchName, out string? switchValue, out bool hasValue) ||
-            !(switchName.Equals("mt", StringComparison.OrdinalIgnoreCase) ||
-              switchName.Equals("multiThreaded", StringComparison.OrdinalIgnoreCase)))
-        {
-            return false;
-        }
-
-        if (!hasValue || string.IsNullOrEmpty(switchValue))
-        {
-            value = true;
-            return true;
-        }
-
-        // Response-file arguments can retain quotes around the boolean value.
-        if (switchValue is ['"', .., '"'])
-        {
-            switchValue = switchValue[1..^1];
-        }
-
-        return bool.TryParse(switchValue, out value);
     }
 
     private static bool TryParseSwitch(string arg, [NotNullWhen(true)] out string? prefix, [NotNullWhen(true)] out string? switchName, out string? switchValue, out bool hasValue)

@@ -21,8 +21,6 @@ internal sealed class CommandLineOptions
 {
     private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
-    private static readonly ImmutableArray<string> s_multiThreadedOptionNames = ["-mt", "/mt", "--mt", "-multiThreaded", "/multiThreaded", "--multiThreaded"];
-
     public static readonly ParserConfiguration ParserConfiguration = new()
     {
         // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
@@ -315,7 +313,7 @@ internal sealed class CommandLineOptions
 
                 // Watch runs `dotnet build` itself, so MSBuild engine switches have to be copied into the
                 // build arguments; commands do not model -mt as a forwarding option either.
-                if (IsMultiThreadedOption(token))
+                if (MSBuildArgumentParser.IsMultiThreadedSwitch(token))
                 {
                     multiThreadedTokensBuilder.Add(token);
                     isMSBuildOnlyToken = true;
@@ -340,37 +338,6 @@ internal sealed class CommandLineOptions
         argumentsForFileDiscovery = argumentsForFileDiscoveryBuilder;
         multiThreadedTokens = multiThreadedTokensBuilder;
         return arguments;
-    }
-
-    private static bool IsMultiThreadedOption(string token)
-    {
-        foreach (var name in s_multiThreadedOptionNames)
-        {
-            if (token.Equals(name, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (token.StartsWith(name, StringComparison.OrdinalIgnoreCase) &&
-                token.Length > name.Length &&
-                token[name.Length] == ':')
-            {
-                var value = token[(name.Length + 1)..];
-                if (value.Length == 0)
-                {
-                    return true;
-                }
-
-                if (value is ['"', .., '"'])
-                {
-                    value = value[1..^1];
-                }
-
-                return bool.TryParse(value, out _);
-            }
-        }
-
-        return false;
     }
 
     private static string GetOptionNameToForward(OptionResult optionResult)

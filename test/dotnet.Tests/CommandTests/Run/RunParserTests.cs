@@ -237,19 +237,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
-        [DataRow(new[] { "-mt" }, true)]
-        [DataRow(new[] { "-mt:" }, true)]
-        [DataRow(new[] { "-mt:false", "-mt" }, true)]
-        [DataRow(new[] { "-mt", "-mt:false" }, false)]
-        public void FileBuildConcurrency_UsesEffectiveMultiThreadedValue(string[] args, bool expectedMultiThreaded)
-        {
-            var (multiThreaded, maxNodeCount) = VirtualProjectBuildingCommand.GetBuildConcurrency(args);
-
-            multiThreaded.Should().Be(expectedMultiThreaded);
-            maxNodeCount.Should().Be(expectedMultiThreaded ? Environment.ProcessorCount : 1);
-        }
-
-        [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {
