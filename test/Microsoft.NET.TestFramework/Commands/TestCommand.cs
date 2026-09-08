@@ -188,14 +188,6 @@ namespace Microsoft.NET.TestFramework.Commands
                     command.OnOutputLine(CommandOutputHandler);
                 }
 
-                // Decode captured stdout as UTF-8 by default so non-ASCII output (e.g. localized
-                // strings such as the French "Bienvenue à .Net!") is not corrupted by the host
-                // console's active code page. Child dotnet/MSBuild processes emit UTF-8; when
-                // StandardOutputEncoding is left null, Process decodes the redirected stream using
-                // Console.OutputEncoding, which on Windows is the OEM code page (e.g. CP437/850) and
-                // turns UTF-8 bytes like 0xC3 0xA0 ('à') into mojibake ('├á'). Because the active code
-                // page varies by agent, tests asserting on non-ASCII output failed intermittently. On
-                // non-Windows the default capture encoding is already UTF-8, so this is a no-op there.
                 command.StandardOutputEncoding(StandardOutputEncoding ?? Encoding.UTF8);
             }
 
