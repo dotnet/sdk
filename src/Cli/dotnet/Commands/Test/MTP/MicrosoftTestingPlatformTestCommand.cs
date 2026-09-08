@@ -661,11 +661,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // a second press can force-kill running test app child processes and exit with
         // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
-        // Retry-specific rendering is enabled by the retry orchestrator handshake. Older platform
-        // versions that do not send it still fall back to instance-based inference from attempt 2.
-        output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry: false);
+        // Retry-specific rendering is enabled authoritatively by the retry orchestrator handshake.
+        // Keep the raw option check only for older platform versions that support retries but do not
+        // send that handshake, so they can still label attempt 1.
+        bool isRetry = IsLegacyRetryOptionEnabled(parseResult.GetArguments());
+        output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
     }
+
+    internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
+        => arguments.Contains("--retry-failed-tests");
 
     /// <summary>
     /// Reads the Microsoft.Testing.Platform <c>--show-slowest-tests N</c> option out of the raw command line.

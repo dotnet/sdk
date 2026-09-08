@@ -789,6 +789,13 @@ public class TerminalTestReporterTests
     public void GetShowFlakyTests_ParsesForwardedOption(string[] arguments, bool expected)
         => MicrosoftTestingPlatformTestCommand.GetShowFlakyTests(arguments).Should().Be(expected);
 
+    [TestMethod]
+    [DataRow(new string[0], false)]
+    [DataRow(new[] { "--retry-failed-tests", "3" }, true)]
+    [DataRow(new[] { "test", "--", "--retry-failed-tests", "3" }, true)]
+    public void IsLegacyRetryOptionEnabled_ParsesForwardedOption(string[] arguments, bool expected)
+        => MicrosoftTestingPlatformTestCommand.IsLegacyRetryOptionEnabled(arguments).Should().Be(expected);
+
     /// <summary>
     /// Finds the per-assembly summary line for the given assembly. Multiple lines may mention the
     /// assembly (e.g. the "Running tests from ..." banner and the summary line). The summary line
