@@ -31,10 +31,6 @@ permissions:
   contents: read
   copilot-requests: write
 
-sandbox:
-  agent:
-    sudo: false
-
 # The PAT-backed API proxy cannot price the implicit `auto` alias. Pin the
 # explicitly priced Sol model for both this assignment workflow and the coding
 # agent session it starts.
