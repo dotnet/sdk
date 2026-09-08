@@ -213,7 +213,7 @@ namespace ManifestReaderTests
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public void PathBasedIdsRejectInvalidComponents(string id)
+        public void PathBasedIdsRejectInvalidComponents(string? id)
         {
             Assert.Throws<ArgumentException>(() => new ManifestId(id));
             Assert.Throws<ArgumentException>(() => new WorkloadId(id));
