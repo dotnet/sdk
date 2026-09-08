@@ -2106,9 +2106,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolInstallManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
   </data>
-  <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
-    <value>NuGet configuration file '{0}' does not exist.</value>
-  </data>
   <data name="ToolInstallSourceOptionDescription" xml:space="preserve">
     <value>Replace all NuGet package sources to use during installation with these.</value>
   </data>
@@ -2178,6 +2175,12 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
+  </data>
+  <data name="ToolSearchNoSourcesConfigured" xml:space="preserve">
+    <value>No NuGet package sources are configured or enabled.</value>
+  </data>
+  <data name="ToolSearchSourceDoesNotSupportPackageTypeFiltering" xml:space="preserve">
+    <value>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</value>
   </data>
   <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>

@@ -494,7 +494,7 @@ public class CliSchemaTests : SdkTest
       "description": "The NuGet configuration file to use.",
       "hidden": false,
       "helpName": "FILE",
-      "valueType": "System.String",
+      "valueType": "System.IO.FileInfo",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

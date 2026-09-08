@@ -32,7 +32,7 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         INuGetPackageDownloader nugetPackageDownloader = null)
         : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        string configOption = parseResult.GetValue(Definition.ConfigOption)?.FullName;
         var sourceOption = parseResult.GetValue(Definition.SourceOption);
         _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
             new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);

@@ -2138,8 +2138,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">在 nuget.org 中搜索 dotnet 工具</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">在 nuget.org 中搜索 dotnet 工具</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

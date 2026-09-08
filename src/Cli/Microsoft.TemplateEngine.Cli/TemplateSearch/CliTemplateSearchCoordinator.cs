@@ -12,6 +12,8 @@ using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using NuGet.Configuration;
+using NuGet.Credentials;
 using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
@@ -61,6 +63,19 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.NotFound;
             }
 
+            PackageAvailabilityResult availability = await FilterAvailablePackagesAsync(searchResults, commandArgs, cancellationToken).ConfigureAwait(false);
+            if (!availability.AnyFeedSucceeded)
+            {
+                return NewCommandStatus.NotFound;
+            }
+
+            Dictionary<SearchResult, IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> filteredHitsByResult =
+                searchResults.ToDictionary(
+                    result => result,
+                    result => (IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>)result.SearchHits
+                        .Where(hit => IsConfirmedAvailable(hit.PackageInfo, availability.AvailablePackages))
+                        .ToList());
+
             foreach (SearchResult result in searchResults)
             {
                 if (!result.Success)
@@ -70,10 +85,11 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     continue;
                 }
 
+                IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> filteredHits = filteredHitsByResult[result];
                 Reporter.Output.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_MatchesFromSource, result.Provider.Factory.DisplayName);
-                if (result.SearchHits.Any())
+                if (filteredHits.Any())
                 {
-                    DisplayResultsForPack(result.SearchHits, environmentSettings, commandArgs, defaultLanguage);
+                    DisplayResultsForPack(filteredHits, environmentSettings, commandArgs, defaultLanguage);
                 }
                 else
                 {
@@ -87,10 +103,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                         .Bold().Red());
                 }
             }
+
             Reporter.Output.WriteLine();
-            if (searchResults.Where(r => r.Success).SelectMany(r => r.SearchHits).Any())
+            IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> allFilteredHits =
+                searchResults.Where(r => r.Success).SelectMany(r => filteredHitsByResult[r]).ToList();
+            if (allFilteredHits.Any())
             {
-                string packageIdToShow = EvaluatePackageToShow(searchResults);
+                string packageIdToShow = EvaluatePackageToShow(allFilteredHits);
                 Reporter.Output.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_InstallHelp);
                 Reporter.Output.WriteCommand(
                  Example
@@ -106,6 +125,72 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
+        }
+
+        private static async Task<PackageAvailabilityResult> FilterAvailablePackagesAsync(
+            IReadOnlyList<SearchResult> searchResults,
+            SearchCommandArgs commandArgs,
+            CancellationToken cancellationToken)
+        {
+            InitializeNuGetCredentialService(commandArgs.Interactive);
+
+            NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
+                nugetConfig: commandArgs.ConfigFile,
+                sourceFeedOverrides: commandArgs.Sources,
+                additionalSourceFeeds: commandArgs.AddSources,
+                invalidSource: invalidSource => Reporter.Error.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResource, invalidSource).Bold().Red()));
+
+            if (sourceConfiguration.PackageSources.Count == 0)
+            {
+                Reporter.Error.WriteLine(LocalizableStrings.DetailsCommand_NoNuGetSources.Bold().Red());
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), AnyFeedSucceeded: false);
+            }
+
+            PackageSourceMapping? sourceMapping = PackageAvailabilityChecker.GetEffectivePackageSourceMapping(
+                sourceConfiguration.Settings,
+                sourceOverridesSpecified: commandArgs.Sources?.Count > 0,
+                additionalSourcesSpecified: commandArgs.AddSources?.Count > 0);
+
+            HashSet<PackageAvailabilityCandidate> candidates = searchResults
+                .Where(r => r.Success)
+                .SelectMany(r => r.SearchHits)
+                .Where(hit => !string.IsNullOrEmpty(hit.PackageInfo.Version))
+                .Select(hit => new PackageAvailabilityCandidate(hit.PackageInfo.Name, hit.PackageInfo.Version!))
+                .ToHashSet();
+
+            if (candidates.Count == 0)
+            {
+                return new PackageAvailabilityResult(candidates, AnyFeedSucceeded: true);
+            }
+
+            PackageAvailabilityChecker checker = new(sourceConfiguration.PackageSources, sourceMapping);
+            PackageAvailabilityResult availability = await checker.GetAvailablePackagesAsync(candidates, cancellationToken).ConfigureAwait(false);
+            if (!availability.AnyFeedSucceeded)
+            {
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_AllFeedsFailed.Bold().Red());
+            }
+            return availability;
+        }
+
+        internal static bool IsConfirmedAvailable(ITemplatePackageInfo packageInfo, IReadOnlySet<PackageAvailabilityCandidate> availablePackages)
+        {
+            if (string.IsNullOrEmpty(packageInfo.Version))
+            {
+                return true;
+            }
+            return availablePackages.Contains(new PackageAvailabilityCandidate(packageInfo.Name, packageInfo.Version));
+        }
+
+        private static void InitializeNuGetCredentialService(bool interactive)
+        {
+            try
+            {
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(new CliNuGetLogger(), !interactive);
+            }
+            catch (Exception ex)
+            {
+                Reporter.Verbose.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Verbose_NuGetCredentialServiceError, ex.ToString());
+            }
         }
 
         internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
@@ -150,10 +235,9 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             return new List<ITemplateInfo>();
         }
 
-        private static string EvaluatePackageToShow(IReadOnlyList<SearchResult> searchResults)
+        private static string EvaluatePackageToShow(IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> searchHits)
         {
-            var microsoftAuthoredPackages = searchResults
-                .SelectMany(r => r.SearchHits)
+            var microsoftAuthoredPackages = searchHits
                 .Where(hit => hit.PackageInfo.Name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
                                 && hit.MatchedTemplates.Any(t => t.Author == "Microsoft"))
                 .OrderByDescending(hit => hit.PackageInfo.TotalDownloads);
@@ -164,8 +248,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             }
             else
             {
-                return searchResults
-                        .SelectMany(r => r.SearchHits)
+                return searchHits
                         .OrderByDescending(hit => hit.PackageInfo.TotalDownloads)
                         .First().PackageInfo.Name;
             }
@@ -384,5 +467,3 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
         }
     }
 }
-
-

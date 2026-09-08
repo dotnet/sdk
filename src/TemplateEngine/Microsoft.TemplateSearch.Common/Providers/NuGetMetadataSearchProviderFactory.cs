@@ -8,7 +8,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
 {
     public sealed class NuGetMetadataSearchProviderFactory : ITemplateSearchProviderFactory
     {
-        string ITemplateSearchProviderFactory.DisplayName => "NuGet.org";
+        string ITemplateSearchProviderFactory.DisplayName => ".NET template catalog";
 
         Guid IIdentifiedComponent.Id => new Guid("6EA368C4-8A56-444C-91D1-55150B296BF2");
 

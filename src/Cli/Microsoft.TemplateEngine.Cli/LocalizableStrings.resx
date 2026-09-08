@@ -453,6 +453,12 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</value>
   <data name="CliTemplateSearchCoordinator_Error_NoSources" xml:space="preserve">
     <value>No remoted sources defined to search for the templates.</value>
   </data>
+  <data name="CliTemplateSearchCoordinator_Error_AllFeedsFailed" xml:space="preserve">
+    <value>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</value>
+  </data>
+  <data name="CannotUseAddSourceWithSourceMapping" xml:space="preserve">
+    <value>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</value>
+  </data>
   <data name="CliTemplateSearchCoordinator_Error_NotFound" xml:space="preserve">
     <value>Template '{0}' was not found.</value>
   </data>

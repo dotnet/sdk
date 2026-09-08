@@ -33,6 +33,14 @@ internal sealed class ToolSearchCommandDefinition : Command
 
     public readonly Option<bool> PrereleaseOption = ToolAppliedOption.CreatePrereleaseOption();
 
+    public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
+
+    public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption(CommandDefinitionStrings.SourceDescription);
+
+    public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption(CommandDefinitionStrings.Option_AddSource);
+
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
+
     public ToolSearchCommandDefinition()
         : base("search", CommandDefinitionStrings.ToolSearchCommandDescription)
     {
@@ -42,5 +50,9 @@ internal sealed class ToolSearchCommandDefinition : Command
         Options.Add(SkipOption);
         Options.Add(TakeOption);
         Options.Add(PrereleaseOption);
+        Options.Add(ConfigOption);
+        Options.Add(SourceOption);
+        Options.Add(AddSourceOption);
+        Options.Add(InteractiveOption);
     }
 }
