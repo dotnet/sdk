@@ -70,6 +70,7 @@ tools:
   # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg
   # gateway, avoiding the firewall TCP_DENIED/403 on that single-label host.
   # See github/gh-aw#45915.
+  bash: ["gh:*", "safeoutputs:*"]
   cli-proxy: true
   web-fetch:
   github:
