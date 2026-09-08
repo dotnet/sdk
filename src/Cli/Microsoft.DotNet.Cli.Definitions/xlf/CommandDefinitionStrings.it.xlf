@@ -347,14 +347,14 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Imposta il valore di una variabile di ambiente. 
-Crea la variabile se non esiste e la sostituisce se esiste. 
-È possibile specificare più volte l'argomento per fornire più variabili.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
-Esempi:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -413,7 +413,7 @@ Equivale a eliminare project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="needs-review-translation">Elenca i testi individuati invece di eseguirli.</target>
+        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -461,7 +461,7 @@ Equivale a eliminare project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="needs-review-translation">Specifica il numero minimo dei test che si prevede saranno eseguiti.</target>
+        <target state="new">Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -714,15 +714,15 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Imposta il valore di una variabile di ambiente. 
-Crea la variabile se non esiste e la sostituisce se esiste. 
-In questo modo forza l'esecuzione dei test in un processo isolato. 
-È possibile specificare più volte questo argomento per fornire più variabili.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Esempi:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
