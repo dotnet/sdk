@@ -13,9 +13,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         private ITestOutputHelper _log => Log;
 
+        // NetTFMUpdate: Retarget the test templates to net12.0 before removing this override.
+        private const string CurrentTemplateTargetFramework = "net11.0";
+        private const string CurrentTemplateTargetFrameworkVersion = "11.0";
+
         private static readonly ImmutableArray<string> SupportedTargetFrameworks =
         [
-            ToolsetInfo.CurrentTargetFramework
+            CurrentTemplateTargetFramework
         ];
 
         private static readonly (string ProjectTemplateName, string ItemTemplateName, string[] Languages, bool SupportsTestingPlatform)[] AvailableItemTemplates =
@@ -64,7 +68,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // This is the live location of the build
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                $"Microsoft.DotNet.Common.ProjectTemplates.{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                $"Microsoft.DotNet.Common.ProjectTemplates.{CurrentTemplateTargetFrameworkVersion}",
                 "content");
 
             var dummyLog = new NullTestOutputHelper();

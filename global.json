@@ -5,12 +5,12 @@
       "$host$"
     ],
     "errorMessage": "The .NET SDK is not installed or is not configured correctly. Please run ./build to install the correct SDK version locally.",
-    "version": "11.0.100-rc.1.26431.117",
+    "version": "12.0.100-alpha.1.26458.102",
     "allowPrerelease": true,
     "rollForward": "latestFeature"
   },
   "tools": {
-    "dotnet": "11.0.100-rc.1.26431.117",
+    "dotnet": "12.0.100-alpha.1.26458.102",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCorePlatformsPackageVersion)"
