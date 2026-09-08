@@ -75,7 +75,7 @@ creates `*.received.*` files on mismatch that must not be committed.
 **Workaround:** Edit `.resx` and regenerate XLF; change manpage content in `dotnet/docs`;
 regenerate workflow locks through their owning workflow; inspect received snapshots and
 promote only intentional output to `*.verified.*`. See the
-[root generated-file guardrails](../copilot-instructions.md#do-not-hand-edit-generated-files)
+[root generated-file guardrails](../../AGENTS.md#do-not-hand-edit-generated-files)
 and [`snapshot-based-testing.md`](../../documentation/project-docs/snapshot-based-testing.md).
 
 ## Redist Requires Correct Outer-Build Ordering

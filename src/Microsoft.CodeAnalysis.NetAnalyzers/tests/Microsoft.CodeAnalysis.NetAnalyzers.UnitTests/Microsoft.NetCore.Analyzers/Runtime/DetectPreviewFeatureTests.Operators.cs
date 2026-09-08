@@ -13,26 +13,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewMethodUnaryOperator()
         {
-            var csInput = @" 
-using System.Runtime.Versioning; using System;
-namespace Preview_Feature_Scratch
-{
-    public class Program
-    {
-        static void Main(string[] args)
-        {
-            var a = new Fraction();
-            var b = {|#0:+a|};
-        }
-    }
+            var csInput = """
 
-    public readonly struct Fraction
-    {
-        [RequiresPreviewFeatures]
-        public static Fraction operator +(Fraction a) => a;
-    }
-}
-";
+                using System.Runtime.Versioning; using System;
+                namespace Preview_Feature_Scratch
+                {
+                    public class Program
+                    {
+                        static void Main(string[] args)
+                        {
+                            var a = new Fraction();
+                            var b = {|#0:+a|};
+                        }
+                    }
+
+                    public readonly struct Fraction
+                    {
+                        [RequiresPreviewFeatures]
+                        public static Fraction operator +(Fraction a) => a;
+                    }
+                }
+                """;
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_UnaryPlus", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -42,27 +43,29 @@ namespace Preview_Feature_Scratch
         [TestMethod]
         public async Task TestPreviewMethodBinaryOperator()
         {
-            var csInput = @" 
-        using System.Runtime.Versioning; using System;
-        namespace Preview_Feature_Scratch
-        {
-            public class Program
-            {
-                static void Main(string[] args)
-                {
-                    var a = new Fraction();
-                    var b = new Fraction();
-                    b = {|#0:b + a|};
-                }
-            }
+            var csInput = """
 
-            public readonly struct Fraction
-            {
-                [RequiresPreviewFeatures]
-                public static Fraction operator +(Fraction a, Fraction b) => a;
-            }
-        }
-        ";
+                        using System.Runtime.Versioning; using System;
+                        namespace Preview_Feature_Scratch
+                        {
+                            public class Program
+                            {
+                                static void Main(string[] args)
+                                {
+                                    var a = new Fraction();
+                                    var b = new Fraction();
+                                    b = {|#0:b + a|};
+                                }
+                            }
+
+                            public readonly struct Fraction
+                            {
+                                [RequiresPreviewFeatures]
+                                public static Fraction operator +(Fraction a, Fraction b) => a;
+                            }
+                        }
+
+                """;
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_Addition", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);

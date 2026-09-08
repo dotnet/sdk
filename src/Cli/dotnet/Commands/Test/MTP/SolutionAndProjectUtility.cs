@@ -468,20 +468,18 @@ internal static class SolutionAndProjectUtility
     }
 
     /// <summary>
-    /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
-    /// and TestTfmsInParallel setting, or null if no device selection is needed.
+    /// Evaluates the project and its inner builds before device selection.
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
     /// </summary>
-    internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
+    internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
         EvaluationContext? evaluationContext = null,
         string? configuration = null,
-        string? platform = null,
-        Dictionary<string, ProjectInstance>? evaluatedProjects = null)
+        string? platform = null)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -510,7 +508,6 @@ internal static class SolutionAndProjectUtility
             configuration,
             platform,
             globalProperties);
-        evaluatedProjects?[string.Empty] = projectInstance;
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -522,8 +519,6 @@ internal static class SolutionAndProjectUtility
         {
             testTfmsInParallel = parsed;
         }
-
-        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         IEnumerable<string> frameworks;
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
@@ -539,8 +534,11 @@ internal static class SolutionAndProjectUtility
                 .Where(f => !string.IsNullOrEmpty(f));
         }
 
-        var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
-        bool restoreWasPerformed = false;
+        var evaluatedProjects = new Dictionary<string, ProjectInstance>(StringComparer.OrdinalIgnoreCase)
+        {
+            [string.Empty] = projectInstance,
+        };
+
         foreach (var framework in frameworks)
         {
             ProjectInstance frameworkProject = projectInstance;
@@ -556,8 +554,31 @@ internal static class SolutionAndProjectUtility
                     platform,
                     globalProperties);
             }
-            evaluatedProjects?[framework] = frameworkProject;
+            evaluatedProjects[framework] = frameworkProject;
+        }
 
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel);
+    }
+
+    /// <summary>
+    /// Selects devices from previously evaluated target-framework-specific project instances.
+    /// Returns a result with device mappings and TestTfmsInParallel setting, or null if no
+    /// device selection is needed.
+    /// </summary>
+    internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession,
+        DeviceSelectionEvaluation evaluation,
+        string? configuration = null,
+        string? platform = null)
+    {
+        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+        var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        bool restoreWasPerformed = false;
+
+        foreach (var (framework, frameworkProject) in evaluation.ProjectsByFramework)
+        {
             // Workload-specific targets are imported only by inner builds, so probe the
             // TFM-specific evaluation before constructing the selector that executes the target.
             (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
@@ -579,8 +600,21 @@ internal static class SolutionAndProjectUtility
         }
 
         return devicesByTfm.Values.Any(v => v.Device is not null)
-            ? new DeviceSelectionResult(devicesByTfm, testTfmsInParallel, restoreWasPerformed)
+            ? new DeviceSelectionResult(devicesByTfm, evaluation.TestTfmsInParallel, restoreWasPerformed)
             : null;
+    }
+
+    internal sealed record DeviceSelectionEvaluation(
+        Dictionary<string, ProjectInstance> EvaluatedProjects,
+        bool TestTfmsInParallel)
+    {
+        public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
+            => EvaluatedProjects.Count == 1
+                ? EvaluatedProjects
+                : EvaluatedProjects.Where(project => !string.IsNullOrEmpty(project.Key));
+
+        public bool SupportsDeviceSelection
+            => ProjectsByFramework.Any(project => project.Value.Targets.ContainsKey(Constants.ComputeAvailableDevices));
     }
 
     internal sealed record DeviceSelectionResult(
@@ -700,7 +734,13 @@ internal static class SolutionAndProjectUtility
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
+            project.GetPropertyValue(ProjectProperties.AppDesignerFolder),
+            buildOptions,
+            profileName: null,
+            project.ExpandString);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -773,7 +813,13 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(
+        string projectDirectory,
+        string projectNameWithoutExtension,
+        string appDesignerFolder,
+        BuildOptions buildOptions,
+        string? profileName,
+        Func<string, string> evaluateExpression)
     {
         if (buildOptions.NoLaunchProfile)
         {
@@ -808,13 +854,40 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(
+            launchSettingsPath,
+            profileName,
+            new LaunchProfileParserOptions(
+                evaluateExpression,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: !buildOptions.NoLaunchProfileArguments));
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.Profile;
+        if (result.Profile is not ProjectLaunchProfile projectProfile)
+        {
+            return result.Profile;
+        }
+
+        try
+        {
+            return ProjectLaunchProfileParser.ExpandMSBuildProperties(
+                projectProfile,
+                evaluateExpression,
+                expandCommandLineArgs: !buildOptions.NoLaunchProfileArguments,
+                expandApplicationUrl: false);
+        }
+        catch (Microsoft.Build.Exceptions.InvalidProjectFileException ex)
+        {
+            Reporter.Error.WriteLine(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                profileName,
+                ex.Message).Bold().Red());
+            return null;
+        }
     }
 }

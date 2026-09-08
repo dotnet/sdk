@@ -214,6 +214,40 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItFindsDevicesForProjectWithoutTargetFramework()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+        string projectPath = Path.Combine(testInstance.Path, "DotnetTestDevices.csproj");
+        File.WriteAllText(
+            projectPath,
+            File.ReadAllText(projectPath)
+                .Replace(
+                    $"    <TargetFrameworks>net9.0;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>{Environment.NewLine}",
+                    string.Empty)
+                .Replace(
+                    "</Project>",
+                    """
+                      <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                        <ItemGroup>
+                          <Devices Include="test-device-1" />
+                          <Devices Include="test-device-2" />
+                        </ItemGroup>
+                      </Target>
+                    </Project>
+                    """));
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--no-restore")
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.HaveStdErrContaining("test-device-1")
+            .And.HaveStdErrContaining("test-device-2");
+    }
+
+    [TestMethod]
     public void ItSelectsDevicesFromTargetsImportedOnlyByInnerBuilds()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")

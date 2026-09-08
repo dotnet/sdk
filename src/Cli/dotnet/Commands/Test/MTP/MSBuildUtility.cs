@@ -98,10 +98,17 @@ internal static class MSBuildUtility
 
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
-        var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
+        var deviceEvaluation = SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
             projectFilePath,
             buildOptions,
             buildSession);
+        var deviceSelection = deviceEvaluation is not null
+            ? SolutionAndProjectUtility.SelectDevicesBeforeBuild(
+                projectFilePath,
+                buildOptions,
+                buildSession,
+                deviceEvaluation)
+            : null;
 
         if (deviceSelection is not null)
         {
@@ -332,26 +339,86 @@ internal static class MSBuildUtility
         MSBuildSession buildSession)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        var nonDeviceProjects = new List<(
+        var solutionProjects = projects.ToArray();
+        var deviceProjects = new (
             string ProjectFilePath,
             string? Configuration,
             string? Platform,
-            IReadOnlyDictionary<string, ProjectInstance> EvaluatedProjects)>();
+            SolutionAndProjectUtility.DeviceSelectionEvaluation Evaluation)?[solutionProjects.Length];
+        var gracefulExceptions = new ConcurrentQueue<GracefulException>();
 
-        // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
-        // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
-        // The shared session may stay open across them, because it owns a build manager of its own.
-        foreach (var project in projects)
+        // Phase 1: Evaluate projects in parallel. Non-device projects are processed immediately
+        // using the same instances, while device projects are retained for the sequential phase.
+        Parallel.For(
+            fromInclusive: 0,
+            toExclusive: solutionProjects.Length,
+            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+            index =>
+            {
+                var project = solutionProjects[index];
+                try
+                {
+                    var evaluation = SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
+                        project.ProjectFilePath,
+                        buildOptions,
+                        buildSession,
+                        evaluationContext,
+                        project.Configuration,
+                        project.Platform);
+
+                    if (evaluation?.SupportsDeviceSelection == true)
+                    {
+                        deviceProjects[index] = (
+                            project.ProjectFilePath,
+                            project.Configuration,
+                            project.Platform,
+                            evaluation);
+                        return;
+                    }
+
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata =
+                        SolutionAndProjectUtility.GetProjectProperties(
+                            project.ProjectFilePath,
+                            projectCollection,
+                            evaluationContext,
+                            buildOptions,
+                            buildSession,
+                            project.Configuration,
+                            project.Platform,
+                            globalProperties,
+                            preEvaluatedProjects: evaluation?.EvaluatedProjects);
+                    foreach (var projectMetadata in projectsMetadata)
+                    {
+                        allProjects.Add(projectMetadata);
+                    }
+                }
+                catch (GracefulException ex)
+                {
+                    gracefulExceptions.Enqueue(ex);
+                }
+            });
+
+        if (gracefulExceptions.TryDequeue(out GracefulException? gracefulException))
         {
-            var evaluatedProjects = new Dictionary<string, ProjectInstance>(StringComparer.OrdinalIgnoreCase);
+            throw gracefulException;
+        }
+
+        // Phase 2: Select, build and inspect device projects sequentially. These operations use
+        // in-process MSBuild and may prompt for a device, so they cannot run concurrently.
+        foreach (var deviceProject in deviceProjects)
+        {
+            if (deviceProject is not { } project)
+            {
+                continue;
+            }
+
             var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
                 project.ProjectFilePath,
                 buildOptions,
                 buildSession,
-                evaluationContext,
+                project.Evaluation,
                 project.Configuration,
-                project.Platform,
-                evaluatedProjects);
+                project.Platform);
 
             if (deviceSelection is not null)
             {
@@ -374,51 +441,8 @@ internal static class MSBuildUtility
             }
             else
             {
-                // The solution was built before device discovery, so these evaluations are current
-                // and can be reused by the parallel property-discovery phase below.
-                nonDeviceProjects.Add((
-                    project.ProjectFilePath,
-                    project.Configuration,
-                    project.Platform,
-                    evaluatedProjects));
+                throw new InvalidOperationException($"Device selection unexpectedly returned no result for '{project.ProjectFilePath}'.");
             }
-        }
-
-        // Phase 2: Handle non-device projects in parallel (existing behavior).
-        var gracefulExceptions = new ConcurrentQueue<GracefulException>();
-        Parallel.ForEach(
-            nonDeviceProjects,
-            // We don't use --max-parallel-test-modules here.
-            // If user wants to limit the test applications run in parallel, we don't want to punish them and force the evaluation to also be limited.
-            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-            (project) =>
-            {
-                try
-                {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(
-                        project.ProjectFilePath,
-                        projectCollection,
-                        evaluationContext,
-                        buildOptions,
-                        buildSession,
-                        project.Configuration,
-                        project.Platform,
-                        globalProperties,
-                        preEvaluatedProjects: project.EvaluatedProjects);
-                    foreach (var projectMetadata in projectsMetadata)
-                    {
-                        allProjects.Add(projectMetadata);
-                    }
-                }
-                catch (GracefulException ex)
-                {
-                    gracefulExceptions.Enqueue(ex);
-                }
-            });
-
-        if (gracefulExceptions.TryDequeue(out GracefulException? gracefulException))
-        {
-            throw gracefulException;
         }
 
         return (allProjects, 0);
