@@ -1,14 +1,15 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.DoNotHardCodeEncryptionKey, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotHardCodeEncryptionKeyTests : TaintedDataAnalyzerTestBase<DoNotHardCodeEncryptionKey, DoNotHardCodeEncryptionKey>
     {
         protected override DiagnosticDescriptor Rule => DoNotHardCodeEncryptionKey.Rule;
@@ -51,7 +52,7 @@ namespace System.Security.Cryptography
     }
 }";
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedStaticReadonlyField__DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -73,7 +74,7 @@ internal static class Program
             // Ideally, we'd treat _key as hardcoded.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInString_CreateEncryptor_NeedValueContentAnalysis_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +93,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ASCIIEncodingGetBytesWithStringParameter_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -111,7 +112,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_EncodingUTF8GetBytesWithStringParameter_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -130,7 +131,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ASCIIEncodingGetBytesWithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -149,7 +150,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 38, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] key, byte[] someOtherBytesForIV)", "string chars", "int ASCIIEncoding.GetBytes(string chars, int charIndex, int charCount, byte[] bytes, int byteIndex)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInStringWithVariable_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -169,7 +170,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInMultilinesString_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -192,7 +193,7 @@ class TestClass
             GetCSharpResultAt(14, 9, 12, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -211,7 +212,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AesGcmWithByteArrayParameter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -229,7 +230,7 @@ class TestClass
             GetCSharpResultAt(10, 25, 9, 22, "AesGcm.AesGcm(byte[] key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AesGcmWithReadOnlySpanParameter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -247,7 +248,7 @@ class TestClass
             GetCSharpResultAt(10, 25, 9, 57, "AesGcm.AesGcm(ReadOnlySpan<byte> key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_TooShortHardcodedInStringWithVariable_AesGcm_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -265,7 +266,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_InvalidBase64HardcodedInStringWithVariable_AesGcm_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -283,7 +284,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInStringWithVariable_AesGcm_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -302,7 +303,7 @@ class TestClass
             GetCSharpResultAt(11, 25, 10, 22, "AesGcm.AesGcm(byte[] key)", "void TestClass.TestMethod()", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AesCcmWithTooShortByteArrayParameter_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -319,7 +320,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AesCcmWithByteArrayParameter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -337,7 +338,7 @@ class TestClass
             GetCSharpResultAt(10, 25, 9, 22, "AesCcm.AesCcm(byte[] key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AesCcmWithReadOnlySpanParameter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -355,7 +356,7 @@ class TestClass
             GetCSharpResultAt(10, 25, 9, 57, "AesCcm.AesCcm(ReadOnlySpan<byte> key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInStringWithVariable_AesCcm_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -374,7 +375,7 @@ class TestClass
             GetCSharpResultAt(11, 25, 10, 22, "AesCcm.AesCcm(byte[] key)", "void TestClass.TestMethod()", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_CreateDecryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -393,7 +394,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateDecryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArrayWithVariable_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -413,7 +414,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_KeyProperty_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -432,7 +433,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 25, "byte[] SymmetricAlgorithm.Key", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_CreateEncryptorFromDerivedClassOfSymmetricAlgorithm_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -451,7 +452,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_AesKey_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -471,7 +472,7 @@ class TestClass
             GetCSharpResultAt(11, 13, 11, 23, "byte[] SymmetricAlgorithm.Key", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_CreateEncryptor_Multivalues_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -498,7 +499,7 @@ class TestClass
             GetCSharpResultAt(18, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInByteArray_CreateEncryptor_WithoutAssignment_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -516,7 +517,7 @@ class TestClass
             GetCSharpResultAt(10, 9, 10, 30, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_MaybeHardcoded_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -541,7 +542,7 @@ class TestClass
             GetCSharpResultAt(17, 9, 13, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte[] rgbKey)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte[] rgbKey)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_PassTaintedSourceInfoAsParameter_SinkMethodParameters_Interprocedual_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -565,7 +566,7 @@ class TestClass
             GetCSharpResultAt(16, 9, 9, 22, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_PassTaintedSourceInfoAsParameter_SinkProperties_Interprocedual_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -589,7 +590,7 @@ class TestClass
                 GetCSharpResultAt(16, 9, 9, 22, "byte[] SymmetricAlgorithm.Key", "void TestClass.CreateEncryptor(byte[] rgbKey)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedIn2DByteArray_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -610,7 +611,7 @@ class TestClass
             ////GetCSharpResultAt(12, 9, 10, 26, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[,]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInJaggedArrayInitializer_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -637,7 +638,7 @@ class TestClass
             ////GetCSharpResultAt(17, 9, 12, 13, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV, byte unknownByte)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodeByParamsBytesArray_CreateEncryptor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -661,7 +662,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 25, "ICryptoTransform SymmetricAlgorithm.CreateEncryptor(byte[] rgbKey, byte[] rgbIV)", "void TestClass.TestMethod(byte[] someOtherBytesForIV)", "byte[]", "void TestClass.TestMethod(byte[] someOtherBytesForIV)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_TooLongHardcodeByParamsBytesArray_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -684,7 +685,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ASCIIEncodingGetBytesWithCharArrayParameter_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -702,7 +703,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ASCIIEncodingGetBytesWithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -720,7 +721,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ASCIIEncodingGetBytesWithConstantCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -739,7 +740,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ElementTypeIsTypeParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -758,7 +759,7 @@ class TestClass<T1> where T1 : struct
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInJaggedArray_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -779,7 +780,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NotHardcoded_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -796,7 +797,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_HardcodedInArrayThenOverwrite_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -815,7 +816,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NotHardcodedInString_CreateEncryptor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -834,7 +835,7 @@ class TestClass
         }
 
         // For now, it doesn't support checking return tainted source info.
-        [Fact]
+        [TestMethod]
         public async Task Test_ReturnTaintedSourceInfo_Interprocedual_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -857,7 +858,7 @@ class TestClass
 }");
         }
 
-        [Fact, WorkItem(2723, "https://github.com/dotnet/roslyn-analyzers/issues/2723")]
+        [TestMethod, WorkItem(2723, "https://github.com/dotnet/roslyn-analyzers/issues/2723")]
         public async Task Test_ArrayInitializerInAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 13",
+  "identity": "MyProject.13.Con.CSharp",         
+  "groupIdentity":"MyProject.13.Con",
+  "shortName": "sample13",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true,
+  "symbols":{
+      "myconstant": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value":"5001"
+      },
+      "replaces":"1234"
+    }
+  }
+}

@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -12,39 +12,6 @@ namespace Analyzer.Utilities.Lightup
 {
     internal static class LightupHelpers
     {
-        private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<OperationKind, bool>> s_supportedOperationWrappers = new();
-
-        internal static bool CanWrapOperation(IOperation? operation, Type? underlyingType)
-        {
-            if (operation == null)
-            {
-                // The wrappers support a null instance
-                return true;
-            }
-
-            if (underlyingType == null)
-            {
-                // The current runtime doesn't define the target type of the conversion, so no instance of it can exist
-                return false;
-            }
-
-            ConcurrentDictionary<OperationKind, bool> wrappedSyntax = s_supportedOperationWrappers.GetOrAdd(underlyingType, _ => new ConcurrentDictionary<OperationKind, bool>());
-
-            // Avoid creating the delegate if the value already exists
-            if (!wrappedSyntax.TryGetValue(operation.Kind, out var canCast))
-            {
-                canCast = wrappedSyntax.GetOrAdd(
-                    operation.Kind,
-                    kind => underlyingType.GetTypeInfo().IsAssignableFrom(operation.GetType().GetTypeInfo()));
-            }
-
-            return canCast;
-        }
-
-        internal static Func<TOperation, TProperty> CreateOperationPropertyAccessor<TOperation, TProperty>(Type? type, string propertyName, TProperty fallbackResult)
-            where TOperation : IOperation
-            => CreatePropertyAccessor<TOperation, TProperty>(type, "operation", propertyName, fallbackResult);
-
         internal static Func<TSyntax, TProperty> CreateSyntaxPropertyAccessor<TSyntax, TProperty>(Type? type, string propertyName, TProperty fallbackResult)
             where TSyntax : SyntaxNode
             => CreatePropertyAccessor<TSyntax, TProperty>(type, "syntax", propertyName, fallbackResult);

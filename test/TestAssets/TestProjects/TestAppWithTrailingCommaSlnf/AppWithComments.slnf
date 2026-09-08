@@ -1,0 +1,10 @@
+{
+  /* Multi-line comment
+     Testing comment support */
+  "solution": {
+    "path": "App.slnx",
+    "projects": [
+      "App\\App.csproj" // Only include App project
+    ]
+  }
+}

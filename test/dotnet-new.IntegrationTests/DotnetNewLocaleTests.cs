@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -8,17 +8,17 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class DotnetNewLocaleTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
-        public DotnetNewLocaleTests(ITestOutputHelper log) : base(log)
+        public DotnetNewLocaleTests()
         {
-            _log = log;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDefaultLocale()
         {
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
@@ -41,10 +41,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .HaveStdOutMatching("name.*TestAssets.TemplateWithLocalization");
         }
 
-        [Theory]
-        [InlineData("en-US", "name")]
-        [InlineData("de-DE", "name_de-DE")]
-        [InlineData("tr-TR", "name_tr-TR")]
+        [TestMethod]
+        [DataRow("en-US", "name")]
+        [DataRow("de-DE", "name_de-DE")]
+        [DataRow("tr-TR", "name_tr-TR")]
         public void TestDotnetCLIEnvVariable(string dotnetCliEnvVar, string expectedName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .HaveStdOutMatching(Regex.Escape(expectedName) + ".*TestAssets.TemplateWithLocalization");
         }
 
-        [Fact]
+        [TestMethod]
         public void SkipsLocalizationOnInstall_WhenInvalidFormat()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("name in base configuration");
         }
 
-        [Fact]
+        [TestMethod]
         public void SkipsLocalizationOnInstall_WhenLocalizationValidationFails()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -132,7 +132,7 @@ Error: The template 'name' (TestAssets.Invalid.Localiation.ValidationFailure) ha
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void SkipsLocalizationOnInstantiate_WhenInvalidFormat()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -174,7 +174,7 @@ Error: The template 'name' (TestAssets.Invalid.Localiation.ValidationFailure) ha
                 .And.HaveStdOutContaining("Die Vorlage \"name\" wurde erfolgreich erstellt.").And.NotHaveStdOutContaining("name_de-DE:äÄßöÖüÜ");
         }
 
-        [Fact]
+        [TestMethod]
         public void SkipsLocalizationOnInstantiate_WhenLocalizationValidationFails()
         {
             string home = CreateTemporaryFolder(folderName: "Home");

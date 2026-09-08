@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -14,6 +14,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy.Tests;
 /// <summary>
 /// Unit Tests for <see cref="OneDeployStatusService"/>
 /// </summary>
+[TestClass]
 public class OneDeployStatusServiceTests
 {
     private const string Username = "someUser";
@@ -24,19 +25,19 @@ public class OneDeployStatusServiceTests
 
     private static readonly Uri DeploymentUri = new UriBuilder($@"{PublishUrl}/api/deployments/{DeploymentId}").Uri;
 
-    [Theory]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.Success)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.Success)]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.PartialSuccess)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.PartialSuccess)]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.Failed)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.Failed)]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.Conflict)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.Conflict)]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.Cancelled)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.Cancelled)]
-    [InlineData(HttpStatusCode.OK, DeploymentStatus.Unknown)]
-    [InlineData(HttpStatusCode.Accepted, DeploymentStatus.Unknown)]
+    [TestMethod]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.Success)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.Success)]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.PartialSuccess)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.PartialSuccess)]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.Failed)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.Failed)]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.Conflict)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.Conflict)]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.Cancelled)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.Cancelled)]
+    [DataRow(HttpStatusCode.OK, DeploymentStatus.Unknown)]
+    [DataRow(HttpStatusCode.Accepted, DeploymentStatus.Unknown)]
     public async Task PollDeployment_Completes(HttpStatusCode statusCode, DeploymentStatus expectedDeploymentStatus)
     {
         // Arrange
@@ -62,16 +63,16 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion, resulting in the given expectedDeploymentStatus
-        Assert.Equal(expectedDeploymentStatus, deploymentResponse.Status);
+        Assert.AreEqual(expectedDeploymentStatus, deploymentResponse.Status);
 
         taskLoggerMock.VerifyAll();
         httpClientMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Forbidden)]
-    [InlineData(HttpStatusCode.NotFound)]
-    [InlineData(HttpStatusCode.InternalServerError)]
+    [TestMethod]
+    [DataRow(HttpStatusCode.Forbidden)]
+    [DataRow(HttpStatusCode.NotFound)]
+    [DataRow(HttpStatusCode.InternalServerError)]
     public async Task PollDeployment_HttpResponse_Fail(HttpStatusCode statusCode)
     {
         // Arrange
@@ -90,13 +91,13 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion, resulting in 'Unknown' status because failed HTTP Response Status code
-        Assert.Equal(DeploymentStatus.Unknown, result.Status);
+        Assert.AreEqual(DeploymentStatus.Unknown, result.Status);
 
         taskLoggerMock.VerifyAll();
         httpClientMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PollDeployment_Completes_No_Logger()
     {
         // Arrange
@@ -117,12 +118,12 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion with NULL ITaskLogger
-        Assert.Equal(DeploymentStatus.Success, deploymentResponse.Status);
+        Assert.AreEqual(DeploymentStatus.Success, deploymentResponse.Status);
 
         httpClientMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PollDeployment_Halted()
     {
         // Arrange
@@ -141,16 +142,16 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment as 'CancellationToken' is already cancelled
-        Assert.Equal(DeploymentStatus.Unknown, result.Status);
+        Assert.AreEqual(DeploymentStatus.Unknown, result.Status);
 
         taskLoggerMock.VerifyAll();
         httpClientMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("not-valid-url")]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("not-valid-url")]
+    [DataRow("")]
+    [DataRow(null)]
     public async Task PollDeployment_InvalidURL(string invalidUrl)
     {
         // Arrange
@@ -169,13 +170,13 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, invalidUrl, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment because given polling URL is invalid
-        Assert.Equal(DeploymentStatus.Unknown, result.Status);
+        Assert.AreEqual(DeploymentStatus.Unknown, result.Status);
 
         taskLoggerMock.VerifyAll();
         httpClientMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PollDeployment_Missing_HttpClient()
     {
         // Arrange
@@ -191,18 +192,18 @@ public class OneDeployStatusServiceTests
         var result = await oneDeployStatusService.PollDeploymentAsync(null, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment because IHttpClient is NULL
-        Assert.Equal(DeploymentStatus.Unknown, result.Status);
+        Assert.AreEqual(DeploymentStatus.Unknown, result.Status);
 
         taskLoggerMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_OK()
     {
         var oneDeployStatusService = new OneDeployStatusService();
 
         // no-arg ctor instantiate instance
-        Assert.NotNull(oneDeployStatusService);
+        Assert.IsNotNull(oneDeployStatusService);
     }
 
     private Mock<IHttpClient> GetHttpClientMock(

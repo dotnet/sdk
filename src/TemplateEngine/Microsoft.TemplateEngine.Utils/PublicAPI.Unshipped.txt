@@ -1,0 +1,26 @@
+﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
+Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions
+static Microsoft.TemplateEngine.Utils.DictionaryExtensions.TryAdd<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue>! dict, TKey key, TValue value, System.Predicate<TValue>! condition) -> bool
+static Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions.ToITemplateInfo(this Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo! templateInfo, string? locFilePath = null, string? hostFilePath = null) -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo!
+Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string?
+Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message) -> void
+Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string? configItem, System.Exception! innerException) -> void
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<System.Threading.Tasks.Task<T>!>! taskFactory) -> void
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<T>! valueFactory) -> void
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.GetAwaiter() -> System.Runtime.CompilerServices.TaskAwaiter<T>
+Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution
+Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Overwrite = 0 -> Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution
+Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.PreserveOriginal = 1 -> Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution
+Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Throw = 2 -> Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution
+Microsoft.TemplateEngine.Utils.IPatternMatcher
+Microsoft.TemplateEngine.Utils.IPatternMatcher.IsMatch(string! test) -> bool
+Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Description.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DisplayName.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Precedence.init -> void
+static Microsoft.TemplateEngine.Utils.DictionaryExtensions.Merge<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue>! dict, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>! another, Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution conflictingKeysResolution = Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Overwrite) -> void
+static readonly Microsoft.TemplateEngine.Utils.Glob.MatchAll -> Microsoft.TemplateEngine.Utils.IPatternMatcher!

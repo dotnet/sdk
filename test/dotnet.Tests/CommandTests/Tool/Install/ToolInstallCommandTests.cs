@@ -9,15 +9,16 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolInstallCommandTests : SdkTest
     {
         private const string PackageId = "global.tool.console.demo";
 
-        public ToolInstallCommandTests(ITestOutputHelper log) : base(log)
+        public ToolInstallCommandTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var parseResult = Parser.Parse($"dotnet tool install -g --tool-path /tmp/folder {PackageId}");
@@ -33,7 +34,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "--global --tool-path"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42346")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42346")]
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
@@ -60,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -77,7 +79,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "--local --tool-path"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -92,7 +94,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -110,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithLocalAndFrameworkShowErrorMessage()
         {
             var parseResult = Parser.Parse(

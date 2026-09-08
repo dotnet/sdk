@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesFixer>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OperatorOverloadsHaveNamedAlternatesTests
     {
         #region Boilerplate
@@ -56,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         #region C# tests
 
-        [Fact]
+        [TestMethod]
         public async Task HasAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -68,7 +69,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HasMultipleAlternatePrimary_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -80,7 +81,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HasMultipleAlternateSecondary_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +93,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HasAppropriateConversionAlternate_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -104,7 +105,7 @@ public class C
 ");
         }
 
-        [Fact, WorkItem(1717, "https://github.com/dotnet/roslyn-analyzers/issues/1717")]
+        [TestMethod, WorkItem(1717, "https://github.com/dotnet/roslyn-analyzers/issues/1717")]
         public async Task HasAppropriateConversionAlternate02_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -128,7 +129,7 @@ public class SomeClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -140,7 +141,7 @@ public class C
             GetCA2225CSharpDefaultResultAt(4, 30, "Add", "op_Addition"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task MissingAlternateMethod_CSharp_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -159,7 +160,7 @@ public class C2
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingAlternateProperty_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -172,7 +173,7 @@ public class C
             GetCA2225CSharpPropertyResultAt(4, 33, "IsTrue", "op_True"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingMultipleAlternates_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -184,7 +185,7 @@ public class C
             GetCA2225CSharpMultipleResultAt(4, 30, "Mod", "Remainder", "op_Modulus"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ImproperAlternateMethodVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -197,7 +198,7 @@ public class C
                 GetCA2225CSharpVisibilityResultAt(5, 24, "Add", "op_Addition"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ImproperAlternatePropertyVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -211,7 +212,7 @@ public class C
             GetCA2225CSharpVisibilityResultAt(6, 18, "IsTrue", "op_True"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StructHasAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -223,7 +224,7 @@ struct C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ImplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -238,7 +239,7 @@ public struct MyStruct
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -253,7 +254,7 @@ public struct MyStruct
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ImplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -268,7 +269,7 @@ public struct MyStruct
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -283,7 +284,7 @@ public struct MyStruct
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ImplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -298,7 +299,7 @@ public struct MyStruct
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -321,7 +322,7 @@ public struct MyStruct
 
         #region VB tests
 
-        [Fact]
+        [TestMethod]
         public async Task HasAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -336,7 +337,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -349,7 +350,7 @@ End Class
             GetCA2225BasicDefaultResultAt(3, 28, "Add", "op_Addition"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task MissingAlternateMethod_VisualBasic_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -369,7 +370,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StructHasAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

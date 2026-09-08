@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -13,17 +13,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "AdvSimd.Or")]
-        [InlineData("sbyte", "AdvSimd.Or")]
-        [InlineData("short", "AdvSimd.Or")]
-        [InlineData("ushort", "AdvSimd.Or")]
-        [InlineData("int", "AdvSimd.Or")]
-        [InlineData("uint", "AdvSimd.Or")]
-        [InlineData("long", "AdvSimd.Or")]
-        [InlineData("ulong", "AdvSimd.Or")]
-        [InlineData("float", "AdvSimd.Or")]
-        [InlineData("double", "AdvSimd.Or")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Or")]
+        [DataRow("sbyte", "AdvSimd.Or")]
+        [DataRow("short", "AdvSimd.Or")]
+        [DataRow("ushort", "AdvSimd.Or")]
+        [DataRow("int", "AdvSimd.Or")]
+        [DataRow("uint", "AdvSimd.Or")]
+        [DataRow("long", "AdvSimd.Or")]
+        [DataRow("ulong", "AdvSimd.Or")]
+        [DataRow("float", "AdvSimd.Or")]
+        [DataRow("double", "AdvSimd.Or")]
         public async Task Fixer_opBitwiseOrArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -58,20 +58,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "AdvSimd.Or")]
-        [InlineData("sbyte", "AdvSimd.Or")]
-        [InlineData("short", "AdvSimd.Or")]
-        [InlineData("ushort", "AdvSimd.Or")]
-        [InlineData("int", "AdvSimd.Or")]
-        [InlineData("uint", "AdvSimd.Or")]
-        [InlineData("long", "AdvSimd.Or")]
-        [InlineData("ulong", "AdvSimd.Or")]
-        [InlineData("float", "AdvSimd.Or")]
-        [InlineData("double", "AdvSimd.Or")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Or")]
+        [DataRow("sbyte", "AdvSimd.Or")]
+        [DataRow("short", "AdvSimd.Or")]
+        [DataRow("ushort", "AdvSimd.Or")]
+        [DataRow("int", "AdvSimd.Or")]
+        [DataRow("uint", "AdvSimd.Or")]
+        [DataRow("long", "AdvSimd.Or")]
+        [DataRow("ulong", "AdvSimd.Or")]
+        [DataRow("float", "AdvSimd.Or")]
+        [DataRow("double", "AdvSimd.Or")]
         public async Task Fixer_opBitwiseOrArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -106,20 +106,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "PackedSimd.Or")]
-        [InlineData("sbyte", "PackedSimd.Or")]
-        [InlineData("short", "PackedSimd.Or")]
-        [InlineData("ushort", "PackedSimd.Or")]
-        [InlineData("int", "PackedSimd.Or")]
-        [InlineData("uint", "PackedSimd.Or")]
-        [InlineData("long", "PackedSimd.Or")]
-        [InlineData("ulong", "PackedSimd.Or")]
-        [InlineData("float", "PackedSimd.Or")]
-        [InlineData("double", "PackedSimd.Or")]
+        [TestMethod]
+        [DataRow("byte", "PackedSimd.Or")]
+        [DataRow("sbyte", "PackedSimd.Or")]
+        [DataRow("short", "PackedSimd.Or")]
+        [DataRow("ushort", "PackedSimd.Or")]
+        [DataRow("int", "PackedSimd.Or")]
+        [DataRow("uint", "PackedSimd.Or")]
+        [DataRow("long", "PackedSimd.Or")]
+        [DataRow("ulong", "PackedSimd.Or")]
+        [DataRow("float", "PackedSimd.Or")]
+        [DataRow("double", "PackedSimd.Or")]
         public async Task Fixer_opBitwiseOrWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -154,20 +154,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Sse2.Or")]
-        [InlineData("sbyte", "Sse2.Or")]
-        [InlineData("short", "Sse2.Or")]
-        [InlineData("ushort", "Sse2.Or")]
-        [InlineData("int", "Sse2.Or")]
-        [InlineData("uint", "Sse2.Or")]
-        [InlineData("long", "Sse2.Or")]
-        [InlineData("ulong", "Sse2.Or")]
-        [InlineData("float", "Sse.Or")]
-        [InlineData("double", "Sse2.Or")]
+        [TestMethod]
+        [DataRow("byte", "Sse2.Or")]
+        [DataRow("sbyte", "Sse2.Or")]
+        [DataRow("short", "Sse2.Or")]
+        [DataRow("ushort", "Sse2.Or")]
+        [DataRow("int", "Sse2.Or")]
+        [DataRow("uint", "Sse2.Or")]
+        [DataRow("long", "Sse2.Or")]
+        [DataRow("ulong", "Sse2.Or")]
+        [DataRow("float", "Sse.Or")]
+        [DataRow("double", "Sse2.Or")]
         public async Task Fixer_opBitwiseOrx86V128Async(string type, string method)
         {
             // lang=C#-test
@@ -202,20 +202,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx2.Or")]
-        [InlineData("sbyte", "Avx2.Or")]
-        [InlineData("short", "Avx2.Or")]
-        [InlineData("ushort", "Avx2.Or")]
-        [InlineData("int", "Avx2.Or")]
-        [InlineData("uint", "Avx2.Or")]
-        [InlineData("long", "Avx2.Or")]
-        [InlineData("ulong", "Avx2.Or")]
-        [InlineData("float", "Avx.Or")]
-        [InlineData("double", "Avx.Or")]
+        [TestMethod]
+        [DataRow("byte", "Avx2.Or")]
+        [DataRow("sbyte", "Avx2.Or")]
+        [DataRow("short", "Avx2.Or")]
+        [DataRow("ushort", "Avx2.Or")]
+        [DataRow("int", "Avx2.Or")]
+        [DataRow("uint", "Avx2.Or")]
+        [DataRow("long", "Avx2.Or")]
+        [DataRow("ulong", "Avx2.Or")]
+        [DataRow("float", "Avx.Or")]
+        [DataRow("double", "Avx.Or")]
         public async Task Fixer_opBitwiseOrx86V256Async(string type, string method)
         {
             // lang=C#-test
@@ -250,20 +250,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx512F.Or")]
-        [InlineData("sbyte", "Avx512F.Or")]
-        [InlineData("short", "Avx512F.Or")]
-        [InlineData("ushort", "Avx512F.Or")]
-        [InlineData("int", "Avx512F.Or")]
-        [InlineData("uint", "Avx512F.Or")]
-        [InlineData("long", "Avx512F.Or")]
-        [InlineData("ulong", "Avx512F.Or")]
-        [InlineData("float", "Avx512DQ.Or")]
-        [InlineData("double", "Avx512DQ.Or")]
+        [TestMethod]
+        [DataRow("byte", "Avx512F.Or")]
+        [DataRow("sbyte", "Avx512F.Or")]
+        [DataRow("short", "Avx512F.Or")]
+        [DataRow("ushort", "Avx512F.Or")]
+        [DataRow("int", "Avx512F.Or")]
+        [DataRow("uint", "Avx512F.Or")]
+        [DataRow("long", "Avx512F.Or")]
+        [DataRow("ulong", "Avx512F.Or")]
+        [DataRow("float", "Avx512DQ.Or")]
+        [DataRow("double", "Avx512DQ.Or")]
         public async Task Fixer_opBitwiseOrx86V512Async(string type, string method)
         {
             // lang=C#-test
@@ -298,7 +298,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

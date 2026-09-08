@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Archivo de configuración plantilla.json",
+  "description": "Plantilla para el archivo de configuración template.json para la plantilla de .NET. Consulte https://aka.ms/template-json-reference para obtener una descripción completa de la configuración.",
+  "symbols/CreateTemplateConfigFolder/description": "Es verdadero cuando template.json debe crearse en la carpeta .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Crear carpeta .template.config",
+  "symbols/TemplateName/description": "Nombre de la plantilla.",
+  "symbols/TemplateName/displayName": "Nombre de plantilla",
+  "symbols/TemplateShortName/description": "Nombre corto de la plantilla.",
+  "symbols/TemplateShortName/displayName": "Nombre corto de la plantilla",
+  "symbols/TemplateIdentity/description": "Identidad de la plantilla (debe ser única).",
+  "symbols/TemplateIdentity/displayName": "Identidad de plantilla",
+  "postActions/instructions/description": "No se requieren acciones manuales",
+  "postActions/instructions/manualInstructions/default/text": "Abra template.json en el editor y complete la configuración."
+}

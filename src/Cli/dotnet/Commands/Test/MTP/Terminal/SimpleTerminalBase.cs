@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.DotNet.Cli.Commands;
@@ -161,7 +161,7 @@ internal abstract class SimpleTerminal : ITerminal
         // nop
     }
 
-    // TODO: Refactor NonAnsiTerminal and AnsiTerminal such that we don't need StartUpdate/StopUpdate.
+    // NonAnsiTerminal and AnsiTerminal could be refactored such that we don't need StartUpdate/StopUpdate.
     // It's much better if we use lock C# keyword instead of manually calling Monitor.Enter/Exit
     // Using lock also ensures we don't accidentally have `await`s in between that could cause Exit to be on a different thread.
     public void StartUpdate()

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,16 +7,14 @@ using Microsoft.DotNet.Cli;
 
 namespace Microsoft.NET.Pack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAHelloWorldProject : SdkTest
     {
-        public GivenThatWeWantToPackAHelloWorldProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_packs_successfully()
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PackHelloWorld")
                 .WithSource();
 
@@ -46,7 +44,7 @@ namespace Microsoft.NET.Pack.Tests
             fileTargets.Should().BeEquivalentTo(expectedFileTargets);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_if_nobuild_was_requested_but_build_was_invoked()
         {
             var testProject = new TestProject()
@@ -56,7 +54,7 @@ namespace Microsoft.NET.Pack.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     project.Root.Add(XElement.Parse(@"<Target Name=""InvokeBuild"" DependsOnTargets=""Build"" BeforeTargets=""Pack"" />"));
@@ -75,12 +73,12 @@ namespace Microsoft.NET.Pack.Tests
                 .HaveStdOutContaining("NETSDK1085");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_packs_with_release_if_PackRelease_property_set(bool optedOut)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld", identifier: optedOut.ToString())
                .WithSource();
 
@@ -95,15 +93,15 @@ namespace Microsoft.NET.Pack.Tests
                 .Pass();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", optedOut ? "Debug" : "Release", "HelloWorld.1.0.0.nupkg");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
         }
 
-        [Theory]
-        [InlineData("true")]
-        [InlineData("false")]
+        [TestMethod]
+        [DataRow("true")]
+        [DataRow("false")]
         public void It_packs_with_release_if_PackRelease_property_set_in_csproj(string valueOfPackRelease)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld")
                .WithSource()
                .WithProjectChanges(project =>
@@ -124,12 +122,12 @@ namespace Microsoft.NET.Pack.Tests
             new FileInfo(expectedAssetPath).Should().Exist();
         }
 
-        [InlineData("")]
-        [InlineData("false")]
-        [Theory]
+        [DataRow("")]
+        [DataRow("false")]
+        [TestMethod]
         public void It_packs_successfully_with_Multitargeting_where_net_8_and_net_7_project_defines_PackRelease_or_not(string packReleaseValue)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: packReleaseValue)
                 .WithSource()
                 .WithTargetFrameworks("net8.0;net7.0")
@@ -156,11 +154,11 @@ namespace Microsoft.NET.Pack.Tests
             new FileInfo(expectedAssetPath).Should().Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void A_PackRelease_property_does_not_affect_other_commands_besides_pack()
         {
             var tfm = "net8.0";
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld")
                .WithSource()
                .WithTargetFramework(tfm);
@@ -175,9 +173,9 @@ namespace Microsoft.NET.Pack.Tests
                 .Pass();
 
             var unexpectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", tfm, "HelloWorld.dll");
-            Assert.False(File.Exists(unexpectedAssetPath));
+            Assert.IsFalse(File.Exists(unexpectedAssetPath));
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", tfm, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
         }
     }
 }

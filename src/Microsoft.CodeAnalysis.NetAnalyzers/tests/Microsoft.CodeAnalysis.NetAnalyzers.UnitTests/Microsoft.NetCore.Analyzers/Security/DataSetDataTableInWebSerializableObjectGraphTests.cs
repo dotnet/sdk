@@ -1,18 +1,19 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInWebSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInWebSerializableObjectGraphTests
     {
-        [Fact]
+        [TestMethod]
         public async Task WebServiceDirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
@@ -33,7 +34,7 @@ public class MyService : WebService
                 GetCSharpResultAt(10, 31, "DataTable", "DataTable"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WebServiceIndirectlyReferencesAsync()
         {
             await VerifyWebServicesCSharpAsync(@"
@@ -59,7 +60,7 @@ public class MyType
                 GetCSharpResultAt(10, 31, "DataSet", "DataSet MyType.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OperationContractAsync()
         {
             await VerifyServiceModelCSharpAsync(@"
@@ -106,7 +107,7 @@ public class MyClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyWebServicesCSharpAsync(string source, params DiagnosticResult[] expected)
@@ -128,7 +129,7 @@ public class MyClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

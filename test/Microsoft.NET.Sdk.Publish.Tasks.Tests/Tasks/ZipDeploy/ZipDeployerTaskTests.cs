@@ -9,6 +9,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
 {
+    [TestClass]
     public class ZipDeployerTaskTests
     {
         private static string _testZippedPublishContentsPath;
@@ -32,7 +33,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExecuteZipDeploy_InvalidZipFilePath()
         {
             Mock<IHttpClient> client = new();
@@ -41,18 +42,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
             bool result = await zipDeployer.ZipDeployAsync(string.Empty, "username", "password", "publishUrl", null, "Foo", client.Object, false);
 
             client.Verify(c => c.PostAsync(It.IsAny<Uri>(), It.IsAny<StreamContent>()), Times.Never);
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
         /// <summary>
         /// ZipDeploy should use PublishUrl if not null or empty, else use SiteName.
         /// </summary>
-        [Theory]
-        [InlineData("https://sitename.scm.azurewebsites.net", null, "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
-        [InlineData("https://sitename.scm.azurewebsites.net", "", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
-        [InlineData("https://sitename.scm.azurewebsites.net", "shouldNotBeUsed", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
-        [InlineData(null, "sitename", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
-        [InlineData("", "sitename", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
+        [TestMethod]
+        [DataRow("https://sitename.scm.azurewebsites.net", null, "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
+        [DataRow("https://sitename.scm.azurewebsites.net", "", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
+        [DataRow("https://sitename.scm.azurewebsites.net", "shouldNotBeUsed", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
+        [DataRow(null, "sitename", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
+        [DataRow("", "sitename", "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true")]
         public async Task ExecuteZipDeploy_PublishUrlOrSiteNameGiven(string publishUrl, string siteName, string expectedZipDeployEndpoint)
         {
             Action<Mock<IHttpClient>, bool> verifyStep = (client, result) =>
@@ -61,18 +62,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
                 It.Is<Uri>(uri => string.Equals(uri.AbsoluteUri, expectedZipDeployEndpoint, StringComparison.Ordinal)),
                 It.Is<StreamContent>(streamContent => IsStreamContentEqualToFileContent(streamContent, TestZippedPublishContentsPath))),
                 Times.Once);
-                Assert.Equal($"{UserAgentName}/{UserAgentVersion}", client.Object.DefaultRequestHeaders.GetValues("User-Agent").FirstOrDefault());
-                Assert.True(result);
+                Assert.AreEqual($"{UserAgentName}/{UserAgentVersion}", client.Object.DefaultRequestHeaders.GetValues("User-Agent").FirstOrDefault());
+                Assert.IsTrue(result);
             };
 
             await RunZipDeployAsyncTest(publishUrl, siteName, UserAgentVersion, HttpStatusCode.OK, verifyStep);
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        [InlineData("", null)]
-        [InlineData(null, "")]
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("", "")]
+        [DataRow("", null)]
+        [DataRow(null, "")]
         public async Task ExecuteZipDeploy_NeitherPublishUrlNorSiteNameGiven(string publishUrl, string siteName)
         {
             Action<Mock<IHttpClient>, bool> verifyStep = (client, result) =>
@@ -81,20 +82,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
                 It.IsAny<Uri>(),
                 It.IsAny<StreamContent>()),
                 Times.Never);
-                Assert.False(client.Object.DefaultRequestHeaders.TryGetValues("User-Agent", out _));
-                Assert.False(result);
+                Assert.IsFalse(client.Object.DefaultRequestHeaders.TryGetValues("User-Agent", out _));
+                Assert.IsFalse(result);
             };
 
             await RunZipDeployAsyncTest(publishUrl, siteName, UserAgentVersion, HttpStatusCode.OK, verifyStep);
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.OK, true)]
-        [InlineData(HttpStatusCode.Accepted, true)]
-        [InlineData(HttpStatusCode.Forbidden, false)]
-        [InlineData(HttpStatusCode.NotFound, false)]
-        [InlineData(HttpStatusCode.RequestTimeout, false)]
-        [InlineData(HttpStatusCode.InternalServerError, false)]
+        [TestMethod]
+        [DataRow(HttpStatusCode.OK, true)]
+        [DataRow(HttpStatusCode.Accepted, true)]
+        [DataRow(HttpStatusCode.Forbidden, false)]
+        [DataRow(HttpStatusCode.NotFound, false)]
+        [DataRow(HttpStatusCode.RequestTimeout, false)]
+        [DataRow(HttpStatusCode.InternalServerError, false)]
         public async Task ExecuteZipDeploy_VaryingHttpResponseStatuses(HttpStatusCode responseStatusCode, bool expectedResult)
         {
             Action<Mock<IHttpClient>, bool> verifyStep = (client, result) =>
@@ -103,8 +104,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
                 It.Is<Uri>(uri => string.Equals(uri.AbsoluteUri, "https://sitename.scm.azurewebsites.net/api/zipdeploy?isAsync=true", StringComparison.Ordinal)),
                 It.Is<StreamContent>(streamContent => IsStreamContentEqualToFileContent(streamContent, TestZippedPublishContentsPath))),
                 Times.Once);
-                Assert.Equal($"{UserAgentName}/{UserAgentVersion}", client.Object.DefaultRequestHeaders.GetValues("User-Agent").FirstOrDefault());
-                Assert.Equal(expectedResult, result);
+                Assert.AreEqual($"{UserAgentName}/{UserAgentVersion}", client.Object.DefaultRequestHeaders.GetValues("User-Agent").FirstOrDefault());
+                Assert.AreEqual(expectedResult, result);
             };
 
             await RunZipDeployAsyncTest("https://sitename.scm.azurewebsites.net", null, UserAgentVersion, responseStatusCode, verifyStep);
@@ -122,8 +123,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Tests
                 byte[] plainAuthBytes = Encoding.ASCII.GetBytes("username:password");
                 string base64AuthParam = Convert.ToBase64String(plainAuthBytes);
 
-                Assert.Equal(base64AuthParam, client.Object.DefaultRequestHeaders.Authorization.Parameter);
-                Assert.Equal("Basic", client.Object.DefaultRequestHeaders.Authorization.Scheme);
+                Assert.AreEqual(base64AuthParam, client.Object.DefaultRequestHeaders.Authorization.Parameter);
+                Assert.AreEqual("Basic", client.Object.DefaultRequestHeaders.Authorization.Scheme);
 
                 return Task.FromResult(new HttpResponseMessage(responseStatusCode));
             });

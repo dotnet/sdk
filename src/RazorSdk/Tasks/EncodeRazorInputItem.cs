@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     // Characters like {} in the filename cause issues with resolving the type. To work
     // around this, we encode everything before writing it to the editorconfig then decode
     // inside the Razor source generator.
+    [MSBuildMultiThreadableTask]
     public class EncodeRazorInputItem : Task
     {
         [Required]

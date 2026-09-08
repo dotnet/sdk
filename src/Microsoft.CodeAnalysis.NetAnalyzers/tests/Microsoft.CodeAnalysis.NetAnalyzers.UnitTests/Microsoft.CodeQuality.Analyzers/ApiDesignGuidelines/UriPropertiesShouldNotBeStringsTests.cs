@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriPropertiesShouldNotBeStringsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UriPropertiesShouldNotBeStringsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -28,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithUrlNotStringTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -41,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056WarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -54,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1056CSharpResultAt(6, 23, "A.SampleUri"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithNoUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -67,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningDerivedFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningOverrideAsync()
         {
             // warning is from base type not overriden one
@@ -114,7 +115,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1056CSharpResultAt(6, 34, "Base.SampleUrl"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
@@ -131,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
         }
 
-        [Fact, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
+        [TestMethod, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
         public async Task DoNotReportOnInterfaceImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -159,11 +160,11 @@ End Class",
                 GetCA1056BasicResultAt(3, 14, "IPath.UrlPathSegment"));
         }
 
-        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = SampleUri")]
-        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = SampleUri")]
-        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = Sample*")]
+        [TestMethod, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = SampleUri")]
+        [DataRow("dotnet_code_quality.CA1056.excluded_symbol_names = SampleUri")]
+        [DataRow("dotnet_code_quality.CA1056.excluded_symbol_names = Sample*")]
         public async Task CA1056_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -193,7 +194,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1056CSharpResultAt(6, 19, "A.SampleUri"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -225,7 +226,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1056BasicResultAt(5, 30, "A.SampleUri"));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)

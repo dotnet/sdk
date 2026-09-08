@@ -36,7 +36,7 @@
     <None Include="assets\ThirdPartyNotices.txt" Pack="true" PackagePath="/" />
 
     <None Include="README.md" Pack="true" PackagePath="/documentation" />
-    <None Include="..\docs\Analyzer Configuration.md" Pack="true" PackagePath="/documentation" />
+    <None Include="..\docs\analyzer-configuration.md" Pack="true" PackagePath="/documentation" />
     <None Include="$(PackageId).md" Pack="true" PackagePath="/documentation" />
     <None Include="$(GeneratedSarifFilePath)" Pack="true" PackagePath="/documentation" Visible="false" />
 
@@ -73,15 +73,13 @@
 
       <AnalyzerDocumentationFileDir>$(NetAnalyzersRootDir)src</AnalyzerDocumentationFileDir>
       <AnalyzerSarifFileDir>$(NetAnalyzersRootDir)src</AnalyzerSarifFileDir>
-      <AnalyzerConfigurationFileDir>$(NetAnalyzersRootDir)docs</AnalyzerConfigurationFileDir>
 
       <PackagePropsFileName>$(PackageId).props</PackagePropsFileName>
       <PackageTargetsFileName>$(PackageId).targets</PackageTargetsFileName>
       <DisableNETAnalyzersPackagePropsFileName>DisableNETAnalyzersForNuGetPackage.props</DisableNETAnalyzersPackagePropsFileName>
       <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
-      <AnalyzerSarifFileName>$(PackageId).sarif</AnalyzerSarifFileName>
+      <AnalyzerSarifFileName>$(PackageId).sarif.template</AnalyzerSarifFileName>
       <AnalyzerSarifTemplateProperties>AnalyzerVersion=$(VersionPrefix)</AnalyzerSarifTemplateProperties>
-      <AnalyzerConfigurationFileName>Analyzer Configuration.md</AnalyzerConfigurationFileName>
 
       <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
       <ValidateOnlyFlag>false</ValidateOnlyFlag>

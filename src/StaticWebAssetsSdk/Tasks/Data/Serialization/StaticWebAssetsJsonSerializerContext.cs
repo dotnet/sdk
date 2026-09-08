@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 [JsonSerializable(typeof(StaticWebAssetsManifest))]
 [JsonSerializable(typeof(GenerateStaticWebAssetsDevelopmentManifest.StaticWebAssetsDevelopmentManifest))]
 [JsonSerializable(typeof(StaticWebAssetEndpointsManifest))]
+[JsonSerializable(typeof(StaticWebAssetPackageManifest))]
 [JsonSourceGenerationOptions(
     GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
     WriteIndented = false)]

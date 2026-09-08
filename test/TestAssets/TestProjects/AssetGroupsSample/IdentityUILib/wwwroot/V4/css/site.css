@@ -1,0 +1,9 @@
+/* Bootstrap 4 variant - site.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+.identity-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}

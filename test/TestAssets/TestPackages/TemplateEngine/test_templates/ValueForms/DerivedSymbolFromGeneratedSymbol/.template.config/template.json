@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "ValueForms.DerivedSymbolFromGeneratedSymbol",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol",
+  "precedence": "100",
+  "identity": "TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol",
+  "shortName": "TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol",
+  "sourceName": "My.Web.App",
+  "symbols": {
+    "nameUpper": {
+      "description": "replaces content matching 'MY.WEB.APP' to the uppercased '{sourceName}', e.g. sourceName 'Foo.Bar' becomes 'FOO.BAR'",
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "name",
+        "toLower": false
+      },
+      "replaces": "MY.WEB.APP"
+    },
+    "nameUpperSnake": {
+      "description": "replaces content matching 'MY_WEB_APP' to the uppercased and underscored '{sourceName}', e.g. sourceName 'Foo.Bar' becomes 'FOO_BAR'",
+      "type": "derived",
+      "valueSource": "nameUpper",
+      "valueTransform": "DotToSnake",
+      "replaces": "MY_WEB_APP"
+    }
+  },
+  "forms": {
+    "DotToSnake": {
+      "identifier": "replace",
+      "pattern": "\\.",
+      "replacement": "_"
+    }
+  }
+}

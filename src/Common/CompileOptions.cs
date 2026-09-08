@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 #if MICROSOFT_ENABLE_TELEMETRY
-      [assembly: System.Reflection.AssemblyMetadata("TelemetryOptOutDefault", Microsoft.DotNet.Cli.CompileOptions.TelemetryOptOutDefaultString)]
+[assembly: System.Reflection.AssemblyMetadata("TelemetryOptOutDefault", Microsoft.DotNet.Cli.CompileOptions.TelemetryOptOutDefaultString)]
 #endif
 
 namespace Microsoft.DotNet.Cli;

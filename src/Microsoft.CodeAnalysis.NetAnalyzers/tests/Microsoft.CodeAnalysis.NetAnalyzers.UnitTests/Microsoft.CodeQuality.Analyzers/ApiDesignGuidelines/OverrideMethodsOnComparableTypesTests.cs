@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideMethodsOnComparableTypesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideMethodsOnComparableTypesFixer>;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public partial class OverrideMethodsOnComparableTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoWarningCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -71,7 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWrongEqualsCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -114,7 +114,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1036CSharpBothResultAt(4, 18, "A", "<=, >="));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036ClassWrongEqualsCSharp_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -195,7 +195,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWrongEquals2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -297,7 +297,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 GetCA1036CSharpEqualsResultAt(52, 18, "B"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructNoWarningCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -353,7 +353,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036PrivateClassNoOpLessThanNoWarningCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -392,7 +392,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -434,7 +434,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1036CSharpBothResultAt(4, 18, "A", "<=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoOpEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -471,7 +471,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1036CSharpOperatorsResultAt(4, 18, "A", "==, !=, <=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructNoOpLessThanOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -508,7 +508,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1036CSharpOperatorsResultAt(4, 19, "A", "<, <=, >, >="));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036StructNoOpLessThanOperatorCSharp_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -575,7 +575,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWithGenericIComparableCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -612,7 +612,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1036CSharpOperatorsResultAt(4, 18, "A", "==, !=, <=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWithDerivedIComparableCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -651,7 +651,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1036CSharpOperatorsResultAt(6, 18, "A", "==, !=, <=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoWarningBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -699,7 +699,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructWrongEqualsBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -738,7 +738,7 @@ End Structure
             GetCA1036BasicBothResultAt(4, 18, "A", "<=, >="));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036StructWrongEqualsBasic_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -808,7 +808,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructWrongEqualsBasic2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -887,7 +887,7 @@ End Structure
                 GetCA1036BasicBothResultAt(44, 18, "B", "<=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructNoWarningBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -935,7 +935,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036PrivateClassNoOpLessThanNoWarningBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -969,7 +969,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1006,7 +1006,7 @@ End Class
             GetCA1036BasicBothResultAt(4, 14, "A", "<=, >="));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036ClassNoEqualsOperatorBasic_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1074,7 +1074,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoOpEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1107,7 +1107,7 @@ End Class
             GetCA1036BasicOperatorsResultAt(4, 14, "A", "=, <>, <=, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassNoOpLessThanOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1140,7 +1140,7 @@ End Structure
             GetCA1036BasicOperatorsResultAt(4, 18, "A", "<, <=, >, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWithGenericIComparableBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1173,7 +1173,7 @@ End Structure
             GetCA1036BasicOperatorsResultAt(4, 18, "A", "<, <=, >, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassWithDerivedIComparableBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1210,13 +1210,13 @@ End Structure
             GetCA1036BasicOperatorsResultAt(8, 18, "A", "<, <=, >, >="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bug1994CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("enum MyEnum {}");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bug1994VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1226,7 +1226,7 @@ Enum MyEnum
 End Enum");
         }
 
-        [Fact, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
+        [TestMethod, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
         public async Task CA1036BaseTypeComparable_NoWarningOnDerived_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1258,7 +1258,7 @@ public class DerivedClass : BaseClass
             GetCA1036CSharpOperatorsResultAt(4, 14, "BaseClass", @"==, !=, <, <=, >, >="));
         }
 
-        [Fact, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
+        [TestMethod, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
         public async Task CA1036BaseTypeGenericComparable_NoWarningOnDerived_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

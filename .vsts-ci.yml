@@ -1,13 +1,27 @@
-# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+# This yml is used by these pipelines:
+# - dotnet-sdk-official-ci
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=286
+#   Triggers: CI batch and weekly schedule (complete CG scan)
+# - dotnet-sdk-unofficial-ci
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1472
+#   Triggers: PR
 
 trigger:
   batch: true
   branches:
     include:
     - main
-    - release/10.0.4*
+    - release/11.0.1*
     - internal/release/*
     - exp/*
+
+schedules:
+- cron: '0 0 * * 0'
+  displayName: Weekly CodeQL/SDL build
+  branches:
+    include:
+    - main
+  always: true
 
 pr:
   branches:
@@ -17,13 +31,19 @@ pr:
     - internal/release/*
 
 parameters:
-# When true, runs the pipeline in the same way as the PR pipeline.
-- name: runTestBuild
-  displayName: Run A Test Build
+# When true, forces test mode on non-PR runs.
+- name: forceTestBuild
+  displayName: Force test build
   type: boolean
   default: false
-- name: enableArm64Job
-  displayName: Enables the ARM64 job
+# When true, forces publish-stage routing on non-check-in runs.
+- name: forcePublish
+  displayName: Force publish stage
+  type: boolean
+  default: false
+# When true, forces a complete CG scan including test template acquisition for non-scheduled runs.
+- name: forceCompleteCg
+  displayName: Force complete CG scan
   type: boolean
   default: false
 
@@ -31,27 +51,25 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
 - group: AzureDevOps-Artifact-Feeds-Pats
+- ${{ if or(eq(parameters.forceTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+  - name: runInTestMode
+    value: true
+- ${{ if or(eq(parameters.forceCompleteCg, true), eq(variables['Build.Reason'], 'Schedule')) }}:
+  - name: runInCompleteCgMode
+    value: true
 # Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
-- ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
+- ${{ if and(eq(parameters.forceTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
     value: false
 # Provides TSA variables for automatic bug reporting.
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - group: DotNet-CLI-SDLValidation-Params
-### LOCAL ONLY ###
-- name: _publishArgument
-  value: -publish
-- name: _signArgument
-  value: -sign /p:SignCoreSdk=true
-- name: _officialBuildProperties
-  # The OfficialBuilder property is set to Microsoft for the official build only.
-  # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
-  # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
   repositories:
@@ -68,7 +86,15 @@ extends:
   parameters:
     containers:
       azureLinux30Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
+      # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+      # AOT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+      # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+      # /p:CrossBuild=true so ILC emits --sysroot/--target.
+      azureLinuxCrossArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
 
     sdl:
       sourceAnalysisPool:
@@ -81,224 +107,110 @@ extends:
         enabled: true
       binskim:
         enabled: true
-      ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
-        componentgovernance:
-          # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
-          ignoreDirectories: artifacts, .packages
+      componentgovernance:
+        # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
+        ignoreDirectories: artifacts, .packages
 
     stages:
+    ############### ONELOCBUILD STAGE ###############
+    - ${{ if and(or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI')), eq(variables['Build.SourceBranch'], 'refs/heads/release/11.0.1xx')) }}:
+      - stage: onelocbuild
+        displayName: OneLocBuild
+        dependsOn: []
+        jobs:
+        - template: /eng/common/templates-official/job/onelocbuild.yml@self
+          parameters:
+            CreatePr: true
+            LclSource: lclFilesfromPackage
+            LclPackageId: LCL-JUNO-PROD-DOTNETSDK
+            MirrorBranch: release/11.0.1xx
+            MirrorRepo: sdk
+
     ############### BUILD STAGE ###############
-    - stage: build
-      displayName: Build
-      jobs:
-      ############### WINDOWS ###############
-      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-        parameters:
-          pool:
-            name: $(DncEngInternalBuildPool)
-            image: windows.vs2022.amd64
-            os: windows
-          helixTargetQueue: windows.amd64.vs2026.pre.scout
-          oneESCompat:
-            templateFolderName: templates-official
-            publishTaskPrefix: 1ES.
-          populateInternalRuntimeVariables: true
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: release/11.0.1xx
-          # WORKAROUND: BinSkim requires the folder exist prior to scanning.
-          preSteps:
-          - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
-            displayName: Create artifacts/bin directory
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 180
-            windowsJobParameterSets:
-            ### OFFICIAL ###
-            - categoryName: Official
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties) /p:BuildWorkloads=true
-              enableDefaultArtifacts: true
-              runTests: false
-              publishRetryConfig: true
-              variables:
-                _SignType: real
-            - categoryName: Official
-              targetArchitecture: x86
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-              dependsOn: Official_windows_x64
-              downloadManifestMsiPackages: true
-            - categoryName: Official
-              targetArchitecture: arm64
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-              dependsOn: Official_windows_x64
-              downloadManifestMsiPackages: true
-            ### TestTemplatesCG ###
-            # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
-            # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
-            # CG is only ran internally, so this job makes sense to only run alongside of the official jobs.
-            - categoryName: TestTemplatesCG
-              testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-              testRunnerAdditionalArguments: -class Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
-              publishXunitResults: true
+    # Run build jobs for non-check-in runs.
+    - ${{ if and(ne(variables['Build.Reason'], 'IndividualCI'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
+      - stage: build
+        displayName: Build
+        jobs:
+        ############### HELIX JOB MONITOR ###############
+        - ${{ if eq(variables['runInTestMode'], 'true') }}:
+          - template: /eng/common/core-templates/job/helix-job-monitor.yml@self
+            parameters:
+              helixAccessToken: $(HelixApiAccessToken)
+              useFullyQualifiedTestName: true
 
-      ############### LINUX ###############
-      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-        parameters:
-          pool:
-            name: $(DncEngInternalBuildPool)
-            image: build.azurelinux.3.amd64
-            os: linux
-          helixTargetQueue: ubuntu.2204.amd64
-          oneESCompat:
-            templateFolderName: templates-official
-            publishTaskPrefix: 1ES.
-          populateInternalRuntimeVariables: true
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
-            linuxJobParameterSets:
-            ### OFFICIAL ###
-            # Note: These builds are also glibc like the glibc category, but that category uses containers, and doesn't publish zips and tarballs.
-            - categoryName: Official
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties)
-              runTests: false
-            - categoryName: Official
-              targetArchitecture: arm
-              runtimeIdentifier: linux-arm
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties)
-              runTests: false
-            - categoryName: Official
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties)
-              runTests: false
-            ### glibc ###
-            - categoryName: glibc
-              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
-              runTests: false
-            - categoryName: glibc
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
-              runTests: false
-            ### musl ###
-            - categoryName: musl
-              container: azureLinux30Amd64
-              runtimeIdentifier: linux-musl-x64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
-              # SBOM generation is not supported for alpine.
-              enableSbom: false
-              runTests: false
-              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
-              disableJob: true
-            - categoryName: musl
-              container: azureLinux30Amd64
-              targetArchitecture: arm
-              runtimeIdentifier: linux-musl-arm
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: /p:OSName=linux-musl
-              runTests: false
-              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
-              disableJob: true
-            - categoryName: musl
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-musl-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: /p:OSName=linux-musl
-              runTests: false
+        ############### WINDOWS ###############
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2026.amd64
+              os: windows
+            helixTargetQueue: windows.amd64.vs2026.pre.scout
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            runTests: ${{ eq(variables['runInTestMode'], 'true') }}
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            # WORKAROUND: BinSkim requires the folder exist prior to scanning.
+            preSteps:
+            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+              displayName: Create artifacts/bin directory
+            ${{ if and(eq(parameters.forceTestBuild, false), eq(variables['runInCompleteCgMode'], 'true')) }}:
+              additionalWindowsJobParameterSets:
+              # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
+              # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
+              # CG is only run internally, so this job runs only in CG mode.
+              - categoryName: TestTemplatesCG
+                runTests: true
+                testExecutionMode: local
+                testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
+                testFilter: FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
 
-      ############### MACOS ###############
-      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-        parameters:
-          pool:
-            name: Azure Pipelines
-            image: macOS-latest
-            os: macOS
-          helixTargetQueue: osx.15.amd64
-          oneESCompat:
-            templateFolderName: templates-official
-            publishTaskPrefix: 1ES.
-          populateInternalRuntimeVariables: true
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
-            macOSJobParameterSets:
-            ### OFFICIAL ###
-            - categoryName: Official
-              runtimeIdentifier: osx-x64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-            - categoryName: Official
-              targetArchitecture: arm64
-              runtimeIdentifier: osx-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-      ### ARM64 TESTBUILD ###
-      - ${{ if and(or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')), eq(parameters.enableArm64Job, true)) }}:
+        ############### LINUX ###############
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: build.azurelinux.3.amd64
+              os: linux
+            helixTargetQueue: ubuntu.2204.amd64
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            runTests: ${{ eq(variables['runInTestMode'], 'true') }}
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+
+        ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
             pool:
               name: Azure Pipelines
-              vmImage: macOS-latest
+              image: macOS-latest
               os: macOS
             helixTargetQueue: osx.15.arm64
-            populateInternalRuntimeVariables: true
-            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-            macOSJobParameterSets:
-            - categoryName: TestBuild
-              targetArchitecture: arm64
-              runtimeIdentifier: osx-arm64
-
-      ############### DOTNET-FORMAT ###############
-      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
-        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-          parameters:
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+            runTests: ${{ eq(variables['runInTestMode'], 'true') }}
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    - ${{ if or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI'), eq(parameters.forcePublish, true)) }}:
       - stage: publish
         displayName: Publish
         dependsOn: []
+        condition: ne(variables['runInCompleteCgMode'], 'true')
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             isAssetlessBuild: true
+            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

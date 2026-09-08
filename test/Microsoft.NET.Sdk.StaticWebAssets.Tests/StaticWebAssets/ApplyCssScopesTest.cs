@@ -1,16 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [TestClass]
     public class ApplyAllCssScopesTest
     {
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_AppliesScopesToRazorComponentFiles()
         {
             // Arrange
@@ -39,7 +45,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             taskInstance.RazorComponentsWithScopes.Should().ContainSingle(rcws => rcws.ItemSpec == "TestFiles/Pages/Counter.razor" && rcws.GetMetadata("CssScope") == "counter-scope");
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_AppliesScopesToRazorViewFiles()
         {
             // Arrange
@@ -68,7 +74,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             taskInstance.RazorGenerateWithScopes.Should().ContainSingle(rcws => rcws.ItemSpec == "TestFiles/Pages/Counter.cshtml" && rcws.GetMetadata("CssScope") == "counter-scope");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesNotApplyCssScopes_ToRazorComponentsWithoutAssociatedFiles()
         {
             // Arrange
@@ -92,12 +98,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var result = taskInstance.Execute();
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
             result.Should().BeTrue();
             taskInstance.RazorComponentsWithScopes.Should().NotContain(rcws => rcws.ItemSpec == "TestFiles/Pages/Fetchdata.razor");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesNotApplyCssScopes_ToRazorViewsWithoutAssociatedFiles()
         {
             // Arrange
@@ -121,12 +127,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var result = taskInstance.Execute();
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
             result.Should().BeTrue();
             taskInstance.RazorGenerateWithScopes.Should().NotContain(rcws => rcws.ItemSpec == "TestFiles/Pages/Fetchdata.razor");
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_FailsWhenTheScopedCss_DoesNotMatchTheRazorComponent()
         {
             // Arrange
@@ -154,7 +160,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_FailsWhenTheScopedCss_DoesNotMatchTheRazorView()
         {
             // Arrange
@@ -182,7 +188,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ScopedCssCanDefineAssociatedRazorComponentFile()
         {
             // Arrange
@@ -211,7 +217,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             taskInstance.RazorComponentsWithScopes.Should().ContainSingle(rcws => rcws.ItemSpec == "TestFiles/Pages/FetchData.razor" && rcws.GetMetadata("CssScope") == "fetchdata-scope");
         }
 
-        [Fact]
+        [TestMethod]
         public void ScopedCssCanDefineAssociatedRazorGenerateFile()
         {
             // Arrange
@@ -240,7 +246,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             taskInstance.RazorGenerateWithScopes.Should().ContainSingle(rcws => rcws.ItemSpec == "TestFiles/Pages/FetchData.cshtml" && rcws.GetMetadata("CssScope") == "fetchdata-scope");
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_FailsWhenMultipleScopedCssFiles_MatchTheSameRazorComponent()
         {
             // Arrange
@@ -272,7 +278,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_FailsWhenMultipleScopedCssFiles_MatchTheSameRazorView()
         {
             // Arrange
@@ -304,7 +310,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_AppliesScopesToRazorComponentAndViewFiles()
         {
             // Arrange
@@ -343,7 +349,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             taskInstance.RazorGenerateWithScopes.Should().ContainSingle(rcws => rcws.ItemSpec == "TestFiles/Pages/_Host.cshtml" && rcws.GetMetadata("CssScope") == "_host-scope");
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyAllCssScopes_ScopedCssComponentsDontMatchWithScopedCssViewStylesAndViceversa()
         {
             // Arrange

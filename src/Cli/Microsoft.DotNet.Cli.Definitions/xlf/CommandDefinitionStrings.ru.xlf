@@ -157,6 +157,21 @@
         <target state="translated">Целевая среда выполнения для очистки.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Включает сбор аварийного дампа при ожидаемом и неожиданном завершении работы узла тестирования.</target>
@@ -244,6 +259,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 В MSTest версии ниже 2.2.4 время ожидания подсчитывается суммарно для всех тестовых случаев.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfig">
         <source>CONFIG_FILE</source>
         <target state="translated">CONFIG_FILE</target>
@@ -301,6 +331,11 @@ If not specified the file will be generated inside the default 'TestResults' dir
         <target state="translated">Блокировка параллельного восстановления множества проектов.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDurationName">
+        <source>DURATION</source>
+        <target state="new">DURATION</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -309,7 +344,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Устанавливает значение переменной среды. 
@@ -377,8 +412,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Вывод списка обнаруженных тестов вместо выполнения тестов.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Вывод списка обнаруженных тестов вместо выполнения тестов.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -419,14 +454,24 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">Максимальное число тестовых модулей, которые могут выполняться параллельно.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsDescription">
+        <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
+        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="translated">Указывает минимальное число тестов, которые должны быть запущены.</target>
+        <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="needs-review-translation">Указывает минимальное число тестов, которые должны быть запущены.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
         <target state="translated">Отключить вывод ANSI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -561,6 +606,20 @@ The specified directory will be created if it does not exist.</source>
 Если указанного каталога не существует, он будет создан.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdRootPathName">
         <source>ROOT_PATH</source>
         <target state="translated">ROOT_PATH</target>
@@ -652,7 +711,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Устанавливает значение переменной среды. 
@@ -668,6 +727,11 @@ Examples:
 </target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestInvalidTimeout">
+        <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
+        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
         <source>Run tests for the specified test modules.</source>
         <target state="translated">Запускает тесты для указанных модулей.</target>
@@ -681,6 +745,16 @@ Examples:
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Уровень детализации вывода тестов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestPositiveIntegerRequired">
+        <source>The value must be a positive integer.</source>
+        <target state="new">The value must be a positive integer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutDescription">
+        <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -748,6 +822,11 @@ Examples:
         <target state="translated">Идентификатор устройства, на котором следует запустить приложение.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">УСТРОЙСТВО</target>
@@ -778,6 +857,11 @@ Examples:
         <target state="translated">Вывести список доступных устройств для запуска приложения.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
         <target state="translated">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
@@ -805,7 +889,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandPrereleaseOptionDescription">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Разрешает установку пакетов предварительной версии.</target>
+        <target state="translated">Разрешает установку пакетов предварительного выпуска.</target>
         <note />
       </trans-unit>
       <trans-unit id="Command_AliasAdd_Description">
@@ -1278,6 +1362,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">Позволяет устанавливать пакеты шаблонов из указанных источников, даже если при этом они переопределят пакет шаблонов из другого источника.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Позволяет остановить команду и ожидать ввода или действия пользователя (например, для проверки подлинности).</target>
@@ -1440,7 +1529,7 @@ If command is specified without the argument, it lists all the template packages
       </trans-unit>
       <trans-unit id="PackageSearchPrereleaseDescription">
         <source>Include prerelease packages.</source>
-        <target state="translated">Включить предварительные версии пакетов.</target>
+        <target state="translated">Включить пакеты предварительного выпуска.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermArgumentName">

@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class ResolveAllScopedCssAssets : Task
 {
     [Required]

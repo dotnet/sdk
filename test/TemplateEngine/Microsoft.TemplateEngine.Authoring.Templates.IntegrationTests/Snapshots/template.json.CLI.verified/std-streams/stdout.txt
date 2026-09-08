@@ -1,0 +1,5 @@
+﻿The template "template.json configuration file" was created successfully.
+
+Processing post-creation actions...
+Description: Manual actions required
+Manual instructions: Open template.json in the editor and complete the configuration.

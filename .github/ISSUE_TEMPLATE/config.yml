@@ -13,3 +13,6 @@ contact_links:
   - name: Issue with Roslyn compiler
     url:  https://github.com/dotnet/roslyn/issues/new/choose
     about: Please open issues relating to the Roslyn .NET compiler in dotnet/roslyn.
+  - name: Issue with .NET container images
+    url:  https://github.com/dotnet/dotnet-docker/issues/new/choose
+    about: Please open issues with mcr.microsoft.com/dotnet/* container images in dotnet/dotnet-docker.

@@ -1,0 +1,26 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Verify.MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Snapshots\**\*" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

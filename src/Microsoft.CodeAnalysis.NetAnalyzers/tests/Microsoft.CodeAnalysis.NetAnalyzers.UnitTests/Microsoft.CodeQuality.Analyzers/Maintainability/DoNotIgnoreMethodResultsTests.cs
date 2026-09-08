@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.DoNotIgnoreMethodResultsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class DoNotIgnoreMethodResultsTests
     {
         #region Unit tests for no analyzer diagnostic
 
-        [Fact]
+        [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UsedInvocationResultAsync()
         {
@@ -75,7 +76,7 @@ End Class
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [Fact]
+        [TestMethod]
         public async Task ExpectedExceptionLastLineAsync()
         {
             await new VerifyCS.Test
@@ -98,7 +99,7 @@ public class Test
 }",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -122,16 +123,16 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [InlineData("Xunit", "Throws", "Exception", true)]
-        [InlineData("Xunit", "ThrowsAny", "Exception", true)]
-        [InlineData("NUnit.Framework", "Throws", "Exception", false)]
-        [InlineData("NUnit.Framework", "Catch", "", false)]
-        [InlineData("NUnit.Framework", "DoesNotThrow", "", false)]
-        [Theory]
+        [DataRow("Xunit", "Throws", "Exception", true)]
+        [DataRow("Xunit", "ThrowsAny", "Exception", true)]
+        [DataRow("NUnit.Framework", "Throws", "Exception", false)]
+        [DataRow("NUnit.Framework", "Catch", "", false)]
+        [DataRow("NUnit.Framework", "DoesNotThrow", "", false)]
+        [TestMethod]
         public async Task UnitTestingThrowsAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
@@ -154,7 +155,7 @@ public class Test
 }}",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -178,16 +179,16 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [InlineData("Xunit", "ThrowsAsync", "Exception", true)]
-        [InlineData("Xunit", "ThrowsAnyAsync", "Exception", true)]
-        [InlineData("NUnit.Framework", "ThrowsAsync", "Exception", false)]
-        [InlineData("NUnit.Framework", "CatchAsync", "", false)]
-        [InlineData("NUnit.Framework", "DoesNotThrowAsync", "", false)]
-        [Theory]
+        [DataRow("Xunit", "ThrowsAsync", "Exception", true)]
+        [DataRow("Xunit", "ThrowsAnyAsync", "Exception", true)]
+        [DataRow("NUnit.Framework", "ThrowsAsync", "Exception", false)]
+        [DataRow("NUnit.Framework", "CatchAsync", "", false)]
+        [DataRow("NUnit.Framework", "DoesNotThrowAsync", "", false)]
+        [TestMethod]
         public async Task UnitTestingThrows2Async(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
@@ -211,7 +212,7 @@ public class Test
 }}",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -235,10 +236,10 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
+        [TestMethod, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
         public async Task CA1806_LinqMethods_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -282,7 +283,7 @@ End Class
 
         #region Unit tests for analyzer diagnostic(s)
 
-        [Fact]
+        [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedStringCreationAsync()
         {
@@ -319,7 +320,7 @@ End Class
     GetBasicStringCreationResultAt(9, 9, "DoesNotAssignStringToVariable", "ToLower"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedObjectCreationAsync()
         {
@@ -350,7 +351,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedTryParseResultAsync()
         {
@@ -381,7 +382,7 @@ End Class
     GetBasicTryParseResultAt(7, 9, "M", "TryParse"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedPInvokeResultAsync()
         {
@@ -418,7 +419,7 @@ End Class
     GetBasicHResultOrErrorCodeResultAt(6, 9, "M", "NativeMethod"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/746")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/746")]
         [WorkItem(746, "https://github.com/dotnet/roslyn-analyzers/issues/746")]
         public async Task UnusedComImportPreserveSigAsync()
         {
@@ -462,7 +463,7 @@ End Interface
     GetBasicHResultOrErrorCodeResultAt(6, 9, "M", "NativeMethod"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(1164, "https://github.com/dotnet/roslyn-analyzers/issues/1164")]
         public async Task UnusedPureMethodTriggersErrorAsync()
         {
@@ -500,12 +501,12 @@ End Module
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [InlineData("Xunit", "Throws", "Exception", true)]
-        [InlineData("Xunit", "ThrowsAny", "Exception", true)]
-        [InlineData("NUnit.Framework", "Throws", "Exception", false)]
-        [InlineData("NUnit.Framework", "Catch", "", false)]
-        [InlineData("NUnit.Framework", "DoesNotThrow", "", false)]
-        [Theory]
+        [DataRow("Xunit", "Throws", "Exception", true)]
+        [DataRow("Xunit", "ThrowsAny", "Exception", true)]
+        [DataRow("NUnit.Framework", "Throws", "Exception", false)]
+        [DataRow("NUnit.Framework", "Catch", "", false)]
+        [DataRow("NUnit.Framework", "DoesNotThrow", "", false)]
+        [TestMethod]
         public async Task UnitTestingThrows_NotLastLineStillDiagnosticAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
@@ -535,7 +536,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -564,16 +565,16 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [InlineData("Xunit", "ThrowsAsync", "Exception", true)]
-        [InlineData("Xunit", "ThrowsAnyAsync", "Exception", true)]
-        [InlineData("NUnit.Framework", "ThrowsAsync", "Exception", false)]
-        [InlineData("NUnit.Framework", "CatchAsync", "", false)]
-        [InlineData("NUnit.Framework", "DoesNotThrowAsync", "", false)]
-        [Theory]
+        [DataRow("Xunit", "ThrowsAsync", "Exception", true)]
+        [DataRow("Xunit", "ThrowsAnyAsync", "Exception", true)]
+        [DataRow("NUnit.Framework", "ThrowsAsync", "Exception", false)]
+        [DataRow("NUnit.Framework", "CatchAsync", "", false)]
+        [DataRow("NUnit.Framework", "DoesNotThrowAsync", "", false)]
+        [TestMethod]
         public async Task UnitTestingThrowsAsync_NotLastLineStillDiagnosticAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
@@ -603,7 +604,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -632,11 +633,11 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
-        [Fact]
+        [TestMethod]
         public async Task ExpectedException_NotLastLineDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -664,7 +665,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(9, 9, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -693,10 +694,10 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(11, 9, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
+        [TestMethod, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
         public async Task PureMethodVoidAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -741,7 +742,7 @@ Public Class B
 End Class");
         }
 
-        [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
+        [TestMethod, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
         public async Task CA1806_LinqMethods_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -788,17 +789,17 @@ End Class
                 GetBasicLinqMethodResultAt(12, 9, "Method1", "OfType"));
         }
 
-        [Theory, WorkItem(3479, "https://github.com/dotnet/roslyn-analyzers/issues/3479")]
+        [TestMethod, WorkItem(3479, "https://github.com/dotnet/roslyn-analyzers/issues/3479")]
         // No configuration - validate no diagnostics in default configuration
-        [InlineData("")]
+        [DataRow("")]
         // Match by method name
-        [InlineData("dotnet_code_quality.additional_use_results_methods = GetSomeValue")]
+        [DataRow("dotnet_code_quality.additional_use_results_methods = GetSomeValue")]
         // Setting only for Rule ID
-        [InlineData("dotnet_code_quality.CA1806.additional_use_results_methods = GetSomeValue")]
+        [DataRow("dotnet_code_quality.CA1806.additional_use_results_methods = GetSomeValue")]
         // Match by documentation ID without "M:" prefix
-        [InlineData("dotnet_code_quality.additional_use_results_methods = SomeClass.GetSomeValue()|SomeClass.GetSomeValue(System.Int32)")]
+        [DataRow("dotnet_code_quality.additional_use_results_methods = SomeClass.GetSomeValue()|SomeClass.GetSomeValue(System.Int32)")]
         // Match by documentation ID with "M:" prefix
-        [InlineData("dotnet_code_quality.additional_use_results_methods = M:SomeClass.GetSomeValue()|M:SomeClass.GetSomeValue(System.Int32)")]
+        [DataRow("dotnet_code_quality.additional_use_results_methods = M:SomeClass.GetSomeValue()|M:SomeClass.GetSomeValue(System.Int32)")]
         public async Task CA1806_UserDefinedMethods_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -837,7 +838,7 @@ public class Class1
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpUserDefinedMethodResultAt(13, 9, "Method1", "GetSomeValue"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbtest = new VerifyVB.Test
             {
@@ -878,10 +879,10 @@ End Class
                 vbtest.ExpectedDiagnostics.Add(GetBasicUserDefinedMethodResultAt(15, 9, "Method1", "GetSomeValue"));
             }
 
-            await vbtest.RunAsync();
+            await vbtest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7030, "https://github.com/dotnet/roslyn-analyzers/issues/7030")]
         public Task QueryableTake()
         {

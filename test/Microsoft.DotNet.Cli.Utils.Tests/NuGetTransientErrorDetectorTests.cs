@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class NuGetTransientErrorDetectorTests
     {
-        [Fact]
+        [TestMethod]
         public void Error1()
         {
             string input =
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void Error2()
         {
             string input =
@@ -81,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void Error3()
         {
             string input =
@@ -100,7 +101,26 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
+        public void TransportConnectionResetWithoutNuGetTargets()
+        {
+            // Simulates a 'dotnet tool install' failure where NuGet.targets is not in the output.
+            // This is the error pattern from https://github.com/dotnet/sdk/issues/51154
+            string input =
+                "error NU1301: Unable to load the service index for source https://api.nuget.org/v3/index.json.\r\n" +
+                "Unable to read data from the transport connection: Connection reset by peer.";
+            NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void ConnectionClosedUnexpectedlyWithoutNuGetTargets()
+        {
+            string input =
+                "The connection was closed unexpectedly.";
+            NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
+        }
+
+        [TestMethod]
         public void NoTransientError()
         {
             string input =

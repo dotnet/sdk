@@ -9,20 +9,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantDesignerSupport : SdkTest
     {
-        public GivenThatWeWantDesignerSupport(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("net46", "false")]
-        [InlineData("netcoreapp3.0", "true")]
-        [InlineData("netcoreapp3.0", "false")]
-        [InlineData("net6.0-windows", "true")]
-        [InlineData("net6.0-windows", "false")]
-        [InlineData("net7.0-windows10.0.17763", "true")]
-        [InlineData("net7.0-windows10.0.17763", "false")]
+        [TestMethod]
+        [DataRow("net46", "false")]
+        [DataRow("netcoreapp3.0", "true")]
+        [DataRow("netcoreapp3.0", "false")]
+        [DataRow("net6.0-windows", "true")]
+        [DataRow("net6.0-windows", "false")]
+        [DataRow("net7.0-windows10.0.17763", "true")]
+        [DataRow("net7.0-windows10.0.17763", "false")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
         {
             if (targetFramework == "netcoreapp3.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -61,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
                 project.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.17763.38";
             }
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project, identifier: targetFramework);
 
             var command = new GetValuesCommand(

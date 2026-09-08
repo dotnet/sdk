@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
@@ -7,24 +7,25 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class ListPackageParserTests
     {
-        [Fact]
+        [TestMethod]
         public void ListPackageCanForwardInteractiveFlag()
         {
             var result = Parser.Parse(["dotnet", "list", "package", "--interactive"]);
 
-            var command = Assert.IsType<ListPackageCommandDefinition>(result.CommandResult.Command);
+            var command = Assert.IsExactInstanceOfType<ListPackageCommandDefinition>(result.CommandResult.Command);
 
             result.OptionValuesToBeForwarded(command).Should().ContainSingle("--interactive");
             result.Errors.Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData("--verbosity", "foo")]
-        [InlineData("--verbosity", "")]
-        [InlineData("-v", "foo")]
-        [InlineData("-v", "")]
+        [TestMethod]
+        [DataRow("--verbosity", "foo")]
+        [DataRow("--verbosity", "")]
+        [DataRow("-v", "foo")]
+        [DataRow("-v", "")]
         public void ListPackageRejectsInvalidVerbosityFlags(string inputOption, string value)
         {
             var result = Parser.Parse(["dotnet", "list", "package", inputOption, value]);
@@ -32,25 +33,25 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().NotBeEmpty();
         }
 
-        [Theory]
-        [InlineData("--verbosity", "q")]
-        [InlineData("--verbosity", "quiet")]
-        [InlineData("--verbosity", "m")]
-        [InlineData("--verbosity", "minimal")]
-        [InlineData("--verbosity", "n")]
-        [InlineData("--verbosity", "normal")]
-        [InlineData("--verbosity", "d")]
-        [InlineData("--verbosity", "detailed")]
-        [InlineData("--verbosity", "diag")]
-        [InlineData("--verbosity", "diagnostic")]
-        [InlineData("--verbosity", "QUIET")]
-        [InlineData("-v", "q")]
-        [InlineData("-v", "QUIET")]
+        [TestMethod]
+        [DataRow("--verbosity", "q")]
+        [DataRow("--verbosity", "quiet")]
+        [DataRow("--verbosity", "m")]
+        [DataRow("--verbosity", "minimal")]
+        [DataRow("--verbosity", "n")]
+        [DataRow("--verbosity", "normal")]
+        [DataRow("--verbosity", "d")]
+        [DataRow("--verbosity", "detailed")]
+        [DataRow("--verbosity", "diag")]
+        [DataRow("--verbosity", "diagnostic")]
+        [DataRow("--verbosity", "QUIET")]
+        [DataRow("-v", "q")]
+        [DataRow("-v", "QUIET")]
         public void ListPackageCanForwardVerbosityFlag(string inputOption, string value)
         {
             var result = Parser.Parse(["dotnet", "list", "package", inputOption, value]);
 
-            var command = Assert.IsType<ListPackageCommandDefinition>(result.CommandResult.Command);
+            var command = Assert.IsExactInstanceOfType<ListPackageCommandDefinition>(result.CommandResult.Command);
 
             result
                 .OptionValuesToBeForwarded(command)
@@ -59,12 +60,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ListPackageDoesNotForwardVerbosityByDefault()
         {
             var result = Parser.Parse(["dotnet", "list", "package"]);
 
-            var command = Assert.IsType<ListPackageCommandDefinition>(result.CommandResult.Command);
+            var command = Assert.IsExactInstanceOfType<ListPackageCommandDefinition>(result.CommandResult.Command);
 
             result
                 .OptionValuesToBeForwarded(command)

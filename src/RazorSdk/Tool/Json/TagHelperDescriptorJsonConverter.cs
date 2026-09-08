@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Json;
@@ -9,8 +10,17 @@ internal sealed class TagHelperDescriptorJsonConverter : ObjectJsonConverter<Tag
 {
     public static readonly TagHelperDescriptorJsonConverter Instance = new();
 
+    internal static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
+
     private TagHelperDescriptorJsonConverter()
     {
+    }
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(Instance);
+        return options;
     }
 
     protected override TagHelperDescriptor ReadFromProperties(JsonDataReader reader)

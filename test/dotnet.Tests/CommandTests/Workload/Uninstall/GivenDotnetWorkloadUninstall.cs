@@ -13,6 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadUninstall : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -43,28 +44,28 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
 
         }
 
-        public GivenDotnetWorkloadUninstall(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadUninstall()
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockWorkloadsSample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockWorkloadsSample.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadUninstallItErrorsWhenWorkloadIsNotInstalled()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
-            var exceptionThrown = Assert.Throws<GracefulException>(() => UninstallWorkload("mock-1", testDirectory, "6.0.100"));
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => UninstallWorkload("mock-1", testDirectory, "6.0.100"));
             exceptionThrown.Message.Should().Contain("mock-1");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenWorkloadUninstallItCanUninstallWorkload(bool userLocal)
         {
             var installingWorkload = "mock-1";
             var sdkFeatureVersion = "6.0.100";
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
 
             var installRoot = SetUpMockWorkloadToUninstall(installingWorkload, sdkFeatureVersion, testDirectory, userLocal);
 
@@ -79,13 +80,13 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             packRecordDirs.Count().Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadUninstallItWorksWithVerbosityFlag()
         {
             bool userLocal = true; // The locality doesnt really matter as we just want to make sure the flag(s) are supported.
             var installingWorkload = "mock-1";
             var sdkFeatureVersion = "6.0.100";
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
 
             SetUpMockWorkloadToUninstall(installingWorkload, sdkFeatureVersion, testDirectory, userLocal);
 
@@ -94,12 +95,12 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             exitCode.Should().Be(0, "The exit code of workload uninstall should be 0 to indicate success when the flag was added.");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenWorkloadUninstallItCanUninstallOnlySpecifiedWorkload(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var sdkFeatureVersion = "6.0.100";
@@ -138,12 +139,12 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             packRecordDirs.Count().Should().Be(3);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenWorkloadUninstallItCanUninstallOnlySpecifiedFeatureBand(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var prevSdkFeatureVersion = "5.0.100";

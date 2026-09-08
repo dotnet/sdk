@@ -36,12 +36,14 @@ public class Muxer
 
     public Muxer()
     {
+        string muxerFileName = MuxerName + Constants.ExeSuffix;
+
         // Most scenarios are running dotnet.dll as the app
         // Root directory with muxer should be two above app base: <root>/sdk/<version>
         string? rootPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)));
         if (rootPath is not null)
         {
-            string muxerPathMaybe = Path.Combine(rootPath, $"{MuxerName}{FileNameSuffixes.CurrentPlatform.Exe}");
+            string muxerPathMaybe = Path.Combine(rootPath, muxerFileName);
             if (File.Exists(muxerPathMaybe))
             {
                 _muxerPath = muxerPathMaybe;
@@ -58,8 +60,9 @@ public class Muxer
             string processPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
 
-            // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost
-            if (processPath is not null && !Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+            // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost.
+            // Use GetFileName (not GetFileNameWithoutExtension) to avoid false matches with dotnet-prefixed names like "dotnet.Tests".
+            if (processPath is not null && !Path.GetFileName(processPath).Equals(muxerFileName, StringComparison.OrdinalIgnoreCase))
             {
                 // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
                 processPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
@@ -69,7 +72,7 @@ public class Muxer
                     var root = Environment.GetEnvironmentVariable("DOTNET_ROOT");
                     if (root is not null)
                     {
-                        processPath = Path.Combine(root, $"dotnet{Constants.ExeSuffix}");
+                        processPath = Path.Combine(root, muxerFileName);
                     }
                 }
             }

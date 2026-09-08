@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -6,24 +7,24 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Usage;
 using Microsoft.NetCore.VisualBasic.Analyzers.Usage;
 using Test.Utilities;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
     using VerifyCS = CSharpCodeFixVerifier<DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull, CSharpDoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullFixer>;
     using VerifyVB = VisualBasicCodeFixVerifier<DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull, BasicDoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullFixer>;
 
+    [TestClass]
     public sealed class DoNotPassStructToArgumentNullExceptionThrowIfNullTests
     {
         #region C#
 
         #region Diagnostic
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task NotNullable_PassedInConstructor_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task NotNullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -47,20 +48,20 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task Nullable_PassedInConstructor_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task Nullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -89,20 +90,20 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task NotNullable_PassedAsLocalVariable_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -128,20 +129,20 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task Nullable_PassedAsLocalVariable_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -172,17 +173,17 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task NotNullable_CustomStruct_Diagnostic()
+        [TestMethod]
+        public async Task NotNullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 using System;
@@ -210,17 +211,17 @@ public class Test
 
 public struct MyStruct {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Nullable_CustomStruct_Diagnostic()
+        [TestMethod]
+        public async Task Nullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 using System;
@@ -253,18 +254,18 @@ public class Test
 
 public struct MyStruct {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
-        public Task NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "System.Guid", "bool")] string type,
+        public async Task NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "System.Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -285,18 +286,18 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
-        public Task Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "Guid", "bool")] string type,
+        public async Task Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -326,20 +327,20 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task NotNullable_PropertyAccess_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task NotNullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -367,21 +368,21 @@ public class Test
 
 public record MyRecord({type} X);";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 LanguageVersion = LanguageVersion.CSharp9,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("bool")]
-        public Task Nullable_PropertyAccess_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("bool")]
+        public async Task Nullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -414,21 +415,21 @@ public class Test
 
 public record MyRecord({type}? X);";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 LanguageVersion = LanguageVersion.CSharp9,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("MyType")]
-        public Task Instantiation_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("MyType")]
+        public async Task Instantiation_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -454,17 +455,17 @@ class Test
 
 class MyType {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task EmptyInitializer_Diagnostic()
+        [TestMethod]
+        public async Task EmptyInitializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -492,17 +493,17 @@ class Test
 
 class MyType {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Initializer_Diagnostic()
+        [TestMethod]
+        public async Task Initializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -534,17 +535,17 @@ class MyType
     public string Name { get; set; }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task CollectionInitializer_Diagnostic()
+        [TestMethod]
+        public async Task CollectionInitializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -568,21 +569,21 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("Guid")]
-        [InlineData("MyType")]
-        [InlineData("System.Net.Http.HttpClient")]
-        public Task Nameof_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("Guid")]
+        [DataRow("MyType")]
+        [DataRow("System.Net.Http.HttpClient")]
+        public async Task Nameof_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -608,17 +609,17 @@ class Test
 
 class MyType {{}}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Generics_Diagnostic()
+        [TestMethod]
+        public async Task Generics_Diagnostic()
         {
             const string code = @"
 using System;
@@ -640,17 +641,17 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task TriviaIsNotPreserved_Diagnostic()
+        [TestMethod]
+        public async Task TriviaIsNotPreserved_Diagnostic()
         {
             const string code = @"
 using System;
@@ -675,17 +676,17 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task TriviaIsPreserved_Diagnostic()
+        [TestMethod]
+        public async Task TriviaIsPreserved_Diagnostic()
         {
             const string code = @"
 using System;
@@ -713,17 +714,17 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task TwoArguments_Diagnostic()
+        [TestMethod]
+        public async Task TwoArguments_Diagnostic()
         {
             const string code = @"
 using System;
@@ -747,29 +748,117 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        {
+            const string code = @"
+using System;
+
+class Test
+{
+    public void M(int x, Guid y)
+    {
+        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+        Console.WriteLine(x);
+    }
+}";
+            const string fixedCode = @"
+using System;
+
+class Test
+{
+    public void M(int x, Guid y)
+    {
+        Console.WriteLine(x);
+    }
+}";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NonNullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNonNullableValueDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        {
+            const string code = @"
+using System;
+
+class Test
+{
+    public void M(int? x, Guid? y)
+    {
+        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+        Console.WriteLine(x);
+    }
+}";
+            const string fixedCode = @"
+using System;
+
+class Test
+{
+    public void M(int? x, Guid? y)
+    {
+        if (!x.HasValue)
+        {
+            throw new ArgumentNullException(nameof(x));
+        }
+
+        if (!y.HasValue)
+        {
+            throw new ArgumentNullException(nameof(y));
+        }
+
+        Console.WriteLine(x);
+    }
+}";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNullableStructDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region No diagnostic
 
-        [Theory]
-        [InlineData("int")]
-        [InlineData("int?")]
-        [InlineData("System.Guid")]
-        [InlineData("System.Guid?")]
-        [InlineData("bool")]
-        [InlineData("bool?")]
-        [InlineData("MyStruct")]
-        [InlineData("MyStruct?")]
-        public Task CustomThrowIfNull_NoDiagnostic(string type)
+        [TestMethod]
+        [DataRow("int")]
+        [DataRow("int?")]
+        [DataRow("System.Guid")]
+        [DataRow("System.Guid?")]
+        [DataRow("bool")]
+        [DataRow("bool?")]
+        [DataRow("MyStruct")]
+        [DataRow("MyStruct?")]
+        public async Task CustomThrowIfNull_NoDiagnostic(string type)
         {
             var code = $@"
 #nullable enable
@@ -788,24 +877,24 @@ public class ArgumentNullException {{
 
 public struct MyStruct {{}}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("string?")]
-        [InlineData("int[]")]
-        [InlineData("int[]?")]
-        [InlineData("Random")]
-        [InlineData("Random?")]
-        [InlineData("System.Net.Http.HttpClient")]
-        [InlineData("System.Net.Http.HttpClient?")]
-        public Task ReferenceTypes_NoDiagnostic(string type)
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("string?")]
+        [DataRow("int[]")]
+        [DataRow("int[]?")]
+        [DataRow("Random")]
+        [DataRow("Random?")]
+        [DataRow("System.Net.Http.HttpClient")]
+        [DataRow("System.Net.Http.HttpClient?")]
+        public async Task ReferenceTypes_NoDiagnostic(string type)
         {
             var code = $@"
 using System;
@@ -820,16 +909,16 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Record_NoDiagnostic()
+        [TestMethod]
+        public async Task Record_NoDiagnostic()
         {
             const string code = @"
 using System;
@@ -845,19 +934,19 @@ public class Test
 
 public record MyRecord;";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("where T : notnull")]
-        [InlineData("where T : class")]
-        public Task Generics_NoDiagnostic(string whereClause)
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("where T : notnull")]
+        [DataRow("where T : class")]
+        public async Task Generics_NoDiagnostic(string whereClause)
         {
             var code = $@"
 using System;
@@ -870,12 +959,12 @@ class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
@@ -886,11 +975,11 @@ class Test
 
         #region Diagnostic
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_NotNullable_PassedInConstructor_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_NotNullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -912,20 +1001,20 @@ Public Class Test
 End Class
 ";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_Nullable_PassedInConstructor_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_Nullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -949,20 +1038,20 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_NotNullable_PassedAsLocalVariable_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -984,20 +1073,20 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_Nullable_PassedAsLocalVariable_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1024,17 +1113,17 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Vb_NotNullable_CustomStruct_Diagnostic()
+        [TestMethod]
+        public async Task Vb_NotNullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1060,17 +1149,17 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Vb_Nullable_CustomStruct_Diagnostic()
+        [TestMethod]
+        public async Task Vb_Nullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1100,18 +1189,18 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
-        public Task Vb_NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("System.Int32", "System.Guid", "System.Boolean")] string type,
+        public async Task Vb_NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("System.Int32", "System.Guid", "System.Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -1128,18 +1217,18 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
-        public Task Vb_Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("Int32", "Guid", "Boolean")] string type,
+        public async Task Vb_Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("Int32", "Guid", "Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -1164,20 +1253,20 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_NotNullable_PropertyAccess_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_NotNullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1205,20 +1294,20 @@ Public Class MyType
     Public Dim X As {type}
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("Boolean")]
-        public Task Vb_Nullable_PropertyAccess_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("Boolean")]
+        public async Task Vb_Nullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1250,20 +1339,20 @@ Public Class MyType
     Public Dim X As {type}?
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("MyType")]
-        public Task Vb_Instantiation_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("MyType")]
+        public async Task Vb_Instantiation_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1287,21 +1376,21 @@ End Class
 Class MyType
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Int32")]
-        [InlineData("Guid")]
-        [InlineData("MyType")]
-        [InlineData("System.Net.Http.HttpClient")]
-        public Task Vb_Nameof_Diagnostic(string type)
+        [TestMethod]
+        [DataRow("Int32")]
+        [DataRow("Guid")]
+        [DataRow("MyType")]
+        [DataRow("System.Net.Http.HttpClient")]
+        public async Task Vb_Nameof_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1325,17 +1414,17 @@ End Class
 Class MyType
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Vb_Generics_Diagnostic()
+        [TestMethod]
+        public async Task Vb_Generics_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1353,17 +1442,17 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Vb_Initializer_Diagnostic()
+        [TestMethod]
+        public async Task Vb_Initializer_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1389,17 +1478,17 @@ Class MyType
     Public Property Name As String
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task Vb_CollectionInitializer_Diagnostic()
+        [TestMethod]
+        public async Task Vb_CollectionInitializer_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1419,29 +1508,107 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Vb_TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        {
+            const string code = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32, y As Guid)
+        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+        Console.WriteLine(x)
+    End Sub
+End Class";
+            const string fixedCode = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32, y As Guid)
+        Console.WriteLine(x)
+    End Sub
+End Class";
+
+            await new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NonNullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNonNullableValueDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Vb_TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        {
+            const string code = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32?, y As Guid?)
+        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+        Console.WriteLine(x)
+    End Sub
+End Class";
+            const string fixedCode = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32?, y As Guid?)
+        If Not x.HasValue Then
+            Throw New ArgumentNullException(NameOf(x))
+        End If
+
+        If Not y.HasValue Then
+            Throw New ArgumentNullException(NameOf(y))
+        End If
+
+        Console.WriteLine(x)
+    End Sub
+End Class";
+
+            await new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNullableStructDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region No diagnostic
 
-        [Theory]
-        [InlineData("System.Int32")]
-        [InlineData("System.Int32?")]
-        [InlineData("System.Guid")]
-        [InlineData("System.Guid?")]
-        [InlineData("System.Boolean")]
-        [InlineData("System.Boolean?")]
-        [InlineData("MyStruct")]
-        [InlineData("MyStruct?")]
-        public Task Vb_CustomThrowIfNull_NoDiagnostic(string type)
+        [TestMethod]
+        [DataRow("System.Int32")]
+        [DataRow("System.Int32?")]
+        [DataRow("System.Guid")]
+        [DataRow("System.Guid?")]
+        [DataRow("System.Boolean")]
+        [DataRow("System.Boolean?")]
+        [DataRow("MyStruct")]
+        [DataRow("MyStruct?")]
+        public async Task Vb_CustomThrowIfNull_NoDiagnostic(string type)
         {
             var code = $@"
 Public Class Test
@@ -1460,19 +1627,19 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("String")]
-        [InlineData("Int32()")]
-        [InlineData("Random")]
-        [InlineData("System.Net.Http.HttpClient")]
-        public Task Vb_ReferenceTypes_NoDiagnostic(string type)
+        [TestMethod]
+        [DataRow("String")]
+        [DataRow("Int32()")]
+        [DataRow("Random")]
+        [DataRow("System.Net.Http.HttpClient")]
+        public async Task Vb_ReferenceTypes_NoDiagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1484,17 +1651,17 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("As Class")]
-        public Task Vb_Generics_NoDiagnostic(string whereClause)
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("As Class")]
+        public async Task Vb_Generics_NoDiagnostic(string whereClause)
         {
             var code = $@"
 Imports System
@@ -1505,11 +1672,11 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion

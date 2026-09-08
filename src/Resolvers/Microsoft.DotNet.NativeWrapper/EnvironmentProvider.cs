@@ -59,23 +59,31 @@ namespace Microsoft.DotNet.NativeWrapper
             }
 
             string? dotnetExe;
-#if NETCOREAPP
+#if NET
             // The dotnet executable is loading only the .NET version of this code so there is no point checking
             // the current process path on .NET Framework. We are expected to find dotnet on PATH.
             dotnetExe = _getCurrentProcessPath();
 
-            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileNameWithoutExtension(dotnetExe)
-                    .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
+            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileName(dotnetExe)
+                    .Equals(Constants.DotNetFileName, StringComparison.InvariantCultureIgnoreCase))
 #endif
             {
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
 
-                if (dotnetExeFromPath != null && !FileInterop.RunningOnWindows)
+#if NET
+                if (dotnetExeFromPath != null && !OperatingSystem.IsWindows())
                 {
-                    // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
+                    // e.g. on Linux the 'dotnet' command from PATH may be a symlink so we need to
                     // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = FileInterop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
+                    FileSystemInfo fileInfo = new FileInfo(dotnetExeFromPath);
+                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) != 0)
+                    {
+                        fileInfo = fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+                    }
+
+                    dotnetExeFromPath = fileInfo.FullName;
                 }
+#endif
 
                 if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
                 {
@@ -86,7 +94,7 @@ namespace Microsoft.DotNet.NativeWrapper
                     log?.Invoke($"GetDotnetExeDirectory: dotnet command path not found.  Using current process");
                     log?.Invoke($"GetDotnetExeDirectory: Path variable: {_getEnvironmentVariable(Constants.PATH)}");
 
-#if !NETCOREAPP
+#if !NET
                     // If we failed to find dotnet on PATH, we revert to the old behavior of returning the current process
                     // path. This is really an error state but we're keeping the contract of always returning a non-empty
                     // path for backward compatibility.
@@ -124,7 +132,7 @@ namespace Microsoft.DotNet.NativeWrapper
         private static string? GetCurrentProcessPath()
         {
             string? currentProcessPath;
-#if NET6_0_OR_GREATER
+#if NET
             currentProcessPath = Environment.ProcessPath;
 #else
             currentProcessPath = Process.GetCurrentProcess().MainModule.FileName;

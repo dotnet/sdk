@@ -21,6 +21,11 @@ public class StaticWebAssetTokenResolver(IReadOnlyDictionary<string, string> tok
             return true;
         }
 
+        if (asset.TryGetAssetGroupValue(key, out value))
+        {
+            return true;
+        }
+
         if (tokens == null)
         {
             value = null;

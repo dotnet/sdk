@@ -1,18 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAComServerLibrary : SdkTest
     {
-        public GivenThatWeWantToPublishAComServerLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_publishes_comhost_to_the_publish_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource();
 

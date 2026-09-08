@@ -3,13 +3,20 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class JsModulesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesIntegrationTest))
+    [TestClass]
+    public class JsModulesIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(JsModulesIntegrationTest);
+        [TestMethod]
         public void Build_NoOps_WhenJsModulesIsDisabled()
         {
             var testAsset = "RazorComponentApp";
@@ -26,7 +33,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_GeneratesManifestWhenItFindsALibrary()
         {
             var testAsset = "RazorComponentApp";
@@ -50,7 +57,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             file.Should().Match("""ComponentApp\.[a-zA-Z-0-9]{10}\.lib\.module\.js""");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_DiscoversJsModulesBasedOnPatterns()
         {
             var testAsset = "RazorComponentApp";
@@ -84,7 +91,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_PublishesJsModuleBundleBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -115,7 +122,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_DoesNotPublishAnyFile_WhenThereAreNoJsModulesFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -130,7 +137,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.modules.json")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Does_Nothing_WhenThereAreNoJsModulesFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -145,7 +152,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             file.Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_JsModules_IsIncremental()
         {
             // Arrange
@@ -180,7 +187,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 foreach (var file in files)
                 {
                     var thumbprint = FileThumbPrint.Create(file);
-                    Assert.Equal(thumbprintLookup[file], thumbprint);
+                    Assert.AreEqual(thumbprintLookup[file], thumbprint);
                 }
             }
         }
@@ -192,9 +199,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
     }
 
-    public class JsModulesPackagesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesPackagesIntegrationTest))
+    [TestClass]
+    public class JsModulesPackagesIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(JsModulesPackagesIntegrationTest);
+        [TestMethod]
         public void BuildProjectWithReferences_IncorporatesInitializersFromClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -231,7 +240,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             file.Should().Contain("_content/ClassLibrary/ClassLibrary.lib.module.js");
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_IncorporatesInitializersFromClassLibrariesAndPublishesAssetsToTheRightLocation()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -276,7 +285,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             file.Should().NotContain("_content/ClassLibrary/AnotherClassLib.lib.module.js");
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_DifferentBuildAndPublish_LibraryInitializers()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

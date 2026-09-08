@@ -22,7 +22,8 @@ internal static class ContentStore
 
     public static string PathForDescriptor(Descriptor descriptor)
     {
-        string digestValue = DigestUtils.GetEncoded(descriptor.Digest);
+        string digestString = descriptor.Digest;
+        string digestValue = DigestUtils.GetEncoded(digestString);
 
         string extension = descriptor.MediaType switch
         {
@@ -36,13 +37,8 @@ internal static class ContentStore
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
-        return GetPathForHash(digestValue) + extension;
-    }
-
-
-    public static string GetPathForHash(string contentHash)
-    {
-        return Path.Combine(ContentRoot, contentHash);
+        string descriptorPath = Path.Combine(ContentRoot, digestValue) + extension;
+        return descriptorPath;
     }
 
     public static string GetTempFile() => Path.Join(TempPath, Path.GetRandomFileName());

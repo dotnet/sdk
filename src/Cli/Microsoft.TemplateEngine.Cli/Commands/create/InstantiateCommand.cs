@@ -15,9 +15,21 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed partial class InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewCreateCommandDefinition definition)
-        : BaseCommand<InstantiateCommandArgs, NewCreateCommandDefinition>(hostBuilder, definition), ICustomHelp
+    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs, NewCreateCommandDefinition>, ICustomHelp
     {
+        internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewCreateCommandDefinition definition)
+            : base(hostBuilder, definition)
+        {
+        }
+
+        internal IReadOnlyList<Option> PassByOptions =>
+        [
+            Definition.InstantiateOptions.ForceOption,
+            Definition.InstantiateOptions.NameOption,
+            Definition.InstantiateOptions.DryRunOption,
+            Definition.InstantiateOptions.NoUpdateCheckOption
+        ];
+
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,
             IEngineEnvironmentSettings environmentSettings,
@@ -33,6 +45,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HostSpecificDataLoader hostSpecificDataLoader,
             CancellationToken cancellationToken)
         {
+            using var createTemplateGroupsActivity = Activities.Source.StartActivity("create-template-groups");
             IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             return TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
         }
@@ -43,6 +56,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplatePackageManager templatePackageManager,
                 TemplateGroup templateGroup)
         {
+            using var getTemplateActivity = Activities.Source.StartActivity("get-template-command");
             //groups templates in the group by precedence
             foreach (IGrouping<int, CliTemplateInfo> templateGrouping in templateGroup.Templates.GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
             {
@@ -73,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     templateGroup,
                     candidates);
             }
-            return new HashSet<TemplateCommand>();
+            return [];
         }
 
         internal static void HandleNoMatchingTemplateGroup(InstantiateCommandArgs instantiateArgs, IEnumerable<TemplateGroup> templateGroups, IReporter reporter)
@@ -163,6 +177,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return await templateListCoordinator.DisplayCommandDescriptionAsync(instantiateArgs, cancellationToken).ConfigureAwait(false);
             }
+            using var createActivity = Activities.Source.StartActivity("instantiate-command");
+            createActivity?.DisplayName = $"Invoke '{instantiateArgs.ShortName}'";
 
             IEnumerable<TemplateGroup> allTemplateGroups = await GetTemplateGroupsAsync(
                 templatePackageManager,
@@ -232,10 +248,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 TemplateCommand templateCommandToRun = candidates.Single();
                 args.NewOrInstantiateCommand.Subcommands.Add(templateCommandToRun);
-
+                var templateParseActivity = Activities.Source.StartActivity("reparse-for-template");
                 ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(
                     args.ParseResult.Tokens.Select(t => t.Value).ToArray(),
                     args.ParseResult.Configuration);
+                templateParseActivity?.Stop();
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
             else if (candidates.Any())
@@ -395,7 +412,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     validateDefaultLanguage);
 
                 System.CommandLine.Command parser = ParserFactory.CreateParser(command);
-                ParseResult parseResult = parser.Parse(args.RemainingArguments, ParserFactory.ParserConfiguration);
+                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
                 return (command, parseResult);
             }
             catch (InvalidTemplateParametersException e)

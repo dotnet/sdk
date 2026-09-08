@@ -1,23 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+
     <!--
       Tests code used in in-proc VS and VS Code.
       Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
     -->
-    <TargetFrameworks>$(SdkTargetFramework);$(VisualStudioTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
     <RootNamespace>Microsoft.DotNet.HotReload.UnitTests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\TestLogger.cs" Link="Utilities\TestLogger.cs" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -25,8 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 

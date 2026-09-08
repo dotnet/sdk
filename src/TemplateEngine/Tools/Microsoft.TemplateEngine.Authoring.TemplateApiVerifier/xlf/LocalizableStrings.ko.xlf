@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CreateSuccessful">
+        <source>The template "{0}" was created successfully.</source>
+        <target state="translated">"{0}" 템플릿이 성공적으로 생성되었습니다.</target>
+        <note>{0} holds template name</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigDoesntExist">
+        <source>Template config: {0} doesn't exist. When using 'WithInstantiationThroughTemplateCreatorApi' the 'TemplatePath' parameter must specify path to the template.json or to the root of template (containing {1}).</source>
+        <target state="translated">템플릿 구성: {0}이(가) 없습니다. 'WithInstantiationThroughTemplateCreatorApi'를 사용하는 경우 'TemplatePath' 매개 변수는 template.json 또는 템플릿의 루트({1} 포함)에 대한 경로를 지정해야 합니다.</target>
+        <note>Do not translate 'TemplatePath' and 'WithInstantiationThroughTemplateCreatorApi'
+
+{0} and {1} contain paths</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigRetrieval">
+        <source>Template configuration file could not be retrieved from configured mount point.</source>
+        <target state="translated">구성된 탑재 지점에서 템플릿 구성 파일을 검색할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_DotnetPath">
+        <source>'DotnetExecutablePath' parameter must not be specified when using 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">'WithInstantiationThroughTemplateCreatorApi'를 사용하는 경우 'DotnetExecutablePath' 매개 변수를 지정하지 않아야 합니다.</target>
+        <note>Do not translate 'DotnetExecutablePath' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+      <trans-unit id="Error_InstallFail">
+        <source>Failed to install template: {0}, details: {1}.</source>
+        <target state="translated">템플릿을 설치하지 못했습니다. {0}, 세부 정보: {1}.</target>
+        <note>{0} is tamplate name, {1} is error message</note>
+      </trans-unit>
+      <trans-unit id="Error_NoPackages">
+        <source>No packages fetched after installation.</source>
+        <target state="translated">설치 후 가져온 패키지가 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_TemplateArgsDisalowed">
+        <source>'TemplateSpecificArgs' parameter must not be specified when using WithInstantiationThroughTemplateCreatorApi. Parameters should be passed via the argument of 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">WithInstantiationThroughTemplateCreatorApi를 사용하는 경우 'TemplateSpecificArgs' 매개 변수를 지정하지 않아야 합니다. 매개 변수는 'WithInstantiationThroughTemplateCreatorApi'의 인수를 통해 전달해야 합니다.</target>
+        <note>Do not translate 'TemplateSpecificArgs' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

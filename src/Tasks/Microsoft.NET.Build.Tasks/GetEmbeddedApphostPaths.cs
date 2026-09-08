@@ -8,6 +8,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class GetEmbeddedApphostPaths : TaskBase
     {
         /// <summary>

@@ -8,11 +8,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenAProjectDependencyCommandResolver : SdkTest
     {
         private string _configuration;
 
-        public GivenAProjectDependencyCommandResolver(ITestOutputHelper log) : base(log)
+        public GivenAProjectDependencyCommandResolver()
         {
             Environment.SetEnvironmentVariable(
                 Constants.MSBUILD_EXE_PATH,
@@ -21,11 +22,11 @@ namespace Microsoft.DotNet.Tests
             _configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsACommandSpecWhenToolIsInAProjectRef()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -56,11 +57,11 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain(commandResolverArguments.CommandName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPassesDepsfileArgToHostWhenReturningACommandSpecForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -87,11 +88,11 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain("--depsfile");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectDependenciesForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -116,11 +117,11 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsDepsfileToOutputInCommandspecForMSBuild()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);

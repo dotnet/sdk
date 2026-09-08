@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -6,11 +6,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <PackageId>testSdkBlazorWasm</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -52,7 +47,7 @@
     <ProjectReference Include="..\..\src\BlazorWasmSdk\Tasks\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\src\RazorSdk\Tasks\Microsoft.NET.Sdk.Razor.Tasks.csproj" />
     <ProjectReference Include="..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

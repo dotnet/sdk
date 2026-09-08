@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -13,17 +13,18 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolRunCommandTests: SdkTest
     {
         private const string ManifestFilename = "dotnet-tools.json";
         private DirectoryPath _nugetGlobalPackagesFolder;
 
-        public ToolRunCommandTests(ITestOutputHelper log) : base(log)
+        public ToolRunCommandTests()
         {
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithRollForwardOptionItShouldPreserveDuplicateArgumentsForwardedToTool()
         {
             (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.Args.Should().Contain("--var a --var b");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a");
@@ -84,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
-            var testDirectoryRoot = _testAssetsManager.CreateTestDirectory();
+            var testDirectoryRoot = TestAssetsManager.CreateTestDirectory();
             var fileSystem = new FileSystemWrapper();
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
 

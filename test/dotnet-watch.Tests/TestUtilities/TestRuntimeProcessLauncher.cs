@@ -49,7 +49,7 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
         RestartOperation? startOp = null;
         startOp = new RestartOperation(async cancellationToken =>
         {
-            Assert.NotNull(startOp);
+            Assert.IsNotNull(startOp);
 
             runningProject = await ProjectLauncher.TryLaunchProcessAsync(
                 projectOptions,
@@ -58,14 +58,14 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
                 restartOperation: startOp,
                 cancellationToken);
 
-            Assert.NotNull(runningProject);
+            Assert.IsNotNull(runningProject);
 
             await runningProject.Clients.WaitForConnectionEstablishedAsync(cancellationToken);
         });
 
         await startOp(cancellationToken);
 
-        Assert.NotNull(runningProject);
+        Assert.IsNotNull(runningProject);
         return runningProject;
     }
 }

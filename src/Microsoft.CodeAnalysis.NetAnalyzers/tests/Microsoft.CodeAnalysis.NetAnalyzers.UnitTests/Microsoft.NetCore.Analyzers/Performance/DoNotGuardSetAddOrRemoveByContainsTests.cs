@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.DoNotGuardCallAnalyzer,
@@ -14,10 +14,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class DoNotGuardSetAddOrRemoveByContainsTests
     {
         #region Tests
-        [Fact]
+        [TestMethod]
         public async Task NonInvocationConditionDoesNotThrow_CS()
         {
             string source = """
@@ -33,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddIsTheOnlyStatement_OffersFixer_CS()
         {
             string source = """
@@ -68,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveIsTheOnlyStatement_OffersFixer_CS()
         {
             string source = """
@@ -103,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddIsTheOnlyStatementInBlock_OffersFixer_CS()
         {
             string source = """
@@ -140,7 +141,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveIsTheOnlyStatementInBlock_OffersFixer_CS()
         {
             string source = """
@@ -177,7 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddHasElseStatement_OffersFixer_CS()
         {
             string source = """
@@ -215,7 +216,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveHasElseStatement_OffersFixer_CS()
         {
             string source = """
@@ -253,7 +254,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseHasElseStatement_OffersFixer_CS()
         {
             string source = """
@@ -291,7 +292,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseHasElseStatement_OffersFixer_CS()
         {
             string source = """
@@ -329,7 +330,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddHasElseBlock_OffersFixer_CS()
         {
             string source = """
@@ -373,7 +374,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveHasElseBlock_OffersFixer_CS()
         {
             string source = """
@@ -417,7 +418,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseHasElseBlock_OffersFixer_CS()
         {
             string source = """
@@ -461,7 +462,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseHasElseBlock_OffersFixer_CS()
         {
             string source = """
@@ -505,7 +506,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithAdditionalStatements_ReportsDiagnostic_CS()
         {
             string source = """
@@ -529,7 +530,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithAdditionalStatements_ReportsDiagnostic_CS()
         {
             string source = """
@@ -553,7 +554,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithAdditionalStatements_ReportsDiagnostic_CS()
         {
             string source = """
@@ -581,7 +582,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithAdditionalStatements_ReportsDiagnostic_CS()
         {
             string source = """
@@ -609,7 +610,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithVariableAssignment_ReportsDiagnostic_CS()
         {
             string source = """
@@ -632,7 +633,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithVariableAssignment_ReportsDiagnostic_CS()
         {
             string source = """
@@ -655,7 +656,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithVariableAssignment_ReportsDiagnostic_CS()
         {
             string source = """
@@ -682,7 +683,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithVariableAssignment_ReportsDiagnostic_CS()
         {
             string source = """
@@ -709,7 +710,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithNonNegatedContains_NoDiagnostics_CS()
         {
             string source = """
@@ -730,7 +731,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithNegatedContains_NoDiagnostics_CS()
         {
             string source = """
@@ -751,7 +752,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithNegatedContains_NoDiagnostics_CS()
         {
             string source = """
@@ -774,7 +775,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithNonNegatedContains_NoDiagnostics_CS()
         {
             string source = """
@@ -797,7 +798,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AdditionalCondition_NoDiagnostic_CS()
         {
             string source = """
@@ -818,7 +819,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConditionInVariable_NoDiagnostic_CS()
         {
             string source = """
@@ -840,7 +841,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInSeparateLine_NoDiagnostic_CS()
         {
             string source = """
@@ -862,7 +863,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotSetRemove_NoDiagnostic_CS()
         {
             string source = """
@@ -884,7 +885,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NestedConditional_NoDiagnostic_CS()
         {
             string source = """
@@ -911,7 +912,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenTrue_ReportsDiagnostic_CS()
         {
             string source = """
@@ -931,7 +932,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalse_ReportsDiagnostic_CS()
         {
             string source = """
@@ -951,7 +952,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrue_ReportsDiagnostic_CS()
         {
             string source = """
@@ -971,7 +972,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenFalse_ReportsDiagnostic_CS()
         {
             string source = """
@@ -991,7 +992,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalseNested_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1013,7 +1014,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrueNested_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1035,7 +1036,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenTrueWithNonNegatedContains_NoDiagnostic_CS()
         {
             string source = """
@@ -1055,7 +1056,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalseWithNegatedContains_NoDiagnostic_CS()
         {
             string source = """
@@ -1075,7 +1076,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrueWithNegatedContains_NoDiagnostic_CS()
         {
             string source = """
@@ -1095,7 +1096,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenFalseWithNonNegatedContains_NoDiagnostic_CS()
         {
             string source = """
@@ -1115,7 +1116,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TriviaIsPreserved_CS()
         {
             string source = """
@@ -1154,7 +1155,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddIsTheOnlyStatement_OffersFixer_VB()
         {
             string source = """
@@ -1184,7 +1185,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveIsTheOnlyStatement_OffersFixer_VB()
         {
             string source = """
@@ -1214,7 +1215,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddIsTheOnlyStatementInBlock_OffersFixer_VB()
         {
             string source = """
@@ -1246,7 +1247,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveIsTheOnlyStatementInBlock_OffersFixer_VB()
         {
             string source = """
@@ -1278,7 +1279,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddHasElseStatement_OffersFixer_VB()
         {
             string source = """
@@ -1308,7 +1309,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveHasElseStatement_OffersFixer_VB()
         {
             string source = """
@@ -1338,7 +1339,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseHasElseStatement_OffersFixer_VB()
         {
             string source = """
@@ -1368,7 +1369,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseHasElseStatement_OffersFixer_VB()
         {
             string source = """
@@ -1398,7 +1399,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddHasElseBlock_OffersFixer_VB()
         {
             string source = """
@@ -1434,7 +1435,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveHasElseBlock_OffersFixer_VB()
         {
             string source = """
@@ -1470,7 +1471,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseHasElseBlock_OffersFixer_VB()
         {
             string source = """
@@ -1506,7 +1507,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseHasElseBlock_OffersFixer_VB()
         {
             string source = """
@@ -1542,7 +1543,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithNonNegatedContains_NoDiagnostics_VB()
         {
             string source = """
@@ -1560,7 +1561,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithNegatedContains_NoDiagnostics_VB()
         {
             string source = """
@@ -1578,7 +1579,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithNegatedContains_NoDiagnostics_VB()
         {
             string source = """
@@ -1596,7 +1597,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithNonNegatedContains_NoDiagnostics_VB()
         {
             string source = """
@@ -1614,7 +1615,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithVariableAssignment_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1634,7 +1635,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithVariableAssignment_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1654,7 +1655,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithVariableAssignment_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1676,7 +1677,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithVariableAssignment_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1698,7 +1699,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWithAdditionalStatements_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1719,7 +1720,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWithAdditionalStatements_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1740,7 +1741,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddWhenFalseWithAdditionalStatements_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1763,7 +1764,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveWhenFalseWithAdditionalStatements_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1786,7 +1787,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenTrue_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1804,7 +1805,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalse_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1822,7 +1823,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrue_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1840,7 +1841,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenFalse_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1858,7 +1859,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalseNested_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1876,7 +1877,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrueNested_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1894,7 +1895,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenTrueWithNonNegatedContains_NoDiagnostic_VB()
         {
             string source = """
@@ -1912,7 +1913,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddInTernaryWhenFalseWithNegatedContains_NoDiagnostic_VB()
         {
             string source = """
@@ -1930,7 +1931,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenTrueWithNegatedContains_NoDiagnostic_VB()
         {
             string source = """
@@ -1948,7 +1949,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RemoveInTernaryWhenFalseWithNonNegatedContains_ReportsDiagnostic_VB()
         {
             string source = """
@@ -1966,7 +1967,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TriviaIsPreserved_VB()
         {
             string source = """
@@ -2000,7 +2001,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6377, "https://github.com/dotnet/roslyn-analyzers/issues/6377")]
         public async Task ContainsAndRemoveCalledOnDifferentInstances_NoDiagnostic_CS()
         {
@@ -2058,7 +2059,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ContainsAndAddCalledWithDifferentArguments_NoDiagnostic_CS()
         {
             string source = """
@@ -2095,7 +2096,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ContainsAndAddCalledWithSameArgumentsFields_OffersFixer_CS()
         {
             string source = """
@@ -2134,7 +2135,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ContainsAndAddCalledWithSameArgumentsLocals_OffersFixer_CS()
         {
             string source = """
@@ -2175,7 +2176,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ContainsAndAddCalledWithSameArgumentsParameters_OffersFixer_CS()
         {
             string source = """
@@ -2212,15 +2213,15 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("SortedSet<string>", "Add")]
-        [InlineData("SortedSet<string>", "Remove")]
-        [InlineData("HashSet<string>", "Add")]
-        [InlineData("HashSet<string>", "Remove")]
-        [InlineData("ImmutableHashSet<string>.Builder", "Add")]
-        [InlineData("ImmutableHashSet<string>.Builder", "Remove")]
-        [InlineData("ImmutableSortedSet<string>.Builder", "Add")]
-        [InlineData("ImmutableSortedSet<string>.Builder", "Remove")]
+        [TestMethod]
+        [DataRow("SortedSet<string>", "Add")]
+        [DataRow("SortedSet<string>", "Remove")]
+        [DataRow("HashSet<string>", "Add")]
+        [DataRow("HashSet<string>", "Remove")]
+        [DataRow("ImmutableHashSet<string>.Builder", "Add")]
+        [DataRow("ImmutableHashSet<string>.Builder", "Remove")]
+        [DataRow("ImmutableSortedSet<string>.Builder", "Add")]
+        [DataRow("ImmutableSortedSet<string>.Builder", "Remove")]
         public async Task SupportsSetsWithAddOrRemoveReturningBool_OffersFixer_CS(string setType, string method)
         {
             string source = $$"""
@@ -2257,15 +2258,15 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("ISet<string>", "SortedSet<string>", "Add")]
-        [InlineData("ISet<string>", "SortedSet<string>", "Remove")]
-        [InlineData("ISet<string>", "HashSet<string>", "Add")]
-        [InlineData("ISet<string>", "HashSet<string>", "Remove")]
-        [InlineData("ISet<string>", "ImmutableHashSet<string>.Builder", "Add")]
-        [InlineData("ISet<string>", "ImmutableHashSet<string>.Builder", "Remove")]
-        [InlineData("ISet<string>", "ImmutableSortedSet<string>.Builder", "Add")]
-        [InlineData("ISet<string>", "ImmutableSortedSet<string>.Builder", "Remove")]
+        [TestMethod]
+        [DataRow("ISet<string>", "SortedSet<string>", "Add")]
+        [DataRow("ISet<string>", "SortedSet<string>", "Remove")]
+        [DataRow("ISet<string>", "HashSet<string>", "Add")]
+        [DataRow("ISet<string>", "HashSet<string>", "Remove")]
+        [DataRow("ISet<string>", "ImmutableHashSet<string>.Builder", "Add")]
+        [DataRow("ISet<string>", "ImmutableHashSet<string>.Builder", "Remove")]
+        [DataRow("ISet<string>", "ImmutableSortedSet<string>.Builder", "Add")]
+        [DataRow("ISet<string>", "ImmutableSortedSet<string>.Builder", "Remove")]
         public async Task SupportsSetsWithAddOrRemoveReturningBoolWithInterfaceType_OffersFixer_CS(string interfaceType, string concreteType, string method)
         {
             string source = $$"""
@@ -2302,11 +2303,11 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("ImmutableHashSet<string>", "Add")]
-        [InlineData("ImmutableHashSet<string>", "Remove")]
-        [InlineData("ImmutableSortedSet<string>", "Add")]
-        [InlineData("ImmutableSortedSet<string>", "Remove")]
+        [TestMethod]
+        [DataRow("ImmutableHashSet<string>", "Add")]
+        [DataRow("ImmutableHashSet<string>", "Remove")]
+        [DataRow("ImmutableSortedSet<string>", "Add")]
+        [DataRow("ImmutableSortedSet<string>", "Remove")]
         public async Task SupportsSetWithAddOrRemoveReturningGenericType_ReportsDiagnostic_CS(string setType, string method)
         {
             string source = $$"""
@@ -2328,11 +2329,11 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("IImmutableSet<string>", "ImmutableHashSet<string>", "Add")]
-        [InlineData("IImmutableSet<string>", "ImmutableHashSet<string>", "Remove")]
-        [InlineData("IImmutableSet<string>", "ImmutableSortedSet<string>", "Add")]
-        [InlineData("IImmutableSet<string>", "ImmutableSortedSet<string>", "Remove")]
+        [TestMethod]
+        [DataRow("IImmutableSet<string>", "ImmutableHashSet<string>", "Add")]
+        [DataRow("IImmutableSet<string>", "ImmutableHashSet<string>", "Remove")]
+        [DataRow("IImmutableSet<string>", "ImmutableSortedSet<string>", "Add")]
+        [DataRow("IImmutableSet<string>", "ImmutableSortedSet<string>", "Remove")]
         public async Task SupportsSetWithAddOrRemoveReturningGenericTypeWithInterfaceType_ReportsDiagnostic_CS(string interfaceType, string concreteType, string method)
         {
             string source = $$"""

@@ -6,13 +6,14 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
+    [TestClass]
     public class CompleteCommandTests : SdkTest
     {
-        public CompleteCommandTests(ITestOutputHelper log) : base(log)
+        public CompleteCommandTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenOnlyDotnetItSuggestsTopLevelCommandsAndOptions()
         {
             var expected = new[] {
@@ -59,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenASlashItSuggestsTopLevelOptions()
         {
             var expected = new[] {
@@ -82,7 +83,8 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         // this test in helix errors accessing the template hive  but this test doesn't work with the ephemeral hive
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenNewCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -103,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Contain(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -129,7 +131,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetDeleteCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -153,7 +155,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetLocalsCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -179,7 +181,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetPushCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -214,7 +216,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetVerifyCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -234,7 +236,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetTrustCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -260,7 +262,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetSignCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -290,7 +292,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNuGetWhyCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -308,7 +310,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenDotnetAddPackWithPosition()
         {
             var expected = new[] {
@@ -320,7 +322,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenDotnetToolInWithPosition()
         {
             var expected = new[] {
@@ -333,11 +335,11 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [TestMethod]
         public void CompletesNugetPackageIds()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string[] expected = ["Newtonsoft.Json"];
             var reporter = new BufferedReporter();
@@ -354,11 +356,11 @@ namespace Microsoft.DotNet.Tests.Commands
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompletesNugetPackageVersions()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0.1"; // not exhaustive
@@ -376,11 +378,11 @@ namespace Microsoft.DotNet.Tests.Commands
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompletesNugetPackageVersionsWithStem()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0"; // not exhaustive
@@ -402,11 +404,11 @@ namespace Microsoft.DotNet.Tests.Commands
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompletesNugetPackageVersionsWithPrereleaseVersionsWhenSpecified()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Spectre.Console";
             string knownVersion = "0.49.1";

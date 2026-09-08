@@ -1,18 +1,19 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseStackallocInLoopsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotUseStackallocInLoopsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocNotInLoopAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocAsSourceOfForeachLoop()
         {
             await new VerifyCS.Test
@@ -42,10 +43,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         foreach (char c in stackalloc char[] { 'a', 'b', 'c' }) { }
                     }
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocInLoopWithBreakAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocInLoopButInsideALocalFunctionAsync()
         {
             await new VerifyCS.Test
@@ -102,10 +103,10 @@ class TestClass {
         }
     }
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocInLoopButInsideALambdaAsync()
         {
             await new VerifyCS.Test
@@ -124,10 +125,10 @@ class TestClass {
         }
     }
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocInLoopButInsideALambda2Async()
         {
             await new VerifyCS.Test
@@ -142,10 +143,10 @@ class TestClass {
         }
     }
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StackallocInLoopButInsideFuncAsync()
         {
             await new VerifyCS.Test
@@ -165,10 +166,10 @@ class TestClass {
         }
     }
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_LoopsWithStackallocPtrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -198,7 +199,7 @@ class TestClass {
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_LoopsWithStackallocSpanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -228,7 +229,7 @@ class TestClass {
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_LoopInLoopWithOuterBreakAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -247,7 +248,7 @@ class TestClass {
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_LoopWithBreakInConditionalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -268,7 +269,7 @@ class TestClass {
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_StackallocAsSourceOfForeachLoopButInAnotherLoop()
         {
             await new VerifyCS.Test
@@ -284,10 +285,10 @@ class TestClass {
                         }
                     }
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_StackallocAsSourceOfForeachVariableLoop()
         {
             await new VerifyCS.Test
@@ -305,10 +306,10 @@ class TestClass {
                         }
                     }
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task NoDiagnostics_StackallocInLoopInitializer()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -322,7 +323,7 @@ class TestClass {
                 }");
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task NoDiagnostics_StackallocInNonFirstVariableOfLoopInitializer()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -338,7 +339,7 @@ class TestClass {
                 }");
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task NoDiagnostics_WrappedStackallocInLoopInitializer()
         {
             return new VerifyCS.Test
@@ -355,10 +356,10 @@ class TestClass {
 
                     public static Span<int> Helper(Span<int> span) => throw null;
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task Diagnostics_NestedStackallocInLoopInitializer()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -374,7 +375,7 @@ class TestClass {
                 }");
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task Diagnostics_NestedStackallocInNonFirstVariableOfLoopInitializer()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -392,7 +393,7 @@ class TestClass {
                 }");
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task Diagnostics_StackallocInConditionExpression()
         {
             return new VerifyCS.Test
@@ -407,10 +408,10 @@ class TestClass {
                         for (; [|stackalloc int[2]|].Length == 2;) { }
                     }
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        [TestMethod, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task Diagnostics_StackallocInUpdateExpression()
         {
             return new VerifyCS.Test
@@ -426,7 +427,7 @@ class TestClass {
 		                for (;; [|stackalloc int[2]|].CopyTo(span)) { }
                     }
                 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

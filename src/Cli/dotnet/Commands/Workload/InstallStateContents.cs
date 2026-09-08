@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,16 +21,9 @@ internal class InstallStateContents
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? WorkloadVersion { get; set; }
 
-    private static readonly JsonSerializerOptions s_options = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-        AllowTrailingCommas = true,
-    };
-
     public static InstallStateContents FromString(string contents)
     {
-        return JsonSerializer.Deserialize<InstallStateContents>(contents, s_options) ?? new InstallStateContents();
+        return JsonSerializer.Deserialize(contents, InstallStateJsonSerializerContext.Default.InstallStateContents) ?? new InstallStateContents();
     }
 
     public static InstallStateContents FromPath(string path)
@@ -42,10 +33,17 @@ internal class InstallStateContents
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, s_options);
+        return JsonSerializer.Serialize(this, InstallStateJsonSerializerContext.Default.InstallStateContents);
     }
 
     public bool ShouldUseWorkloadSets() => UseWorkloadSets ?? true;
 }
+
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    WriteIndented = true,
+    AllowTrailingCommas = true)]
+[JsonSerializable(typeof(InstallStateContents))]
+internal partial class InstallStateJsonSerializerContext : JsonSerializerContext;
 
 #pragma warning restore CS8632

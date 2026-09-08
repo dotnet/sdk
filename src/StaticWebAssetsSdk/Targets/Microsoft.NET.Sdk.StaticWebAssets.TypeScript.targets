@@ -1,0 +1,132 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.TypeScript.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      RegisterTypeScriptStaticWebAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ResolveTypeScriptStaticWebAssetsConfiguration"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <_TypeScriptSwaManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.typescript.files.txt</_TypeScriptSwaManifestPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="RegisterTypeScriptStaticWebAssets"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration;CompileTypeScriptWithTSConfig;GetTypeScriptOutputForPublishing">
+
+    <!--
+      Use project-relative paths (e.g. wwwroot/app.js) for the candidate items
+      instead of the absolute paths from @(GeneratedJavascript). On macOS, VsTsc
+      may report paths through the /tmp symlink while $(MSBuildProjectDirectory)
+      resolves to /private/tmp. DefineStaticWebAssets resolves candidate FullPath
+      via Path.GetFullPath which does not resolve symlinks, causing a StartsWith
+      mismatch against ContentRoot. Project-relative identities avoid this because
+      MSBuild resolves %(FullPath) through $(MSBuildProjectDirectory).
+    -->
+    <ItemGroup>
+      <_TypeScriptGeneratedInWwwroot Include="@(GeneratedJavascript)"
+        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')" />
+
+      <!-- Strip everything up to and including "wwwroot/" (8 chars) from Identity,
+           then prepend "wwwroot/" to form a project-relative path. -->
+      <_TypeScriptGeneratedInWwwroot>
+        <_WwwrootSubPath>$([System.String]::new('%(Identity)').Substring(
+          $([MSBuild]::Add(
+            $([System.String]::new('%(Identity)').IndexOf('wwwroot')), 8))))</_WwwrootSubPath>
+      </_TypeScriptGeneratedInWwwroot>
+
+      <_TypeScriptWwwrootAssets Include="@(_TypeScriptGeneratedInWwwroot->'wwwroot\%(_WwwrootSubPath)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(_TypeScriptSwaManifestPath)"
+      Lines="@(_TypeScriptWwwrootAssets)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_TypeScriptSwaManifestPath)" />
+    </ItemGroup>
+
+    <!--
+      TypeScript outputs can already be present in @(Content) when the project is evaluated,
+      causing ResolveProjectStaticWebAssets to register them before TypeScript compilation.
+      Remove those assets and their endpoints before re-registering them with fresh
+      post-compilation metadata.
+      StaticWebAsset Identity = full path, so Remove with the resolved full paths works.
+    -->
+    <ItemGroup Condition="'@(_TypeScriptWwwrootAssets)' != ''">
+      <_TypeScriptWwwrootFullPaths Include="@(_TypeScriptWwwrootAssets->'%(FullPath)')" />
+      <StaticWebAsset Remove="@(_TypeScriptWwwrootFullPaths)" />
+    </ItemGroup>
+
+    <!-- Remove endpoints that pointed to the stale assets. FilterStaticWebAssetEndpoints
+         matches endpoints whose AssetFile is in the Assets dictionary (keyed by Identity).
+         We pass the full paths as bare items; only Identity is needed for the lookup. -->
+    <FilterStaticWebAssetEndpoints
+      Condition="'@(_TypeScriptWwwrootFullPaths)' != '' And '@(StaticWebAssetEndpoint)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_TypeScriptWwwrootFullPaths)"
+      Filters="">
+      <Output TaskParameter="FilteredEndpoints" ItemName="_StaleTypeScriptEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+
+    <ItemGroup Condition="'@(_StaleTypeScriptEndpoints)' != ''">
+      <StaticWebAssetEndpoint Remove="@(_StaleTypeScriptEndpoints)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''"
+      CandidateAssets="@(_TypeScriptWwwrootAssets)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      RelativePathPattern="wwwroot/**"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_TypeScriptStaticWebAssets" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_TypeScriptStaticWebAssets)' != ''"
+      CandidateAssets="@(_TypeScriptStaticWebAssets)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+  </Target>
+
+  <Target Name="RemoveTypeScriptFromContentBeforeSwaDiscovery"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration"
+          BeforeTargets="CoreClean;ResolveProjectStaticWebAssets">
+
+    <ReadLinesFromFile File="$(_TypeScriptSwaManifestPath)"
+                       Condition="Exists('$(_TypeScriptSwaManifestPath)')">
+      <Output TaskParameter="Lines" ItemName="_RegisteredTypeScriptAssets" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <Content Remove="@(_RegisteredTypeScriptAssets)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

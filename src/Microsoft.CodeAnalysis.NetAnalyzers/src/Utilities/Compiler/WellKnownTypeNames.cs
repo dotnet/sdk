@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Analyzer.Utilities
 {
@@ -228,6 +229,7 @@ namespace Analyzer.Utilities
         public const string SystemDiagnosticsProcess = "System.Diagnostics.Process";
         public const string SystemDiagnosticsProcessModule = "System.Diagnostics.ProcessModule";
         public const string SystemDiagnosticsProcessStartInfo = "System.Diagnostics.ProcessStartInfo";
+        public const string SystemDiagnosticsStopwatch = "System.Diagnostics.Stopwatch";
         public const string SystemDiagnosticsTraceListener = "System.Diagnostics.TraceListener";
         public const string SystemDiagnosticsTracingEventSource = "System.Diagnostics.Tracing.EventSource";
         public const string SystemDiagnosticsUnreachableException = "System.Diagnostics.UnreachableException";
@@ -276,6 +278,7 @@ namespace Analyzer.Utilities
         public const string SystemLinqEnumerable = "System.Linq.Enumerable";
         public const string SystemLinqExpressionsExpression1 = "System.Linq.Expressions.Expression`1";
         public const string SystemLinqIOrderedEnumerable1 = "System.Linq.IOrderedEnumerable`1";
+        public const string SystemLinqParallelEnumerable = "System.Linq.ParallelEnumerable";
         public const string SystemLinqQueryable = "System.Linq.Queryable";
         public const string SystemMarshalByRefObject = "System.MarshalByRefObject";
         public const string SystemMemory1 = "System.Memory`1";
@@ -438,9 +441,12 @@ namespace Analyzer.Utilities
         public const string SystemSystemException = "System.SystemException";
         public const string SystemTextCompositeFormat = "System.Text.CompositeFormat";
         public const string SystemTextEncoding = "System.Text.Encoding";
+        public const string SystemTextJsonJsonDocument = "System.Text.Json.JsonDocument";
+        public const string SystemTextJsonJsonElement = "System.Text.Json.JsonElement";
         public const string SystemTextJsonJsonSerializerOptions = "System.Text.Json.JsonSerializerOptions";
         public const string SystemTextJsonJsonSerializer = "System.Text.Json.JsonSerializer";
         public const string SystemTextRegularExpressionsGroup = "System.Text.RegularExpressions.Group";
+        public const string SystemTextRegularExpressionsMatch = "System.Text.RegularExpressions.Match";
         public const string SystemTextRegularExpressionsMatchCollection = "System.Text.RegularExpressions.MatchCollection";
         public const string SystemTextRegularExpressionsRegex = "System.Text.RegularExpressions.Regex";
         public const string SystemTextStringBuilder = "System.Text.StringBuilder";

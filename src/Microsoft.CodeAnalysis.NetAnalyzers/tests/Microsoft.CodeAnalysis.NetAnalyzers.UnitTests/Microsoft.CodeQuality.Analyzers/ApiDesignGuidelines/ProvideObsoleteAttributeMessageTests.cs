@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ProvideObsoleteAttributeMessageAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class ProvideObsoleteAttributeMessageTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -50,7 +51,7 @@ public delegate void del(int x);
             GetCSharpResultAt(20, 2, "del"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -87,7 +88,7 @@ Public Delegate Sub del(x As Integer)
             GetBasicResultAt(22, 2, "del"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharpNoDiagnosticsForInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -114,7 +115,7 @@ delegate void del(int x);
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task BasicNoDiagnosticsForInternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -143,7 +144,7 @@ Delegate Sub del(x As Integer)
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +165,7 @@ class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

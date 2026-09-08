@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHaveZeroValueAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumsShouldHaveZeroValueFixer>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumsShouldHaveZeroValueFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
@@ -107,7 +108,7 @@ public enum NoZeroValuedField
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"// Some comment
@@ -152,7 +153,7 @@ public enum E2
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
@@ -221,7 +222,7 @@ public enum E4
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
@@ -292,11 +293,11 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(836193, "DevDiv")]
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
             var code = @"
@@ -367,10 +368,10 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"
@@ -423,7 +424,7 @@ End Enum";
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"

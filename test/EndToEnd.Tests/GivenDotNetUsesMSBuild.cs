@@ -1,18 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace EndToEnd.Tests
 {
-    public class GivenDotNetUsesMSBuild(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public class GivenDotNetUsesMSBuild : SdkTest
     {
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            string projectDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            string projectDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             string[] newArgs = ["console", "--no-restore"];
             new DotnetNewCommand(Log)
@@ -41,10 +41,11 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void ItCanRunToolsInACSProj()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -73,10 +74,11 @@ namespace EndToEnd.Tests
                     .And.HaveStdOutContaining("Hello Portable World!");
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void ItCanRunToolsThatPrefersTheCliRuntimeEvenWhenTheToolItselfDeclaresADifferentRuntime()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .WithProjectChanges(project =>
                 {

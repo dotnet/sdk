@@ -1,17 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToExcludeTheMainProjectFromTheDepsFile : SdkTest
     {
-        public GivenThatWeWantToExcludeTheMainProjectFromTheDepsFile(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_successfully()
         {
             TestProject testProject = new()
@@ -30,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges((path, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(path) == testProject.Name)

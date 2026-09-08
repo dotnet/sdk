@@ -3,13 +3,8 @@
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    // Retained for compatibility; no longer wraps a message sink.
     public class DiagnosticFixture
     {
-        public DiagnosticFixture(IMessageSink sink)
-        {
-            DiagnosticSink = sink;
-        }
-
-        public IMessageSink DiagnosticSink { get; }
     }
 }

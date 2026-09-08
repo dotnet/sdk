@@ -3,23 +3,37 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class TruncatingTestOutputHelperTests
     {
         private sealed class RecordingOutputHelper : ITestOutputHelper
         {
+            private readonly StringBuilder _output = new();
+
             public List<string> Lines { get; } = new();
 
-            public void WriteLine(string message) => Lines.Add(message);
+            public string Output => _output.ToString();
 
-            public void WriteLine(string format, params object[] args) => Lines.Add(string.Format(format, args));
+            public void Write(string message) => _output.Append(message);
+
+            public void Write(string format, params object[] args) => Write(string.Format(format, args));
+
+            public void WriteLine(string message)
+            {
+                Lines.Add(message);
+                _output.AppendLine(message);
+            }
+
+            public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
         }
 
         private static bool IsOmissionNote(string line) => line.Contains(nameof(TruncatingTestOutputHelper));
 
-        [Fact]
+        [TestMethod]
         public void OutputWithinBudgetIsForwardedUnchanged()
         {
             var inner = new RecordingOutputHelper();
@@ -32,7 +46,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             inner.Lines.Should().Equal("first", "second");
         }
 
-        [Fact]
+        [TestMethod]
+        public void WriteDoesNotAppendNewLine()
+        {
+            var inner = new RecordingOutputHelper();
+            using (var helper = new TruncatingTestOutputHelper(inner, maxHeadCharacters: 5, maxTailCharacters: 5))
+            {
+                helper.Write("head-");
+                helper.Write("middle");
+                helper.Write("-tail");
+
+                helper.Output.Should().Be("head-");
+            }
+
+            inner.Output.Should().EndWith("-tail");
+            inner.Output.Should().NotEndWith("-tail" + Environment.NewLine);
+        }
+
+        [TestMethod]
         public void MiddleIsDroppedButHeadAndTailArePreserved()
         {
             var inner = new RecordingOutputHelper();
@@ -49,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             inner.Lines.Should().NotContain("bbbbb");
         }
 
-        [Fact]
+        [TestMethod]
         public void TailKeepsRecentContentWhenFinalLineIsTiny()
         {
             // Michael Simons' review edge case: a short final line must not evict a much larger
@@ -68,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             tail.Length.Should().Be(10);
         }
 
-        [Fact]
+        [TestMethod]
         public void SingleMessageLargerThanBudgetForwardsOnlyHeadAndTailPortions()
         {
             var inner = new RecordingOutputHelper();
@@ -82,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             inner.Lines.Should().ContainSingle(l => IsOmissionNote(l));
         }
 
-        [Fact]
+        [TestMethod]
         public void WriteBufferedTailIsIdempotent()
         {
             var inner = new RecordingOutputHelper();

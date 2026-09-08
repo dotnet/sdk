@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.DotNet.Cli.Utils;
 
 public static class Env
@@ -31,4 +29,16 @@ public static class Env
 
     public static string? GetEnvironmentVariable(string name) =>
         s_environment.GetEnvironmentVariable(name);
+
+    public static bool AnyEnvironmentVariablesSet(IEnumerable<string> variableNames)
+    {
+        foreach (var name in variableNames)
+        {
+            if (GetEnvironmentVariable(name) != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

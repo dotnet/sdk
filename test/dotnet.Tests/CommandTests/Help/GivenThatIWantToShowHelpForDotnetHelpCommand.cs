@@ -3,6 +3,7 @@
 
 namespace Microsoft.DotNet.Help.Tests
 {
+    [TestClass]
     public class GivenThatIWantToShowHelpForDotnetHelpCommand : SdkTest
     {
         private const string HelpText =
@@ -18,15 +19,15 @@ Arguments:
 Options:
   -?, -h, --help  Show command line help.";
 
-        public GivenThatIWantToShowHelpForDotnetHelpCommand(ITestOutputHelper log) : base(log)
+        public GivenThatIWantToShowHelpForDotnetHelpCommand()
         {
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
-        [InlineData("-?")]
-        [InlineData("/?")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
+        [DataRow("-?")]
+        [DataRow("/?")]
         public void WhenHelpOptionIsPassedToDotnetHelpCommandItPrintsUsage(string helpArg)
         {
             var cmd = new DotnetCommand(Log, "help")

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -280,15 +280,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
         }
 
-        [Theory]
-        [MemberData(nameof(GetInvalidParametersTestData))]
+        [TestMethod]
+        [DynamicData(nameof(GetInvalidParametersTestData))]
         // invalid params:
         // [0] name / value - Kind
         // [1] canonical
         // [2] input format
         // [3] param value
         // [4] error message
-        internal void CanEvaluateInvalidParameters(string command, MockTemplateInfo[] templates, string?[][] expectedInvalidParams)
+        public void CanEvaluateInvalidParameters(string command, MockTemplateInfo[] templates, string?[][] expectedInvalidParams)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                 CliTemplateInfo.FromTemplateInfo(templates, A.Fake<IHostSpecificDataLoader>()))
@@ -302,11 +302,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($" new {command}");
             var args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             HashSet<TemplateCommand> templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);
-            Assert.Empty(templateCommands);
+            Assert.IsEmpty(templateCommands);
 
             List<TemplateResult> templateMatchInfos = InstantiateCommand.CollectTemplateMatchInfo(args, settings, templatePackageManager, templateGroup);
             List<InvalidTemplateOptionResult> invalidOptions = InstantiateCommand.GetInvalidOptions(templateMatchInfos);
-            Assert.Equal(expectedInvalidParams.Length, invalidOptions.Count);
+            Assert.HasCount(expectedInvalidParams.Length, invalidOptions);
 
             foreach (string?[] invalidParam in expectedInvalidParams)
             {
@@ -325,11 +325,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
                 InvalidTemplateOptionResult actualParam = invalidOptions.Single(param => param.InputFormat == expectedInputFormat);
 
-                Assert.Equal(expectedErrorKind, actualParam.ErrorKind);
-                Assert.Equal(expectedCanonicalName, actualParam.TemplateOption?.TemplateParameter.Name);
-                Assert.Equal(expectedInputFormat, actualParam.InputFormat);
-                Assert.Equal(expectedSpecifiedValue, actualParam.SpecifiedValue);
-                Assert.Equal(expectedErrorMessage, actualParam.ErrorMessage);
+                Assert.AreEqual(expectedErrorKind, actualParam.ErrorKind);
+                Assert.AreEqual(expectedCanonicalName, actualParam.TemplateOption?.TemplateParameter.Name);
+                Assert.AreEqual(expectedInputFormat, actualParam.InputFormat);
+                Assert.AreEqual(expectedSpecifiedValue, actualParam.SpecifiedValue);
+                Assert.AreEqual(expectedErrorMessage, actualParam.ErrorMessage);
             }
         }
     }

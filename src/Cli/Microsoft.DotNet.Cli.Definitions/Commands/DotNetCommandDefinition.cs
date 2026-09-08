@@ -58,6 +58,14 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Arity = ArgumentArity.Zero
     };
 
+    public readonly Option<bool> CliSchemaOption = new("--cli-schema")
+    {
+        Description = CommandDefinitionStrings.SDKSchemaCommandDefinition,
+        Arity = ArgumentArity.Zero,
+        Recursive = true,
+        Hidden = true,
+    };
+
     public readonly Option<bool> ListSdksOption = new("--list-sdks")
     {
         Arity = ArgumentArity.Zero
@@ -66,14 +74,6 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
     {
         Arity = ArgumentArity.Zero
-    };
-
-    public readonly Option<bool> CliSchemaOption = new("--cli-schema")
-    {
-        Description = CommandDefinitionStrings.SDKSchemaCommandDefinition,
-        Arity = ArgumentArity.Zero,
-        Recursive = true,
-        Hidden = true,
     };
 
     public readonly AddCommandDefinition AddCommand;
@@ -121,9 +121,11 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Options.Add(DiagOption);
         Options.Add(VersionOption);
         Options.Add(InfoOption);
+        Options.Add(CliSchemaOption);
+
+        // Host-handled options. Only defined to be shown in help.
         Options.Add(ListSdksOption);
         Options.Add(ListRuntimesOption);
-        Options.Add(CliSchemaOption);
 
         Subcommands.Add(AddCommand = new());
         Subcommands.Add(BuildCommand = new());

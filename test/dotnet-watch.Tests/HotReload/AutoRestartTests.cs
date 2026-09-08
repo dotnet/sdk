@@ -5,9 +5,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class AutoRestartTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class AutoRestartTests : DotNetWatchTestBase
 {
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task AutoRestartOnRudeEdit(bool nonInteractive)
     {
@@ -52,8 +53,9 @@ public class AutoRestartTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/51469")]
+    [TestMethod]
     [CombinatorialData]
+    [Ignore("https://github.com/dotnet/sdk/issues/51469")]
     public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
@@ -115,7 +117,7 @@ public class AutoRestartTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains("System.Byte");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AutoRestartOnRudeEditAfterRestartPrompt()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -158,7 +160,7 @@ public class AutoRestartTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
     {

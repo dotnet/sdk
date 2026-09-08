@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureXSLTScriptExecutionAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage, name));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -64,7 +64,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNonSecureResolverInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -113,7 +113,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNonSecureResolverInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -160,7 +160,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNonSecureResolverInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -207,7 +207,7 @@ End Namespace",
                 GetCA3076LoadInsecureConstructedBasicResultAt(14, 17, "TestMethod")
             );
         }
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNullResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -241,7 +241,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsReconstructDefaultAndNonSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -277,7 +277,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsReconstructTrustedXsltAndNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -316,7 +316,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsReconstructTrustedXsltAndNonSecureResolverInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -365,7 +365,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsReconstructTrustedXsltAndNonSecureResolverInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -412,7 +412,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsReconstructTrustedXsltAndNonSecureResolverInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -460,7 +460,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToFalseAndNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -499,7 +499,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToFalseAndNonSecureResolverInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -548,7 +548,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToFalseAndNonSecureResolverInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -595,7 +595,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToFalseAndNonSecureResolverInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -643,7 +643,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -679,7 +679,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndSecureResolverInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -725,7 +725,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndSecureResolverInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -769,7 +769,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndSecureResolverInFinallyBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -814,7 +814,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndSecureResolverAsyncAwaitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -859,7 +859,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -898,7 +898,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndNonSecureResolverInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -947,7 +947,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndNonSecureResolverInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -994,7 +994,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndNonSecureResolverInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1042,7 +1042,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetOneToTrueAndNonSecureResolverAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1096,7 +1096,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetBothToFalseAndNonSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1134,7 +1134,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetBothToFalseAndNonSecureResolverInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1182,7 +1182,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetBothToFalseAndNonSecureResolverInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1229,7 +1229,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetBothToFalseAndNonSecureResolverInFinallyBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1277,7 +1277,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXslCompiledTransformLoadInputSettingsSetBothToFalseAndNonSecureResolverAsyncAwaitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

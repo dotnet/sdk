@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -79,6 +80,12 @@ internal sealed record EnvironmentOptions(
     private int _uniqueLogId;
 
     public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
+
+    private static string ValidateMuxerPath(string path)
+    {
+        Debug.Assert(Path.GetFileName(path) == $"dotnet{PathUtilities.ExecutableExtension}");
+        return path;
+    }
 
     public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)
         => options.BinaryLogPath != null

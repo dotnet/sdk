@@ -1,16 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tests;
+using Microsoft.DotNet.Tests.TelemetryTests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [Collection(TestConstants.UsesStaticTelemetryState)]
-    public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
+    [TestClass]
+    public class GivenDotnetBuildInvocation : SdkTest
     {
+        [ClassInitialize]
+        public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
+
         string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         public static string[] RestoreExpectedPrefixForImplicitRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
         public static string[] RestoreExpectedPrefixForSeparateRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--property:{kvp.Key}={kvp.Value}")];
@@ -20,34 +23,34 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
 
-        [Theory]
-        [InlineData(new string[] { }, new string[] { })]
-        [InlineData(new string[] { "-o", "foo" }, new string[] { "--property:OutputPath=<cwd>foo", "--property:_CommandLineDefinedOutputPath=true" })]
-        [InlineData(new string[] { "-property:Verbosity=diag" }, new string[] { "--property:Verbosity=diag" })]
-        [InlineData(new string[] { "--output", "foo" }, new string[] { "--property:OutputPath=<cwd>foo", "--property:_CommandLineDefinedOutputPath=true" })]
-        [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
-        [InlineData(new string[] { "-o", "foo1 foo2" }, new string[] { "--property:OutputPath=<cwd>foo1 foo2", "--property:_CommandLineDefinedOutputPath=true" })]
-        [InlineData(new string[] { "--no-incremental" }, new string[] { "--target:Rebuild" })]
-        [InlineData(new string[] { "-r", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
-        [InlineData(new string[] { "-r", "linux-amd64" }, new string[] { "--property:RuntimeIdentifier=linux-x64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
-        [InlineData(new string[] { "--runtime", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
-        [InlineData(new string[] { "--use-current-runtime" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
-        [InlineData(new string[] { "--ucr" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
-        [InlineData(new string[] { "-c", "config" }, new string[] { "--property:Configuration=config" })]
-        [InlineData(new string[] { "--configuration", "config" }, new string[] { "--property:Configuration=config" })]
-        [InlineData(new string[] { "--version-suffix", "mysuffix" }, new string[] { "--property:VersionSuffix=mysuffix" })]
-        [InlineData(new string[] { "--no-dependencies" }, new string[] { "--property:BuildProjectReferences=false" })]
-        [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
-        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
-        [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
+        [TestMethod]
+        [DataRow(new string[] { }, new string[] { })]
+        [DataRow(new string[] { "-o", "myoutput" }, new string[] { "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
+        [DataRow(new string[] { "-property:Verbosity=diag" }, new string[] { "--property:Verbosity=diag" })]
+        [DataRow(new string[] { "--output", "myoutput" }, new string[] { "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
+        [DataRow(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
+        [DataRow(new string[] { "-o", "foo1 myoutput" }, new string[] { "--property:OutputPath=<cwd>foo1 myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
+        [DataRow(new string[] { "--no-incremental" }, new string[] { "--target:Rebuild" })]
+        [DataRow(new string[] { "-r", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [DataRow(new string[] { "-r", "linux-amd64" }, new string[] { "--property:RuntimeIdentifier=linux-x64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [DataRow(new string[] { "--runtime", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [DataRow(new string[] { "--use-current-runtime" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
+        [DataRow(new string[] { "--ucr" }, new string[] { "--property:UseCurrentRuntimeIdentifier=True" })]
+        [DataRow(new string[] { "-c", "config" }, new string[] { "--property:Configuration=config" })]
+        [DataRow(new string[] { "--configuration", "config" }, new string[] { "--property:Configuration=config" })]
+        [DataRow(new string[] { "--version-suffix", "mysuffix" }, new string[] { "--property:VersionSuffix=mysuffix" })]
+        [DataRow(new string[] { "--no-dependencies" }, new string[] { "--property:BuildProjectReferences=false" })]
+        [DataRow(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
+        [DataRow(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
+        [DataRow(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                    new string[] { "--target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
-        [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "--target:CustomTarget" })]
-        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        [DataRow(new string[] { "/t:CustomTarget" }, new string[] { "--target:CustomTarget" })]
+        [DataRow(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory)).ToArray();
+                expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
@@ -59,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void NoRestoreMeansNoSeparateRestoreCommand()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -72,26 +75,26 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Theory]
-        [InlineData(new string[] { "-f", "tfm" },
+        [TestMethod]
+        [DataRow(new string[] { "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
-        [InlineData(new string[] { "-p:TargetFramework=tfm" },
+        [DataRow(new string[] { "-p:TargetFramework=tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
-        [InlineData(new string[] { "/p:TargetFramework=tfm" },
+        [DataRow(new string[] { "/p:TargetFramework=tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
-        [InlineData(new string[] { "-t:Run", "-f", "tfm" },
+        [DataRow(new string[] { "-t:Run", "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm", "--target:Run" })]
-        [InlineData(new string[] { "/t:Run", "-f", "tfm" },
+        [DataRow(new string[] { "/t:Run", "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm", "--target:Run" })]
-        [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
+        [DataRow(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
             new string[] { "--property:TargetFramework=tfm", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
-        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
+        [DataRow(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--nologo", "--verbosity:quiet" },
             new string[] { "--property:TargetFramework=tfm", "--getItem:Compile", "--getProperty:TargetFramework", "--getTargetResult:Build" })]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
@@ -102,11 +105,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgsForRestore = expectedAdditionalArgsForRestore
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
@@ -121,8 +124,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Theory]
-        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType =typeof(TelemetryCommonPropertiesTests))]
+        [TestMethod]
+        [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -164,3 +167,4 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
+

@@ -3,13 +3,14 @@
 
 namespace Microsoft.DotNet.Cli.Install.Tests
 {
+    [TestClass]
     public class GivenDotnetInstallTool : SdkTest
     {
-        public GivenDotnetInstallTool(ITestOutputHelper log) : base(log)
+        public GivenDotnetInstallTool()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsWithQuietVerbosityByDefault()
         {
             var result = new DotnetToolCommand(Log)
@@ -22,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Install.Tests
                 .NotHaveStdOutContaining("Restoring");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsWithTheSpecifiedVerbosity()
         {
             var result = new DotnetToolCommand(Log)

@@ -27,8 +27,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         internal async Task Verify(int connections, int completed)
         {
             var stats = await CancelAndCompleteAsync().ConfigureAwait(false);
-            Assert.Equal(connections, stats.Connections);
-            Assert.Equal(completed, stats.CompletedConnections);
+            Assert.AreEqual(connections, stats.Connections);
+            Assert.AreEqual(completed, stats.CompletedConnections);
         }
 
         public void Dispose()

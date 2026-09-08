@@ -7,28 +7,28 @@ using NuGet.Packaging.Signing;
 
 namespace Microsoft.NET.Publish.Tests;
 
+[TestClass]
 public class PublishNoRestoreTests : SdkTest
 {
-    public PublishNoRestoreTests(ITestOutputHelper log) : base(log)
-    {
-    }
-
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void PublishTrimmed(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishTrimmed", specifyRuntimeIdentifier);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void PublishSingleFile(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishSingleFile", specifyRuntimeIdentifier);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void PublishAot(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishAot", specifyRuntimeIdentifier);
@@ -61,7 +61,7 @@ public class PublishNoRestoreTests : SdkTest
             testProject.AdditionalProperties["RuntimeIdentifiers"] = string.Join(';', runtimeIdentifiers);
         }
 
-        var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, specifyRuntimeIdentifier.ToString());
+        var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, specifyRuntimeIdentifier.ToString());
         new RestoreCommand(testProjectInstance).Execute().Should().Pass();
         var publishCommand = new PublishCommand(testProjectInstance)
         {

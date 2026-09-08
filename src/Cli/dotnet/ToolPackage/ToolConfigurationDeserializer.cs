@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Xml;
-using System.Xml.Serialization;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.ToolPackage.ToolConfigurationDeserialization;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Packaging.Core;
@@ -21,25 +21,46 @@ internal static class ToolConfigurationDeserializer
     {
         fileSystem ??= new FileSystemWrapper();
 
-        var serializer = new XmlSerializer(typeof(DotNetCliTool));
-
         DotNetCliTool dotNetCliTool;
 
         try
         {
+            XDocument doc;
             using (var stream = fileSystem.File.OpenRead(pathToXml))
             {
-                var reader = XmlReader.Create(stream);
-                dotNetCliTool = (DotNetCliTool)serializer.Deserialize(reader);
+                doc = XDocument.Load(stream);
             }
+
+            var root = doc.Root;
+            dotNetCliTool = new DotNetCliTool
+            {
+                Version = (string)root.Attribute("Version"),
+                Commands = root.Element("Commands")?
+                    .Elements("Command")
+                    .Select(e => new DotNetCliToolCommand
+                    {
+                        Name = (string)e.Attribute("Name"),
+                        EntryPoint = (string)e.Attribute("EntryPoint"),
+                        Runner = (string)e.Attribute("Runner"),
+                    })
+                    .ToArray(),
+                RuntimeIdentifierPackages = root.Element("RuntimeIdentifierPackages")?
+                    .Elements("RuntimeIdentifierPackage")
+                    .Select(e => new DotNetCliToolRuntimeIdentifierPackage
+                    {
+                        RuntimeIdentifier = (string)e.Attribute("RuntimeIdentifier"),
+                        Id = (string)e.Attribute("Id"),
+                    })
+                    .ToArray(),
+            };
         }
-        catch (InvalidOperationException ex) when (ex.InnerException is XmlException)
+        catch (XmlException ex)
         {
             throw new ToolConfigurationException(
                 string.Format(
                     CliStrings.ToolSettingsInvalidXml,
-                    ex.InnerException.Message),
-                ex.InnerException);
+                    ex.Message),
+                ex);
         }
         catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
         {

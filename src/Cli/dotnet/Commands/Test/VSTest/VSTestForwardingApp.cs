@@ -21,7 +21,7 @@ public class VSTestForwardingApp : ForwardingApp
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
 
-        VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{argsToForward?.Aggregate((a, b) => $"{a} | {b}")}\"");
+        VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{string.Join(" | ", argsToForward ?? [])}\"");
     }
 
     private static string GetVSTestExePath()

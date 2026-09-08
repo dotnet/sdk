@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,7 +14,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DefaultXmlReaderSettingsInStaticFieldShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -49,7 +49,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DefaultXmlReaderSettingsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +82,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -117,7 +117,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerTargetFx452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -163,7 +163,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsOnlySetMaxCharRoZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -198,7 +198,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -233,7 +233,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseAndMaxCharToNonZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -273,7 +273,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseAndSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -314,7 +314,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseWithOtherValuesSecureInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -356,7 +356,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -392,7 +392,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -437,7 +437,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -481,7 +481,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -526,7 +526,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInUnusedOneShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -563,7 +563,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInUsedOneShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

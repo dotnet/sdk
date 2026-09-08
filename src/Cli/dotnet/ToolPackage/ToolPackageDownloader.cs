@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -66,9 +66,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string? folderToDeleteOnFailure = null;
         return TransactionalAction.Run(() =>
         {
+            var _downloadActivity = Activities.Source.StartActivity("download-tool");
+            _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-
+            _downloadActivity?.Stop();
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
             // look for package on disk and read the version
@@ -81,6 +83,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
+
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
                 File.WriteAllText(hashPath, packageHash);
             }
@@ -90,8 +93,10 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
             }
             // Extract the package
+            var _extractActivity = Activities.Source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
+            _extractActivity?.Stop();
 
             return version;
         }, rollback: () =>

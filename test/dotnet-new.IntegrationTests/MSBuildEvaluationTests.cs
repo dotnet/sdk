@@ -6,13 +6,14 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class MSBuildEvaluationTests : BaseIntegrationTest
     {
-        public MSBuildEvaluationTests(ITestOutputHelper log) : base(log)
+        public MSBuildEvaluationTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void Class_BasicTest()
         {
             string tempDir = CreateTemporaryFolder();
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             string testFilePath = Path.Combine(projectPath, "MyTestClass.cs");
 
-            Assert.True(File.Exists(testFilePath));
+            Assert.IsTrue(File.Exists(testFilePath));
             Assert.Contains("namespace MyConsole", File.ReadAllText(testFilePath));
 
             cmd = new DotnetBuildCommand(Log)
@@ -50,7 +51,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd.Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void TestClass_BasicTest()
         {
             string tempDir = CreateTemporaryFolder();
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             string testFilePath = Path.Combine(projectPath, "MyTestClass.cs");
 
-            Assert.True(File.Exists(testFilePath));
+            Assert.IsTrue(File.Exists(testFilePath));
             Assert.Contains("namespace MyTestProject", File.ReadAllText(testFilePath));
 
             cmd = new DotnetBuildCommand(Log)
@@ -89,7 +90,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd.Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ListFiltersOutRestrictedTemplates()
         {
             string tempDir = CreateTemporaryFolder();
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd.StdOut.Should().Contain("TestAssets.ClassTemplate").And.NotContain("TestAssets.TestClassTemplate");
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleProjects_BasicTest()
         {
             string tempDir = CreateTemporaryFolder();
@@ -181,7 +182,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd.Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void NonSDKStyleProject_BasicTest()
         {
             string tempDir = CreateTemporaryFolder();

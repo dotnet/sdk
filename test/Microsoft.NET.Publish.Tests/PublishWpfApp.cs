@@ -1,20 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishWpfApp : SdkTest
     {
-        public PublishWpfApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0.0.32901")]
+        [Ignore("https://github.com/dotnet/wpf/issues/11651")]
         public void It_publishes_and_runs_self_contained_wpf_app()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()

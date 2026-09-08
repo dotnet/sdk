@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.TemplateEngine.Abstractions;
@@ -25,14 +27,17 @@ namespace Microsoft.TemplateEngine.Cli
                   builtIns,
                   fallbackHostNames,
                   loggerFactory: Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
-                    builder
-                        .SetMinimumLevel(logLevel)
-                        .AddConsole(config => config.FormatterName = nameof(CliConsoleFormatter))
-                        .AddConsoleFormatter<CliConsoleFormatter, ConsoleFormatterOptions>(config =>
-                        {
-                            config.IncludeScopes = true;
-                            config.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
-                        })))
+                  {
+                      builder
+                          .SetMinimumLevel(logLevel)
+                          .AddConsole(config => config.FormatterName = nameof(CliConsoleFormatter));
+                      builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ConsoleFormatter, CliConsoleFormatter>());
+                      builder.Services.Configure<ConsoleFormatterOptions>(config =>
+                      {
+                          config.IncludeScopes = true;
+                          config.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
+                      });
+                  }))
         {
             string workingPath = FileSystem.GetCurrentDirectory();
             IsCustomOutputPath = outputPath != null;

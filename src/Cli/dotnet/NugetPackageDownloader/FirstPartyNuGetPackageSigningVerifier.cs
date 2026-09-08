@@ -11,8 +11,31 @@ using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
+/// <summary>
+/// Verifies NuGet package (<c>.nupkg</c>) signatures.
+/// </summary>
+/// <remarks>
+/// <para>Provides two levels of verification:</para>
+/// <list type="bullet">
+///   <item><see cref="Verify"/> — <b>Microsoft first-party check</b>: calls <see cref="NuGetVerify"/>
+///     to validate the signature chain, then calls <see cref="IsFirstParty"/> to verify the
+///     <b>author</b> signing certificate matches known Microsoft thumbprints. Used when package
+///     source mapping is not in use (the default workload path). Workloads are selected from a
+///     Microsoft-provided list, so there is an implicit chain of trust justifying this check.</item>
+///   <item><see cref="NuGetVerify"/> — <b>Any valid NuGet signature</b>: shells out to
+///     <c>dotnet nuget verify --all</c> to confirm the package has a valid signature from any trusted
+///     signer (repository or author). Used when package source mapping is enabled, since feed
+///     constraints already limit which packages are accepted.</item>
+/// </list>
+/// <para>This is distinct from MSI Authenticode verification, which is handled by
+/// <see cref="Installer.Windows.MsiPackageCache"/> for Windows MSI payloads.</para>
+/// </remarks>
 internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSigningVerifier
 {
+    /// <summary>
+    /// SHA-256 thumbprints of known Microsoft first-party signing certificates (leaf certificates).
+    /// If the package's primary signature leaf certificate matches one of these, it is considered first-party.
+    /// </summary>
     internal readonly HashSet<string> _firstPartyCertificateThumbprints =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -21,6 +44,11 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
             "566A31882BE208BE4422F7CFD66ED09F5D4524A5994F50CCC8B05EC0528C1353"
         };
 
+    /// <summary>
+    /// SHA-256 thumbprints of intermediate certificates in the signing chain. Packages are considered
+    /// first-party when the leaf certificate subject matches <see cref="FirstPartyCertificateSubject"/>
+    /// AND the second certificate in the chain matches one of these thumbprints.
+    /// </summary>
     private readonly HashSet<string> _upperFirstPartyCertificateThumbprints =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -35,11 +63,35 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     {
     }
 
+    /// <summary>
+    /// Verifies that the package has a valid NuGet signature AND is signed by a known Microsoft first-party certificate.
+    /// </summary>
+    /// <remarks>
+    /// This is the <b>strict</b> verification mode. It first calls <see cref="NuGetVerify"/> to confirm
+    /// the package has a valid signature, then calls <see cref="IsFirstParty"/> to check the signing
+    /// certificate against known Microsoft thumbprints.
+    /// </remarks>
+    /// <param name="nupkgToVerify">Path to the <c>.nupkg</c> file.</param>
+    /// <param name="commandOutput">Diagnostic output from the NuGet verify command.</param>
+    /// <returns><see langword="true"/> if the package is validly signed by Microsoft.</returns>
     public bool Verify(FilePath nupkgToVerify, out string commandOutput)
     {
         return NuGetVerify(nupkgToVerify, out commandOutput) && IsFirstParty(nupkgToVerify);
     }
 
+    /// <summary>
+    /// Checks whether the NuGet package's primary signature was produced by a known Microsoft first-party certificate.
+    /// </summary>
+    /// <remarks>
+    /// Two matching strategies are used:
+    /// <list type="number">
+    ///   <item>Leaf certificate SHA-256 thumbprint matches <see cref="_firstPartyCertificateThumbprints"/>.</item>
+    ///   <item>Leaf certificate subject matches <see cref="FirstPartyCertificateSubject"/> AND the
+    ///         intermediate (second) certificate thumbprint matches <see cref="_upperFirstPartyCertificateThumbprints"/>.</item>
+    /// </list>
+    /// This does NOT validate the signature itself — only the identity of the signer.
+    /// Call <see cref="NuGetVerify"/> first for signature validation.
+    /// </remarks>
     internal bool IsFirstParty(FilePath nupkgToVerify)
     {
         try
@@ -76,6 +128,20 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
         }
     }
 
+    /// <summary>
+    /// Verifies that the NuGet package has any valid signature by running <c>dotnet nuget verify --all</c>.
+    /// </summary>
+    /// <remarks>
+    /// This is the <b>relaxed</b> verification mode. It does NOT check whether the signer is Microsoft —
+    /// any trusted signer is accepted. Used when package source mapping is enabled, since the feed
+    /// constraints already limit which packages are accepted.
+    /// <para>On Linux, the subprocess finds the TRP root certificate bundles shipped with the SDK
+    /// automatically. On macOS, verification may fail unless the bundles are present.</para>
+    /// </remarks>
+    /// <param name="nupkgToVerify">Path to the <c>.nupkg</c> file.</param>
+    /// <param name="commandOutput">Combined stdout + stderr from the verify command.</param>
+    /// <param name="currentWorkingDirectory">Working directory for NuGet config resolution (optional).</param>
+    /// <returns><see langword="true"/> if the package signature is valid.</returns>
     public static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput, string currentWorkingDirectory = null)
     {
         var args = new[] { "verify", "--all", nupkgToVerify.Value };

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,11 +8,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToUseVB : SdkTest
     {
-        public GivenThatWeWantToUseVB(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private enum VBRuntime
         {
@@ -22,12 +20,12 @@ namespace Microsoft.NET.Build.Tests
             Referenced
         }
 
-        [Theory]
-        [InlineData("net472", true)]
-        [InlineData("netstandard2.0", false)]
-        [InlineData("netcoreapp2.1", true)]
-        [InlineData("netcoreapp3.0", true)]
-        [InlineData("netcoreapp3.0", false)]
+        [TestMethod]
+        [DataRow("net472", true)]
+        [DataRow("netstandard2.0", false)]
+        [DataRow("netcoreapp2.1", true)]
+        [DataRow("netcoreapp3.0", true)]
+        [DataRow("netcoreapp3.0", false)]
         public void It_builds_a_simple_vb_project(string targetFramework, bool isExe)
         {
             var (expectedVBRuntime, expectedOutputFiles) = GetExpectedOutputs(targetFramework, isExe);
@@ -68,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: targetFramework + isExe);
 
             var buildCommand = new GetValuesCommand(
@@ -172,10 +170,11 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_a_vb_wpf_app()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetNewCommand(Log, "wpf", "-lang", "vb")
                 .WithVirtualHive()

@@ -1,0 +1,46 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json.Nodes;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
+{
+    internal class BalancedNestingConfig : IOperationConfig
+    {
+        public string Key => BalancedNesting.OperationName;
+
+        public Guid Id => new Guid("3147965A-08E5-4523-B869-02C8E9A8AAA1");
+
+        public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
+        {
+            JsonObject rawConfiguration = JExtensions.ParseJsonObject(configuration);
+            string? startToken = rawConfiguration.ToString("startToken");
+            string? realEndToken = rawConfiguration.ToString("realEndToken");
+            string? pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
+            string? id = rawConfiguration.ToString("id");
+            string? resetFlag = rawConfiguration.ToString("resetFlag");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
+
+            yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag, onByDefault);
+        }
+
+        internal static JsonObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
+        {
+            JsonObject config = new JsonObject
+            {
+                ["startToken"] = startToken,
+                ["realEndToken"] = realEndToken,
+                ["pseudoEndToken"] = pseudoEndToken,
+                ["id"] = id,
+                ["resetFlag"] = resetFlag
+            };
+
+            return config;
+        }
+    }
+}

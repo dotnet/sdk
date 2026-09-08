@@ -1,19 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
 
 namespace Microsoft.NET.TestFramework
 {
     public class RequiresSpecificFrameworkTheoryAttribute : TheoryAttribute
     {
-        public RequiresSpecificFrameworkTheoryAttribute(string framework)
+        public RequiresSpecificFrameworkTheoryAttribute(string framework, [CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(framework))
             {

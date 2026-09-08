@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedMethodsCalledWarns()
         {
             var csSource = @"
@@ -68,7 +69,7 @@ End Class
                 .WithArguments("Public Sub ObsoletedOnLinux()", "'Linux' 4.1 and later", "'Linux'"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedAndSupportedMixedDiagnostics()
         {
             var csSource = @"
@@ -157,7 +158,7 @@ public class Unsupported
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWithMessageUrlCalledWarns()
         {
             var csSource = @"
@@ -189,7 +190,7 @@ public class Test
                     WithArguments("Test.ObsoletedWithUrl()", "'Windows' 10.1.1.1 and later (http://www/look.for.more.info)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedAPIsCAlledFromDifferentCallsite()
         {
             var csSource = @"
@@ -254,7 +255,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnsuportedWithMessageCalledWarnsAsync()
         {
             var csSource = @"
@@ -290,7 +291,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithOperatingSystemAPIs()
         {
             var csSource = @"
@@ -338,7 +339,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithOperatingSystemAPIsFromDifferentCallsite()
         {
             var csSource = @"
@@ -396,7 +397,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithUnsupportedOSPlatformGuardAttribute()
         {
             var csSource = @"
@@ -453,7 +454,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CalledApiHasSupportedAndObsoletedAttributes_CallsiteSupressesSupportedAttributeWarnsForObsoletedOnly()
         {
             var source = @"

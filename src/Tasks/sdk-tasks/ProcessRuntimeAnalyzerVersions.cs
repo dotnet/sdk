@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.Build.Tasks;
 
@@ -58,15 +59,18 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(MetadataFilePath)!);
-        File.WriteAllText(path: MetadataFilePath!, JsonSerializer.Serialize(metadata));
+        File.WriteAllText(path: MetadataFilePath!, JsonSerializer.Serialize(metadata, SdkTasksJsonSerializerContext.Default.DictionaryStringMetadataEntry));
 
         Outputs = Inputs;
         return true;
     }
 
-    private sealed class MetadataEntry(string version)
+    internal sealed class MetadataEntry(string version)
     {
         public string Version { get; } = version;
         public List<string> Files { get; } = [];
     }
 }
+
+[JsonSerializable(typeof(Dictionary<string, ProcessRuntimeAnalyzerVersions.MetadataEntry>))]
+internal partial class SdkTasksJsonSerializerContext : JsonSerializerContext;

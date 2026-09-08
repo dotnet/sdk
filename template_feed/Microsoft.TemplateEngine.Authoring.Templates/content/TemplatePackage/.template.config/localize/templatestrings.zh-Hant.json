@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "範本套件",
+  "description": "包含 .NET 範本之範本套件的專案。",
+  "postActions/instructions/description": "需要手動動作",
+  "postActions/instructions/manualInstructions/default/text": "在編輯器中開啟 *.csproj，並完成套件中繼資料設定。將範本複製到 'content' 資料夾。填寫 README.md。"
+}

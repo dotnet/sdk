@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Localize_Log_ExportTaskFailed">
+        <source>Failed to export localization files for 'template.json' file under the path '{0}': {1}.</source>
+        <target state="translated">'{0}' 경로의 'template.json' 파일에 대한 지역화 파일을 내보내지 못했습니다. {1}.</target>
+        <note>Do not localize: 'template.json'</note>
+      </trans-unit>
+      <trans-unit id="Localize_Log_FileProcessingCancelled">
+        <source>'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</source>
+        <target state="translated">작업이 취소되었기 때문에 'LocalizeTemplates'가 {0} 파일 처리를 중지했습니다.</target>
+        <note>Do not localize: 'LocalizeTemplates'.
+{0} is the full path to a file, such as 'C:/Users/someguy/Desktop/template.json'</note>
+      </trans-unit>
+      <trans-unit id="Localize_Log_TemplateJsonNotFound">
+        <source>Failed to find 'template.json' file under the path '{0}'.</source>
+        <target state="translated">‘{0}’ 경로에서 ‘template.json’ 파일을 찾지 못했습니다.</target>
+        <note>Do not localize: 'template.json'</note>
+      </trans-unit>
+      <trans-unit id="Log_Error_MissingRequiredProperty">
+        <source>The property '{0}' should be set for '{1}' target.</source>
+        <target state="translated">‘{0}’ 속성을 ‘{1}’에 대해 설정해야 합니다.</target>
+        <note>'Target' and 'property' are referring to MSBuild concepts with the same names.</note>
+      </trans-unit>
+      <trans-unit id="Validate_Log_FoundTemplate">
+        <source>Location '{0}': found {1} templates.</source>
+        <target state="translated">위치 '{0}': {1} 템플릿을 찾았습니다.</target>
+        <note>{0} - path configured for scanning the templates, {1} - the number of templates found.</note>
+      </trans-unit>
+      <trans-unit id="Validate_Log_TemplateConfiguration_Subcategory">
+        <source>Template configuration</source>
+        <target state="translated">템플릿 구성</target>
+        <note>this is subcategory of the error message displayed after build</note>
+      </trans-unit>
+      <trans-unit id="Validate_Log_TemplateLocalization_Subcategory">
+        <source>Template localization</source>
+        <target state="translated">템플릿 지역화</target>
+        <note>this is subcategory of the error message displayed after build</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

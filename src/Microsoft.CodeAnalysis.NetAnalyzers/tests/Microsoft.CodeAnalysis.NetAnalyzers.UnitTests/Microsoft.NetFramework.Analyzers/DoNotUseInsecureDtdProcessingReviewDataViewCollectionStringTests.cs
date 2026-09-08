@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleReviewDtdProcessingProperties).WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerSetCollectionStringShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -64,7 +64,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagernInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -106,7 +106,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -160,7 +160,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -208,7 +208,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -255,7 +255,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -303,7 +303,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -355,7 +355,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataSetDefaultDataViewManagerInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -395,7 +395,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerSetCollectionStringShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -435,7 +435,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -477,7 +477,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -531,7 +531,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -579,7 +579,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -626,7 +626,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -674,7 +674,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -726,7 +726,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataViewManagerInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

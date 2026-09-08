@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Globalization;
 using System.Security;
@@ -18,7 +16,7 @@ internal static class ExternalTelemetryProperties
     /// For Windows, returns the OS installation type, eg. "Nano Server", "Server Core", "Server", or "Client".
     /// For Unix, or on error, currently returns empty string.
     /// </summary>
-    internal static string GetInstallationType()
+    internal static string? GetInstallationType()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -30,7 +28,7 @@ internal static class ExternalTelemetryProperties
 
         try
         {
-            return (string)Registry.GetValue(Key, ValueName, defaultValue: "");
+            return (string?)Registry.GetValue(Key, ValueName, defaultValue: "");
         }
         // Catch everything: this is for telemetry only.
         catch (Exception e)
@@ -50,7 +48,7 @@ internal static class ExternalTelemetryProperties
     /// We're not attempting to decode the value on the client side as new Windows releases may add new values.
     /// For Unix, or on error, returns an empty string.
     /// </summary>
-    internal static string GetProductType()
+    internal static string? GetProductType()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -84,7 +82,7 @@ internal static class ExternalTelemetryProperties
     /// If the libc is musl, currently returns empty string.
     /// Otherwise returns empty string.
     /// </summary>
-    internal static string GetLibcRelease()
+    internal static string? GetLibcRelease()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -108,7 +106,7 @@ internal static class ExternalTelemetryProperties
     /// If the libc is musl, currently returns empty string. (In future could run "ldd -version".)
     /// Otherwise returns empty string.
     /// </summary>
-    internal static string GetLibcVersion()
+    internal static string? GetLibcVersion()
     {
         if (OperatingSystem.IsWindows())
         {

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -10,6 +10,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy.Tests;
 /// <summary>
 /// Unit Tests for <see cref="CreatePackageFile"/>.
 /// </summary>
+[TestClass]
 public class CreatePackageFileTests
 {
     private const string TestPackageExtension = ".test";
@@ -17,9 +18,9 @@ public class CreatePackageFileTests
     private const string ContentToPackage = $@"z:\Users\testUser\source\Solution\{ProjectName}";
     private const string IntermediateTempPath = $@"{ContentToPackage}\bin\net8.0\{ProjectName}";
 
-    [Theory]
-    [InlineData(true, TestPackageExtension, IntermediateTempPath)]
-    [InlineData(false, null, null)]
+    [TestMethod]
+    [DataRow(true, TestPackageExtension, IntermediateTempPath)]
+    [DataRow(false, null, null)]
     public void CreatePackageFile_Execute(bool expectedResult, string expectedFileExtension, string expectedFileDirectory)
     {
         // Arrange
@@ -42,30 +43,30 @@ public class CreatePackageFileTests
         var result = createPackageFileTask.Execute();
 
         // Assert: 'CreatePackageFile' task result expected results
-        Assert.Equal(expectedResult, result);
+        Assert.AreEqual(expectedResult, result);
 
         if (expectedResult)
         {
-            Assert.Equal(expectedFileDirectory, Path.GetDirectoryName(createPackageFileTask.CreatedPackageFilePath));
-            Assert.Equal(expectedFileExtension, Path.GetExtension(createPackageFileTask.CreatedPackageFilePath));
+            Assert.AreEqual(expectedFileDirectory, Path.GetDirectoryName(createPackageFileTask.CreatedPackageFilePath));
+            Assert.AreEqual(expectedFileExtension, Path.GetExtension(createPackageFileTask.CreatedPackageFilePath));
         }
         else
         {
-            Assert.True(string.IsNullOrEmpty(createPackageFileTask.CreatedPackageFilePath));
+            Assert.IsTrue(string.IsNullOrEmpty(createPackageFileTask.CreatedPackageFilePath));
         }
 
         filePackagerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData(null, ProjectName, IntermediateTempPath)]
-    [InlineData("", ProjectName, IntermediateTempPath)]
-    [InlineData(ContentToPackage, null, IntermediateTempPath)]
-    [InlineData(ContentToPackage, "", IntermediateTempPath)]
-    [InlineData(ContentToPackage, ProjectName, null)]
-    [InlineData(ContentToPackage, ProjectName, "")]
-    [InlineData("", "", "")]
-    [InlineData(null, null, null)]
+    [TestMethod]
+    [DataRow(null, ProjectName, IntermediateTempPath)]
+    [DataRow("", ProjectName, IntermediateTempPath)]
+    [DataRow(ContentToPackage, null, IntermediateTempPath)]
+    [DataRow(ContentToPackage, "", IntermediateTempPath)]
+    [DataRow(ContentToPackage, ProjectName, null)]
+    [DataRow(ContentToPackage, ProjectName, "")]
+    [DataRow("", "", "")]
+    [DataRow(null, null, null)]
     public void CreatePackageFile_Execute_MissingValues(string contentToPackage, string projectName, string intermediateTempPath)
     {
         // Arrange
@@ -82,12 +83,12 @@ public class CreatePackageFileTests
         var result = createPackageFileTask.Execute();
 
         // Assert: 'CreatePackageFile' task results in 'False' due to missing values
-        Assert.False(result);
-        Assert.True(string.IsNullOrEmpty(createPackageFileTask.CreatedPackageFilePath));
+        Assert.IsFalse(result);
+        Assert.IsTrue(string.IsNullOrEmpty(createPackageFileTask.CreatedPackageFilePath));
         filePackagerMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public void CreatePackagerFile_ZipPackager_Default()
     {
         // Act
@@ -96,6 +97,6 @@ public class CreatePackageFileTests
         // Assert:
         // - Default ctor (as used by MSBuild) can correctly instantiate an instance.
         // - A 'ZipFilePackager' is set as the default 'IFilePackager' (though we can't verify that, here)
-        Assert.True(createPackageFile is not null);
+        Assert.IsNotNull(createPackageFile);
     }
 }

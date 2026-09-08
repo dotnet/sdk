@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class BuildReporterTests
 {
-    [Fact]
+    [TestMethod]
     public void GetBinLogPath()
     {
         var root = Path.GetTempPath();

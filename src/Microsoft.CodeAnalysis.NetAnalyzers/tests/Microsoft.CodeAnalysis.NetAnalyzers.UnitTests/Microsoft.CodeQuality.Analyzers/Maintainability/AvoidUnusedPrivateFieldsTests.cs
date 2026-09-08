@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsAnalyzer,
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsFixer>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class AvoidUnusedPrivateFieldsTests
     {
         private const string CSharpMEFAttributesDefinition = @"
@@ -44,7 +45,7 @@ Namespace System.Composition
 End Namespace
 ";
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_AttributeUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -56,7 +57,7 @@ public class Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_InterpolatedStringUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -68,7 +69,7 @@ public class Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_CollectionInitializerUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +83,7 @@ public class Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_FieldOffsetAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +96,7 @@ public class Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -108,7 +109,7 @@ public class Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -127,7 +128,7 @@ class Class2
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -140,7 +141,7 @@ class Class
                 GetCA1823CSharpResultAt(5, 17, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -153,7 +154,7 @@ class Class
                 GetCA1823CSharpResultAt(5, 17, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -173,7 +174,7 @@ class Class2
                 GetCA1823CSharpResultAt(11, 17, "field"));
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
@@ -188,7 +189,7 @@ public class Class
 ");
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributesError_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
@@ -203,7 +204,7 @@ public class Class
 ");
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -224,10 +225,10 @@ public class Class
                     GetCA1823CSharpResultAt(5, 17, "fieldWithMefV1ExportAttribute"),
                     GetCA1823CSharpResultAt(8, 17, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_SimpleUsages_DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -252,7 +253,7 @@ public class Class
                 GetCA1823CSharpResultAt(8, 17, "Unused2"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6789, "https://github.com/dotnet/roslyn-analyzers/issues/6789")]
         public async Task CA1823_CSharp_InlineArrayAttributeAsync()
         {
@@ -268,10 +269,10 @@ public struct InlineArrayType
     private object _item0;
 }
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_VisualBasic_DiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -298,7 +299,7 @@ End Class
                 GetCA1823BasicResultAt(7, 13, "Unused2"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_FieldOffsetAttribute_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -310,7 +311,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -322,7 +323,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -339,7 +340,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -351,7 +352,7 @@ End Class
                 GetCA1823BasicResultAt(4, 13, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -363,7 +364,7 @@ End Class
                 GetCA1823BasicResultAt(4, 13, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -381,7 +382,7 @@ End Class
                 GetCA1823BasicResultAt(9, 13, "field"));
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributes_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
@@ -395,7 +396,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributesError_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
@@ -409,7 +410,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -429,7 +430,7 @@ End Class
                     GetCA1823BasicResultAt(4, 13, "fieldWithMefV1ExportAttribute"),
                     GetCA1823BasicResultAt(7, 13, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1823CSharpResultAt(int line, int column, string fieldName)
