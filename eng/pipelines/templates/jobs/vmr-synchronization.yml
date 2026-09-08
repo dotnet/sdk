@@ -74,7 +74,7 @@ jobs:
           --commit-verification-pat '$(BotAccount-dotnet-maestro-bot-no-scopes-PAT)'
           --branch '${{ parameters.vmrBranch }}'
           --remote-url '$(vmrPublicUrl)'
-          --github-pat '$(BotAccount-dotnet-bot-repo-PAT)'
+          --github-pat '$(BotAccount-dotnet-bot-vmr-sync-PAT)'
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
         workingDirectory: $(Agent.BuildDirectory)/sdk
