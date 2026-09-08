@@ -24,11 +24,10 @@ internal static class DotnetBotBanner
         }
 
         string brand = DotnetupTheme.Current.Brand;
-        string description = ".NET toolchain manager for developers.";
 
         var content = new Rows(
             new Markup($"[{brand} bold]dotnetup[/] v{version.EscapeMarkup()}"),
-            new Markup($"[dim]{description.EscapeMarkup()}[/]"));
+            new Markup($"[dim]{Strings.InitBannerDescription.EscapeMarkup()}[/]"));
 
         return new Panel(content)
         {

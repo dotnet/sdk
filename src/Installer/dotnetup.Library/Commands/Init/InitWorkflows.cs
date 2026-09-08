@@ -47,7 +47,7 @@ internal class InitWorkflows
         if (!command.DryRun && HasLocalSdkPathGlobalJson())
         {
             SpectreAnsiConsole.MarkupLine(
-                $"[{DotnetupTheme.Current.Dim}]A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.[/]");
+                $"[{DotnetupTheme.Current.Dim}]{Strings.InitLocalSdkPathMessage.EscapeMarkup()}[/]");
             return [];
         }
 
@@ -165,7 +165,7 @@ internal class InitWorkflows
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
 
-        SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
+        SpectreAnsiConsole.MarkupLine($"[{dim}]{Strings.InitDryRunNotice.EscapeMarkup()}[/]");
 
         string channelText =
             formSelection.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
@@ -173,13 +173,16 @@ internal class InitWorkflows
             defaults.Migrations,
             BuildSelectedInstallSpecs(defaults, formSelection));
         string migrateText = formSelection.MigrateSystemInstalls
-            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
-            : "No";
+            ? string.Format(CultureInfo.InvariantCulture, Strings.InitDryRunMigrateCount, migrations.Count)
+            : Strings.InitFormChoiceNo;
 
-        PrintPreviewLine("SDK channel", channelText, accent);
-        PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
-        PrintPreviewLine("Migrate system installs", migrateText, accent);
-        PrintPreviewLine("Installs in", defaults.InstallRoot.Path, accent);
+        PrintPreviewLine(Strings.InitDryRunChannelLabel, channelText, accent);
+        PrintPreviewLine(
+            Strings.InitDryRunAccessModeLabel,
+            formSelection.AccessMode.ToString().ToLowerInvariant(),
+            accent);
+        PrintPreviewLine(Strings.InitDryRunMigrateLabel, migrateText, accent);
+        PrintPreviewLine(Strings.InitDryRunInstallLocationLabel, defaults.InstallRoot.Path, accent);
     }
 
     private static void PrintPreviewLine(string label, string value, string accent)
@@ -337,7 +340,7 @@ internal class InitWorkflows
     }
 
     internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)
-        => console.MarkupLine("Setting up your environment.");
+        => console.MarkupLine(Strings.InitEnvironmentSetupProgress.EscapeMarkup());
 
     // ── Prompt Functions ──
 
@@ -385,10 +388,28 @@ internal class InitWorkflows
             .OrderBy(i => i.Component)
             .ThenBy(i => i.Channel.Name)
             .Select(i => showArchitecture
-                ? string.Format(CultureInfo.InvariantCulture, "{0} {1} [{2}]", i.Component.GetDisplayName(), i.Channel.Name, i.Architecture)
-                : string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Channel.Name))
+                ? string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.InitMigrationDisplayWithArchitecture,
+                    GetMigrationComponentName(i.Component),
+                    i.Channel.Name,
+                    i.Architecture)
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.InitMigrationDisplay,
+                    GetMigrationComponentName(i.Component),
+                    i.Channel.Name))
             .ToList();
     }
+
+    private static string GetMigrationComponentName(InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => Strings.InitMigrationComponentSdk,
+        InstallComponent.Runtime => Strings.InitMigrationComponentRuntime,
+        InstallComponent.ASPNETCore => Strings.InitMigrationComponentAspNetCoreRuntime,
+        InstallComponent.WindowsDesktop => Strings.InitMigrationComponentWindowsDesktopRuntime,
+        _ => component.ToString(),
+    };
 
     internal static List<MigrationWorkflow.MigrationSelection> PromptUserForMigration(
         List<MigrationWorkflow.MigrationSelection> migrationSelections,
@@ -396,8 +417,12 @@ internal class InitWorkflows
     {
         if (Console.IsInputRedirected)
         {
+            string message = string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.InitMigrationPromptSkipped.EscapeMarkup(),
+                Strings.InitMigrationRetryHint.EscapeMarkup());
             SpectreAnsiConsole.MarkupLine(
-                $"[{DotnetupTheme.Current.Dim}]Skipping the migration prompt because interactive input is not available. {GetMigrationRetryHint().EscapeMarkup()}[/]");
+                $"[{DotnetupTheme.Current.Dim}]{message}[/]");
             return [];
         }
 
@@ -406,16 +431,20 @@ internal class InitWorkflows
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
         string systemPath = currentInstall is not null && InstallPathClassifier.IsAdminInstallPath(currentInstall.Path)
             ? currentInstall.Path
-            : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
+            : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? Strings.InitSystemDotnetLocation;
 
-        SpectreAnsiConsole.MarkupLine($"You have existing system-managed .NET installs in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
+        string existingInstalls = string.Format(
+            CultureInfo.InvariantCulture,
+            Strings.InitExistingSystemInstalls.EscapeMarkup(),
+            $"[{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/]");
+        SpectreAnsiConsole.MarkupLine(existingInstalls);
 
         var displayItems = FormatMigrationDisplayItems(migrationSelections);
 
         var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
             visibleCount: MigrationWorkflow.MigrationPreviewCount,
-            "Do you want dotnetup to install matching versions in its managed directory?");
+            Strings.InitMigrationConfirmationPrompt);
 
         HandleMigrationConfirmResult(confirmResult);
         return confirmResult == ConfirmResult.Yes ? migrationSelections : [];
@@ -428,16 +457,15 @@ internal class InitWorkflows
     {
         if (confirmResult == ConfirmResult.Yes)
         {
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed as part of the current setup.[/]");
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Dim}]{Strings.InitMigrationAccepted.EscapeMarkup()}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]{GetMigrationRetryHint().EscapeMarkup()}[/]");
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Dim}]{Strings.InitMigrationRetryHint.EscapeMarkup()}[/]");
         }
     }
-
-    private static string GetMigrationRetryHint()
-        => "You can migrate matching SDKs or runtimes later with \"dotnetup sdk install --migrate-from-system\" or \"dotnetup runtime install --migrate-from-system\".";
 
     // ── Display Functions ──
 
@@ -452,22 +480,20 @@ internal class InitWorkflows
 
         if (globalJsonPath is not null)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(
+            string message = string.Format(
                 CultureInfo.InvariantCulture,
-                "[{0}]Installing to [{1}]{2}[/] as specified by [{1}]{3}[/].[/]",
-                DotnetupTheme.Current.Dim,
-                DotnetupTheme.Current.Accent,
-                installPath.EscapeMarkup(),
-                globalJsonPath.EscapeMarkup()));
+                Strings.InitInstallingToFromGlobalJson.EscapeMarkup(),
+                $"[{DotnetupTheme.Current.Accent}]{installPath.EscapeMarkup()}[/]",
+                $"[{DotnetupTheme.Current.Accent}]{globalJsonPath.EscapeMarkup()}[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]{message}[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(
+            string message = string.Format(
                 CultureInfo.InvariantCulture,
-                "[{0}]You can find dotnetup managed installs at [{1}]{2}[/].[/]",
-                DotnetupTheme.Current.Dim,
-                DotnetupTheme.Current.Accent,
-                installPath.EscapeMarkup()));
+                Strings.InitManagedInstallLocation.EscapeMarkup(),
+                $"[{DotnetupTheme.Current.Accent}]{installPath.EscapeMarkup()}[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]{message}[/]");
         }
     }
 
@@ -499,7 +525,7 @@ internal class InitWorkflows
             DisplayPathGuidance(accessMode);
         }
 
-        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand(Strings.InitSetupComplete.EscapeMarkup()));
     }
 
     /// <summary>

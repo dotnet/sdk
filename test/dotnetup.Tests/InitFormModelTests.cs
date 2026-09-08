@@ -9,6 +9,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using BootstrapperStrings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -85,7 +86,7 @@ public class InitFormModelTests
         IReadOnlyList<DetailLine> lines = model.BuildDerivedDetailLines(model.Fields[0], choiceIndex: 0);
 
         lines.Should().ContainSingle()
-            .Which.Should().Be(new DetailLine("From global.json:", globalJsonPath));
+            .Which.Should().Be(new DetailLine(BootstrapperStrings.InitFormDetailGlobalJsonSource, globalJsonPath));
     }
 
     [TestMethod]
@@ -94,9 +95,9 @@ public class InitFormModelTests
         var model = CreateModel(
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             accessMode: DotnetAccessMode.Shell);
-        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        FormField accessModeField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormAccessModeLabel);
 
-        accessModeField.DisplayValue.Should().Be(DotnetAccessMode.Shell.ToString());
+        accessModeField.DisplayValue.Should().Be("shell");
         accessModeField.IsChangedFromDefault.Should().BeFalse();
         model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
     }
@@ -148,7 +149,7 @@ public class InitFormModelTests
                 CreateMigration("10.0.1xx", "10.0.100"),
                 CreateMigration("9.0.3xx", "9.0.300"),
             ]);
-        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField migrationField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
 
         model.BuildDerivedDetailLines(migrationField, choiceIndex: 0)
             .Should().ContainSingle().Which.Value.Should().Be("9.0.300");
@@ -168,7 +169,7 @@ public class InitFormModelTests
             new DefaultChannelDisplay("10.0.1xx", GlobalJsonPath: null),
             [CreateMigration("10.0.1xx", "10.0.100")],
             accessMode: DotnetAccessMode.Shell);
-        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField migrationField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
         migrationField.IsVisible.Should().BeFalse();
         model.MigrateSelected().Should().BeFalse();
 
@@ -186,7 +187,7 @@ public class InitFormModelTests
         var model = CreateModel(
             new DefaultChannelDisplay("10.0.1xx", GlobalJsonPath: null),
             [CreateMigration("10.0.1xx", "10.0.100")]);
-        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField migrationField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
         FormField channelField = model.Fields[0];
         channelField.SetCustomValue(channelField.Choices.Count - 1, "10.0.1XX");
 
@@ -199,7 +200,7 @@ public class InitFormModelTests
     {
         var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
 
-        model.Fields.Should().NotContain(field => field.Label == "Migrate system installs");
+        model.Fields.Should().NotContain(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
         model.MigrateSelected().Should().BeFalse();
     }
 
@@ -209,7 +210,7 @@ public class InitFormModelTests
         var model = CreateModel(
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             [CreateMigration("10.0.1xx", "10.0.100")]);
-        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField migrationField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
 
         migrationField.SelectChoice(1);
 
@@ -229,14 +230,14 @@ public class InitFormModelTests
                 CreateMigration("7.0.4xx", "7.0.400"),
                 CreateMigration("10.0", "10.0.5", InstallComponent.Runtime),
             ]);
-        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField migrationField = model.Fields.Single(field => field.Label == BootstrapperStrings.InitFormMigrateLabel);
 
         IReadOnlyList<DetailLine> lines = model.BuildDerivedDetailLines(migrationField, choiceIndex: 0);
 
         lines.Should().HaveCount(2);
-        lines[0].Label.Should().Be(".NET SDKs:");
+        lines[0].Label.Should().Be(BootstrapperStrings.InitFormMigrationSdksLabel);
         lines[0].Value.Should().EndWith("and 1 more");
-        lines[1].Label.Should().ContainEquivalentOf("runtime");
+        lines[1].Label.Should().Be(BootstrapperStrings.InitFormMigrationRuntimesLabel);
         lines[1].Value.Should().Be("10.0.5");
     }
 

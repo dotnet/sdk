@@ -207,6 +207,25 @@ public class InitFormRendererTests
     }
 
     [TestMethod]
+    public void BrowseForm_AlignsValuesUsingTerminalCellWidth()
+    {
+        InitFormModel model = CreateDefaultModel();
+        FormField[] fields =
+        [
+            new("項目", [new FieldChoice("one", "First value.")], defaultIndex: 0),
+            new("Field", [new FieldChoice("two", "Second value.")], defaultIndex: 0),
+        ];
+        var state = new InitFormState(fields);
+
+        string[] lines = Lines(RenderForm(model, state, width: 120, height: 100, out _));
+        string cjkLine = lines.Single(line => line.Contains("one", StringComparison.Ordinal));
+        string latinLine = lines.Single(line => line.Contains("two", StringComparison.Ordinal));
+
+        cjkLine[..cjkLine.IndexOf("one", StringComparison.Ordinal)].GetCellWidth()
+            .Should().Be(latinLine[..latinLine.IndexOf("two", StringComparison.Ordinal)].GetCellWidth());
+    }
+
+    [TestMethod]
     public void ExpandedChannel_HidesUnrelatedFieldsWhenConstrained()
     {
         const int height = 8;

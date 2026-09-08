@@ -210,7 +210,11 @@ internal static class SpectreDisplayHelpers
 
         if (confirmPrompt is not null)
         {
-            string promptHint = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
+            string promptHint = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} [{1}]([bold underline]Y[/]/n)[/]",
+                confirmPrompt.EscapeMarkup(),
+                DotnetupTheme.Current.Brand);
             rows.Add(new Markup(promptHint));
         }
         else if (remaining <= 0)
