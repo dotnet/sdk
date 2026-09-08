@@ -503,13 +503,13 @@ sealed class VirtualProjectBuilder
 
             lastProject = (projectFileText, project, projectRoot);
 
-            // Preserve the legacy artifacts behavior when the .NET SDK imported its artifacts props but selected no layout.
+            // Preserve the legacy artifacts behavior when the .NET SDK imported its artifacts props but does not support FileBasedAppArtifactsPath.
             // dotnet CLI has the latest SDK imported but other hosts like MSBuildWorkspace may not.
             if (_useLegacyArtifactsPath is null)
             {
-                var defaultArtifactsPathPropsImported = await project.GetPropertyValueAsync("_SupportsFileBasedAppArtifactsPath").ConfigureAwait(false);
+                var supportsFileBasedAppArtifactsPath = await project.GetPropertyValueAsync("_SupportsFileBasedAppArtifactsPath").ConfigureAwait(false);
 
-                _useLegacyArtifactsPath = !string.Equals(defaultArtifactsPathPropsImported, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+                _useLegacyArtifactsPath = !string.Equals(supportsFileBasedAppArtifactsPath, bool.TrueString, StringComparison.OrdinalIgnoreCase);
 
                 if (_useLegacyArtifactsPath == true)
                 {
