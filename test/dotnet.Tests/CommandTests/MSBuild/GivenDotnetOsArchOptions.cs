@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
+
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
@@ -203,20 +204,20 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimeIdentifierChainUsesProductVersionWhenInstalled()
         {
-            string sdkPath = _testAssetsManager.CreateTestDirectory().Path;
+            string sdkPath = TestAssetsManager.CreateTestDirectory().Path;
             string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
             CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
 
             TargetPlatformOptions.GetRuntimeIdentifierChainPath(sdkPath, "10.0.100").Should().Be(expectedPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimeIdentifierChainUsesLatestSdkWhenProductVersionHasNoChainFile()
         {
-            string sdkPath = _testAssetsManager.CreateTestDirectory().Path;
+            string sdkPath = TestAssetsManager.CreateTestDirectory().Path;
             CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
             string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
             Directory.CreateDirectory(Path.Combine(sdkPath, "10.0.200-ci"));
@@ -234,4 +235,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-
