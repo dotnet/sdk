@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
@@ -59,6 +60,40 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                         Debug.Assert(!isAbstractGlobalizationDiagnosticAnalyzer, $"Analyzer {analyzerType.Name} wasn't expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
                     }
                 }
+            }
+
+            static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)
+            => throw e.Exception ?? new NotSupportedException(e.Message);
+        }
+
+        [TestMethod]
+        public void CA1825IsDiscoveredExactlyOncePerLanguageFromShippedAssemblies()
+        {
+            var testsAssemblyPath = typeof(MiscellaneousAnalyzerTests).Assembly.Location;
+            var directory = Path.GetDirectoryName(testsAssemblyPath);
+            var assemblyNames = new[] { "Microsoft.CodeAnalysis.NetAnalyzers.dll", "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll", "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" };
+            var analyzerFileReferences = new AnalyzerFileReference[assemblyNames.Length];
+
+            for (int i = 0; i < assemblyNames.Length; i++)
+            {
+                var path = Path.Combine(directory, assemblyNames[i]);
+                Assert.IsTrue(File.Exists(path), $"File {path} doesn't exist.");
+
+                var analyzerFileReference = new AnalyzerFileReference(path, AnalyzerAssemblyLoader.Instance);
+                analyzerFileReference.AnalyzerLoadFailed += AnalyzerFileReference_AnalyzerLoadFailed;
+                analyzerFileReferences[i] = analyzerFileReference;
+            }
+
+            foreach (var language in new[] { LanguageNames.CSharp, LanguageNames.VisualBasic })
+            {
+                var ca1825Analyzers = analyzerFileReferences
+                    .SelectMany(reference => reference.GetAnalyzers(language))
+                    .Where(analyzer => analyzer.SupportedDiagnostics.Any(descriptor => descriptor.Id == "CA1825"))
+                    .ToArray();
+
+                Assert.HasCount(1, ca1825Analyzers, $"Expected exactly one CA1825 analyzer for {language}.");
+                Assert.AreEqual("Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer", ca1825Analyzers[0].GetType().FullName);
+                Assert.AreEqual("Microsoft.CodeAnalysis.NetAnalyzers", ca1825Analyzers[0].GetType().Assembly.GetName().Name);
             }
 
             static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)

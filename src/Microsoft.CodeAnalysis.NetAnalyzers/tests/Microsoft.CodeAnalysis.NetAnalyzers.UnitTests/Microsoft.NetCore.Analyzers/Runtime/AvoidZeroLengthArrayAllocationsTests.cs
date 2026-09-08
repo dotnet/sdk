@@ -6,10 +6,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidZeroLengthArrayAllocationsAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicAvoidZeroLengthArrayAllocationsAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests

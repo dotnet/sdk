@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NetCore.Analyzers.Runtime;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     /// <summary>
-    /// RS0007: Avoid zero-length array allocations.
+    /// Compatibility wrapper retained for callers that reference this type directly.
+    /// The shared <see cref="AvoidZeroLengthArrayAllocationsAnalyzer"/> is registered for C# and Visual Basic.
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpAvoidZeroLengthArrayAllocationsAnalyzer : AvoidZeroLengthArrayAllocationsAnalyzer
     {
     }
