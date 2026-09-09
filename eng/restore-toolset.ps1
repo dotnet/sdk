@@ -31,6 +31,7 @@ function InitializeCustomSDKToolset {
         # Also install the exact runtime versions that arcade's toolset requires
         # (from Version.Details.props) so tests can target those specific versions.
         $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
+        $runtimeSpecs += Get-BootstrapRuntimeVersion
 
         $nativeArch = Get-NativeMachineArchitecture
         if ((-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) -and ($env:TARGET_ARCHITECTURE -ne $nativeArch)) {
@@ -179,6 +180,21 @@ function Get-CurrentRuntimeToolsetSpecs() {
     }
 
     return $specs
+}
+
+function Get-BootstrapRuntimeVersion() {
+    $sdkVersion = $GlobalJson.tools.dotnet
+    $runtimeConfigPath = Join-Path $env:DOTNET_INSTALL_DIR "sdk\$sdkVersion\dotnet.runtimeconfig.json"
+    $runtimeConfig = Get-Content -Raw -Path $runtimeConfigPath | ConvertFrom-Json
+    $runtimeVersion = $runtimeConfig.runtimeOptions.framework |
+        Where-Object { $_.name -eq 'Microsoft.NETCore.App' } |
+        Select-Object -ExpandProperty version
+
+    if ([string]::IsNullOrEmpty($runtimeVersion)) {
+        throw "Cannot find the bootstrap Microsoft.NETCore.App runtime version in '$runtimeConfigPath'."
+    }
+
+    return $runtimeVersion
 }
 
 # Maps a dotnetup component (e.g. 'aspnetcore', 'windowsdesktop' or 'dotnet')

@@ -156,7 +156,8 @@
   </Target>
 
   <!-- On a cross-build, restore-toolset.{sh,ps1} downloads the target-architecture test shared
-       frameworks (6.0-9.0, plus the exact toolset versions) into a sidecar folder under artifacts,
+       frameworks (6.0-10.0, plus the exact toolset and bootstrap SDK runtime versions) into a
+       sidecar folder under artifacts,
        rather than into the host .dotnet (whose runtimes must stay host-architecture so host tools
        such as the NuGet credential provider keep working). Copy those target-architecture shared
        frameworks into the test host so the Helix test payload runs them on target-architecture
