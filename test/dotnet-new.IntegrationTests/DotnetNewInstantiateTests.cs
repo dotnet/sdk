@@ -10,15 +10,41 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         private ITestOutputHelper _log => Log;
         private static SharedHomeDirectory s_fixture = null!;
+        private static string s_mstestTemplateSelectionHome = null!;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx)
         {
-            s_fixture = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            var log = new TestContextOutputHelper(ctx);
+            s_fixture = new SharedHomeDirectory(log);
+
+            s_mstestTemplateSelectionHome = Utilities.CreateTemporaryFolder(
+                nameof(MSTestTemplate_SelectsCurrentTemplateForEverySupportedTargetFramework));
+
+            new DotnetNewCommand(log)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .WithDebug()
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetNewCommand(log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates100Path)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
         }
 
         [ClassCleanup]
-        public static void ClassCleanup() => s_fixture?.Dispose();
+        public static void ClassCleanup()
+        {
+            s_fixture?.Dispose();
+            Directory.Delete(s_mstestTemplateSelectionHome, true);
+        }
 
         private SharedHomeDirectory _fixture => s_fixture;
 
@@ -61,7 +87,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     projectName,
                     "--output",
                     outputDirectory)
-                .WithCustomHive(_fixture.HomeDirectory)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
