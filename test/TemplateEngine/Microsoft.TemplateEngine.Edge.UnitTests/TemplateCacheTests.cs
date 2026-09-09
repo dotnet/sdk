@@ -118,7 +118,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                                             ],
                                         },
                                     ],
-                                    "mountpointsinfo": {},
+                                    "mountpointsinfo": {
+                                        "testMount": "2026-09-09T12:34:56.789Z",
+                                    },
                                 }
                                 """;
 
@@ -138,6 +140,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual(
                 PrecedenceDefinition.Optional,
                 cache.TemplateInfo[0].ParameterDefinitions["optionalParameter"].Precedence.PrecedenceDefinition);
+            Assert.ContainsSingle(cache.MountPointsInfo);
+            Assert.AreEqual(
+                new DateTime(2026, 9, 9, 12, 34, 56, 789, DateTimeKind.Utc),
+                cache.MountPointsInfo["testMount"]);
         }
 
         [TestMethod]
