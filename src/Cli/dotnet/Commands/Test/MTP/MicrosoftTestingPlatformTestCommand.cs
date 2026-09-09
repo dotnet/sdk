@@ -709,8 +709,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// The option belongs to the test application, not to the 'dotnet test' CLI, so it is forwarded verbatim. Under
     /// the pipe protocol the test host's own terminal reporter is not plugged in (the SDK owns user-facing output),
     /// so the section has to be rendered by the SDK's reporter instead — which means the SDK has to observe the
-    /// option. Same approach as the '--retry-failed-tests' detection above. A missing, non-numeric or non-positive
-    /// argument leaves the section off, mirroring the upstream option validator.
+    /// option. A missing, non-numeric or non-positive argument leaves the section off, mirroring the upstream
+    /// option validator.
     /// </remarks>
     internal static int GetSlowestTestsCount(IReadOnlyList<string> arguments)
     {
