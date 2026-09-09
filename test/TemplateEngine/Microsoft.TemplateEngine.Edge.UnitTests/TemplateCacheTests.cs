@@ -97,12 +97,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             SettingsFilePaths paths = new(environmentSettings);
             const string json = """
                                 {
-                                    // Cache property names are matched case-insensitively.
-                                    "version": "1.0.0.7",
+                                    // Cache property names are matched case-insensitively, with the last match winning.
+                                    "version": "0.0.0.0",
+                                    "VERSION": "1.0.0\u002E7",
                                     "locale": "en-US",
                                     "templateinfo": [
                                         {
-                                            "identity": "testIdentity",
+                                            "identity": "ignoredIdentity",
+                                            "IDENTITY": "testIdentity",
                                             "name": "testName",
                                             "shortnamelist": "testShort",
                                             "mountpointuri": "testMount",
@@ -134,6 +136,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [DataRow(nameof(TemplateInfo.Name))]
         [DataRow(nameof(TemplateInfo.MountPointUri))]
         [DataRow(nameof(TemplateInfo.ConfigPlace))]
+        [DataRow(nameof(TemplateInfo.GeneratorId))]
         public void ReadRejectsTemplateMissingRequiredProperty(string propertyName)
         {
             IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -142,6 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 [nameof(TemplateInfo.Identity)] = "testIdentity",
                 [nameof(TemplateInfo.Name)] = "testName",
+                [nameof(TemplateInfo.ShortNameList)] = new JsonArray("testShort"),
                 [nameof(TemplateInfo.MountPointUri)] = "testMount",
                 [nameof(TemplateInfo.ConfigPlace)] = ".template.config/template.json",
                 [nameof(TemplateInfo.GeneratorId)] = Guid.Empty.ToString()

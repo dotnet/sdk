@@ -143,6 +143,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 string name = GetStringValue(entry, nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
                 string mountPointUri = GetStringValue(entry, nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
                 string configPlace = GetStringValue(entry, nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
+                string generatorId = GetStringValue(entry, nameof(GeneratorId)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(GeneratorId)} property.", nameof(entry));
                 IReadOnlyList<string> shortNames = TryGetPropertyCaseInsensitive(entry, nameof(ShortNameList), out JsonElement shortNameToken)
                     ? GetStringCollection(shortNameToken)
                     : [];
@@ -169,7 +170,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 info.DefaultName = GetStringValue(entry, nameof(DefaultName));
                 info.PreferDefaultName = GetBoolValue(entry, nameof(PreferDefaultName));
                 info.Description = GetStringValue(entry, nameof(Description));
-                info.GeneratorId = Guid.Parse(GetStringValue(entry, nameof(GeneratorId)));
+                info.GeneratorId = Guid.Parse(generatorId);
                 info.GroupIdentity = GetStringValue(entry, nameof(GroupIdentity));
                 info.Precedence = GetInt32Value(entry, nameof(Precedence));
                 info.LocaleConfigPlace = GetStringValue(entry, nameof(LocaleConfigPlace));
@@ -362,13 +363,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         return true;
                     }
 
+                    bool found = false;
                     foreach (JsonProperty property in element.EnumerateObject())
                     {
                         if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
                         {
                             value = property.Value;
-                            return true;
+                            found = true;
                         }
+                    }
+                    if (found)
+                    {
+                        return true;
                     }
                 }
 

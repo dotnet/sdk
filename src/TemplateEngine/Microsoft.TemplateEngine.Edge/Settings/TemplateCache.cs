@@ -135,7 +135,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            Version = versionToken.GetRawText().Trim('"');
+            Version = versionToken.ValueKind == JsonValueKind.String
+                ? versionToken.GetString()
+                : versionToken.GetRawText();
             Locale = TryGetPropertyCaseInsensitive(content, nameof(Locale), out JsonElement localeToken)
                 && localeToken.ValueKind != JsonValueKind.Null
                     ? localeToken.GetString() ?? string.Empty
@@ -197,13 +199,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     return true;
                 }
 
+                bool found = false;
                 foreach (JsonProperty property in element.EnumerateObject())
                 {
                     if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
                     {
                         value = property.Value;
-                        return true;
+                        found = true;
                     }
+                }
+                if (found)
+                {
+                    return true;
                 }
             }
 
