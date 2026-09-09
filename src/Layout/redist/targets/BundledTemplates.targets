@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates110PackageVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates110PackageVersion)" UseVersionForTemplateInstallPath="true" />
-    <BundledTemplate Include="Microsoft.McpServer.ProjectTemplates.11.0" PackageVersion="$(MicrosoftMcpServerProjectTemplates110PackageVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates.12.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates120PackageVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.12.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates120PackageVersion)" UseVersionForTemplateInstallPath="true" />
+    <BundledTemplate Include="Microsoft.McpServer.ProjectTemplates.12.0" PackageVersion="$(MicrosoftMcpServerProjectTemplates120PackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
   </ItemGroup>
