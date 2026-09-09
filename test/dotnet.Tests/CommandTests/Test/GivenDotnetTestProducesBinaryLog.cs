@@ -152,6 +152,9 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             File.Copy(
                 Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
                 Path.Combine(dir, Path.GetFileName(dir) + ".csproj"));
+            File.Copy(
+                Path.Combine(testInstance.Path, "DotnetTestDevices.Device.targets"),
+                Path.Combine(dir, "DotnetTestDevices.Device.targets"));
         }
 
         File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));
