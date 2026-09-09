@@ -73,7 +73,8 @@ internal sealed class Program(
     private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, out int errorCode)
     {
         var reporter = new ConsoleReporter(console, environmentOptions.LogMessagePrefix, environmentOptions.SuppressEmojis);
-        var parsingLoggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? LogLevel.Information);
+        var parserLogLevel = environmentOptions.CliContextVerbose ? LogLevel.Debug : LogLevel.Information;
+        var parsingLoggerFactory = new LoggerFactory(reporter, parserLogLevel);
         var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
         if (options == null)
         {
@@ -81,7 +82,7 @@ internal sealed class Program(
             return null;
         }
 
-        var loggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel);
+        var loggerFactory = new LoggerFactory(reporter, options.GlobalOptions.GetEffectiveLogLevel(environmentOptions));
         return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
     }
 
