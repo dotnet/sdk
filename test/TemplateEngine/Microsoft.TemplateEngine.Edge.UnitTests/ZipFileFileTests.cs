@@ -31,7 +31,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual(data.Length, ((IKnownLengthFile)file).Length);
             using Stream stream = file.OpenRead();
             byte[] actual = new byte[data.Length];
-            Assert.AreEqual(data.Length, stream.Read(actual, 0, actual.Length));
+            int totalRead = 0;
+            while (totalRead < actual.Length)
+            {
+                int bytesRead = stream.Read(actual, totalRead, actual.Length - totalRead);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                totalRead += bytesRead;
+            }
+
+            Assert.AreEqual(data.Length, totalRead);
             Assert.AreSequenceEqual(data, actual);
         }
     }
