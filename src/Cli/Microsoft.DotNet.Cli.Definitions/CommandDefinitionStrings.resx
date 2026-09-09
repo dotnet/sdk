@@ -1060,8 +1060,14 @@ The default is to publish a framework-dependent application.</value>
   <data name="RunFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to run for. The target framework must also be specified in the project file.</value>
   </data>
+  <data name="RunFileModeOptionDescription" xml:space="preserve">
+    <value>Treat the first application argument as the file-based app to run. A relative file path is resolved against the directory specified by --working-directory.</value>
+  </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="RunWorkingDirectoryOptionDescription" xml:space="preserve">
+    <value>The working directory to use when running the application. This option overrides the working directory from a launch profile.</value>
   </data>
   <data name="SdkAppFullName" xml:space="preserve">
     <value>.NET SDK Command</value>
@@ -1553,5 +1559,17 @@ If command is specified without the argument, it lists all the template packages
   </data>
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
+  </data>
+  <data name="DnxCommandDescription" xml:space="preserve">
+    <value>Run a file-based app or execute a tool package without permanently installing it.</value>
+  </data>
+  <data name="DnxPackageOrFileArgumentDescription" xml:space="preserve">
+    <value>A qualified path to a file-based app, or a package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</value>
+  </data>
+  <data name="DnxPackageOrFileArgumentName" xml:space="preserve">
+    <value>FILE_OR_PACKAGE</value>
+  </data>
+  <data name="DnxArgumentsDescription" xml:space="preserve">
+    <value>Arguments forwarded to the file-based app or tool.</value>
   </data>
 </root>

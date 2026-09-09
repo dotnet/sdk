@@ -1072,6 +1072,26 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
         <target state="translated">S'il est présent, empêche la présentation des modèles regroupés dans le SDK.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DnxArgumentsDescription">
+        <source>Arguments forwarded to the file-based app or tool.</source>
+        <target state="new">Arguments forwarded to the file-based app or tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxCommandDescription">
+        <source>Run a file-based app or execute a tool package without permanently installing it.</source>
+        <target state="new">Run a file-based app or execute a tool package without permanently installing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxPackageOrFileArgumentDescription">
+        <source>A qualified path to a file-based app, or a package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">A qualified path to a file-based app, or a package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxPackageOrFileArgumentName">
+        <source>FILE_OR_PACKAGE</source>
+        <target state="new">FILE_OR_PACKAGE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
         <target state="translated">Commande de test .NET pour Microsoft.Testing.Platform (activée via le fichier « global.json »). Cela prend uniquement en charge Microsoft.Testing.Platform et ne prend pas en charge VSTest. Pour plus d'informations, consultez https://aka.ms/dotnet-test.</target>
@@ -1795,6 +1815,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <target state="translated">Configuration pour laquelle l'exécution est effectuée. La valeur par défaut pour la plupart des projets est 'Debug'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunFileModeOptionDescription">
+        <source>Treat the first application argument as the file-based app to run. A relative file path is resolved against the directory specified by --working-directory.</source>
+        <target state="new">Treat the first application argument as the file-based app to run. A relative file path is resolved against the directory specified by --working-directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunFrameworkOptionDescription">
         <source>The target framework to run for. The target framework must also be specified in the project file.</source>
         <target state="translated">Framework cible pour lequel l'exécution est effectuée. Le framework cible doit également être spécifié dans le fichier projet.</target>
@@ -1803,6 +1828,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
       <trans-unit id="RunRuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">Runtime cible à exécuter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunWorkingDirectoryOptionDescription">
+        <source>The working directory to use when running the application. This option overrides the working directory from a launch profile.</source>
+        <target state="new">The working directory to use when running the application. This option overrides the working directory from a launch profile.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeIdentifierArgumentName">

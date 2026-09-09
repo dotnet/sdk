@@ -1072,6 +1072,26 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">있는 경우 SDK에 번들로 제공되는 템플릿이 표시되지 않도록 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DnxArgumentsDescription">
+        <source>Arguments forwarded to the file-based app or tool.</source>
+        <target state="new">Arguments forwarded to the file-based app or tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxCommandDescription">
+        <source>Run a file-based app or execute a tool package without permanently installing it.</source>
+        <target state="new">Run a file-based app or execute a tool package without permanently installing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxPackageOrFileArgumentDescription">
+        <source>A qualified path to a file-based app, or a package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">A qualified path to a file-based app, or a package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DnxPackageOrFileArgumentName">
+        <source>FILE_OR_PACKAGE</source>
+        <target state="new">FILE_OR_PACKAGE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
         <target state="translated">Microsoft.Testing.Platform용 .NET 테스트 명령입니다('global.json' 파일을 통해 옵트인). 이는 Microsoft.Testing.Platform만 지원하며 VSTest를 지원하지 않습니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
@@ -1795,6 +1815,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">실행할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunFileModeOptionDescription">
+        <source>Treat the first application argument as the file-based app to run. A relative file path is resolved against the directory specified by --working-directory.</source>
+        <target state="new">Treat the first application argument as the file-based app to run. A relative file path is resolved against the directory specified by --working-directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunFrameworkOptionDescription">
         <source>The target framework to run for. The target framework must also be specified in the project file.</source>
         <target state="translated">실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
@@ -1803,6 +1828,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunRuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">실행할 대상 런타임입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunWorkingDirectoryOptionDescription">
+        <source>The working directory to use when running the application. This option overrides the working directory from a launch profile.</source>
+        <target state="new">The working directory to use when running the application. This option overrides the working directory from a launch profile.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimeIdentifierArgumentName">

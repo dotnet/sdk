@@ -122,6 +122,35 @@ and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch
 even if a valid `watch` file-based app exists in the current directory;
 one can use `dotnet ./watch` to run the file-based app).
 
+### `dnx`
+
+The `dnx` launcher also supports running file-based apps whose target path is valid according to the same rules as `dotnet run`:
+the file must exist and either have a `.cs` extension or start with `#!`.
+The target path must also be explicit: it must be fully qualified or contain a directory separator,
+such as `./app`, `../app`, or `some/directory/app`.
+This requirement avoids ambiguity with NuGet tool package IDs, so a bare `dnx app` always retains the existing tool execution behavior
+even if a file named `app` exists in the current directory.
+
+```ps1
+dnx ./some/path.cs arg0 arg1
+```
+
+This is equivalent to `dotnet run --file ./some/path.cs -- arg0 arg1`.
+All arguments after the target path are passed to the app verbatim, including a literal `--`
+and arguments that have the same names as `dnx` tool options.
+
+For file-based apps, `dnx` starts the `dotnet` host with the target directory as its working directory so SDK resolution,
+including the search for `global.json`, starts from the target directory rather than the directory from which `dnx` was invoked.
+After the SDK CLI has started, `dnx` restores the original working directory before building and running the app.
+Consequently, implicit build files such as `Directory.Build.props` are still discovered relative to the file-based app,
+while the running app observes the directory from which the user invoked `dnx` as its current working directory.
+
+For example, `cd /x/ && dnx /y/file.cs` searches for `global.json` and implicit build files from `/y/`,
+but runs the app with `/x/` as its current working directory.
+
+If the first argument is not a valid file-based app target path, `dnx` retains its existing NuGet tool execution behavior:
+it uses the newest installed SDK regardless of `global.json`.
+
 ### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.

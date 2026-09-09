@@ -18,7 +18,8 @@ public sealed class RunCommandTests : SdkTest
     private static RunCommand CreateRunCommand(
         string projectPath,
         bool noLaunchProfileArguments = false,
-        string[]? applicationArgs = null)
+        string[]? applicationArgs = null,
+        string? workingDirectory = null)
         => new(
             noBuild: true,
             projectFileFullPath: projectPath,
@@ -34,7 +35,8 @@ public sealed class RunCommandTests : SdkTest
             msbuildArgs: MSBuildArgs.FromOtherArgs([]),
             applicationArgs: applicationArgs ?? [],
             readCodeFromStdin: false,
-            environmentVariables: new Dictionary<string, string>());
+            environmentVariables: new Dictionary<string, string>(),
+            workingDirectory: workingDirectory);
 
     [TestMethod]
     public void EnvironmentVariableExpansion_Project()
@@ -231,6 +233,32 @@ public sealed class RunCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void Executable_WorkingDirectoryOptionOverridesLaunchProfile()
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string projectDirectory = Path.Combine(root, "project");
+        string optionWorkingDirectory = Path.Combine(root, "option");
+        var model = new ExecutableLaunchProfile
+        {
+            ExecutablePath = "executable",
+            WorkingDirectory = Path.Combine(root, "profile"),
+            EnvironmentVariables = [],
+        };
+
+        var runCommand = CreateRunCommand(
+            Path.Combine(projectDirectory, "myproj.csproj"),
+            workingDirectory: optionWorkingDirectory);
+        var command = (Command)runCommand.GetTargetCommand(
+            model,
+            projectFactory: null,
+            cachedRunProperties: null,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(optionWorkingDirectory, command.StartInfo.WorkingDirectory);
+    }
+
+    [TestMethod]
     public void Executable_NoLaunchProfileArguments()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -399,5 +427,31 @@ public sealed class RunCommandTests : SdkTest
             logger: null);
 
         Assert.AreEqual(expectedArguments, command.StartInfo.Arguments);
+    }
+
+    [TestMethod]
+    public void Project_WorkingDirectoryOptionOverridesRunWorkingDirectory()
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string optionWorkingDirectory = Path.Combine(root, "option");
+        var runCommand = CreateRunCommand(
+            Path.Combine(root, "myproj.csproj"),
+            workingDirectory: optionWorkingDirectory);
+        var runProperties = new RunProperties(
+            Command: "executable",
+            Arguments: null,
+            WorkingDirectory: Path.Combine(root, "msbuild"),
+            RuntimeIdentifier: string.Empty,
+            DefaultAppHostRuntimeIdentifier: string.Empty,
+            TargetFrameworkVersion: string.Empty);
+
+        var command = (Command)runCommand.GetTargetCommand(
+            launchSettings: null,
+            projectFactory: null,
+            cachedRunProperties: runProperties,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(optionWorkingDirectory, command.StartInfo.WorkingDirectory);
     }
 }

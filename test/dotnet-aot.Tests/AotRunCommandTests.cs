@@ -92,13 +92,16 @@ public class AotRunCommandTests
     public void EligiblePositionalNoBuildProducesLaunchInvocation()
     {
         var fixture = CreateFixture();
+        string workingDirectory = Path.Join(fixture.TestDirectory, "working");
+        Directory.CreateDirectory(workingDirectory);
         string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
         try
         {
             NativeEntryPoint.DotnetRoot = fixture.TestDirectory;
             var parseResult = Parser.Parse([
                 "run",
-                fixture.EntryPointPath,
+                "--working-directory", workingDirectory,
+                Path.GetRelativePath(fixture.TestDirectory, fixture.EntryPointPath),
                 "--no-build",
                 "--no-launch-profile",
                 "--", "arg one", "--flag",
@@ -118,7 +121,50 @@ public class AotRunCommandTests
             Assert.IsNotNull(invocation);
             Assert.AreEqual(fixture.LaunchArtifacts.AppHost, invocation.Command);
             Assert.AreEqual("\"arg one\" --flag", invocation.CommandArguments);
-            Assert.AreEqual(fixture.TestDirectory, invocation.WorkingDirectory);
+            Assert.AreEqual(workingDirectory, invocation.WorkingDirectory);
+        }
+        finally
+        {
+            NativeEntryPoint.DotnetRoot = originalDotnetRoot;
+            DeleteFixture(fixture);
+        }
+    }
+
+    [TestMethod]
+    public void FileModeResolvesFromAndRunsInWorkingDirectory()
+    {
+        var fixture = CreateFixture();
+        string callerDirectory = Path.Join(fixture.TestDirectory, "caller");
+        Directory.CreateDirectory(callerDirectory);
+        string relativeEntryPointPath = Path.GetRelativePath(callerDirectory, fixture.EntryPointPath);
+        string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
+        try
+        {
+            NativeEntryPoint.DotnetRoot = fixture.TestDirectory;
+            var parseResult = Parser.Parse([
+                "run",
+                "--file-mode",
+                "--working-directory", callerDirectory,
+                "--no-build",
+                "--no-launch-profile",
+                "--", relativeEntryPointPath, "--help", "arg",
+            ]);
+            AotRunInvocation? invocation = null;
+
+            int exitCode = AotRunCommand.Execute(
+                parseResult,
+                value =>
+                {
+                    invocation = value;
+                    return 17;
+                },
+                fixture.TestDirectory);
+
+            Assert.AreEqual(17, exitCode);
+            Assert.IsNotNull(invocation);
+            Assert.AreEqual(fixture.LaunchArtifacts.AppHost, invocation.Command);
+            Assert.AreEqual("--help arg", invocation.CommandArguments);
+            Assert.AreEqual(callerDirectory, invocation.WorkingDirectory);
         }
         finally
         {
