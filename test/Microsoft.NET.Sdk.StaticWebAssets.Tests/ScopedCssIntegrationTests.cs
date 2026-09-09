@@ -545,6 +545,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     }
 
     [TestClass]
+    // These compatibility tests load prior Razor toolchains that are not safe alongside current Razor builds.
+    [DoNotParallelize]
     public class ScopedCssCompatibilityIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget");
