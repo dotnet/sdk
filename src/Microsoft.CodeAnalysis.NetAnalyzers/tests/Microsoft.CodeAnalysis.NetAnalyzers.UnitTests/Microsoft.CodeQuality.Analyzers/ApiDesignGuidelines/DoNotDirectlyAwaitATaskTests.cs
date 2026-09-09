@@ -408,19 +408,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                             where TAsyncDisposable : IAsyncDisposable => throw null;
                         private static Task<TAsyncDisposable> CreateAsync<TAsyncDisposable>()
                             where TAsyncDisposable : IAsyncDisposable => throw null;
-
+                    
                         public async Task M1<TAsyncDisposable>()
                             where TAsyncDisposable : IAsyncDisposable
                         {
                             await using var resource = Create<TAsyncDisposable>().ConfigureAwait(false);
                         }
-
+                    
                         public async Task M2<TAsyncDisposable>()
                             where TAsyncDisposable : IAsyncDisposable
                         {
                             await using var resource = (await CreateAsync<TAsyncDisposable>().ConfigureAwait(false)).ConfigureAwait(false);
                         }
-
+                    
                         public async Task M3<TAsyncDisposable>()
                             where TAsyncDisposable : IAsyncDisposable
                         {
@@ -428,7 +428,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                             {
                             }
                         }
-
+                    
                         public async Task M4<TAsyncDisposable>()
                             where TAsyncDisposable : IAsyncDisposable
                         {

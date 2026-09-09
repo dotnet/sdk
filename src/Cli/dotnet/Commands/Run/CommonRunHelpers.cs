@@ -3,6 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+#if !CLI_AOT
+using Microsoft.Build.Exceptions;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
@@ -138,14 +141,17 @@ internal static class CommonRunHelpers
         string? launchProfile,
         bool noLaunchProfile,
         bool reportUsingLaunchSettings,
-        Action<string, bool> report)
+        Action<string, bool> report,
+        LaunchProfileParserOptions parserOptions,
+        out string? launchSettingsPath)
     {
+        launchSettingsPath = null;
         if (noLaunchProfile || projectOrEntryPointFilePath is null)
         {
             return LaunchProfileParseResult.Success(model: null);
         }
 
-        string? launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
+        launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
             projectOrEntryPointFilePath,
             launchProfile,
             report);
@@ -159,7 +165,26 @@ internal static class CommonRunHelpers
             report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
         }
 
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile);
+        return ReadLaunchProfileFromFile(launchSettingsPath, launchProfile, parserOptions);
+    }
+
+    internal static LaunchProfileParseResult ReadLaunchProfileFromFile(
+        string launchSettingsPath,
+        string? launchProfile,
+        LaunchProfileParserOptions parserOptions)
+    {
+#if CLI_AOT
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
+#else
+        try
+        {
+            return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
+        }
+        catch (InvalidProjectFileException ex)
+        {
+            return LaunchProfileParseResult.Failure(ex.Message);
+        }
+#endif
     }
 
     /// <summary>

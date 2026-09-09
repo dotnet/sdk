@@ -329,6 +329,76 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         }
 
         [TestMethod]
+        public void RoundTrip_AssetPathTagHelper_PreservesMetadata()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Kind": 11,
+                        "Name": "img[src]",
+                        "AssemblyName": "Microsoft.AspNetCore.Components",
+                        "TypeName": "Microsoft.AspNetCore.Components.AssetPathAttributes",
+                        "MetadataKind": 8,
+                        "Metadata": {
+                            "Element": "img",
+                            "Attribute": "src"
+                        }
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual(TagHelperKind.AssetPath, roundTripped[0].Kind);
+            Assert.IsInstanceOfType<AssetPathMetadata>(roundTripped[0].Metadata);
+            var metadata = (AssetPathMetadata)roundTripped[0].Metadata;
+            Assert.AreEqual("img", metadata.Element);
+            Assert.AreEqual("src", metadata.Attribute);
+        }
+
+        [TestMethod]
+        public void RoundTrip_ComponentPropertyAcceptingAssetPath_PreservesMetadata()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Name": "MyComponent",
+                        "AssemblyName": "ComponentAssembly",
+                        "TypeName": "ComponentNamespace.MyComponent",
+                        "BoundAttributes": [
+                            {
+                                "Flags": 0,
+                                "Name": "source",
+                                "PropertyName": "Source",
+                                "TypeName": "System.String",
+                                "DisplayName": "Source",
+                                "MetadataKind": 2,
+                                "Metadata": {
+                                    "AcceptsAssetPath": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            Assert.ContainsSingle(roundTripped[0].BoundAttributes);
+            Assert.IsInstanceOfType<PropertyMetadata>(roundTripped[0].BoundAttributes[0].Metadata);
+            var metadata = (PropertyMetadata)roundTripped[0].BoundAttributes[0].Metadata;
+            Assert.IsTrue(metadata.AcceptsAssetPath);
+        }
+
+        [TestMethod]
         public void RoundTrip_MultipleTagHelpers_PreservesAll()
         {
             // Arrange

@@ -7,7 +7,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -27,8 +26,6 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
-    private static readonly Regex s_msBuildPropertyRegex = new(@"\$\((?!\[)(?<token>[^\)]+)\)", RegexOptions.IgnoreCase);
-
     public bool NoBuild { get; }
 
     /// <summary>
@@ -169,11 +166,20 @@ public class RunCommand
                 return 1;
             }
 
-            var launchProfileParseResult = ReadLaunchProfileSettings();
-            if (launchProfileParseResult.FailureReason != null)
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile), launchProfileParseResult.FailureReason).Bold().Red());
-            }
+            var launchProfileParseResult = ReadLaunchProfileSettings(
+                projectFactory: null,
+                expandExecutableProfile: false,
+                out string? launchSettingsPath);
+            ReportLaunchProfileFailure(launchProfileParseResult);
+
+            bool requiresProjectExpansion = launchProfileParseResult.Profile is ProjectLaunchProfile projectProfile
+                && ProjectLaunchProfileParser.RequiresMSBuildExpansion(
+                    projectProfile,
+                    includeCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0);
+            bool requiresExecutableExpansion = launchProfileParseResult.Profile is ExecutableLaunchProfile executableProfile
+                && ExecutableLaunchProfileParser.RequiresMSBuildExpansion(
+                    executableProfile,
+                    includeCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0);
 
             Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             RunProperties? cachedRunProperties = null;
@@ -186,7 +192,13 @@ public class RunCommand
                     Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
                 }
 
-                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
+                EnsureProjectIsBuilt(
+                    out projectFactory,
+                    out cachedRunProperties,
+                    out projectBuilder,
+                    selector?.IntermediateOutputPath,
+                    selector?.HasRuntimeEnvironmentVariableSupport ?? false,
+                    requiresProjectExpansion);
                 runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
@@ -199,7 +211,9 @@ public class RunCommand
 
                 Reporter.Verbose.WriteLine("Checking changes for run properties");
                 var buildLevel = projectBuilder.GetBuildLevel(out var cache);
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+                projectFactory = requiresProjectExpansion || !CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry)
+                    ? projectBuilder.CreateProjectInstance
+                    : null;
                 cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }
 
@@ -212,6 +226,15 @@ public class RunCommand
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
                 }
+            }
+
+            if (requiresExecutableExpansion)
+            {
+                launchProfileParseResult = ReadLaunchProfileSettings(
+                    launchSettingsPath ?? throw new InvalidOperationException(),
+                    projectFactory,
+                    expandExecutableProfile: true);
+                ReportLaunchProfileFailure(launchProfileParseResult);
             }
 
             var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger);
@@ -233,6 +256,17 @@ public class RunCommand
         finally
         {
             logger?.ReallyShutdown();
+        }
+
+        void ReportLaunchProfileFailure(LaunchProfileParseResult result)
+        {
+            if (result.FailureReason is not null)
+            {
+                Reporter.Error.WriteLine(string.Format(
+                    CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                    LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile),
+                    result.FailureReason).Bold().Red());
+            }
         }
     }
 
@@ -416,22 +450,84 @@ public class RunCommand
         return command;
     }
 
-    internal LaunchProfileParseResult ReadLaunchProfileSettings()
-        => CommonRunHelpers.ReadLaunchProfile(
-            ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
-            LaunchProfile,
-            NoLaunchProfile,
-            reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
-            static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
+    internal LaunchProfileParseResult ReadLaunchProfileSettings(
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        bool expandExecutableProfile,
+        out string? launchSettingsPath)
+    {
+        string? discoveredPath = null;
+        LaunchProfileParseResult result = ReadLaunchProfileSettingsCore(
+            projectFactory,
+            expandExecutableProfile,
+            options => CommonRunHelpers.ReadLaunchProfile(
+                ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
+                LaunchProfile,
+                NoLaunchProfile,
+                reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
+                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message),
+                options,
+                out discoveredPath));
+        launchSettingsPath = discoveredPath;
+        return result;
+    }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
+    private LaunchProfileParseResult ReadLaunchProfileSettings(
+        string launchSettingsPath,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        bool expandExecutableProfile)
+        => ReadLaunchProfileSettingsCore(
+            projectFactory,
+            expandExecutableProfile,
+            options => CommonRunHelpers.ReadLaunchProfileFromFile(launchSettingsPath, LaunchProfile, options));
+
+    private LaunchProfileParseResult ReadLaunchProfileSettingsCore(
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        bool expandExecutableProfile,
+        Func<LaunchProfileParserOptions, LaunchProfileParseResult> read)
+    {
+        IDisposable? environmentScope = null;
+        ProjectInstance? project = null;
+        try
+        {
+            return read(new LaunchProfileParserOptions(
+                EvaluateExpression,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: expandExecutableProfile,
+                ExpandCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0));
+        }
+        finally
+        {
+            environmentScope?.Dispose();
+        }
+
+        string EvaluateExpression(string expression)
+        {
+            environmentScope ??= MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            project ??= EvaluateProject(
+                ProjectFileFullPath,
+                projectFactory ?? (EntryPointFileFullPath is null ? null : CreateProjectBuilder().CreateProjectInstance),
+                MSBuildArgs,
+                binaryLogger: null);
+            return project.ExpandString(expression);
+        }
+    }
+
+    private void EnsureProjectIsBuilt(
+        out Func<ProjectCollection, ProjectInstance>? projectFactory,
+        out RunProperties? cachedRunProperties,
+        out VirtualProjectBuildingCommand? projectBuilder,
+        string? intermediateOutputPath,
+        bool hasRuntimeEnvironmentVariableSupport,
+        bool requiresProjectExpansion)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
             projectBuilder = CreateProjectBuilder();
             buildResult = projectBuilder.Execute();
-            projectFactory = CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+            projectFactory = requiresProjectExpansion || !CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry)
+                ? projectBuilder.CreateProjectInstance
+                : null;
             cachedRunProperties = projectBuilder.LastRunProperties ?? projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
@@ -524,15 +620,19 @@ public class RunCommand
     {
         ICommand command;
         ProjectInstance? project = null;
+        bool requiresProjectExpansion = launchSettings is not null
+            && ProjectLaunchProfileParser.RequiresMSBuildExpansion(
+                launchSettings,
+                includeCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0);
         IReadOnlyDictionary<string, string> runtimeEnvironmentVariables = EnvironmentVariables;
-        if (cachedRunProperties != null)
+        if (cachedRunProperties != null && !requiresProjectExpansion)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
             Reporter.Verbose.WriteLine($"Getting target command: from {(runPropertiesFromEvaluation ? "previous evaluation" : "cache")}.");
             command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
-        else if (projectFactory is null && ProjectFileFullPath is null)
+        else if (projectFactory is null && ProjectFileFullPath is null && !requiresProjectExpansion)
         {
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
             // So we can skip project evaluation to continue the optimized path.
@@ -544,17 +644,10 @@ public class RunCommand
         {
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
-            bool hasRuntimeEnvironmentVariableSupport;
-            try
-            {
-                using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
-                project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
-                ValidatePreconditions(project);
-                hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
-            }
-            finally
-            {
-                    }
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+            ValidatePreconditions(project);
+            bool hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
@@ -567,6 +660,28 @@ public class RunCommand
             }
         }
 
+        if (requiresProjectExpansion)
+        {
+            ProjectLaunchProfile profile = launchSettings ?? throw new InvalidOperationException();
+            ProjectInstance expansionProject = project ?? throw new InvalidOperationException();
+            try
+            {
+                launchSettings = ProjectLaunchProfileParser.ExpandMSBuildProperties(
+                    profile,
+                    expansionProject.ExpandString,
+                    expandCommandLineArgs: !NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs),
+                    expandApplicationUrl: true);
+            }
+            catch (InvalidProjectFileException ex)
+            {
+                Reporter.Error.WriteLine(string.Format(
+                    CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                    LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile),
+                    ex.Message).Bold().Red());
+                launchSettings = null;
+            }
+        }
+
         CommonRunHelpers.ApplyLaunchEnvironmentVariables(
             launchSettings,
             runtimeEnvironmentVariables,
@@ -574,33 +689,10 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
-            command.SetCommandArgs(
-                project is null
-                    ? launchSettings.CommandLineArgs
-                    : s_msBuildPropertyRegex.Replace(launchSettings.CommandLineArgs, match => project.ExpandString(match.Value)));
+            command.SetCommandArgs(launchSettings.CommandLineArgs);
         }
 
         return command;
-
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
-        {
-            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-            if (projectFactory != null)
-            {
-                return projectFactory(collection);
-            }
-
-            try
-            {
-                return collection.LoadProject(projectFilePath).CreateProjectInstance();
-            }
-            catch (InvalidProjectFileException e)
-            {
-                throw new GracefulException(string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, projectFilePath), e);
-            }
-        }
 
         static void ValidatePreconditions(ProjectInstance project)
         {
@@ -684,6 +776,30 @@ public class RunCommand
             }
 
             return hasRuntimeEnvironmentVariableSupport;
+        }
+    }
+
+    private static ProjectInstance EvaluateProject(
+        string? projectFilePath,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        MSBuildArgs msbuildArgs,
+        ILogger? binaryLogger)
+    {
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+        var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+        if (projectFactory != null)
+        {
+            return projectFactory(collection);
+        }
+
+        try
+        {
+            return collection.LoadProject(projectFilePath).CreateProjectInstance();
+        }
+        catch (InvalidProjectFileException e)
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, projectFilePath), e);
         }
     }
 
