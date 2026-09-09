@@ -4,10 +4,10 @@
 namespace Microsoft.DotNet.Tests;
 
 [TestClass]
-public class AssemblySetup
+public static class AssemblySetup
 {
     [AssemblyInitialize]
-    public static void Initialize(TestContext _)
+    public static void Initialize(TestContext testContext)
     {
         _ = SdkTestContext.Current;
     }
