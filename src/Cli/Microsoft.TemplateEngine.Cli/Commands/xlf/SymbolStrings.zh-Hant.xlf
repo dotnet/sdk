@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="TemplateCommand_Option_AllowScripts">
         <source>Specifies if post action scripts should run. Templates can run arbitrary code through MSBuild whether or not this option is enabled; only use templates from trusted sources.</source>
-        <target state="new">Specifies if post action scripts should run. Templates can run arbitrary code through MSBuild whether or not this option is enabled; only use templates from trusted sources.</target>
+        <target state="translated">指定是否應執行動作後指令碼。不論是否啟用此選項，範本都可以透過 MSBuild 執行任意程式碼；只應使用來自受信任來源的範本。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_Baseline">

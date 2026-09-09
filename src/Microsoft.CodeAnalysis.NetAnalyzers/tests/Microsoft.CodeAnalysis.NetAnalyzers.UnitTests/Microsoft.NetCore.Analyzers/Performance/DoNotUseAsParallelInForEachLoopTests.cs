@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.DoNotUseAsParallelInForEachLoopAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class DoNotUseAsParallelInForEachLoopTests
     {
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelDirectlyInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_AsParallelDirectlyInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelWithSelectInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelWithWhereInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelEarlyInChain_NoDiagnostic()
         {
             const string code = """
@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelWithToList_NoDiagnostic()
         {
             const string code = """
@@ -141,7 +141,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelWithToArray_NoDiagnostic()
         {
             const string code = """
@@ -161,7 +161,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_RegularForeachWithoutAsParallel_NoDiagnostic()
         {
             const string code = """
@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CSharp_AsParallelOnArrayDirectlyInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -205,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_AsParallelWithSelectInForeachLoop_ReportsDiagnostic()
         {
             const string code = """
@@ -224,7 +224,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_AsParallelWithToList_NoDiagnostic()
         {
             const string code = """

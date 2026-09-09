@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -35,10 +35,6 @@ public class PublishCommand : RestoringCommand
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        string[] args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
-
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(definition.SelfContainedOption),
             parseResult.HasOption(definition.NoSelfContainedOption));
 
@@ -72,10 +68,10 @@ public class PublishCommand : RestoringCommand
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, otherArgs) =>
             {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
-                        nonBinLogArgs,
+                        otherArgs,
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );

@@ -46,7 +46,7 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new DockerCli(loggerFactory).IsAvailable())
+        if (!new ContainerRuntime(loggerFactory).IsAvailable())
         {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }

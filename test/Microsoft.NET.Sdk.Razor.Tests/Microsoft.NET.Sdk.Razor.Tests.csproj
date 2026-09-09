@@ -3,6 +3,8 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Integration tests share the Razor build server, which can cross-contaminate concurrent project builds. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,14 +35,6 @@
       <_Parameter1>DefaultTestBaselinePackageVersion</_Parameter1>
       <_Parameter2>5.0</_Parameter2>
     </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
   <ItemGroup>

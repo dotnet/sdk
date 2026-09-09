@@ -3,18 +3,12 @@
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!-- Each test uses a caller- and data-row-specific asset directory and only mutates child-process state. -->
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
 </Project>

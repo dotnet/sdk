@@ -6,13 +6,23 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
-internal sealed class ReferenceListCommandDefinition()
-    : ListReferenceCommandDefinitionBase(Name)
+internal sealed class ReferenceListCommandDefinition : ListReferenceCommandDefinitionBase
 {
     public new const string Name = "list";
 
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
+
+    public ReferenceListCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(FileOption);
+    }
+
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
-    internal override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOption);
+    internal override Option<string?>? GetFileOption() => FileOption;
+
+    internal override Option<string?>? GetProjectOption() => Parent.ProjectOption;
+
+    internal override Argument<string>? GetProjectOrFileArgument() => null;
 }

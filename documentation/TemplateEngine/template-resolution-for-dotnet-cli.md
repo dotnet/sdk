@@ -187,7 +187,7 @@ Argument (name) matching: exact or partial short name or name, optional.
 
 ### Template parameter filters
 
-This feature is currently unsupported (support was removed with moving o a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
+This feature is currently unsupported (support was removed with moving to a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
 
 ### Error cases
 
@@ -278,7 +278,7 @@ filters applied.
 
 ### Template parameter filters
 
-This feature is currently unsupported (support was removed with moving o a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
+This feature is currently unsupported (support was removed with moving to a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
 
 ### Error cases
 

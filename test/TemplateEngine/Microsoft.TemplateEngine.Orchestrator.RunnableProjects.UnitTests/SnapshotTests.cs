@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class SnapshotTests : TestBase
     {
         private TestContext _testContext = null!;

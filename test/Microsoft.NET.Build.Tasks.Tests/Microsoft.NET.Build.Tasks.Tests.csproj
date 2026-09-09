@@ -33,7 +33,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Using Include="Microsoft.NET.TestFramework" />
   </ItemGroup>
 
   <ItemGroup>

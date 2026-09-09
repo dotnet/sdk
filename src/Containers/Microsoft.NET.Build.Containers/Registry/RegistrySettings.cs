@@ -88,6 +88,6 @@ internal class RegistrySettings
             }
         }
 
-        return DockerCli.IsInsecureRegistry(registryName);
+        return DockerContainerRuntime.IsInsecureRegistry(registryName);
     }
 }

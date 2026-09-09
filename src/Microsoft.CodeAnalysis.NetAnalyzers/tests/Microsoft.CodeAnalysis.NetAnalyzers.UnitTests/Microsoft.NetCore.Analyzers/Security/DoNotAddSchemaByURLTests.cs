@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotAddSchemaByURL,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,120 +12,132 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotAddSchemaByURLTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithStringStringParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        XmlSchemaCollection xsc = new XmlSchemaCollection();
-        xsc.Add(""urn: bookstore - schema"", ""books.xsd"");
-    }
-}",
+                using System;
+                using System.Xml.Schema;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        XmlSchemaCollection xsc = new XmlSchemaCollection();
+                        xsc.Add("urn: bookstore - schema", "books.xsd");
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Xml.Schema
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-class TestClass
-    public Sub TestMethod
-        Dim xsc As New XmlSchemaCollection
-        xsc.Add(""urn: bookstore - schema"", ""books.xsd"")
-    End Sub
-End Class",
+                Imports System
+                Imports System.Xml.Schema
+
+                class TestClass
+                    public Sub TestMethod
+                        Dim xsc As New XmlSchemaCollection
+                        xsc.Add("urn: bookstore - schema", "books.xsd")
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(8, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithNullStringParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        XmlSchemaCollection xsc = new XmlSchemaCollection();
-        xsc.Add(null, ""books.xsd"");
-    }
-}",
+                using System;
+                using System.Xml.Schema;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        XmlSchemaCollection xsc = new XmlSchemaCollection();
+                        xsc.Add(null, "books.xsd");
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Xml.Schema
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-class TestClass
-    public Sub TestMethod
-        Dim xsc As New XmlSchemaCollection
-        xsc.Add(Nothing, ""books.xsd"")
-    End Sub
-End Class",
+                Imports System
+                Imports System.Xml.Schema
+
+                class TestClass
+                    public Sub TestMethod
+                        Dim xsc As New XmlSchemaCollection
+                        xsc.Add(Nothing, "books.xsd")
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(8, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithXmlSchemaCollectionParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml.Schema;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        XmlSchemaCollection xsc = new XmlSchemaCollection();
-        xsc.Add(xsc);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        XmlSchemaCollection xsc = new XmlSchemaCollection();
+                        xsc.Add(xsc);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithXmlSchemaParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml.Schema;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        XmlSchemaCollection xsc = new XmlSchemaCollection();
-        xsc.Add(new XmlSchema());
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        XmlSchemaCollection xsc = new XmlSchemaCollection();
+                        xsc.Add(new XmlSchema());
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalAddMethodNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml.Schema;
 
-class TestClass
-{
-    public static void Add (string ns, string uri)
-    {
-    }
+                class TestClass
+                {
+                    public static void Add (string ns, string uri)
+                    {
+                    }
 
-    public void TestMethod()
-    {
-        TestClass.Add(""urn: bookstore - schema"", ""books.xsd"");
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TestClass.Add("urn: bookstore - schema", "books.xsd");
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

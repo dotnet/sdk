@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
@@ -47,6 +48,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         return false;
     }
 
+#if !CLI_AOT
     internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
@@ -55,16 +57,16 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
         ParseResult parseResult,
         string? msbuildPath = null,
-        Func<MSBuildArgs, MSBuildArgs>? transformer = null)
+        Func<MSBuildArgs, ImmutableArray<string>, MSBuildArgs>? transformer = null)
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
-        LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
+        LoggerUtility.SeparateMSBuildArguments(args, out var msbuildOnlyArgs, out var otherArgs);
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
-        if (nonLoggerArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
+        if (otherArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
-                var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. loggerArgs],
+                var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. msbuildOnlyArgs],
                 [
                     .. optionsToUseWhenParsingMSBuildFlags,
                     CommonOptions.CreateGetPropertyOption(),
@@ -72,7 +74,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
                     CommonOptions.CreateGetTargetResultOption(),
                     CommonOptions.CreateGetResultOutputFileOption(),
                 ]);
-                msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+                msbuildArgs = transformer?.Invoke(msbuildArgs, otherArgs) ?? msbuildArgs;
                 return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
             }
             else
@@ -85,7 +87,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             // Warn if any argument looks like a file-based program entry point but we're falling back to MSBuild.
             // This can happen when extra positional arguments prevent the single-arg file-based path from being taken,
             // or when a .cs file doesn't exist (so IsValidEntryPointPath returns false).
-            foreach (var candidate in nonLoggerArgs)
+            foreach (var candidate in otherArgs)
             {
                 if (VirtualProjectBuilder.IsValidEntryPointPath(candidate))
                 {
@@ -94,7 +96,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
                             CliCommandStrings.WarningFileArgumentPassedToMSBuild,
                             candidate,
                             commandDefinition.Name,
-                            FormatUnsupportedArguments(nonLoggerArgs, candidate)).Yellow());
+                            FormatUnsupportedArguments(otherArgs, candidate)).Yellow());
                     break;
                 }
 
@@ -104,13 +106,13 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
                         string.Format(
                             CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
                             candidate,
-                            FormatUnrecognizedArguments(nonLoggerArgs)).Yellow());
+                            FormatUnrecognizedArguments(otherArgs)).Yellow());
                     break;
                 }
             }
 
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
-            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+            msbuildArgs = transformer?.Invoke(msbuildArgs, otherArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
         }
     }
@@ -136,4 +138,5 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             yield return arg;
         }
     }
+#endif
 }

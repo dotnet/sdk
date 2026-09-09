@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
-[DoNotParallelize]
 public sealed class LayerEndToEndTests : SdkTest, IDisposable
 {
     public LayerEndToEndTests()

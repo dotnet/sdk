@@ -152,8 +152,13 @@ There are several details of this implementation that keep our workflows and rep
    provided to a dedicated step within the `pat_pool` job. That job runs
    after `pre_activation` and contains only the trusted checkout and action
    steps--no untrusted context or input is within scope. The
-   `select-pat-number` action only references the secret values to determine
-   which are non-empty, filtering the secret numbers to those with values.
+  `select-pat-number` action sends each non-empty secret only to the fixed
+  `https://api.github.com/user` endpoint and includes only entries that return
+  HTTP 200. Response bodies are discarded. This excludes expired, revoked,
+  and otherwise unauthenticated PATs before random selection. This check does
+  not verify Copilot permissions or licensing; the scheduled
+  [`validate-pat-pool.yml`](../validate-pat-pool.yml) workflow exercises those
+  separately with an actual Copilot request.
 1. **The `pat_pool` job emits only a number, never a secret.** Its sole output,
    `pat_number`, is the 0-9 index of the selected PAT (or empty when the pool
    is empty). The actual secret materializes only later, in the activation
@@ -162,9 +167,11 @@ There are several details of this implementation that keep our workflows and rep
    [passing secrets][passing-secrets] between jobs or workflows, with the
    `case` statement acting as a very simple secret store.
 1. **The `select-pat-number` action does not require any permissions.** It
-   reads only the `COPILOT_PAT_#` environment variables passed to it and writes
-   only to `GITHUB_OUTPUT`. The job that hosts it sets `permissions:` to the
-   workflow defaults (no elevated scopes).
+  reads only the `COPILOT_PAT_#` environment variables passed to it, makes
+  authentication checks against GitHub, and writes only the selected number
+  to `GITHUB_OUTPUT`. The job that hosts it sets `permissions:` to the workflow
+  defaults (no elevated scopes). PAT values and API response bodies are never
+  written to logs, summaries, artifacts, outputs, or command arguments.
 1. **The implementation uses supported Agentic Workflow extensibility hooks.**
    Defining a custom job inside an [imported workflow file][imports] is
    supported by `gh aw compile`. gh-aw automatically

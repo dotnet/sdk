@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,24 +11,27 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotDeclareProtectedMembersInSealedTypesTests
     {
 
-        [Fact]
+        [TestMethod]
         public async Task ProtectedSubInNotInheritable_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public NotInheritable Class C
-    Protected Sub M()
-    End Sub
-End Class",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public NotInheritable Class C
+                    Protected Sub M()
+                    End Sub
+                End Class
+                """,
                 VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
-        [Theory]
-        [InlineData("protected")]
-        [InlineData("protected internal")]
-        [InlineData("private protected")]
+        [TestMethod]
+        [DataRow("protected")]
+        [DataRow("protected internal")]
+        [DataRow("private protected")]
         public Task AnyProtectedVariantMembersInSealed_DiagnosticAsync(string accessModifier)
         {
             return new VerifyCS.Test
@@ -38,118 +40,127 @@ End Class",
                 {
                     Sources =
                     {
-                        $@"
-using System;
+                        $$"""
+                            using System;
 
-public sealed class C
-{{
-    {accessModifier} int [|SomeField|];
+                            public sealed class C
+                            {
+                                {{accessModifier}} int [|SomeField|];
 
-    {accessModifier} int [|SomeProperty|] {{ [|get|]; [|set|]; }}
+                                {{accessModifier}} int [|SomeProperty|] { [|get|]; [|set|]; }
 
-    {accessModifier} event EventHandler [|SomeEvent|];
+                                {{accessModifier}} event EventHandler [|SomeEvent|];
 
-    {accessModifier} void [|SomeMethod|]() {{ }}
-}}"
+                                {{accessModifier}} void [|SomeMethod|]() { }
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-dotnet_code_quality.CA1047.api_surface = All
-") }
+                        [*]
+                        dotnet_code_quality.CA1047.api_surface = All
+                        """) }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Protected")]
-        [InlineData("Protected Friend")]
-        [InlineData("Private Protected")]
+        [TestMethod]
+        [DataRow("Protected")]
+        [DataRow("Protected Friend")]
+        [DataRow("Private Protected")]
         public Task AnyProtectedVariantMemberInNotInheritable_DiagnosticAsync(string accessModifier)
         {
             return new VerifyVB.Test
             {
                 TestState =
                 {
-                    Sources = { $@"
-Imports System
+                    Sources = { $"""
+                        Imports System
 
-Public NotInheritable Class C
-    {accessModifier} [|SomeField|] As Integer
+                        Public NotInheritable Class C
+                            {accessModifier} [|SomeField|] As Integer
 
-    {accessModifier} Property [|SomeProperty|] As Integer
+                            {accessModifier} Property [|SomeProperty|] As Integer
 
-    {accessModifier} Event [|SomeEvent|] As EventHandler
+                            {accessModifier} Event [|SomeEvent|] As EventHandler
 
-    {accessModifier} Sub [|SomeSub|]()
-    End Sub
+                            {accessModifier} Sub [|SomeSub|]()
+                            End Sub
 
-    {accessModifier} Function [|SomeFunction|]() As Integer
-    End Function
-End Class"
+                            {accessModifier} Function [|SomeFunction|]() As Integer
+                            End Function
+                        End Class
+                        """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-dotnet_code_quality.CA1047.api_surface = All
-") }
+                        [*]
+                        dotnet_code_quality.CA1047.api_surface = All
+                        """) }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ProtectedOverridesMemberInNotInheritable_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class C
-    Protected Overridable Property SomeProperty As Integer
+                Public Class C
+                    Protected Overridable Property SomeProperty As Integer
 
-    Protected Overridable Sub SomeSub()
-    End Sub
+                    Protected Overridable Sub SomeSub()
+                    End Sub
 
-    Protected Overridable Function SomeFunction() As Integer
-    End Function
-End Class
+                    Protected Overridable Function SomeFunction() As Integer
+                    End Function
+                End Class
 
-Public NotInheritable Class C2
-    Inherits C
-    Protected Overrides Property SomeProperty As Integer
+                Public NotInheritable Class C2
+                    Inherits C
+                    Protected Overrides Property SomeProperty As Integer
 
-    Protected Overrides Sub SomeSub()
-    End Sub
+                    Protected Overrides Sub SomeSub()
+                    End Sub
 
-    Protected Overrides Function SomeFunction() As Integer
-    End Function
-End Class");
+                    Protected Overrides Function SomeFunction() As Integer
+                    End Function
+                End Class
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         // General analyzer option
-        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = All")]
         // Specific analyzer option
-        [InlineData("Friend", "dotnet_code_quality.CA1047.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.CA1047.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
-                                dotnet_code_quality.CA1047.api_surface = All")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = Private
+                                            dotnet_code_quality.CA1047.api_surface = All
+            """)]
         // Case-insensitive analyzer option
-        [InlineData("Friend", "DOTNET_code_quality.CA1047.API_SURFACE = ALL")]
+        [DataRow("Friend", "DOTNET_code_quality.CA1047.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
-                                dotnet_code_quality.CA1047.api_surface_2 = Private")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = All
+                                            dotnet_code_quality.CA1047.api_surface_2 = Private
+            """)]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
@@ -158,30 +169,33 @@ End Class");
                 {
                     Sources =
                     {
-                        $@"
-Public Class OuterClass
-    {accessibility} NotInheritable Class C
-        Protected [|SomeField|] As Integer
-    End Class
-End Class"
+                        $"""
+                            Public Class OuterClass
+                                {accessibility} NotInheritable Class C
+                                    Protected [|SomeField|] As Integer
+                                End Class
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Finalize_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public NotInheritable Class C
-    Protected Overrides Sub Finalize()
-    End Sub
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public NotInheritable Class C
+                    Protected Overrides Sub Finalize()
+                    End Sub
+                End Class
+                """);
         }
     }
 }

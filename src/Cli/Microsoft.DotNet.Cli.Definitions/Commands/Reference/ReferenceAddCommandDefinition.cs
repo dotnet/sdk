@@ -3,18 +3,28 @@
 
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
-using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal sealed class ReferenceAddCommandDefinition() : ReferenceAddCommandDefinitionBase(Name)
+internal sealed class ReferenceAddCommandDefinition : ReferenceAddCommandDefinitionBase
 {
     public new const string Name = "add";
 
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
+
+    public ReferenceAddCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(FileOption);
+    }
+
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOption);
+    public override Option<string?>? GetFileOption() => FileOption;
+
+    public override Option<string?>? GetProjectOption() => Parent.ProjectOption;
+
+    public override Argument<string>? GetProjectOrFileArgument() => null;
 }
 
 internal abstract class ReferenceAddCommandDefinitionBase : Command
@@ -48,5 +58,9 @@ internal abstract class ReferenceAddCommandDefinitionBase : Command
         Options.Add(InteractiveOption);
     }
 
-    public abstract string? GetFileOrDirectory(ParseResult parseResult);
+    public abstract Option<string?>? GetFileOption();
+
+    public abstract Option<string?>? GetProjectOption();
+
+    public abstract Argument<string>? GetProjectOrFileArgument();
 }

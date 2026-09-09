@@ -14,6 +14,7 @@
       <WorkloadPublishProperties Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" />
       <WorkloadPublishProperties Include="BlazorWasm" Value="$(_WorkloadUsesBlazorWasm)" />
       <WorkloadPublishProperties Include="WasmSDK" Value="$(_WorkloadUsesWasmSDK)" />
+      <WorkloadPublishProperties Include="UsingBrowserRuntimeWorkload" Value="$(UsingBrowserRuntimeWorkload)" />
       <WorkloadPublishProperties Include="UsesMaui" Value="$(UseMaui)" />
       <WorkloadPublishProperties Include="UsesMobileSDKOnly" Value="$(_WorkloadUsesMobileSDKOnly)" />
       <WorkloadPublishProperties Include="UsesOtherMobileSDK" Value="$(_WorkloadUsesOther)" />

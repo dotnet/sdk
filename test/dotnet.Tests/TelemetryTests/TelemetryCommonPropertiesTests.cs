@@ -186,7 +186,11 @@ public class TelemetryCommonPropertiesTests : SdkTest
     public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
+        // The "llm" property reflects whichever LLM-agent env vars are set in the
+        // current process. When tests run locally (no agent) the value is null; inside
+        // an LLM environment (e.g. Claude Code, Copilot CLI, Copilot App) it will
+        // contain the matching comma-separated labels. Accept any non-failing value.
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("llm");
     }
 
     [TestMethod]
@@ -210,10 +214,48 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
+    // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
+    // Tests must clear these before each run so that ambient env vars (e.g. when
+    // tests execute inside the Copilot CLI desktop app) don't pollute results.
+    private static readonly string[] _allLLMEnvVars = [
+        "CLAUDE_CODE_IS_COWORK", "CLAUDECODE", "CLAUDE_CODE", "CLAUDE_CODE_ENTRYPOINT",
+        "CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT",
+        "GEMINI_CLI",
+        "GITHUB_COPILOT_CLI_MODE", "GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI", "COPILOT_MODEL", "COPILOT_ALLOW_ALL", "COPILOT_GITHUB_TOKEN",
+        "AI_AGENT", "COPILOT_AGENT",
+        "CODEX_CLI", "CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID",
+        "OR_APP_NAME",
+        "AMP_HOME",
+        "QWEN_CODE",
+        "DROID_CLI",
+        "OPENCODE_AI",
+        "ZED_ENVIRONMENT", "ZED_TERM",
+        "KIMI_CLI",
+        "GOOSE_TERMINAL", "GOOSE_PROVIDER",
+        "CLINE_TASK_ID",
+        "ROO_CODE_TASK_ID",
+        "WINDSURF_SESSION",
+        "REPL_ID",
+        "AUGMENT_AGENT",
+        "ANTIGRAVITY_AGENT",
+        "AGENT_CLI",
+    ];
+
     [TestMethod]
     [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {
+        // Save and clear all LLM env vars so ambient values don't affect the test.
+        var savedEnvVars = _allLLMEnvVars
+            .Select(key => (key, value: Environment.GetEnvironmentVariable(key)))
+            .Where(pair => pair.value is not null)
+            .ToArray();
+
+        foreach (var key in _allLLMEnvVars)
+        {
+            Environment.SetEnvironmentVariable(key, null);
+        }
+
         try
         {
             if (envVars is not null)
@@ -227,12 +269,18 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
         finally
         {
+            // Clean up test-set vars
             if (envVars is not null)
             {
                 foreach (var (key, value) in envVars)
                 {
                     Environment.SetEnvironmentVariable(key, null);
                 }
+            }
+            // Restore original ambient vars
+            foreach (var (key, value) in savedEnvVars)
+            {
+                Environment.SetEnvironmentVariable(key, value);
             }
         }
     }
@@ -268,6 +316,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         new object[] { new Dictionary<string, string> { { "COPILOT_MODEL", "gpt" } }, "copilot-cli" },
         new object[] { new Dictionary<string, string> { { "COPILOT_ALLOW_ALL", "1" } }, "copilot-cli" },
         new object[] { new Dictionary<string, string> { { "COPILOT_GITHUB_TOKEN", "token" } }, "copilot-cli" },
+        // GitHub Copilot app (desktop application)
+        new object[] { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-app" },
         // GitHub Copilot agent mode in VS Code
         new object[] { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-vscode" },
         new object[] { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
@@ -306,6 +356,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
         new object[] { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
         new object[] { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
+        // Copilot app sets both COPILOT_CLI and AI_AGENT=github_copilot_app_agent; both rules fire
+        new object[] { new Dictionary<string, string> { { "COPILOT_CLI", "1" }, { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-cli, copilot-app" },
         // Existence-based loosened vars now match regardless of value (e.g. "false" is still a non-empty value)
         new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, "gemini" },
         new object[] { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, "copilot-cli" },

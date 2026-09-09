@@ -9,7 +9,7 @@ internal static class TestAssetsManagerExtensions
 {
     extension(TestAssetsManager)
     {
-        public static TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, object[]? identifiers = null)
+        public static TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, object?[]? identifiers = null)
             => TestDirectory.Create(TestAssetsManager.GetTestDestinationDirectoryPath(
                 testName,
                 testName,

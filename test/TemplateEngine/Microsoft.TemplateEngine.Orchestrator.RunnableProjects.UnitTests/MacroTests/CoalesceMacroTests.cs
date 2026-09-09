@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class CoalesceMacroTests
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
@@ -20,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();

@@ -10,6 +10,13 @@ namespace Microsoft.DotNet.Watch;
 
 internal delegate ValueTask RestartOperation(CancellationToken cancellationToken);
 
+/// <summary>
+/// Represents a project that is launched and creates one or more processes.
+/// </summary>
+/// <param name="clients">
+/// The primary client, if any, is associated with the primary project represented by <paramref name="projectNode"/> and with <paramref name="process"/>.
+/// Secondary client, if any, is associated with a project referenced by the primary project.
+/// </param>
 internal sealed class RunningProject(
     ProjectGraphNode projectNode,
     ProjectOptions options,
