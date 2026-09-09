@@ -222,17 +222,38 @@ internal static class MSBuildUtility
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
-        LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
+        ImmutableArray<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+        ImmutableArray<string> msbuildOnlyArgs;
+        ImmutableArray<string> otherArgs;
+        int positionalArgumentCount;
+        if (CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+            parseResult,
+            unmatchedTokens,
+            out int unmatchedTokenCountBeforeDoubleDash,
+            out string[] argumentsAfterDoubleDash))
+        {
+            LoggerUtility.SeparateMSBuildArguments(
+                unmatchedTokens[..unmatchedTokenCountBeforeDoubleDash],
+                out msbuildOnlyArgs,
+                out var argumentsBeforeDoubleDash);
+            positionalArgumentCount = argumentsBeforeDoubleDash.Length;
+            otherArgs = [.. argumentsBeforeDoubleDash, .. argumentsAfterDoubleDash];
+        }
+        else
+        {
+            LoggerUtility.SeparateMSBuildArguments(unmatchedTokens, out msbuildOnlyArgs, out otherArgs);
+            positionalArgumentCount = otherArgs.Length;
+        }
 
         if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
         {
             otherArgs = otherArgs.Add("--no-banner");
         }
 
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(positionalArgumentCount, ref otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(loggerArgs);
+            .Concat(msbuildOnlyArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
@@ -287,7 +308,8 @@ internal static class MSBuildUtility
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
     }
 
-    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
+        int positionalArgumentCount, ref ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -297,7 +319,7 @@ internal static class MSBuildUtility
         // So, disabling validation is okay if the user scenario is valid.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
-        for (int i = 0; i < otherArgs.Length; i++)
+        for (int i = 0; i < positionalArgumentCount; i++)
         {
             var token = otherArgs[i];
             if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
