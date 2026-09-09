@@ -40,9 +40,11 @@ Additionally, the implicit project file has the following customizations:
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
 
-  - `ArtifactsPath` is set to a [temp directory](#build-outputs).
+  - `ArtifactsPath` is set to a [temp directory](#build-outputs),
+    unless [artifacts output layout][artifacts-output] is enabled.
 
-  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app,
+    unless [artifacts output layout][artifacts-output] is enabled.
 
   - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
     which can be accessed in the app via `AppContext`:
@@ -156,7 +158,9 @@ and the conversion process only copying the items that were included in the orig
 
 ## Build outputs
 
-Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+If [artifacts output layout][artifacts-output] is enabled, build outputs of the file-based app are placed there
+(except caching markers which are placed in the global temp directory described next).
+Otherwise, build outputs are placed under a subdirectory whose name is hashed file path of the entry point
 inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
 The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
@@ -179,6 +183,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property TargetFramework=net11.0
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
+#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all
 #:project ../MyLibrary
 #:ref ../lib/lib.cs
 #:include ./**/*.cs
@@ -189,6 +194,41 @@ The value is required for `#:property`, optional for `#:package`/`#:sdk`, and di
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
+
+The remainder of a directive (after the kind) is split into whitespace-separated tokens.
+Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
+A value is written either bare or wrapped entirely in double quotes.
+A quoted value is lexed as a regular C# string literal,
+so its escape sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
+`#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`.
+Verbatim (`@"..."`) and raw (`"""..."""`) string literals are not supported.
+Quotes can only enclose a whole value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
+It is an error if a quote is left unterminated or if a quoted value contains an invalid escape sequence (e.g., `"a\q"`).
+
+`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
+Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
+When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
+The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
+
+Whitespace may surround the separator (`@` or `=`) of any directive,
+so `#:property Xyz="abc "`, `#:property Xyz ="abc "`, and `#:property Xyz = "abc "` are equivalent,
+as are `#:package Package@1.0.0 Note="see the docs"` and `#:package Package @ 1.0.0 Note = "see the docs"`.
+Either side of the separator can be quoted, e.g., `#:package "Humanizer"@2.0`.
+
+Because a bare value keeps a backslash literal while a quoted value follows C# escape rules,
+a Windows path is simplest written bare (`#:project C:\src\lib`)
+or with forward slashes if quoting is needed (`#:project "C:/src/my lib"`);
+quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
+
+For backward compatibility, a directive whose value contains no double quotes is still accepted in a *legacy mode*
+when its trailing whitespace-separated tokens cannot be parsed as the new metadata form:
+the entire remainder after the name and separator is taken verbatim as a single value (including any internal whitespace),
+matching how these directives behaved before quoting and metadata were supported.
+For `#:package`, `#:project`, and `#:ref`, if every trailing token is valid `Name=Value` metadata,
+those tokens are treated as metadata instead; for example, `#:project path A=B` has the value `path` and the metadata `A=B`.
+Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
+flags legacy directives and offers a code fix to rewrite them into the quoted form.
 
 The directives are processed as follows:
 
@@ -201,6 +241,8 @@ The directives are processed as follows:
 
 - Each `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
   It is an error if its name is empty (the value, i.e., package version, is allowed to be empty, but that results in empty `Version=""`).
+  Any trailing `Name=Value` metadata is injected as child elements, e.g.,
+  `<PackageReference Include="{0}" Version="{1}"><ExcludeAssets>runtime</ExcludeAssets></PackageReference>`.
 
   It is valid to have a `#:package` directive without a version.
   That's useful when central package management (CPM) is used.
@@ -208,6 +250,7 @@ The directives are processed as follows:
 
 - Each `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
   It is an error if the value is empty.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
@@ -216,6 +259,7 @@ The directives are processed as follows:
   A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
   and a `<ProjectReference Include="lib.cs.csproj" />` is injected in an `<ItemGroup>`.
   It is an error if the name is empty or if the referenced file does not exist.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
   The referenced file is itself a file-based program with its own virtual project (defaulting to `OutputType=Exe`).

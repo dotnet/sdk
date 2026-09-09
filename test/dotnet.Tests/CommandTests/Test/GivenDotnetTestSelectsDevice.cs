@@ -49,6 +49,23 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItFindsDevicesForSingleEntryTargetFrameworksWithoutFramework()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute($"-p:TargetFrameworks={ToolsetInfo.CurrentTargetFramework}");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.HaveStdErrContaining("test-device-1")
+            .And.HaveStdErrContaining("test-device-2");
+    }
+
+    [TestMethod]
     [DataRow("test-device-1")]
     [DataRow("test-device-2")]
     public void ItRunsTestsWithSpecifiedDevice(string deviceId)
@@ -107,6 +124,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", "test-device-1");
 
         result.Should().Pass();
+    }
+
+    [TestMethod]
+    public void ItUsesFreshEvaluationContextAfterBuild()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "FreshEvaluationContext")
+            .WithSource();
+        File.Delete(Path.Combine(testInstance.Path, "post-build-discovery.props"));
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework", ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:GeneratePostBuildDiscoveryProps=true");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Runtime environment variables:");
     }
 
     [TestMethod]
@@ -179,19 +214,97 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    public void ItAutoSelectsSingleDevicePerTfm()
+    public void ItFindsDevicesForProjectWithoutTargetFramework()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+        string projectPath = Path.Combine(testInstance.Path, "DotnetTestDevices.csproj");
+        File.WriteAllText(
+            projectPath,
+            File.ReadAllText(projectPath)
+                .Replace(
+                    $"    <TargetFrameworks>net9.0;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>{Environment.NewLine}",
+                    string.Empty)
+                .Replace(
+                    "</Project>",
+                    """
+                      <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                        <ItemGroup>
+                          <Devices Include="test-device-1" />
+                          <Devices Include="test-device-2" />
+                        </ItemGroup>
+                      </Target>
+                    </Project>
+                    """));
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--no-restore")
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.HaveStdErrContaining("test-device-1")
+            .And.HaveStdErrContaining("test-device-2");
+    }
+
+    [TestMethod]
+    public void ItSelectsDevicesFromTargetsImportedOnlyByInnerBuilds()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
             .WithSource();
 
-        // Run without -f to test all TFMs. SingleDevice=true means one device per TFM
-        // is auto-selected. Device selection happens BEFORE the build so that any
-        // device-provided RuntimeIdentifier is included in the build output.
+        // Workloads import device targets only after TargetFramework is set. Run without -f
+        // to verify the outer cross-targeting evaluation does not skip device selection.
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("-p:SingleDevice=true");
+            .Execute("-p:SingleDevice=true", "-bl");
 
         result.Should().Pass();
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "DeployToDevice",
+            targets =>
+            {
+                targets.Should().HaveCount(2, "both target frameworks should be deployed");
+                targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                    .Where(message => message.Text.Contains("DeployToDevice: Deployed"))
+                    .Should().OnlyContain(message => message.Text.Contains("to device single-device"));
+            });
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "Restore",
+            targets => targets.Should().ContainSingle("device selection should restore once for all target frameworks"));
+    }
+
+    [TestMethod]
+    public void ItSelectsDevicesOnlyForTargetFrameworksThatSupportThem()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "-p:SingleDevice=true",
+                $"-p:DeviceTargetFramework={ToolsetInfo.CurrentTargetFramework}",
+                "-bl")
+            .Should().Pass();
+
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "DeployToDevice",
+            targets =>
+            {
+                var deployMessages = targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                    .Where(message => message.Text.Contains("DeployToDevice: Deployed"))
+                    .Select(message => message.Text)
+                    .ToArray();
+
+                deployMessages.Should().Contain(message =>
+                    message.Contains($"Deployed {ToolsetInfo.CurrentTargetFramework} to device single-device"));
+                deployMessages.Should().Contain(message =>
+                    message.Contains("Deployed net9.0 to device  with RuntimeIdentifier"));
+            });
     }
 
     [TestMethod]
@@ -212,6 +325,9 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             File.Copy(
                 Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
                 Path.Combine(dir, Path.GetFileName(dir) + ".csproj"));
+            File.Copy(
+                Path.Combine(testInstance.Path, "DotnetTestDevices.Device.targets"),
+                Path.Combine(dir, "DotnetTestDevices.Device.targets"));
         }
 
         File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));
@@ -220,14 +336,29 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
             """
             <Solution>
-              <Project Path="Project1\Project1.csproj" />
-              <Project Path="Project2\Project2.csproj" />
+              <Configurations>
+                <BuildType Name="Debug" />
+                <Platform Name="Any CPU" />
+              </Configurations>
+              <Project Path="Project1\Project1.csproj">
+                <BuildType Solution="Debug|*" Project="Release" />
+                <Platform Solution="*|Any CPU" Project="AnyCPU" />
+              </Project>
+              <Project Path="Project2\Project2.csproj">
+                <BuildType Solution="Debug|*" Project="Release" />
+                <Platform Solution="*|Any CPU" Project="AnyCPU" />
+              </Project>
             </Solution>
             """);
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true", "-bl");
+            .Execute(
+                "--solution", "TestSolution.slnx",
+                "-p:SingleDevice=true",
+                "-p:ExpectedDeviceConfiguration=Release",
+                "-p:ExpectedDevicePlatform=AnyCPU",
+                "-bl");
 
         result.Should().Pass();
 
@@ -442,6 +573,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    [DataRow("--collect-test-map")]
+    [DataRow("--affected-tests")]
+    public void ItErrorsWhenListDevicesAndAffectedTestOperationAreCombined(string affectedTestOption)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", $"ListDevicesWith{affectedTestOption.TrimStart('-')}")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLE_AFFECTED_TESTS", "1")
+            .Execute("--list-devices", affectedTestOption, "-f", "net11.0-android");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndAffectedTestsMutuallyExclusive);
+    }
+
+    [TestMethod]
     public void ItListsDevicesForExplicitFrameworkOnMultiTargetedProject()
     {
         // DotnetTestDevices targets both net9.0 and $(CurrentTargetFramework) with different
@@ -502,6 +651,30 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                     .Single(message => message.Text.Contains("DeployToDevice: Deployed"));
                 deployMessage.Text.Should().Contain(deviceId, "the Device property should be passed to DeployToDevice");
             });
+    }
+
+    [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        new DotnetCommand(Log, "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:Device=test-device-1")
+            .Should().Pass();
+
+        var command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "--device",
+            "test-device-1",
+            "--no-build")
+            .Should().Pass();
     }
 
     [TestMethod]
@@ -608,7 +781,33 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 "-p:FailDeployToDevice=true");
 
         result.Should().Fail()
-            .And.HaveStdErrContaining(CliCommandStrings.RunCommandDeployFailed);
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandDeployFailed)
+            // The MSBuild error itself must be reported, otherwise the user is told to fix errors
+            // that were never printed anywhere.
+            .And.HaveStdOutContaining("DeployToDevice failed as requested.");
+    }
+
+    [TestMethod]
+    public void ItFailsWhenComputeRunArgumentsTargetFails()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "ComputeRunArgumentsFailure")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "--device",
+                "test-device-1",
+                "-p:FailComputeRunArguments=true");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, "ComputeRunArguments"))
+            // The MSBuild error itself must be reported, otherwise the user is told to fix errors
+            // that were never printed anywhere.
+            .And.HaveStdOutContaining("ComputeRunArguments failed as requested.");
     }
 
     [TestMethod]
@@ -669,5 +868,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 messages.Should().Contain(message => message.Text.Contains("net9.0"));
                 messages.Should().Contain(message => message.Text.Contains(ToolsetInfo.CurrentTargetFramework));
             });
+    }
+
+    [TestMethod]
+    public void ItRunsBrowserWasmTestHostOverHttpTransport()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "HttpTransport")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:UseHttpTestTransport=true")
+            .Should()
+            .Pass()
+            .And.HaveStdOutContaining("HTTP transport selected.")
+            .And.HaveStdOutContaining("total: 1");
     }
 }

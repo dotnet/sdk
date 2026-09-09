@@ -53,7 +53,17 @@ internal class Layer
     }
 
     public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, int? userId = null)
+        => FromDirectory(directory, containerPath, isWindowsLayer, manifestMediaType, userId, modificationTime: null);
+
+    internal static Layer FromDirectory(
+        string directory,
+        string containerPath,
+        bool isWindowsLayer,
+        string manifestMediaType,
+        int? userId,
+        DateTimeOffset? modificationTime)
     {
+        DateTimeOffset entryModificationTime = modificationTime ?? DateTimeOffset.UtcNow;
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         Span<byte> uncompressedHash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -91,19 +101,22 @@ internal class Layer
         string tempTarballPath = ContentStore.GetTempFile();
         using (FileStream fs = File.Create(tempTarballPath))
         {
-            using (HashDigestGZipStream gz = new(fs, leaveOpen: true))
+            using (LayerTarGZipStream layerStream = new(fs, leaveOpen: true))
             {
-                using (TarWriter writer = new(gz, TarEntryFormat.Pax, leaveOpen: true))
+                using (TarWriter writer = new(layerStream, TarEntryFormat.Pax, leaveOpen: true))
                 {
                     // Windows layers need a Files folder
                     if (isWindowsLayer)
                     {
-                        var entry = new PaxTarEntry(TarEntryType.Directory, "Files", entryAttributes);
-                        writer.WriteEntry(entry);
+                        var entry = new PaxTarEntry(TarEntryType.Directory, "Files", entryAttributes)
+                        {
+                            ModificationTime = entryModificationTime
+                        };
+                        WriteEntry(writer, layerStream, entry);
                     }
 
                     // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                    WriteTarEntryForFile(writer, layerStream, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
 
                     // Write entries for the application directory contents.
                     var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
@@ -124,21 +137,26 @@ internal class Layer
                                     AttributesToSkip = FileAttributes.System, // Include hidden files
                                     RecurseSubdirectories = true
                                 });
-                    foreach (var item in fileList)
+                    // The enumeration order of a directory is filesystem-defined, so it is sorted to keep
+                    // the order of entries in the tar stream stable across machines and builds.
+                    foreach (var item in fileList.OrderBy(static item => item.containerPath, StringComparer.Ordinal))
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                        WriteTarEntryForFile(writer, layerStream, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
                     if (isWindowsLayer)
                     {
-                        var entry = new PaxTarEntry(TarEntryType.Directory, "Hives", entryAttributes);
-                        writer.WriteEntry(entry);
+                        var entry = new PaxTarEntry(TarEntryType.Directory, "Hives", entryAttributes)
+                        {
+                            ModificationTime = entryModificationTime
+                        };
+                        WriteEntry(writer, layerStream, entry);
                     }
 
                 } // Dispose of the TarWriter before getting the hash so the final data get written to the tar stream
 
-                int bytesWritten = gz.GetCurrentUncompressedHash(uncompressedHash);
+                int bytesWritten = layerStream.GetCurrentUncompressedHash(uncompressedHash);
                 Debug.Assert(bytesWritten == uncompressedHash.Length);
             }
 
@@ -149,8 +167,14 @@ internal class Layer
             int bW = SHA256.HashData(fs, hash);
             Debug.Assert(bW == hash.Length);
 
+            static void WriteEntry(TarWriter writer, LayerTarGZipStream layerStream, PaxTarEntry entry)
+            {
+                layerStream.NormalizeNextHeader();
+                writer.WriteEntry(entry);
+            }
+
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId)
+            static void WriteTarEntryForFile(TarWriter writer, LayerTarGZipStream layerStream, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId, DateTimeOffset modificationTime)
             {
                 UnixFileMode mode = DetermineFileMode(file);
                 PaxTarEntry entry;
@@ -169,12 +193,13 @@ internal class Layer
                 }
 
                 entry.Mode = mode;
+                entry.ModificationTime = modificationTime;
                 if (userId is int uid)
                 {
                     entry.Uid = uid;
                 }
 
-                writer.WriteEntry(entry);
+                WriteEntry(writer, layerStream, entry);
 
                 if (entry.DataStream is not null)
                 {
@@ -191,7 +216,7 @@ internal class Layer
 
                     // On Unix, we can determine the x-bit based on the filesystem permission.
                     // On Windows, we use executable permissions for all entries.
-                    return (OperatingSystem.IsWindows() || ((file.UnixFileMode | UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
+                    return (OperatingSystem.IsWindows() || ((file.UnixFileMode & UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
                 }
             }
         }
@@ -229,14 +254,27 @@ internal class Layer
     private static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
     /// <summary>
-    /// A stream capable of computing the hash digest of raw uncompressed data while also compressing it.
+    /// Normalizes pax headers while computing the uncompressed tar hash and writing its gzip stream.
     /// </summary>
-    private sealed class HashDigestGZipStream : Stream
+    private sealed class LayerTarGZipStream : Stream
     {
+        private const int TarBlockSize = 512;
+        private const int NameLength = 100;
+        private const int ChecksumOffset = 148;
+        private const int ChecksumLength = 8;
+        private const int TypeFlagOffset = 156;
+        private const byte ExtendedHeaderTypeFlag = (byte)'x';
+
+        private static ReadOnlySpan<byte> NormalizedPaxHeaderName => "./PaxHeaders/."u8;
+
         private readonly IncrementalHash sha256Hash;
         private readonly GZipStream compressionStream;
+        private readonly byte[] headerBlock = new byte[TarBlockSize];
 
-        public HashDigestGZipStream(Stream writeStream, bool leaveOpen)
+        private int headerBytes;
+        private bool normalizeNextHeader;
+
+        public LayerTarGZipStream(Stream writeStream, bool leaveOpen)
         {
             sha256Hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             compressionStream = new GZipStream(writeStream, CompressionMode.Compress, leaveOpen);
@@ -244,16 +282,73 @@ internal class Layer
 
         public override bool CanWrite => true;
 
-        public override void Write(byte[] buffer, int offset, int count)
+        internal void NormalizeNextHeader()
         {
-            sha256Hash.AppendData(buffer, offset, count);
-            compressionStream.Write(buffer, offset, count);
+            if (normalizeNextHeader || headerBytes != 0)
+            {
+                throw new InvalidOperationException("The previous pax header has not been completely written.");
+            }
+
+            normalizeNextHeader = true;
         }
+
+        public override void Write(byte[] buffer, int offset, int count) => Write(buffer.AsSpan(offset, count));
 
         public override void Write(ReadOnlySpan<byte> buffer)
         {
+            while (normalizeNextHeader && !buffer.IsEmpty)
+            {
+                int take = Math.Min(TarBlockSize - headerBytes, buffer.Length);
+                buffer[..take].CopyTo(headerBlock.AsSpan(headerBytes));
+                headerBytes += take;
+                buffer = buffer[take..];
+
+                if (headerBytes == TarBlockSize)
+                {
+                    NormalizePaxHeader(headerBlock);
+                    WriteCore(headerBlock);
+                    headerBytes = 0;
+                    normalizeNextHeader = false;
+                }
+            }
+
+            WriteCore(buffer);
+        }
+
+        private void WriteCore(ReadOnlySpan<byte> buffer)
+        {
             sha256Hash.AppendData(buffer);
             compressionStream.Write(buffer);
+        }
+
+        private static void NormalizePaxHeader(Span<byte> header)
+        {
+            if (header[TypeFlagOffset] != ExtendedHeaderTypeFlag)
+            {
+                return;
+            }
+
+            Span<byte> name = header[..NameLength];
+            name.Clear();
+            NormalizedPaxHeaderName.CopyTo(name);
+
+            Span<byte> checksumField = header.Slice(ChecksumOffset, ChecksumLength);
+            checksumField.Fill((byte)' ');
+
+            int checksum = 0;
+            foreach (byte b in header)
+            {
+                checksum += b;
+            }
+
+            for (int i = 5; i >= 0; i--)
+            {
+                checksumField[i] = (byte)('0' + (checksum & 7));
+                checksum >>= 3;
+            }
+
+            checksumField[6] = 0;
+            checksumField[7] = (byte)' ';
         }
 
         public override void Flush()
@@ -267,11 +362,17 @@ internal class Layer
         {
             try
             {
-                sha256Hash.Dispose();
+                if (headerBytes > 0)
+                {
+                    WriteCore(headerBlock.AsSpan(0, headerBytes));
+                    headerBytes = 0;
+                }
+
                 compressionStream.Dispose();
             }
             finally
             {
+                sha256Hash.Dispose();
                 base.Dispose(disposing);
             }
         }

@@ -60,182 +60,194 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task HasAlternateMethod_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator +(C left, C right) { return new C(); }
-    public static C Add(C left, C right) { return new C(); }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static C operator +(C left, C right) { return new C(); }
+                    public static C Add(C left, C right) { return new C(); }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task HasMultipleAlternatePrimary_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator %(C left, C right) { return new C(); }
-    public static C Mod(C left, C right) { return new C(); }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static C operator %(C left, C right) { return new C(); }
+                    public static C Mod(C left, C right) { return new C(); }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task HasMultipleAlternateSecondary_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator %(C left, C right) { return new C(); }
-    public static C Remainder(C left, C right) { return new C(); }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static C operator %(C left, C right) { return new C(); }
+                    public static C Remainder(C left, C right) { return new C(); }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task HasAppropriateConversionAlternate_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static implicit operator int(C item) { return 0; }
-    public int ToInt32() { return 0; }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static implicit operator int(C item) { return 0; }
+                    public int ToInt32() { return 0; }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(1717, "https://github.com/dotnet/roslyn-analyzers/issues/1717")]
         public async Task HasAppropriateConversionAlternate02_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Other
-{	
-	public int i {get; set;}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class Other
+                {
+                	public int i {get; set;}
 
-	public Other(int i) => this.i = i;	
-}
+                	public Other(int i) => this.i = i;
+                }
 
-public class SomeClass
-{	
-	public int i {get; set;}
+                public class SomeClass
+                {
+                	public int i {get; set;}
 
-	public SomeClass(int i) => this.i = i;
+                	public SomeClass(int i) => this.i = i;
 
-	public static implicit operator SomeClass(Other b) => new SomeClass(b.i);
+                	public static implicit operator SomeClass(Other b) => new SomeClass(b.i);
 
-	public static SomeClass FromOther(Other b) => new SomeClass(b.i);
-}
-");
+                	public static SomeClass FromOther(Other b) => new SomeClass(b.i);
+                }
+                """);
         }
 
         [TestMethod]
         public async Task MissingAlternateMethod_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator +(C left, C right) { return new C(); }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static C operator +(C left, C right) { return new C(); }
+                }
+
+                """,
             GetCA2225CSharpDefaultResultAt(4, 30, "Add", "op_Addition"));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task MissingAlternateMethod_CSharp_InternalAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    public static C operator +(C left, C right) { return new C(); }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class C
+                {
+                    public static C operator +(C left, C right) { return new C(); }
+                }
 
-public class C2
-{
-    private class C3
-    {
-        public static C3 operator +(C3 left, C3 right) { return new C3(); }
-    }
-}
-");
+                public class C2
+                {
+                    private class C3
+                    {
+                        public static C3 operator +(C3 left, C3 right) { return new C3(); }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task MissingAlternateProperty_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static bool operator true(C item) { return true; }
-    public static bool operator false(C item) { return false; }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static bool operator true(C item) { return true; }
+                    public static bool operator false(C item) { return false; }
+                }
+
+                """,
             GetCA2225CSharpPropertyResultAt(4, 33, "IsTrue", "op_True"));
         }
 
         [TestMethod]
         public async Task MissingMultipleAlternates_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator %(C left, C right) { return new C(); }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static C operator %(C left, C right) { return new C(); }
+                }
+
+                """,
             GetCA2225CSharpMultipleResultAt(4, 30, "Mod", "Remainder", "op_Modulus"));
         }
 
         [TestMethod]
         public async Task ImproperAlternateMethodVisibility_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static C operator +(C left, C right) { return new C(); }
-    protected static C Add(C left, C right) { return new C(); }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static C operator +(C left, C right) { return new C(); }
+                    protected static C Add(C left, C right) { return new C(); }
+                }
+
+                """,
                 GetCA2225CSharpVisibilityResultAt(5, 24, "Add", "op_Addition"));
         }
 
         [TestMethod]
         public async Task ImproperAlternatePropertyVisibility_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static bool operator true(C item) { return true; }
-    public static bool operator false(C item) { return false; }
-    private bool IsTrue => true;
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static bool operator true(C item) { return true; }
+                    public static bool operator false(C item) { return false; }
+                    private bool IsTrue => true;
+                }
+
+                """,
             GetCA2225CSharpVisibilityResultAt(6, 18, "IsTrue", "op_True"));
         }
 
         [TestMethod]
         public async Task StructHasAlternateMethod_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-struct C
-{
-    public static C operator +(C left, C right) { return new C(); }
-    public static C Add(C left, C right) { return new C(); }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                struct C
+                {
+                    public static C operator +(C left, C right) { return new C(); }
+                    public static C Add(C left, C right) { return new C(); }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task ImplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static implicit operator byte[](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1];
+        public static implicit operator byte[](MyStruct myStruct)
+        {
+            return new byte[1];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
@@ -243,14 +255,16 @@ public struct MyStruct
         public async Task ExplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static explicit operator byte[](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1];
+        public static explicit operator byte[](MyStruct myStruct)
+        {
+            return new byte[1];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
@@ -258,14 +272,16 @@ public struct MyStruct
         public async Task ImplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static implicit operator byte[,](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1,1];
+        public static implicit operator byte[,](MyStruct myStruct)
+        {
+            return new byte[1,1];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
@@ -273,14 +289,16 @@ public struct MyStruct
         public async Task ExplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static explicit operator byte[,](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1,1];
+        public static explicit operator byte[,](MyStruct myStruct)
+        {
+            return new byte[1,1];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
@@ -288,14 +306,16 @@ public struct MyStruct
         public async Task ImplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static implicit operator byte[][](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1][];
+        public static implicit operator byte[][](MyStruct myStruct)
+        {
+            return new byte[1][];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
         }
 
@@ -303,14 +323,16 @@ public struct MyStruct
         public async Task ExplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-public struct MyStruct
-{
-    public static explicit operator byte[][](MyStruct myStruct)
+"""
+
+    public struct MyStruct
     {
-        return new byte[1][];
+        public static explicit operator byte[][](MyStruct myStruct)
+        {
+            return new byte[1][];
+        }
     }
-}",
+    """,
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
@@ -325,64 +347,66 @@ public struct MyStruct
         [TestMethod]
         public async Task HasAlternateMethod_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Public Shared Operator +(left As C, right As C) As C
-        Return New C()
-    End Operator
-    Public Shared Function Add(left As C, right As C) As C
-        Return New C()
-    End Function
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C
+                    Public Shared Operator +(left As C, right As C) As C
+                        Return New C()
+                    End Operator
+                    Public Shared Function Add(left As C, right As C) As C
+                        Return New C()
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task MissingAlternateMethod_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Public Shared Operator +(left As C, right As C) As C
-        Return New C()
-    End Operator
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class C
+                    Public Shared Operator +(left As C, right As C) As C
+                        Return New C()
+                    End Operator
+                End Class
+
+                """,
             GetCA2225BasicDefaultResultAt(3, 28, "Add", "op_Addition"));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task MissingAlternateMethod_VisualBasic_InternalAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Public Shared Operator +(left As C, right As C) As C
-        Return New C()
-    End Operator
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Public Shared Operator +(left As C, right As C) As C
+                        Return New C()
+                    End Operator
+                End Class
 
-Public Class C2
-    Private Class C3
-        Public Shared Operator +(left As C3, right As C3) As C3
-            Return New C3()
-        End Operator
-    End Class
-End Class
-");
+                Public Class C2
+                    Private Class C3
+                        Public Shared Operator +(left As C3, right As C3) As C3
+                            Return New C3()
+                        End Operator
+                    End Class
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task StructHasAlternateMethod_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Structure C
-    Public Shared Operator +(left As C, right As C) As C
-        Return New C()
-    End Operator
-    Public Shared Function Add(left As C, right As C) As C
-        Return New C()
-    End Function
-End Structure
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Structure C
+                    Public Shared Operator +(left As C, right As C) As C
+                        Return New C()
+                    End Operator
+                    Public Shared Function Add(left As C, right As C) As C
+                        Return New C()
+                    End Function
+                End Structure
+                """);
         }
 
         #endregion

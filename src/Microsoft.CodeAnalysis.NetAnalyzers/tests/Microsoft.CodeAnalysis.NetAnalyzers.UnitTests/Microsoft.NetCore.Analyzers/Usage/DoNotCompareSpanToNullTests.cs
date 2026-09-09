@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
@@ -17,30 +16,30 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
     [TestClass]
     public sealed class DoNotCompareSpanToNullTests
     {
-        private const string CSharpClass = """
-                                           using System;
-                                           using System.Diagnostics;
+        private static string CreateCSharpClass(string spanType, string code) => $$"""
+            using System;
+            using System.Diagnostics;
 
-                                           public class Test
-                                           {{
-                                               public void Run({0} span)
-                                               {{
-                                                   {1}
-                                               }}
-                                           }}
-                                           """;
+            public class Test
+            {
+                public void Run({{spanType}} span)
+                {
+                    {{code}}
+                }
+            }
+            """;
 
-        private const string VbClass = """
-                                       Imports System
-                                       Imports System.Diagnostics
+        private static string CreateVbClass(string spanType, string code) => $$"""
+            Imports System
+            Imports System.Diagnostics
 
-                                       Public Class Test
-                                           <Obsolete>
-                                           Public Sub Run(span As {0})
-                                               {1}
-                                           End Sub
-                                       End Class
-                                       """;
+            Public Class Test
+                <Obsolete>
+                Public Sub Run(span As {{spanType}})
+                    {{code}}
+                End Sub
+            End Class
+            """;
 
         private static readonly DiagnosticResult DoNotCompareToNullResult = new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(0);
         private static readonly DiagnosticResult DoNotCompareToDefaultResult = new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToDefaultRule).WithLocation(0);
@@ -181,8 +180,8 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 
         private static async Task VerifyNoDiagnosticCsharpAsync(string code)
         {
-            var spanCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "Span<int>", code);
-            var rosCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "ReadOnlySpan<int>", code);
+            var spanCode = CreateCSharpClass("Span<int>", code);
+            var rosCode = CreateCSharpClass("ReadOnlySpan<int>", code);
 
             await VerifyCS.VerifyAnalyzerAsync(spanCode);
             await VerifyCS.VerifyAnalyzerAsync(rosCode);
@@ -190,11 +189,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 
         private static async Task VerifyCsharpCompareToNullAsync(string code, string fixedCode)
         {
-            var spanCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "Span<int>", code);
-            var fixedSpanCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "Span<int>", fixedCode);
+            var spanCode = CreateCSharpClass("Span<int>", code);
+            var fixedSpanCode = CreateCSharpClass("Span<int>", fixedCode);
 
-            var rosCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "ReadOnlySpan<int>", code);
-            var fixedRosCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "ReadOnlySpan<int>", fixedCode);
+            var rosCode = CreateCSharpClass("ReadOnlySpan<int>", code);
+            var fixedRosCode = CreateCSharpClass("ReadOnlySpan<int>", fixedCode);
 
             await new VerifyCS.Test
             {
@@ -213,11 +212,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 
         private static async Task VerifyCsharpCompareToDefaultAsync(string code, string fixedCode)
         {
-            var spanCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "Span<int>", code);
-            var fixedSpanCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "Span<int>", fixedCode);
+            var spanCode = CreateCSharpClass("Span<int>", code);
+            var fixedSpanCode = CreateCSharpClass("Span<int>", fixedCode);
 
-            var rosCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "ReadOnlySpan<int>", code);
-            var fixedRosCode = string.Format(CultureInfo.InvariantCulture, CSharpClass, "ReadOnlySpan<int>", fixedCode);
+            var rosCode = CreateCSharpClass("ReadOnlySpan<int>", code);
+            var fixedRosCode = CreateCSharpClass("ReadOnlySpan<int>", fixedCode);
 
             await new VerifyCS.Test
             {
@@ -234,10 +233,88 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            const string testCode = """
+                using System;
+
+                public class Test
+                {
+                    public void Run(Span<int> a, Span<int> b)
+                    {
+                        if ({|#0:({|#1:a == null|} ? a : b) == null|}) {}
+                    }
+                }
+                """;
+
+            const string fixedCode = """
+                using System;
+
+                public class Test
+                {
+                    public void Run(Span<int> a, Span<int> b)
+                    {
+                        if ((a.IsEmpty ? a : b).IsEmpty) {}
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(0),
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(1),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_VisualBasicAsync()
+        {
+            const string testCode = """
+                Imports System
+
+                Public Class Test
+                    <Obsolete>
+                    Public Sub Run(a As Span(Of Int32), b As Span(Of Int32))
+                        If {|#0:If({|#1:a = Nothing|}, a, b) = Nothing|} Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            const string fixedCode = """
+                Imports System
+
+                Public Class Test
+                    <Obsolete>
+                    Public Sub Run(a As Span(Of Int32), b As Span(Of Int32))
+                        If If(a.IsEmpty, a, b).IsEmpty Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(0),
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(1),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
         private static async Task VerifyNoDiagnosticVisualBasicAsync(string code)
         {
-            var spanCode = string.Format(CultureInfo.InvariantCulture, VbClass, "Span(Of Int32)", code);
-            var rosCode = string.Format(CultureInfo.InvariantCulture, VbClass, "ReadOnlySpan(Of Int32)", code);
+            var spanCode = CreateVbClass("Span(Of Int32)", code);
+            var rosCode = CreateVbClass("ReadOnlySpan(Of Int32)", code);
 
             await VerifyVB.VerifyAnalyzerAsync(spanCode);
             await VerifyVB.VerifyAnalyzerAsync(rosCode);
@@ -245,11 +322,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 
         private static async Task VerifyVisualBasicAsync(string code, string fixedCode)
         {
-            var spanCode = string.Format(CultureInfo.InvariantCulture, VbClass, "Span(Of Int32)", code);
-            var fixedSpanCode = string.Format(CultureInfo.InvariantCulture, VbClass, "Span(Of Int32)", fixedCode);
+            var spanCode = CreateVbClass("Span(Of Int32)", code);
+            var fixedSpanCode = CreateVbClass("Span(Of Int32)", fixedCode);
 
-            var rosCode = string.Format(CultureInfo.InvariantCulture, VbClass, "ReadOnlySpan(Of Int32)", code);
-            var fixedRosCode = string.Format(CultureInfo.InvariantCulture, VbClass, "ReadOnlySpan(Of Int32)", fixedCode);
+            var rosCode = CreateVbClass("ReadOnlySpan(Of Int32)", code);
+            var fixedRosCode = CreateVbClass("ReadOnlySpan(Of Int32)", fixedCode);
 
             await new VerifyVB.Test
             {

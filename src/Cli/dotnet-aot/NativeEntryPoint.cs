@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -294,20 +295,15 @@ static unsafe partial class NativeEntryPoint
     ///  <c>Program.ExecuteExternalCommand</c>. Returns <see langword="true"/> when the command was
     ///  resolved and executed (with its exit code in <paramref name="exitCode"/>); returns
     ///  <see langword="false"/> to signal that the invocation must be handled by the managed CLI -
-    ///  file-based apps (<c>dotnet app.cs</c>), legacy project tools, commands that do not resolve in
-    ///  AOT, or any resolution error.
+    ///  unsupported file-based app shapes, legacy project tools, commands that do not resolve in AOT,
+    ///  or any resolution error. External commands take precedence over implicit file-based apps.
     /// </summary>
     private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, string? globalJsonState, out int exitCode, out bool success)
     {
         exitCode = 1;
         success = false;
 
-        // File-based apps (`dotnet app.cs`) are re-dispatched by the managed CLI as `dotnet run --file`,
-        // which requires the managed `run` command. Defer them to the managed CLI.
-        if (parseResult.GetFileBasedAppEntryPointToken() is not null)
-        {
-            return false;
-        }
+        ParseResult? fileBasedRunParseResult = parseResult.TryParseFileBasedAppAsRun();
 
         string? subCommandToken = parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         string commandName = "dotnet-" + subCommandToken;
@@ -335,11 +331,34 @@ static unsafe partial class NativeEntryPoint
             }
         }
 
-        // The AOT resolver set is a subset of the managed one (it omits the MSBuild/NuGet-based project
-        // tools resolver). When nothing resolves, defer to the managed CLI so it can resolve a project
-        // tool or report the unknown-command error exactly as it would without the AOT fast path.
+        // External resolution precedes implicit file-based dispatch in the managed CLI, so only use
+        // the file after the AOT resolver set confirms that no external command takes precedence.
         if (commandSpec is null)
         {
+            if (fileBasedRunParseResult is not null)
+            {
+                try
+                {
+                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult);
+                    success = true;
+                    mainActivity?.SetDisplayName(fileBasedRunParseResult);
+                    SendAotParserTelemetry(fileBasedRunParseResult, globalJsonState);
+                    return true;
+                }
+                catch (CommandNotAvailableInAotException)
+                {
+                    return false;
+                }
+                catch (Exception exception)
+                {
+                    exitCode = Parser.ExceptionHandler(exception, fileBasedRunParseResult);
+                    success = false;
+                    return true;
+                }
+            }
+
+            // The AOT resolver set is a subset of the managed one (it omits the MSBuild/NuGet-based
+            // project-tools resolver). Defer so the managed CLI can resolve it or report the error.
             return false;
         }
 

@@ -42,8 +42,10 @@
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
 
-    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <!-- We don't need to code sign most .js files because they are coming from other repos and are already signed -->
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
+
+    <FileSignInfo Include="Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" CertificateName="MicrosoftDotNet500" />
 
     <!-- Skip signing .py files because they are already signed -->
     <FileExtensionSignInfo Update=".py" CertificateName="None" />

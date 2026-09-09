@@ -2,6 +2,8 @@ parameters:
   oneESCompat:
     templateFolderName: templates
   locBranch: ''
+  runTests: true
+  additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:
   - publishRetryConfig: true
@@ -82,13 +84,25 @@ jobs:
       MirrorRepo: sdk
 ### BUILD JOBS ###
 # Each job parameter set creates a new job and the parameter set is unwrapped into the parameters for that job.
-# The parameters sent to this template are also passed to the job, which does include the os-specific jobParameterSets array, but that array itself isn't used in the job.
+# jobParameters takes priority: iterate top-level parameters and skip any key that jobParameters already
+# defines, then insert jobParameters. This avoids duplicate-key conflicts for any override (e.g. runTests).
 - ${{ if eq(parameters.pool.os, 'windows') }}:
   - ${{ each jobParameters in parameters.windowsJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
+          ${{ insert }}: ${{ jobParameters }}
+          platformName: Windows
+  - ${{ each jobParameters in parameters.additionalWindowsJobParameterSets }}:
+    - ${{ if not(jobParameters.disableJob) }}:
+      - template: /eng/pipelines/templates/jobs/sdk-build.yml
+        parameters:
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
           platformName: Windows
 - ${{ if eq(parameters.pool.os, 'linux') }}:
@@ -96,7 +110,9 @@ jobs:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
           platformName: Linux
 - ${{ if eq(parameters.pool.os, 'macOS') }}:
@@ -104,6 +120,8 @@ jobs:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
           platformName: Mac

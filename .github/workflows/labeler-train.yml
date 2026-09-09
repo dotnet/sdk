@@ -45,6 +45,7 @@ on:
         default: "staged"
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   CACHE_KEY: ${{ inputs.cache_key_suffix }}
   REPOSITORY: ${{ github.repository }}
   LABEL_PREFIX: "Area-"
