@@ -134,7 +134,7 @@ public class ProjectGraphFactoryTests
 
         var map = graph.GetProjectInstanceMap(deepCopy: false);
 
-        var actual = map.Select(entry => $"{entry.Key.ProjectPath} TFM={entry.Key.TargetFramework} X={(entry.Value.GlobalProperties.TryGetValue(\"X\", out var x) ? x : \"\")}").ToArray();
+        var actual = map.Select(entry => $"{entry.Key.ProjectPath} TFM={entry.Key.TargetFramework} X={(entry.Value.GlobalProperties.TryGetValue("X", out var x) ? x : "")}").ToArray();
         Assert.Contains($"{appProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=", actual);
         Assert.IsTrue(
             actual.Contains($"{libraryProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=One") ||
