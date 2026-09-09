@@ -94,13 +94,12 @@
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Global usings -->
   <ItemGroup>
     <Using Include="Microsoft.DotNet.Cli.Telemetry" />
-    <Using Include="Combinatorial.MSTest" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial" />
     <!-- Aliases -->
     <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />

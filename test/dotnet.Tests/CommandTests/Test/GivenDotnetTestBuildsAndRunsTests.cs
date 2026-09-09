@@ -139,15 +139,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
             var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchArgument>--from-launch-settings</LaunchArgument>
+                    <LaunchEnvironment>TestValue1</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
 
-            File.WriteAllText(launchSettingsPath, $$"""
+            File.WriteAllText(launchSettingsPath, """
                 {
                     "profiles": {
                         "ConsoleApp25": {
                             "commandName": "Project",
-                            "commandLineArgs": "--from-launch-settings",
+                            "commandLineArgs": "$(LaunchArgument)",
                             "environmentVariables": {
-                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
                             }
                         }
                     }
@@ -161,7 +169,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute("-c", configuration);
 
             if (!SdkTestContext.IsLocalized())
@@ -178,6 +185,84 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithInvalidMSBuildExpressionInLaunchSettings_ShouldReturnExitCodeSuccess()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
+                .WithSource();
+
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(Path.Join(propertiesDirectory, "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithTests": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("could not be applied");
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithIgnoredInvalidLaunchArguments_AppliesEnvironmentVariables()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithLaunchSettings": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)",
+                            "applicationUrl": "$([)",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
+                            }
+                        }
+                    }
+                }
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    "if (!args.Contains(\"--from-launch-settings\"))",
+                    "if (args.Contains(\"--from-launch-settings\"))"));
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--no-launch-profile-arguments");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=expanded-environment");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);

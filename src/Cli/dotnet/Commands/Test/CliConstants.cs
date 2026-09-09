@@ -85,6 +85,11 @@ internal static class HandshakeMessagePropertyNames
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
 
+    // Identifies the extension responsible for a test-host orchestrator. Optional and
+    // additive so older consumers can ignore it and newer consumers can recognize known
+    // orchestrators without rejecting unknown ones.
+    internal const byte OrchestratorFeature = 11;
+
     // Reply-only capability that tells Microsoft.Testing.Platform where to open
     // the reverse channel used for server-initiated session cancellation.
     internal const byte ServerControlPipeName = 12;
@@ -120,6 +125,7 @@ internal static class HandshakeMessageExecutionModes
 internal static class HandshakeMessageHostTypes
 {
     internal const string TestHost = "TestHost";
+    internal const string TestHostOrchestrator = "TestHostOrchestrator";
     internal const string ArtifactPostProcessor = "ArtifactPostProcessor";
 }
 
