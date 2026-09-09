@@ -279,7 +279,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    _userTemplateCache = cache = new TemplateCache(_environmentSettings.Host.FileSystem.ReadUtf8Object(_paths.TemplateCacheFile));
+                    _userTemplateCache = cache = TemplateCache.Read(_environmentSettings.Host.FileSystem, _paths.TemplateCacheFile);
                 }
                 catch (FileNotFoundException)
                 {

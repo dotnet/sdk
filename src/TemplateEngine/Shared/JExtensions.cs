@@ -454,11 +454,10 @@ namespace Microsoft.TemplateEngine
                 ?? throw new InvalidOperationException($"Failed to parse JSON from '{path}'.");
         }
 
-        internal static JsonObject ReadUtf8Object(this IPhysicalFileSystem fileSystem, string path)
+        internal static JsonDocument ReadUtf8Document(this IPhysicalFileSystem fileSystem, string path)
         {
             using Stream fileStream = fileSystem.OpenRead(path);
-            return (JsonObject?)JsonNode.Parse(fileStream, null, DocOptions)
-                ?? throw new InvalidOperationException($"Failed to parse JSON from '{path}'.");
+            return JsonDocument.Parse(fileStream, DocOptions);
         }
 
         internal static void WriteObject<T>(this IPhysicalFileSystem fileSystem, string path, T obj, JsonTypeInfo<T> jsonTypeInfo)

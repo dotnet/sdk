@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FakeItEasy;
@@ -90,6 +91,45 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
+        public void ReadHandlesCompatibleJsonSyntax()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            const string json = """
+                                {
+                                    // Cache property names are matched case-insensitively.
+                                    "version": "1.0.0.7",
+                                    "locale": "en-US",
+                                    "templateinfo": [
+                                        {
+                                            "identity": "testIdentity",
+                                            "name": "testName",
+                                            "shortnamelist": "testShort",
+                                            "mountpointuri": "testMount",
+                                            "configplace": ".template.config/template.json",
+                                            "generatorid": "00000000-0000-0000-0000-000000000000",
+                                        },
+                                    ],
+                                    "mountpointsinfo": {},
+                                }
+                                """;
+
+            using (Stream stream = environmentSettings.Host.FileSystem.CreateFile(paths.TemplateCacheFile))
+            using (StreamWriter writer = new(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            {
+                writer.Write(json);
+            }
+
+            TemplateCache cache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.AreEqual("1.0.0.7", cache.Version);
+            Assert.AreEqual("en-US", cache.Locale);
+            Assert.ContainsSingle(cache.TemplateInfo);
+            Assert.AreEqual("testIdentity", cache.TemplateInfo[0].Identity);
+            Assert.AreSequenceEqual(new[] { "testShort" }, cache.TemplateInfo[0].ShortNameList);
+        }
+
+        [TestMethod]
         public void CanHandlePostActions()
         {
             IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -107,7 +147,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
             Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -132,7 +172,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
             Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -176,7 +216,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
             Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -216,7 +256,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
             Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -353,7 +393,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual(hostFileFormatted, templateCache.TemplateInfo[0].HostData);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
             Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -388,14 +428,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
 
             return managedTemplatePackage;
-        }
-
-        private static JsonObject ReadObject(IPhysicalFileSystem fileSystem, string path)
-        {
-            using var fileStream = fileSystem.OpenRead(path);
-            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            string content = textReader.ReadToEnd();
-            return JsonNode.Parse(content)!.AsObject();
         }
 
         private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
