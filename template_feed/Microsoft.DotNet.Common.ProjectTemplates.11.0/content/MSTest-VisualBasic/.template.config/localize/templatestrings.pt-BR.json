@@ -6,6 +6,8 @@
   "symbols/TargetFrameworkOverride/displayName": "Substituição da estrutura de destino",
   "symbols/Framework/description": "A estrutura de destino para o projeto.",
   "symbols/Framework/displayName": "Estrutura",
+  "symbols/Framework/choices/net12.0/description": ".NET 12",
+  "symbols/Framework/choices/net12.0-windows/description": ".NET 12 (somente Windows)",
   "symbols/Framework/choices/net11.0/description": ".NET 11",
   "symbols/Framework/choices/net11.0-windows/description": ".NET 11 (somente Windows)",
   "symbols/Framework/choices/net10.0/description": ".NET 10",

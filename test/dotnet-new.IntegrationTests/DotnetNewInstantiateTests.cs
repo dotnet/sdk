@@ -105,6 +105,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string[] mstestTargetFrameworks =
             [
+                "net12.0",
+                "net12.0-windows",
                 "net11.0",
                 "net11.0-windows",
                 "net10.0",
