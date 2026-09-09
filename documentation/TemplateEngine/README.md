@@ -70,7 +70,6 @@ We welcome contributions! You can contribute by:
 - [Creating an issue](https://github.com/dotnet/sdk/issues/new/choose) in the dotnet/sdk repository
 - Contributing a PR that fixes an issue or implements a new feature
 
-See the [SDK contributing guide](../../CONTRIBUTING.md) for details on how to build, run, and debug.
+See the [SDK developer guide](../project-docs/developer-guide.md) for details on how to build, run, and debug.
 
 For template engine specific documentation on contributing, see the [contributing guide](contributing/).
-

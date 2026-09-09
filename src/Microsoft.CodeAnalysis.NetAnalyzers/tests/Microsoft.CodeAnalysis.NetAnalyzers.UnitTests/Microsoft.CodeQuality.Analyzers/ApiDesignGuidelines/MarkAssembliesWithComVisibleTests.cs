@@ -21,91 +21,99 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task NoTypesComVisibleTrueAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(true)]");
+                [assembly: ComVisible(true)]
+                """);
         }
 
         [TestMethod]
         public async Task NoTypesComVisibleFalseAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(false)]");
+                [assembly: ComVisible(false)]
+                """);
         }
 
         [TestMethod]
         public async Task PublicTypeComVisibleMissingAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                }
+                """,
                 GetAddComVisibleFalseResult());
         }
 
         [TestMethod]
         public async Task PublicTypeComVisibleTrueAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(true)]
+                [assembly: ComVisible(true)]
 
-public class C
-{
-}",
+                public class C
+                {
+                }
+                """,
                 GetExposeIndividualTypesResult());
         }
 
         [TestMethod]
         public async Task PublicTypeComVisibleFalseAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(false)]
+                [assembly: ComVisible(false)]
 
-public class C
-{
-}");
+                public class C
+                {
+                }
+                """);
         }
 
         [TestMethod]
         public async Task InternalTypeComVisibleMissingAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class C
-{
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal class C
+                {
+                }
+                """);
         }
 
         [TestMethod]
         public async Task InternalTypeComVisibleTrueAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(true)]
+                [assembly: ComVisible(true)]
 
-internal class C
-{
-}");
+                internal class C
+                {
+                }
+                """);
         }
 
         [TestMethod]
         public async Task InternalTypeComVisibleFalseAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[assembly: ComVisible(false)]
+                [assembly: ComVisible(false)]
 
-internal class C
-{
-}");
+                internal class C
+                {
+                }
+                """);
         }
 
         private static DiagnosticResult GetExposeIndividualTypesResult()

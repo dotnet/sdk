@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

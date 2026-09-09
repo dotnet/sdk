@@ -6,7 +6,7 @@
     This file defines which tests can be skipped on PRs that don't touch relevant source.
     See documentation/project-docs/pr-test-filtering.md for design details and usage guide.
 
-    The targeted-test agent skill reads these scopes directly. When changing them, also
+    The run-tests agent skill reads these scopes directly. When changing them, also
     reconcile its fallback table for common unscoped areas: remove entries now covered by
     a scope, and update entries when test-project ownership changes.
   -->
@@ -18,6 +18,7 @@
   <PropertyGroup>
     <GlobalTriggerPaths>
       eng/Version.Details.xml;
+      src/Layout/redist/targets/GenerateBundledVersions.targets;
       test/Microsoft.NET.TestFramework/**;
       test/Microsoft.NET.TestFramework.MSTest/**
     </GlobalTriggerPaths>

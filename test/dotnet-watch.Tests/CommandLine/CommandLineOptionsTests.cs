@@ -99,7 +99,7 @@ public class CommandLineOptionsTests
     [TestMethod]
     [CombinatorialData]
     public void WatchOptions_NotPassedThrough(
-        [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
+        [CombinatorialValues("--quiet", "--verbose", "--trace", "--no-hot-reload", "--non-interactive")] string option,
         bool beforeCommand)
     {
         var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
@@ -112,6 +112,22 @@ public class CommandLineOptionsTests
     {
          VerifyErrors(["--quiet", "--verbose"],
             expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, "--quiet", "--verbose")}"]);
+    }
+
+    [TestMethod]
+    [DataRow("--quiet")]
+    [DataRow("--verbose")]
+    public void TraceAndOtherLogLevel(string option)
+    {
+        VerifyErrors([option, "--trace"],
+            expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, option, "--trace")}"]);
+    }
+
+    [TestMethod]
+    public void Trace()
+    {
+        var options = VerifyOptions(["--trace"]);
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
     }
 
     [TestMethod]

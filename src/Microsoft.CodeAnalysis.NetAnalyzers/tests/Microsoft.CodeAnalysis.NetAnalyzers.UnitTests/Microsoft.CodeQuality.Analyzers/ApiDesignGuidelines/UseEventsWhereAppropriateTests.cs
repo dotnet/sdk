@@ -22,317 +22,317 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task NoDiagnostic_NamingCasesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class EventsClass1
-{
-    public event EventHandler RaiseFileEvent;
+                public class EventsClass1
+                {
+                    public event EventHandler RaiseFileEvent;
 
-    public string RaiseAnotherProperty => null;
+                    public string RaiseAnotherProperty => null;
 
-    public void SomeMethodThatDoesNotStartWithRaise()
-    {
-    }
+                    public void SomeMethodThatDoesNotStartWithRaise()
+                    {
+                    }
 
-    public void RaisedRoutine()
-    {
-    }
+                    public void RaisedRoutine()
+                    {
+                    }
 
-    public void AddOneAssembly()
-    {
-    }
+                    public void AddOneAssembly()
+                    {
+                    }
 
-    public void Remover()
-    {
-    }
-}
-");
+                    public void Remover()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class EventsClass1
-    Public Event RaiseFileEvent As EventHandler
+                Public Class EventsClass1
+                    Public Event RaiseFileEvent As EventHandler
 
-    Public ReadOnly Property RaiseAnotherProperty() As String
-        Get
-            Return Nothing
-        End Get
-    End Property
+                    Public ReadOnly Property RaiseAnotherProperty() As String
+                        Get
+                            Return Nothing
+                        End Get
+                    End Property
 
-    Public Sub SomeMethodThatDoesNotStartWithRaise()
-    End Sub
+                    Public Sub SomeMethodThatDoesNotStartWithRaise()
+                    End Sub
 
-    Public Sub RaisedRoutine()
-    End Sub
+                    Public Sub RaisedRoutine()
+                    End Sub
 
-    Public Sub AddOneAssembly()
-    End Sub
+                    Public Sub AddOneAssembly()
+                    End Sub
 
-    Public Sub Remover()
-    End Sub
-End Class
-");
+                    Public Sub Remover()
+                    End Sub
+                End Class
+                """);
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [TestMethod]
         public async Task NoDiagnostic_InterfaceMemberImplementationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class InterfaceImplementation : I
-{
-    // Explicit interface implementation - Rule does not fire.
-    void I.FireOnSomething_InterfaceMethod1()
-    {
-        throw new NotImplementedException();
-    }
+                public class InterfaceImplementation : I
+                {
+                    // Explicit interface implementation - Rule does not fire.
+                    void I.FireOnSomething_InterfaceMethod1()
+                    {
+                        throw new NotImplementedException();
+                    }
 
-    // Implicit interface implementation - Rule does not fire.
-    public void FireOnSomething_InterfaceMethod2()
-    {
-        throw new NotImplementedException();
-    }
-}
+                    // Implicit interface implementation - Rule does not fire.
+                    public void FireOnSomething_InterfaceMethod2()
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
 
-#pragma warning disable CA1030 // We are only testing no violations in InterfaceImplementation in this test, so suppress issues reported in the interface.
-public interface I
-{
-    // Interface methods - Rule fires.
-    void FireOnSomething_InterfaceMethod1();
-    void FireOnSomething_InterfaceMethod2();
-}
-#pragma warning restore CA1030
-");
+                #pragma warning disable CA1030 // We are only testing no violations in InterfaceImplementation in this test, so suppress issues reported in the interface.
+                public interface I
+                {
+                    // Interface methods - Rule fires.
+                    void FireOnSomething_InterfaceMethod1();
+                    void FireOnSomething_InterfaceMethod2();
+                }
+                #pragma warning restore CA1030
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class InterfaceImplementation
-	Implements I
-	' Explicit interface implementation - Rule does not fire.
-	Private Sub FireOnSomething_InterfaceMethod1() Implements I.FireOnSomething_InterfaceMethod1
-		Throw New NotImplementedException()
-	End Sub
+                Public Class InterfaceImplementation
+                	Implements I
+                	' Explicit interface implementation - Rule does not fire.
+                	Private Sub FireOnSomething_InterfaceMethod1() Implements I.FireOnSomething_InterfaceMethod1
+                		Throw New NotImplementedException()
+                	End Sub
 
-	' Implicit interface implementation - Rule does not fire.
-	Public Sub FireOnSomething_InterfaceMethod2() Implements I.FireOnSomething_InterfaceMethod2
-		Throw New NotImplementedException()
-	End Sub
-End Class
+                	' Implicit interface implementation - Rule does not fire.
+                	Public Sub FireOnSomething_InterfaceMethod2() Implements I.FireOnSomething_InterfaceMethod2
+                		Throw New NotImplementedException()
+                	End Sub
+                End Class
 
-#Disable Warning CA1030 ' We are only testing no violations in InterfaceImplementation in this test, so suppress issues reported in the interface.
-Public Interface I
-	' Interface methods - Rule fires.
-	Sub FireOnSomething_InterfaceMethod1()
-	Sub FireOnSomething_InterfaceMethod2()
-End Interface
-#Enable Warning CA1030
-");
+                #Disable Warning CA1030 ' We are only testing no violations in InterfaceImplementation in this test, so suppress issues reported in the interface.
+                Public Interface I
+                	' Interface methods - Rule fires.
+                	Sub FireOnSomething_InterfaceMethod1()
+                	Sub FireOnSomething_InterfaceMethod2()
+                End Interface
+                #Enable Warning CA1030
+                """);
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [TestMethod]
         public async Task NoDiagnostic_UnflaggedMethodKindsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class FireOnSomethingDerivedClass : BaseClass
-{
-    // Constructor - Rule does not fire.
-    public FireOnSomethingDerivedClass()
-    {
-    }
+                public class FireOnSomethingDerivedClass : BaseClass
+                {
+                    // Constructor - Rule does not fire.
+                    public FireOnSomethingDerivedClass()
+                    {
+                    }
 
-    // Finalizer - Rule does not fire.
-    ~FireOnSomethingDerivedClass()
-    {
-    }
+                    // Finalizer - Rule does not fire.
+                    ~FireOnSomethingDerivedClass()
+                    {
+                    }
 
-    // Overridden methods - Rule does not fire.
-    public override void FireOnSomething()
-    {
-        throw new NotImplementedException();
-    }
+                    // Overridden methods - Rule does not fire.
+                    public override void FireOnSomething()
+                    {
+                        throw new NotImplementedException();
+                    }
 
-    public override void RaiseOnSomething()
-    {
-        throw new NotImplementedException();
-    }
+                    public override void RaiseOnSomething()
+                    {
+                        throw new NotImplementedException();
+                    }
 
-    public override void AddOnSomething()
-    {
-        throw new NotImplementedException();
-    }
+                    public override void AddOnSomething()
+                    {
+                        throw new NotImplementedException();
+                    }
 
-    public override void RemoveOnSomething()
-    {
-        throw new NotImplementedException();
-    }
-}
+                    public override void RemoveOnSomething()
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
 
-#pragma warning disable CA1030 // We are only testing no violations in FireOnSomethingDerivedClass in this test, so suppress issues reported in the BaseClass.
-public abstract class BaseClass
-{
-    // Abstract method - Rule fires.
-    public abstract void FireOnSomething();
+                #pragma warning disable CA1030 // We are only testing no violations in FireOnSomethingDerivedClass in this test, so suppress issues reported in the BaseClass.
+                public abstract class BaseClass
+                {
+                    // Abstract method - Rule fires.
+                    public abstract void FireOnSomething();
 
-    // Abstract method - Rule fires.
-    public abstract void RaiseOnSomething();
+                    // Abstract method - Rule fires.
+                    public abstract void RaiseOnSomething();
 
-    // Abstract method - Rule fires.
-    public abstract void AddOnSomething();
+                    // Abstract method - Rule fires.
+                    public abstract void AddOnSomething();
 
-    // Abstract method - Rule fires.
-    public abstract void RemoveOnSomething();
-}
-#pragma warning restore CA1030
-");
+                    // Abstract method - Rule fires.
+                    public abstract void RemoveOnSomething();
+                }
+                #pragma warning restore CA1030
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class FireOnSomethingDerivedClass
-	Inherits BaseClass
-	' Constructor - Rule does not fire.
-	Public Sub New()
-	End Sub
+                Public Class FireOnSomethingDerivedClass
+                	Inherits BaseClass
+                	' Constructor - Rule does not fire.
+                	Public Sub New()
+                	End Sub
 
-	' Finalizer - Rule does not fire.
-	Protected Overrides Sub Finalize()
-		Try
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                	' Finalizer - Rule does not fire.
+                	Protected Overrides Sub Finalize()
+                		Try
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	' Overridden methods - Rule does not fire.
-	Public Overrides Sub FireOnSomething()
-		Throw New NotImplementedException()
-	End Sub
+                	' Overridden methods - Rule does not fire.
+                	Public Overrides Sub FireOnSomething()
+                		Throw New NotImplementedException()
+                	End Sub
 
-	Public Overrides Sub RaiseOnSomething()
-		Throw New NotImplementedException()
-	End Sub
+                	Public Overrides Sub RaiseOnSomething()
+                		Throw New NotImplementedException()
+                	End Sub
 
-	Public Overrides Sub AddOnSomething()
-		Throw New NotImplementedException()
-	End Sub
+                	Public Overrides Sub AddOnSomething()
+                		Throw New NotImplementedException()
+                	End Sub
 
-	Public Overrides Sub RemoveOnSomething()
-		Throw New NotImplementedException()
-	End Sub
-End Class
+                	Public Overrides Sub RemoveOnSomething()
+                		Throw New NotImplementedException()
+                	End Sub
+                End Class
 
-#Disable Warning CA1030 ' We are only testing no violations in FireOnSomethingDerivedClass in this test, so suppress issues reported in the BaseClass.
-Public MustInherit Class BaseClass
-	' Abstract method - Rule fires.
-	Public MustOverride Overloads Sub FireOnSomething()
+                #Disable Warning CA1030 ' We are only testing no violations in FireOnSomethingDerivedClass in this test, so suppress issues reported in the BaseClass.
+                Public MustInherit Class BaseClass
+                	' Abstract method - Rule fires.
+                	Public MustOverride Overloads Sub FireOnSomething()
 
-	' Abstract method - Rule fires.
-	Public MustOverride Overloads Sub RaiseOnSomething()
+                	' Abstract method - Rule fires.
+                	Public MustOverride Overloads Sub RaiseOnSomething()
 
-	' Abstract method - Rule fires.
-	Public MustOverride Overloads Sub AddOnSomething()
+                	' Abstract method - Rule fires.
+                	Public MustOverride Overloads Sub AddOnSomething()
 
-	' Abstract method - Rule fires.
-	Public MustOverride Overloads Sub RemoveOnSomething()
-End Class
-#Enable Warning CA1030
-");
+                	' Abstract method - Rule fires.
+                	Public MustOverride Overloads Sub RemoveOnSomething()
+                End Class
+                #Enable Warning CA1030
+                """);
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task NoDiagnostic_FlaggedMethodKinds_NotExternallyVisibleAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-internal interface InterfaceWithViolations
-{
-    // Interface methods.
-    void FireOnSomething_InterfaceMethod1();
-    void FireOnSomething_InterfaceMethod2();
-}
+                internal interface InterfaceWithViolations
+                {
+                    // Interface methods.
+                    void FireOnSomething_InterfaceMethod1();
+                    void FireOnSomething_InterfaceMethod2();
+                }
 
-public abstract class ClassWithViolations
-{
-    private class InnerClass
-    {
-        // Static method.
-        public static void RaiseOnSomething_StaticMethod()
-        {
-        }
-    }
+                public abstract class ClassWithViolations
+                {
+                    private class InnerClass
+                    {
+                        // Static method.
+                        public static void RaiseOnSomething_StaticMethod()
+                        {
+                        }
+                    }
 
-    internal class InnerClass2
-    {
-        // Virtual method.
-        public virtual void FireOnSomething_VirtualMethod()
-        {
-        }
-    }
+                    internal class InnerClass2
+                    {
+                        // Virtual method.
+                        public virtual void FireOnSomething_VirtualMethod()
+                        {
+                        }
+                    }
 
-    // Private method.
-    private static void RaiseOnSomething_StaticMethod()
-    {
-    }
+                    // Private method.
+                    private static void RaiseOnSomething_StaticMethod()
+                    {
+                    }
 
-    // Abstract method.
-    internal abstract void FireOnSomething_AbstractMethod();
+                    // Abstract method.
+                    internal abstract void FireOnSomething_AbstractMethod();
 
-    // Abstract method.
-    internal abstract void RaiseOnSomething_AbstractMethod();
+                    // Abstract method.
+                    internal abstract void RaiseOnSomething_AbstractMethod();
 
-    // Abstract method.
-    internal abstract void AddOnSomething_AbstractMethod();
+                    // Abstract method.
+                    internal abstract void AddOnSomething_AbstractMethod();
 
-    // Abstract method.
-    internal abstract void RemoveOnSomething_AbstractMethod();
-}
-");
+                    // Abstract method.
+                    internal abstract void RemoveOnSomething_AbstractMethod();
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Friend Interface InterfaceWithViolations
-    ' Interface methods.
-    Sub FireOnSomething_InterfaceMethod1()
-    Sub FireOnSomething_InterfaceMethod2()
-End Interface
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Friend Interface InterfaceWithViolations
+                    ' Interface methods.
+                    Sub FireOnSomething_InterfaceMethod1()
+                    Sub FireOnSomething_InterfaceMethod2()
+                End Interface
 
-Public MustInherit Class ClassWithViolations
-    Private Class InnerClass
-        ' Static method.
-        Public Shared Sub RaiseOnSomething_StaticMethod()
-        End Sub
-    End Class
+                Public MustInherit Class ClassWithViolations
+                    Private Class InnerClass
+                        ' Static method.
+                        Public Shared Sub RaiseOnSomething_StaticMethod()
+                        End Sub
+                    End Class
 
-    Friend Class InnerClass2
-        ' Virtual method.
-        Public Overridable Sub FireOnSomething_VirtualMethod()
-        End Sub
-    End Class
+                    Friend Class InnerClass2
+                        ' Virtual method.
+                        Public Overridable Sub FireOnSomething_VirtualMethod()
+                        End Sub
+                    End Class
 
-    ' Private method.
-    Private Shared Sub RaiseOnSomething_StaticMethod()
-    End Sub
+                    ' Private method.
+                    Private Shared Sub RaiseOnSomething_StaticMethod()
+                    End Sub
 
-    ' Abstract method.
-    Friend MustOverride Sub FireOnSomething_AbstractMethod()
+                    ' Abstract method.
+                    Friend MustOverride Sub FireOnSomething_AbstractMethod()
 
-    ' Abstract method.
-    Friend MustOverride Sub RaiseOnSomething_AbstractMethod()
+                    ' Abstract method.
+                    Friend MustOverride Sub RaiseOnSomething_AbstractMethod()
 
-    ' Abstract method.
-    Friend MustOverride Sub AddOnSomething_AbstractMethod()
+                    ' Abstract method.
+                    Friend MustOverride Sub AddOnSomething_AbstractMethod()
 
-    ' Abstract method.
-    Friend MustOverride Sub RemoveOnSomething_AbstractMethod()
-End Class
-");
+                    ' Abstract method.
+                    Friend MustOverride Sub RemoveOnSomething_AbstractMethod()
+                End Class
+                """);
         }
 
         #endregion
@@ -343,41 +343,43 @@ End Class
         [TestMethod]
         public async Task Diagnostic_FlaggedMethodKindsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public interface InterfaceWithViolations
-{
-    // Interface methods - Rule fires.
-    void FireOnSomething_InterfaceMethod1();
-    void FireOnSomething_InterfaceMethod2();
-}
+                using System;
 
-public abstract class ClassWithViolations
-{
-    // Static method - Rule fires.
-    public static void RaiseOnSomething_StaticMethod()
-    {
-    }
+                public interface InterfaceWithViolations
+                {
+                    // Interface methods - Rule fires.
+                    void FireOnSomething_InterfaceMethod1();
+                    void FireOnSomething_InterfaceMethod2();
+                }
 
-    // Virtual method - Rule fires.
-    public virtual void FireOnSomething_VirtualMethod()
-    {
-    }
+                public abstract class ClassWithViolations
+                {
+                    // Static method - Rule fires.
+                    public static void RaiseOnSomething_StaticMethod()
+                    {
+                    }
 
-    // Abstract method - Rule fires.
-    public abstract void FireOnSomething_AbstractMethod();
+                    // Virtual method - Rule fires.
+                    public virtual void FireOnSomething_VirtualMethod()
+                    {
+                    }
 
-    // Abstract method - Rule fires.
-    public abstract void RaiseOnSomething_AbstractMethod();
+                    // Abstract method - Rule fires.
+                    public abstract void FireOnSomething_AbstractMethod();
 
-    // Abstract method - Rule fires.
-    public abstract void AddOnSomething_AbstractMethod();
+                    // Abstract method - Rule fires.
+                    public abstract void RaiseOnSomething_AbstractMethod();
 
-    // Abstract method - Rule fires.
-    public abstract void RemoveOnSomething_AbstractMethod();
-}
-",
+                    // Abstract method - Rule fires.
+                    public abstract void AddOnSomething_AbstractMethod();
+
+                    // Abstract method - Rule fires.
+                    public abstract void RemoveOnSomething_AbstractMethod();
+                }
+
+                """,
       // Test0.cs(7,10): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod1' an event.
       GetCSharpResultAt(7, 10, "FireOnSomething_InterfaceMethod1"),
       // Test0.cs(8,10): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod2' an event.
@@ -395,35 +397,37 @@ public abstract class ClassWithViolations
       // Test0.cs(33,26): warning CA1030: Consider making 'RemoveOnSomething_AbstractMethod' an event.
       GetCSharpResultAt(33, 26, "RemoveOnSomething_AbstractMethod"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Interface InterfaceWithViolations
-	' Interface methods - Rule fires.
-	Sub FireOnSomething_InterfaceMethod1()
-	Sub FireOnSomething_InterfaceMethod2()
-End Interface
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public MustInherit Class ClassWithViolations
-	' Static method - Rule fires.
-	Public Shared Sub RaiseOnSomething_StaticMethod()
-	End Sub
+                Public Interface InterfaceWithViolations
+                	' Interface methods - Rule fires.
+                	Sub FireOnSomething_InterfaceMethod1()
+                	Sub FireOnSomething_InterfaceMethod2()
+                End Interface
 
-	' Virtual method - Rule fires.
-	Public Overridable Sub FireOnSomething_VirtualMethod()
-	End Sub
+                Public MustInherit Class ClassWithViolations
+                	' Static method - Rule fires.
+                	Public Shared Sub RaiseOnSomething_StaticMethod()
+                	End Sub
 
-	' Abstract method - Rule fires.
-	Public MustOverride Sub FireOnSomething_AbstractMethod()
+                	' Virtual method - Rule fires.
+                	Public Overridable Sub FireOnSomething_VirtualMethod()
+                	End Sub
 
-	' Abstract method - Rule fires.
-	Public MustOverride Sub RaiseOnSomething_AbstractMethod()
+                	' Abstract method - Rule fires.
+                	Public MustOverride Sub FireOnSomething_AbstractMethod()
 
-	' Abstract method - Rule fires.
-	Public MustOverride Sub AddOnSomething_AbstractMethod()
+                	' Abstract method - Rule fires.
+                	Public MustOverride Sub RaiseOnSomething_AbstractMethod()
 
-	' Abstract method - Rule fires.
-	Public MustOverride Sub RemoveOnSomething_AbstractMethod()
-End Class
-",
+                	' Abstract method - Rule fires.
+                	Public MustOverride Sub AddOnSomething_AbstractMethod()
+
+                	' Abstract method - Rule fires.
+                	Public MustOverride Sub RemoveOnSomething_AbstractMethod()
+                End Class
+
+                """,
       // Test0.vb(4,6): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod1' an event.
       GetBasicResultAt(4, 6, "FireOnSomething_InterfaceMethod1"),
       // Test0.vb(5,6): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod2' an event.
@@ -446,26 +450,28 @@ End Class
         [TestMethod]
         public async Task Diagnostic_PascalCasedMethodNamesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class EventsClassPascalCased
-{
-    public void Fire() { }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public void Raise() { }
+                public class EventsClassPascalCased
+                {
+                    public void Fire() { }
 
-    public void RaiseFileEvent() { }
+                    public void Raise() { }
 
-    public void FireFileEvent() { }
+                    public void RaiseFileEvent() { }
 
-    public void AddOnFileEvent() { }
+                    public void FireFileEvent() { }
 
-    public void RemoveOnFileEvent() { }
+                    public void AddOnFileEvent() { }
 
-    public void Add_OnFileEvent() { }
+                    public void RemoveOnFileEvent() { }
 
-    public void Remove_OnFileEvent() { }
-}
-",
+                    public void Add_OnFileEvent() { }
+
+                    public void Remove_OnFileEvent() { }
+                }
+
+                """,
       // Test0.cs(4,17): warning CA1030: Consider making 'Fire' an event.
       GetCSharpResultAt(4, 17, "Fire"),
       // Test0.cs(6,17): warning CA1030: Consider making 'Raise' an event.
@@ -483,33 +489,35 @@ public class EventsClassPascalCased
       // Test0.cs(18,17): warning CA1030: Consider making 'Remove_OnFileEvent' an event.
       GetCSharpResultAt(18, 17, "Remove_OnFileEvent"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class EventsClassPascalCased
-	Public Sub Fire()
-	End Sub
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-	Public Sub Raise()
-	End Sub
+                Public Class EventsClassPascalCased
+                	Public Sub Fire()
+                	End Sub
 
-	Public Sub RaiseFileEvent()
-	End Sub
+                	Public Sub Raise()
+                	End Sub
 
-	Public Sub FireFileEvent()
-	End Sub
+                	Public Sub RaiseFileEvent()
+                	End Sub
 
-	Public Sub AddOnFileEvent()
-	End Sub
+                	Public Sub FireFileEvent()
+                	End Sub
 
-	Public Sub RemoveOnFileEvent()
-	End Sub
+                	Public Sub AddOnFileEvent()
+                	End Sub
 
-	Public Sub Add_OnFileEvent()
-	End Sub
+                	Public Sub RemoveOnFileEvent()
+                	End Sub
 
-	Public Sub Remove_OnFileEvent()
-	End Sub
-End Class
-",
+                	Public Sub Add_OnFileEvent()
+                	End Sub
+
+                	Public Sub Remove_OnFileEvent()
+                	End Sub
+                End Class
+
+                """,
       // Test0.vb(3,13): warning CA1030: Consider making 'Fire' an event.
       GetBasicResultAt(3, 13, "Fire"),
       // Test0.vb(6,13): warning CA1030: Consider making 'Raise' an event.
@@ -533,26 +541,28 @@ End Class
         [TestMethod]
         public async Task Diagnostic_LowerCaseMethodNamesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class EventsClassLowercase
-{
-    public void fire() { }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public void raise() { }
+                public class EventsClassLowercase
+                {
+                    public void fire() { }
 
-    public void raiseFileEvent() { }
+                    public void raise() { }
 
-    public void fireFileEvent() { }
+                    public void raiseFileEvent() { }
 
-    public void addOnFileEvent() { }
+                    public void fireFileEvent() { }
 
-    public void removeOnFileEvent() { }
+                    public void addOnFileEvent() { }
 
-    public void add_onFileEvent() { }
+                    public void removeOnFileEvent() { }
 
-    public void remove_onFileEvent() { }
-}
-",
+                    public void add_onFileEvent() { }
+
+                    public void remove_onFileEvent() { }
+                }
+
+                """,
       // Test0.cs(4,17): warning CA1030: Consider making 'fire' an event.
       GetCSharpResultAt(4, 17, "fire"),
       // Test0.cs(6,17): warning CA1030: Consider making 'raise' an event.
@@ -570,33 +580,35 @@ public class EventsClassLowercase
       // Test0.cs(18,17): warning CA1030: Consider making 'remove_onFileEvent' an event.
       GetCSharpResultAt(18, 17, "remove_onFileEvent"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class EventsClassLowercase
-	Public Sub fire()
-	End Sub
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-	Public Sub raise()
-	End Sub
+                Public Class EventsClassLowercase
+                	Public Sub fire()
+                	End Sub
 
-	Public Sub raiseFileEvent()
-	End Sub
+                	Public Sub raise()
+                	End Sub
 
-	Public Sub fireFileEvent()
-	End Sub
+                	Public Sub raiseFileEvent()
+                	End Sub
 
-	Public Sub addOnFileEvent()
-	End Sub
+                	Public Sub fireFileEvent()
+                	End Sub
 
-	Public Sub removeOnFileEvent()
-	End Sub
+                	Public Sub addOnFileEvent()
+                	End Sub
 
-	Public Sub add_onFileEvent()
-	End Sub
+                	Public Sub removeOnFileEvent()
+                	End Sub
 
-	Public Sub remove_onFileEvent()
-	End Sub
-End Class
-",
+                	Public Sub add_onFileEvent()
+                	End Sub
+
+                	Public Sub remove_onFileEvent()
+                	End Sub
+                End Class
+
+                """,
       // Test0.vb(3,13): warning CA1030: Consider making 'fire' an event.
       GetBasicResultAt(3, 13, "fire"),
       // Test0.vb(6,13): warning CA1030: Consider making 'raise' an event.
