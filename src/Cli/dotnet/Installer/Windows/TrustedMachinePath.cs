@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -31,6 +34,13 @@ namespace Microsoft.DotNet.Installer.Windows
 #endif
     internal static class TrustedMachinePath
     {
+        private const uint ReadControl = 0x00020000;
+        private const uint OpenExisting = 3;
+        private const uint FileFlagBackupSemantics = 0x02000000;
+        private const uint FileFlagOpenReparsePoint = 0x00200000;
+        private const uint OwnerSecurityInformation = 0x00000001;
+        private const uint DaclSecurityInformation = 0x00000004;
+
         private static readonly SecurityIdentifier s_AdministratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
         private static readonly SecurityIdentifier s_LocalSystemSid = new(WellKnownSidType.LocalSystemSid, null);
         private static readonly HashSet<SecurityIdentifier> s_TrustedSids = new()
@@ -92,12 +102,50 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         public static void ValidateDirectory(string path)
         {
-            if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+            using SafeFileHandle handle = CreateFile(
+                path,
+                ReadControl,
+                FileShare.ReadWrite | FileShare.Delete,
+                IntPtr.Zero,
+                OpenExisting,
+                FileFlagBackupSemantics | FileFlagOpenReparsePoint,
+                IntPtr.Zero);
+
+            if (handle.IsInvalid)
+            {
+                ThrowNativeError(Marshal.GetLastWin32Error(), path);
+            }
+
+            if (!GetFileInformationByHandleEx(handle, FileInfoByHandleClass.FileAttributeTagInfo, out FileAttributeTagInfo fileInformation, (uint)Marshal.SizeOf<FileAttributeTagInfo>()))
+            {
+                ThrowNativeError(Marshal.GetLastWin32Error(), path);
+            }
+
+            if ((fileInformation.FileAttributes & FileAttributes.ReparsePoint) != 0)
             {
                 ThrowUntrusted(path);
             }
 
-            Validate(new DirectoryInfo(path).GetAccessControl(AccessControlSections.Access | AccessControlSections.Owner), path);
+            uint error = GetSecurityInfo(handle, SeObjectType.FileObject, OwnerSecurityInformation | DaclSecurityInformation, out _, out _, out _, out _, out IntPtr securityDescriptor);
+            if (error != 0)
+            {
+                ThrowNativeError((int)error, path);
+            }
+
+            try
+            {
+                int length = checked((int)GetSecurityDescriptorLength(securityDescriptor));
+                byte[] binarySecurityDescriptor = new byte[length];
+                Marshal.Copy(securityDescriptor, binarySecurityDescriptor, 0, length);
+
+                DirectorySecurity security = new DirectorySecurity();
+                security.SetSecurityDescriptorBinaryForm(binarySecurityDescriptor, AccessControlSections.Access | AccessControlSections.Owner);
+                Validate(security, path);
+            }
+            finally
+            {
+                LocalFree(securityDescriptor);
+            }
         }
 
         /// <summary>
@@ -157,5 +205,47 @@ namespace Microsoft.DotNet.Installer.Windows
             throw new InvalidDataException(
                 $"'{path}' has unexpected permissions and cannot be trusted. Delete '{path}' and retry.");
         }
+
+        private static void ThrowNativeError(int error, string path)
+        {
+            var exception = new Win32Exception(error);
+            throw error switch
+            {
+                2 or 3 => new DirectoryNotFoundException($"Could not find '{path}'.", exception),
+                5 => new UnauthorizedAccessException(exception.Message, exception),
+                _ => new IOException(exception.Message, exception),
+            };
+        }
+
+        private enum FileInfoByHandleClass { FileAttributeTagInfo = 9 }
+        private enum SeObjectType { FileObject = 1 }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct FileAttributeTagInfo
+        {
+            public FileAttributes FileAttributes;
+            public uint ReparseTag;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern SafeFileHandle CreateFile(string fileName, uint desiredAccess, FileShare shareMode, IntPtr securityAttributes, uint creationDisposition, uint flagsAndAttributes, IntPtr templateFile);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetFileInformationByHandleEx(SafeFileHandle file, FileInfoByHandleClass fileInformationClass, out FileAttributeTagInfo fileInformation, uint bufferSize);
+
+        [DllImport("advapi32.dll")]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern uint GetSecurityInfo(SafeFileHandle handle, SeObjectType objectType, uint securityInformation, out IntPtr owner, out IntPtr group, out IntPtr dacl, out IntPtr sacl, out IntPtr securityDescriptor);
+
+        [DllImport("advapi32.dll")]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern uint GetSecurityDescriptorLength(IntPtr securityDescriptor);
+
+        [DllImport("kernel32.dll")]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern IntPtr LocalFree(IntPtr memory);
     }
 }
