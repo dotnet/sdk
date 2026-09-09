@@ -428,9 +428,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
-        public static async Task ShouldNotTrigger_PropertyWithSetterMoreAccessibleThanGetter()
+        public async Task ShouldNotTrigger_PropertyWithSetterMoreAccessibleThanGetter()
         {
             await TestCSAsync(@"
                 using System;
@@ -465,6 +465,90 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     public void M() { }
                 }
             ");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_ProtectedGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { protected get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_InternalGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { internal get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_PrivateProtectedGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { private protected get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldStillTrigger_PublicGetterPrivateSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo {|#0:Prop|} { get; private set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ",
+            $"dotnet_code_quality.CA1859.api_surface = public,internal,private",
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                .WithLocation(0)
+                .WithArguments("Prop", "Example.IFoo", "Example.Foo"));
         }
 
         [TestMethod]
