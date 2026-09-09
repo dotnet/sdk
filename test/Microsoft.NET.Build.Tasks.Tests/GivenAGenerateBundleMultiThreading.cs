@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// back to <c>Environment.CurrentDirectory</c> / <c>Path.GetFullPath</c> would surface here.
     /// </summary>
     [TestClass]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DoNotParallelize]
     public class GivenAGenerateBundleMultiThreading : IDisposable
     {
         private readonly List<string> _tempDirs = new();

@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 /// passing RELATIVE paths and expecting tasks to resolve them via TaskEnvironment.
 /// </summary>
 [TestClass]
-[ResourceLock(WellKnownResources.CurrentDirectory)]
+[DoNotParallelize]
 public class GivenTasksUseAbsolutePaths : IDisposable
 {
     private readonly TaskTestEnvironment _env;
