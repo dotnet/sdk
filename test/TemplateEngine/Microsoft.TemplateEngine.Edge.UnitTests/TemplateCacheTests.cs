@@ -130,6 +130,39 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
+        [DataRow(nameof(TemplateInfo.Identity))]
+        [DataRow(nameof(TemplateInfo.Name))]
+        [DataRow(nameof(TemplateInfo.MountPointUri))]
+        [DataRow(nameof(TemplateInfo.ConfigPlace))]
+        public void ReadRejectsTemplateMissingRequiredProperty(string propertyName)
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            JsonObject template = new()
+            {
+                [nameof(TemplateInfo.Identity)] = "testIdentity",
+                [nameof(TemplateInfo.Name)] = "testName",
+                [nameof(TemplateInfo.MountPointUri)] = "testMount",
+                [nameof(TemplateInfo.ConfigPlace)] = ".template.config/template.json",
+                [nameof(TemplateInfo.GeneratorId)] = Guid.Empty.ToString()
+            };
+            Assert.IsTrue(template.Remove(propertyName));
+
+            JsonObject cache = new()
+            {
+                [nameof(TemplateCache.Version)] = "1.0.0.7",
+                [nameof(TemplateCache.Locale)] = "en-US",
+                [nameof(TemplateCache.TemplateInfo)] = new JsonArray(template),
+                [nameof(TemplateCache.MountPointsInfo)] = new JsonObject()
+            };
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, cache);
+
+            ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(
+                () => TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            Assert.Contains(propertyName, exception.Message);
+        }
+
+        [TestMethod]
         public void CanHandlePostActions()
         {
             IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
