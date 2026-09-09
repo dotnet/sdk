@@ -112,8 +112,6 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public DotNetCommandDefinition()
         : base("dotnet")
     {
-        HelpName = "dotnet";
-
         Directives.Add(new DiagramDirective());
         Directives.Add(new SuggestDirective());
         Directives.Add(new EnvironmentVariablesDirective());

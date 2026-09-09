@@ -363,7 +363,7 @@ namespace Microsoft.NET.Build.Tests
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
         [DataRow(true, true, "net5.0")]
-        [DataRow(true, true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(true, true, ToolsetInfo.SdkTargetFramework)]
         [DataRow(true, false, ToolsetInfo.CurrentTargetFramework)]
         [DataRow(false, false, ToolsetInfo.CurrentTargetFramework)]
         public void TestPreviewFeatures(bool enablePreviewFeatures, bool generateRequiresPreviewFeaturesAttribute, string targetFramework)
@@ -412,7 +412,7 @@ namespace Microsoft.NET.Build.Tests
 
             if (enablePreviewFeatures && generateRequiresPreviewFeaturesAttribute)
             {
-                if (targetFramework == ToolsetInfo.CurrentTargetFramework)
+                if (targetFramework == ToolsetInfo.SdkTargetFramework)
                 {
                     Assert.AreEqual("Preview", langVersion);
                     Assert.IsTrue(contains);
