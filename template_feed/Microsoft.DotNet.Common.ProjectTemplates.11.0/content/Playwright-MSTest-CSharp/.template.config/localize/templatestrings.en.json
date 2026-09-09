@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "MSTest Playwright Test Project",
   "description": "A project that contains Playwright tests using MSTest test framework, that can run on .NET on Windows, Linux and MacOS.",
