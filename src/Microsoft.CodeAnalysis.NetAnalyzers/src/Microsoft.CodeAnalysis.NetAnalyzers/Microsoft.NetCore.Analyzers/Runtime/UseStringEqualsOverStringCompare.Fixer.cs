@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -10,10 +11,11 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Text;
 
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseStringEqualsOverStringCompare.RequiredSymbols;
@@ -21,48 +23,61 @@ using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseStringEqualsOverS
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class UseStringEqualsOverStringCompareFixer : CodeFixProvider
+    public sealed class UseStringEqualsOverStringCompareFixer : SyntaxEditorBasedCodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var document = context.Document;
-            var token = context.CancellationToken;
-            var semanticModel = await document.GetRequiredSemanticModelAsync(token).ConfigureAwait(false);
+            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            _ = RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols);
-            RoslynDebug.Assert(symbols is not null);
-
-            var root = await document.GetRequiredSyntaxRootAsync(token).ConfigureAwait(false);
-            var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
-            var violation = semanticModel.GetOperation(node, token);
-            if (violation is not (IBinaryOperation or IInvocationOperation))
-                return;
-
-            //  Get the replacer that applies to the reported violation.
-            var replacer = GetOperationReplacers(symbols).First(x => x.IsMatch(violation));
-
-            var codeAction = CodeAction.Create(
-                Resx.UseStringEqualsOverStringCompareCodeFixTitle,
-                CreateChangedDocument,
-                nameof(Resx.UseStringEqualsOverStringCompareCodeFixTitle));
-            context.RegisterCodeFix(codeAction, context.Diagnostics);
-            return;
-
-            //  Local functions
-
-            async Task<Document> CreateChangedDocument(CancellationToken cancellationToken)
+            if (GetViolation(root, context.Span, semanticModel, context.CancellationToken) is null)
             {
-                var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-                var replacementNode = replacer.CreateReplacementExpression(violation, editor.Generator);
-                editor.ReplaceNode(violation.Syntax, replacementNode);
-
-                return editor.GetChangedDocument();
+                return;
             }
+
+            RegisterCodeFix(context, Resx.UseStringEqualsOverStringCompareCodeFixTitle, nameof(Resx.UseStringEqualsOverStringCompareCodeFixTitle));
         }
 
-        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+            if (GetViolation(editor.OriginalRoot, diagnostic.Location.SourceSpan, semanticModel, cancellationToken) is not (IOperation violation, OperationReplacer replacer))
+            {
+                return;
+            }
+
+            //  The replacement is built out of the reported node's own descendants, so track them: a nested
+            //  violation may already have been rewritten by the time this fix runs.
+            foreach (var argument in replacer.GetArgumentSyntaxes(violation))
+            {
+                editor.TrackNode(argument);
+            }
+
+            editor.ReplaceNode(violation.Syntax, (currentNode, generator) =>
+                replacer.CreateReplacementExpression(violation, generator, original => currentNode.GetCurrentNode(original) ?? original));
+        }
+
+        private static (IOperation Violation, OperationReplacer Replacer)? GetViolation(SyntaxNode root, TextSpan span, SemanticModel semanticModel, CancellationToken cancellationToken)
+        {
+            if (!RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols))
+            {
+                return null;
+            }
+
+            var node = root.FindNode(span, getInnermostNodeForTie: true);
+            var violation = semanticModel.GetOperation(node, cancellationToken);
+            if (violation is not (IBinaryOperation or IInvocationOperation))
+            {
+                return null;
+            }
+
+            var replacer = GetOperationReplacers(symbols).FirstOrDefault(x => x.IsMatch(violation));
+
+            return replacer is not null ? (violation, replacer) : null;
+        }
 
         private static ImmutableArray<OperationReplacer> GetOperationReplacers(RequiredSymbols symbols)
         {
@@ -99,8 +114,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             /// <param name="violation">The <see cref="IBinaryOperation"/> or <see cref="IInvocationOperation"/> obtained at the location reported by the analyzer.
             /// <see cref="IsMatch(IOperation)"/> must return <see langword="true"/> for this operation.</param>
             /// <param name="generator"></param>
+            /// <param name="current">Maps a descendant of the violation onto its current form in the tree being edited.</param>
             /// <returns></returns>
-            public abstract SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator);
+            public abstract SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode> current);
+
+            /// <summary>
+            /// Gets the syntax nodes that <see cref="CreateReplacementExpression"/> carries over from the violation.
+            /// </summary>
+            public IEnumerable<SyntaxNode> GetArgumentSyntaxes(IOperation violation)
+                => GetInvocation(violation).Arguments.Select(x => x.Value.Syntax);
 
             protected SyntaxNode CreateEqualsMemberAccess(SyntaxGenerator generator)
             {
@@ -153,14 +175,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode> current)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
                 var compareInvocation = GetInvocation(violation);
                 var equalsInvocationSyntax = generator.InvocationExpression(
                     CreateEqualsMemberAccess(generator),
-                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
+                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => current(x.Value.Syntax)));
 
                 return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
@@ -177,7 +199,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringBoolCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode> current)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
@@ -200,8 +222,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var equalsInvocationSyntax = generator.InvocationExpression(
                     CreateEqualsMemberAccess(generator),
-                    compareInvocation.Arguments.GetArgumentForParameterAtIndex(0).Value.Syntax,
-                    compareInvocation.Arguments.GetArgumentForParameterAtIndex(1).Value.Syntax,
+                    current(compareInvocation.Arguments.GetArgumentForParameterAtIndex(0).Value.Syntax),
+                    current(compareInvocation.Arguments.GetArgumentForParameterAtIndex(1).Value.Syntax),
                     stringComparisonMemberAccessSyntax);
 
                 return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
@@ -219,14 +241,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringStringComparisonCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode> current)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
                 var invocation = GetInvocation(violation);
                 var equalsInvocationSyntax = generator.InvocationExpression(
                     CreateEqualsMemberAccess(generator),
-                    invocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
+                    invocation.Arguments.GetArgumentsInParameterOrder().Select(x => current(x.Value.Syntax)));
 
                 return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
@@ -243,14 +265,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsOrdinalStringStringCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode> current)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
                 var compareInvocation = GetInvocation(violation);
                 var equalsInvocationSyntax = generator.InvocationExpression(
                     CreateEqualsMemberAccess(generator),
-                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
+                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => current(x.Value.Syntax)));
 
                 return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }

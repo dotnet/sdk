@@ -22,6 +22,14 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\HostFxrPathResolver.cs" LinkBase="Common" />
+  </ItemGroup>
+
   <!--
     When building inside Visual Studio, publish the AOT binaries and overlay managed dependencies
     so the "Debug dn (AOT native)" launch profile is ready to go.

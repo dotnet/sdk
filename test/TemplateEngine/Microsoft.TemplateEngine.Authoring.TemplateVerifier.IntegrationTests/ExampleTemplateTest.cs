@@ -1,27 +1,24 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
-using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+using VerifyMSTest;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
-    public class ExampleTemplateTest : TestBase
+    [TestClass]
+    [UsesVerify]
+    public partial class ExampleTemplateTest : TestBase
     {
-        private readonly ILogger _log;
-
-        public ExampleTemplateTest(ITestOutputHelper log)
-        {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
-        }
+        private ILogger Log => new TestContextLogger(TestContext);
 
         // Following 2 tests share identical snapshot folder - that's the reason for the additional
         //  naming parameters (DoNotPrependCallerMethodNameToScenarioName, DoNotAppendTemplateArgsToScenarioName, ScenarioName)
         // The identity of snapshots ilustrates that execution through API and through full blown command leads to identical results
 
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngineSampleDogfoodTest()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -54,11 +51,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                             }
                         }));
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngineSampleDogfoodTest_ExecThroughApi()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -89,8 +86,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                             }
                         }));
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
     }
 }

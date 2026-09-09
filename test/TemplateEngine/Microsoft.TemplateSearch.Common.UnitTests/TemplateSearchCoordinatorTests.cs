@@ -12,7 +12,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
     public class TemplateSearchCoordinatorTests
     {
         private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
-            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+            new(() => new EnvironmentSettingsHelper());
 
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 

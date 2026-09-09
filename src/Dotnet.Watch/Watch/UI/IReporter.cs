@@ -199,8 +199,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(string, string, int)> LaunchedProcess = Create<(string, string, int)>("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, LogLevel.Debug);
     public static readonly MessageDescriptor<long> ManagedCodeChangesApplied = Create<long>("C# and Razor changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
     public static readonly MessageDescriptor<long> StaticAssetsChangesApplied = Create<long>("Static asset changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
-    public static readonly MessageDescriptor<None> StaticWebAssetManifestNotFound = Create("Static web asset manifest not found.", Emoji.Warning, LogLevel.Warning);
-    public static readonly MessageDescriptor<string> ScopedCssBundleFileNotFound = Create<string>("Scoped CSS bundle file '{0}' not found.", Emoji.Warning, LogLevel.Warning);
+    public static readonly MessageDescriptor<None> StaticWebAssetManifestNotFound = Create(LogEvents.StaticWebAssetManifestNotFound, Emoji.Warning);
+    public static readonly MessageDescriptor<string> ScopedCssBundleFileNotFound = Create(LogEvents.ScopedCssBundleFileNotFound, Emoji.Warning);
     public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> ChangesAppliedToProjectsNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
     public static readonly MessageDescriptor<int> SendingUpdateBatch = Create(LogEvents.SendingUpdateBatch, Emoji.HotReload);
     public static readonly MessageDescriptor<int> UpdateBatchCompleted = Create(LogEvents.UpdateBatchCompleted, Emoji.HotReload);

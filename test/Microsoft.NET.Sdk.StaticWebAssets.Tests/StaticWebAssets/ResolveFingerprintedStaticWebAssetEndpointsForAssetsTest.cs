@@ -228,6 +228,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Should().BeFalse();
     }
 
+
     private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
@@ -269,6 +270,42 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Normalize();
 
         return result.ToTaskItem();
+    }
+
+    // Builds a candidate with a relative ContentRoot that is intentionally left un-normalized so
+    // that the relative path reaches the task under test and is rooted against its
+    // TaskEnvironment.ProjectDirectory rather than the process current directory.
+    private static ITaskItem CreateCandidateWithRelativeContentRoot(
+        string identity,
+        string relativeContentRoot,
+        string relativePath,
+        string fingerprint)
+    {
+        var asset = new StaticWebAsset()
+        {
+            Identity = identity,
+            SourceId = "MyPackage",
+            SourceType = "Discovered",
+            ContentRoot = relativeContentRoot,
+            BasePath = "base",
+            RelativePath = relativePath,
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "",
+            CopyToPublishDirectory = "",
+            OriginalItemSpec = identity,
+            // Preset to avoid accessing the disk to compute them.
+            Integrity = "integrity",
+            Fingerprint = fingerprint,
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow,
+        };
+
+        return asset.ToTaskItem();
     }
 
     private StaticWebAssetEndpoint[] CreateEndpoints(StaticWebAsset[] assets)

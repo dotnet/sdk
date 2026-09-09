@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 #if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
-using Microsoft.DotNet.Cli.Extensions;
 #endif
 using Microsoft.DotNet.Cli.Commands.Solution.List;
 using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
@@ -16,13 +16,11 @@ internal static class SolutionCommandParser
 {
     public static void ConfigureCommand(SolutionCommandDefinition command)
     {
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 #if CLI_AOT
-        // In AOT mode, 'sln add' requires MSBuild and bare 'dotnet sln' needs full help —
-        // both require fallback to the managed CLI.
-        command.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
+        // 'sln add' requires MSBuild, so it falls back to the managed CLI.
         command.AddCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
 #else
-        command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.AddCommand.SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
 #endif
         command.ListCommand.SetAction(parseResult => new SolutionListCommand(parseResult).Execute());

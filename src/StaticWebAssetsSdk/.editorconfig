@@ -94,7 +94,7 @@ charset = utf-8-bom
 
 [*.{cs,vb}]
 
-# MSBuildTask0002-0005 (Microsoft.Build.TaskAuthoring.Analyzer) downgraded to 'suggestion' for report-only
+# MSBuildTask0002-0008 (Microsoft.Build.TaskAuthoring.Analyzer) downgraded to 'suggestion' for report-only
 # onboarding while task migration to the multithreaded model (IMultiThreadableTask / TaskEnvironment) is
 # pending. MSBuildTask0001 is enabled at its natural 'error' severity (it flags never-safe APIs whose fixes
 # don't need the TaskEnvironment migration). This must be kept in sync with the repo-root .editorconfig
@@ -105,6 +105,9 @@ dotnet_diagnostic.MSBuildTask0002.severity = suggestion
 dotnet_diagnostic.MSBuildTask0003.severity = suggestion
 dotnet_diagnostic.MSBuildTask0004.severity = suggestion
 dotnet_diagnostic.MSBuildTask0005.severity = suggestion
+dotnet_diagnostic.MSBuildTask0006.severity = suggestion
+dotnet_diagnostic.MSBuildTask0007.severity = suggestion
+dotnet_diagnostic.MSBuildTask0008.severity = suggestion
 
 # SYSLIB1054: Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 dotnet_diagnostic.SYSLIB1054.severity = warning

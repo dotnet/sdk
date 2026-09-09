@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -52,132 +53,197 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider() =>
-            WellKnownFixAllProviders.BatchFixer;
+        public sealed override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<string?>(context => context.CodeActionEquivalenceKey, ApplyFixAsync);
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document doc = context.Document;
             CancellationToken ct = context.CancellationToken;
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(ct).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
 
-            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
+            if (!TryGetFix(model, root, context.Diagnostics[0], ct, out Fix fix))
             {
                 return;
             }
 
-            SemanticModel model = await doc.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
+            string equivalenceKey = fix.EquivalenceKey;
 
-            if (model.GetOperation(node, ct) is not IInvocationOperation invocation)
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle,
+                    cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(doc, context.Diagnostics,
+                        (document, diagnostic, editor, token) => ApplyFixAsync(document, diagnostic, editor, equivalenceKey, token), cancellationToken),
+                    equivalenceKey),
+                context.Diagnostics);
+        }
+
+        private async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey, CancellationToken cancellationToken)
+        {
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!TryGetFix(model, editor.OriginalRoot, diagnostic, cancellationToken, out Fix fix) ||
+                (equivalenceKey is not null && equivalenceKey != fix.EquivalenceKey))
             {
                 return;
+            }
+
+            SyntaxNode streamInstanceNode = GetNodeWithNullability(fix.Invocation);
+
+            editor.TrackNode(streamInstanceNode);
+            editor.TrackNode(fix.Buffer.Node!);
+            editor.TrackNode(fix.Offset.Node!);
+            editor.TrackNode(fix.Count.Node!);
+            if (fix.CancellationToken.Node is SyntaxNode cancellationTokenNode)
+            {
+                editor.TrackNode(cancellationTokenNode);
+            }
+
+            //  An argument can itself be a diagnosed invocation, so the rewritten call is built from the
+            //  arguments as the inner fixes left them rather than from the original tree.
+            editor.ReplaceNode(fix.Invocation.Syntax, (currentNode, generator) =>
+            {
+                SyntaxNode Current(SyntaxNode original) => currentNode.GetCurrentNode(original) ?? original;
+
+                SyntaxNode bufferNode = Current(fix.Buffer.Node!);
+                SyntaxNode offsetNode = Current(fix.Offset.Node!);
+                SyntaxNode countNode = Current(fix.Count.Node!);
+
+                // Depending on the arguments being passed to Read/WriteAsync, it's the substitution we will make
+                SyntaxNode replacedInvocationNode;
+
+                if (IsPassingZeroAndBufferLength(model, fix.Buffer.Node!, fix.Offset.Node!, fix.Count.Node!))
+                {
+                    // Remove 0 and buffer.length
+                    replacedInvocationNode =
+                        GetNamedArgument(generator, bufferNode, fix.Buffer.IsNamed, "buffer")
+                        .WithTriviaFrom(bufferNode);
+                }
+                else
+                {
+                    // buffer.AsMemory(int start, int length)
+                    // offset should become start
+                    // count should become length
+                    SyntaxNode namedStartNode = GetNamedArgument(generator, offsetNode, fix.Offset.IsNamed, "start");
+                    SyntaxNode namedLengthNode = GetNamedArgument(generator, countNode, fix.Count.IsNamed, "length");
+
+                    // Generate an invocation of the AsMemory() method from the byte array object, using the correct named arguments
+                    SyntaxNode asMemoryExpressionNode = GetNamedMemberInvocation(generator, bufferNode, "AsMemory");
+                    SyntaxNode asMemoryInvocationNode = generator.InvocationExpression(
+                        asMemoryExpressionNode,
+                        namedStartNode.WithTriviaFrom(offsetNode),
+                        namedLengthNode.WithTriviaFrom(countNode)).WithAddImportsAnnotation().WithAdditionalAnnotations(s_asMemorySymbolAnnotation);
+
+                    // Generate the new buffer argument, ensuring we include the buffer argument name if the user originally indicated one
+                    replacedInvocationNode = GetNamedArgument(generator, asMemoryInvocationNode, fix.Buffer.IsNamed, "buffer")
+                        .WithTriviaFrom(bufferNode);
+                }
+
+                // Create an async method call for the stream object with no arguments
+                SyntaxNode currentStreamInstanceNode = Current(streamInstanceNode);
+                SyntaxNode asyncMethodNode = generator.MemberAccessExpression(currentStreamInstanceNode, fix.Invocation.TargetMethod.Name);
+
+                // Add the arguments to the async method call, with or without CancellationToken
+                SyntaxNode[] nodeArguments;
+                if (fix.CancellationToken.Node is SyntaxNode originalCancellationTokenNode)
+                {
+                    SyntaxNode currentCancellationTokenNode = Current(originalCancellationTokenNode);
+                    SyntaxNode namedCancellationTokenNode = GetNamedArgument(generator, currentCancellationTokenNode, fix.CancellationToken.IsNamed, "cancellationToken");
+                    nodeArguments = new SyntaxNode[] { replacedInvocationNode, namedCancellationTokenNode.WithTriviaFrom(currentCancellationTokenNode) };
+                }
+                else
+                {
+                    nodeArguments = new SyntaxNode[] { replacedInvocationNode };
+                }
+
+                return generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(currentNode);
+            });
+        }
+
+        private bool TryGetFix(SemanticModel model, SyntaxNode root, Diagnostic diagnostic, CancellationToken cancellationToken, out Fix fix)
+        {
+            fix = default;
+
+            if (root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not SyntaxNode node ||
+                model.GetOperation(node, cancellationToken) is not IInvocationOperation invocation)
+            {
+                return false;
             }
 
             // Defensive check to ensure the fix is only attempted on one of the 4 specific undesired overloads
             if (invocation.Arguments.Length is not (3 or 4))
             {
-                return;
+                return false;
             }
 
             SyntaxNode? bufferNode = GetArgumentByPositionOrName(invocation, 0, "buffer", out bool isBufferNamed);
-            if (bufferNode == null)
+            if (bufferNode is null)
             {
-                return;
+                return false;
             }
 
             SyntaxNode? offsetNode = GetArgumentByPositionOrName(invocation, 1, "offset", out bool isOffsetNamed);
-            if (offsetNode == null)
+            if (offsetNode is null)
             {
-                return;
+                return false;
             }
 
             SyntaxNode? countNode = GetArgumentByPositionOrName(invocation, 2, "count", out bool isCountNamed);
-            if (countNode == null)
+            if (countNode is null)
             {
-                return;
+                return false;
             }
 
             // No nullcheck for this, because there is an overload that may not contain it
             SyntaxNode? cancellationTokenNode = GetArgumentByPositionOrName(invocation, 3, "cancellationToken", out bool isCancellationTokenNamed);
 
-            string title = MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle;
-
-            Task<Document> createChangedDocument(CancellationToken _) => FixInvocationAsync(model, doc, root,
-                                                         invocation, invocation.TargetMethod.Name,
-                                                         bufferNode, isBufferNamed,
-                                                         offsetNode, isOffsetNamed,
-                                                         countNode, isCountNamed,
-                                                         cancellationTokenNode, isCancellationTokenNamed);
-
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: title,
-                    createChangedDocument,
-                    equivalenceKey: title + invocation.TargetMethod.Name),
-                context.Diagnostics);
+            fix = new Fix(invocation,
+                new Argument(bufferNode, isBufferNamed),
+                new Argument(offsetNode, isOffsetNamed),
+                new Argument(countNode, isCountNamed),
+                new Argument(cancellationTokenNode, isCancellationTokenNamed));
+            return true;
         }
 
-        private Task<Document> FixInvocationAsync(SemanticModel model, Document doc, SyntaxNode root,
-            IInvocationOperation invocation, string methodName,
-            SyntaxNode bufferNode, bool isBufferNamed,
-            SyntaxNode offsetNode, bool isOffsetNamed,
-            SyntaxNode countNode, bool isCountNamed,
-            SyntaxNode? cancellationTokenNode, bool isCancellationTokenNamed)
+        private readonly struct Argument
         {
-            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(doc);
-
-            // The stream-derived instance
-            SyntaxNode streamInstanceNode = GetNodeWithNullability(invocation);
-
-            // Depending on the arguments being passed to Read/WriteAsync, it's the substitution we will make
-            SyntaxNode replacedInvocationNode;
-
-            if (IsPassingZeroAndBufferLength(model, bufferNode, offsetNode, countNode))
+            public Argument(SyntaxNode? node, bool isNamed)
             {
-                // Remove 0 and buffer.length
-                replacedInvocationNode =
-                    GetNamedArgument(generator, bufferNode, isBufferNamed, "buffer")
-                    .WithTriviaFrom(bufferNode);
-            }
-            else
-            {
-                // buffer.AsMemory(int start, int length)
-                // offset should become start
-                // count should become length
-                SyntaxNode namedStartNode = GetNamedArgument(generator, offsetNode, isOffsetNamed, "start");
-                SyntaxNode namedLengthNode = GetNamedArgument(generator, countNode, isCountNamed, "length");
-
-                // Generate an invocation of the AsMemory() method from the byte array object, using the correct named arguments
-                SyntaxNode asMemoryExpressionNode = GetNamedMemberInvocation(generator, bufferNode, "AsMemory");
-                SyntaxNode asMemoryInvocationNode = generator.InvocationExpression(
-                    asMemoryExpressionNode,
-                    namedStartNode.WithTriviaFrom(offsetNode),
-                    namedLengthNode.WithTriviaFrom(countNode)).WithAddImportsAnnotation().WithAdditionalAnnotations(s_asMemorySymbolAnnotation);
-
-                // Generate the new buffer argument, ensuring we include the buffer argument name if the user originally indicated one
-                replacedInvocationNode = GetNamedArgument(generator, asMemoryInvocationNode, isBufferNamed, "buffer")
-                    .WithTriviaFrom(bufferNode);
+                Node = node;
+                IsNamed = isNamed;
             }
 
-            // Create an async method call for the stream object with no arguments
-            SyntaxNode asyncMethodNode = generator.MemberAccessExpression(streamInstanceNode, methodName);
+            public SyntaxNode? Node { get; }
 
-            // Add the arguments to the async method call, with or without CancellationToken
-            SyntaxNode[] nodeArguments;
-            if (cancellationTokenNode != null)
+            public bool IsNamed { get; }
+        }
+
+        private readonly struct Fix
+        {
+            public Fix(IInvocationOperation invocation, Argument buffer, Argument offset, Argument count, Argument cancellationToken)
             {
-                SyntaxNode namedCancellationTokenNode = GetNamedArgument(generator, cancellationTokenNode, isCancellationTokenNamed, "cancellationToken");
-                nodeArguments = new SyntaxNode[] { replacedInvocationNode, namedCancellationTokenNode.WithTriviaFrom(cancellationTokenNode) };
-            }
-            else
-            {
-                nodeArguments = new SyntaxNode[] { replacedInvocationNode };
+                Invocation = invocation;
+                Buffer = buffer;
+                Offset = offset;
+                Count = count;
+                CancellationToken = cancellationToken;
             }
 
-            SyntaxNode newInvocationExpression = generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(streamInstanceNode);
-            SyntaxNode newRoot = generator.ReplaceNode(root, invocation.Syntax, newInvocationExpression.WithTriviaFrom(invocation.Syntax));
+            public IInvocationOperation Invocation { get; }
 
-            return Task.FromResult(doc.WithSyntaxRoot(newRoot));
+            public Argument Buffer { get; }
+
+            public Argument Offset { get; }
+
+            public Argument Count { get; }
+
+            public Argument CancellationToken { get; }
+
+            /// <summary>
+            /// Read and write get their own key, so that fixing all of one does not silently rewrite the other.
+            /// </summary>
+            public string EquivalenceKey => nameof(MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle) + Invocation.TargetMethod.Name;
         }
     }
 }

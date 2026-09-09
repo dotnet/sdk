@@ -134,9 +134,12 @@ check, **not** a cryptographic signature check.
 - `ShouldVerifySignatures()` → `verifySignatures` (single value for both layers)
 - Reinstalls existing workloads to verify integrity
 
-### 4. `WorkloadManifestUpdater.GetInstance()` (background advertising)
+### 4. `WorkloadManifestUpdater.GetAdvertisingUpdaterInstance()` (background advertising)
 - NuGet: `ShouldVerifySignatures()` (respects policy, no user flags)
-- MSI: **disabled** (`false`) — only downloads advertising manifests, not MSIs
+- MSI: **disabled** (`false`) — only downloads advertising manifests, not MSIs. This path builds a
+  lightweight `WindowsMsiManifestInstaller`/`FileBasedManifestInstaller` directly (via
+  `WorkloadAdvertisingManifestUpdater`) instead of `WorkloadInstallerFactory`, so it never constructs
+  the full `NetSdkMsiInstallerClient`/`FileBasedInstaller` or elevated MSI IPC.
 
 ### 5. `NetSdkMsiInstallerClient.Create()` (fallback downloader)
 - `CreateForWorkloads(verifyNuGetSignatures: false)` — MSI Authenticode is the primary gate

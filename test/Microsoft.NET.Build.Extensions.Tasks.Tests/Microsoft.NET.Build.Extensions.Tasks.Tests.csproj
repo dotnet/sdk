@@ -28,7 +28,6 @@
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\TaskEnvironmentHelper.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\TaskTestEnvironment.cs" />
-    <Using Include="Microsoft.NET.TestFramework" />
   </ItemGroup>
 
 </Project>

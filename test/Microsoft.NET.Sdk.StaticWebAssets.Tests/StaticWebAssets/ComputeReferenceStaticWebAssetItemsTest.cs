@@ -14,7 +14,6 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class ComputeReferenceStaticWebAssetItemsTest
     {

@@ -31,6 +31,7 @@ on:
 permissions: read-all
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   AZDO_ORG: dnceng-public
   AZDO_PROJECT: public
   AZDO_PIPELINE_ID: "101"
@@ -58,7 +59,7 @@ jobs:
       - name: Evaluate comment command
         id: command-filter
         if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
@@ -72,7 +73,7 @@ jobs:
 
       - name: Ensure commenter is trusted
         if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -102,7 +103,7 @@ jobs:
 
       - name: React to comment
         if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -131,7 +132,7 @@ jobs:
 
       - name: Resolve PR metadata
         id: resolve
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           SHOULD_RUN: ${{ steps.command-filter.outputs.should_run }}
           DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -192,45 +193,25 @@ jobs:
       has_report: ${{ steps.report.outputs.has_report }}
 
     steps:
-      - name: Configure Azure DevOps CLI
-        run: az devops configure --defaults organization="https://dev.azure.com/${AZDO_ORG}" project="${AZDO_PROJECT}"
-
+      - name: Check out workflow scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: |
+            .github/workflows/aot-size-analysis/scripts
+            NuGet.config
       - name: Find PR and baseline builds
         id: builds
-        run: |
-          set -euo pipefail
-
-          # Find the PR build by its merge branch (server-side filter)
-          PR_BUILD_ID=$(az pipelines runs list \
-            --pipeline-ids "$AZDO_PIPELINE_ID" \
-            --branch "refs/pull/${PR_NUMBER}/merge" \
-            --status completed --result succeeded \
-            --top 1 --query "[0].id" -o tsv)
-
-          if [ -z "$PR_BUILD_ID" ]; then
-            echo "::warning::No completed build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "PR build ID: $PR_BUILD_ID"
-
-          # Find the most recent baseline build on the base branch
-          BASE_BUILD_ID=$(az pipelines runs list \
-            --pipeline-ids "$AZDO_PIPELINE_ID" \
-            --branch "refs/heads/${BASE_BRANCH}" \
-            --status completed --result succeeded \
-            --top 1 --query "[0].id" -o tsv)
-
-          if [ -z "$BASE_BUILD_ID" ]; then
-            echo "::warning::No completed baseline build found on ${BASE_BRANCH}."
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "Baseline build ID: $BASE_BUILD_ID"
-
-          echo "found=true" >> "$GITHUB_OUTPUT"
-          echo "pr_build_id=${PR_BUILD_ID}" >> "$GITHUB_OUTPUT"
-          echo "base_build_id=${BASE_BUILD_ID}" >> "$GITHUB_OUTPUT"
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/find-builds.sh"
+          --azdo-org "$AZDO_ORG"
+          --azdo-project "$AZDO_PROJECT"
+          --pipeline-id "$AZDO_PIPELINE_ID"
+          --pr-number "$PR_NUMBER"
+          --pr-head-sha "$PR_HEAD_SHA"
+          --base-branch "$BASE_BRANCH"
+          --output-file "$GITHUB_OUTPUT"
 
       - name: Download size analysis artifacts
         if: steps.builds.outputs.found == 'true'
@@ -238,72 +219,14 @@ jobs:
         env:
           PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
           BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
-        run: |
-          set -euo pipefail
-
-          # List artifacts from PR build that match _AotSizeAnalysis
-          ARTIFACT_NAMES=$(az pipelines runs artifact list \
-            --run-id "$PR_BUILD_ID" \
-            --query "[?ends_with(name, '_AotSizeAnalysis')].name" -o tsv)
-
-          if [ -z "$ARTIFACT_NAMES" ]; then
-            echo "::warning::No _AotSizeAnalysis artifacts found in PR build ${PR_BUILD_ID}."
-            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Found artifacts: ${ARTIFACT_NAMES}"
-          PLATFORMS=""
-
-          for ARTIFACT_NAME in $ARTIFACT_NAMES; do
-            PLATFORM="${ARTIFACT_NAME%_AotSizeAnalysis}"
-            echo "::group::Downloading ${PLATFORM}"
-
-            PR_DIR="${RUNNER_TEMP}/pr/${PLATFORM}"
-            BASE_DIR="${RUNNER_TEMP}/base/${PLATFORM}"
-            mkdir -p "$PR_DIR" "$BASE_DIR"
-
-            # Download PR artifact
-            if ! az pipelines runs artifact download \
-                --run-id "$PR_BUILD_ID" \
-                --artifact-name "$ARTIFACT_NAME" \
-                --path "$PR_DIR"; then
-              echo "::warning::Failed to download ${ARTIFACT_NAME} from PR build, skipping."
-              echo "::endgroup::"
-              continue
-            fi
-
-            # Download baseline artifact (same name)
-            if ! az pipelines runs artifact download \
-                --run-id "$BASE_BUILD_ID" \
-                --artifact-name "$ARTIFACT_NAME" \
-                --path "$BASE_DIR"; then
-              echo "Baseline build does not have artifact ${ARTIFACT_NAME}, skipping."
-              echo "::endgroup::"
-              continue
-            fi
-
-            # Verify .mstat files exist in both
-            PR_MSTAT=$(find "$PR_DIR" -name "dotnet-aot.mstat" -type f | head -1)
-            BASE_MSTAT=$(find "$BASE_DIR" -name "dotnet-aot.mstat" -type f | head -1)
-
-            if [ -n "$PR_MSTAT" ] && [ -n "$BASE_MSTAT" ]; then
-              PLATFORMS="${PLATFORMS:+${PLATFORMS} }${PLATFORM}"
-            else
-              echo "Could not find .mstat files for ${PLATFORM}, skipping."
-            fi
-
-            echo "::endgroup::"
-          done
-
-          if [ -z "$PLATFORMS" ]; then
-            echo "::warning::No matching .mstat file pairs found."
-            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
-          echo "platforms=$(echo "$PLATFORMS" | tr ' ' '\n' | sort | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/download-artifacts.sh"
+          --azdo-org "$AZDO_ORG"
+          --azdo-project "$AZDO_PROJECT"
+          --pr-build-id "$PR_BUILD_ID"
+          --base-build-id "$BASE_BUILD_ID"
+          --temp-dir "$RUNNER_TEMP"
+          --output-file "$GITHUB_OUTPUT"
 
       - name: Install sizoscope-cli
         if: steps.download.outputs.has_artifacts == 'true'
@@ -316,83 +239,17 @@ jobs:
           PLATFORMS: ${{ steps.download.outputs.platforms }}
           PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
           BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
-        run: |
-          set -euo pipefail
-
-          REPORT_FILE="${RUNNER_TEMP}/size-report.md"
-          DETAILS_FILE="${RUNNER_TEMP}/size-details.md"
-          AZDO_BUILD_URL="https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId="
-
-          # Pass 1: run sizoscope-cli for each platform, collect summary data
-          declare -A PLATFORM_TOTALS
-          HAS_ANY_DIFF=false
-
-          for PLATFORM in $PLATFORMS; do
-            echo "::group::Analyzing ${PLATFORM}"
-
-            PR_MSTAT=$(find "${RUNNER_TEMP}/pr/${PLATFORM}" -name "dotnet-aot.mstat" -type f | head -1)
-            BASE_MSTAT=$(find "${RUNNER_TEMP}/base/${PLATFORM}" -name "dotnet-aot.mstat" -type f | head -1)
-
-            DIFF_FILE="${RUNNER_TEMP}/${PLATFORM}-diff.md"
-            if sizoscope-cli "$BASE_MSTAT" "$PR_MSTAT" --output "$DIFF_FILE"; then
-              HAS_ANY_DIFF=true
-
-              # Extract the total size difference from the first line
-              TOTAL_LINE=$(head -1 "$DIFF_FILE")
-              # Expected format: "Total accounted size difference: 781.8 kB"
-              TOTAL_SIZE=$(echo "$TOTAL_LINE" | sed -n 's/^Total accounted size difference: *//p')
-              PLATFORM_TOTALS["$PLATFORM"]="${TOTAL_SIZE:-unknown}"
-
-              # Accumulate per-platform details
-              {
-                echo "### ${PLATFORM}"
-                echo ""
-                echo "<details>"
-                echo "<summary>Size diff details</summary>"
-                echo ""
-                echo '```'
-                cat "$DIFF_FILE"
-                echo '```'
-                echo ""
-                echo "</details>"
-                echo ""
-              } >> "$DETAILS_FILE"
-            else
-              echo "::warning::sizoscope-cli failed for ${PLATFORM}."
-            fi
-
-            echo "::endgroup::"
-          done
-
-          if [ "$HAS_ANY_DIFF" = false ]; then
-            echo "::notice::No size diffs were generated across any platform."
-            echo "has_report=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Pass 2: assemble the final report with summary table first
-          {
-            echo "## 📊 NativeAOT Size Analysis"
-            echo ""
-            echo "Comparing PR build [\`${PR_HEAD_SHA:0:8}\`](${AZDO_BUILD_URL}${PR_BUILD_ID}) against baseline on \`${BASE_BRANCH}\` ([build](${AZDO_BUILD_URL}${BASE_BUILD_ID}))."
-            echo ""
-            echo "| Platform | Size Difference |"
-            echo "|----------|-----------------|"
-            for PLATFORM in $PLATFORMS; do
-              if [ -n "${PLATFORM_TOTALS[$PLATFORM]+x}" ]; then
-                echo "| ${PLATFORM} | ${PLATFORM_TOTALS[$PLATFORM]} |"
-              fi
-            done
-            echo ""
-            cat "$DETAILS_FILE"
-          } > "$REPORT_FILE"
-
-          echo "has_report=true" >> "$GITHUB_OUTPUT"
-          echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/generate-report.sh"
+          --platforms "$PLATFORMS"
+          --pr-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${PR_BUILD_ID}"
+          --baseline-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${BASE_BUILD_ID}"
+          --temp-dir "$RUNNER_TEMP"
+          --output-file "$GITHUB_OUTPUT"
 
       - name: Upload size report
         if: steps.report.outputs.has_report == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: size-report
           path: ${{ steps.report.outputs.report_file }}
@@ -411,13 +268,13 @@ jobs:
 
     steps:
       - name: Download size report
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: size-report
           path: ${{ runner.temp }}
 
       - name: Post or update PR comment
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           REPORT_FILE: ${{ runner.temp }}/size-report.md
         with:
@@ -461,7 +318,7 @@ jobs:
 
       - name: Post failure notice
         if: failure() && (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment')
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           RUN_URL: ${{ format('https://github.com/{0}/actions/runs/{1}', github.repository, github.run_id) }}
         with:
@@ -473,4 +330,3 @@ jobs:
               issue_number: parseInt(process.env.PR_NUMBER, 10),
               body: `❌ NativeAOT size analysis failed. See [workflow run](${process.env.RUN_URL}) for details.`,
             });
-

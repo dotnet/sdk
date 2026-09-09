@@ -7,18 +7,28 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: Build
+  categoryName: ''
+  platformName: ''
   runTests: true
+  testExecutionMode: helix
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+  testFilter: ''
   publishRetryConfig: false
-  publishXunitResults: false
   testRunnerAdditionalArguments: ''
   enableSbom: true
   populateInternalRuntimeVariables: false
   timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
+  # Enables the Blazor WebAssembly AoT tests (test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests)
+  # on Helix via the RunAoTTests env var.
   runAoTTests: false
+  # Runs the NativeAOT CLI tests (test/dotnet-aot.Tests) on the build agent after the build.
+  # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
+  # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
+  # agent architecture matches the target (the produced native binary must run on the agent);
+  # cross-arch AOT legs leave it false.
+  runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
   publishArgument: ''
@@ -36,12 +46,12 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }})'
+    ${{ if eq(parameters.categoryName, '') }}:
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }}'
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}_${{ parameters.categoryName }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }} ${{ parameters.categoryName }}'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -59,6 +69,8 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: SkippedTestScopes
+      value: ''
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -102,6 +114,7 @@ jobs:
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.osProperties }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -140,64 +153,135 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
 
-      # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
-      - ${{ if eq(parameters.pool.os, 'windows') }}:
-        - powershell: eng/common/build.ps1
-            -restore -test -ci -prepareMachine -nativeToolsOnMachine
-            -configuration $(buildConfiguration)
-            -binaryLogName ${{ parameters.categoryName }}Tests.binlog
-            /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
-            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-            ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-            /p:EnableHelixJobMonitor=true
-          displayName: 🟣 Queue Tests
-          env:
-            # Required by Arcade for running in Helix.
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(HelixApiAccessToken)
-            RunAoTTests: ${{ parameters.runAoTTests }}
-            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+      - ${{ if eq(parameters.testExecutionMode, 'helix') }}:
+        # Determine which test groups to skip based on changed files and build context.
+        - script: $(Build.SourcesDirectory)/.dotnet/dotnet run $(Build.SourcesDirectory)/scripts/EvaluateConditionalTestScopes.cs --
+              --repo-root "$(Build.SourcesDirectory)"
+              --target-branch "$(System.PullRequest.TargetBranch)"
+              --build-reason "$(Build.Reason)"
+              --output-variable "SkippedTestScopes"
+          displayName: 🟣 Evaluate Conditional Test Scopes
+          # If evaluation fails, the variable remains empty and all tests run.
+          continueOnError: true
 
-      - ${{ else }}:
-        # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
-        # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
-        # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
-        - script: eng/common/build.sh
-            -restore -test -ci -prepareMachine
-            -configuration $(buildConfiguration)
-            --binaryLogName ${{ parameters.categoryName }}Tests.binlog
-            '/p:Projects="${{ parameters.testProjects }}"'
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
-            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-            /p:TargetRid=${{ parameters.runtimeIdentifier }}
-            ${{ parameters.osProperties }}
-            ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
-            /p:EnableHelixJobMonitor=true
-          displayName: 🟣 Queue Tests
-          env:
-            # Required by Arcade for running in Helix.
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(HelixApiAccessToken)
-            RunAoTTests: ${{ parameters.runAoTTests }}
-            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+        # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
+        - ${{ if eq(parameters.pool.os, 'windows') }}:
+          - powershell: eng/common/build.ps1
+              -restore -test -ci -prepareMachine -nativeToolsOnMachine
+              -configuration $(buildConfiguration)
+              -binaryLogName ${{ parameters.categoryName }}Tests.binlog
+              /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
+              /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
+              /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+              ${{ parameters.runtimeSourceProperties }}
+              /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+              /p:EnableHelixJobMonitor=true
+              /p:SkippedTestScopes="$(SkippedTestScopes)"
+            displayName: 🟣 Queue Tests
+            env:
+              # Required by Arcade for running in Helix.
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              HelixAccessToken: $(HelixApiAccessToken)
+              RunAoTTests: ${{ parameters.runAoTTests }}
+              TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+
+        - ${{ else }}:
+          # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
+          # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
+          # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
+          - script: eng/common/build.sh
+              -restore -test -ci -prepareMachine
+              -configuration $(buildConfiguration)
+              --binaryLogName ${{ parameters.categoryName }}Tests.binlog
+              '/p:Projects="${{ parameters.testProjects }}"'
+              /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
+              /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+              /p:TargetRid=${{ parameters.runtimeIdentifier }}
+              ${{ parameters.osProperties }}
+              ${{ parameters.runtimeSourceProperties }}
+              /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+              /p:EnableHelixJobMonitor=true
+              /p:SkippedTestScopes="$(SkippedTestScopes)"
+            displayName: 🟣 Queue Tests
+            env:
+              # Required by Arcade for running in Helix.
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              HelixAccessToken: $(HelixApiAccessToken)
+              RunAoTTests: ${{ parameters.runAoTTests }}
+              TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+
+      - ${{ if eq(parameters.testExecutionMode, 'local') }}:
+        - ${{ if eq(parameters.pool.os, 'windows') }}:
+          - powershell: |
+              $args = @(
+                "test",
+                "${{ parameters.testProjects }}",
+                "--configuration", "$(buildConfiguration)",
+                "--no-build")
+              if (-not [string]::IsNullOrWhiteSpace("${{ parameters.testFilter }}"))
+              {
+                  $args += @("--filter", "${{ parameters.testFilter }}")
+              }
+              $args += @(
+                "--",
+                "--report-trx",
+                "--report-trx-filename", "${{ parameters.categoryName }}.trx",
+                "--results-directory", "$(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)")
+
+              & "$(Build.SourcesDirectory)/.dotnet/dotnet.exe" @args
+            displayName: 🟣 Run Tests Locally
+
+          - task: PublishTestResults@2
+            displayName: 🟣 Publish Local Test Results
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.trx
+              testRunTitle: $(System.PhaseName)
+              buildPlatform: ${{ parameters.targetArchitecture }}
+              buildConfiguration: $(buildConfiguration)
+            continueOnError: true
+            condition: always()
+
+      ############### NATIVE AOT CLI TESTS ###############
+      # Publishes test/dotnet-aot.Tests as a NativeAOT binary and runs it on the build agent.
+      # NativeAOT binaries must run on the same architecture they are built for, so the scripts
+      # auto-detect the agent's host RID (via .dotnet/dotnet --info) rather than using the build's
+      # target RID. On cross-architecture legs (e.g. the macOS leg cross-builds osx-arm64 on an
+      # x64 host) this runs the tests for the host architecture. Runs after the Helix queue step
+      # so it never prevents the broader Helix test submission.
+      - ${{ if eq(parameters.runNativeAotCliTests, true) }}:
+        - ${{ if eq(parameters.pool.os, 'windows') }}:
+          - powershell: |
+              test/dotnet-aot.Tests/run-aot-tests.ps1 `
+                -Configuration $(buildConfiguration) `
+                -Trx `
+                -ResultsDirectory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+            displayName: 🟣 Run NativeAOT CLI Tests
+        - ${{ else }}:
+          - script: |
+              chmod +x test/dotnet-aot.Tests/run-aot-tests.sh
+              test/dotnet-aot.Tests/run-aot-tests.sh \
+                --configuration $(buildConfiguration) \
+                --trx \
+                --results-directory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+            displayName: 🟣 Run NativeAOT CLI Tests
+            # The CLI's --cli-schema rendering evaluates a shell-completion default that requires
+            # SHELL to be set; the bare AzDO script task does not export it, so set it explicitly.
+            env:
+              SHELL: /bin/bash
+
+        - task: PublishTestResults@2
+          displayName: 🟣 Publish NativeAOT CLI Test Results
+          inputs:
+            testResultsFormat: VSTest
+            testResultsFiles: artifacts/TestResults/$(buildConfiguration)/dotnet-aot.Tests.trx
+            testRunTitle: NativeAOT CLI ($(System.PhaseName))
+            buildPlatform: ${{ parameters.targetArchitecture }}
+            buildConfiguration: $(buildConfiguration)
+          continueOnError: true
+          condition: always()
 
     ############### POST ###############
-    - ${{ if eq(parameters.publishXunitResults, true) }}:
-      # This is only necessary for non-Helix tests.
-      - task: PublishTestResults@2
-        displayName: 🟣 Publish xUnit Test Results
-        inputs:
-          testResultsFormat: xUnit
-          testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.xml
-          testRunTitle: $(System.PhaseName)
-          buildPlatform: ${{ parameters.targetArchitecture }}
-          buildConfiguration: $(buildConfiguration)
-        continueOnError: true
-        condition: always()
-
     - task: CopyFiles@2
       displayName: 🟣 Copy Logs
       inputs:
@@ -223,15 +307,15 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
         # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
-        ArtifactName: $(System.PhaseName)_Logs
+        ArtifactName: $(System.PhaseName)_Logs_Attempt$(System.JobAttempt)
         publishLocation: Container
       continueOnError: true
       condition: always()
 
-    # Only the AoT legs publish the dotnet-aot NativeAOT library, so only they produce
-    # the size-analysis files. Gate these steps so they don't run (and upload empty
-    # artifacts) on non-AoT legs like the TestBuild/FullFramework jobs.
-    - ${{ if eq(parameters.runAoTTests, true) }}:
+    # Only the AOT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AOT category so these steps run on every AOT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AOT legs.
+    - ${{ if eq(parameters.categoryName, 'AOT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
         inputs:

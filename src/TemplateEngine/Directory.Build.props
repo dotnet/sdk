@@ -19,6 +19,9 @@
     <!-- Enable reproducible build per binskim -->
     <Deterministic>true</Deterministic>
 
+    <!-- Override the SDK default of non-shipping packages -->
+    <IsShippingPackage>true</IsShippingPackage>
+
     <!-- Disable analyzers in sourcebuild -->
     <EnableAnalyzers>true</EnableAnalyzers>
     <EnableAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</EnableAnalyzers>

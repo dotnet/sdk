@@ -3,6 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
@@ -11,13 +14,16 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, --help, and default usage are served entirely
+///  Validates that --version, --info, --help, default usage, and build-free test-module
+///  orchestration are served entirely
 ///  from AOT, that the full command surface now parses (matching the managed CLI),
 ///  and that commands which require the managed CLI report this via
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 [TestClass]
-public class AotParserTests
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.Console)]
+public partial class AotParserTests
 {
     private static Exception? RecordException(Action action)
     {
@@ -63,11 +69,20 @@ public class AotParserTests
     }
 
     [TestMethod]
+    public void ParseSdkCheck_HasNoErrors()
+    {
+        // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.
+        var result = Parser.Parse(["sdk", "check"]);
+        Assert.IsEmpty(result.Errors);
+    }
+
+    /// <summary>Verifies that an existing C# file is detected as an implicit file-based application.</summary>
+    [TestMethod]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
         // path as an unmatched root argument, so the shared detection (reused from the managed CLI)
-        // identifies it so NativeEntryPoint can defer to the managed run pipeline.
+        // identifies it for external resolution and the narrow native run gate.
         var csFile = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
         File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
         try
@@ -82,6 +97,39 @@ public class AotParserTests
         }
     }
 
+    /// <summary>Verifies that shorthand reparsing preserves run options, environment variables, and application arguments.</summary>
+    [TestMethod]
+    public void ParseFileBasedAppAsRunPreservesOptionsAndApplicationArguments()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(path, "Console.WriteLine(42);");
+        try
+        {
+            ParseResult? runParseResult = Parser.Parse([
+                path,
+                "--no-build",
+                "--no-launch-profile",
+                "-e", "TEST_SHORTHAND=value",
+                "--", "arg one", "--flag",
+            ]).TryParseFileBasedAppAsRun();
+
+            Assert.IsNotNull(runParseResult);
+            var definition = (RunCommandDefinition)runParseResult.CommandResult.Command;
+            Assert.AreEqual(path, runParseResult.GetValue(definition.FileOption));
+            Assert.IsTrue(runParseResult.HasOption(definition.NoBuildOption));
+            Assert.IsTrue(runParseResult.HasOption(definition.NoLaunchProfileOption));
+            IReadOnlyDictionary<string, string>? environmentVariables = runParseResult.GetValue(definition.EnvOption);
+            Assert.IsNotNull(environmentVariables);
+            Assert.AreEqual("value", environmentVariables["TEST_SHORTHAND"]);
+            Assert.AreSequenceEqual(["arg one", "--flag"], runParseResult.GetValue(definition.ApplicationArguments));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    /// <summary>Verifies that a built-in command is not treated as a file-based application.</summary>
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForBuiltInCommand()
     {
@@ -89,6 +137,7 @@ public class AotParserTests
         Assert.IsNull(result.GetFileBasedAppEntryPointToken());
     }
 
+    /// <summary>Verifies that a nonexistent C# path is not treated as a file-based application.</summary>
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForNonExistentFile()
     {
@@ -152,6 +201,41 @@ public class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeBareSdk_RendersHelpFromAot()
+    {
+        // `dotnet sdk` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback), matching the managed CLI behavior.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sdk"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("check");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeBareSln_RendersHelpFromAot()
+    {
+        // `dotnet sln` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback). Only `sln add` falls back to the managed CLI.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sln"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("list");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeSdkCheckHelp_RendersFromAotWithoutFallback()
+    {
+        // `sdk check` is wired to its real AOT implementation (not the managed fallback), so its
+        // help renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["sdk", "check", "--help"]);
+        var exception = RecordException(() => Parser.Invoke(result));
+
+        Assert.IsNull(exception);
+    }
+
+    [TestMethod]
     public void InvokeRootHelp_RendersUsageFromAot()
     {
         var (exitCode, stdout, _) = InvokeWithCapture(["--help"]);
@@ -170,6 +254,141 @@ public class AotParserTests
         var exception = RecordException(() => Parser.Invoke(result));
 
         Assert.IsNull(exception);
+    }
+
+    /// <summary>Verifies that run help renders directly from the Native AOT command tree.</summary>
+    [TestMethod]
+    public void InvokeRunHelp_RendersFromAotWithoutFallback()
+    {
+        var result = Parser.Parse(["run", "--help"]);
+        var exception = RecordException(() => Parser.Invoke(result));
+
+        Assert.IsNull(exception);
+    }
+
+    /// <summary>Verifies that unsupported run options retain managed fallback.</summary>
+    [TestMethod]
+    public void InvokeUnsupportedRunShape_FallsBackToManaged()
+    {
+        var result = Parser.Parse([
+            "run",
+            "--file", "Program.cs",
+            "--no-build",
+            "--no-launch-profile",
+            "--configuration", "Release",
+        ]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    [DataRow("new")]
+    [DataRow("new --help")]
+    [DataRow("new console --help")]
+    [DataRow("new list --help")]
+    [DataRow("new install --help")]
+    public void InvokeNewHelp_FallsBackToManaged(string commandLine)
+    {
+        // The managed CLI replaces `new` with a template-engine-backed command whose help is
+        // generated dynamically (template short-name/args usage line, Arguments section, per-template
+        // options). The AOT definition has no static equivalent, so help for the `new` subtree must
+        // defer to the managed CLI rather than render the incomplete static help.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    [DataRow("test")]
+    [DataRow("test --help")]
+    public void InvokeTestHelp_FallsBackToManaged(string commandLine)
+    {
+        // In Microsoft.Testing.Platform mode the managed CLI builds the test project and forwards
+        // `--help` to the test application, which contributes the "Extension Options:" section and
+        // per-extension options. The AOT definition cannot reproduce that, so help for the `test`
+        // subtree must defer to the managed CLI. (Bare `test` also requires MSBuild and falls back.)
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokeTestModulesWithoutMatches_IsHandledInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var (exitCode, stdout, _) = InvokeWithCapture(ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--no-progress",
+            ]));
+
+            Assert.AreEqual(1, exitCode);
+            stdout.Should().Contain("No test modules found");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_AcceptsArgumentsAfterDoubleDashInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            ParseResult parseResult = ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--",
+                "--extension-option",
+            ]);
+
+            TestCommandOptions.GetBuildOptions(parseResult).TestApplicationArguments
+                .Should().Contain("--extension-option");
+
+            var (exitCode, _, _) = InvokeWithCapture(parseResult);
+
+            Assert.AreEqual(1, exitCode);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("test --project sample.csproj")]
+    [DataRow("test --test-modules **/*.dll --framework net10.0")]
+    [DataRow("test --test-modules **/*.dll --unknown-option")]
+    public void InvokeUnsupportedTestShape_FallsBackToManaged(string commandLine)
+    {
+        var result = ParseAotTestCommand(commandLine.Split(' ')[1..]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => result.Invoke(Parser.InvocationConfiguration));
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_WithRootDiagnostics_FallsBackToManaged()
+    {
+        var root = new RootCommand();
+        root.Options.Add(CommonOptions.CreateDiagnosticsOption(recursive: false));
+        TestCommandDefinition testCommand = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(testCommand);
+        root.Subcommands.Add(testCommand);
+        ParseResult result = root.Parse([
+            "--diagnostics",
+            "test",
+            "--test-modules", "**/*.dll",
+        ]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(
+            () => result.Invoke(Parser.InvocationConfiguration));
     }
 
     [TestMethod]
@@ -237,17 +456,22 @@ public class AotParserTests
         stdout.Should().Contain(".NET SDK:");
         stdout.Should().Contain("Version:");
         stdout.Should().Contain("Commit:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
         stdout.Should().Contain("Runtime Environment:");
     }
 
     [TestMethod]
-    public void InvokeInfo_DoesNotContainManagedOnlySections()
+    public void InvokeInfo_ReportsMSBuildAndWorkloadVersions()
     {
-        var (_, stdout, _) = InvokeWithCapture(["--info"]);
+        var (exitCode, stdout, _) = InvokeWithCapture(["--info"]);
 
-        // Under CLI_AOT, workload and MSBuild info are excluded
-        Assert.DoesNotContain("Workload version:", stdout);
-        Assert.DoesNotContain("MSBuild version:", stdout);
+        // Workload and MSBuild reporting used to be excluded from the AOT build; the AOT --info now
+        // matches the managed CLI. Assert the MSBuild line renders a real (non-empty) version so a
+        // future trim/substitution regression that blanks it out would be caught.
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().MatchRegex(@"MSBuild version:\s+\S");
+        stdout.Should().Contain("Workload version:");
     }
 
     [TestMethod]
@@ -311,9 +535,19 @@ public class AotParserTests
     ///  and Console.SetOut for direct Console.Out writes (used by default usage action).
     /// </summary>
     private static (int exitCode, string stdout, string stderr) InvokeWithCapture(string[] args)
-    {
-        var parseResult = Parser.Parse(args);
+        => InvokeWithCapture(Parser.Parse(args));
 
+    private static ParseResult ParseAotTestCommand(string[] args)
+    {
+        var command = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(command);
+        return command.Parse(args);
+    }
+
+    private static (int exitCode, string stdout, string stderr) InvokeWithCapture(ParseResult parseResult)
+    {
         var bufferedOutput = new BufferedReporter();
         var bufferedError = new BufferedReporter();
         var originalOut = Console.Out;

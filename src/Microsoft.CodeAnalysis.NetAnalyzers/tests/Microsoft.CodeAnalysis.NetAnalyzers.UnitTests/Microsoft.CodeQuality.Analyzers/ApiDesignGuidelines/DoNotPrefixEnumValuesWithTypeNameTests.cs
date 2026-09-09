@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotPrefixEnumValuesWithTypeNameAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,142 +13,155 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
 {
+    [TestClass]
     public class DoNotPrefixEnumValuesWithTypeNameTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_NoPrefixAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                { 
-                    enum State
-                    {
-                        Ok = 0,
-                        Error = 1,
-                        Unknown = 2
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        Ok = 0,
+                                        Error = 1,
+                                        Unknown = 2
+                                    };
+                                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_NoPrefixAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Class A
-                    Private Enum State
-                        Ok = 0
-                        Err = 1
-                        Unknown = 2
-                    End Enum
-                End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                                Class A
+                                    Private Enum State
+                                        Ok = 0
+                                        Err = 1
+                                        Unknown = 2
+                                    End Enum
+                                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_EachValuePrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        StateOk = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"),
                 GetCSharpResultAt(7, 25, "State"),
                 GetCSharpResultAt(8, 25, "State"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_EachValuePrefixedAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Class A
-                    Private Enum State
-                        StateOk = 0
-                        StateErr = 1
-                        StateUnknown = 2
-                    End Enum
-                End Class
-                ",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                                Class A
+                                    Private Enum State
+                                        StateOk = 0
+                                        StateErr = 1
+                                        StateUnknown = 2
+                                    End Enum
+                                End Class
+
+                """,
                 GetBasicResultAt(4, 25, "State"),
                 GetBasicResultAt(5, 25, "State"),
                 GetBasicResultAt(6, 25, "State"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_HalfOfValuesPrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        Ok = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        Ok = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2,
+                                        Invalid = 3
+                                    };
+                                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_ThreeOfFourValuesPrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        StateOk = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2,
+                                        Invalid = 3
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"),
                 GetCSharpResultAt(7, 25, "State"),
                 GetCSharpResultAt(8, 25, "State"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_PrefixCaseDiffersAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        stateOk = 0
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        stateOk = 0
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_EmptyEnumAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                    };
+                                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         // No data
-        [InlineData("")]
+        [DataRow("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue, AllEnumValues")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue, AllEnumValues")]
         // Valid options
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
         public async Task AllValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -158,23 +170,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        StateInvalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    StateError = 1,
+                                                    StateUnknown = 2,
+                                                    StateInvalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(6, 25, "State"),
@@ -183,7 +199,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                         GetCSharpResultAt(9, 25, "State"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -191,21 +207,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        StateError = 1
-                        StateUnknown = 2
-                        StateInvalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    StateError = 1
+                                                    StateUnknown = 2
+                                                    StateInvalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetBasicResultAt(4, 25, "State"),
@@ -214,18 +234,18 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                         GetBasicResultAt(7, 25, "State"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         // No data
-        [InlineData("")]
+        [DataRow("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
         public async Task OneOfFourValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -234,23 +254,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        Error = 1,
-                        Unknown = 2,
-                        Invalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    Error = 1,
+                                                    Unknown = 2,
+                                                    Invalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -259,7 +283,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(6, 25, "State"));
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -267,21 +291,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        [Error] = 1
-                        Unknown = 2
-                        Invalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    [Error] = 1
+                                                    Unknown = 2
+                                                    Invalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -290,18 +318,18 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(4, 25, "State"));
             }
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         // No data
-        [InlineData("")]
+        [DataRow("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
+        [DataRow("dotnet_code_quality.CA1712.enum_values_prefix_trigger = Heuristic")]
         public async Task ThreeOfFourValuesPrefixed_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -310,23 +338,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    StateError = 1,
+                                                    StateUnknown = 2,
+                                                    Invalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -341,7 +373,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                     });
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -349,21 +381,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        StateError = 1
-                        StateUnknown = 2
-                        Invalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    StateError = 1
+                                                    StateUnknown = 2
+                                                    Invalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -378,7 +414,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                     });
             }
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

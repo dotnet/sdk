@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FakeItEasy;
@@ -16,7 +16,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class TemplatePackageManagerTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;
@@ -25,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
