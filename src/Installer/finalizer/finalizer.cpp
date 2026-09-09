@@ -3,6 +3,200 @@
 
 #include "precomp.h"
 
+namespace
+{
+    const DWORD ModificationRights =
+        FILE_ADD_FILE |
+        FILE_ADD_SUBDIRECTORY |
+        FILE_WRITE_EA |
+        FILE_WRITE_ATTRIBUTES |
+        DELETE |
+        FILE_DELETE_CHILD |
+        WRITE_DAC |
+        WRITE_OWNER;
+
+    DWORD NormalizeFileAccessMask(DWORD accessMask)
+    {
+        GENERIC_MAPPING fileMapping = { FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS };
+        MapGenericMask(&accessMask, &fileMapping);
+        return accessMask;
+    }
+
+    bool IsTrustedMachineSid(PSID sid)
+    {
+        return sid != NULL &&
+            IsValidSid(sid) &&
+            (IsWellKnownSid(sid, WinBuiltinAdministratorsSid) || IsWellKnownSid(sid, WinLocalSystemSid));
+    }
+
+    PSID GetObjectAceSid(DWORD flags, DWORD* sidStart)
+    {
+        BYTE* sid = reinterpret_cast<BYTE*>(sidStart);
+
+        if ((flags & ACE_INHERITED_OBJECT_TYPE_PRESENT) == 0)
+        {
+            sid -= sizeof(GUID);
+        }
+
+        if ((flags & ACE_OBJECT_TYPE_PRESENT) == 0)
+        {
+            sid -= sizeof(GUID);
+        }
+
+        return reinterpret_cast<PSID>(sid);
+    }
+
+    bool TryGetAccessMaskAndSid(ACE_HEADER* aceHeader, DWORD* accessMask, PSID* sid, BOOL* isDeny)
+    {
+        switch (aceHeader->AceType)
+        {
+        case ACCESS_ALLOWED_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_ALLOWED_ACE*>(aceHeader)->Mask;
+            *sid = reinterpret_cast<PSID>(&reinterpret_cast<ACCESS_ALLOWED_ACE*>(aceHeader)->SidStart);
+            *isDeny = FALSE;
+            return true;
+        case ACCESS_DENIED_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_DENIED_ACE*>(aceHeader)->Mask;
+            *sid = reinterpret_cast<PSID>(&reinterpret_cast<ACCESS_DENIED_ACE*>(aceHeader)->SidStart);
+            *isDeny = TRUE;
+            return true;
+        case ACCESS_ALLOWED_OBJECT_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_ALLOWED_OBJECT_ACE*>(aceHeader)->Mask;
+            *sid = GetObjectAceSid(
+                reinterpret_cast<ACCESS_ALLOWED_OBJECT_ACE*>(aceHeader)->Flags,
+                &reinterpret_cast<ACCESS_ALLOWED_OBJECT_ACE*>(aceHeader)->SidStart);
+            *isDeny = FALSE;
+            return true;
+        case ACCESS_DENIED_OBJECT_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_DENIED_OBJECT_ACE*>(aceHeader)->Mask;
+            *sid = GetObjectAceSid(
+                reinterpret_cast<ACCESS_DENIED_OBJECT_ACE*>(aceHeader)->Flags,
+                &reinterpret_cast<ACCESS_DENIED_OBJECT_ACE*>(aceHeader)->SidStart);
+            *isDeny = TRUE;
+            return true;
+        case ACCESS_ALLOWED_CALLBACK_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_ALLOWED_CALLBACK_ACE*>(aceHeader)->Mask;
+            *sid = reinterpret_cast<PSID>(&reinterpret_cast<ACCESS_ALLOWED_CALLBACK_ACE*>(aceHeader)->SidStart);
+            *isDeny = FALSE;
+            return true;
+        case ACCESS_DENIED_CALLBACK_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_DENIED_CALLBACK_ACE*>(aceHeader)->Mask;
+            *sid = reinterpret_cast<PSID>(&reinterpret_cast<ACCESS_DENIED_CALLBACK_ACE*>(aceHeader)->SidStart);
+            *isDeny = TRUE;
+            return true;
+        case ACCESS_ALLOWED_CALLBACK_OBJECT_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_ALLOWED_CALLBACK_OBJECT_ACE*>(aceHeader)->Mask;
+            *sid = GetObjectAceSid(
+                reinterpret_cast<ACCESS_ALLOWED_CALLBACK_OBJECT_ACE*>(aceHeader)->Flags,
+                &reinterpret_cast<ACCESS_ALLOWED_CALLBACK_OBJECT_ACE*>(aceHeader)->SidStart);
+            *isDeny = FALSE;
+            return true;
+        case ACCESS_DENIED_CALLBACK_OBJECT_ACE_TYPE:
+            *accessMask = reinterpret_cast<ACCESS_DENIED_CALLBACK_OBJECT_ACE*>(aceHeader)->Mask;
+            *sid = GetObjectAceSid(
+                reinterpret_cast<ACCESS_DENIED_CALLBACK_OBJECT_ACE*>(aceHeader)->Flags,
+                &reinterpret_cast<ACCESS_DENIED_CALLBACK_OBJECT_ACE*>(aceHeader)->SidStart);
+            *isDeny = TRUE;
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    HRESULT ValidateTrustedMachineRoot(LPCWSTR path)
+    {
+        DWORD attributes = GetFileAttributesW(path);
+        if (INVALID_FILE_ATTRIBUTES == attributes)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        if ((attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+        {
+            return E_ACCESSDENIED;
+        }
+
+        PACL dacl = NULL;
+        PSECURITY_DESCRIPTOR securityDescriptor = NULL;
+        PSID owner = NULL;
+        DWORD administratorsRights = 0;
+        DWORD localSystemRights = 0;
+
+        DWORD result = GetNamedSecurityInfoW(
+            path,
+            SE_FILE_OBJECT,
+            OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+            &owner,
+            NULL,
+            &dacl,
+            NULL,
+            &securityDescriptor);
+
+        if (ERROR_SUCCESS != result)
+        {
+            return HRESULT_FROM_WIN32(result);
+        }
+
+        if (!IsTrustedMachineSid(owner) || NULL == dacl)
+        {
+            LocalFree(securityDescriptor);
+            return E_ACCESSDENIED;
+        }
+
+        for (DWORD aceIndex = 0; aceIndex < dacl->AceCount; ++aceIndex)
+        {
+            LPVOID ace = NULL;
+            if (!GetAce(dacl, aceIndex, &ace))
+            {
+                result = GetLastError();
+                LocalFree(securityDescriptor);
+                return HRESULT_FROM_WIN32(result);
+            }
+
+            DWORD accessMask = 0;
+            PSID sid = NULL;
+            BOOL isDeny = FALSE;
+
+            if (!TryGetAccessMaskAndSid(reinterpret_cast<ACE_HEADER*>(ace), &accessMask, &sid, &isDeny) || !IsValidSid(sid))
+            {
+                LocalFree(securityDescriptor);
+                return E_ACCESSDENIED;
+            }
+
+            if (isDeny)
+            {
+                continue;
+            }
+
+            accessMask = NormalizeFileAccessMask(accessMask);
+
+            if (IsWellKnownSid(sid, WinBuiltinAdministratorsSid))
+            {
+                administratorsRights |= accessMask;
+            }
+            else if (IsWellKnownSid(sid, WinLocalSystemSid))
+            {
+                localSystemRights |= accessMask;
+            }
+            else if ((accessMask & ModificationRights) != 0)
+            {
+                LocalFree(securityDescriptor);
+                return E_ACCESSDENIED;
+            }
+        }
+
+        LocalFree(securityDescriptor);
+
+        if ((administratorsRights & FILE_ALL_ACCESS) != FILE_ALL_ACCESS ||
+            (localSystemRights & FILE_ALL_ACCESS) != FILE_ALL_ACCESS)
+        {
+            return E_ACCESSDENIED;
+        }
+
+        return S_OK;
+    }
+}
+
 extern "C" HRESULT Initialize(int argc, wchar_t* argv[])
 {
     HRESULT hr = S_OK;
@@ -496,13 +690,17 @@ void RemoveInstallStateFile(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczPlatform)
 {
     HRESULT hr = S_OK;
     LPWSTR sczProgramData = NULL;
+    LPWSTR sczDotnetRoot = NULL;
     LPWSTR sczInstallStatePath = NULL;
     LPWSTR sczPath = NULL;
 
     hr = ShelGetFolder(&sczProgramData, CSIDL_COMMON_APPDATA);
     ExitOnFailure(hr, "Failed to get shell folder.");
 
-    hr = PathConcat(sczProgramData, L"dotnet", &sczInstallStatePath);
+    hr = PathConcat(sczProgramData, L"dotnet", &sczDotnetRoot);
+    ExitOnFailure(hr, "Failed to concat dotnet to install state path.");
+
+    hr = StrAllocString(&sczInstallStatePath, sczDotnetRoot, 0);
     ExitOnFailure(hr, "Failed to concat dotnet to install state path.");
 
     hr = PathConcat(sczInstallStatePath, L"workloads", &sczInstallStatePath);
@@ -522,6 +720,14 @@ void RemoveInstallStateFile(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczPlatform)
 
     if (FileExistsEx(sczInstallStatePath, NULL))
     {
+        hr = ValidateTrustedMachineRoot(sczDotnetRoot);
+        if (FAILED(hr))
+        {
+            LogStringLine(REPORT_STANDARD, "Retaining install state path below an untrusted machine root: %ls, error: 0x%.8x", sczInstallStatePath, hr);
+            hr = S_OK;
+            goto LExit;
+        }
+
         LogStringLine(REPORT_STANDARD, "Deleting install state file: %ls", sczInstallStatePath);
         hr = FileEnsureDelete(sczInstallStatePath);
         ExitOnFailure(hr, "Failed to delete install state file: %ls", sczInstallStatePath);
@@ -539,7 +745,8 @@ void RemoveInstallStateFile(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczPlatform)
 
 LExit:
     ReleaseStr(sczPath);
-    ReleaseStr(sczInstallStatePath)
+    ReleaseStr(sczInstallStatePath);
+    ReleaseStr(sczDotnetRoot);
     ReleaseStr(sczProgramData);
 }
 
