@@ -10,6 +10,7 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GivenAWriteAppConfigWithSupportedRuntimeMultiThreading : IDisposable
     {
         private readonly List<string> _tempDirs = new();
