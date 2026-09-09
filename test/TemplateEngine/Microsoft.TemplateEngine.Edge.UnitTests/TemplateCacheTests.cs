@@ -110,6 +110,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                                             "mountpointuri": "testMount",
                                             "configplace": ".template.config/template.json",
                                             "generatorid": "00000000-0000-0000-0000-000000000000",
+                                            "parameters": [
+                                                {
+                                                    "name": "optionalParameter",
+                                                    "precedence": null,
+                                                },
+                                            ],
                                         },
                                     ],
                                     "mountpointsinfo": {},
@@ -129,6 +135,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.ContainsSingle(cache.TemplateInfo);
             Assert.AreEqual("testIdentity", cache.TemplateInfo[0].Identity);
             Assert.AreSequenceEqual(new[] { "testShort" }, cache.TemplateInfo[0].ShortNameList);
+            Assert.AreEqual(
+                PrecedenceDefinition.Optional,
+                cache.TemplateInfo[0].ParameterDefinitions["optionalParameter"].Precedence.PrecedenceDefinition);
         }
 
         [TestMethod]
@@ -272,6 +281,43 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual("displ", readTemplate.ParameterDefinitions["param3"].DisplayName);
             Assert.IsTrue(readTemplate.ParameterDefinitions["param3"].AllowMultipleValues);
             Assert.HasCount(2, readTemplate.ParameterDefinitions["param3"].Choices!);
+        }
+
+        [TestMethod]
+        public void CanHandleMetadata()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.Classifications).Returns(["library", "console"]);
+            A.CallTo(() => template.TagsCollection).Returns(new Dictionary<string, string>
+            {
+                ["language"] = "C#",
+                ["type"] = "project"
+            });
+            A.CallTo(() => template.BaselineInfo).Returns(new Dictionary<string, IBaselineInfo>
+            {
+                ["standard"] = new BaselineInfo(
+                    new Dictionary<string, string> { ["framework"] = "net11.0" },
+                    "Standard baseline")
+            });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            TemplateCache templateCache = new(
+                [],
+                [new ScanResult(mountPoint, [template], [], [])],
+                new Dictionary<string, DateTime>(),
+                environmentSettings);
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+
+            TemplateInfo readTemplate = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile).TemplateInfo.Single();
+
+            Assert.AreSequenceEqual(new[] { "library", "console" }, readTemplate.Classifications);
+            Assert.AreEqual("C#", readTemplate.TagsCollection["language"]);
+            Assert.AreEqual("project", readTemplate.TagsCollection["type"]);
+            Assert.AreEqual("Standard baseline", readTemplate.BaselineInfo["standard"].Description);
+            Assert.AreEqual("net11.0", readTemplate.BaselineInfo["standard"].DefaultOverrides["framework"]);
         }
 
         [TestMethod]

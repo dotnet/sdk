@@ -468,7 +468,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             private static TemplateParameterPrecedence GetTemplateParameterPrecedence(JsonElement element, string propertyName)
             {
-                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement precedenceToken))
+                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement precedenceToken)
+                    || precedenceToken.ValueKind == JsonValueKind.Null)
                 {
                     return TemplateParameterPrecedence.Default;
                 }
