@@ -51,13 +51,13 @@ namespace Microsoft.DotNet.Installer.Windows
 
         public static void ValidateDirectory(string path)
         {
+            DirectorySecurity security = new DirectoryInfo(path).GetAccessControl(AccessControlSections.Access | AccessControlSections.Owner);
+            Validate(security, path);
+
             if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint))
             {
                 ThrowUntrusted(path);
             }
-
-            DirectorySecurity security = new DirectoryInfo(path).GetAccessControl(AccessControlSections.Access | AccessControlSections.Owner);
-            Validate(security, path);
         }
 
         public static void Validate(FileSystemSecurity security, string path)
