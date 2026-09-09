@@ -57,6 +57,8 @@ fi
 
 PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID"
 EXE_PATH="$PUBLISH_DIR/dotnet-aot.Tests"
+MANAGED_TEST_DIR="$SCRIPT_DIR/artifacts/managed-tests/$CONFIGURATION/$RID"
+MANAGED_TEST_MODULE="$MANAGED_TEST_DIR/dotnet-aot.Tests.dll"
 AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID"
 DN_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dn/$CONFIGURATION/$RID"
 case "$RID" in
@@ -76,6 +78,11 @@ echo ""
 # Publish
 if [[ "$NO_BUILD" == false ]]; then
     echo "Publishing as NativeAOT..."
+
+    "$DOTNET" build "$TEST_PROJECT" \
+        -c "$CONFIGURATION" \
+        -p:PublishAotTests=false \
+        -p:OutDir="$MANAGED_TEST_DIR"
 
     "$DOTNET" publish "$TEST_PROJECT" \
         -c "$CONFIGURATION" \
@@ -134,8 +141,7 @@ fi
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
-MANAGED_TEST_MODULE="$(find "$REPO_ROOT/artifacts/bin/dotnet-aot.Tests/$CONFIGURATION" -path "*/$RID/dotnet-aot.Tests.dll" -print -quit)"
-if [[ -z "$MANAGED_TEST_MODULE" ]]; then
+if [[ ! -f "$MANAGED_TEST_MODULE" ]]; then
     echo "ERROR: Managed test module not found for Native AOT integration validation."
     exit 1
 fi
