@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
@@ -62,11 +62,11 @@ public class PackCommand(
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs, nonLoggerArgs) =>
+            transformer: (msbuildArgs, otherArgs) =>
             {
                 ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonLoggerArgs,
+                            otherArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );

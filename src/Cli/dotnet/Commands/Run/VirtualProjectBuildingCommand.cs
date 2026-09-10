@@ -17,6 +17,11 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
+#if !CLI_AOT
+using MSBuildApp = Microsoft.Build.CommandLine.MSBuildApp;
+using MSBuildCommandLineParser = Microsoft.Build.CommandLine.Experimental.CommandLineParser;
+using MSBuildCommandLineSwitches = Microsoft.Build.CommandLine.Experimental.CommandLineSwitches;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -214,14 +219,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
             ReadOnlySpan<ILogger> consoleLoggers = consoleLogger is null ? [] : [consoleLogger];
             IEnumerable<ILogger> loggers = [.. binaryLoggers, .. consoleLoggers];
+            (bool multiThreaded, int maxNodeCount) = GetBuildConcurrency();
             var projectCollection = new ProjectCollection(
-                MSBuildArgs.GlobalProperties,
-                loggers,
-                ToolsetDefinitionLocations.Default);
+                globalProperties: MSBuildArgs.GlobalProperties,
+                loggers: loggers,
+                remoteLoggers: [],
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
+                maxNodeCount: maxNodeCount,
+                onlyLogCriticalEvents: false);
             var parameters = new BuildParameters(projectCollection)
             {
                 Loggers = loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
+                MaxNodeCount = maxNodeCount,
+                MultiThreaded = multiThreaded,
             };
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
@@ -705,6 +716,44 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         File.WriteAllText(Path.Join(directory, FileBasedAppRunPlan.BuildStartCacheFileName), Builder.EntryPointFileFullPath);
     }
+
+#if !CLI_AOT
+    private (bool MultiThreaded, int MaxNodeCount) GetBuildConcurrency()
+    {
+        var parser = new MSBuildCommandLineParser();
+        parser.GatherAllSwitches(
+            ["MSBuild", "-maxcpucount", Builder.EntryPointFileFullPath, .. MSBuildArgs.OtherMSBuildArgs],
+            [],
+            out var autoResponseSwitches,
+            out var explicitSwitches,
+            out var commandLine,
+            out _);
+
+        var switches = CombineSwitches();
+        // Parse() alone does not load project response files. Match MSBuild's two-stage
+        // discovery using the existing source file, not its nonexistent virtual project path.
+        if (parser.CheckAndGatherProjectAutoResponseFile(autoResponseSwitches, switches, false, commandLine))
+        {
+            switches = CombineSwitches();
+        }
+
+        int maxNodeCount = MSBuildApp.ProcessMaxCPUCountSwitch(
+            switches[MSBuildCommandLineSwitches.ParameterizedSwitch.MaxCPUCount]);
+        bool multiThreaded = MSBuildApp.IsMultiThreadedEnabled(switches);
+
+        // Keep the existing single-node default unless multithreading was requested.
+        return (multiThreaded, multiThreaded ? maxNodeCount : 1);
+
+        MSBuildCommandLineSwitches CombineSwitches()
+        {
+            var result = new MSBuildCommandLineSwitches();
+            result.Append(autoResponseSwitches, commandLine);
+            result.Append(explicitSwitches, commandLine);
+            result.ThrowErrors();
+            return result;
+        }
+    }
+#endif
 
     private void MarkBuildSuccess(FileBasedAppCacheInfo cache)
     {

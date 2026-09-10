@@ -344,6 +344,16 @@
         <target state="translated">NETSDK1154: należy określić element Crossgen2Tool, gdy właściwość UseCrossgen2 jest ustawiona na wartość true.</target>
         <note>{StrBegins="NETSDK1154: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedHostRuntimeIdentifier">
+        <source>NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</source>
+        <target state="new">NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</target>
+        <note>{StrBegins="NETSDK1245: "}</note>
+      </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedTargetFramework">
+        <source>NETSDK1246: The crossgen2 pack is not available for the target framework.</source>
+        <target state="new">NETSDK1246: The crossgen2 pack is not available for the target framework.</target>
+        <note>{StrBegins="NETSDK1246: "}</note>
+      </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
         <source>NETSDK1166: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
         <target state="translated">NETSDK1166: nie można emitować symboli podczas publikowania w przypadku platformy .NET 5 z Crossgen2 przy użyciu trybu złożonego.</target>
