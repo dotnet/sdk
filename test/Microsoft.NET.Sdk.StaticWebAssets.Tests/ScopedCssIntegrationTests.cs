@@ -597,7 +597,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/roslyn/issues/85132")]
+        [Ignore("https://github.com/dotnet/sdk/issues/56132")]
         public void ScopedCss_PublishIsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
