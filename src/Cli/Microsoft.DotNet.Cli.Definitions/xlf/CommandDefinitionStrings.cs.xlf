@@ -489,6 +489,11 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <target state="translated">Neukládat balíčky a požadavky http do mezipaměti</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Neobnoví odkazy mezi projekty a obnoví jen konkrétní projekt.</target>

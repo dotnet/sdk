@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 /// Tests shared file-based application build and launch planning.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(Reporter))]
 public class FileBasedAppRunPlanTests
 {
     /// <summary>Verifies that a fresh simple application selects direct compilation.</summary>

@@ -21,14 +21,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at f935d2d3: the upstream additions since the previous baseline (SupportedPostProcessorKinds/SupportedPostProcessorExtensionsLegacy, the ArtifactPostProcessor host type and the 'tool' execution mode) are already mirrored in CliConstants.cs, so this was a baseline bump only. Intentional divergences: the SDK does not mirror TestStates.InProgress or HandshakeMessagePropertyNames.OrchestratorFeature (it consumes neither), and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
+      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at 868da4b6: the SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "8e11c4ba1b8472a4d28178f28ef088c0c0948580",
+          "baseline_ref_sha": "868da4b6752d5818d8f1c2c54ae27ee5b5f61852",
+          "baseline_blob_sha": "54dff700b3f69da76605d4707b60ba7c67d21d20",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]

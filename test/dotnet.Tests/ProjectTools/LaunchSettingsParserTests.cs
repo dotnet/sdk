@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.ProjectTools.Tests;
@@ -30,11 +31,16 @@ public class LaunchSettingsParserTests
     {
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "Execute", """
-            {
-                "commandName": "Executable"
-            }
-            """));
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile(
+            "path",
+            "Execute",
+            """
+                {
+                    "commandName": "Executable"
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -44,13 +50,18 @@ public class LaunchSettingsParserTests
     {
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        var result = parser.ParseProfile("path", "name", $$"""
-            {
-                "commandName": "Executable",
-                "executablePath": "executable",
-                "dotnetRunMessages": {{value}}
-            }
-            """);
+        var result = parser.ParseProfile(
+            "path",
+            "name",
+            $$"""
+                {
+                    "commandName": "Executable",
+                    "executablePath": "executable",
+                    "dotnetRunMessages": {{value}}
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         Assert.IsNotNull(result.Profile);
@@ -62,13 +73,18 @@ public class LaunchSettingsParserTests
     {
         var parser = ProjectLaunchProfileParser.Instance;
 
-        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "name", $$"""
-            {
-                "commandName": "Executable",
-                "executablePath": "executable",
-                "dotnetRunMessages": "true"
-            }
-            """));
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile(
+            "path",
+            "name",
+            $$"""
+                {
+                    "commandName": "Executable",
+                    "executablePath": "executable",
+                    "dotnetRunMessages": "true"
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -76,12 +92,17 @@ public class LaunchSettingsParserTests
     {
         var parser = ProjectLaunchProfileParser.Instance;
 
-        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "name", $$"""
-            {
-                "commandName": "Project",
-                "dotnetRunMessages": "true"
-            }
-            """));
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile(
+            "path",
+            "name",
+            $$"""
+                {
+                    "commandName": "Project",
+                    "dotnetRunMessages": "true"
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -89,16 +110,21 @@ public class LaunchSettingsParserTests
     {
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        var result = parser.ParseProfile("path", "name", """
-            {
-                // line comment
-                "commandName": "Executable",
-                "executablePath": "executable", /* block comment */
-                "environmentVariables": {
-                    "VAR1": "VALUE1", // trailing comma below
-                },
-            }
-            """);
+        var result = parser.ParseProfile(
+            "path",
+            "name",
+            """
+                {
+                    // line comment
+                    "commandName": "Executable",
+                    "executablePath": "executable", /* block comment */
+                    "environmentVariables": {
+                        "VAR1": "VALUE1", // trailing comma below
+                    },
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
@@ -111,16 +137,21 @@ public class LaunchSettingsParserTests
     {
         var parser = ProjectLaunchProfileParser.Instance;
 
-        var result = parser.ParseProfile("path", "name", """
-            {
-                // line comment
-                "commandName": "Project",
-                "commandLineArgs": "arg1", /* block comment */
-                "environmentVariables": {
-                    "VAR1": "VALUE1", // trailing comma below
-                },
-            }
-            """);
+        var result = parser.ParseProfile(
+            "path",
+            "name",
+            """
+                {
+                    // line comment
+                    "commandName": "Project",
+                    "commandLineArgs": "arg1", /* block comment */
+                    "environmentVariables": {
+                        "VAR1": "VALUE1", // trailing comma below
+                    },
+                }
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(result.Profile);
@@ -137,19 +168,24 @@ public class LaunchSettingsParserTests
 
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        var settings = parser.ParseProfile(launchSettingsPath, "MyProfile", $$"""
-            {
-                "commandName": "Executable",
-                "executablePath": "../path/{{EnvironmentVariableReference(s_environmentVariableName1)}}/executable",
-                "commandLineArgs": "arg1 {{EnvironmentVariableReference(s_environmentVariableName1)}} arg3",
-                "workingDirectory": "{{Path.Combine("..", EnvironmentVariableReference(s_environmentVariableName1)).Replace("\\", "\\\\")}}",
-                "environmentVariables": {
-                    "{{s_environmentVariableNameUnset}}": "{{EnvironmentVariableReference(s_environmentVariableName2)}}",
-                    "VAR1": "{{EnvironmentVariableReference(s_environmentVariableNameUnset)}}",
-                    "VAR2": "ENV_VALUE2"
+        var settings = parser.ParseProfile(
+            launchSettingsPath,
+            "MyProfile",
+            $$"""
+                {
+                    "commandName": "Executable",
+                    "executablePath": "../path/{{EnvironmentVariableReference(s_environmentVariableName1)}}/executable",
+                    "commandLineArgs": "arg1 {{EnvironmentVariableReference(s_environmentVariableName1)}} arg3",
+                    "workingDirectory": "{{Path.Combine("..", EnvironmentVariableReference(s_environmentVariableName1)).Replace("\\", "\\\\")}}",
+                    "environmentVariables": {
+                        "{{s_environmentVariableNameUnset}}": "{{EnvironmentVariableReference(s_environmentVariableName2)}}",
+                        "VAR1": "{{EnvironmentVariableReference(s_environmentVariableNameUnset)}}",
+                        "VAR2": "ENV_VALUE2"
+                    }
                 }
-            }
-            """);
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true);
 
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(settings.Profile);
 
@@ -173,17 +209,22 @@ public class LaunchSettingsParserTests
 
         var parser = ProjectLaunchProfileParser.Instance;
 
-        var settings = parser.ParseProfile(launchSettingsPath, "MyProfile", $$"""
-            {
-                "commandName": "Project",
-                "commandLineArgs": "arg1 {{EnvironmentVariableReference(s_environmentVariableName1)}} arg3",
-                "environmentVariables": {
-                    "{{s_environmentVariableNameUnset}}": "{{EnvironmentVariableReference(s_environmentVariableName2)}}",
-                    "VAR1": "{{EnvironmentVariableReference(s_environmentVariableNameUnset)}}",
-                    "VAR2": "ENV_VALUE2"
+        var settings = parser.ParseProfile(
+            launchSettingsPath,
+            "MyProfile",
+            $$"""
+                {
+                    "commandName": "Project",
+                    "commandLineArgs": "arg1 {{EnvironmentVariableReference(s_environmentVariableName1)}} arg3",
+                    "environmentVariables": {
+                        "{{s_environmentVariableNameUnset}}": "{{EnvironmentVariableReference(s_environmentVariableName2)}}",
+                        "VAR1": "{{EnvironmentVariableReference(s_environmentVariableNameUnset)}}",
+                        "VAR2": "ENV_VALUE2"
+                    }
                 }
-            }
-            """);
+                """,
+            evaluateExpression: null,
+            expandCommandLineArgs: true);
 
         var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
 
@@ -194,5 +235,123 @@ public class LaunchSettingsParserTests
             ("VAR1", EnvironmentVariableReference(s_environmentVariableNameUnset)),
             ("VAR2", "ENV_VALUE2")
         ], model.EnvironmentVariables.OrderBy(e => e.Key).Select(e => (e.Key, e.Value)));
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Executable()
+    {
+        string root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string launchSettingsPath = Path.Combine(root, "Properties", "launchSettings.json");
+        var properties = new Dictionary<string, string>
+        {
+            ["$(Executable)"] = "tool",
+            ["$(Argument)"] = "argument",
+            ["$(WorkingDirectory)"] = root,
+            ["$(EnvironmentValue)"] = "environment",
+        };
+
+        var settings = ExecutableLaunchProfileParser.Instance.ParseProfile(
+            launchSettingsPath,
+            "MyProfile",
+            """
+            {
+                "commandName": "Executable",
+                "executablePath": "$(Executable)",
+                "commandLineArgs": "$(Argument)",
+                "workingDirectory": "$(WorkingDirectory)",
+                "environmentVariables": {
+                    "VALUE": "$(EnvironmentValue)"
+                }
+            }
+            """,
+            value => properties[value],
+            expandCommandLineArgs: true);
+
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(settings.Profile);
+        Assert.AreEqual("tool", model.ExecutablePath);
+        Assert.AreEqual("argument", model.CommandLineArgs);
+        Assert.AreEqual(root, model.WorkingDirectory);
+        Assert.AreEqual("environment", model.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project()
+    {
+        var properties = new Dictionary<string, string>
+        {
+            ["$(Argument)"] = "argument",
+            ["$(LaunchUrl)"] = "path",
+            ["$(ApplicationUrl)"] = "https://localhost:5001",
+            ["$(EnvironmentValue)"] = "environment",
+        };
+
+        var settings = ProjectLaunchProfileParser.Instance.ParseProfile(
+            "launchSettings.json",
+            "MyProfile",
+            """
+            {
+                "commandName": "Project",
+                "commandLineArgs": "$(Argument)",
+                "launchUrl": "$(LaunchUrl)",
+                "applicationUrl": "$(ApplicationUrl)",
+                "environmentVariables": {
+                    "VALUE": "$(EnvironmentValue)"
+                }
+            }
+            """,
+            value => properties[value],
+            expandCommandLineArgs: true);
+
+        var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
+        Assert.AreEqual("argument", model.CommandLineArgs);
+        Assert.AreEqual("$(LaunchUrl)", model.LaunchUrl);
+        Assert.AreEqual("https://localhost:5001", model.ApplicationUrl);
+        Assert.AreEqual("environment", model.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project_PreservesEnvironmentVariableComparers()
+    {
+        var keyComparer = StringComparer.OrdinalIgnoreCase;
+        var valueComparer = StringComparer.OrdinalIgnoreCase;
+        var profile = new ProjectLaunchProfile
+        {
+            EnvironmentVariables = ImmutableDictionary<string, string>.Empty
+                .WithComparers(keyComparer, valueComparer)
+                .Add("VALUE", "$(EnvironmentValue)"),
+        };
+
+        ProjectLaunchProfile expandedProfile = ProjectLaunchProfileParser.ExpandMSBuildProperties(
+            profile,
+            _ => "environment",
+            expandCommandLineArgs: false,
+            expandApplicationUrl: false);
+
+        Assert.AreSame(keyComparer, expandedProfile.EnvironmentVariables.KeyComparer);
+        Assert.AreSame(valueComparer, expandedProfile.EnvironmentVariables.ValueComparer);
+        Assert.AreEqual("environment", expandedProfile.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project_IgnoresDisabledCommandLineArgs()
+    {
+        var settings = ProjectLaunchProfileParser.Instance.ParseProfile(
+            "launchSettings.json",
+            "MyProfile",
+            """
+            {
+                "commandName": "Project",
+                "commandLineArgs": "$([)",
+                "environmentVariables": {
+                    "VALUE": "$(EnvironmentValue)"
+                }
+            }
+            """,
+            value => value == "$(EnvironmentValue)" ? "environment" : throw new InvalidOperationException(),
+            expandCommandLineArgs: false);
+
+        var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
+        Assert.AreEqual("$([)", model.CommandLineArgs);
+        Assert.AreEqual("environment", model.EnvironmentVariables["VALUE"]);
     }
 }
