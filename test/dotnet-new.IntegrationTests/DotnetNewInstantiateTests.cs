@@ -10,15 +10,41 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         private ITestOutputHelper _log => Log;
         private static SharedHomeDirectory s_fixture = null!;
+        private static string s_mstestTemplateSelectionHome = null!;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx)
         {
-            s_fixture = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            var log = new TestContextOutputHelper(ctx);
+            s_fixture = new SharedHomeDirectory(log);
+
+            s_mstestTemplateSelectionHome = Utilities.CreateTemporaryFolder(
+                nameof(MSTestTemplate_SelectsCurrentTemplateForEverySupportedTargetFramework));
+
+            new DotnetNewCommand(log)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .WithDebug()
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetNewCommand(log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates100Path)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
         }
 
         [ClassCleanup]
-        public static void ClassCleanup() => s_fixture?.Dispose();
+        public static void ClassCleanup()
+        {
+            s_fixture?.Dispose();
+            Directory.Delete(s_mstestTemplateSelectionHome, true);
+        }
 
         private SharedHomeDirectory _fixture => s_fixture;
 
@@ -35,6 +61,89 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The template \"Console App\" was created successfully.");
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(MSTestTemplateSelectionData))]
+        public void MSTestTemplate_SelectsCurrentTemplateForEverySupportedTargetFramework(
+            string templateName,
+            string targetFramework,
+            string language,
+            string projectExtension)
+        {
+            const string projectName = "MSTestProject";
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = Path.Combine(workingDirectory, projectName);
+
+            new DotnetNewCommand(
+                    _log,
+                    templateName,
+                    "--no-restore",
+                    "--framework",
+                    targetFramework,
+                    "--language",
+                    language,
+                    "--name",
+                    projectName,
+                    "--output",
+                    outputDirectory)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("was created successfully.");
+
+            string projectContents = File.ReadAllText(Path.Combine(outputDirectory, $"{projectName}.{projectExtension}"));
+
+            projectContents.Should().Contain($"<TargetFramework>{targetFramework}</TargetFramework>");
+            projectContents.Should().Contain("""<PackageReference Include="MSTest" Version="4.2.3" />""");
+        }
+
+        public static IEnumerable<object[]> MSTestTemplateSelectionData()
+        {
+            string[] mstestTargetFrameworks =
+            [
+                "net11.0",
+                "net11.0-windows",
+                "net10.0",
+                "net10.0-windows",
+                "net9.0",
+                "net9.0-windows",
+                "net8.0",
+                "net8.0-windows",
+                "net481",
+                "net48",
+                "net472",
+                "net471",
+                "net47",
+                "net462",
+            ];
+
+            foreach (string targetFramework in mstestTargetFrameworks)
+            {
+                yield return ["mstest", targetFramework, "C#", "csproj"];
+            }
+
+            // Cover the language-specific template groups at the framework where the
+            // Microsoft.DotNet.Common.ProjectTemplates.10.0 package can otherwise win.
+            yield return ["mstest", "net10.0", "F#", "fsproj"];
+            yield return ["mstest", "net10.0", "VB", "vbproj"];
+
+            string[] additionalPlaywrightTargetFrameworks =
+            [
+                "net7.0",
+                "net7.0-windows",
+                "net6.0",
+                "net6.0-windows",
+                "netcoreapp3.1",
+            ];
+
+            foreach (string targetFramework in mstestTargetFrameworks.Concat(additionalPlaywrightTargetFrameworks))
+            {
+                yield return ["mstest-playwright", targetFramework, "C#", "csproj"];
+            }
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
