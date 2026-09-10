@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -439,6 +440,129 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """;
 
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_PropertyWithSetterMoreAccessibleThanGetter()
+        {
+            await TestCSAsync(@"
+                using System;
+                using System.Threading.Tasks;
+
+                public class Class1
+                {
+                    public I Prop { private get; set; } = new Impl1();
+
+                    void M()
+                    {
+                        Prop.M();
+                        Prop.MyProperty = 1;
+                        Prop[1] = 1;
+                        Prop.Evt += (s, e) => { };
+                    }
+                }
+
+                public interface I
+                {
+                    int MyProperty { get; set; }
+                    int this[int i] { get; set; }
+                    event EventHandler Evt;
+                    void M();
+                }
+
+                public class Impl1 : I
+                {
+                    public int MyProperty { get; set; }
+                    public int this[int i] { get => i; set { } }
+                    public event EventHandler Evt;
+                    public void M() { }
+                }
+            ");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_ProtectedGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { protected get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_InternalGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { internal get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldNotTrigger_PrivateProtectedGetterPublicSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo Prop { private protected get; set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = public,internal,private");
+        }
+
+        [TestMethod]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public async Task ShouldStillTrigger_PublicGetterPrivateSetter()
+        {
+            await TestCSAsync(@"
+                namespace Example
+                {
+                    public interface IFoo { void Bar(); }
+                    public class Foo : IFoo { public void Bar() { } }
+
+                    public class Container
+                    {
+                        public IFoo {|#0:Prop|} { get; private set; } = new Foo();
+
+                        void M() => Prop.Bar();
+                    }
+                }
+            ",
+            $"dotnet_code_quality.CA1859.api_surface = public,internal,private",
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                .WithLocation(0)
+                .WithArguments("Prop", "Example.IFoo", "Example.Foo"));
         }
 
         [TestMethod]
@@ -1564,7 +1688,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        private static async Task TestCSAsync(string source, params DiagnosticResult[] diagnosticResults)
+        private static async Task TestCSAsync([StringSyntax("C#-test")] string source, params DiagnosticResult[] diagnosticResults)
         {
             var test = new VerifyCS.Test
             {
@@ -1577,7 +1701,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await test.RunAsync(CancellationToken.None);
         }
 
-        private static async Task TestCSAsync(string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
+        private static async Task TestCSAsync([StringSyntax("C#-test")] string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
         {
             var test = new VerifyCS.Test
             {
