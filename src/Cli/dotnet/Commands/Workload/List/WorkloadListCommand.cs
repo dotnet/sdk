@@ -61,7 +61,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
 
         _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
             _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer,
-            packageSourceLocation);
+            packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
     public override int Execute()
