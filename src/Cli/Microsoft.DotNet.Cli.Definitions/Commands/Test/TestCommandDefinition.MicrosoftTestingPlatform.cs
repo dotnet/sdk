@@ -46,6 +46,13 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.ExactlyOne
         };
 
+        public readonly Option<string> ResultsDirectoryLayoutOption = new Option<string>("--results-directory-layout")
+        {
+            Description = CommandDefinitionStrings.CmdResultsDirectoryLayoutDescription,
+            HelpName = CommandDefinitionStrings.CmdResultsDirectoryLayoutName,
+            Arity = ArgumentArity.ExactlyOne
+        }.AcceptOnlyFromAmong("flat", "per-module");
+
         public const string ConfigFileOptionName = "--config-file";
 
         public readonly Option<string> ConfigFileOption = new(ConfigFileOptionName)
@@ -140,6 +147,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(TestModulesFilterOption);
             Options.Add(TestModulesRootDirectoryOption);
             Options.Add(ResultsDirectoryOption);
+            Options.Add(ResultsDirectoryLayoutOption);
             Options.Add(ConfigFileOption);
             Options.Add(DiagnosticOutputDirectoryOption);
             Options.Add(MaxParallelTestModulesOption);

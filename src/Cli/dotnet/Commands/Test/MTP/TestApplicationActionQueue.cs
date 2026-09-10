@@ -17,14 +17,20 @@ internal class TestApplicationActionQueue
 
     private static readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
+    public TestApplicationActionQueue(
+        int degreeOfParallelism,
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested));
+            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, resultsDirectoryResolver, output, onHelpRequested));
         }
     }
 
@@ -51,14 +57,19 @@ internal class TestApplicationActionQueue
         _channel.Writer.Complete();
     }
 
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
+    private async Task Read(
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested)
     {
         await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync())
         {
             foreach (var module in nonParallelizedGroup)
             {
                 int result = ExitCode.GenericFailure;
-                var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                var testApp = new TestApplication(module, buildOptions, testOptions, resultsDirectoryResolver, output, onHelpRequested);
                 try
                 {
                     using (testApp)
