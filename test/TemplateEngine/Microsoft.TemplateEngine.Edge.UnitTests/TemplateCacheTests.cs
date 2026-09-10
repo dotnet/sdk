@@ -97,15 +97,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             SettingsFilePaths paths = new(environmentSettings);
             const string json = """
                                 {
-                                    // Cache property names are matched case-insensitively, with the last match winning.
-                                    "version": "0.0.0.0",
-                                    "VERSION": "1.0.0\u002E7",
-                                    "locale": "en-US",
+                                    // Exact-cased property names win; otherwise the last case-insensitive match wins.
+                                    "Version": "1.0.0\u002E7",
+                                    "VERSION": "ignoredVersion",
+                                    "locale": "ignoredLocale",
+                                    "LOCALE": "en-US",
                                     "templateinfo": [
                                         {
-                                            "identity": "ignoredIdentity",
-                                            "IDENTITY": "testIdentity",
-                                            "name": "testName",
+                                            "Identity": "testIdentity",
+                                            "IDENTITY": "ignoredIdentity",
+                                            "name": "ignoredName",
+                                            "NAME": "testName",
                                             "shortnamelist": "testShort",
                                             "mountpointuri": "testMount",
                                             "configplace": ".template.config/template.json",
@@ -136,6 +138,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual("en-US", cache.Locale);
             Assert.ContainsSingle(cache.TemplateInfo);
             Assert.AreEqual("testIdentity", cache.TemplateInfo[0].Identity);
+            Assert.AreEqual("testName", cache.TemplateInfo[0].Name);
             Assert.AreSequenceEqual(new[] { "testShort" }, cache.TemplateInfo[0].ShortNameList);
             Assert.AreEqual(
                 PrecedenceDefinition.Optional,
