@@ -215,6 +215,24 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
+        public void Build_BrowserToolsUiIsCompatibleWithStrictCsp()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build).Should().Pass();
+
+            var client = File.ReadAllText(Path.Combine(GeneratedDirectory(build), ClientFileName));
+            client.Should().Contain("attachShadow({ mode: 'open' })");
+            client.Should().Contain("root.adoptedStyleSheets = [browserToolsStylesheet]");
+            client.Should().Contain("browserToolsStylesheet.replaceSync(browserToolsStyles)");
+            client.Should().NotContain("innerHTML");
+            client.Should().NotContain("setAttribute('style'");
+            client.Should().NotContain("createElement('style'");
+            client.Should().NotContain(".style.");
+        }
+
+        [TestMethod]
         public void Build_RegistersAssetsAsBuildOnlyAndKeepsThemOutOfTheOutputDirectory()
         {
             var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);

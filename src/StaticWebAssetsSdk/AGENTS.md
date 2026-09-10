@@ -32,6 +32,9 @@ non-fingerprinted, `no-store`, compression-excluded settings asset at
 to `{ "hotReload": false }`. Hosted WebAssembly's client owns these outputs; its server
 consumes the referenced assets rather than generating a competing route and keypair. The
 assets are build only and must never reach publish output.
+Browser-tools UI must remain self-contained and compatible with strict Content Security
+Policy: isolate it in Shadow DOM, use constructable stylesheets, and do not require
+application stylesheets, inline styles, nonces, or `style-src 'unsafe-inline'`.
 See [`src/Dotnet.Watch/AGENTS.md`](../Dotnet.Watch/AGENTS.md).
 
 ## Architecture
