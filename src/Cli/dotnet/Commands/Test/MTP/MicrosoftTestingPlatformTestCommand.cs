@@ -674,7 +674,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         IReadOnlyList<string> effectiveArguments = TryExpandResponseFileArguments(
             parsedArguments,
             workingDirectory,
-            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(FileUtilities.PathComparer),
             expandedArguments)
                 ? expandedArguments
                 : parsedArguments;
