@@ -31,7 +31,9 @@ function InitializeCustomSDKToolset {
         # Also install the exact runtime versions that arcade's toolset requires
         # (from Version.Details.props) so tests can target those specific versions.
         $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
-        $runtimeSpecs += Get-BootstrapRuntimeVersion
+        $bootstrapRuntimeVersion = Get-BootstrapRuntimeVersion
+        $runtimeSpecs += $bootstrapRuntimeVersion
+        $runtimeSpecs += "aspnetcore@$bootstrapRuntimeVersion"
 
         $nativeArch = Get-NativeMachineArchitecture
         if ((-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) -and ($env:TARGET_ARCHITECTURE -ne $nativeArch)) {

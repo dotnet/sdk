@@ -46,7 +46,7 @@ function InitializeCustomSDKToolset {
     fi
     local bootstrap_runtime_version
     bootstrap_runtime_version=$(ReadBootstrapRuntimeVersion)
-    runtime_specs+=("$bootstrap_runtime_version")
+    runtime_specs+=("$bootstrap_runtime_version" "aspnetcore@$bootstrap_runtime_version")
 
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
