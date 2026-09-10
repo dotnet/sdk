@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">Impossibile individuare il fallback gestito. Previsti '{0}' e '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">Il file di impostazioni 'DotnetToolSettings.xml' non è stato trovato nel pacchetto '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">Il percorso risolto '{0}' escape della directory di destinazione '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -730,7 +730,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">La directory radice dell'SDK '{0}' fornita tramite l'impostazione '{1}' non esiste.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">La cartella della soluzione '{0}' contiene già un progetto con il nome file '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -820,12 +820,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">Lo strumento '{0}' richiede una versione di .NET superiore a quella attualmente installata. Lo strumento è destinato a {1}, ma il runtime corrente è {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <target state="translated">Per usare questo strumento, eseguire l'aggiornamento a .NET {0} o versione successiva oppure usare una versione dello strumento compatibile con .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
