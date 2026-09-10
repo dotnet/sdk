@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsMessage">
         <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
-        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <target state="translated">Birden çok ardışık Path.{0} işlemi tek bir işlem olarak daraltılabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsTitle">
@@ -2445,12 +2445,12 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">'{0}' parametresi '{2}' yerine '{1}' olarak bildirilebilir</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
-        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <target state="translated">'Span&lt;T&gt;' veya 'Memory&lt;T&gt;' yerine 'ReadOnlySpan&lt;T&gt;' veya 'ReadOnlyMemory&lt;T&gt;' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">

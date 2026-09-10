@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <target state="translated">L’évaluation de cet argument peut être coûteuse et inutile si la journalisation est désactivée ({0})</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsMessage">
         <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
-        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <target state="translated">Plusieurs opérations Path.{0} consécutives peuvent être réduites en une seule opération</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsTitle">
@@ -2445,12 +2445,12 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">Le paramètre '{0}' peut être déclaré comme '{1}' et non comme '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
-        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <target state="translated">Utilisez « ReadOnlySpan&lt;T&gt; » ou « ReadOnlyMemory&lt;T&gt; » au lieu de « Span&lt;T&gt; » ou « Memory&lt;T&gt; »</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">

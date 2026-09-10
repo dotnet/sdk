@@ -449,62 +449,62 @@
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
         <source>The addition operator should be preferred</source>
-        <target state="new">The addition operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di addizione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
-        <target state="new">The bitwise-and operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore AND bit per bit</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
-        <target state="new">The bitwise-or operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore OR bit per bit</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Division">
         <source>The division operator should be preferred</source>
-        <target state="new">The division operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di divisione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
-        <target state="new">The exclusive-or operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore OR esclusivo</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_LeftShift">
         <source>The left-shift operator should be preferred</source>
-        <target state="new">The left-shift operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di spostamento a sinistra</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Multiply">
         <source>The multiply operator should be preferred</source>
-        <target state="new">The multiply operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di moltiplicazione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_OnesComplement">
         <source>The ones-complement operator should be preferred</source>
-        <target state="new">The ones-complement operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di complemento a uno</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_RightShift">
         <source>The right-shift operator should be preferred</source>
-        <target state="new">The right-shift operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di spostamento a destra</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Subtraction">
         <source>The subtraction operator should be preferred</source>
-        <target state="new">The subtraction operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di sottrazione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnaryNegation">
         <source>The unary-negation operator should be preferred</source>
-        <target state="new">The unary-negation operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di negazione unario</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
-        <target state="new">The unsigned right-shift operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di spostamento a destra senza segno</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsTitle">

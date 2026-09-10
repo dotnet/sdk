@@ -74,52 +74,52 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <target state="translated">Die Auswertung dieses Arguments kann kostspielig und unnötig sein, wenn die Protokollierung deaktiviert ist ({0}).</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
         <source>anonymous object creation</source>
-        <target state="new">anonymous object creation</target>
+        <target state="translated">Anonyme Objekterstellung</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation">
         <source>array creation</source>
-        <target state="new">array creation</target>
+        <target state="translated">Arrayerstellung</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression">
         <source>await expression</source>
-        <target state="new">await expression</target>
+        <target state="translated">Await-Ausdruck</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion">
         <source>boxing conversion</source>
-        <target state="new">boxing conversion</target>
+        <target state="translated">Boxing-Konvertierung</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression">
         <source>collection expression</source>
-        <target state="new">collection expression</target>
+        <target state="translated">Sammlungsausdruck</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation">
         <source>method invocation</source>
-        <target state="new">method invocation</target>
+        <target state="translated">Methodenaufruf</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation">
         <source>object creation</source>
-        <target state="new">object creation</target>
+        <target state="translated">Objekterstellung</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation">
         <source>string interpolation</source>
-        <target state="new">string interpolation</target>
+        <target state="translated">Zeichenfolgeninterpolation</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression">
         <source>with expression</source>
-        <target state="new">with expression</target>
+        <target state="translated">With-Ausdruck</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
@@ -204,22 +204,22 @@
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
         <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
-        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <target state="translated">Wenn „Regex.IsMatch“ verwendet wird, um nach einer Übereinstimmung zu suchen, und dann „Regex.Match“ mit den gleichen Argumenten aufgerufen wird, wird der reguläre Ausdruck zweimal ausgewertet. Rufen Sie „Regex.Match“ einmal auf, und aktivieren Sie „Match.Success“, um redundante Arbeit zu vermeiden.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
         <source>Use 'Regex.Match' and check 'Success'</source>
-        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <target state="translated">Verwenden Sie „Regex.Match“, und überprüfen Sie „Success“.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
         <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
-        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <target state="translated">Redundanter Aufruf von „Regex.IsMatch“ vor „Regex.Match“. Verwenden Sie „Regex.Match“, und aktivieren Sie stattdessen „Match.Success“.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
         <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
-        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <target state="translated">Vermeiden Sie einen redundanten Regex.IsMatch-Aufruf vor „Regex.Match“.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -304,22 +304,22 @@
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
         <source>Collapse into single Path.{0} operation</source>
-        <target state="new">Collapse into single Path.{0} operation</target>
+        <target state="translated">Zu einem einzelnen Pfad reduzieren.{0} Vorgang</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsDescription">
         <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
-        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <target state="translated">Wenn mehrere Path.Combine- oder Path.Join-Vorgänge geschachtelt sind, können sie zu einem einzigen Vorgang reduziert werden, um eine bessere Leistung und Lesbarkeit zu erzielen.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsMessage">
         <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
-        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <target state="translated">Mehrere aufeinander folgende Pfade.{0} Vorgänge können in einen einzigen Vorgang reduziert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsTitle">
         <source>Collapse consecutive Path.Combine or Path.Join operations</source>
-        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <target state="translated">Aufeinanderfolgende Path.Combine- oder Path.Join-Vorgänge reduzieren</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -624,12 +624,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">Verwenden Sie das empfohlene Dispose-Muster, um sicherzustellen, dass das von „{0}“ erstellte Objekt in allen Pfaden verworfen wird. Schließen Sie die Erstellung nach Möglichkeit in einer using-Anweisung oder einer using-Deklaration ein. Verwenden Sie andernfalls ein try-finally-Muster mit einer vor dem try-Bereich deklarierten dedizierten lokalen Variablen und einem Dispose-Aufruf ohne Bedingung für den Nicht-NULL-Wert im finally-Bereich, beispielsweise "x?.Dispose()". Wenn das Objekt explizit innerhalb des try-Bereichs gelöscht oder der Dispose-Besitz auf ein anderes Objekt oder eine andere Methode übertragen wird, weisen Sie der lokalen Variablen gleich nach einem solchen Vorgang NULL zu, um einen doppelten Löschvorgang in „finally“ zu vermeiden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">Verwenden Sie das empfohlene Dispose-Muster, um sicherzustellen, dass das von „{0}“ erstellte Objekt in allen Ausnahmepfaden verworfen wird. Schließen Sie die Erstellung nach Möglichkeit in einer using-Anweisung oder einer using-Deklaration ein. Verwenden Sie andernfalls ein try-finally-Muster mit einer vor dem try-Bereich deklarierten dedizierten lokalen Variablen und einem Dispose-Aufruf ohne Bedingung für den Nicht-NULL-Wert im finally-Bereich, beispielsweise "x?.Dispose()". Wenn das Objekt explizit innerhalb des try-Bereichs gelöscht oder der Dispose-Besitz auf ein anderes Objekt oder eine andere Methode übertragen wird, weisen Sie der lokalen Variablen gleich nach einem solchen Vorgang NULL zu, um einen doppelten Löschvorgang in „finally“ zu vermeiden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -1095,17 +1095,17 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <target state="translated">Die direkte Verwendung von „AsParallel()“ in einer foreach-Schleife hat keine Auswirkungen. Die foreach-Anweisung durchläuft die Auflistung unabhängig davon seriell. Um LINQ-Vorgänge zu parallelisieren, rufen Sie „AsParallel()“ weiter oben in der Abfragekette vor anderen LINQ-Operatoren auf. Verwenden Sie stattdessen „Parallel.ForEach“, um die Schleife selbst zu parallelisieren.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <target state="translated">Die direkte Verwendung von „AsParallel()“ in einer foreach-Schleife hat keine Auswirkungen, und die Schleife wird nicht parallelisiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
         <source>Do not use 'AsParallel' in 'foreach'</source>
-        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <target state="translated">Verwenden Sie „AsParallel“ nicht in „foreach“.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
@@ -1250,17 +1250,17 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
         <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
-        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <target state="translated">Wenn Task.Delay mit Task.WhenAny verwendet wird, um ein Timeout zu implementieren, wird der von Task.Delay erstellte Timer auch nach Abschluss von WhenAny weiterhin ausgeführt, wobei Ressourcen verschwendet werden. Wenn Ihr Zielframework Task.WaitAsync unterstützt, verwenden Sie dies stattdessen, da es über integrierte Timeoutunterstützung verfügt, ohne dass Timer ausgeführt werden. Andernfalls übergeben Sie ein CancellationToken an Task.Delay, das abgebrochen werden kann, wenn der Vorgang abgeschlossen ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
         <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
-        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <target state="translated">Die Verwendung von „Task.WhenAny“ mit „Task.Delay“ kann dazu führen, dass ein Timer nach Abschluss des Vorgangs weiterhin ausgeführt wird und Ressourcen verschwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
         <source>Cancel Task.Delay after Task.WhenAny completes</source>
-        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <target state="translated">Task.Delay abbrechen, nachdem Task.WhenAny abgeschlossen ist</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -2375,22 +2375,22 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="PreferJsonElementParseDescription">
         <source>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</source>
-        <target state="new">JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</target>
+        <target state="translated">JsonDocument implementiert IDisposable und muss ordnungsgemäß verworfen werden. Wenn nur das RootElement benötigt wird, bevorzugen Sie JsonElement.Parse, das nicht gelöscht werden muss.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseFix">
         <source>Use 'JsonElement.Parse'</source>
-        <target state="new">Use 'JsonElement.Parse'</target>
+        <target state="translated">Verwenden von „JsonElement.Parse“</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseMessage">
         <source>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</source>
-        <target state="new">Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</target>
+        <target state="translated">Verwenden Sie „JsonElement.Parse“ anstelle von „JsonDocument.Parse(...).RootElement“ zur Vermeidung von Ressourcenverlusten</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseTitle">
         <source>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</source>
-        <target state="new">Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</target>
+        <target state="translated">JsonElement.Parse gegenüber JsonDocument.Parse() bevorzugen. RootElement</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
@@ -2415,42 +2415,42 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveCodeFixTitle">
         <source>Add quotes around the directive value</source>
-        <target state="new">Add quotes around the directive value</target>
+        <target state="translated">Hinzufügen von Anführungszeichen um den direktiven Wert</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveDescription">
         <source>Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</source>
-        <target state="new">Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</target>
+        <target state="translated">Bevor Anführungszeichen unterstützt wurden, wurde der Wert der #:-Direktive in einem dateibasierten Programm wörtlich genommen. Diese Form funktioniert immer noch, ist aber veraltet; Umschließen Sie Werte, die Leerzeichen enthalten, in doppelte Anführungszeichen, damit sie eindeutig analysiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveMessage">
         <source>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</source>
-        <target state="new">Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</target>
+        <target state="translated">Umschließen Sie den Wert der „#:{0}“-Anweisung in Anführungszeichen. Das Formular ohne Anführungszeichen ist veraltet.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveTitle">
         <source>Quote whitespace in file-based program directive values</source>
-        <target state="new">Quote whitespace in file-based program directive values</target>
+        <target state="translated">Leerzeichen in dateibasierten direktiven Programmwerten in Anführungszeichen setzen</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
         <source>Change to '{0}'</source>
-        <target state="new">Change to '{0}'</target>
+        <target state="translated">Ändern in „{0}“</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanDescription">
         <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
-        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <target state="translated">Die Verwendung von „ReadOnlySpan&lt;T&gt;“ oder „ReadOnlyMemory&lt;T&gt;“ anstelle von „Span&lt;T&gt;“ oder „Memory&lt;T&gt;“ für Parameter, die nicht geschrieben werden, kann Fehler verhindern, Absichten eindeutiger vermitteln und die Leistung verbessern.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">Der Parameter „{0}“ kann als „{1}“ anstatt als „{2}“ deklariert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
-        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <target state="translated">Verwenden Sie "ReadOnlySpan&lt;T&gt;" oder "ReadOnlyMemory&lt;T&gt;" anstelle von "Span&lt;T&gt;" oder "Memory&lt;T&gt;".</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2490,12 +2490,12 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</target>
+        <target state="translated">StringBuilder.Append und StringBuilder.Insert stellen Überladungen für verschiedene Typen über System.String hinaus bereit.  Sofern möglich, geben Sie den stark typisierten Überladungen Vorrang vor einer Verwendung von ToString() und zeichenfolgenbasierten Überladungen. Außerdem bevorzugen Sie Append(char, int) gegenüber Append(new string(char, int)).</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Prefer strongly-typed StringBuilder overload</source>
-        <target state="new">Prefer strongly-typed StringBuilder overload</target>
+        <target state="translated">Stark typisierte StringBuilder-Überladung bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -2505,7 +2505,7 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
         <source>Use StringBuilder.Append(char, int) overload</source>
-        <target state="new">Use StringBuilder.Append(char, int) overload</target>
+        <target state="translated">Verwenden der StringBuilder.Append(char, int)-Überladung</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">

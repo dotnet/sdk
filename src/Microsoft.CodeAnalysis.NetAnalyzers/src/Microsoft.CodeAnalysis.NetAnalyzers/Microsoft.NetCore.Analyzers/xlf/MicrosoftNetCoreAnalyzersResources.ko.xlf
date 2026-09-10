@@ -74,52 +74,52 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <target state="translated">로깅이 비활성화되면 이 인수를 평가하는 데 비용이 많이 들고 불필요할 수 있습니다 ({0}).</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
         <source>anonymous object creation</source>
-        <target state="new">anonymous object creation</target>
+        <target state="translated">익명 개체 만들기</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation">
         <source>array creation</source>
-        <target state="new">array creation</target>
+        <target state="translated">배열 만들기</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression">
         <source>await expression</source>
-        <target state="new">await expression</target>
+        <target state="translated">await 식</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion">
         <source>boxing conversion</source>
-        <target state="new">boxing conversion</target>
+        <target state="translated">boxing 변환</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression">
         <source>collection expression</source>
-        <target state="new">collection expression</target>
+        <target state="translated">컬렉션 식</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation">
         <source>method invocation</source>
-        <target state="new">method invocation</target>
+        <target state="translated">메서드 호출</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation">
         <source>object creation</source>
-        <target state="new">object creation</target>
+        <target state="translated">개체 만들기</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation">
         <source>string interpolation</source>
-        <target state="new">string interpolation</target>
+        <target state="translated">문자열 보간</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression">
         <source>with expression</source>
-        <target state="new">with expression</target>
+        <target state="translated">with 식</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
@@ -204,22 +204,22 @@
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
         <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
-        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <target state="translated">'Regex.IsMatch'를 사용하여 일치를 확인한 뒤 같은 인수로 'Regex.Match'를 호출하면 정규식이 두 번 평가됩니다. 'Regex.Match'를 한 번만 호출하고 'Match.Success'를 확인하여 중복 작업을 방지하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
         <source>Use 'Regex.Match' and check 'Success'</source>
-        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <target state="translated">'Regex.Match' 사용 및 'Success' 확인</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
         <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
-        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <target state="translated">'Regex.Match' 이전의 'Regex.IsMatch'에 대한 중복 호출입니다. 대신 'Regex.Match'를 사용하고 'Match.Success'를 확인하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
         <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
-        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <target state="translated">'Regex.Match' 전에 중복된 'Regex.IsMatch' 호출 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -304,22 +304,22 @@
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
         <source>Collapse into single Path.{0} operation</source>
-        <target state="new">Collapse into single Path.{0} operation</target>
+        <target state="translated">단일 Path.{0} 작업으로 축소</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsDescription">
         <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
-        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <target state="translated">여러 Path.Combine 또는 Path.Join 작업이 중첩되어 있으면 성능과 가독성을 높이기 위해 하나의 작업으로 축소할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsMessage">
         <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
-        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <target state="translated">연속된 여러 Path.{0} 작업은 하나의 작업으로 축소할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsTitle">
         <source>Collapse consecutive Path.Combine or Path.Join operations</source>
-        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <target state="translated">연속된 Path.Combine 또는 Path.Join 작업 축소</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -624,12 +624,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">권장 dispose 패턴을 사용하여 '{0}'에서 생성된 개체가 모든 경로에서 삭제되도록 합니다. 가능한 경우 'using' 문이나 'using' 선언 내에서 생성을 래핑합니다. 그러지 않으면 try 영역 앞에 선언된 전용 지역 변수 및 'finally' 영역에 있는 null이 아닌 값의 비조건부 Dispose 호출('x?.Dispose()')과 함께 try-finally 패턴을 사용하세요. 개체가 try 영역 내에서 명시적으로 삭제되거나 삭제 소유권이 다른 개체나 메서드로 이전되면 해당 작업 바로 뒤의 지역 변수에 'null'을 할당하여 'finally'에서 이중 삭제를 방지하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">권장 dispose 패턴을 사용하여 '{0}'에서 생성된 개체가 모든 예외 경로에서 삭제되도록 합니다. 가능한 경우 'using' 문이나 'using' 선언 내에서 생성을 래핑합니다. 그러지 않으면 try 영역 앞에 선언된 전용 지역 변수 및 'finally' 영역에 있는 null이 아닌 값의 비조건부 Dispose 호출('x?.Dispose()')과 함께 try-finally 패턴을 사용하세요. 개체가 try 영역 내에서 명시적으로 삭제되거나 삭제 소유권이 다른 개체나 메서드로 이전되면 해당 작업 바로 뒤의 지역 변수에 'null'을 할당하여 'finally'에서 이중 삭제를 방지하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -1095,17 +1095,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <target state="translated">'foreach' 루프에서 'AsParallel()'을 직접 사용해도 효과가 없습니다. 'foreach' 문은 어쨌든 컬렉션을 순차적으로 반복합니다. LINQ 작업을 병렬화하려면 다른 LINQ 연산자보다 앞서 쿼리 체인 초기에 'AsParallel()'을 호출하세요. 루프 자체를 병렬화하려면 대신 'Parallel.ForEach'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <target state="translated">'foreach' 루프에서 'AsParallel()'을 직접 사용해도 효과가 없으며 루프가 병렬화되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
         <source>Do not use 'AsParallel' in 'foreach'</source>
-        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <target state="translated">'foreach'에서는 'AsParallel'을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
@@ -1250,17 +1250,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
         <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
-        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <target state="translated">Task.Delay를 Task.WhenAny와 함께 사용해 시간 제한을 구현하면, Task.Delay가 만든 타이머는 WhenAny가 완료된 뒤에도 계속 실행되어 리소스를 낭비합니다. 대상 프레임워크에서 Task.WaitAsync를 지원하는 경우, 타이머를 계속 실행하지 않고 기본 제공 시간 제한 지원을 제공하므로 이 메서드를 대신 사용하세요. 그렇지 않은 경우 작업이 완료되면 취소할 수 있는 CancellationToken을 Task.Delay에 전달하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
         <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
-        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <target state="translated">Task.WhenAny를 Task.Delay와 함께 사용하면 작업이 완료된 뒤에도 타이머가 계속 실행되어 리소스를 낭비할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
         <source>Cancel Task.Delay after Task.WhenAny completes</source>
-        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <target state="translated">Task.WhenAny가 완료된 후 Task.Delay 취소</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -2375,22 +2375,22 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferJsonElementParseDescription">
         <source>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</source>
-        <target state="new">JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</target>
+        <target state="translated">JsonDocument는 IDisposable을 구현하므로 제대로 삭제해야 합니다. RootElement만 필요한 경우 삭제가 필요 없는 JsonElement.Parse를 사용하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseFix">
         <source>Use 'JsonElement.Parse'</source>
-        <target state="new">Use 'JsonElement.Parse'</target>
+        <target state="translated">'JsonElement.Parse' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseMessage">
         <source>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</source>
-        <target state="new">Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</target>
+        <target state="translated">리소스 누수를 방지하려면 'JsonDocument.Parse(...).RootElement' 대신 'JsonElement.Parse'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseTitle">
         <source>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</source>
-        <target state="new">Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</target>
+        <target state="translated">JsonDocument.Parse().RootElement보다 JsonElement.Parse를 우선 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
@@ -2415,42 +2415,42 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveCodeFixTitle">
         <source>Add quotes around the directive value</source>
-        <target state="new">Add quotes around the directive value</target>
+        <target state="translated">지시문 값 주위에 따옴표 추가</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveDescription">
         <source>Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</source>
-        <target state="new">Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</target>
+        <target state="translated">인용을 지원하기 전에는 파일 기반 프로그램의 '#:' 지시문 값에 있는 공백이 문자 그대로 처리되었습니다. 해당 형식은 여전히 작동하지만 사용이 중단되었습니다. 공백이 포함된 값은 큰따옴표로 묶어 모호하지 않게 구문 분석되도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveMessage">
         <source>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</source>
-        <target state="new">Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</target>
+        <target state="translated">'#:{0}' 지시문의 값을 따옴표로 묶습니다. 따옴표가 없는 공백 형식은 사용되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveTitle">
         <source>Quote whitespace in file-based program directive values</source>
-        <target state="new">Quote whitespace in file-based program directive values</target>
+        <target state="translated">파일 기반 프로그램 지시문 값에서 공백을 따옴표로 묶기</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
         <source>Change to '{0}'</source>
-        <target state="new">Change to '{0}'</target>
+        <target state="translated">'{0}'(으)로 변경</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanDescription">
         <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
-        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <target state="translated">기록되지 않은 매개 변수에 'Span&lt;T&gt;' 또는 'Memory&lt;T&gt;' 대신 'ReadOnlySpan&lt;T&gt;' 또는 'ReadOnlyMemory&lt;T&gt;'를 사용하면 오류를 방지하고 의도를 더 분명하게 전달하며 성능도 향상될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">'{0}' 매개 변수는 '{2}' 대신 '{1}'로 선언할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
-        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <target state="translated">'ReadOnlySpan&lt;T&gt;' 또는 'ReadOnlyMemory&lt;T&gt;' 대신 'Span&lt;T&gt;' 또는 'ReadOnly&lt;T&gt;Memory ' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2490,12 +2490,12 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</target>
+        <target state="translated">StringBuilder.Append 및 StringBuilder.Insert는 System.String 외의 여러 형식에 대한 오버로드를 제공합니다.  가능한 경우 ToString() 및 문자열 기반 오버로드를 사용하는 대신 강력한 형식의 오버로드를 사용하세요. 또한 Append(new string(char, int)) 대신 Append(char, int)를 우선적으로 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Prefer strongly-typed StringBuilder overload</source>
-        <target state="new">Prefer strongly-typed StringBuilder overload</target>
+        <target state="translated">강력한 형식의 StringBuilder 오버로드 우선 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -2505,7 +2505,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
         <source>Use StringBuilder.Append(char, int) overload</source>
-        <target state="new">Use StringBuilder.Append(char, int) overload</target>
+        <target state="translated">StringBuilder.Append(char, int) 오버로드 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">

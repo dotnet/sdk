@@ -74,52 +74,52 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <target state="translated">如果禁用日志记录，则计算此参数可能会成本高昂且不必要({0})</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
         <source>anonymous object creation</source>
-        <target state="new">anonymous object creation</target>
+        <target state="translated">匿名对象创建</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation">
         <source>array creation</source>
-        <target state="new">array creation</target>
+        <target state="translated">数组创建</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression">
         <source>await expression</source>
-        <target state="new">await expression</target>
+        <target state="translated">await 表达式</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion">
         <source>boxing conversion</source>
-        <target state="new">boxing conversion</target>
+        <target state="translated">装箱转换</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression">
         <source>collection expression</source>
-        <target state="new">collection expression</target>
+        <target state="translated">集合表达式</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation">
         <source>method invocation</source>
-        <target state="new">method invocation</target>
+        <target state="translated">方法调用</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation">
         <source>object creation</source>
-        <target state="new">object creation</target>
+        <target state="translated">对象创建</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation">
         <source>string interpolation</source>
-        <target state="new">string interpolation</target>
+        <target state="translated">字符串内插</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression">
         <source>with expression</source>
-        <target state="new">with expression</target>
+        <target state="translated">with 表达式</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
@@ -204,22 +204,22 @@
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
         <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
-        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <target state="translated">当使用 "Regex.IsMatch" 检查匹配项，然后使用相同参数调用 "Regex.Match" 时，正则表达式会被评估两次。为避免冗余工作，请调用一次 "Regex.Match" 并检查 "Match.Success"。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
         <source>Use 'Regex.Match' and check 'Success'</source>
-        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <target state="translated">使用 "Regex.Match" 并检查 "Success"</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
         <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
-        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <target state="translated">在 "Regex.Match" 之前冗余调用 "Regex.IsMatch"。请改用 "Regex.Match" 并检查 "Match.Success"。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
         <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
-        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <target state="translated">不要在 "Regex.Match" 之前进行冗余的 "Regex.IsMatch" 调用</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -304,22 +304,22 @@
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
         <source>Collapse into single Path.{0} operation</source>
-        <target state="new">Collapse into single Path.{0} operation</target>
+        <target state="translated">合并为单个 Path.{0} 操作</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsDescription">
         <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
-        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <target state="translated">当多个 Path.Combine 或 Path.Join 操作嵌套时，可将它们合并为单个操作，以提高性能和可读性。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsMessage">
         <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
-        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <target state="translated">多个连续的 Path.{0} 操作可合并为单个操作</target>
         <note />
       </trans-unit>
       <trans-unit id="CollapseMultiplePathOperationsTitle">
         <source>Collapse consecutive Path.Combine or Path.Join operations</source>
-        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <target state="translated">合并连续的 Path.Combine 或 Path.Join 操作</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -624,12 +624,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">使用推荐的 Dispose 模式，确保“{0}”创建的对象释放于所有路径上。如果可能，请将创建包装在 "using" 语句或 "using" 声明中。否则，请使用 try-finally 模式，在 try 区域之前声明一个专用的局部变量，在 "finally" 区域中对非 null 值进行无条件 Dispose 调用，比如，"x?.Dispose()"。如果对象显式释放在 try 区域内或释放所有权转让给另一个对象或方法，则在这样的操作之后立即将 "null" 分配给局部变量，以防止在 "finally" 中进行双重释放。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="new">Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</target>
+        <target state="translated">使用推荐的 Dispose 模式，确保“{0}”创建的对象在所有异常路径上释放。如果可能，请将创建包装在 "using" 语句或 "using" 声明中。否则，请使用 try-finally 模式，在 try 区域之前声明一个专用的局部变量，在 "finally" 区域中对非 null 值进行无条件 Dispose 调用，比如，"x?.Dispose()"。如果对象显式释放在 try 区域内或释放所有权转让给另一个对象或方法，则在这样的操作之后立即将 "null" 分配给局部变量，以防止在 "finally" 中进行双重释放。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -1095,17 +1095,17 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <target state="translated">在 "foreach" 循环中直接使用 "AsParallel()" 没有效果。无论如何，"foreach" 语句都会以串行方式循环访问集合。若要并行化 LINQ 操作，请在查询链中在其他 LINQ 运算符之前调用 "AsParallel()"。若要并行化循环本身，请改用 "Parallel.ForEach"。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
         <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
-        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <target state="translated">在 "foreach" 循环中直接使用 "AsParallel()" 没有效果，循环不会并行化</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
         <source>Do not use 'AsParallel' in 'foreach'</source>
-        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <target state="translated">不要在 "foreach" 中使用 "AsParallel"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
@@ -1250,17 +1250,17 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
         <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
-        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <target state="translated">当 Task.Delay 与 Task.WhenAny 一起用于实现超时时，即使在 WhenAny 完成后，Task.Delay 创建的计时器仍会继续运行，导致资源浪费。如果你的目标框架支持 Task.WaitAsync，请改用它，因为它具有内置的超时支持，不会让计时器持续运行。否则，请将 CancellationToken 传递给 Task.Delay，后者可在操作完成时取消。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
         <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
-        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <target state="translated">将 Task.WhenAny 与 Task.Delay 一起使用可能会导致计时器在操作完成后继续运行，从而浪费资源</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
         <source>Cancel Task.Delay after Task.WhenAny completes</source>
-        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <target state="translated">在 Task.WhenAny 完成后取消 Task.Delay</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -2375,22 +2375,22 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="PreferJsonElementParseDescription">
         <source>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</source>
-        <target state="new">JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</target>
+        <target state="translated">JsonDocument 实现了 IDisposable，需要正确释放。当只需要 RootElement 时，首选不需要释放的 JsonElement.Parse。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseFix">
         <source>Use 'JsonElement.Parse'</source>
-        <target state="new">Use 'JsonElement.Parse'</target>
+        <target state="translated">使用 "JsonElement.Parse"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseMessage">
         <source>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</source>
-        <target state="new">Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</target>
+        <target state="translated">为避免资源泄漏，请使用 "JsonElement.Parse" 而不是 "JsonDocument.Parse(...).RootElement"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJsonElementParseTitle">
         <source>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</source>
-        <target state="new">Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</target>
+        <target state="translated">首选 JsonElement.Parse 而不是 JsonDocument.Parse().RootElement</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
@@ -2415,42 +2415,42 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveCodeFixTitle">
         <source>Add quotes around the directive value</source>
-        <target state="new">Add quotes around the directive value</target>
+        <target state="translated">在指令值两边添加引号</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveDescription">
         <source>Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</source>
-        <target state="new">Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</target>
+        <target state="translated">在支持使用引号之前，基于文件的程序 "#:" 指令值中的空白会按字面意思处理。该形式仍然有效，但已弃用；请将包含空白的值用双引号括起来，以便明确地分析它们。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveMessage">
         <source>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</source>
-        <target state="new">Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</target>
+        <target state="translated">将“#:{0}”指令的值用引号括起来；不带引号的空白形式已弃用</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveTitle">
         <source>Quote whitespace in file-based program directive values</source>
-        <target state="new">Quote whitespace in file-based program directive values</target>
+        <target state="translated">在基于文件的程序指令值中将空白字符用引号括起来</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
         <source>Change to '{0}'</source>
-        <target state="new">Change to '{0}'</target>
+        <target state="translated">更改为“{0}”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanDescription">
         <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
-        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <target state="translated">对于不写入的参数，使用 "ReadOnlySpan&lt;T&gt;" 或 "ReadOnlyMemory&lt;T&gt;" 代替 "Span&lt;T&gt;" 或 "Memory&lt;T&gt;" 可防止错误、更清楚地传达意图，并可能提高性能。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">参数“{0}”可以声明为“{1}”而不是“{2}”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
-        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <target state="translated">使用 "ReadOnlySpan&lt;T&gt;" 或 "ReadOnlyMemory&lt;T&gt;" 代替 "Span&lt;T&gt;" 或 "Memory&lt;T&gt;"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2490,12 +2490,12 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</target>
+        <target state="translated">StringBuilder.Append 和 StringBuilder.Insert 为 System.String 之外的多种类型提供重载。 在可能情况下，尽量使用强类型重载而非使用 ToString()和基于字符串的重载。此外，首选 Append(char, int)而不是 Append(new string(char, int))。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Prefer strongly-typed StringBuilder overload</source>
-        <target state="new">Prefer strongly-typed StringBuilder overload</target>
+        <target state="translated">首选强类型 StringBuilder 重载</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -2505,7 +2505,7 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
         <source>Use StringBuilder.Append(char, int) overload</source>
-        <target state="new">Use StringBuilder.Append(char, int) overload</target>
+        <target state="translated">使用 StringBuilder.Append(char, int)重载</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">

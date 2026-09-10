@@ -2425,7 +2425,7 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveMessage">
         <source>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</source>
-        <target state="new">Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</target>
+        <target state="translated">Encapsular o valor da diretiva '#:{0}' entre aspas; o formulário de espaço em branco sem aspas foi preterido</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferQuotedFileBasedProgramDirectiveTitle">
@@ -2445,7 +2445,7 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
         <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <target state="translated">O parâmetro '{0}' pode ser declarado como '{1}' em vez de como '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
