@@ -169,24 +169,15 @@ public class EvaluationResultTests
     }
 
     [TestMethod]
-    [DataRow(false, "True", "test-public-key")]
-    [DataRow(true, "False", "")]
-    public void GetGlobalBuildProperties_OverridesReservedWatchProperties(
-        bool suppressBrowserRefresh,
-        string expectedBrowserToolsValue,
-        string expectedPublicKey)
+    public void GetGlobalBuildProperties_PreservesUserProperties()
     {
-        var environmentOptions = TestOptions.GetEnvironmentOptions() with
-        {
-            SuppressBrowserRefresh = suppressBrowserRefresh
-        };
+        // dotnet-watch no longer reserves any build property for the browser tools: the build owns
+        // the browser tools key pair and settings document, and dotnet-watch reads them back.
+        var properties = EvaluationResult.GetGlobalBuildProperties(["-p:CustomProperty=user-value"]);
 
-        var properties = EvaluationResult.GetGlobalBuildProperties(
-            ["-p:dotnetwatchbrowsertools=user-value", "-p:dotnetwatchbrowsertoolspublickey=user-key"],
-            environmentOptions,
-            browserToolsPublicKey: "test-public-key");
-
-        Assert.AreEqual(expectedBrowserToolsValue, properties["DotNetWatchBrowserTools"]);
-        Assert.AreEqual(expectedPublicKey, properties["DotNetWatchBrowserToolsPublicKey"]);
+        Assert.AreEqual("user-value", properties["CustomProperty"]);
+        Assert.AreEqual("true", properties["DesignTimeBuild"]);
+        Assert.IsFalse(properties.ContainsKey("DotNetWatchBrowserTools"));
+        Assert.IsFalse(properties.ContainsKey("DotNetWatchBrowserToolsPublicKey"));
     }
 }

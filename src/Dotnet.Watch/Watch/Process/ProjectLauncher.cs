@@ -49,7 +49,40 @@ internal sealed class ProjectLauncher(
         var agentLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
 
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
-        var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
+
+        HotReloadClients clients;
+        try
+        {
+            clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
+        }
+        catch (BrowserToolsBuildOutputsException e)
+        {
+            // The application pinned a key that dotnet-watch cannot match, so browser tools could
+            // never work for this launch. Fail explicitly instead of starting an application whose
+            // Hot Reload, refresh and diagnostics would silently do nothing.
+            clientLogger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
+            return null;
+        }
+
+        if (clients.BrowserRefreshServer != null &&
+            appModel is WebApplicationAppModel webAppModel &&
+            BrowserToolsBuildOutputs.TryGetFor(webAppModel.BrowserToolsProject, clientLogger) is { } browserToolsOutputs)
+        {
+            // Every build resets the settings document to the disabled state, so it has to be
+            // enabled again on each launch and relaunch. The application reads it once at startup,
+            // and the development static assets handler picks up the new content because the asset
+            // is not fingerprinted and is served with 'Cache-Control: no-store'.
+            try
+            {
+                browserToolsOutputs.EnableHotReload();
+            }
+            catch (BrowserToolsBuildOutputsException e)
+            {
+                clientLogger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
+                clients.Dispose();
+                return null;
+            }
+        }
 
         var processSpec = new ProcessSpec
         {

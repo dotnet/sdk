@@ -1,11 +1,33 @@
-// Activates the dotnet-watch browser tools client. Added to the app by the SDK during dotnet-watch builds.
+// Activates the dotnet-watch browser tools client. Added to the app by the SDK during development builds.
+//
+// The initializer is part of every development build, so it always asks the application for the
+// browser tools settings before it changes anything about the runtime configuration, and it only
+// activates when a dotnet-watch session enabled them. An ordinary 'dotnet run' therefore boots
+// exactly as it did before this initializer existed.
 
 // Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. True only when the target
 // framework's built-in WebAssembly Hot Reload agent has to be enabled explicitly.
 const useRuntimeHotReloadAgent = __RUNTIME_HOT_RELOAD_AGENT__;
 
-export function onRuntimeConfigLoaded(config) {
+// Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. Both are app hosted and sit
+// next to this initializer, so resolving them relative to import.meta.url keeps them correct under
+// any static web asset base path or fingerprinting scheme.
+const settingsPath = '__SETTINGS_PATH__';
+const configModulePath = '__CONFIG_MODULE__';
+
+// Blazor guarantees that every onRuntimeConfigLoaded callback runs before any onRuntimeReady
+// callback, so the result of the settings lookup is available to onRuntimeReady. Module scope is
+// enough here because both callbacks belong to this module; state that has to reach another
+// initializer travels through the runtime configuration object instead.
+let hotReloadEnabled = false;
+
+export async function onRuntimeConfigLoaded(config) {
     if (config.debugLevel === 0) {
+        return;
+    }
+
+    hotReloadEnabled = await isHotReloadEnabled();
+    if (!hotReloadEnabled) {
         return;
     }
 
@@ -24,12 +46,30 @@ export function onRuntimeConfigLoaded(config) {
 }
 
 export async function onRuntimeReady() {
+    if (!hotReloadEnabled) {
+        return;
+    }
+
     // Started once the runtime is up so that the Hot Reload apply API is available before updates are replayed.
-    // The configuration module is app hosted and sits next to this initializer, so resolving it relative to
-    // import.meta.url keeps it correct under any static web asset base path or fingerprinting scheme.
     try {
-        await import(new URL('./Microsoft.NET.Sdk.WebAssembly.DotNetWatch.BrowserTools.Config.js', import.meta.url).href);
+        await import(new URL(configModulePath, import.meta.url).href);
     } catch (error) {
         console.debug('Unable to load the dotnet-watch browser tools.', error);
+    }
+}
+
+async function isHotReloadEnabled() {
+    try {
+        // The document is rewritten in place by dotnet-watch, so it must never be read from a cache.
+        const response = await fetch(new URL(settingsPath, import.meta.url).href, { cache: 'no-store' });
+        if (!response.ok) {
+            return false;
+        }
+
+        const settings = await response.json();
+        return settings?.hotReload === true;
+    } catch (error) {
+        console.debug('Unable to read the dotnet-watch browser tools settings.', error);
+        return false;
     }
 }

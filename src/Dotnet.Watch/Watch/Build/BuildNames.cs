@@ -22,8 +22,13 @@ internal static class PropertyNames
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
     public const string NonExistentFile = nameof(NonExistentFile);
-    public const string DotNetWatchBrowserTools = nameof(DotNetWatchBrowserTools);
-    public const string DotNetWatchBrowserToolsPublicKey = nameof(DotNetWatchBrowserToolsPublicKey);
+    // Evaluated properties that mirror the condition guarding the target which produces the browser
+    // tools build outputs. They are read, never set: the build owns the browser tools key pair and
+    // dotnet-watch discovers its outputs. See BrowserToolsBuildOutputs.
+    public const string DotNetWatchBrowserToolsEnabled = nameof(DotNetWatchBrowserToolsEnabled);
+    public const string DotNetWatchBrowserToolsAssetPrefix = nameof(DotNetWatchBrowserToolsAssetPrefix);
+    public const string StaticWebAssetsEnabled = nameof(StaticWebAssetsEnabled);
+    public const string JSModulesEnabled = nameof(JSModulesEnabled);
     public const string StartupHookSupport = nameof(StartupHookSupport);
     public const string MetadataUpdaterSupport = nameof(MetadataUpdaterSupport);
     public const string Optimize = nameof(Optimize);

@@ -14,6 +14,83 @@ const AgentMessageSeverity_Error = 2;
 // Bounds how long the replay waits for the Hot Reload agent. Only spent when there is something to
 // replay and the apply API is still missing, which is the case that would otherwise lose updates.
 const hotReloadAgentReadyTimeoutMs = 10000;
+const browserToolsStyles = `
+  :host {
+    z-index: 1000000;
+    position: fixed;
+  }
+
+  :host(#dotnet-compile-error) {
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: black;
+    overflow: scroll;
+  }
+
+  .dotnet-compile-error-item {
+    border: 2px solid red;
+    padding: 8px;
+    background-color: #faa;
+  }
+
+  .dotnet-compile-error-message {
+    font-weight: bold;
+  }
+
+  :host(#dotnet-hotreload-toast) {
+    width: 48px;
+    height: 48px;
+    top: 5px;
+    left: 5px;
+  }
+
+  svg {
+    filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.4));
+  }
+
+  #hotreloaded-ellipse1 {
+    animation: hotreloaded-ellipse1_c_o 1800ms linear 1 normal forwards;
+  }
+
+  #hotreloaded-path1 {
+    animation-name: hotreloaded-path1__m, hotreloaded-path1_c_o;
+    animation-duration: 1800ms;
+    animation-delay: 100ms;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+    animation-direction: normal;
+    animation-iteration-count: 1;
+  }
+
+  @keyframes hotreloaded-ellipse1_c_o {
+    0% { opacity: 0; }
+    16.666667% { opacity: 1; }
+    72.222222% { opacity: 1; }
+    90% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes hotreloaded-path1__m {
+    0% { d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242'); }
+    16.666667% { d: path('M126.151214,288.396852L126.151214,288.396852L126.151214,288.396852'); }
+    22.222222% {
+      d: path('M126.151214,288.396852L196.625037,350.661591L196.625037,350.661591');
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+    }
+    33.333333% { d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242'); }
+    100% { d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242'); }
+  }
+
+  @keyframes hotreloaded-path1_c_o {
+    0% { opacity: 0; }
+    16.666667% { opacity: 0; }
+    22.222222% { opacity: 1; }
+    72.222222% { opacity: 1; }
+    90% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+`;
+let browserToolsStylesheet;
 
 /**
  * Connects to the dotnet-watch browser tools provider.
@@ -330,14 +407,13 @@ export async function startBrowserTools(config) {
       return;
     }
 
-    const el = document.body.appendChild(document.createElement('div'));
-    el.id = 'dotnet-compile-error';
-    el.setAttribute('style', 'z-index:1000000; position:fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); color:black; overflow: scroll;');
+    const { host: el, root } = createBrowserToolsHost('dotnet-compile-error');
+    document.body.appendChild(el);
     diagnostics.forEach(error => {
-      const item = el.appendChild(document.createElement('div'));
-      item.setAttribute('style', 'border: 2px solid red; padding: 8px; background-color: #faa;')
+      const item = root.appendChild(document.createElement('div'));
+      item.className = 'dotnet-compile-error-item';
       const message = item.appendChild(document.createElement('div'));
-      message.setAttribute('style', 'font-weight: bold');
+      message.className = 'dotnet-compile-error-message';
       message.textContent = error.Message;
       item.appendChild(document.createElement('div')).textContent = error;
     });
@@ -352,13 +428,52 @@ export async function startBrowserTools(config) {
     {
         return;
     }
-    const el = document.createElement('div');
-    el.id = 'dotnet-hotreload-toast';
-    el.innerHTML = "<svg style=\"filter: drop-shadow(0px 2px 1px rgb(0 0 0 / 0.4));\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 500 500\"><style><![CDATA[#hotreloaded-ellipse1 {animation: hotreloaded-ellipse1_c_o 1800ms linear 1 normal forwards}@keyframes hotreloaded-ellipse1_c_o { 0% {opacity: 0} 16.666667% {opacity: 1} 72.222222% {opacity: 1} 90% {opacity: 0} 100% {opacity: 0}} #hotreloaded-path1 {animation-name: hotreloaded-path1__m, hotreloaded-path1_c_o;animation-duration: 1800ms;animation-delay:100ms;animation-fill-mode: forwards;animation-timing-function: linear;animation-direction: normal;animation-iteration-count: 1;}@keyframes hotreloaded-path1__m { 0% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')} 16.666667% {d: path('M126.151214,288.396852L126.151214,288.396852L126.151214,288.396852')} 22.222222% {d: path('M126.151214,288.396852L196.625037,350.661591L196.625037,350.661591');animation-timing-function: cubic-bezier(0.42,0,0.58,1)} 33.333333% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')} 100% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')}}@keyframes hotreloaded-path1_c_o { 0% {opacity: 0} 16.666667% {opacity: 0} 22.222222% {opacity: 1} 72.222222% {opacity: 1} 90% {opacity: 0} 100% {opacity: 0}}]]></style><ellipse id=\"hotreloaded-ellipse1\" rx=\"212.808853\" ry=\"205.404598\" transform=\"matrix(0.982102 0 0 1.017504 251 238)\" opacity=\"0\" fill=\"rgb(120,120,120)\"/><path id=\"hotreloaded-path1\" d=\"M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242\" transform=\"matrix(1 0 0 1 27.527732 -26.589916)\" opacity=\"0\" fill=\"none\" stroke=\"rgb(255,255,255)\" stroke-width=\"40\" stroke-linecap=\"round\"/></svg>";
-    el.setAttribute('style', 'z-index: 1000000; width: 48px; height: 48px; position:fixed; top:5px; left: 5px');
+    const { host: el, root } = createBrowserToolsHost('dotnet-hotreload-toast');
+    root.appendChild(createHotReloadToastIcon());
     document.body.appendChild(el);
     window[hotReloadActiveKey] = false;
     setTimeout(() => el.remove(), 2000);
+  }
+
+  function createHotReloadToastIcon() {
+    const svgNamespace = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNamespace, 'svg');
+    svg.setAttribute('viewBox', '0 0 500 500');
+
+    const ellipse = svg.appendChild(document.createElementNS(svgNamespace, 'ellipse'));
+    ellipse.id = 'hotreloaded-ellipse1';
+    ellipse.setAttribute('rx', '212.808853');
+    ellipse.setAttribute('ry', '205.404598');
+    ellipse.setAttribute('transform', 'matrix(0.982102 0 0 1.017504 251 238)');
+    ellipse.setAttribute('opacity', '0');
+    ellipse.setAttribute('fill', 'rgb(120,120,120)');
+
+    const path = svg.appendChild(document.createElementNS(svgNamespace, 'path'));
+    path.id = 'hotreloaded-path1';
+    path.setAttribute('d', 'M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242');
+    path.setAttribute('transform', 'matrix(1 0 0 1 27.527732 -26.589916)');
+    path.setAttribute('opacity', '0');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'rgb(255,255,255)');
+    path.setAttribute('stroke-width', '40');
+    path.setAttribute('stroke-linecap', 'round');
+    return svg;
+  }
+
+  function createBrowserToolsHost(id) {
+    const host = document.createElement('div');
+    host.id = id;
+    const root = host.attachShadow({ mode: 'open' });
+    if ('adoptedStyleSheets' in root && typeof CSSStyleSheet === 'function') {
+      if (!browserToolsStylesheet) {
+        browserToolsStylesheet = new CSSStyleSheet();
+        browserToolsStylesheet.replaceSync(browserToolsStyles);
+      }
+
+      root.adoptedStyleSheets = [browserToolsStylesheet];
+    }
+
+    return { host, root };
   }
 
   function refreshBrowser() {

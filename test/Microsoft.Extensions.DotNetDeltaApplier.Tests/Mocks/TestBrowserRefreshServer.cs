@@ -12,7 +12,8 @@ internal sealed class TestBrowserRefreshServer()
     : AbstractBrowserRefreshServer(configureLaunchEnvironment: static (_, _) => { }, new SharedSecretProvider(), new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
 {
     /// <summary>
-    /// The invocation scoped key pair. Tests use its public half to build encrypted sub-protocols.
+    /// The key pair the provider is keyed with. Tests use its public half to build encrypted
+    /// sub-protocols. In production it comes from the project's build output.
     /// </summary>
     public SharedSecretProvider Key => SessionKey;
 

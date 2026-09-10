@@ -67,9 +67,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var build = CreateBuildCommand(ProjectDirectory);
 
-            // The browser tools assets are only produced when dotnet-watch supplies the public half of
-            // the session key it created for the invocation, so both properties are required.
-            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true", "/p:DotNetWatchBrowserToolsPublicKey=TestPublicKey").Should().Pass();
+            // Browser tools assets are part of every development build: the build owns the key pair
+            // and the settings document, and dotnet-watch reads them back and flips the settings.
+            ExecuteCommand(build).Should().Pass();
 
             var initializers = GetLibraryInitializers(build, targetFramework);
 
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
 
             var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build).Should().Pass();
+            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
 
             GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*");
         }

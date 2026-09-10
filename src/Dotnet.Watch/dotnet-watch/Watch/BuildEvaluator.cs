@@ -49,14 +49,13 @@ internal class BuildEvaluator
             MainProjectOptions.Representation.PhysicalPath,
             MainProjectOptions.TargetFramework,
             _context.BuildArguments,
-            _context.BrowserRefreshServerFactory.PublicKey,
             _context.ProcessRunner,
             _context.BuildLogger,
             _context.Options,
             _context.EnvironmentOptions);
     }
 
-    public IReadOnlyList<string> GetProcessArguments(int iteration)
+    public IReadOnlyList<string> GetProcessArguments(int iteration, bool skipBuild = false)
     {
         var noRestore = false;
         if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
@@ -79,6 +78,11 @@ internal class BuildEvaluator
             MainProjectOptions.Command
         };
 
+        if (skipBuild)
+        {
+            arguments.Add("--no-build");
+        }
+
         if (noRestore)
         {
             arguments.Add("--no-restore");
@@ -98,14 +102,45 @@ internal class BuildEvaluator
 
         arguments.AddRange(MainProjectOptions.CommandArguments);
 
-        if (MainProjectOptions.Command is "build" or "clean" or "msbuild" or "pack" or "publish" or "restore" or "run" or "test")
+        return arguments;
+    }
+
+    public async ValueTask<bool> BuildProjectAsync(CancellationToken cancellationToken)
+    {
+        Debug.Assert(MainProjectOptions.Representation.PhysicalPath != null);
+
+        var projectPath = MainProjectOptions.Representation.PhysicalPath;
+        var arguments = new List<string>
         {
-            var applicationArgumentsSeparator = arguments.IndexOf("--");
-            var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : arguments.Count;
-            arguments.InsertRange(reservedPropertiesIndex, ReservedBuildProperties.GetBrowserToolsArguments(_context.EnvironmentOptions, _context.BrowserRefreshServerFactory.PublicKey));
+            "build",
+            projectPath,
+        };
+
+        arguments.AddRange(_context.BuildArguments);
+
+        if (MainProjectOptions.TargetFramework != null)
+        {
+            arguments.Add("--framework");
+            arguments.Add(MainProjectOptions.TargetFramework);
         }
 
-        return arguments;
+        if (MainProjectOptions.Device != null)
+        {
+            arguments.Add($"-p:Device={MainProjectOptions.Device}");
+        }
+
+        var processSpec = new ProcessSpec
+        {
+            Executable = _context.EnvironmentOptions.GetMuxerPath(),
+            WorkingDirectory = Path.GetDirectoryName(projectPath),
+            IsUserApplication = false,
+            Arguments = arguments,
+        };
+
+        processSpec.EnvironmentVariables.Add(EnvironmentVariables.Names.DotnetWatch, "1");
+
+        _context.BuildLogger.Log(MessageDescriptor.Building, projectPath);
+        return await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken) == 0;
     }
 
     public async ValueTask<MSBuildFileSetFactory.EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
