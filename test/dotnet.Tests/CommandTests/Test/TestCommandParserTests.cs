@@ -87,15 +87,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
         }
 
-        [Fact]
-        public void MTPCommandDoesNotDuplicateNoBannerOption()
+        [Theory]
+        [InlineData("--no-banner")]
+        [InlineData("--no-banner=true")]
+        [InlineData("--no-banner=false")]
+        public void MTPCommandDoesNotDuplicateNoBannerOption(string noBannerOption)
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
-            var parseResult = command.Parse(["--nologo", "--no-banner"]);
+            var parseResult = command.Parse(["--nologo", noBannerOption]);
 
             var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
 
-            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.TestApplicationArguments
+                .Where(arg => arg.StartsWith("--no-banner", StringComparison.Ordinal))
+                .Should().ContainSingle().Which.Should().Be(noBannerOption);
         }
 
         [Fact]

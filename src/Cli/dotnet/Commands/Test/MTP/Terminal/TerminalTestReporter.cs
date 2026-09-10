@@ -52,7 +52,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private bool _wasCancelled;
 
-    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+    public bool HasHandshakeFailure => Volatile.Read(ref _handshakeFailuresCount) > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
 
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
