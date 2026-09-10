@@ -25,8 +25,14 @@ test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
 WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the browser tools
 client must be an application static asset: the browser authenticates the watch provider
 with a build-pinned public key, so the provider must not be the source of the executable
-code. Its assets are build only and must never reach publish output. See
-[`src/Dotnet.Watch/AGENTS.md`](../Dotnet.Watch/AGENTS.md).
+code, nor of the key. This target therefore also generates the keypair (via
+`EnsureDotNetWatchBrowserToolsKey`) into `obj/<config>/<tfm>/dotnet-watch/`, and a
+non-fingerprinted, `no-store`, compression-excluded settings asset at
+`_framework/browser-tools/hot-reload-settings.json` that every non-design-time build resets
+to `{ "hotReload": false }`. Hosted WebAssembly's client owns these outputs; its server
+consumes the referenced assets rather than generating a competing route and keypair. The
+assets are build only and must never reach publish output.
+See [`src/Dotnet.Watch/AGENTS.md`](../Dotnet.Watch/AGENTS.md).
 
 ## Architecture
 

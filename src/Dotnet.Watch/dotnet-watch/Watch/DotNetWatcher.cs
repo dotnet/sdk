@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -48,12 +49,35 @@ internal static class DotNetWatcher
                 staticFileHandler = null;
             }
 
+            using var fileSetWatcher = new FileWatcher(context.Logger, context.EnvironmentOptions);
+            fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
+
+            var webAppModel =
+                context.MainProjectOptions?.Command == "run" &&
+                projectRootNode != null &&
+                HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel inferredWebAppModel
+                    ? inferredWebAppModel
+                    : null;
+            var browserToolsOutputs = webAppModel != null
+                ? BrowserToolsBuildOutputs.TryGetFor(webAppModel.BrowserToolsProject, context.Logger)
+                : null;
+
+            if (browserToolsOutputs != null &&
+                !await buildEvaluator.BuildProjectAsync(shutdownCancellationToken))
+            {
+                changedFile = await fileSetWatcher.WaitForFileChangeAsync(
+                    evaluationResult.Files,
+                    startedWatching: () => context.Logger.Log(MessageDescriptor.FixBuildError),
+                    shutdownCancellationToken);
+                continue;
+            }
+
             var processSpec = new ProcessSpec
             {
                 Executable = context.EnvironmentOptions.GetMuxerPath(),
                 WorkingDirectory = context.EnvironmentOptions.WorkingDirectory,
                 IsUserApplication = true,
-                Arguments = buildEvaluator.GetProcessArguments(iteration),
+                Arguments = buildEvaluator.GetProcessArguments(iteration, skipBuild: browserToolsOutputs != null),
                 EnvironmentVariables =
                 {
                     [EnvironmentVariables.Names.DotnetWatch] = "1",
@@ -61,11 +85,38 @@ internal static class DotNetWatcher
                 }
             };
 
-            var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
-                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
-                : null;
+            BrowserRefreshServer? browserRefreshServer;
+            try
+            {
+                browserRefreshServer = browserToolsOutputs != null &&
+                    projectRootNode != null &&
+                    webAppModel != null
+                    ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
+                    : null;
+            }
+            catch (BrowserToolsBuildOutputsException e)
+            {
+                // The application pinned a key that dotnet-watch cannot match, so browser tools
+                // could never work. Fail explicitly rather than run an application whose refresh
+                // and diagnostics would silently do nothing.
+                context.Logger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
+                return;
+            }
 
             browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
+
+            if (browserRefreshServer != null && browserToolsOutputs != null)
+            {
+                try
+                {
+                    browserToolsOutputs.EnableHotReload();
+                }
+                catch (BrowserToolsBuildOutputsException e)
+                {
+                    context.Logger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
+                    return;
+                }
+            }
 
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)
@@ -91,9 +142,6 @@ internal static class DotNetWatcher
 
             using var currentRunCancellationSource = new CancellationTokenSource();
             using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
-            using var fileSetWatcher = new FileWatcher(context.Logger, context.EnvironmentOptions);
-
-            fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
             var processTask = context.ProcessRunner.RunAsync(processSpec, context.Logger, launchResult: null, combinedCancellationSource.Token);
 
