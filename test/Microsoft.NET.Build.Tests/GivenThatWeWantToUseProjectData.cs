@@ -8,14 +8,16 @@ public class GivenThatWeWantToUseProjectData : SdkTest
 {
     [TestMethod]
     [CoreMSBuildOnly]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void It_loads_the_bundled_tasks_and_only_writes_project_data_when_enabled(bool enabled)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void It_loads_the_bundled_tasks_and_only_writes_project_data_when_enabled(bool enabled, bool multiTarget)
     {
         var testProject = new TestProject
         {
             Name = "ProjectDataTest",
-            TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            TargetFrameworks = multiTarget ? $"{ToolsetInfo.CurrentTargetFramework};netstandard2.0" : ToolsetInfo.CurrentTargetFramework
         };
         testProject.AdditionalProperties["EnableProjectDataInProjectFolder"] = "true";
         if (enabled)
@@ -23,20 +25,7 @@ public class GivenThatWeWantToUseProjectData : SdkTest
             testProject.AdditionalProperties["EnableProjectDataOnBuild"] = "true";
         }
 
-        var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: enabled.ToString())
-            .WithProjectChanges(project =>
-            {
-                project.Root!.Attribute("Sdk")!.Remove();
-                project.Root.AddFirst(new XElement("Import",
-                    new XAttribute("Project", "Sdk.props"),
-                    new XAttribute("Sdk", "Microsoft.NET.Sdk")));
-                project.Root.Add(
-                    new XElement("Import",
-                        new XAttribute("Project", "Sdk.targets"),
-                        new XAttribute("Sdk", "Microsoft.NET.Sdk")),
-                    new XElement("Import",
-                        new XAttribute("Project", "$(MSBuildSDKsPath)/../ProjectData/build/Microsoft.NET.ProjectData.targets")));
-            });
+        var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{enabled}_{multiTarget}");
 
         new BuildCommand(testAsset).Execute().Should().Pass();
 

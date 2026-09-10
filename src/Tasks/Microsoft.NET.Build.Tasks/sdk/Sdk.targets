@@ -65,4 +65,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets"
     Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets')" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\ProjectData\build\Microsoft.NET.ProjectData.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\ProjectData\build\Microsoft.NET.ProjectData.targets')" />
 </Project>
