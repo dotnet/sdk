@@ -194,9 +194,14 @@ public class TelemetryCommonPropertiesTests : SdkTest
     }
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DynamicData(nameof(CITelemetryTestCases))]
     public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
     {
+        var originalValues = envVars.ToDictionary(
+            pair => pair.Key,
+            pair => Environment.GetEnvironmentVariable(pair.Key));
+
         try
         {
             foreach (var (key, value) in envVars)
@@ -207,9 +212,9 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
         finally
         {
-            foreach (var (key, value) in envVars)
+            foreach (var (key, value) in originalValues)
             {
-                Environment.SetEnvironmentVariable(key, null);
+                Environment.SetEnvironmentVariable(key, value);
             }
         }
     }
@@ -242,6 +247,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
     ];
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {

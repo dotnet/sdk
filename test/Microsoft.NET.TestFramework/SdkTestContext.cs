@@ -170,20 +170,36 @@ namespace Microsoft.NET.TestFramework
         }
 
         private static SdkTestContext? _current;
+        private static readonly object s_initializationLock = new();
+
+        [ThreadStatic]
+        private static SdkTestContext? t_initializing;
 
         public static SdkTestContext Current
         {
             get
             {
-                if (_current == null)
+                SdkTestContext? current = Volatile.Read(ref _current) ?? t_initializing;
+                if (current != null)
                 {
-                    Initialize();
+                    return current;
                 }
-                return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
+
+                lock (s_initializationLock)
+                {
+                    if (_current == null)
+                    {
+                        InitializeCore();
+                    }
+                    return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
+                }
             }
             set
             {
-                _current = value;
+                lock (s_initializationLock)
+                {
+                    Volatile.Write(ref _current, value);
+                }
             }
         }
 
@@ -223,6 +239,14 @@ namespace Microsoft.NET.TestFramework
 
 
         public static void Initialize()
+        {
+            lock (s_initializationLock)
+            {
+                InitializeCore();
+            }
+        }
+
+        private static void InitializeCore()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
@@ -321,23 +345,30 @@ namespace Microsoft.NET.TestFramework
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 
-            //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
-            //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
-            Current = testContext;
+            // Recursive access on the initializing thread needs the context before the process-wide
+            // environment and hooks are ready. Other threads wait for complete initialization.
+            t_initializing = testContext;
+            try
+            {
+                Environment.SetEnvironmentVariable(
+                    Constants.MSBUILD_EXE_PATH,
+                    Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
-            //  Set up test hooks for in-process tests
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
-
-            Environment.SetEnvironmentVariable(
-                "MSBuildSDKsPath",
-                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
+                Environment.SetEnvironmentVariable(
+                    "MSBuildSDKsPath",
+                    Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
 #if NETCOREAPP
-            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
-                testContext.ToolsetUnderTest.SdkFolderUnderTest;
+                MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+                    testContext.ToolsetUnderTest.SdkFolderUnderTest;
 #endif
+
+                Volatile.Write(ref _current, testContext);
+            }
+            finally
+            {
+                t_initializing = null;
+            }
         }
 
         public static string? GetRepoRoot()

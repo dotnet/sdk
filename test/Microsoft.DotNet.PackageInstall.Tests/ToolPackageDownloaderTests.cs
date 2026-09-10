@@ -34,7 +34,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void Dispose() => Environment.SetEnvironmentVariable(_PATH_VAR_NAME, _originalPath);
     }
 
+    // The class fixture mutates PATH, and the shared tool builder mutates the NuGet global packages folder.
     [TestClass]
+    [DoNotParallelize]
     public class ToolPackageDownloaderTests : SdkTest
     {
         private static DotnetEnvironmentTestFixture _envFixture;
