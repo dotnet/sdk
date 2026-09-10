@@ -294,12 +294,12 @@
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
         <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
+        <target state="translated">Die Projekt- oder Projektmappe- oder C#-Datei (dateibasiertes Programm), auf die zugegriffen werden soll. Wenn keine Datei angegeben ist, durchsucht der Befehl das aktuelle Verzeichnis nach einem Projekt oder einer Projektmappe.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentName">
         <source>PROJECT | SOLUTION | FILE</source>
-        <target state="new">PROJECT | SOLUTION | FILE</target>
+        <target state="translated">PROJEKT | PROJEKTMAPPE | DATEI</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">

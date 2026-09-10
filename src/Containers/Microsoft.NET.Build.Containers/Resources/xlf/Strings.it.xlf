@@ -211,7 +211,7 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">l'area di autenticazione di connessione '{0}' viene risolta in '{1}' che è un indirizzo letterale privato, loopback, locale rispetto al collegamento o IP non specificato</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="InvalidRegistryAuthResponse">
         <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
-        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <target state="translated">CONTAINER1019: il '{0}' del Registro di sistema ha restituito una risposta di autenticazione non valida: {1}</target>
         <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="Registry_ManifestExists">
         <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
-        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <target state="translated">Il manifesto '{0}' esiste già nel repository '{1}'. I caricamenti di livello e configurazione verranno ignorati.</target>
         <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">

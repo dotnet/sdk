@@ -294,12 +294,12 @@
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
         <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
+        <target state="translated">Le fichier projet ou solution ou fichier C# (programme basé sur un fichier) à utiliser. Si aucun fichier n'est spécifié, la commande recherche un projet ou une solution dans le répertoire actuel.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentName">
         <source>PROJECT | SOLUTION | FILE</source>
-        <target state="new">PROJECT | SOLUTION | FILE</target>
+        <target state="translated">PROJECT | SOLUTION | FICHIER</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
@@ -334,7 +334,7 @@
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app">
         <source>The file '{0}' does not appear to be a valid project, solution file, or file-based app.</source>
-        <target state="new">The file '{0}' does not appear to be a valid project, solution file, or file-based app.</target>
+        <target state="translated">Le fichier '{0}' ne semble pas être un projet, un fichier solution ou une application basée sur un fichier valide.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
