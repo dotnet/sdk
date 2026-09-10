@@ -140,7 +140,9 @@ internal sealed class CommandLineOptions
             buildArguments.Add(binLogToken);
         }
 
-        var logLevel = parseResult.GetValue(definition.VerboseOption)
+        var logLevel = parseResult.GetValue(definition.TraceOption)
+            ? LogLevel.Trace
+            : parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
             : parseResult.GetValue(definition.QuietOption)
             ? LogLevel.Warning
