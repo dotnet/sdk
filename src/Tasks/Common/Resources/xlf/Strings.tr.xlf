@@ -883,7 +883,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RunCommandRequiresWindowsForNetFramework">
         <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
-        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <target state="translated">NETSDK1243: Project '{0}', yalnızca Windows üzerinde çalıştırılabilen .NET Framework hedefliyor. Projeyi Windows üzerinde çalıştırın, TargetFramework desteklenen bir .NET TFM (örneğin, net{1}) olarak değiştirin veya RunCommand özelliğini açıkça ayarlayın. Daha fazla bilgi için bkz. https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
         <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
@@ -928,7 +928,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkVersionHasVulnerabilities">
         <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1238: Geçerli .NET SDK ({0}) bilinen güvenlik açıklarına ({1}) sahip.{2} Bkz. https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionIsEol">

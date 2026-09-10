@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../CliCommandStrings.resx">
     <body>
@@ -79,17 +79,17 @@
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
-        <target state="new">Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</target>
+        <target state="translated">'{0}' 있는 아티팩트 사후 처리에 실패했습니다. {1} 원본 아티팩트가 보고됩니다.</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
-        <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
+        <target state="translated">'{0}'을(를) 사용한 아티팩트 후처리가 코드 {1}(으)로 종료되었습니다. 병합되지 않은 아티팩트는 개별적으로 보고됩니다.</target>
         <note>{0} is the test application path. {1} is the process exit code.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingStarted">
         <source>Merging compatible artifacts produced by different test applications...</source>
-        <target state="new">Merging compatible artifacts produced by different test applications...</target>
+        <target state="translated">다른 테스트 응용 프로그램에서 생성된 호환 가능한 아티팩트 병합...</target>
         <note />
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
@@ -109,112 +109,112 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">영향을 받는 테스트 선택은 실험적 기능입니다. '{0}' 환경 변수를 '1'로 설정하여 사용하도록 설정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">'--collect-test-map' 및 '--affected-tests' 옵션은 함께 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsResponseFilesMustBeConsistent">
         <source>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</source>
-        <target state="new">Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</target>
+        <target state="translated">전달된 응답 파일은 모든 테스트 애플리케이션에 대해 동일한 영향을 받는 테스트 작업을 선택해야 합니다. 대신 'dotnet test'에서 직접 '--collect-test-map' 또는 '--affected-tests'를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">'--collect-test-map' 옵션은 '--minimum-expected-tests'와 결합할 수 없습니다. 컬렉션 일괄 처리는 부모 프로세스에 테스트 합계를 보고하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">'--collect-test-map' 옵션은 '--max-parallel-test-modules'와 결합할 수 없습니다. 테스트 맵은 한 번에 하나의 모듈로 수집됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
-        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <target state="translated">'--device' 및 '--list-devices' 옵션은 프로젝트가 필요하며 '--test-modules'와 함께 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndAffectedTestsMutuallyExclusive">
         <source>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</source>
-        <target state="new">The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</target>
+        <target state="translated">'--list-devices' 옵션은 '--collect-test-map' 또는 '--affected-tests'와 결합할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
         <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
-        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <target state="translated">'--list-devices' 및 '--list-tests' 옵션은 함께 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">테스트 프로젝트를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">애플리케이션 실행에 사용할 장치 식별자입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">장치</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">애플리케이션을 실행하는 데 사용할 수 있는 장치를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
         <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
-        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <target state="translated">동일한 파이프 연결에 있는 Microsoft.Testing.Platform에서 두 개 이상의 핸드셰이크 메시지를 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
         <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
-        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <target state="translated">Microsoft.Testing.Platform의 핸드셰이크 메시지가 지원되는 프로토콜 버전을 제공하지 않았습니다. SDK는 '{0}'을(를) 지원합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingRequiredMessageProperty">
         <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
-        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <target state="translated">'{1}' 형식의 메시지에 '{0}' 필수 속성이 없거나 비어 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlakyAttempts">
         <source>{0} attempts</source>
-        <target state="new">{0} attempts</target>
+        <target state="translated">{0} 시도</target>
         <note>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</note>
       </trans-unit>
       <trans-unit id="FlakyLowercase">
         <source>flaky: {0} (passed after retry)</source>
-        <target state="new">flaky: {0} (passed after retry)</target>
+        <target state="translated">불안정: {0}(다시 시도 후 통과)</target>
         <note>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</note>
       </trans-unit>
       <trans-unit id="FlakyTests">
         <source>Flaky tests:</source>
-        <target state="new">Flaky tests:</target>
+        <target state="translated">불안정한 테스트:</target>
         <note>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</note>
       </trans-unit>
       <trans-unit id="FlakyTransition">
         <source>failed -&gt; passed</source>
-        <target state="new">failed -&gt; passed</target>
+        <target state="translated">실패 -&gt; 통과</target>
         <note>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</note>
       </trans-unit>
       <trans-unit id="HandshakeFailuresHeader">
         <source>Handshake failures:</source>
-        <target state="new">Handshake failures:</target>
+        <target state="translated">핸드셰이크 실패:</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
-        <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
+        <target state="translated">테스트 호스트에서 실행 모드가 '{0}' 것으로 보고했지만 예상된 '{1}''dotnet test'. 이는 일반적으로 '--help', '-?' 또는 '--list-tests'와 같은 옵션이 비 CLI 채널(예: 'TestingPlatformCommandLineArguments' 또는 'RunArguments' MSBuild 속성 또는 'launchSettings.json' commandLineArgs)을 통해 테스트 호스트에 삽입된 경우에 발생합니다. 대신 이러한 옵션을 'dotnet test'에 직접 전달하세요.</target>
         <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeHostType">
         <source>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</source>
-        <target state="new">The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</target>
+        <target state="translated">테스트 호스트에서 호스트 유형 '{0}'를 보고했지만 예상된 '{1}' 'dotnet test'.</target>
         <note>{Locked="dotnet test"}</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
@@ -680,7 +680,7 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">MSBuild를 사용하여 프로젝트 가져오기 속성이 종료 코드에서 제대로 실행되지 않았습니다. {0}.</target>
+        <target state="translated">종료 코드 {0}(으)로 인해 빌드하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -775,7 +775,7 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
-        <target state="needs-review-translation">옵션 아키텍처, 구성, 프레임워크, 운영 체제 및 런타임은 '--test-modules' 옵션과 함께 사용할 수 없습니다.</target>
+        <target state="translated">옵션 아키텍처, 구성, 프레임워크, 운영 체제, 런타임 및 현재 런타임 사용은 '--test-modules' 옵션과 함께 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -1935,7 +1935,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
+        <target state="translated">워크로드가 설치되어 있지 않고 복구할 작업이 없습니다. `dotnet workload search`을 실행하여 설치할 워크로드를 찾습니다.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -2327,7 +2327,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PressCtrlCAgainToForceExit">
         <source>Press Ctrl+C again to force exit.</source>
-        <target state="new">Press Ctrl+C again to force exit.</target>
+        <target state="translated">강제 종료하려면 Ctrl+C를 한 번 더 누르세요.</target>
         <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -2503,7 +2503,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertDuplicateRefFolderName">
         <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
-        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <target state="translated">참조된 여러 파일이 동일한 디렉터리 '{0}'으(로) 변환됩니다.</target>
         <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -2695,7 +2695,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">도구 '{0}'의 최신 버전을 사용할 수 있습니다(버전 '{1}'). 매니페스트 파일을 업데이트해 보세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
@@ -2710,12 +2710,12 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RetriedColon">
         <source>retried:</source>
-        <target state="new">retried:</target>
+        <target state="translated">재시도됨:</target>
         <note>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</note>
       </trans-unit>
       <trans-unit id="RetriedTestsAndRuns">
         <source>{0} test(s), {1} extra run(s)</source>
-        <target state="new">{0} test(s), {1} extra run(s)</target>
+        <target state="translated">{0} 테스트, {1} 추가 실행</target>
         <note>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</note>
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2750,12 +2750,12 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunAsyncCalledMoreThanOnce">
         <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
-        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <target state="translated">'TestApplication.RunAsync'는 이 인스턴스에서 이미 호출되었으며 두 번 이상 호출할 수 없습니다.</target>
         <note>{Locked="TestApplication.RunAsync"}</note>
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">사용 가능한 장치:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -2770,7 +2770,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">장치에 배포하지 못했습니다. 배포 오류를 수정하고 다시 실행하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -2817,15 +2817,15 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">프로젝트를 실행할 수 없습니다.
-실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
-실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
-현재 {1}은(는) '{2}'입니다.</target>
+        <target state="translated">프로젝트 '{0}'을(를) 진행할 수 없습니다.
+실행 가능한 프로젝트 형식이 있는지 확인하세요.
+실행 가능한 프로젝트는 실행 가능한 TFM(예: net{1})을(를) 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
+현재 OutputType은(는) '{2}'입니다.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">여러 장치를 사용할 수 있어 이 프로젝트를 실행할 수 없습니다. 다음 값 중 하나를 사용해 {0} 인수를 전달하여 사용할 장치를 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2837,7 +2837,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">위아래로 이동하여 더 많은 장치 보기</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -2847,7 +2847,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">이 프로젝트에 사용할 수 있는 장치가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2862,7 +2862,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">실행할 장치 선택:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -2877,12 +2877,12 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">경고: '{0}'은(는) 파일 기반 앱처럼 보이지만 파일을 찾을 수 없으며 프로젝트 '{1}'에 인수로 전달되었습니다. 응용 프로그램 인수로 전달하려면 'dotnet run -- {0}'을(를) 사용해 이 경고를 표시하지 않도록 설정하세요.</target>
         <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
         <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">경고: '{0}'은(는) 파일 기반 앱으로 보이지만 프로젝트 '{1}'에 인수로 전달되었습니다. 파일 기반 앱으로 실행하려면 'dotnet run --file {0}'을(를) 사용하세요. 응용 프로그램 인수로 전달하려면 'dotnet run -- {0}'을(를) 사용해 이 경고를 표시하지 않도록 설정하세요.</target>
         <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
@@ -3099,7 +3099,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SlowestTests">
         <source>Slowest tests:</source>
-        <target state="new">Slowest tests:</target>
+        <target state="translated">가장 느린 테스트:</target>
         <note>Header of the run summary section that lists the longest-running tests.</note>
       </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
@@ -3124,7 +3124,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">솔루션 필터 파일(.slnf)은 --in-root 또는 --solution-folder 옵션을 지원하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -3239,7 +3239,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
-        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <target state="translated">... 출력이 잘렸고 {0} 줄이 생략되었습니다.</target>
         <note>{0} is the number of output lines that were omitted from the summary.</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3433,7 +3433,7 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
-        <target state="new">A package ID was not specified for tool installation.</target>
+        <target state="translated">도구 설치를 위한 패키지 ID가 지정되지 않았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3700,7 +3700,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
         <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
-        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <target state="translated">TestHost 핸드셰이크가 완료되기 전에 Microsoft.Testing.Platform에서 '{0}' 형식의 메시지를 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
@@ -3725,7 +3725,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnknownSessionEventType">
         <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
-        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
+        <target state="translated">Microsoft.Testing.Platform에서 알 수 없는 세션 이벤트 유형 '{0}' 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -4142,7 +4142,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
         <source>Search for available workloads or workload versions.</source>
-        <target state="needs-review-translation">사용 가능한 워크로드를 검색합니다.</target>
+        <target state="translated">사용 가능한 워크로드 또는 워크로드 버전을 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
@@ -4157,12 +4157,12 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
         <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</target>
+        <target state="translated">'{0}' 올바른 워크로드 집합 버전이 아닙니다. 워크로드 집합 버전의 부 구성 요소는 '0'이어야 합니다(예: '10.0.105' 또는 '10.0.103.1'). '{1}' 의미했나요?{2}</target>
         <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionSpecifiedInGlobalJson">
         <source> (Specified in '{0}')</source>
-        <target state="new"> (Specified in '{0}')</target>
+        <target state="translated"> ('{0}'에 지정됨)</target>
         <note>{0} is the path to the global.json file.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

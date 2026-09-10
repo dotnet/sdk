@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../CliCommandStrings.resx">
     <body>
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
-        <target state="new">Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</target>
+        <target state="translated">Échec du post-traitement de l’artefact avec '{0}' : {1} artefacts originaux seront signalés.</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
-        <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
+        <target state="translated">Le post-traitement de l’artefact avec '{0}' s’est arrêté avec le code {1}. Tous les artefacts qui n’ont pas été fusionnés seront signalés individuellement.</target>
         <note>{0} is the test application path. {1} is the process exit code.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingStarted">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">L’option '--collect-test-map' ne peut pas être combinée avec '--minimum-expected-tests'. Les lots de collecte ne transmettent pas les totaux de test au processus parent.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="CmdListDevicesAndAffectedTestsMutuallyExclusive">
         <source>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</source>
-        <target state="new">The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</target>
+        <target state="translated">L’option '--list-devices' ne peut pas être combinée avec '--collect-test-map' ou '--affected-tests'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
@@ -149,22 +149,22 @@
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">Désolé, aucun projet de test n’a été trouvé.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">L’identifiant de l’appareil à utiliser pour exécuter l’application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">APPAREIL</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">Lister les appareils disponibles pour exécuter l’application.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
@@ -174,37 +174,37 @@
       </trans-unit>
       <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
         <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
-        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <target state="translated">Le message de négociation de Microsoft.Testing.Platform n’a pas fourni les versions de protocole prises en charge. Le Kit de développement logiciel (SDK) prend en charge '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingRequiredMessageProperty">
         <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
-        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <target state="translated">La propriété requise '{0}' était manquante ou vide dans le message de type '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlakyAttempts">
         <source>{0} attempts</source>
-        <target state="new">{0} attempts</target>
+        <target state="translated">{0} tentatives</target>
         <note>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</note>
       </trans-unit>
       <trans-unit id="FlakyLowercase">
         <source>flaky: {0} (passed after retry)</source>
-        <target state="new">flaky: {0} (passed after retry)</target>
+        <target state="translated">non fiable : {0} (passé après une nouvelle tentative)</target>
         <note>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</note>
       </trans-unit>
       <trans-unit id="FlakyTests">
         <source>Flaky tests:</source>
-        <target state="new">Flaky tests:</target>
+        <target state="translated">Tests non fiables :</target>
         <note>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</note>
       </trans-unit>
       <trans-unit id="FlakyTransition">
         <source>failed -&gt; passed</source>
-        <target state="new">failed -&gt; passed</target>
+        <target state="translated">échec -&gt; réussite</target>
         <note>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</note>
       </trans-unit>
       <trans-unit id="HandshakeFailuresHeader">
         <source>Handshake failures:</source>
-        <target state="new">Handshake failures:</target>
+        <target state="translated">Échecs de l’établissement d’une liaison :</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
@@ -680,7 +680,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">L’obtention des propriétés des projets avec MSBuild ne s’est pas exécutée correctement avec le code de sortie : {0}.</target>
+        <target state="translated">Échec de la build avec le code de sortie : {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -775,7 +775,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
-        <target state="needs-review-translation">L’architecture, la configuration, le framework, le système d’exploitation et le runtime des options ne peuvent pas être utilisés avec l’option « --test-modules ».</target>
+        <target state="new">The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -1935,7 +1935,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">Aucune charge de travail n’est installée, rien à réparer. Exécutez « recherche de charge de travail dotnet » pour trouver les charges de travail à installer.</target>
+        <target state="new">No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -2327,7 +2327,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="PressCtrlCAgainToForceExit">
         <source>Press Ctrl+C again to force exit.</source>
-        <target state="new">Press Ctrl+C again to force exit.</target>
+        <target state="translated">Appuyez de nouveau sur Ctrl+C pour forcer la fermeture.</target>
         <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -2503,7 +2503,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="ProjectConvertDuplicateRefFolderName">
         <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
-        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <target state="translated">Plusieurs fichiers référencés seraient convertis dans le même dossier : « {0} »</target>
         <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -2695,7 +2695,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">Une version plus récente de l’outil « {0} » est disponible (version « {1} »). Pensez à mettre à jour votre fichier manifeste.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
@@ -2715,7 +2715,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RetriedTestsAndRuns">
         <source>{0} test(s), {1} extra run(s)</source>
-        <target state="new">{0} test(s), {1} extra run(s)</target>
+        <target state="translated">{0} test(s), {1} exécution(s) en plus</target>
         <note>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</note>
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2755,7 +2755,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">Appareils disponibles :</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -2770,7 +2770,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">Désolé... Nous n’avons pas pu procéder au déploiement de l’appareil. Corrigez les erreurs de déploiement et relancez l’exécution.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -2817,15 +2817,15 @@ La valeur par défaut est de publier une application dépendante du framework.</
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Impossible d'exécuter votre projet.
-Vérifiez que vous avez un type de projet exécutable et que '{0}' prend en charge ce projet.
-Un projet exécutable doit cibler un TFM exécutable (par exemple, net5.0) et avoir OutputType 'Exe'.
-Le {1} actuel est '{2}'.</target>
+        <target state="translated">Impossible de continuer avec le projet « {0} ».
+Vérifiez que vous avez un type de projet exécutable.
+Un projet exécutable doit cibler un TFM exécutable (par exemple, net{1}) et avoir OutputType « Exe ».
+Le type de sortie actuel (OutputType) est « {2} ».</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">Impossible d’exécuter ce projet, car plusieurs appareils sont disponibles. Veuillez spécifier l’appareil à utiliser en passant l’argument {0} avec l’une des valeurs suivantes :</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2837,7 +2837,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">Montez et descendez pour afficher plus d’appareils</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -2847,7 +2847,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">Désolé, aucun appareil n’est disponible pour ce projet.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2862,7 +2862,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">Sélectionnez un appareil sur lequel exécuter :</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -2877,12 +2877,12 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">Avertissement : « {0} » ressemble à une application basée sur un fichier, mais le fichier est introuvable et il a été passé en tant qu’argument au projet « {1} ». Pour le passer en tant qu’argument d’application, utilisez « dotnet run -- {0} » afin de supprimer cet avertissement.</target>
         <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
         <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">Avertissement : « {0} » semble être une application basée sur un fichier, mais elle a été transmise en tant qu’argument au projet « {1} ». Pour l’exécuter en tant qu’application basée sur un fichier, utilisez « dotnet run --file {0} ». Pour le passer en tant qu’argument d’application, utilisez « dotnet run -- {0} » afin de supprimer cet avertissement.</target>
         <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
@@ -3099,7 +3099,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="SlowestTests">
         <source>Slowest tests:</source>
-        <target state="new">Slowest tests:</target>
+        <target state="translated">Tests les plus lents :</target>
         <note>Header of the run summary section that lists the longest-running tests.</note>
       </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
@@ -3124,7 +3124,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">Les fichiers de filtre de solution (.slnf) ne prennent pas en charge les options --in-root ou --solution-folder.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -3700,7 +3700,7 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
         <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
-        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <target state="translated">Réception d’un message de type '{0}' de Microsoft.Testing.Platform avant la fin de la négociation TestHost.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
@@ -4142,7 +4142,7 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
         <source>Search for available workloads or workload versions.</source>
-        <target state="needs-review-translation">Recherchez les charges de travail disponibles.</target>
+        <target state="new">Search for available workloads or workload versions.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

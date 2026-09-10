@@ -137,7 +137,7 @@ Dieses Argument kann mehrmals angegeben werden, um mehrere Variablen bereitzuste
 Beispiele:
 -e VARIABLE=abc
 -e VARIABLE="wert mit leerzeichen"
--e VARIABLE="wert;getrennt durch;semikolons"
+-e VARIABLE="Wert;getrennt durch;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

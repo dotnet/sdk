@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">Etkilenen test seçimi deneyseldir. Etkinleştirmek için '{0}' ortam değişkenini '1' olarak ayarlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
@@ -347,15 +347,15 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Bir ortam değişkeninin değerini ayarlar. 
-Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
-Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
-Örnek:
--e DEĞİŞKEN=abc
--e DEĞİŞKEN="boşluk içeren değerler"
--e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
--e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
@@ -413,7 +413,7 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="needs-review-translation">Testleri çalıştırmak yerine bulunan testleri listeler.</target>
+        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -461,7 +461,7 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="needs-review-translation">Çalıştırılması beklenen en düşük test sayısını belirtir.</target>
+        <target state="new">Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -714,16 +714,16 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Bir ortam değişkeninin değerini ayarlar. 
-Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
-Bu, testleri yalıtılmış bir işlemde çalıştırılmaya zorlar. 
-Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Örnek:
--e DEĞİŞKEN=abc
--e DEĞİŞKEN="boşluk içeren değerler"
--e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
--e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
@@ -749,7 +749,7 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">Değer bir pozitif tamsayı olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">

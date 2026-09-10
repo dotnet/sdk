@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../CliCommandStrings.resx">
     <body>
@@ -79,17 +79,17 @@
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
-        <target state="new">Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</target>
+        <target state="translated">使用“{0}”进行工件后期处理失败: {1}。将报告原始工件。</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
-        <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
+        <target state="translated">项目后处理退出 '{0}'，代码为 {1}。将单独报告任何未合并的项目。</target>
         <note>{0} is the test application path. {1} is the process exit code.</note>
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingStarted">
         <source>Merging compatible artifacts produced by different test applications...</source>
-        <target state="new">Merging compatible artifacts produced by different test applications...</target>
+        <target state="translated">正在合并由不同测试应用程序生成的兼容工件...</target>
         <note />
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
@@ -109,112 +109,112 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">受影响测试选择是实验性的。将“{0}”环境变量设置为 "1" 以启用它。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">选项 "--collect-test-map" 和 "--affected-tests" 不能一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsResponseFilesMustBeConsistent">
         <source>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</source>
-        <target state="new">Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</target>
+        <target state="translated">转发的响应文件必须为每个测试应用程序选择相同的受影响测试操作。请改为直接在 "dotnet test" 上指定 "--collect-test-map" 或 "--affected-tests"。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">选项 "--collect-test-map" 不能与 "--minimum-expected-tests" 结合使用。收集批次不会向父进程报告测试总数。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">选项 "--collect-test-map" 不能与 "--max-parallel-test-modules" 结合使用。测试映射按单个模块逐一收集。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
-        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <target state="translated">选项 "--device" 和 "--list-devices" 需要项目，不能与 "--test-modules" 一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndAffectedTestsMutuallyExclusive">
         <source>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</source>
-        <target state="new">The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</target>
+        <target state="translated">选项 "--list-devices" 不能与 "--collect-test-map" 或 "--affected-tests" 结合使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
         <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
-        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <target state="translated">选项 "--list-devices" 和 "--list-tests" 不能一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
-        <target state="new">No test projects were found.</target>
+        <target state="translated">未找到任何测试项目。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
-        <target state="new">The device identifier to use for running the application.</target>
+        <target state="translated">用于运行该应用程序的设备的标识符。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
-        <target state="new">DEVICE</target>
+        <target state="translated">设备</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
-        <target state="new">List available devices for running the application.</target>
+        <target state="translated">列出可用于运行该应用程序的设备。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
         <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
-        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <target state="translated">在同一管道连接上从 Microsoft.Testing.Platform 收到多个握手消息。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
         <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
-        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <target state="translated">来自 Microsoft.Testing.Platform 的握手消息未提供支持的协议版本。SDK 支持“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingRequiredMessageProperty">
         <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
-        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <target state="translated">类型为 '{1}' 的消息中缺少必需的属性 '{0}' 或该属性为空。</target>
         <note />
       </trans-unit>
       <trans-unit id="FlakyAttempts">
         <source>{0} attempts</source>
-        <target state="new">{0} attempts</target>
+        <target state="translated">{0} 次尝试</target>
         <note>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</note>
       </trans-unit>
       <trans-unit id="FlakyLowercase">
         <source>flaky: {0} (passed after retry)</source>
-        <target state="new">flaky: {0} (passed after retry)</target>
+        <target state="translated">不稳定: {0} (重试后通过)</target>
         <note>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</note>
       </trans-unit>
       <trans-unit id="FlakyTests">
         <source>Flaky tests:</source>
-        <target state="new">Flaky tests:</target>
+        <target state="translated">不稳定的测试:</target>
         <note>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</note>
       </trans-unit>
       <trans-unit id="FlakyTransition">
         <source>failed -&gt; passed</source>
-        <target state="new">failed -&gt; passed</target>
+        <target state="translated">失败 -&gt; 通过</target>
         <note>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</note>
       </trans-unit>
       <trans-unit id="HandshakeFailuresHeader">
         <source>Handshake failures:</source>
-        <target state="new">Handshake failures:</target>
+        <target state="translated">握手失败：</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
-        <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
+        <target state="translated">测试主机报告的执行模式为“{0}”，但 "dotnet test" 预期为“{1}”。在通过非 CLI 渠道(例如 "TestingPlatformCommandLineArguments" 或 "RunArguments" MSBuild 属性，或 "launchSettings.json" commandLineArgs)将 "--help"、"-?" 或 "--list-tests" 等选项注入到测试主机时，通常会发生这种情况。请改为将这些选项直接传递给 "dotnet test"。</target>
         <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeHostType">
         <source>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</source>
-        <target state="new">The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</target>
+        <target state="translated">测试主机报告的主机类型为“{0}”，但 "dotnet test" 预期为“{1}”。</target>
         <note>{Locked="dotnet test"}</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
@@ -680,7 +680,7 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Build failed with exit code: {0}.</source>
-        <target state="needs-review-translation">使用 MSBuild 获取项目属性未正确执行，退出代码为: {0}。</target>
+        <target state="translated">生成失败，退出代码: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -775,7 +775,7 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
-        <target state="needs-review-translation">选项体系结构、配置、框架、操作系统和运行时不能与 '--test-modules' 选项一起使用。</target>
+        <target state="translated">“体系结构”、“配置”、“框架”、“操作系统”、“运行时”和“使用当前运行时”选项不能与 "--test-modules" 选项一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -1935,7 +1935,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">未安装工作负载，没有要修复的内容。请运行“dotnet workload search”，查找要安装的工作负载。</target>
+        <target state="translated">未安装工作负载，没有要修复的内容。请运行 `dotnet workload search`，查找要安装的工作负载。</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -2327,7 +2327,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PressCtrlCAgainToForceExit">
         <source>Press Ctrl+C again to force exit.</source>
-        <target state="new">Press Ctrl+C again to force exit.</target>
+        <target state="translated">再次按 Ctrl+C 强制退出。</target>
         <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -2503,7 +2503,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertDuplicateRefFolderName">
         <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
-        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <target state="translated">多个引用的文件将转换到同一目录: {0}</target>
         <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -2695,7 +2695,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RestoreNewVersionAvailable">
         <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
-        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <target state="translated">工具“{0}”有新版本可用(版本“{1}”)。请考虑更新清单文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
@@ -2710,12 +2710,12 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RetriedColon">
         <source>retried:</source>
-        <target state="new">retried:</target>
+        <target state="translated">已重试:</target>
         <note>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</note>
       </trans-unit>
       <trans-unit id="RetriedTestsAndRuns">
         <source>{0} test(s), {1} extra run(s)</source>
-        <target state="new">{0} test(s), {1} extra run(s)</target>
+        <target state="translated">{0} 个测试，{1} 次额外运行</target>
         <note>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</note>
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2750,12 +2750,12 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunAsyncCalledMoreThanOnce">
         <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
-        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <target state="translated">已在此实例上调用 "TestApplication.RunAsync"，不能多次调用。</target>
         <note>{Locked="TestApplication.RunAsync"}</note>
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
-        <target state="new">Available devices:</target>
+        <target state="translated">可用的设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
@@ -2770,7 +2770,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandDeployFailed">
         <source>Deployment to device failed. Fix any deployment errors and run again.</source>
-        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <target state="translated">部署到设备失败。请修复部署错误后重试。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -2817,15 +2817,15 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">无法运行项目。
-请确保你具有可运行的项目类型且“{0}”支持此项目。
-可运行的项目应面向可运行的 TFM (例如 net5.0)且其 OutputType 为 "Exe"。
-当前的 {1} 为“{2}”。</target>
+        <target state="translated">无法继续进行项目 ‘{0}’。
+确保具有可运行的项目类型。
+可运行的项目应面向可运行的 TFM (例如 net{1})且其 OutputType 为 ‘Exe’。
+当前 OutputType 为 ‘{2}’。</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
         <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
-        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <target state="translated">无法运行此项目，因为有多个设备可用。请通过传递 {0} 参数并为其指定以下值之一来选择要使用的设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2837,7 +2837,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">上下移动以显示更多设备</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
@@ -2847,7 +2847,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
         <source>No devices are available for this project.</source>
-        <target state="new">No devices are available for this project.</target>
+        <target state="translated">此项目没有可用设备。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2862,7 +2862,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">选择运行设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
@@ -2877,12 +2877,12 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">警告:“{0}”似乎是一个基于文件的应用，但找不到该文件，并且它已作为参数传递给项目“{1}”。要将其作为应用程序参数传递，请使用“dotnet run -- {0}”来抑制此警告。</target>
         <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
         <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">警告:“{0}”似乎是一个基于文件的应用，但已作为参数传递给项目“{1}”。要将其作为基于文件的应用运行，请使用“dotnet run --file {0}”。要将其作为应用程序参数传递，请使用“dotnet run -- {0}”来抑制此警告。</target>
         <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
@@ -3099,7 +3099,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SlowestTests">
         <source>Slowest tests:</source>
-        <target state="new">Slowest tests:</target>
+        <target state="translated">速度最慢的测试:</target>
         <note>Header of the run summary section that lists the longest-running tests.</note>
       </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
@@ -3124,7 +3124,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
         <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
-        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <target state="translated">解决方案筛选器文件(.slnf)不支持 --in-root 或 --solution-folder 选项。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -3239,7 +3239,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
-        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <target state="translated">... 输出已截断，省略 {0} 行 ...</target>
         <note>{0} is the number of output lines that were omitted from the summary.</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3433,7 +3433,7 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
-        <target state="new">A package ID was not specified for tool installation.</target>
+        <target state="translated">未指定用于工具安装的包 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3700,7 +3700,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
         <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
-        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <target state="translated">在 TestHost 握手完成之前，从 Microsoft.Testing.Platform 收到类型为“{0}”的消息。</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
@@ -3725,7 +3725,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnknownSessionEventType">
         <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
-        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
+        <target state="translated">从 Microsoft.Testing.Platform 收到未知的会话事件类型“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -4142,7 +4142,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
         <source>Search for available workloads or workload versions.</source>
-        <target state="needs-review-translation">搜索可用的工作负载。</target>
+        <target state="translated">搜索可用的工作负载或工作负载版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
@@ -4157,12 +4157,12 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
         <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</target>
+        <target state="translated">'{0}' 不是有效的工作负载集版本。工作负载集版本应将 “0” 作为次要组件 (例如 “10.0.105” 或 “10.0.103.1”)。你是说 '{1}' 吗？{2}</target>
         <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionSpecifiedInGlobalJson">
         <source> (Specified in '{0}')</source>
-        <target state="new"> (Specified in '{0}')</target>
+        <target state="translated"> (在“{0}”中指定)</target>
         <note>{0} is the path to the global.json file.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

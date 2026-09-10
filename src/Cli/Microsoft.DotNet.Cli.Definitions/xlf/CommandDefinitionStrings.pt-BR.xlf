@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">A seleção de teste afetado é experimental. Defina a variável de ambiente '{0}' como '1' para habilitá-la.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
@@ -266,7 +266,7 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">A opção '--collect-test-map' não pode ser combinada com '--max-parallel-test-modules'. Os mapas de teste são coletados um módulo por vez.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
@@ -347,14 +347,14 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Define o valor de uma variável de ambiente. 
-Cria a variável se ela não existir, substitui se existir. 
-Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
-Exemplos:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado por;ponto e vírgula"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -413,7 +413,7 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="needs-review-translation">Listar os testes detectados em vez de executar os testes.</target>
+        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -456,12 +456,12 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMaximumFailedTestsDescription">
         <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
-        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <target state="translated">Interrompe a execução do teste quando o número especificado de falhas é atingido em todos os aplicativos de teste. Passe após '--' para aplicar por aplicativo de teste quando houver suporte.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="needs-review-translation">Especifica o número mínimo de testes que devem ser executados.</target>
+        <target state="translated">Especifica o número mínimo de testes que devem ser executados em todos os aplicativos de teste. Passe após '--' para aplicar por aplicativo de teste.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -610,9 +610,9 @@ O diretório especificado será criado se ele ainda não existir.</target>
         <source>Specifies how test results are organized within the results directory.
 'flat' (the default) places the results of every test project directly in the results directory.
 'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
-        <target state="new">Specifies how test results are organized within the results directory.
-'flat' (the default) places the results of every test project directly in the results directory.
-'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <target state="translated">Especifica como os resultados do teste são organizados no diretório de resultados.
+'flat' (o padrão) coloca os resultados de cada projeto de teste diretamente no diretório de resultados.
+'per-module' fornece a cada projeto de teste seu próprio subdiretório '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;', portanto, relatórios com o mesmo nome de arquivo não podem substituir uns aos outros.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdResultsDirectoryLayoutName">
@@ -714,15 +714,15 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Define o valor de uma variável de ambiente. 
-Criará a variável quando ela não existir e a substituirá quando existir. 
-Isso forçará a execução dos testes em um processo isolado. 
-Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Exemplos:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado com;ponto e vírgula"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -749,12 +749,12 @@ Exemplos:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">O valor deve ser um inteiro positivo.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Interrompe a execução do teste quando o tempo de execução do teste especificado é atingido em todos os aplicativos de teste. Passe após '--' para aplicar por aplicativo de teste.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -824,7 +824,7 @@ Exemplos:
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescriptionForTest">
         <source>The device identifier to use for running tests.</source>
-        <target state="new">The device identifier to use for running tests.</target>
+        <target state="translated">O identificador do dispositivo a ser usado para executar testes.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
@@ -1364,7 +1364,7 @@ Se o comando for especificado sem o argumento, ele listará todos os pacotes de 
       </trans-unit>
       <trans-unit id="Option_Install_Prerelease">
         <source>Allows prerelease template packages to be installed when no version is specified.</source>
-        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <target state="translated">Permite que pacotes de modelo de pré-lançamento sejam instalados quando nenhuma versão é especificada.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

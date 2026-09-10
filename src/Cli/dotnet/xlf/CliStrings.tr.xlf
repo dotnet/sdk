@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">Yönetilen geri dönüş bulunamadı. Beklenen '{0}' ve '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">'DotnetToolSettings.xml' ayar dosyası '{0}@{1}' paketinde bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">Çözümlenen yol '{0}' hedef dizinden '{1}' kaçıyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -730,7 +730,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">'{1}' ayarı aracılığıyla sağlanan SDK kök dizini '{0}' yok.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">Çözüm klasörü '{0}' zaten '{1}' dosya adına sahip bir proje içeriyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -820,7 +820,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">Araç '{0}' şu anda yüklü olandan daha yüksek bir .NET sürümü gerektiriyor. Araç {1} hedefliyor, ancak geçerli çalışma zamanı {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">

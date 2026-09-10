@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">No se encontró la reserva administrada. Se esperaban '{0}' y '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">No se encontró el archivo de configuración 'DotnetToolSettings.xml' en el paquete '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">La ruta de acceso resuelta "{0}" se aplica al directorio de destino "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -725,12 +725,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkDirectoryCouldNotBeDetermined">
         <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="new">warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</target>
+        <target state="translated">advertencia: no se pudo determinar el directorio del SDK; no se proporcionó sdk_dir y dotnet-aot no pudo localizar su propio módulo; la resolución relativa al SDK puede ser incorrecta.</target>
         <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">El directorio raíz del SDK "{0}" proporcionado a través de la configuración "{1}" no existe.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">La carpeta de solución "{0}" ya contiene un proyecto con el nombre de archivo "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -820,12 +820,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">La herramienta '{0}' requiere una versión de .NET superior a la instalada actualmente. La herramienta tiene como destino {1}, pero el entorno de ejecución actual es {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <target state="translated">Para usar esta herramienta, actualice a .NET {0} o posterior, o bien use una versión de la herramienta que sea compatible con .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

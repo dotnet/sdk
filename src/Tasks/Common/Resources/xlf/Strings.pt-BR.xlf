@@ -376,7 +376,7 @@
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
         <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
-        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <target state="translated">NETSDK1235: as Ferramentas do .NET não dão suporte ao uso de um arquivo .nuspec personalizado, mas o arquivo nuspec '{0}' foi fornecido. As Ferramentas do .NET usam um layout de pacote personalizado e uma convenção de identificador de pacote e devem ser personalizadas somente por meio da lógica do MSBuild. Remova a propriedade NuspecFile deste projeto para habilitar o empacotamento como uma ferramenta do .NET.</target>
         <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
@@ -528,7 +528,7 @@
       </trans-unit>
       <trans-unit id="IncludeAllContentForSelfExtractIsLegacy">
         <source>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</source>
-        <target state="new">NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</target>
+        <target state="translated">NETSDK1244: 'IncludeAllContentForSelfExtract' habilita um modo de compatibilidade herdado que extrai todos os assemblies gerenciados para o disco na inicialização. Prefira o comportamento padrão de arquivo único na memória removendo a propriedade 'IncludeAllContentForSelfExtract' do seu projeto.</target>
         <note>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</note>
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
@@ -923,12 +923,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkFeatureBandDiscontinued">
         <source>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1240: o SDK do .NET atual ({0}) não tem nenhuma versão mais recente em sua faixa de recursos. Atualizar para a versão {1}: https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionHasVulnerabilities">
         <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1238: o SDK do .NET atual ({0}) tem vulnerabilidades conhecidas ({1}).{2} Consulte https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionIsEol">
@@ -970,7 +970,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="TargetFrameworkEmpty">
         <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
-        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <target state="translated">NETSDK1241: a propriedade TargetFramework está vazia. Especifique um valor para a propriedade TargetFramework no arquivo de projeto.</target>
         <note>{StrBegins="NETSDK1241: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
@@ -1183,8 +1183,7 @@ Talvez você precise compilar o projeto em outro sistema operacional ou arquitet
       <trans-unit id="WorkloadNotInstalled">
         <source>NETSDK1147: To build this project, the following workloads must be installed: {0}
 To install these workloads, run the following command: dotnet workload restore</source>
-        <target state="translated">NETSDK1147: Para criar este projeto, as seguintes cargas de trabalho devem ser instaladas: {0}
- 
+        <target state="translated">NETSDK1147: Para criar esse projeto, as seguintes cargas de trabalho devem ser instaladas: {0}
 Para instalar essas cargas de trabalho, execute o seguinte comando: dotnet workload restore</target>
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>

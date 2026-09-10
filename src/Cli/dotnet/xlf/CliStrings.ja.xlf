@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">マネージド フォールバックが見つかりませんでした。'{0}' と '{1}' が必要です。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">パッケージ '{0}@{1}' に設定ファイル 'DotnetToolSettings.xml' が見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">解決されたパス '{0}' ターゲット ディレクトリ '{1}' をエスケープします。</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -725,12 +725,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkDirectoryCouldNotBeDetermined">
         <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="new">warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</target>
+        <target state="translated">警告: SDK ディレクトリを特定できませんでした。sdk_dir が指定されておらず、dotnet-aot はその独自のモジュールを見つけることができませんでした。SDK 相対解決が正しくない可能性があります。</target>
         <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">'{1}' 設定で指定された SDK ルート ディレクトリ '{0}' 存在しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">ソリューション フォルダー '{0}' には、ファイル名 '{1}' のプロジェクトが既に含まれています。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -820,12 +820,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">ツール '{0}' には、現在インストールされているバージョンよりも新しいバージョンの .NET が必要です。このツールは {1} をターゲットにしていますが、現在のランタイムは {2} です。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <target state="translated">このツールを使用するには、.NET {0} 以降にアップグレードするか、.NET {1} と互換性のあるバージョンのツールを使用してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

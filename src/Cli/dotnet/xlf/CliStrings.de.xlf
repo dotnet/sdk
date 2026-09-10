@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">Die Einstellungsdatei 'DotnetToolSettings.xml' wurde im Paket "{0}@{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">Der aufgelöste Pfad '{0}' entkommt dem Zielverzeichnis '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -730,7 +730,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">Das über die '{1}' Einstellung angegebene SDK-Stammverzeichnis '{0}' ist nicht vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -820,12 +820,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">Das Tool '{0}' erfordert eine höhere Version von .NET als die zurzeit installierte Version. Das Tool zielt auf {1} ab, aber die aktuelle Laufzeit ist {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <target state="translated">Führen Sie ein Upgrade auf .NET {0} oder höher aus, oder verwenden Sie eine Version des Tools, die mit .NET {1} kompatibel ist, um dieses Tool zu verwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
