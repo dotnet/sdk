@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Preserve same-class serialization because integration-test helpers share fixed asset directories
+    <!-- Use same-class serialization because integration-test helpers share fixed asset directories
          and caches. Tests that mutate the process current directory use DoNotParallelize: a ResourceLock
          on only the writers cannot protect unrelated tests that implicitly resolve paths against CWD. -->
     <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>

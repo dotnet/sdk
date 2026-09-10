@@ -15,6 +15,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+// ResourceLock cannot protect unrelated tests that implicitly read the process current directory which this test mutates.
 [DoNotParallelize]
 [TestClass]
 public class StaticWebAssetTaskEnvironmentTests
