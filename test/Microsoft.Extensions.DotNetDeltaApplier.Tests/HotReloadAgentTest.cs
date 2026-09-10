@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.HotReload.UnitTests
     public class HotReloadAgentTest
     {
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ClearHotReloadEnvironmentVariables_DoesNotThrow_WhenStartupHooksNotSet()
         {
             // Ensure DOTNET_STARTUP_HOOKS is not set
