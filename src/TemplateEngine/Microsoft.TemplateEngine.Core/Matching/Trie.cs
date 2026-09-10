@@ -18,8 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
         {
             get
             {
-                Dictionary<byte, TrieNode<T>>? nextNodes = _nextNodes;
-                if (nextNodes != null)
+                if (_nextNodes is { } nextNodes)
                 {
                     return nextNodes;
                 }
