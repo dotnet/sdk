@@ -254,7 +254,8 @@
     <Crossgen
         SourceAssembly="%(RemainingRoslynOptimizationTargets.FullPath)"
         DestinationPath="%(RemainingRoslynOptimizationTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
         CreateSymbols="$(CreateCrossgenSymbols)"
         CrossModuleInliningAssemblies="@(RoslynCrossModuleInliningAssembly)"
