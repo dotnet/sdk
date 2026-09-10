@@ -266,7 +266,7 @@ Für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">Die Option "--collect-test-map" kann nicht mit "--max-parallel-test-modules" kombiniert werden. Testzuordnungen werden Modul für Modul erfasst.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
@@ -461,7 +461,7 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Gibt die Mindestanzahl von Tests an, die für alle Testanwendungen ausgeführt werden sollen. Übergeben Sie nach "--", um eine Anwendung pro Testanwendung anzuwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -749,7 +749,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">Der Wert muss eine positive ganze Zahl sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">

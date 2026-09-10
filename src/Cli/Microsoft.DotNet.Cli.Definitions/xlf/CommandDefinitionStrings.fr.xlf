@@ -261,7 +261,7 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">L’option '--collect-test-map' ne peut pas être combinée avec '--minimum-expected-tests'. Les lots de collecte ne transmettent pas les totaux de test au processus parent.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
@@ -461,7 +461,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Spécifie le nombre minimal de tests qui doivent être exécutés sur toutes les applications de test. Passez après « -- » pour appliquer par application de test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -749,12 +749,12 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">La valeur doit être un entier positif.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Arrête l’exécution du test quand la durée d’exécution du test spécifiée est atteinte dans toutes les applications de test. Passez après « -- » pour appliquer par application de test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -824,7 +824,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescriptionForTest">
         <source>The device identifier to use for running tests.</source>
-        <target state="new">The device identifier to use for running tests.</target>
+        <target state="translated">Identificateur d’appareil à utiliser pour l’exécution des tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
@@ -1364,7 +1364,7 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
       </trans-unit>
       <trans-unit id="Option_Install_Prerelease">
         <source>Allows prerelease template packages to be installed when no version is specified.</source>
-        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <target state="translated">Autorise l’installation des packages de modèles de préversion quand aucune version n’est spécifiée.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

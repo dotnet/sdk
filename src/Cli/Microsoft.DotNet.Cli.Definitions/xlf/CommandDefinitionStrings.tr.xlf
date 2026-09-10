@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">Etkilenen test seçimi deneyseldir. Etkinleştirmek için '{0}' ortam değişkenini '1' olarak ayarlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
@@ -749,7 +749,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">Değer bir pozitif tamsayı olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">

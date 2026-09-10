@@ -159,17 +159,17 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsDescription">
         <source>Run only tests linked in the test map to sources changed in Git.</source>
-        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <target state="translated">仅运行测试映射中链接到 Git 中已更改源的测试。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">受影响测试选择是实验性的。将“{0}”环境变量设置为 "1" 以启用它。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">选项 "--collect-test-map" 和 "--affected-tests" 不能一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -261,17 +261,17 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">选项 "--collect-test-map" 不能与 "--minimum-expected-tests" 结合使用。收集批次不会向父进程报告测试总数。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">选项 "--collect-test-map" 不能与 "--max-parallel-test-modules" 结合使用。测试映射按单个模块逐一收集。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
         <source>Run tests and write the source-to-test map used by affected-test selection.</source>
-        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <target state="translated">运行测试并写入受影响测试选择所使用的源到测试映射。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -333,7 +333,7 @@ If not specified the file will be generated inside the default 'TestResults' dir
       </trans-unit>
       <trans-unit id="CmdDurationName">
         <source>DURATION</source>
-        <target state="new">DURATION</target>
+        <target state="translated">持续时间</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
@@ -347,11 +347,11 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">设置环境变量的值。
+如果该变量不存在，则创建它；如果它已存在，则替代它。
+可多次指定此参数来提供多个变量。
 
-Examples:
+示例:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -413,7 +413,7 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
+        <target state="translated">列出已发现的测试，而不是运行测试。(可选)接受一种格式: "text" (默认)用于人类可读的输出，或 'json' 用于机器可读的输出。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -456,12 +456,12 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdMaximumFailedTestsDescription">
         <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
-        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <target state="translated">当在所有测试应用程序中达到指定的失败数时，停止测试执行。在支持的情况下，在 "--" 之后传递以按测试应用程序应用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">指定预期在所有测试应用程序中运行的最小测试数。在 "--" 之后传递，以按测试应用程序应用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
@@ -471,7 +471,7 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdNoArtifactPostProcessingDescription">
         <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
-        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <target state="translated">不要合并由不同测试应用程序生成的兼容项目，例如 TRX 报告或代码覆盖率文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -610,14 +610,14 @@ The specified directory will be created if it does not exist.</source>
         <source>Specifies how test results are organized within the results directory.
 'flat' (the default) places the results of every test project directly in the results directory.
 'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
-        <target state="new">Specifies how test results are organized within the results directory.
-'flat' (the default) places the results of every test project directly in the results directory.
-'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <target state="translated">指定测试结果在结果目录中的组织方式。
+"flat" (默认值)将每个测试项目的结果直接放在结果目录中。
+"per-module" 为每个测试项目提供自己的 "&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;" 子目录，因此具有相同文件名的报告不会相互覆盖。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdResultsDirectoryLayoutName">
         <source>LAYOUT</source>
-        <target state="new">LAYOUT</target>
+        <target state="translated">布局</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -714,12 +714,12 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">设置环境变量的值。
+如果该变量不存在，则创建它；如果它已存在，则替代它。
+这将在隔离的进程中强制运行测试。
+可多次指定此参数来提供多个变量。
 
-Examples:
+示例:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -729,7 +729,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestInvalidTimeout">
         <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
-        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <target state="translated">超时必须是带有明确单位后缀的正持续时间，例如 ms、s、m、h 或 d (也接受 "seconds"、"minutes"、"hours" 和 "days" 等较长形式)。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
@@ -749,12 +749,12 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">值必须为正整数。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">当在所有测试应用程序中达到指定的测试执行时间时，停止测试执行。在 "--" 之后传递，以按测试应用程序应用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -824,7 +824,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescriptionForTest">
         <source>The device identifier to use for running tests.</source>
-        <target state="new">The device identifier to use for running tests.</target>
+        <target state="translated">用于运行测试的设备标识符。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
@@ -859,7 +859,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescriptionForTest">
         <source>List available devices for running tests.</source>
-        <target state="new">List available devices for running tests.</target>
+        <target state="translated">列出可用于运行测试的设备。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -1364,7 +1364,7 @@ If command is specified without the argument, it lists all the template packages
       </trans-unit>
       <trans-unit id="Option_Install_Prerelease">
         <source>Allows prerelease template packages to be installed when no version is specified.</source>
-        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <target state="translated">允许在未指定版本时安装预发行模板包。</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

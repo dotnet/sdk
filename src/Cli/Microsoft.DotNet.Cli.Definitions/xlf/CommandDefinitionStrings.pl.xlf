@@ -749,12 +749,12 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestPositiveIntegerRequired">
         <source>The value must be a positive integer.</source>
-        <target state="new">The value must be a positive integer.</target>
+        <target state="translated">Wartość musi być dodatnią liczbą całkowitą.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Zatrzymuje wykonywanie testu po osiągnięciu określonego czasu wykonywania testu we wszystkich aplikacjach testowych. Przekaż po "--", aby zastosować dla aplikacji testowej.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -824,7 +824,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescriptionForTest">
         <source>The device identifier to use for running tests.</source>
-        <target state="new">The device identifier to use for running tests.</target>
+        <target state="translated">Identyfikator urządzenia do użycia na potrzeby uruchamiania testów.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
