@@ -3,6 +3,12 @@ emoji: "👾"
 name: Issue Monster Orchestrator
 description: Selects issues and dispatches branch-aware Copilot assignments
 on:
+  # As in issue-monster-assigner.md, the calling workflow dispatches as
+  # github-actions[bot], which has no repository membership for gh-aw's default
+  # role check. This only bypasses that activation check: the workflow_dispatch
+  # API still requires Actions write permission, so roles: all does not allow
+  # arbitrary users to trigger the workflow.
+  roles: all
   workflow_dispatch:
     inputs:
       issue_number:
@@ -95,6 +101,13 @@ safe-outputs:
   # small model that false-positives on gh-aw's own auto-generated anti-injection preamble,
   # which caused every dispatch_workflow output to be aborted under the warn policy.
   threat-detection:
+    prompt: >-
+      The generated issue_monster_assigner tool is an authorized alias for the
+      dispatch-workflow safe output. gh-aw normalizes successful alias calls to
+      dispatch_workflow records before detection. Treat that normalized record
+      as expected only when workflow_name is issue-monster-assigner and its
+      inputs object contains both issue_number and base_branch; do not classify
+      the normalization itself as prompt injection.
     engine:
       id: copilot
       model: gpt-5.6-luna
@@ -192,11 +205,16 @@ ${{ needs.pre_activation.outputs.issue_context }}
 Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above.
 
 **Choose a Base Branch for Each Selected Issue:**
-- Issues with a `dotnetup` label target `release/dnup`.
-- Issues that explicitly mention `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, target that release branch.
-- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target such as `release/10.0.3xx` (generically, `release/{hotfix-target}` while replacing `hotfix-target` with the form `release/X.0.Yxx`).
-- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch..
-- Choose one concrete base branch independently for each selected issue.
+- Determine the requested destination from the issue title and body before applying label or version heuristics. Explicit target language such as "into", "to", "target", "backport to", or "fix on" is authoritative.
+- Distinguish source branches from destination branches. A branch that contains existing content, is linked for reference, or appears after "from" is not automatically the PR base.
+- Issues with a `dotnetup` label default to `release/dnup` only when the issue does not explicitly request another destination.
+- Route to `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, when the issue either explicitly targets that branch or mentions the corresponding SDK train (for example, `10.0.3xx`) near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix. Merely mentioning a release branch as the source of content does not target it.
+- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch.
+- Examples:
+  - "Merge documentation from `release/dnup` to `main`" targets `main`; `release/dnup` is the source.
+  - "Backport the fix from `main` to `release/10.0.3xx`" targets `release/10.0.3xx`; `main` is the source.
+  - A `dotnetup` issue with no explicit destination targets `release/dnup`.
+- Choose one concrete base branch independently for each selected issue and include a one-sentence source/destination rationale in the final summary. If the requested destination remains ambiguous, skip that issue rather than guessing.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
 
@@ -295,13 +313,13 @@ Some issues may be blocked by an integrity policy when you try to read them with
 
 ### 4. Dispatch Issues to the Assigner
 
-For each selected issue, call the `dispatch_workflow` safe-output tool to dispatch the `issue-monster-assigner` workflow, passing the issue number and the concrete base branch you selected in the `inputs` object:
+For each selected issue, call the generated `issue_monster_assigner` safe-output tool, passing the issue number and the concrete base branch you selected:
 
 ```
-dispatch_workflow(workflow_name="issue-monster-assigner", inputs={"issue_number": <issue_number>, "base_branch": "<base_branch>"})
+issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
 ```
 
-`dispatch_workflow` is the tool listed in your available safe-output tools; it routes to the `issue-monster-assigner` workflow. (gh-aw also registers a convenience alias named `issue_monster_assigner` that takes the same `issue_number` and `base_branch` fields directly; either works, but prefer `dispatch_workflow` since it is always advertised.)
+Do not call the generic `dispatch_workflow` tool directly. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded. gh-aw implements the generated tool through `dispatch_workflow`, so a valid `issue_monster_assigner` call is expected to produce that normalized type with `workflow_name: issue-monster-assigner` and `inputs.issue_number` plus `inputs.base_branch`.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
@@ -328,7 +346,7 @@ Keeping each Issue Monster run lean is critical to avoid unbounded token spend.
 - **Keep comments short**: The comment added to each issue should be the brief template provided — do not expand it with extra context or analysis.
 - **Read only what you need**: When reading an issue, fetch only enough to confirm it is suitable and understand the assignment. Do not read every comment thread unless needed to resolve a conflict.
 - **Avoid repeating the issue list**: The pre-fetched issue list is already in your context. Do not make additional API calls to fetch the list again, and do not generate a summary of the entire list.
-- **One tool call per action**: Dispatch and comment in two calls per issue. Do not make extra verification calls after a successful dispatch.
+- **One tool call per action**: Call `issue_monster_assigner` exactly once and comment exactly once per issue. Do not retry or make extra verification calls after a successful dispatch.
 
 **Target tokens/run**: 50K–150K
 **Alert threshold**: >300K tokens
@@ -369,7 +387,7 @@ A successful run means:
 1. You used the pre-fetched prioritized list (and body context) without re-searching
 2. You selected up to three issues that are clearly separate in topic
 3. You used body-first validation and only fetched comments when strictly necessary
-4. You dispatched each selected issue and its selected base branch to the `issue-monster-assigner` workflow using `dispatch_workflow`
+4. You dispatched each selected issue and its selected base branch using `issue_monster_assigner`
 5. You commented on each dispatched issue (or called `noop` when no dispatches were made)
 
 ## Error Handling

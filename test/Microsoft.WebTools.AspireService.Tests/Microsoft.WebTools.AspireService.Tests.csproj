@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
+    <!-- Keep server tests serial within their class because port discovery and Kestrel binding are not atomic. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

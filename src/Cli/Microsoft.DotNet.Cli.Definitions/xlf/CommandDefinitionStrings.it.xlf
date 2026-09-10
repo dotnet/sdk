@@ -489,6 +489,11 @@ Equivale a eliminare project.assets.json.</target>
         <target state="translated">Non memorizza nella cache pacchetti e richieste HTTP.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Non ripristina i riferimenti P2P (da progetto a progetto) e ripristina solo il progetto specificato.</target>
@@ -585,8 +590,8 @@ Equivale a eliminare project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definisce il percorso del file progetto o soluzione da testare. Usare il percorso del file progetto o della directory che contiene il file progetto. Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Definisce il percorso del file progetto o soluzione da testare. Usare il percorso del file progetto o della directory che contiene il file progetto. Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

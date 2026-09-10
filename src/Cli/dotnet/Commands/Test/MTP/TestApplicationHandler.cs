@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplicationHandler
 {
+    private const string RetryOrchestratorFeature = "RetryOrchestrator";
+
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
@@ -143,6 +145,17 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
+        // Orchestrators are capability-style participants: recognize the retry orchestrator,
+        // but accept missing or unknown feature values so older and future peers remain compatible.
+        // This handshake arrives before the first child TestHost handshake, which lets the reporter
+        // render attempt 1 as a retry attempt without relying on command-line inspection.
+        if (hostType == HandshakeMessageHostTypes.TestHostOrchestrator &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.OrchestratorFeature, out string? orchestratorFeature) &&
+            string.Equals(orchestratorFeature, RetryOrchestratorFeature, StringComparison.Ordinal))
+        {
+            _output.EnableRetry();
+        }
+
         if (!_options.IsArtifactPostProcessing)
         {
             _artifactPostProcessingManager?.RecordCapabilities(
@@ -239,9 +252,12 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
             HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
             HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
+            HandshakeMessagePropertyNames.OrchestratorFeature => nameof(HandshakeMessagePropertyNames.OrchestratorFeature),
             HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
             HandshakeMessagePropertyNames.SupportedPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorKinds),
             HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
             _ => string.Empty,
         };
 
@@ -755,7 +771,8 @@ internal sealed class TestApplicationHandler
         {
             logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}");
+                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}, " +
+                $"InputArtifactPaths=[{string.Join(", ", fileArtifactMessage.InputArtifactPaths ?? [])}]");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());

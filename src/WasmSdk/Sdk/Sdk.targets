@@ -81,4 +81,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
+
+  <Target Name="GetWebAssemblyProjectReference"
+          Returns="@(_WebAssemblyProjectReference)">
+    <ItemGroup>
+      <_WebAssemblyProjectReference Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -79,6 +79,8 @@
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
   </ItemGroup>
 
+  <Import Project="..\MSBuildRuntimeReference.targets" />
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />

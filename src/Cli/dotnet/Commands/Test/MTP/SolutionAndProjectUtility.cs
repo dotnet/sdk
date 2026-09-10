@@ -258,10 +258,56 @@ internal static class SolutionAndProjectUtility
         string? configuration,
         string? platform,
         IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
-        HashSet<string>? visitedTraversalProjects = null)
+        HashSet<string>? visitedTraversalProjects = null,
+        IReadOnlyDictionary<string, ProjectInstance>? preEvaluatedProjects = null)
+    {
+        ProjectInstance Evaluate(string? tfm)
+        {
+            if (preEvaluatedProjects is not null &&
+                preEvaluatedProjects.TryGetValue(tfm ?? string.Empty, out ProjectInstance? preEvaluatedProject))
+            {
+                return preEvaluatedProject;
+            }
+
+            return EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm, configuration, platform, additionalGlobalProperties);
+        }
+
+        return GetProjectProperties(
+            projectFilePath,
+            Evaluate,
+            buildOptions,
+            buildSession,
+            configuration,
+            platform,
+            additionalGlobalProperties,
+            visitedTraversalProjects,
+            (path, referenceConfiguration, referencePlatform, visited) =>
+                GetProjectProperties(
+                    path,
+                    projectCollection,
+                    evaluationContext,
+                    buildOptions,
+                    buildSession,
+                    referenceConfiguration,
+                    referencePlatform,
+                    additionalGlobalProperties,
+                    visited));
+    }
+
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
+        string projectFilePath,
+        Func<string?, ProjectInstance> evaluateProject,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession,
+        string? configuration = null,
+        string? platform = null,
+        IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
+        HashSet<string>? visitedTraversalProjects = null,
+        Func<string, string?, string?, HashSet<string>, IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules>>? expandTraversalProject = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform, additionalGlobalProperties);
+        ProjectInstance projectInstance = evaluateProject(null);
 
         // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
         // They act as a container that forwards build/test operations to their ProjectReference items.
@@ -269,6 +315,11 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
+            if (expandTraversalProject is null)
+            {
+                return projects;
+            }
+
             // Track visited (project, configuration, platform) tuples across the whole traversal graph so
             // that a project referenced by multiple traversal projects with the same configuration/platform
             // (a "diamond") is only tested once, while the same project referenced with a *different*
@@ -286,7 +337,11 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, additionalGlobalProperties, visitedTraversalProjects));
+                projects.AddRange(expandTraversalProject(
+                    reference.FullPath,
+                    reference.Configuration,
+                    reference.Platform,
+                    visitedTraversalProjects));
             }
 
             return projects;
@@ -324,7 +379,7 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = evaluateProject(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -338,7 +393,7 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = evaluateProject(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -413,17 +468,18 @@ internal static class SolutionAndProjectUtility
     }
 
     /// <summary>
-    /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
-    /// and TestTfmsInParallel setting, or null if no device selection is needed.
+    /// Evaluates the project and its inner builds before device selection.
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
     /// </summary>
-    internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
+    internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
-        EvaluationContext? evaluationContext = null)
+        EvaluationContext? evaluationContext = null,
+        string? configuration = null,
+        string? platform = null)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -444,18 +500,14 @@ internal static class SolutionAndProjectUtility
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
-        var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
-        {
-            GlobalProperties = globalProperties,
-            EvaluationContext = evaluationContext,
-            ProjectCollection = collection,
-        });
-
-        // If the project doesn't support device selection, skip entirely
-        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
-        {
-            return null;
-        }
+        var projectInstance = EvaluateProject(
+            collection,
+            evaluationContext,
+            projectFilePath,
+            tfm: null,
+            configuration,
+            platform,
+            globalProperties);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -467,8 +519,6 @@ internal static class SolutionAndProjectUtility
         {
             testTfmsInParallel = parsed;
         }
-
-        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         IEnumerable<string> frameworks;
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
@@ -484,34 +534,119 @@ internal static class SolutionAndProjectUtility
                 .Where(f => !string.IsNullOrEmpty(f));
         }
 
-        var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        var evaluatedProjects = new Dictionary<string, ProjectInstance>(StringComparer.OrdinalIgnoreCase)
+        {
+            [string.Empty] = projectInstance,
+        };
+
         foreach (var framework in frameworks)
         {
-            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive, buildSession);
+            ProjectInstance frameworkProject = projectInstance;
+            if (!string.IsNullOrEmpty(framework) &&
+                !string.Equals(framework, targetFramework, StringComparison.OrdinalIgnoreCase))
+            {
+                frameworkProject = EvaluateProject(
+                    collection,
+                    evaluationContext,
+                    projectFilePath,
+                    framework,
+                    configuration,
+                    platform,
+                    globalProperties);
+            }
+            evaluatedProjects[framework] = frameworkProject;
+        }
+
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel);
+    }
+
+    /// <summary>
+    /// Selects devices from previously evaluated target-framework-specific project instances.
+    /// Returns a result with device mappings and TestTfmsInParallel setting, or null if no
+    /// device selection is needed.
+    /// </summary>
+    internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession,
+        DeviceSelectionEvaluation evaluation,
+        string? configuration = null,
+        string? platform = null)
+    {
+        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+        var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        bool restoreWasPerformed = false;
+
+        foreach (var (framework, frameworkProject) in evaluation.ProjectsByFramework)
+        {
+            // Workload-specific targets are imported only by inner builds, so probe the
+            // TFM-specific evaluation before constructing the selector that executes the target.
+            (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
+                frameworkProject.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                    ? SelectDeviceForTfm(
+                        projectFilePath,
+                        buildOptions,
+                        framework,
+                        isInteractive,
+                        configuration,
+                        platform,
+                        noRestore: restoreWasPerformed,
+                        buildSession)
+                    : (null, null, false);
+
+            var (device, rid, selectionRestoreWasPerformed) = selection;
+            restoreWasPerformed |= selectionRestoreWasPerformed;
             devicesByTfm[framework] = (device, rid);
         }
 
         return devicesByTfm.Values.Any(v => v.Device is not null)
-            ? new DeviceSelectionResult(devicesByTfm, testTfmsInParallel)
+            ? new DeviceSelectionResult(devicesByTfm, evaluation.TestTfmsInParallel, restoreWasPerformed)
             : null;
+    }
+
+    internal sealed record DeviceSelectionEvaluation(
+        Dictionary<string, ProjectInstance> EvaluatedProjects,
+        bool TestTfmsInParallel)
+    {
+        public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
+            => EvaluatedProjects.Count == 1
+                ? EvaluatedProjects
+                : EvaluatedProjects.Where(project => !string.IsNullOrEmpty(project.Key));
+
+        public bool SupportsDeviceSelection
+            => ProjectsByFramework.Any(project => project.Value.Targets.ContainsKey(Constants.ComputeAvailableDevices));
     }
 
     internal sealed record DeviceSelectionResult(
         Dictionary<string, (string? Device, string? RuntimeIdentifier)> DevicesByTfm,
-        bool TestTfmsInParallel);
+        bool TestTfmsInParallel,
+        bool RestoreWasPerformed);
 
     /// <summary>
     /// Selects a device for a specific TFM using RunCommandSelector.
-    /// Returns (null, null) if no device support or no devices available for this TFM.
+    /// Returns the selected device, its runtime identifier, and whether restore was performed.
     /// </summary>
-    private static (string? device, string? runtimeIdentifier) SelectDeviceForTfm(
+    private static (string? device, string? runtimeIdentifier, bool restoreWasPerformed) SelectDeviceForTfm(
         string projectFilePath,
         BuildOptions buildOptions,
         string? tfm,
         bool isInteractive,
+        string? configuration,
+        string? platform,
+        bool noRestore,
         MSBuildSession buildSession)
     {
         var msbuildArgsToAppend = buildOptions.MSBuildArgs;
+        if (!string.IsNullOrEmpty(configuration))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.Configuration}={configuration}");
+        }
+
+        if (!string.IsNullOrEmpty(platform))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.Platform}={platform}");
+        }
+
         if (!string.IsNullOrEmpty(tfm))
         {
             msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
@@ -532,16 +667,16 @@ internal static class SolutionAndProjectUtility
         {
             if (!selector.TrySelectDevice(
                 listDevices: false,
-                noRestore: buildOptions.HasNoRestore || buildOptions.HasNoBuild,
+                noRestore: noRestore || buildOptions.HasNoRestore || buildOptions.HasNoBuild,
                 out var selectedDevice,
                 out var runtimeIdentifier,
-                out _))
+                out var restoreWasPerformed))
             {
                 throw new GracefulException(
                     string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
             }
 
-            return (selectedDevice, runtimeIdentifier);
+            return (selectedDevice, runtimeIdentifier, restoreWasPerformed);
         }
     }
 
@@ -599,7 +734,13 @@ internal static class SolutionAndProjectUtility
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
+            project.GetPropertyValue(ProjectProperties.AppDesignerFolder),
+            buildOptions,
+            profileName: null,
+            project.ExpandString);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -672,7 +813,13 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(
+        string projectDirectory,
+        string projectNameWithoutExtension,
+        string appDesignerFolder,
+        BuildOptions buildOptions,
+        string? profileName,
+        Func<string, string> evaluateExpression)
     {
         if (buildOptions.NoLaunchProfile)
         {
@@ -707,13 +854,40 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(
+            launchSettingsPath,
+            profileName,
+            new LaunchProfileParserOptions(
+                evaluateExpression,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: !buildOptions.NoLaunchProfileArguments));
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.Profile;
+        if (result.Profile is not ProjectLaunchProfile projectProfile)
+        {
+            return result.Profile;
+        }
+
+        try
+        {
+            return ProjectLaunchProfileParser.ExpandMSBuildProperties(
+                projectProfile,
+                evaluateExpression,
+                expandCommandLineArgs: !buildOptions.NoLaunchProfileArguments,
+                expandApplicationUrl: false);
+        }
+        catch (Microsoft.Build.Exceptions.InvalidProjectFileException ex)
+        {
+            Reporter.Error.WriteLine(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                profileName,
+                ex.Message).Bold().Red());
+            return null;
+        }
     }
 }
