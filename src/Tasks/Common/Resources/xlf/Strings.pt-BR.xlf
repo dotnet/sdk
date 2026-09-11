@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
         <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
-        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <target state="translated">NETSDK1237: O assembly '{0}' foi listado em PublishReadyToRunPartialAssemblies, mas está sendo compilado em uma imagem composta. A compilação parcial só tem suporte para assemblies compilados separadamente. O assembly será compilado totalmente na imagem composta.</target>
         <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -883,7 +883,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RunCommandRequiresWindowsForNetFramework">
         <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
-        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <target state="translated">NETSDK1243: O projeto '{0}' tem como destino o .NET Framework, que só pode ser executado no Windows. Execute o projeto no Windows, altere o TargetFramework para um TFM .NET compatível (por exemplo, net{1}) ou defina a propriedade RunCommand explicitamente. Para mais informações, consulte https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
         <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
@@ -933,12 +933,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkVersionIsEol">
         <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1239: O SDK .NET atual ({0}) está em fim de vida útil desde {1}. Ele não receberá mais atualizações de segurança: https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionUpdateRecommendation_Info">
         <source>Update to version {0}.</source>
-        <target state="new">Update to version {0}.</target>
+        <target state="translated">Atualizar para Versão {0}.</target>
         <note>{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
@@ -953,7 +953,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SingleFileBundleUnexpectedExclusion">
         <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
-        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <target state="translated">NETSDK1236: A tarefa de geração de pacote de arquivo único excluiu arquivos que deveriam ter sido incluídos: {0}. Isso pode indicar uma incompatibilidade entre a lógica de filtragem de pacotes do SDK e a tarefa de empacotamento.</target>
         <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
@@ -1189,7 +1189,7 @@ Para instalar essas cargas de trabalho, execute o seguinte comando: dotnet workl
       </trans-unit>
       <trans-unit id="MonoRuntimeNotSupportedForPlatform">
         <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
-        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <target state="translated">NETSDK1242: Compilar projetos de {0} com o runtime Mono não tem suporte no .NET 11.0 e posterior. Use o runtime CoreCLR ou direcione para o .NET 10.0.</target>
         <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>

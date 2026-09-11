@@ -376,7 +376,7 @@
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
         <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
-        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <target state="translated">NETSDK1235: .NET Araçları özel bir .nuspec dosyası kullanmayı desteklemez, ancak nuspec dosyası '{0}' sağlandı. .NET Araçları özel bir paket düzeni ve paket tanımlayıcısı kuralı kullanır ve yalnızca MSBuild mantığıyla özelleştirilebilir. Bu projeden NuspecFile özelliğini kaldırarak .NET Aracı olarak paketlenmesini etkinleştirin.</target>
         <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
@@ -528,7 +528,7 @@
       </trans-unit>
       <trans-unit id="IncludeAllContentForSelfExtractIsLegacy">
         <source>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</source>
-        <target state="new">NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</target>
+        <target state="translated">NETSDK1244: 'IncludeAllContentForSelfExtract', başlangıçta tüm yönetilen derlemeleri diske ayıklayan eski bir uyumluluk modunu etkinleştirir. Projenizden 'IncludeAllContentForSelfExtract' özelliğini kaldırarak varsayılan bellek içi tek dosya davranışını kullanın.</target>
         <note>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</note>
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
         <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
-        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <target state="translated">NETSDK1237: '{0}' derlemesi PublishReadyToRunPartialAssemblies listesinde yer aldı ancak bileşik bir görüntüye derleniyor. Kısmi derleme yalnızca ayrı olarak derlenen derlemeler için desteklenir. Derleme, bileşik görüntüye eksiksiz olarak derlenecektir.</target>
         <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -923,7 +923,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkFeatureBandDiscontinued">
         <source>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1240: Mevcut .NET SDK ({0}) için özellik grubunda daha yeni bir sürüm yok. Sürüm {1}: https://dotnet.microsoft.com/download adresine güncelleyin</target>
         <note>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionHasVulnerabilities">
@@ -933,12 +933,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkVersionIsEol">
         <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1239: Mevcut .NET yazılım geliştirme seti ({0}), {1} itibarıyla kullanım ömrünün sonuna gelmiştir. Artık güvenlik güncelleştirmesi almayacaktır: https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionUpdateRecommendation_Info">
         <source>Update to version {0}.</source>
-        <target state="new">Update to version {0}.</target>
+        <target state="translated">{0} sürümüne güncelleştir.</target>
         <note>{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
@@ -953,7 +953,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SingleFileBundleUnexpectedExclusion">
         <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
-        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <target state="translated">NETSDK1236: Tek dosya paket oluşturma görevi, dahil edilmesi beklenen dosyaları dışarıda bıraktı: {0}. Bu, yazılım geliştirme setinin paket filtreleme mantığı ile paketleyici görevi arasında bir uyumsuzluk olduğunu gösterebilir.</target>
         <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
@@ -970,7 +970,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="TargetFrameworkEmpty">
         <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
-        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <target state="translated">NETSDK1241: TargetFramework özelliği boş. Proje dosyanızda TargetFramework özelliği için bir değer belirtin.</target>
         <note>{StrBegins="NETSDK1241: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
@@ -1189,7 +1189,7 @@ Bu iş yüklerini yüklemek için şu komutu çalıştırın: dotnet workload re
       </trans-unit>
       <trans-unit id="MonoRuntimeNotSupportedForPlatform">
         <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
-        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <target state="translated">NETSDK1242: Mono çalışma zamanı ile {0} projelerini derlemek .NET 11.0 ve sonrasında desteklenmez. CoreCLR çalışma zamanını kullanın veya .NET 10.0'ı hedefleyin.</target>
         <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>
