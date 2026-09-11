@@ -152,7 +152,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             }
 
             // Clean up the resources.
-            DeleteTempZipFile(zipFileFullPath);
+            DeleteContainingDirectory(zipFileFullPath);
 
             return success && zipTask.Result;
         }
@@ -191,7 +191,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return zipFileFullPath;
         }
 
-        internal System.Threading.Tasks.Task DeleteTempZipFile(string? tempFilePath)
+        internal System.Threading.Tasks.Task DeleteContainingDirectory(string? tempFilePath)
         {
             return System.Threading.Tasks.Task.Factory.StartNew(
                 () =>
