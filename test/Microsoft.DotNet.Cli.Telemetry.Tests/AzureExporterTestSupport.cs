@@ -124,7 +124,7 @@ internal sealed class AzureExporterTestScope : IDisposable
         options.EnableStandardMetrics = false;
         options.EnablePerformanceCounters = false;
         options.Retry.MaxRetries = 0;
-        options.Retry.NetworkTimeout = TimeSpan.FromSeconds(20);
+        options.Retry.NetworkTimeout = TimeSpan.FromSeconds(5);
     }
 
     internal TracerProvider CreateProvider(HttpMessageHandler handler, string? connectionString = null) =>

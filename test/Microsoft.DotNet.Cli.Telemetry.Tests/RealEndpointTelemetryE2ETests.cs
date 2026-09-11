@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.Tests;
 public class RealEndpointTelemetryE2ETests
 {
     private const string ConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
+    private const string DefaultConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
     private static readonly string s_runId = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_E2E_RUN_ID")
         is { Length: > 0 } pinned ? pinned : Guid.NewGuid().ToString("N");
 
@@ -28,7 +29,7 @@ public class RealEndpointTelemetryE2ETests
         using var handler = new LiveRecordingHandler();
         using var provider = scope.CreateProvider(handler, connection);
         EmitValidBatch(scope);
-        provider.Shutdown(20_000).Should().BeTrue();
+        provider.Shutdown(5_000).Should().BeTrue();
         handler.Responses.Should().NotBeEmpty();
         handler.Responses.Should().OnlyContain(response => response.Status == HttpStatusCode.OK);
         scope.StoredFiles().Should().BeEmpty("accepted telemetry should not need a retry");
@@ -43,7 +44,7 @@ public class RealEndpointTelemetryE2ETests
         using var handler = new LiveRecordingHandler();
         using var provider = scope.CreateProvider(handler, connection);
         EmitValidBatch(scope);
-        provider.Shutdown(20_000).Should().BeTrue();
+        provider.Shutdown(5_000).Should().BeTrue();
         handler.Responses.Should().NotBeEmpty();
         foreach (var response in handler.Responses)
         {
@@ -63,7 +64,7 @@ public class RealEndpointTelemetryE2ETests
         using var handler = new LiveRecordingHandler { AppendMalformedEnvelope = true };
         using var provider = scope.CreateProvider(handler, connection);
         EmitValidBatch(scope);
-        provider.Shutdown(20_000).Should().BeTrue();
+        provider.Shutdown(5_000).Should().BeTrue();
         handler.Responses.Should().NotBeEmpty();
         foreach (var response in handler.Responses)
         {
@@ -82,7 +83,7 @@ public class RealEndpointTelemetryE2ETests
         using var handler = new RecordingHandler();
         using var provider = scope.CreateProvider(handler);
         EmitValidBatch(scope);
-        provider.Shutdown(20_000).Should().BeTrue();
+        provider.Shutdown(5_000).Should().BeTrue();
         handler.Envelopes.Select(envelope => envelope.GetProperty("data").GetProperty("baseType").GetString())
             .Where(baseType => baseType != "MetricData")
             .Should().BeEquivalentTo(["MessageData", "RemoteDependencyData", "RequestData"]);
@@ -97,7 +98,7 @@ public class RealEndpointTelemetryE2ETests
         string? connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvVar);
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            Assert.Inconclusive($"Live ingestion is opt-in. Set {ConnectionStringEnvVar} to run this test.");
+            connectionString = DefaultConnectionString;
         }
         TestContext.WriteLine($"Real-endpoint event='{AzureExporterTestScope.CliEventName}', SessionId='{s_runId}'.");
         TestContext.WriteLine("After ingestion, query the CLI destination table for this SessionId to verify downstream delivery.");

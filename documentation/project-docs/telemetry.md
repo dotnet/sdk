@@ -86,14 +86,16 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
   can still delay shutdown. Local shutdown waits for the batch processor to finish rather than applying the
   old 10-ms timeout to persistence.
-2. **Subsequent invocations.** Azure starts a background drain of its stored payloads shortly after startup.
+2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
+  start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
   Accepted payloads are deleted; retryable failures remain for later attempts. Storage partitioning, retention,
   leases, and response handling belong to Azure. Blobs written directly into the storage root by the previous
   SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
   untouched; this migration does not delete old telemetry files.
 3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
-  calls `Shutdown` with a finite timeout because another invocation may never run. The default is 20 seconds,
-  overridable with a positive `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS`. That value also configures Azure's
+  calls `Shutdown` with a finite timeout because another invocation may never run. The default and maximum CI
+  wait budget is five seconds, shared across trace and metric providers. A positive
+  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` can shorten it; larger CI values are capped. That value also configures Azure's
   network timeout. This selects network-first shutdown, not guaranteed ingestion: retryable failures can still
   be persisted, and a timeout can leave telemetry undelivered.
 4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
@@ -102,7 +104,7 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   network-first flush. A force-flush result is not an ingestion acknowledgment.
 
 These Azure settings are process-wide. OTLP-enabled invocations retain bounded provider shutdown, and the trace
-and metric providers each receive their own timeout rather than sharing one total process-exit budget. Azure's
+and metric providers share the configured wait budget. This bounds provider waits, not all process-exit work. Azure's
 zero drain-wait setting does not control OTLP delivery. Storage failures and abnormal process termination can
 still cause data loss; telemetry delivery remains best-effort.
 
@@ -111,8 +113,9 @@ The lifecycle behavior is covered by
 using the real exporter, isolated storage, and a controlled HTTP transport. The test-only reflection hooks
 disable background drains when asserting persisted payloads and are restored after each test. The retained
 [CLI subprocess test](../../test/dotnet.Tests/TelemetryTests/PersistentStorageTelemetryE2ETests.cs) checks the
-production managed assembly and normal muxer entry point. Live endpoint acceptance tests are opt-in using
-`DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING`; `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
+production managed assembly and normal muxer entry point. Live endpoint acceptance tests use the SDK's fixed
+connection string by default, so running them sends synthetic telemetry to that destination.
+`DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` overrides the destination; `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
 checking downstream ingestion. HTTP acceptance alone does not verify arrival in a destination table.
 
 1.9.0 or later must be leveraged, as older versions did not work well and we requested fixes. Our requested upstream shutdown fixes are documented in
