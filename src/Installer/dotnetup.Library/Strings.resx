@@ -356,49 +356,6 @@
   <data name="InitEnvironmentSetupProgress" xml:space="preserve">
     <value>Setting up your environment.</value>
   </data>
-  <data name="InitMigrationDisplay" xml:space="preserve">
-    <value>{0} {1}</value>
-    <comment>{0} is the localized .NET component name; {1} is a channel name.</comment>
-  </data>
-  <data name="InitMigrationComponentSdk" xml:space="preserve">
-    <value>.NET SDK</value>
-    <comment>{Locked=".NET"}{Locked="SDK"}</comment>
-  </data>
-  <data name="InitMigrationComponentRuntime" xml:space="preserve">
-    <value>.NET runtime</value>
-    <comment>{Locked=".NET"}</comment>
-  </data>
-  <data name="InitMigrationComponentAspNetCoreRuntime" xml:space="preserve">
-    <value>ASP.NET Core runtime</value>
-    <comment>{Locked="ASP.NET Core"}</comment>
-  </data>
-  <data name="InitMigrationComponentWindowsDesktopRuntime" xml:space="preserve">
-    <value>.NET Desktop runtime</value>
-    <comment>{Locked=".NET Desktop"}</comment>
-  </data>
-  <data name="InitMigrationPromptSkipped" xml:space="preserve">
-    <value>Skipping the migration prompt because interactive input is not available. {0}</value>
-    <comment>{0} explains how to migrate later.</comment>
-  </data>
-  <data name="InitMigrationRetryHint" xml:space="preserve">
-    <value>You can migrate matching SDKs or runtimes later with "dotnetup sdk install --migrate-from-system" or "dotnetup runtime install --migrate-from-system".</value>
-    <comment>{Locked="SDK"}{Locked="dotnetup sdk install --migrate-from-system"}{Locked="dotnetup runtime install --migrate-from-system"}</comment>
-  </data>
-  <data name="InitSystemDotnetLocation" xml:space="preserve">
-    <value>the system .NET location</value>
-    <comment>{Locked=".NET"}</comment>
-  </data>
-  <data name="InitExistingSystemInstalls" xml:space="preserve">
-    <value>You have existing system-managed .NET installs in {0}.</value>
-    <comment>{0} is the styled system installation path. {Locked=".NET"}</comment>
-  </data>
-  <data name="InitMigrationConfirmationPrompt" xml:space="preserve">
-    <value>Do you want dotnetup to install matching versions in its managed directory?</value>
-    <comment>{Locked="dotnetup"}</comment>
-  </data>
-  <data name="InitMigrationAccepted" xml:space="preserve">
-    <value>These will be installed as part of the current setup.</value>
-  </data>
   <data name="InitInstallingToFromGlobalJson" xml:space="preserve">
     <value>Installing to {0} as specified by {1}.</value>
     <comment>{0} is the styled installation path; {1} is the styled global.json path.</comment>

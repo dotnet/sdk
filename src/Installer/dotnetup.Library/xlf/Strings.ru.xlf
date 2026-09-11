@@ -386,11 +386,6 @@ Or open a new terminal.</target>
         <target state="new">Setting up your environment.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitExistingSystemInstalls">
-        <source>You have existing system-managed .NET installs in {0}.</source>
-        <target state="new">You have existing system-managed .NET installs in {0}.</target>
-        <note>{0} is the styled system installation path. {Locked=".NET"}</note>
-      </trans-unit>
       <trans-unit id="InitFormAccept">
         <source>Accept and install</source>
         <target state="new">Accept and install</target>
@@ -606,60 +601,10 @@ Or open a new terminal.</target>
         <target state="new">You can find dotnetup managed installs at {0}.</target>
         <note>{0} is the styled installation path. {Locked="dotnetup"}</note>
       </trans-unit>
-      <trans-unit id="InitMigrationAccepted">
-        <source>These will be installed as part of the current setup.</source>
-        <target state="new">These will be installed as part of the current setup.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InitMigrationComponentAspNetCoreRuntime">
-        <source>ASP.NET Core runtime</source>
-        <target state="new">ASP.NET Core runtime</target>
-        <note>{Locked="ASP.NET Core"}</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationComponentRuntime">
-        <source>.NET runtime</source>
-        <target state="new">.NET runtime</target>
-        <note>{Locked=".NET"}</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationComponentSdk">
-        <source>.NET SDK</source>
-        <target state="new">.NET SDK</target>
-        <note>{Locked=".NET"}{Locked="SDK"}</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationComponentWindowsDesktopRuntime">
-        <source>.NET Desktop runtime</source>
-        <target state="new">.NET Desktop runtime</target>
-        <note>{Locked=".NET Desktop"}</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationConfirmationPrompt">
-        <source>Do you want dotnetup to install matching versions in its managed directory?</source>
-        <target state="new">Do you want dotnetup to install matching versions in its managed directory?</target>
-        <note>{Locked="dotnetup"}</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationDisplay">
-        <source>{0} {1}</source>
-        <target state="new">{0} {1}</target>
-        <note>{0} is the localized .NET component name; {1} is a channel name.</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationPromptSkipped">
-        <source>Skipping the migration prompt because interactive input is not available. {0}</source>
-        <target state="new">Skipping the migration prompt because interactive input is not available. {0}</target>
-        <note>{0} explains how to migrate later.</note>
-      </trans-unit>
-      <trans-unit id="InitMigrationRetryHint">
-        <source>You can migrate matching SDKs or runtimes later with "dotnetup sdk install --migrate-from-system" or "dotnetup runtime install --migrate-from-system".</source>
-        <target state="new">You can migrate matching SDKs or runtimes later with "dotnetup sdk install --migrate-from-system" or "dotnetup runtime install --migrate-from-system".</target>
-        <note>{Locked="SDK"}{Locked="dotnetup sdk install --migrate-from-system"}{Locked="dotnetup runtime install --migrate-from-system"}</note>
-      </trans-unit>
       <trans-unit id="InitSetupComplete">
         <source>Setup complete!</source>
         <target state="new">Setup complete!</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InitSystemDotnetLocation">
-        <source>the system .NET location</source>
-        <target state="new">the system .NET location</target>
-        <note>{Locked=".NET"}</note>
       </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>

@@ -35,21 +35,6 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForNone()
-    {
-        DotnetAccessModePolicy.ShouldReplaceSystemConfiguration(DotnetAccessMode.None)
-            .Should().BeFalse();
-    }
-
-    [TestMethod]
-    [DataRow(DotnetAccessMode.Everywhere)]
-    internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(DotnetAccessMode accessMode)
-    {
-        DotnetAccessModePolicy.ShouldReplaceSystemConfiguration(accessMode)
-            .Should().BeTrue();
-    }
-
-    [TestMethod]
     [DataRow(DotnetAccessMode.None, false)]
     [DataRow(DotnetAccessMode.Shell, true)]
     [DataRow(DotnetAccessMode.Everywhere, true)]
@@ -59,46 +44,6 @@ public class InitWorkflowTests : IDisposable
     {
         DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
             .Should().Be(expected);
-    }
-
-    // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
-
-    [TestMethod]
-    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenNoSystemInstallsExist()
-    {
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
-        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
-        var mock = new MockDotnetInstallManager(
-            defaultInstallPath: _tempDir,
-            existingSystemInstalls: []);
-
-        string manifestPath = Path.Combine(_tempDir, "manifest.json");
-        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, installRoot, manifestPath);
-
-        result.Should().BeEmpty();
-        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
-    }
-
-    [TestMethod]
-    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenInteractiveIsFalse()
-    {
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
-        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
-        var mock = new MockDotnetInstallManager(
-            defaultInstallPath: _tempDir,
-            existingSystemInstalls:
-            [
-                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            ]);
-
-        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock,
-            installRoot,
-            interactive: false);
-
-        result.Should().BeEmpty();
-        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
     }
 
     // ── GetExistingSystemInstalls — architecture filtering ──
