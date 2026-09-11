@@ -35,7 +35,8 @@ dotnetup sdk install 10.0.1xx --install-path .\.dotnet --no-progress
 ```
 
 Run the local executable directly or activate it with `dotnetup env script`.
-The forwarding command uses the default dotnetup hive.
+The forwarding command uses the default dotnetup-managed .NET installation
+root.
 
 ## Read state as JSON
 
@@ -62,5 +63,5 @@ manifest. Use an isolated `--manifest-path` for independent jobs.
 ## See also
 
 - [dotnetup list](../reference/dotnetup-list.md)
-- [Manage custom hives](manage-custom-hives.md)
+- [Manage custom installation roots](manage-custom-installation-roots.md)
 - [Update tracked installations](update-installations.md)

@@ -62,7 +62,7 @@ Or open a new terminal.
 > dotnetup list
 Installations (managed by dotnetup):
 
-  <default-hive>
+  <default-installation-root>
 
     Tracked channels:
       SDK latest  (source: explicit)
@@ -92,8 +92,8 @@ Open a new terminal for the change to take effect.
 <resolved-version>
 ```
 
-The mode, resolved version, architecture, hive path, and shell command depend
-on your system and the available releases.
+The mode, resolved version, architecture, installation path, and shell command
+depend on your system and the available releases.
 
 ## How dotnetup manages .NET
 
@@ -107,7 +107,7 @@ For more information, see [How dotnetup works](concepts/how-dotnetup-works.md).
 
 | Goal | Article |
 | --- | --- |
-| Understand channels, hives, and tracking | [How dotnetup works](concepts/how-dotnetup-works.md) |
+| Understand channels, installation roots, and tracking | [How dotnetup works](concepts/how-dotnetup-works.md) |
 | Use a repository's `global.json` | [Manage repository SDK requirements](usecases/install-with-global-json.md) |
 | Install SDKs and runtimes | [Install .NET components](usecases/install-components.md) |
 | Update or remove installations | [Update installations](usecases/update-installations.md) |

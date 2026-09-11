@@ -29,14 +29,14 @@ dotnetup sdk install 11.0.1xx-preview.5-daily
 
 ## Isolate a daily SDK
 
-Use a separate hive when you do not want daily and stable installations in the
-same root:
+Use a separate installation root when you do not want daily and stable
+installations in the same root:
 
 ```dotnetcli
 dotnetup sdk install daily --install-path .\.dotnet-daily
 ```
 
-Run the hive executable directly:
+Run the installation's executable directly:
 
 ```powershell
 .\.dotnet-daily\dotnet.exe --version
@@ -48,8 +48,8 @@ On Linux or macOS, run:
 ./.dotnet-daily/dotnet --version
 ```
 
-`dotnetup dotnet` selects the default dotnetup hive. It does not automatically
-select an arbitrary `--install-path`.
+`dotnetup dotnet` selects the default dotnetup-managed .NET installation root.
+It does not automatically select an arbitrary `--install-path`.
 
 ## Install daily runtimes
 
@@ -75,4 +75,4 @@ An exact prerelease version is pinned and is not changed by update commands.
 
 - [Daily channels](../channels/daily.md)
 - [Preview channels](../channels/preview.md)
-- [Manage custom hives](manage-custom-hives.md)
+- [Manage custom installation roots](manage-custom-installation-roots.md)

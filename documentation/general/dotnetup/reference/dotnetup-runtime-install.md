@@ -37,7 +37,7 @@ only on Windows.
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--set-default-install [<true\|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
-| `--migrate-from-system [<true\|false>]` | Install matching native-architecture runtimes from a system-managed installation into the selected hive. |
+| `--migrate-from-system [<true\|false>]` | Install matching native-architecture runtimes from a system-managed installation into the selected installation root. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--interactive [<true\|false>]` | Allow first-use onboarding to wait for input. |
 | `--no-progress [<true\|false>]` | Disable progress display. |

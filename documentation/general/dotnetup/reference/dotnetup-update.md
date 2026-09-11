@@ -46,7 +46,7 @@ Update all tracked components:
 dotnetup update
 ```
 
-Update one hive and its repository files:
+Update one installation root and its repository files:
 
 ```dotnetcli
 dotnetup update --install-path .\.dotnet --update-global-json

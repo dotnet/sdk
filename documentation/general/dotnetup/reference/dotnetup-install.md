@@ -33,7 +33,7 @@ derive one, it uses `latest`.
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--set-default-install [<true\|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
-| `--migrate-from-system [<true\|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected hive. |
+| `--migrate-from-system [<true\|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected installation root. |
 | `--update-global-json [<true\|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--interactive [<true\|false>]` | Allow first-use onboarding to wait for input. |
@@ -63,7 +63,7 @@ Install the requirement from `global.json` and write the resolved version:
 dotnetup install --update-global-json
 ```
 
-Install in a repository-local hive:
+Install in a repository-local installation root:
 
 ```dotnetcli
 dotnetup install 10.0.1xx --install-path .\.dotnet

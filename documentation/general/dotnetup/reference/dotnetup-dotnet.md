@@ -20,21 +20,21 @@ dotnetup dotnet [--] [<ARGUMENT>...]
 
 ## Description
 
-The command selects the current default dotnetup hive. It uses the `PATH`
-location if that location is the default managed hive. Otherwise, it uses the
-default hive.
+The command selects the current default dotnetup-managed .NET installation
+root. It uses the `PATH` location if that location is the default managed
+installation root. Otherwise, it uses the default installation root.
 
 Before it starts the child process, it sets `DOTNET_ROOT` to the selected
-hive and prepends the hive to `PATH`. It forwards all remaining arguments and
-inherits standard input, output, and error. Its exit code is the child
-process exit code.
+installation root and prepends that root to `PATH`. It forwards all remaining
+arguments and inherits standard input, output, and error. Its exit code is the
+child process exit code.
 
-This command does not automatically select an arbitrary hive supplied earlier
-with `--install-path`.
+This command does not automatically select an arbitrary installation root
+supplied earlier with `--install-path`.
 
 `dotnetup dotnet` changes the environment only for the command that it starts.
-Other applications do not use this hive by default. This includes IDEs such as
-Visual Studio Code.
+Other applications do not use this installation by default. This includes IDEs
+such as Visual Studio Code.
 
 Use Terminal Mode and launch the IDE from that terminal. On Windows, use
 Everywhere Mode to configure all applications. For more information, see

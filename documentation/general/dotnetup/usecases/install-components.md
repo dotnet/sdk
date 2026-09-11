@@ -55,7 +55,7 @@ untracked install.
 ## Migrate native-architecture components
 
 To copy matching components from system-managed .NET locations into the
-selected hive, run:
+selected installation root, run:
 
 ```dotnetcli
 dotnetup sdk install --migrate-from-system
