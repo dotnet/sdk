@@ -63,7 +63,7 @@ Add these entries to the analyzer group's `.resx` file:
 
 - `<Name>Title`;
 - `<Name>Message`;
-- `<Name>Description>`; and
+- `<Name>Description`;
 - `<Name>CodeFixTitle`, when a fixer exists.
 
 Terms that must not be translated use a resource comment such as
