@@ -24,23 +24,25 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
     // Only runs on Windows because the Azure Monitor / persistent-storage telemetry path is only
     // compiled and exercised on Microsoft (non-source-build) Windows builds.
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     [OSCondition(OperatingSystems.Windows)]
-    public void ItPersistsTraceTelemetryToTheStorageDirectory()
+    public void ItPersistsTraceTelemetryToTheStorageDirectory(bool managed)
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;
         var storageDir = Path.Combine(testDir, "telemetry-storage");
         Directory.CreateDirectory(storageDir);
 
         string sessionId = Guid.NewGuid().ToString();
-        var command = CreateCommand(testDir, storageDir, sessionId);
+        var command = CreateCommand(testDir, storageDir, sessionId, managed);
         command.Execute().Should().Pass();
         AssertPersistedTelemetry(storageDir, sessionId);
     }
 
-    private TestCommand CreateCommand(string testDir, string storageDir, string sessionId)
+    private TestCommand CreateCommand(string testDir, string storageDir, string sessionId, bool managed)
     {
         string cliAssembly = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "dotnet.dll");
-        var command = new DotnetCommand(Log, "exec", cliAssembly, "--help")
+        var command = new DotnetCommand(Log, managed ? ["exec", cliAssembly, "--help"] : ["--help"])
             .WithWorkingDirectory(testDir)
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "false")
@@ -51,7 +53,7 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
             .WithEnvironmentVariable("ALL_PROXY", "http://127.0.0.1:1")
             .WithEnvironmentVariable("NO_PROXY", "")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER", "false")
-            .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", managed ? "false" : "true")
             .WithEnvironmentVariable("OTEL_SDK_DISABLED", "false")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "1");
 

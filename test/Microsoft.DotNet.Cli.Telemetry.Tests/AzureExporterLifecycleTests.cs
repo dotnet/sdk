@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Cli.Telemetry.Tests;
@@ -50,15 +52,18 @@ public class AzureExporterLifecycleTests
         };
         using var provider = scope.CreateProvider(handler);
         using var activity = scope.Emit("local-shutdown");
+        Task<bool> shutdown = Task.Run(() => provider.Shutdown());
         try
         {
-            bool completed = await Task.Run(() => provider.Shutdown()).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            bool completed = await shutdown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             completed.Should().BeTrue();
             scope.StoredFiles().Should().NotBeEmpty("unacknowledged telemetry must remain durable");
         }
         finally
         {
             release.TrySetResult();
+            await shutdown.WaitAsync(TimeSpan.FromSeconds(25), CancellationToken.None);
+            SpinWait.SpinUntil(() => scope.StoredFiles().Length == 0, TimeSpan.FromSeconds(5)).Should().BeTrue();
         }
     }
 
@@ -88,6 +93,7 @@ public class AzureExporterLifecycleTests
         finally
         {
             release.TrySetResult();
+            await shutdown.WaitAsync(TimeSpan.FromSeconds(25), CancellationToken.None);
         }
         (await shutdown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken)).Should().BeTrue();
         handler.Payloads.Should().Contain(payload => payload.Contains("ci-shutdown", StringComparison.Ordinal));
@@ -132,6 +138,42 @@ public class AzureExporterLifecycleTests
         handler.Payloads.Should().BeEmpty();
         string persisted = string.Join('\n', scope.StoredFiles().Select(File.ReadAllText));
         persisted.Should().Contain("first-build").And.Contain("second-build");
+    }
+
+    [TestMethod]
+    public void PartialAcceptancePersistsOnlyRetryableEnvelopes()
+    {
+        using var settings = new ExporterSettingsScope(ci: true);
+        using var scope = new AzureExporterTestScope();
+        using var handler = new RecordingHandler
+        {
+            Respond = (payload, _) =>
+            {
+                var envelopes = RecordingHandler.Parse(payload);
+                int retryIndex = Array.FindIndex(envelopes,
+                    envelope => envelope.GetProperty("data").GetProperty("baseType").GetString() == "MessageData");
+                retryIndex.Should().BeGreaterThanOrEqualTo(0);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.PartialContent)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(new
+                    {
+                        itemsReceived = envelopes.Length,
+                        itemsAccepted = envelopes.Length - 1,
+                        errors = new[] { new { index = retryIndex, statusCode = 503, message = "Retry later" } },
+                    }), Encoding.UTF8, "application/json"),
+                });
+            },
+        };
+        using var provider = scope.CreateProvider(handler);
+        using var activity = scope.Emit("partial-acceptance");
+
+        provider.Shutdown(20_000).Should().BeTrue();
+
+        var persisted = scope.StoredFiles().Select(File.ReadAllText).SelectMany(RecordingHandler.Parse).ToArray();
+        persisted.Should().ContainSingle();
+        persisted.Single().GetProperty("data").GetProperty("baseType").GetString().Should().Be("MessageData");
+        persisted.Single().GetProperty("data").GetProperty("baseData").GetProperty("properties")
+            .GetProperty("SessionId").GetString().Should().Be("partial-acceptance");
     }
 
     [TestMethod]

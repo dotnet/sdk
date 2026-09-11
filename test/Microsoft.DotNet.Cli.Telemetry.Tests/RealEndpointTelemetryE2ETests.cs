@@ -116,7 +116,10 @@ public class RealEndpointTelemetryE2ETests
         response.Body.GetProperty("itemsAccepted").GetInt32().Should().Be(accepted);
     }
 
-    private sealed record LiveResponse(HttpStatusCode Status, JsonElement Body, int SentCount);
+    private sealed record LiveResponse(HttpStatusCode Status, string RawBody, int SentCount)
+    {
+        internal JsonElement Body => JsonSerializer.Deserialize<JsonElement>(RawBody);
+    }
 
     private sealed class LiveRecordingHandler : DelegatingHandler
     {
@@ -142,7 +145,7 @@ public class RealEndpointTelemetryE2ETests
             }
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
             string body = await response.Content.ReadAsStringAsync(cancellationToken);
-            Responses.Add(new LiveResponse(response.StatusCode, JsonSerializer.Deserialize<JsonElement>(body), sentCount));
+            Responses.Add(new LiveResponse(response.StatusCode, body, sentCount));
             return response;
         }
     }
