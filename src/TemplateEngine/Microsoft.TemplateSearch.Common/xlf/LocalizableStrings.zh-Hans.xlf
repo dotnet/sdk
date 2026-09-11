@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_FailedToUpdateCache">
         <source>Failed to update search cache.</source>
-        <target state="new">Failed to update search cache.</target>
+        <target state="translated">更新搜索缓存失败。</target>
         <note />
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
         <source>Local search cache '{0}' does not exist.</source>
-        <target state="new">Local search cache '{0}' does not exist.</target>
+        <target state="translated">本地搜索缓存“{0}”不存在。</target>
         <note>{0} - file path to search cache</note>
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">
         <source>Failed to update search cache. Local search cache will be used instead.</source>
-        <target state="new">Failed to update search cache. Local search cache will be used instead.</target>
+        <target state="translated">更新搜索缓存失败。将改为使用本地搜索缓存。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotSupported">
         <source>The template search cache data is not supported.</source>
-        <target state="new">The template search cache data is not supported.</target>
+        <target state="translated">不支持该模板搜索缓存数据。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotValid">
         <source>The template search cache data is not valid.</source>
-        <target state="new">The template search cache data is not valid.</target>
+        <target state="translated">该模板搜索缓存数据无效。</target>
         <note />
       </trans-unit>
     </body>

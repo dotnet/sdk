@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_FailedToUpdateCache">
         <source>Failed to update search cache.</source>
-        <target state="new">Failed to update search cache.</target>
+        <target state="translated">Nie można zaktualizować pamięci podręcznej wyszukiwania.</target>
         <note />
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
         <source>Local search cache '{0}' does not exist.</source>
-        <target state="new">Local search cache '{0}' does not exist.</target>
+        <target state="translated">Lokalna pamięć podręczna wyszukiwania "{0}" nie istnieje.</target>
         <note>{0} - file path to search cache</note>
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">
         <source>Failed to update search cache. Local search cache will be used instead.</source>
-        <target state="new">Failed to update search cache. Local search cache will be used instead.</target>
+        <target state="translated">Nie można zaktualizować pamięci podręcznej wyszukiwania. Zamiast tego zostanie użyta lokalna pamięć podręczna wyszukiwania.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotSupported">
         <source>The template search cache data is not supported.</source>
-        <target state="new">The template search cache data is not supported.</target>
+        <target state="translated">Dane pamięci podręcznej wyszukiwania szablonów nie są obsługiwane.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateSearchCache_Exception_NotValid">
         <source>The template search cache data is not valid.</source>
-        <target state="new">The template search cache data is not valid.</target>
+        <target state="translated">Dane pamięci podręcznej wyszukiwania szablonów nie są prawidłowe.</target>
         <note />
       </trans-unit>
     </body>
