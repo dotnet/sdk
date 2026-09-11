@@ -138,7 +138,7 @@ public static class ParseResultExtensions
 
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
         string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+        || parseResult.RootCommandResult.Children.OfType<CommandResult>().Any();
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {
