@@ -2140,14 +2140,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
     }
 
-    [TestMethod]
-    [DataRow(true, "", true)]
-    [DataRow(true, "FileBasedApp", false)]
-    [DataRow(false, "", false)]
+    [TestMethod, CombinatorialData]
     public async Task Api_VirtualProjectBuilder_ArtifactsPathCompatibility(
-        bool defaultArtifactsPathPropsImported,
-        string artifactsPathLocationType,
-        bool expectLegacyArtifactsPath)
+        bool supportsFileBasedAppArtifactsPath)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         var programPath = Path.Join(testInstance.Path, "Program.cs");
@@ -2166,14 +2161,13 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             VirtualProjectBuildingCommand.ThrowingReporter,
             additionalGlobalProperties: new Dictionary<string, string>
             {
-                ["_DefaultArtifactsPathPropsImported"] = defaultArtifactsPathPropsImported.ToString(),
-                ["_ArtifactsPathLocationType"] = artifactsPathLocationType,
+                ["_SupportsFileBasedAppArtifactsPath"] = supportsFileBasedAppArtifactsPath.ToString(),
             });
 
         var xml = result.ProjectRootElement.GetRawXml();
         Log.WriteLine(xml);
 
-        if (expectLegacyArtifactsPath)
+        if (!supportsFileBasedAppArtifactsPath)
         {
             xml.Should()
                 .Contain("<IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>")
