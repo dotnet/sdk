@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
         <source>Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</source>
-        <target state="new">Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</target>
+        <target state="translated">‘{0}’의 각 자식에는 고유한 ID가 있어야 합니다. 현재 ID ‘{1}’은(는) 여러 자식이 공유합니다.</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>

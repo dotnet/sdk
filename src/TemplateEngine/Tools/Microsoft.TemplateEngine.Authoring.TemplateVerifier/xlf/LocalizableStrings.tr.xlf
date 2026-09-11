@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_NoDirectoryVerifier">
         <source>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</source>
-        <target state="new">No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</target>
+        <target state="translated">Hiçbir dizin doğrulayıcısı yapılandırılmadı. VerificationEngine.DirectoryVerifier öğesini test çerçevenizin Verifier.VerifyDirectory değerine ayarlayın (örneğin VerifyXunit.Verifier.VerifyDirectory veya VerifyMSTest.Verifier.VerifyDirectory) ya da TemplateVerifierOptions.WithCustomDirectoryVerifier yoluyla özel bir doğrulayıcı sağlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">

@@ -212,7 +212,7 @@ Details:
       </trans-unit>
       <trans-unit id="CREATEPROVIDERLIST_SqlExpressPublishRequireLocalDB">
         <source>SQL Server Express LocalDB is required in order to publish one or more of your databases. To learn more and install it, follow this link http://go.microsoft.com/fwlink/?LinkId=245956 </source>
-        <target state="translated">SQL Server Express LocalDB ist erforderlich, um mindestens eine Ihrer Datenbanken zu veröffentlichen. Weitere Informationen zur Installation erhalten Sie unter http://go.microsoft.com/fwlink/?LinkId=245956. </target>
+        <target state="translated">SQL Server Express LocalDB ist erforderlich, um mindestens eine Ihrer Datenbanken zu veröffentlichen. Weitere Informationen zur Installation erhalten Sie unter http://go.microsoft.com/fwlink/?LinkId=245956 </target>
         <note />
       </trans-unit>
       <trans-unit id="DeploymentError_MissingDbDacFx">
@@ -648,10 +648,10 @@ Optionale Kennzeichen:
 		"-skip:objectName=dbFullSql" 
 </source>
         <target state="translated">
-[Zusätzliche msdeploy.exe-Kennzeichen]
-	Der Befehl "msdeploy.exe" unterstützt zusätzliche Kennzeichen. Sie können diese zusätzlichen Kennzeichen in die Datei "$(ProjectName).Deploy.cmd" aufnehmen, und die Kennzeichen werden dann während der Ausführung an "msdeploy.exe" übergeben.
-	Alternativ können Sie zusätzliche Kennzeichen angeben, indem Sie die Umgebungsvariable "_MsDeployAdditionalFlags" festlegen. Diese Einstellungen werden von dieser Batchdatei verwendet.
-	Hinweis: Jeder Kennzeichenwert, der ein Gleichheitszeichen (=) enthält, muss - wie im folgenden Beispiel gezeigt - in doppelte Anführungszeichen eingeschlossen werden. Auf diese Weise wird die Bereitstellung der im Paket enthaltenen Datenbanken übersprungen:
+[Zusätzliche msdeploy.exe-Flags]
+	Der Befehl msdeploy.exe unterstützt zusätzliche Flags. Sie können diese zusätzlichen Flags in die Datei "$(ProjectName).Deploy.cmd" aufnehmen. Die Flags werden dann während der Ausführung an "msdeploy.exe" übergeben.
+	Alternativ können Sie zusätzliche Flags angeben, indem Sie die Umgebungsvariable "_MsDeployAdditionalFlags" festlegen. Diese Einstellungen werden von dieser Batchdatei verwendet.
+	Hinweis: Jeder Flagwert, der ein Gleichheitszeichen (=) enthält, muss – wie im folgenden Beispiel gezeigt – in doppelte Anführungszeichen eingeschlossen werden. Auf diese Weise wird die Bereitstellung der im Paket enthaltenen Datenbanken übersprungen:
 		"-skip:objectName=dbFullSql" 
 </target>
         <note />
