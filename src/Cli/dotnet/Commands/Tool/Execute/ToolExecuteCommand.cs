@@ -34,7 +34,10 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
 
     private readonly ToolManifestFinder _toolManifestFinder;
 
-    public ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolManifestFinder = null, string? currentWorkingDirectory = null)
+    public ToolExecuteCommand(
+        ParseResult result,
+        ToolManifestFinder? toolManifestFinder = null,
+        string? currentWorkingDirectory = null)
         : base(result)
     {
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
@@ -48,7 +51,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -80,7 +85,10 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     localToolsResolverCache,
                     new FileSystemWrapper());
 
-                var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
+                var restoreResult = await toolPackageRestorer.InstallPackageAsync(
+                    toolManifestPackage,
+                    _configFile == null ? null : new FilePath(_configFile),
+                    cancellationToken).ConfigureAwait(false);
 
                 if (!restoreResult.IsSuccess)
                 {
@@ -109,13 +117,27 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource);
 
-        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+        (var bestVersion, var packageSource) = await _toolPackageDownloader
+            .GetNuGetVersionAsync(
+                packageLocation,
+                packageId,
+                _verbosity,
+                versionRange,
+                _restoreActionConfig,
+                cancellationToken)
+            .ConfigureAwait(false);
         toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
         toolLocationActivity?.Stop();
 
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
+        IToolPackage? toolPackage = await _toolPackageDownloader.TryGetDownloadedToolAsync(
+            packageId,
+            bestVersion,
+            targetFramework: null,
+            verbosity: _verbosity,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (toolPackage is null)
         {
             //  We've already determined which source we will use and will use it to download the package.
             //  So set the package location here to override the source feeds to just the source we already resolved to.
@@ -127,13 +149,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 additionalFeeds: _addSource,
                 packageSourceOverrides: [packageSource]);
 
-            toolPackage = _toolPackageDownloader.InstallPackage(
+            toolPackage = await _toolPackageDownloader.InstallPackageAsync(
                 downloadPackageLocation,
                 packageId: packageId,
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion, true, bestVersion, true),
                 isGlobalToolRollForward: false,
-                restoreActionConfig: _restoreActionConfig);
+                restoreActionConfig: _restoreActionConfig,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");

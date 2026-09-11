@@ -27,7 +27,9 @@ internal sealed class ToolUninstallCommand : CommandBase<ToolUninstallCommandDef
         _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -39,7 +41,7 @@ internal sealed class ToolUninstallCommand : CommandBase<ToolUninstallCommandDef
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return _toolUninstallGlobalOrToolPathCommand.Execute();
+            return await _toolUninstallGlobalOrToolPathCommand.Execute(cancellationToken).ConfigureAwait(false);
         }
         else
         {

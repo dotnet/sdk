@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            updateLocalCommand.Execute().Should().Be(0);
+            updateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
@@ -165,10 +165,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void WhenRunWithPackageIdItShouldUpdateFromManifestFile()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
-            _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertUpdateSuccess();
         }
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void WhenRunWithUpdateAllItShouldUpdateFromManifestFile()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             new ToolRestoreCommand(
                 Parser.Parse($"dotnet tool restore"),
                 _toolPackageDownloaderMock,
@@ -184,12 +184,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _fileSystem,
                 _reporter
-            ).Execute();
+            ).Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
             _mockFeed.Packages[1].Version = _packageNewVersionA.ToNormalizedString();
 
-            _toolUpdateAllLocalCommand.Execute().Should().Be(0);
+            _toolUpdateAllLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertUpdateSuccess(packageIdExpected: _packageIdA.ToString());
             AssertUpdateSuccess(packageIdExpected: _packageIdB.ToString());
@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void WhenRunFromDirectorWithPackageIdItShouldUpdateFromManifestFile()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             var toolUpdateCommand = new ToolUpdateCommand(
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new ToolUpdateGlobalOrToolPathCommand(_parseResultUpdate),
                 _defaultToolUpdateLocalCommand);
 
-            toolUpdateCommand.Execute().Should().Be(0);
+            toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertUpdateSuccess();
         }
@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
-            _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertUpdateSuccess();
         }
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(_manifestFilePath);
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, _manifestFilePath), _jsonEmptyContent);
 
-            _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertUpdateSuccess();
         }
@@ -238,7 +238,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void GivenNoManifestFileItShouldThrow()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            Action a = () => _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+            Action a = () => _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 = Parser.Parse(
                     $"dotnet tool update {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
 
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new(
@@ -267,7 +267,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            toolUpdateLocalCommand.Execute().Should().Be(0);
+            toolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             AssertUpdateSuccess(new FilePath(explicitManifestFilePath));
         }
 
@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             ParseResult parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()}");
 
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new(
@@ -290,17 +290,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 parseResult,
                 toolUpdateLocalCommand: toolUpdateLocalCommand);
 
-            toolUpdateCommand.Execute().Should().Be(0);
+            toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
         }
 
         [TestMethod]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             _reporter.Clear();
-            _defaultToolUpdateLocalCommand.Execute();
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.Single()
                 .Should().Contain(
@@ -318,11 +318,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             _reporter.Clear();
-            _defaultToolUpdateLocalCommand.Execute();
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             AssertUpdateSuccess();
 
@@ -335,11 +335,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Clear();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
-            _defaultToolUpdateLocalCommand.Execute();
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines[0].Should().Contain(parentManifestFilePath);
             _reporter.Lines[0].Should().NotContain(_manifestFilePath);
@@ -348,10 +348,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowDifferentSuccessMessage()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Clear();
-            _defaultToolUpdateLocalCommand.Execute();
+            _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             AssertUpdateSuccess(packageVersion: _packageOriginalVersionA);
 
@@ -367,11 +367,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
         {
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = "0.9.0";
 
             _reporter.Clear();
-            Action a = () => _defaultToolUpdateLocalCommand.Execute();
+            Action a = () => _defaultToolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
                 CliCommandStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
@@ -388,7 +388,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 = Parser.Parse(
                     $"dotnet tool update {_packageIdA.ToString()} --version 0.9.0 --allow-downgrade");
 
-            _toolRestoreCommand.Execute();
+            _toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _mockFeed.Packages[0].Version = "0.9.0";
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
@@ -399,7 +399,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            toolUpdateLocalCommand.Execute().Should().Be(0);
+            toolUpdateLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
         }
 
         private void AssertUpdateSuccess(
@@ -466,4 +466,3 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
-

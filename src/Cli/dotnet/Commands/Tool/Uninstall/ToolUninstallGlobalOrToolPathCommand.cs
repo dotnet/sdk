@@ -27,7 +27,9 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
     private readonly CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         var global = _parseResult.GetValue(Definition.LocationOptions.GlobalOption);
         var toolPath = _parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
@@ -46,11 +48,29 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
             toolDirectoryPath = new DirectoryPath(toolPath);
         }
 
-        var (_, toolPackageStoreQuery, toolPackageUninstaller) = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
+        var (toolPackageStore, toolPackageStoreQuery, toolPackageUninstaller) = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
         var packageId = new PackageId(_parseResult.GetValue(Definition.PackageIdArgument));
+        return await ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+            toolPackageStore.Root,
+            packageId,
+            packageVersionDisplay: "*",
+            cancellationToken,
+            action: () => Task.FromResult(ExecuteUnderLock(
+                packageId,
+                toolPackageStoreQuery,
+                toolPackageUninstaller,
+                shellShimRepository))).ConfigureAwait(false);
+    }
+
+    private int ExecuteUnderLock(
+        PackageId packageId,
+        IToolPackageStoreQuery toolPackageStoreQuery,
+        IToolPackageUninstaller toolPackageUninstaller,
+        IShellShimRepository shellShimRepository)
+    {
         IToolPackage package = null;
         try
         {

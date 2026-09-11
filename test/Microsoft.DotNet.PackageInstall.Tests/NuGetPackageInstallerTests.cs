@@ -48,7 +48,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [TestMethod]
         public async Task GivenNoFeedInstallFailsWithException() =>
             await Assert.ThrowsExactlyAsync<NuGetPackageNotFoundException>(() =>
-                _installer.DownloadPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    cancellationToken: TestContext.CancellationToken));
 
         [TestMethod]
         public async Task GivenASourceInstallSucceeds()
@@ -56,7 +59,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }),
+                cancellationToken: TestContext.CancellationToken);
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -71,7 +75,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] { nonExistFeed.Value })));
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { nonExistFeed.Value }),
+                    cancellationToken: TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -91,7 +96,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     new PackageSourceLocation(sourceFeedOverrides: new[]
                     {
                         "https://nonexist.nuget.source/F/nonexist/api/v3/index.json"
-                    })));
+                    }),
+                    cancellationToken: TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -102,7 +108,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] { source }));
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { source }),
+                    cancellationToken: TestContext.CancellationToken);
 
             var exception = await Assert.ThrowsExactlyAsync<NuGetPackageInstallerException>(downloadAction);
             exception.Message.Should().Contain(string.Format(CliStrings.FailedToLoadNuGetSource, source));
@@ -120,7 +127,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(nugetConfigPath));
+                new PackageSourceLocation(nugetConfigPath),
+                cancellationToken: TestContext.CancellationToken);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -140,7 +148,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
                     new PackageSourceLocation(validNugetConfigPath,
-                        sourceFeedOverrides: new[] { nonExistFeed.Value })));
+                        sourceFeedOverrides: new[] { nonExistFeed.Value }),
+                    cancellationToken: TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -156,7 +165,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(rootConfigDirectory: directoryBelowNugetConfig));
+                new PackageSourceLocation(rootConfigDirectory: directoryBelowNugetConfig),
+                cancellationToken: TestContext.CancellationToken);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -167,7 +177,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 packageVersion,
-                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}),
+                cancellationToken: TestContext.CancellationToken);
             packagePath.Should().Contain("global.tool.console.demo.1.0.4.nupkg", "It can get the latest non preview version");
             File.Exists(packagePath).Should().BeTrue();
         }
@@ -184,7 +195,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                cancellationToken: TestContext.CancellationToken);
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -214,7 +226,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> downloadAction = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(nugetConfig: configPath));
+                new PackageSourceLocation(nugetConfig: configPath),
+                cancellationToken: TestContext.CancellationToken);
             (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
@@ -243,7 +256,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> downloadAction = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(nugetConfig: configPath));
+                new PackageSourceLocation(nugetConfig: configPath),
+                cancellationToken: TestContext.CancellationToken);
             (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
@@ -256,7 +270,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
-                includePreview: true);
+                includePreview: true,
+                cancellationToken: TestContext.CancellationToken);
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,
                 "Package should download higher package version");
@@ -288,13 +303,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }),
+                cancellationToken: TestContext.CancellationToken);
 
             // download 2 packages should only print the message once
             string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }),
+                cancellationToken: TestContext.CancellationToken);
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
@@ -313,13 +330,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }),
+                cancellationToken: TestContext.CancellationToken);
 
             // download 2 packages should only print the message once
             string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }),
+                cancellationToken: TestContext.CancellationToken);
 
             bufferedReporter.Lines.Should().BeEmpty();
             File.Exists(packagePath).Should().BeTrue();
@@ -361,7 +380,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     return nuGetPackageDownloader.DownloadPackageAsync(
                             new PackageId("Microsoft.iOS.Ref"), null, includePreview: true,
                             packageSourceLocation: new PackageSourceLocation(
-                                sourceFeedOverrides: new[] { "https://api.nuget.org/v3/index.json" })).GetAwaiter()
+                                sourceFeedOverrides: new[] { "https://api.nuget.org/v3/index.json" }),
+                            cancellationToken: TestContext.CancellationToken).GetAwaiter()
                         .GetResult();
                 }
                 catch (Exception)
@@ -459,7 +479,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: new[] { someFeed }),
-                packageSourceMapping: mapping);
+                packageSourceMapping: mapping,
+                cancellationToken: TestContext.CancellationToken);
             
             (await download.Should().ThrowAsync<NuGetPackageInstallerException>())
                 .Which.Message.Should().Contain(CliStrings.CannotUseAddSourceWithSourceMapping);

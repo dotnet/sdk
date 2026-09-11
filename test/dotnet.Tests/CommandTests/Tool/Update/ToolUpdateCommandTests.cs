@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUpdateCommand = new ToolUpdateCommand(result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUpdateCommand = new ToolUpdateCommand(result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(

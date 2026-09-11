@@ -48,11 +48,8 @@ internal sealed class ToolUpdateLocalCommand : CommandBase<ToolUpdateCommandDefi
                 _reporter));
     }
 
-    public override int Execute()
-    {
-        _toolInstallLocalCommand.Value.Execute();
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-        return 0;
-    }
+    public Task<int> Execute(CancellationToken cancellationToken) =>
+        _toolInstallLocalCommand.Value.Execute(cancellationToken);
 }
-

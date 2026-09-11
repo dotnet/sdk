@@ -51,27 +51,34 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             currentWorkingDirectory: _currentWorkingDirectory);
     }
 
-    protected override NuGetVersion DownloadAndExtractPackage(
+    protected override async Task<NuGetVersion> DownloadAndExtractPackageAsync(
         PackageId packageId,
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
         NuGetVersion packageVersion,
         PackageSourceLocation packageSourceLocation,
         VerbosityOptions verbosity,
-        bool includeUnlisted = false
-        )
+        bool includeUnlisted,
+        CancellationToken cancellationToken)
     {
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
+        string? folderToDeleteOnFailure = versionFolderPathResolver.GetInstallPath(packageId.ToString(), packageVersion);
 
-        string? folderToDeleteOnFailure = null;
-        return TransactionalAction.Run(() =>
+        try
         {
-            var _downloadActivity = Activities.Source.StartActivity("download-tool");
+            cancellationToken.ThrowIfCancellationRequested();
+            using var _downloadActivity = Activities.Source.StartActivity("download-tool");
             _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
-            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
-                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(
+                packageId,
+                packageVersion,
+                packageSourceLocation,
+                includeUnlisted: includeUnlisted,
+                downloadFolder: new DirectoryPath(packagesRootPath),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             _downloadActivity?.Stop();
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
+            cancellationToken.ThrowIfCancellationRequested();
 
             // look for package on disk and read the version
             NuGetVersion version;
@@ -93,20 +100,25 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
             }
             // Extract the package
-            var _extractActivity = Activities.Source.StartActivity("extract-tool");
+            using var _extractActivity = Activities.Source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
-            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
+            await nugetPackageDownloader.ExtractPackageAsync(
+                packagePath,
+                new DirectoryPath(nupkgDir),
+                cancellationToken).ConfigureAwait(false);
             _extractActivity?.Stop();
 
             return version;
-        }, rollback: () =>
+        }
+        catch
         {
-            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
-            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
+            if (Directory.Exists(folderToDeleteOnFailure))
             {
                 Directory.Delete(folderToDeleteOnFailure, true);
             }
-        });
+
+            throw;
+        }
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)

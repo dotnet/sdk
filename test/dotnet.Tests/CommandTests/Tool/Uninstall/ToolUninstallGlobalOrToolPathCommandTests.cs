@@ -30,6 +30,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _shimsDirectory;
         private readonly string _toolsDirectory;
 
+        public TestContext TestContext { get; set; } = null!;
+
         public ToolUninstallGlobalOrToolPathCommandTests()
         {
             _reporter = new BufferedReporter();
@@ -46,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var packageId = "does.not.exist";
             var command = CreateUninstallCommand($"-g {packageId}");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -58,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAPackageItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -82,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Clear();
 
-            CreateUninstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateUninstallCommand($"-g {PackageId}").Execute(TestContext.CancellationToken).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -98,9 +100,46 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
+        public async Task GivenAPackageLockUninstallWaitCanBeCanceled()
+        {
+            await CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(TestContext.CancellationToken);
+            var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
+            var lockAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseLock = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<int> lockTask = ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+                store.Root,
+                new PackageId(PackageId),
+                packageVersionDisplay: "*",
+                TestContext.CancellationToken,
+                async () =>
+                {
+                    lockAcquired.SetResult();
+                    await releaseLock.Task.WaitAsync(TestContext.CancellationToken);
+                    return 0;
+                });
+
+            await lockAcquired.Task.WaitAsync(TestContext.CancellationToken);
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            try
+            {
+                Func<Task> uninstall = () => CreateUninstallCommand($"-g {PackageId}").Execute(cancellationTokenSource.Token);
+                await uninstall.Should().ThrowExactlyAsync<OperationCanceledException>();
+
+                store.EnumeratePackages().Should().ContainSingle();
+            }
+            finally
+            {
+                releaseLock.SetResult();
+                await lockTask;
+            }
+        }
+
+        [TestMethod]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -152,7 +191,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     result,
                     toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand);
 
-            uninstallCommand.Execute().Should().Be(0);
+            uninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -170,7 +209,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAFailureToUninstallItLeavesItInstalled()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -195,7 +234,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => CreateUninstallCommand(
                 options: $"-g {PackageId}",
                 uninstallCallback: () => throw new IOException("simulated error"))
-                .Execute();
+                .Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -217,7 +256,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var uninstallCommand = CreateUninstallCommand($"--tool-path {toolPath} {PackageId}");
 
-            Action a = () => uninstallCommand.Execute();
+            Action a = () => uninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -279,4 +318,3 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
-
