@@ -31,32 +31,51 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
         var storageDir = Path.Combine(testDir, "telemetry-storage");
         Directory.CreateDirectory(storageDir);
 
-        var command = new DotnetCommand(Log, "--help")
+        string sessionId = Guid.NewGuid().ToString();
+        var command = CreateCommand(testDir, storageDir, sessionId);
+        command.Execute().Should().Pass();
+        AssertPersistedTelemetry(storageDir, sessionId);
+    }
+
+    private TestCommand CreateCommand(string testDir, string storageDir, string sessionId)
+    {
+        string cliAssembly = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "dotnet.dll");
+        var command = new DotnetCommand(Log, "exec", cliAssembly, "--help")
             .WithWorkingDirectory(testDir)
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
-            // Leave DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT unset so the persist path runs.
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "false")
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SESSIONID", sessionId)
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_STORAGE_PATH", storageDir)
-            // Use a minimal shutdown timeout so that even if the test environment is detected
-            // as CI (despite clearing the CI variables below), the background drain has no
-            // opportunity to upload (and delete) blobs before the process exits.
+            .WithEnvironmentVariable("HTTPS_PROXY", "http://127.0.0.1:1")
+            .WithEnvironmentVariable("HTTP_PROXY", "http://127.0.0.1:1")
+            .WithEnvironmentVariable("ALL_PROXY", "http://127.0.0.1:1")
+            .WithEnvironmentVariable("NO_PROXY", "")
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER", "false")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false")
+            .WithEnvironmentVariable("OTEL_SDK_DISABLED", "false")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "1");
 
-        // Force the non-CI (persist-then-drain) path: in a CI environment the CLI instead uses the
-        // standard Azure Monitor exporter and does not persist blobs. Clear every variable the CI
-        // detector inspects so this test exercises the persist path even when it runs on CI hosts.
-        foreach (var ciVariable in CIEnvironmentVariables)
+        foreach (string variable in Microsoft.DotNet.Cli.EnvironmentVariableNames.OtlpExporterEnvVars)
         {
-            command = command.WithEnvironmentVariable(ciVariable, "");
+            command.EnvironmentToRemove.Add(variable);
         }
 
-        command
-            .Execute()
-            .Should()
-            .Pass();
+        foreach (var ciVariable in CIEnvironmentVariables)
+        {
+            command.EnvironmentToRemove.Add(ciVariable);
+        }
 
+        return command;
+    }
+
+    private static void AssertPersistedTelemetry(string storageDir, string sessionId)
+    {
         // The command should have persisted at least one telemetry blob to the storage directory.
-        var blobs = Directory.GetFiles(storageDir, "*", SearchOption.AllDirectories);
+        var blobs = Directory.GetFiles(storageDir, "*", SearchOption.AllDirectories)
+            .Where(path => path.EndsWith(".blob", StringComparison.Ordinal) || path.EndsWith(".lock", StringComparison.Ordinal))
+            .ToArray();
         blobs.Should().NotBeEmpty("the CLI should persist trace telemetry to the configured storage directory");
+        blobs.Select(File.ReadAllText).Should().Contain(payload => payload.Contains(sessionId, StringComparison.Ordinal));
 
         // Every persisted blob should be valid newline-delimited JSON telemetry envelopes.
         foreach (var blob in blobs)

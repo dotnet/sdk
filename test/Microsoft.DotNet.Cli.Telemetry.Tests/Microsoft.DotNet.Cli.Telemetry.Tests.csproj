@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!-- Exporter shutdown switches and SDK stats configuration are process-wide. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <Nullable>enable</Nullable>
     <!-- Strong naming deprecated on .NET Core -->
@@ -13,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The real Azure Monitor exporter is referenced only by the differential test that proves
-         our hand-ported Breeze serializer produces the same envelopes the exporter would send.
-         The shipping Microsoft.DotNet.Cli.Telemetry library deliberately does NOT depend on it
-         (source-build cannot consume it); this reference is test-only. -->
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
   </ItemGroup>
 
