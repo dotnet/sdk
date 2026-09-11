@@ -52,7 +52,7 @@ public class TelemetryClient : ITelemetryClient
 
     private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
     private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs(
-        Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS), s_isCIEnvironment);
+        Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS));
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -62,18 +62,18 @@ public class TelemetryClient : ITelemetryClient
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     /// <summary>
-    /// Returns the shutdown timeout in milliseconds, capped at five seconds in CI.
-    /// DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS can request a shorter CI timeout.
+    /// Returns the shutdown timeout in milliseconds, defaulting to five seconds.
+    /// DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS can override the default with a positive value.
     /// Locally Azure Monitor persists pending telemetry at shutdown without waiting for its drain.
     /// </summary>
-    internal static int GetShutdownTimeoutMs(string? envValue, bool isCIEnvironment)
+    internal static int GetShutdownTimeoutMs(string? envValue)
     {
-        const int defaultCiTimeoutMs = 5_000;
+        const int defaultTimeoutMs = 5_000;
         if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
         {
-            return isCIEnvironment ? Math.Min(parsed, defaultCiTimeoutMs) : parsed;
+            return parsed;
         }
-        return defaultCiTimeoutMs;
+        return defaultTimeoutMs;
     }
 
     public static string? CurrentSessionId { get; private set; } = null;

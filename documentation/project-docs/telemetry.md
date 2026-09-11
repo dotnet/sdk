@@ -93,9 +93,9 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
   untouched; this migration does not delete old telemetry files.
 3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
-  calls `Shutdown` with a finite timeout because another invocation may never run. The default and maximum CI
+  calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
   wait budget is five seconds, shared across trace and metric providers. A positive
-  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` can shorten it; larger CI values are capped. That value also configures Azure's
+  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` can shorten or extend it. That value also configures Azure's
   network timeout. This selects network-first shutdown, not guaranteed ingestion: retryable failures can still
   be persisted, and a timeout can leave telemetry undelivered.
 4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
