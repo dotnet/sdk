@@ -132,83 +132,69 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 
         internal bool DeployZipFile(KuduConnectionInfo connectionInfo)
         {
-            bool success;
-            KuduZipDeploy zipDeploy = new(connectionInfo, Log);
+            if (PublishIntermediateOutputPath is null)
+            {
+                Log.LogError(Resources.KUDUDEPLOY_DeployOutputPathEmpty);
+                return false;
+            }
 
-            string? zipFileFullPath = CreateZipFile(PublishIntermediateOutputPath);
-            Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
+            string? tempSubdirectory = null;
             try
             {
-                success = zipTask.Wait(TimeoutMilliseconds);
+                // Create a temporary directory to store write the zip file.
+#if NETFRAMEWORK
+                tempSubdirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())).FullName;
+#else
+                tempSubdirectory = Directory.CreateTempSubdirectory().FullName;
+#endif
+
+                // Zip the files from PublishOutput path.
+                string zipFileFullPath = Path.Combine(tempSubdirectory, "Publish.zip");
+                Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
+
+                System.IO.Compression.ZipFile.CreateFromDirectory(PublishIntermediateOutputPath, zipFileFullPath);
+                Log.LogMessage(Framework.MessageImportance.High, Resources.KUDUDEPLOY_CopyingToTempLocationCompleted);
+
+                // Deploy
+                KuduZipDeploy zipDeploy = new(connectionInfo, Log);
+                Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
+                bool success = zipTask.Wait(TimeoutMilliseconds);
                 if (!success)
                 {
                     Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
                 }
+
+                return success && zipTask.Result;
             }
             catch (AggregateException ae)
             {
                 Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, ae.Flatten().Message));
-                success = false;
-            }
-
-            // Clean up the resources.
-            DeleteContainingDirectory(zipFileFullPath);
-
-            return success && zipTask.Result;
-        }
-
-        internal string? CreateZipFile(string? sourcePath)
-        {
-            if (sourcePath is null)
-            {
-                return null;
-            }
-
-            string zipFileFullPath;
-            try
-            {
-                // Zip the files from PublishOutput path.
-#if NETFRAMEWORK
-                string tempSubdirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())).FullName;
-#else
-                string tempSubdirectory = Directory.CreateTempSubdirectory().FullName;
-#endif
-
-                zipFileFullPath = Path.Combine(tempSubdirectory, "Publish.zip");
-                Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
-
-                System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
+                return false;
             }
             catch (Exception e)
             {
                 Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, e.Message));
-                // If we are unable to zip the file, then we fail.
-                return null;
+                return false;
             }
-
-            Log.LogMessage(Framework.MessageImportance.High, Resources.KUDUDEPLOY_CopyingToTempLocationCompleted);
-
-            return zipFileFullPath;
-        }
-
-        internal System.Threading.Tasks.Task DeleteContainingDirectory(string? tempFilePath)
-        {
-            return System.Threading.Tasks.Task.Factory.StartNew(
-                () =>
-                {
-                    if (Path.GetDirectoryName(tempFilePath) is string tempSubdirectory)
+            finally
+            {
+                System.Threading.Tasks.Task.Factory.StartNew(
+                    () =>
                     {
-                        try
+                        if (tempSubdirectory is not null)
                         {
-                            Directory.Delete(tempSubdirectory, recursive: true);
-                        }
-                        catch
-                        {
-                            // We don't need to do any thing if we are unable to delete the temp file.
+                            try
+                            {
+                                Directory.Delete(tempSubdirectory, recursive: true);
+                            }
+                            catch
+                            {
+                                // We don't need to do any thing if we are unable to delete the temp file.
+                            }
                         }
                     }
-                }
-            );
+                );
+            }
         }
     }
 }
