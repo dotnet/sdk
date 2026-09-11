@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 internal sealed class TelemetryTestEnvironment : IDisposable
 {
     private readonly TestEnvironment _testEnvironment = new();
+    private readonly TaskCompletionSource _outputClosed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _errorClosed = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public TelemetryTestEnvironment(string ingestionEndpoint)
     {
@@ -149,10 +151,27 @@ internal sealed class TelemetryTestEnvironment : IDisposable
             startInfo.Environment[entry.Key] = entry.Value;
         }
         var process = Process.Start(startInfo)!;
+        process.OutputDataReceived += (_, args) =>
+        {
+            if (args.Data is null)
+            {
+                _outputClosed.TrySetResult();
+            }
+        };
+        process.ErrorDataReceived += (_, args) =>
+        {
+            if (args.Data is null)
+            {
+                _errorClosed.TrySetResult();
+            }
+        };
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         return process;
     }
+
+    public Task WaitForCommandOutputClosedAsync(TimeSpan timeout) =>
+        Task.WhenAll(_outputClosed.Task, _errorClosed.Task).WaitAsync(timeout);
 
     public void Dispose()
     {

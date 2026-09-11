@@ -131,8 +131,8 @@ public sealed class DotnetupTelemetry : IDisposable
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
 
-            _tracerProvider = BuildTracerProvider(resource, IsOneAndDoneEnvironment, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
-            _services = BuildLoggingServices(resource, IsOneAndDoneEnvironment, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
+            _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
+            _services = BuildLoggingServices(resource, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
             _loggerProvider = _services.GetService<LoggerProvider>();
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
@@ -193,7 +193,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Builds the <see cref="TracerProvider"/>.
     /// Traces should be opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x does not ingest spans.
     /// </summary>
-    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool isOneAndDone, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
+    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
     {
         var builder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
@@ -231,7 +231,7 @@ public sealed class DotnetupTelemetry : IDisposable
     ///
     /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
     /// </summary>
-    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool isOneAndDone, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
+    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
     {
         var services = new ServiceCollection();
         services.AddLogging(lb =>
@@ -390,17 +390,17 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Default CI shutdown budget (ms) used when no override is set. One-and-done runs (CI /
-    /// piped / non-interactive) have no guaranteed next invocation to drain an offline store, so
+    /// Default CI shutdown budget (ms) used when no override is set. One-and-done runs
+    /// have no guaranteed next invocation to drain an offline store, so
     /// they deliver inline: the tracer / logger provider <c>Shutdown</c> drains the Azure Monitor
-    /// batch exporter and waits for the in-flight HTTP POST, bounded by this budget. Matches the
-    /// dotnet CLI default (<c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>).
+    /// batch exporter and waits for the in-flight HTTP POST, bounded by this budget.
+    /// This policy is independent of the SDK CLI default.
     /// </summary>
     private const int DefaultCiShutdownBudgetMs = 20_000;
 
     /// <summary>
-    /// Teardown budget (ms) for local runs. Telemetry is already persisted synchronously as it is emitted, so shutdown only has to release the providers.
-    /// Based on existing flush delays such as in the Aspire CLI that have not caused detectable UX degradation
+    /// Budget (ms) for Azure to persist queued local telemetry during shutdown.
+    /// Records not persisted before this budget expires may be lost when the process exits.
     /// </summary>
     private const int LocalShutdownBudgetMs = 200;
 
