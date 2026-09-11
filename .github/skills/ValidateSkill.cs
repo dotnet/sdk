@@ -103,7 +103,12 @@ if (lineCount > 500)
     return 1;
 }
 
-string? binding = GetMetadataString(frontmatter, "binding");
+if (!TryGetMetadataString(frontmatter, "binding", out string? binding, out string? metadataError))
+{
+    Console.Error.WriteLine(metadataError);
+    return 1;
+}
+
 string overlayFile = Path.Combine(skillDir, "overlay.md");
 bool overlayExists = File.Exists(overlayFile);
 
@@ -164,16 +169,39 @@ if (overlayExists)
 Console.WriteLine($"Skill '{frontmatterName}' is valid.");
 return 0;
 
-static string? GetMetadataString(Dictionary<string, object> frontmatter, string key)
+static bool TryGetMetadataString(
+    Dictionary<string, object> frontmatter,
+    string key,
+    out string? value,
+    out string? error)
 {
-    if (!frontmatter.TryGetValue("metadata", out object? metadataValue) ||
-        metadataValue is not IDictionary<object, object> metadata ||
-        !metadata.TryGetValue(key, out object? value))
+    value = null;
+    error = null;
+
+    if (!frontmatter.TryGetValue("metadata", out object? metadataValue))
     {
-        return null;
+        return true;
     }
 
-    return value as string;
+    if (metadataValue is not IDictionary<object, object> metadata)
+    {
+        error = "Frontmatter field 'metadata' must be a mapping.";
+        return false;
+    }
+
+    if (!metadata.TryGetValue(key, out object? metadataEntry))
+    {
+        return true;
+    }
+
+    if (metadataEntry is not string stringValue)
+    {
+        error = $"metadata.{key} must be a string.";
+        return false;
+    }
+
+    value = stringValue;
+    return true;
 }
 
 static Dictionary<string, object> ReadFrontmatter(string path, string displayName, IDeserializer deserializer)

@@ -18,10 +18,12 @@ Work top to bottom. Stop at the first option that fits.
 
 ### 1. An existing rule, re-tuned in `.editorconfig`
 
-The .NET SDK ships **`Microsoft.CodeAnalysis.NetAnalyzers`** (the `CA####` quality
-rules) and the Roslyn **`IDE####`** code-style rules, both enabled by default on
-modern SDKs. A huge fraction of "I want the build to complain about X" is an
-existing rule whose severity just needs raising.
+Modern .NET projects can use the SDK's **`Microsoft.CodeAnalysis.NetAnalyzers`**
+(`CA####` quality rules) and Roslyn **`IDE####`** code-style rules. CA rules
+participate in SDK builds according to `AnalysisLevel` and `AnalysisMode`; IDE rules
+are available in the editor, but code-style build enforcement is off by default. A
+huge fraction of "I want the build to complain about X" is an existing rule whose
+severity just needs raising.
 
 - Search the rule catalogs: the `CA####` quality rules and the `IDE####` style
   rules are documented under the .NET "Code analysis" reference. Match the request

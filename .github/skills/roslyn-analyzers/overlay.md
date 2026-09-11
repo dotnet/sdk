@@ -17,10 +17,11 @@ when writing the analyzer, fixer, resources, or tests. When porting work from th
 `dotnet/roslyn-analyzers` repository, also read
 [`porting-from-roslyn-analyzers.md`](../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/porting-from-roslyn-analyzers.md).
 
-**Project-layout override:** do not create the separate code-fix assembly described by the
-portable core. This established suite intentionally builds fixers and Workspaces utilities
-in its existing core and language assemblies. The exact binding and local analyzer-rule
-exceptions are in
+**Project-layout and packaging override:** do not create the separate code-fix assembly or
+package these analyzers inside another consuming library as described by the portable
+core. This established suite produces the standalone `Microsoft.CodeAnalysis.NetAnalyzers`
+package and intentionally builds fixers and Workspaces utilities in its existing core and
+language assemblies. The exact binding and local analyzer-rule exceptions are in
 [`sdk-netanalyzers.md`](../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/sdk-netanalyzers.md#layout).
 
 ## Routing
@@ -115,7 +116,9 @@ then apply the core's full
 at least mainline positive and negative coverage, and full coverage when language-specific
 code exists.
 
-When a fixer exists, NetAnalyzers policy is to make every test a code-fix test.
+When a fixer exists, use code-fix tests for cases that expect the rule's diagnostic,
+including cases where no action should be offered. Analyzer-only tests remain appropriate
+for no-diagnostic and analyzer-robustness cases where no fixer behavior can be observed.
 
 ### 7. Build and run targeted tests
 

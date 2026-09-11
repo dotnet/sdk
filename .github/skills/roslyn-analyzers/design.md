@@ -9,7 +9,7 @@ behind it.
 
 The analyzer assembly must be `netstandard2.0` so it loads in every compiler host
 (command-line `csc`, the .NET SDK, Visual Studio's .NET Framework host, VS Code).
-RS1038 enforces this. Keep `EnforceExtendedAnalyzerRules=true` on - it turns on the
+RS1041 enforces this. Keep `EnforceExtendedAnalyzerRules=true` on - it turns on the
 `RS####` authoring analyzers that catch most of the mistakes below at build time.
 Both `AnalyzerReleases.Shipped.md` and `AnalyzerReleases.Unshipped.md` must exist
 as `AdditionalFiles` (RS2008), and every new rule ID must be listed in the

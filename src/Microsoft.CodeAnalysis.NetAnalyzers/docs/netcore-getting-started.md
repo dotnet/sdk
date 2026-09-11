@@ -43,9 +43,16 @@ the driver already implies them and the combination fails. Output lands in
   - If the fixer can be entirely implemented with language-agnostic APIs `(IOperation)`, then VB support is essentially free.
   - With a language-agnostic fixer, apply the attribute to indicate the fixer also applies to VB and add mainline VB tests.
   - If language-specific APIs are needed to implement the fixer, the VB fixer is not required.
-  - Do not separate analyzer tests from code fix tests. If the analyzer has a code fix, then write all your tests as code fix tests.
-    - Calling `VerifyCodeFixAsync(source, source)` verifies that the analyzer either does not produce diagnostics, or produces diagnostics where no code fix is offered.
-    - Calling `VerifyCodeFixAsync(source, fixedSource)` verifies the diagnostics (analyzer testing) and verifies that the code fix on source produces the expected output.
+  - Keep analyzer and fixer coverage in the same test class. When the analyzer has a code
+    fix, use code-fix tests for cases that expect the rule's diagnostic, including cases
+    where no action should be offered.
+    - Calling `VerifyCodeFixAsync(source, source)` verifies the diagnostic expectations and
+      unchanged output. Use an explicit zero-action assertion when the test must prove no
+      code action was registered.
+    - Calling `VerifyCodeFixAsync(source, fixedSource)` verifies the diagnostics (analyzer
+      testing) and verifies that the code fix on source produces the expected output.
+    - Analyzer-only tests remain appropriate for no-diagnostic and analyzer-robustness
+      cases where no fixer behavior can be observed.
   - Fix-all is part of the fixer. `WellKnownFixAllProviders.BatchFixer` applies every fix
     against the original document and merges the results, which produces a wrong tree when
     diagnostics overlap or nest. Derive from

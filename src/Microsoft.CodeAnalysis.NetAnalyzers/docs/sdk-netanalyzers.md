@@ -10,6 +10,7 @@ are relative to `$NA = src/Microsoft.CodeAnalysis.NetAnalyzers` unless stated ot
 | Language-agnostic analyzer | `$NA/src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.<Group>.Analyzers/<Category>/<Name>.cs` |
 | Language-specific analyzer | The same path under the C# or Visual Basic analyzer project. |
 | Code fixer | `<Name>.Fixer.cs` beside the applicable analyzer implementation |
+| Package | `$NA/src/Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj` |
 | Unit test | `$NA/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.<Group>.Analyzers/<Category>/<Name>Tests.cs` |
 | Shared analyzer utilities | `$NA/src/Utilities/` |
 | Test verifier utilities | `$NA/tests/Test.Utilities/` |
@@ -18,11 +19,13 @@ Prefer a language-agnostic `IOperation` analyzer. Add C# or Visual Basic impleme
 only when syntax APIs are genuinely required.
 
 The portable core's default advice to create a separate code-fix assembly does **not**
-apply to this established suite. NetAnalyzers intentionally compiles language-agnostic
-fixers and shared Workspaces utilities into `Microsoft.CodeAnalysis.NetAnalyzers`, and
+apply to this established suite, nor does its advice to embed the analyzer in another
+library's package. NetAnalyzers produces the standalone
+`Microsoft.CodeAnalysis.NetAnalyzers` package, compiles language-agnostic fixers and shared
+Workspaces utilities into `Microsoft.CodeAnalysis.NetAnalyzers`, and compiles
 language-specific fixers into the existing C# or Visual Basic assembly. Its local build
 props document and suppress the corresponding compiler-extension warning. Follow the
-existing project layout; do not add another code-fix project or enable
+existing project and package layout; do not add another code-fix project or enable
 `EnforceExtendedAnalyzerRules` merely to match the portable scaffold.
 
 ## Repository API substitutions
@@ -123,9 +126,12 @@ version explicitly when a snippet uses newer syntax. Reference assemblies defaul
 `AdditionalMetadataReferences.Default`; select the member carrying any packages the
 scenario needs.
 
-When a fixer exists, use code-fix tests for positive and negative cases. An identical
-input and expected output verifies either no diagnostic or a diagnostic with no offered
-fix; use an explicit zero-action assertion when distinguishing those outcomes matters.
+When a fixer exists, use code-fix tests for cases that expect the rule's diagnostic,
+including cases where no action should be offered. Analyzer-only tests remain appropriate
+for no-diagnostic and analyzer-robustness cases where no fixer behavior can be observed.
+An identical input and expected output verifies either no diagnostic or a diagnostic with
+no offered fix; use an explicit zero-action assertion when distinguishing those outcomes
+matters.
 C# receives full coverage. Visual Basic receives at least mainline positive and negative
 coverage, and full coverage when language-specific code exists.
 
