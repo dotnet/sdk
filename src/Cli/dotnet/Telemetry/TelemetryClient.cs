@@ -51,7 +51,8 @@ public class TelemetryClient : ITelemetryClient
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
 
     private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
-    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs();
+    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs(
+        Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS), s_isCIEnvironment);
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -61,17 +62,16 @@ public class TelemetryClient : ITelemetryClient
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     /// <summary>
-    /// Returns the shutdown timeout in milliseconds. In CI this defaults to 20 seconds (bounded
-    /// to avoid hanging builds) but can be overridden via DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS.
+    /// Returns the shutdown timeout in milliseconds, capped at five seconds in CI.
+    /// DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS can request a shorter CI timeout.
     /// Locally Azure Monitor persists pending telemetry at shutdown without waiting for its drain.
     /// </summary>
-    private static int GetShutdownTimeoutMs()
+    internal static int GetShutdownTimeoutMs(string? envValue, bool isCIEnvironment)
     {
-        const int defaultCiTimeoutMs = 20_000;
-        var envValue = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS);
+        const int defaultCiTimeoutMs = 5_000;
         if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
         {
-            return parsed;
+            return isCIEnvironment ? Math.Min(parsed, defaultCiTimeoutMs) : parsed;
         }
         return defaultCiTimeoutMs;
     }
@@ -130,7 +130,7 @@ public class TelemetryClient : ITelemetryClient
         if (!s_disableTraceExport && !string.IsNullOrWhiteSpace(s_connectionString))
         {
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown", s_isCIEnvironment);
-            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0);
+            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0); // Persist queued spans, but do not wait for background upload.
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush", !s_isCIEnvironment);
             s_tracerProviderBuilder.AddAzureMonitorTraceExporter(options =>
             {
@@ -247,8 +247,10 @@ public class TelemetryClient : ITelemetryClient
             // and waits for inflight HTTP POSTs to complete, bounded by the configured timeout.
             // This is necessary in CI because there is no subsequent invocation to drain, and
             // for OTLP because the exporter does not use the local persistent-storage pipeline.
+            long started = Stopwatch.GetTimestamp();
             s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
-            s_metricsProvider?.Shutdown(s_shutdownTimeoutMs);
+            int remaining = Math.Max(0, s_shutdownTimeoutMs - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            s_metricsProvider?.Shutdown(remaining);
         }
         else
         {
@@ -260,8 +262,10 @@ public class TelemetryClient : ITelemetryClient
     internal static void ForceFlushProviders()
     {
         int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : Timeout.Infinite;
+        long started = Stopwatch.GetTimestamp();
         s_tracerProvider?.ForceFlush(timeout);
-        s_metricsProvider?.ForceFlush(s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : 10);
+        int remaining = timeout == Timeout.Infinite ? 10 : Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        s_metricsProvider?.ForceFlush(remaining);
     }
 
     internal static void RegisterProviderShutdownOnProcessExit()

@@ -14,6 +14,23 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 [TestClass]
 public class TelemetryClientTests : SdkTest
 {
+    [TestMethod]
+    [DataRow(null, true, 5_000)]
+    [DataRow("", true, 5_000)]
+    [DataRow("invalid", true, 5_000)]
+    [DataRow("0", true, 5_000)]
+    [DataRow("-1", true, 5_000)]
+    [DataRow("100", true, 100)]
+    [DataRow("5000", true, 5_000)]
+    [DataRow("20000", true, 5_000)]
+    [DataRow("2147483647", true, 5_000)]
+    [DataRow(null, false, 5_000)]
+    [DataRow("20000", false, 20_000)]
+    public void ShutdownTimeoutIsCappedInCi(string? value, bool ci, int expected)
+    {
+        TelemetryClient.GetShutdownTimeoutMs(value, ci).Should().Be(expected);
+    }
+
     public static IEnumerable<object[]> CommandsWithExitCode =>
     [
         [new[] { "--help" }, "0"],
