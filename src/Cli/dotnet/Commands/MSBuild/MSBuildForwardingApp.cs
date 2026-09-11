@@ -75,18 +75,7 @@ public class MSBuildForwardingApp : CommandBase
     /// </remarks>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
         MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
-        msbuildPath,
-        new LLMEnvironmentDetectorForTelemetry())
-    {
-    }
-
-    internal MSBuildForwardingApp(
-        IEnumerable<string> rawMSBuildArgs,
-        string? msbuildPath,
-        ILLMEnvironmentDetector llmEnvironmentDetector) : this(
-        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
-        msbuildPath,
-        llmEnvironmentDetector)
+        msbuildPath)
     {
     }
 
@@ -97,21 +86,11 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     /// <param name="msBuildArgs">MSBuild arguments to forward to the builder process, parsed by using <see cref="MSBuildArgs.AnalyzeMSBuildArguments"/> to apply a set of per-command <see cref="System.CommandLine.Option`1"/>s to a list of unparsed command line input tokens.</param>
     /// <param name="msbuildPath">The path to the MSBuild executable. If null, the default MSBuild executable will be used.</param>
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null) : this(
-        msBuildArgs,
-        msbuildPath,
-        new LLMEnvironmentDetectorForTelemetry())
-    {
-    }
-
-    internal MSBuildForwardingApp(
-        MSBuildArgs msBuildArgs,
-        string? msbuildPath,
-        ILLMEnvironmentDetector llmEnvironmentDetector)
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
     {
         var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(
             ConcatTelemetryLogger(msBuildArgs),
-            llmEnvironmentDetector);
+            LLMEnvironmentDetector);
 #if CLI_AOT
         const bool forceOutOfProc = true;
 #else

@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tests.TelemetryTests;
 using Moq;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
@@ -128,20 +126,19 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
-        public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
+        [DataRow(false)]
+        [DataRow(true)]
+        public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(bool isLLMEnvironment)
         {
-            var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-            environmentProvider
-                .Setup(provider => provider.GetEnvironmentVariable(It.IsAny<string>()))
-                .Returns((string name) => llmEnvVarsToSet?.GetValueOrDefault(name));
+            var llmEnvironmentDetector = new Mock<ILLMEnvironmentDetector>(MockBehavior.Strict);
+            llmEnvironmentDetector
+                .Setup(detector => detector.IsLLMEnvironment())
+                .Returns(isLLMEnvironment);
 
-            var llmEnvironmentDetector = new LLMEnvironmentDetectorForTelemetry(environmentProvider.Object);
-            llmEnvironmentDetector.GetLLMEnvironment().Should().Be(expectedLLMName);
+            using var _ = CommandBase.UseLLMEnvironmentDetectorForTests(llmEnvironmentDetector.Object);
+            var command = (RestoringCommand)BuildCommand.FromArgs([]);
 
-            var command = new MSBuildForwardingApp([], null, llmEnvironmentDetector);
-
-            if (expectedLLMName is not null)
+            if (isLLMEnvironment)
             {
                 command.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
             }

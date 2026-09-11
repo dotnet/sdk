@@ -28,3 +28,4 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
+
