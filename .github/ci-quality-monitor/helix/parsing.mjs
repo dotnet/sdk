@@ -31,7 +31,7 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = [])
       evidenceSources: ["helix-console", "process-exit-code"]
     };
   }
-  if (/workload timed out|run timed out|timed_out|timeout|timed out/i.test(text)
+  if (/\b(?:timed? ?out|timed_out|timeoutException)\b/i.test(text)
     || exitCode === 130 || exitCode === 143)
   {
     return {
@@ -81,7 +81,7 @@ export function summarizeHelixConsole(consoleText)
     ? lines.slice(runningTestsMarker + 1).find(line => /^\[[\d:.]+\]\s+\S/.test(line))
     : null;
   const relevant = lines
-    .filter(line => /hang|timed? ?out|active test|currently running|process tree|test host crashed|exit code|dump|permission denied|diagnostics IPC/i.test(line))
+    .filter(line => /hang|\b(?:timed? ?out|timed_out|timeoutException)\b|active test|currently running|process tree|test host crashed|exit code|dump|permission denied|diagnostics IPC/i.test(line))
     .filter(line => !/^[-*]?\s*(?:\/|[A-Za-z]:\\)/.test(line));
   const hostExitCode = [...lines].reverse().map(line => line.match(/exit code(?: is)?\s*['"]?(-?\d+)/i)?.[1])
     .find(Boolean);

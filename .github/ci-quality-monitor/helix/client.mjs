@@ -81,7 +81,7 @@ function classifyTestFailureType(errorMessage, outcome)
   if (`${outcome}`.toLowerCase() === "aborted") return "process-termination";
   if (isAuthenticationFailure(text)) return "authentication-failure";
   if (isNetworkFailure(text)) return "network-failure";
-  if (/timed? ?out|timeout/i.test(text)) return "timeout";
+  if (/\b(?:timed? ?out|timed_out|timeoutException)\b/i.test(text)) return "timeout";
   if (/segmentation fault|stack overflow|core dump|app_crash/i.test(text)) return "process-crash";
   if (/\bCS\d{4}\b/i.test(text)) return "compiler-error";
   return "test-assertion";
@@ -92,7 +92,7 @@ function createWorkItemObservation(reference, workItem, consoleText, testResults
   const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
   const consoleSummary = summarizeHelixConsole(consoleText);
   const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
-    || /still running|hang timeout|timed? ?out|test host crashed|recovered \d+ test result|exit code/i.test(line));
+    || /still running|hang timeout|\b(?:timed? ?out|timed_out|timeoutException)\b|test host crashed|recovered \d+ test result|exit code/i.test(line));
   const mechanismLines = causalConsoleLines.length > 0
     ? causalConsoleLines
     : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
