@@ -15,20 +15,19 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 public class TelemetryClientTests : SdkTest
 {
     [TestMethod]
-    [DataRow(null, true, 5_000)]
-    [DataRow("", true, 5_000)]
-    [DataRow("invalid", true, 5_000)]
-    [DataRow("0", true, 5_000)]
-    [DataRow("-1", true, 5_000)]
-    [DataRow("100", true, 100)]
-    [DataRow("5000", true, 5_000)]
-    [DataRow("20000", true, 5_000)]
-    [DataRow("2147483647", true, 5_000)]
-    [DataRow(null, false, 5_000)]
-    [DataRow("20000", false, 20_000)]
-    public void ShutdownTimeoutIsCappedInCi(string? value, bool ci, int expected)
+    [DataRow(null, 5_000)]
+    [DataRow("", 5_000)]
+    [DataRow("invalid", 5_000)]
+    [DataRow("0", 5_000)]
+    [DataRow("-1", 5_000)]
+    [DataRow("100", 100)]
+    [DataRow("5000", 5_000)]
+    [DataRow("20000", 20_000)]
+    [DataRow("2147483647", int.MaxValue)]
+    [DataRow("2147483648", 5_000)]
+    public void ShutdownTimeoutUsesPositiveOverrideOrFiveSecondDefault(string? value, int expected)
     {
-        TelemetryClient.GetShutdownTimeoutMs(value, ci).Should().Be(expected);
+        TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
     }
 
     public static IEnumerable<object[]> CommandsWithExitCode =>
