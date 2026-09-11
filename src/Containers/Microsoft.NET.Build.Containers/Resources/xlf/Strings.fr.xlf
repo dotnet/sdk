@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: Les images multi-architecture ne peuvent pas être chargées dans WSLC. Publiez une image à plateforme unique ou publiez l’image multi-architecture dans un registre.</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="InvalidRegistryAuthResponse">
         <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
-        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <target state="translated">CONTAINER1019: le registre « {0} » a renvoyé une réponse d’authentification non valide : {1}</target>
         <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
