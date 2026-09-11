@@ -70,6 +70,72 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     }
 
     [TestMethod]
+    public void PackageReference_InRegion_Active()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #if true
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS9299: '#:' directives cannot be after '#if' directive
+            .And.HaveStdOutContaining("error CS9299:")
+            // NO error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.NotHaveStdOutContaining("error CS0234:");
+    }
+
+    [TestMethod]
+    public void PackageReference_InRegion_Conditional()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #if X
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:DefineConstants=X")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS9299: '#:' directives cannot be after '#if' directive
+            .And.HaveStdOutContaining("error CS9299:")
+            // NO error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.NotHaveStdOutContaining("error CS0234:");
+    }
+
+    [TestMethod]
+    public void PackageReference_InRegion_Inactive()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #if false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // NO error CS9299: '#:' directives cannot be after '#if' directive
+            .And.NotHaveStdOutContaining("error CS9299:")
+            // error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.HaveStdOutContaining("error CS0234:");
+    }
+
+    [TestMethod]
     public void PackageReference_CentralVersion()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

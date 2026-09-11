@@ -301,7 +301,7 @@ In other directives, all variables are preserved during conversion.
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
-and can do that efficiently by stopping the search when it sees the first "C# token".
+and can do that efficiently by stopping the search when it sees the first "C# token" or `#if`.
 
 For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point C# files,
 specifically from all `Compile` items included in the project, no matter whether the `Compile` items are specified in some MSBuild code or inferred from `#:include`.
