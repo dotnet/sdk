@@ -159,8 +159,21 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
-        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null, string? baseDirectory = null)
+        /// <summary>
+        /// Creates an empty directory scoped by the caller's member name, source file name, and optional identifier.
+        /// </summary>
+        public TestDirectory CreateTestDirectory(
+            [CallerMemberName] string? testName = null,
+            string? identifier = null,
+            string? baseDirectory = null,
+            [CallerFilePath] string? callerFilePath = null)
         {
+            var fileName = Path.GetFileNameWithoutExtension(callerFilePath);
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                testName += "_" + fileName;
+            }
+
             string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty, baseDirectory: baseDirectory);
             return new TestDirectory(dir);
         }
