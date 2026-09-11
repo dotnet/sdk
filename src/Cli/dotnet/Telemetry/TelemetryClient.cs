@@ -130,7 +130,7 @@ public class TelemetryClient : ITelemetryClient
         if (!s_disableTraceExport && !string.IsNullOrWhiteSpace(s_connectionString))
         {
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown", s_isCIEnvironment);
-            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0); // Persist queued spans, but do not wait for background upload.
+            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0); //  background upload will occur next time - reduce exit latency. This only impacts storage persistThenDrain, so not CI.
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush", !s_isCIEnvironment);
             s_tracerProviderBuilder.AddAzureMonitorTraceExporter(options =>
             {
