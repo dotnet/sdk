@@ -34,6 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             public ConcurrentDictionary<IMethodSymbol, bool> MethodsAssignedToDelegate { get; } = new(SymbolEqualityComparer.Default);
 
             public INamedTypeSymbol? Void { get; private set; }
+            public INamedTypeSymbol? Unknown { get; private set; }
             private Func<ISymbol, bool>? _checkVisibility;
 
             private Collector()
@@ -57,6 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 MethodsAssignedToDelegate.Clear();
 
                 Void = null;
+                Unknown = null;
                 _checkVisibility = null;
 
                 static void DrainDictionary<T, U>(ConcurrentDictionary<T, PooledConcurrentSet<U>> d)
@@ -71,10 +73,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            public static Collector GetInstance(INamedTypeSymbol voidType, Func<ISymbol, bool> visibilityChecker)
+            public static Collector GetInstance(INamedTypeSymbol voidType, INamedTypeSymbol unknownType, Func<ISymbol, bool> visibilityChecker)
             {
                 var c = _pool.Allocate();
                 c.Void = voidType;
+                c.Unknown = unknownType;
                 c._checkVisibility = visibilityChecker;
                 return c;
             }
@@ -500,6 +503,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case OperationKind.Invocation:
                     case OperationKind.ArrayElementReference:
                     case OperationKind.ObjectCreation:
+                    case OperationKind.AnonymousObjectCreation:
                     case OperationKind.ParameterReference:
                     case OperationKind.PropertyReference:
                     case OperationKind.MethodReference:
@@ -539,6 +543,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             }
 
                             break;
+                        }
+
+                    default:
+                        {
+                            // Unhandled operations must disqualify the candidate instead of silently disappearing.
+                            values.Add(Unknown!);
+                            return;
                         }
                 }
             }
