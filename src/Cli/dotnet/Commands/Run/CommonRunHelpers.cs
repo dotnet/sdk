@@ -114,9 +114,10 @@ internal static class CommonRunHelpers
     /// <summary>
     /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
     /// </summary>
-    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs)
+    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs, CommandServices? services = null)
     {
-        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        services ??= new CommandServices();
+        if (services.LLMEnvironmentDetector.IsLLMEnvironment())
         {
             // disable the live-update display of the TerminalLogger, which wastes tokens
             return msbuildArgs.CloneWithAdditionalArgs(Constants.TerminalLogger_DisableNodeDisplay);
@@ -228,7 +229,7 @@ internal static class CommonRunHelpers
     /// This uses the in-process MSBuild logging APIs (<c>Microsoft.Build.*</c>) and so is excluded
     /// from the AOT build, which only ever forwards MSBuild out-of-process.
     /// </remarks>
-    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
-        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
+    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args, CommandServices? services = null) =>
+        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args, services).OtherMSBuildArgs]);
 #endif
 }

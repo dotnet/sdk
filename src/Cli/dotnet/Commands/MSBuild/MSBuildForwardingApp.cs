@@ -73,9 +73,10 @@ public class MSBuildForwardingApp : CommandBase
     /// <remarks>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </remarks>
-    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
+    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null, CommandServices? services = null) : this(
         MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
-        msbuildPath)
+        msbuildPath,
+        services)
     {
     }
 
@@ -86,9 +87,13 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     /// <param name="msBuildArgs">MSBuild arguments to forward to the builder process, parsed by using <see cref="MSBuildArgs.AnalyzeMSBuildArguments"/> to apply a set of per-command <see cref="System.CommandLine.Option`1"/>s to a list of unparsed command line input tokens.</param>
     /// <param name="msbuildPath">The path to the MSBuild executable. If null, the default MSBuild executable will be used.</param>
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
+    /// <param name="services">The command's service dependencies. If null, production defaults are used.</param>
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, CommandServices? services = null)
+        : base(services)
     {
-        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(
+            ConcatTelemetryLogger(msBuildArgs),
+            Services);
 #if CLI_AOT
         const bool forceOutOfProc = true;
 #else

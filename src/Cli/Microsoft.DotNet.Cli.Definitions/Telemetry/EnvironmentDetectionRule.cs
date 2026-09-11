@@ -20,16 +20,22 @@ internal abstract class EnvironmentDetectionRule
 /// </summary>
 internal class BooleanEnvironmentRule : EnvironmentDetectionRule
 {
+    private readonly Func<string, string?> _getEnvironmentVariable;
     private readonly string[] _variables;
 
-    public BooleanEnvironmentRule(params string[] variables)
+    public BooleanEnvironmentRule(params string[] variables) : this(Environment.GetEnvironmentVariable, variables)
     {
+    }
+
+    public BooleanEnvironmentRule(Func<string, string?> getEnvironmentVariable, params string[] variables)
+    {
+        _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
         _variables = variables ?? throw new ArgumentNullException(nameof(variables));
     }
 
     public override bool IsMatch()
     {
-        return _variables.Any(variable => EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(variable), defaultValue: false));
+        return _variables.Any(variable => EnvironmentVariableParser.ParseBool(_getEnvironmentVariable(variable), defaultValue: false));
     }
 }
 
@@ -38,16 +44,22 @@ internal class BooleanEnvironmentRule : EnvironmentDetectionRule
 /// </summary>
 internal class AllPresentEnvironmentRule : EnvironmentDetectionRule
 {
+    private readonly Func<string, string?> _getEnvironmentVariable;
     private readonly string[] _variables;
 
-    public AllPresentEnvironmentRule(params string[] variables)
+    public AllPresentEnvironmentRule(params string[] variables) : this(Environment.GetEnvironmentVariable, variables)
     {
+    }
+
+    public AllPresentEnvironmentRule(Func<string, string?> getEnvironmentVariable, params string[] variables)
+    {
+        _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
         _variables = variables ?? throw new ArgumentNullException(nameof(variables));
     }
 
     public override bool IsMatch()
     {
-        return _variables.All(variable => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)));
+        return _variables.All(variable => !string.IsNullOrEmpty(_getEnvironmentVariable(variable)));
     }
 }
 
@@ -56,16 +68,22 @@ internal class AllPresentEnvironmentRule : EnvironmentDetectionRule
 /// </summary>
 internal class AnyPresentEnvironmentRule : EnvironmentDetectionRule
 {
+    private readonly Func<string, string?> _getEnvironmentVariable;
     private readonly string[] _variables;
 
-    public AnyPresentEnvironmentRule(params string[] variables)
+    public AnyPresentEnvironmentRule(params string[] variables) : this(Environment.GetEnvironmentVariable, variables)
     {
+    }
+
+    public AnyPresentEnvironmentRule(Func<string, string?> getEnvironmentVariable, params string[] variables)
+    {
+        _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
         _variables = variables ?? throw new ArgumentNullException(nameof(variables));
     }
 
     public override bool IsMatch()
     {
-        return _variables.Any(variable => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)));
+        return _variables.Any(variable => !string.IsNullOrEmpty(_getEnvironmentVariable(variable)));
     }
 }
 
@@ -92,18 +110,25 @@ internal class AnyMatchEnvironmentRule : EnvironmentDetectionRule
 /// </summary>
 internal class EnvironmentVariableValueRule : EnvironmentDetectionRule
 {
+    private readonly Func<string, string?> _getEnvironmentVariable;
     private readonly string _variable;
     private readonly string _expectedValue;
 
     public EnvironmentVariableValueRule(string variable, string expectedValue)
+        : this(Environment.GetEnvironmentVariable, variable, expectedValue)
     {
+    }
+
+    public EnvironmentVariableValueRule(Func<string, string?> getEnvironmentVariable, string variable, string expectedValue)
+    {
+        _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
         _variable = variable ?? throw new ArgumentNullException(nameof(variable));
         _expectedValue = expectedValue ?? throw new ArgumentNullException(nameof(expectedValue));
     }
 
     public override bool IsMatch()
     {
-        var value = Environment.GetEnvironmentVariable(_variable);
+        var value = _getEnvironmentVariable(_variable);
         return !string.IsNullOrEmpty(value) && value.Equals(_expectedValue, StringComparison.OrdinalIgnoreCase);
     }
 }
