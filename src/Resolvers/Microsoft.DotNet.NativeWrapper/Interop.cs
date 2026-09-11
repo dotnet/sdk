@@ -291,8 +291,10 @@ namespace Microsoft.DotNet.NativeWrapper
         ///   or custom logging scenarios.
         ///  </para>
         /// </remarks>
+#if !NET
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void hostfxr_error_writer_fn(PlatformString message);
+#endif
 
         /// <summary>
         ///  Sets a callback for receiving error messages from the hosting layer.
