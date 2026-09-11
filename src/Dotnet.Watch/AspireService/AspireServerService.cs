@@ -291,6 +291,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var socketTcs = new TaskCompletionSource();
+        using var shutdownRegistration = _shutdownCancellationSource.Token.Register(() => socketTcs.TrySetResult());
 
         // Track this connection.
         _socketConnectionManager.AddSocketConnection(webSocket, socketTcs,  context.GetDcpId(), context.RequestAborted);

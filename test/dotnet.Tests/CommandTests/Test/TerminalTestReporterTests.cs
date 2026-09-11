@@ -342,6 +342,32 @@ public class TerminalTestReporterTests
         assemblyLine.Should().Contain("[+1/x0/?0/r1]");
     }
 
+    [TestMethod]
+    public void EnableRetry_BeforeFirstAssemblyRun_RendersTryOne()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = true,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.EnableRetry();
+        reporter.AssemblyRunStarted(
+            "/repo/bin/Debug/net9.0/Retry.Tests.dll",
+            targetFramework: "net9.0",
+            architecture: "x64",
+            executionId: "exec-retry",
+            instanceId: "inst-1",
+            attemptNumber: 1);
+
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain("(try 1) Running tests from");
+    }
+
     /// <summary>
     /// Output that fits within the summary budget must be echoed verbatim (no truncation marker).
     /// </summary>
@@ -786,6 +812,13 @@ public class TerminalTestReporterTests
     [DataRow(new[] { "--show-flaky-tests", "0" }, false)]
     public void GetShowFlakyTests_ParsesForwardedOption(string[] arguments, bool expected)
         => MicrosoftTestingPlatformTestCommand.GetShowFlakyTests(arguments).Should().Be(expected);
+
+    [TestMethod]
+    [DataRow(new string[0], false)]
+    [DataRow(new[] { "--retry-failed-tests", "3" }, true)]
+    [DataRow(new[] { "test", "--", "--retry-failed-tests", "3" }, true)]
+    public void IsLegacyRetryOptionEnabled_ParsesForwardedOption(string[] arguments, bool expected)
+        => MicrosoftTestingPlatformTestCommand.IsLegacyRetryOptionEnabled(arguments).Should().Be(expected);
 
     /// <summary>
     /// Finds the per-assembly summary line for the given assembly. Multiple lines may mention the
