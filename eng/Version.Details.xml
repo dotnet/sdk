@@ -499,6 +499,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>3c8d132bfb012af4bbba80de22149a9f58e737f0</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NET.ProjectData.Tasks" Version="5.12.0-1.26460.21">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>e06f98ceb4b7f09c14f05ebbd9e1bf02e9bae183</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26453.118">
