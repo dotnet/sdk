@@ -199,11 +199,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                     {
                         try
                         {
-                            // Delete the file, then the containing directory
-                            File.Delete(tempFilePath);
                             if (Path.GetDirectoryName(tempFilePath) is string tempSubdirectory)
                             {
-                                Directory.Delete(tempSubdirectory);
+                                Directory.Delete(tempSubdirectory, recursive: true);
                             }
                         }
                         catch
