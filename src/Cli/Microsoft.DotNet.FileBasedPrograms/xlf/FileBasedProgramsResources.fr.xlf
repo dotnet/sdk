@@ -57,11 +57,6 @@
         <target state="new">Expected a simple string literal in the directive value. Raw and verbatim string literals are not supported in directive values. Found: {0}</target>
         <note>{0} is the offending C# token text, for example '"""abc"""'.</note>
       </trans-unit>
-      <trans-unit id="ExperimentalFeatureDisabled">
-        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
-        <target state="new">This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</target>
-        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
-      </trans-unit>
       <trans-unit id="IncludeOrExcludeDirectiveUnknownFileType">
         <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
         <target state="translated">Extension de fichier non reconnue dans la directive « {0} ». Seules ces extensions sont actuellement reconnues : {1}</target>

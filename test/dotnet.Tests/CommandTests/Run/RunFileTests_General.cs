@@ -500,7 +500,6 @@ public sealed class RunFileTests_General : RunFileTestBase
 
         new DotnetCommand(Log, "run", "-")
             .WithWorkingDirectory(appDir)
-            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
                 #!/usr/bin/env dotnet
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
@@ -518,7 +517,6 @@ public sealed class RunFileTests_General : RunFileTestBase
 
         new DotnetCommand(Log, "run", "-")
             .WithWorkingDirectory(appDir)
-            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
                 #!/usr/bin/env dotnet
                 #:ref ../lib/mylib.cs

@@ -209,14 +209,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
             namespace MyLib;
@@ -272,14 +264,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
             namespace MyLib;
@@ -321,14 +305,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     public void RefDirective_Transitive_Convert()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
             #:property OutputType=Library
@@ -394,14 +370,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
         File.WriteAllText(Path.Join(testInstance.Path, "a", "lib.cs"), """
             #:property OutputType=Library
@@ -435,21 +403,13 @@ public sealed class DotnetProjectConvertTests : SdkTest
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["a", "app.cs", "b", "Directory.Build.props"]);
+            .Should().BeEquivalentTo(["a", "app.cs", "b"]);
     }
 
     [TestMethod]
     public void RefDirective_DuplicateFolderName_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         // a/lib.cs is referenced by mid.cs
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
@@ -497,14 +457,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     public void RefDirective_DuplicateFolderName_ViaInclude()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         // a/lib.cs is referenced by the app directly
         Directory.CreateDirectory(Path.Join(testInstance.Path, "a"));
@@ -554,14 +506,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
 
@@ -603,14 +547,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     public void RefDirective_IncludedItemsDeleted()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
@@ -657,14 +593,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     public void RefDirective_ConvertScope()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -2212,14 +2140,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     public void Directives_IncludeDll_ViaRef()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
