@@ -549,6 +549,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>69b8232456f310042636be171c2c9ddd549f9c23</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="10.0.0-beta.26458.105">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>69b8232456f310042636be171c2c9ddd549f9c23</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.SignTool" Version="10.0.0-beta.26458.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>69b8232456f310042636be171c2c9ddd549f9c23</Sha>
