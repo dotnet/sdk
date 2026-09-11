@@ -825,9 +825,8 @@ class C
         [DataRow(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
-            if (targetFramework == "net6.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
             {
-                //  https://github.com/dotnet/sdk/issues/49665
                 return;
             }
 
