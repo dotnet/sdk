@@ -165,7 +165,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             }
 
             // Zip the files from PublishOutput path.
-            string zipFileFullPath = Path.Combine(Path.GetTempPath(), string.Format("Publish{0}.zip", new Random().Next(int.MaxValue)));
+#if NETFRAMEWORK
+            string tempSubdirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())).FullName;
+#else
+            string tempSubdirectory = Directory.CreateTempSubdirectory().FullName;
+#endif
+
+            string zipFileFullPath = Path.Combine(tempSubdirectory, "Publish.zip");
             Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
 
             try
@@ -193,7 +199,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                     {
                         try
                         {
+                            // Delete the file, then the containing directory
                             File.Delete(tempFilePath);
+                            if (Path.GetDirectoryName(tempFilePath) is string tempSubdirectory)
+                            {
+                                Directory.Delete(tempSubdirectory);
+                            }
                         }
                         catch
                         {
