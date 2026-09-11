@@ -21,12 +21,14 @@ public class TelemetryDrainE2ETests
 
         (int fixtureExitCode, string fixtureOutput) = environment.RunEnvScript();
         fixtureExitCode.Should().Be(0, fixtureOutput);
+        environment.SeedStoredTelemetry();
         environment.TelemetryBlobPaths.Should().NotBeEmpty(
-            "the real persistent exporter should write the telemetry fixture");
-        (int exitCode, string output) = environment.RunDotnetup([Constants.Telemetry.DrainCommand]);
-
-        exitCode.Should().Be(0, output);
+            "the fixture must contain data before the detached exporter starts");
+        using var drainer = environment.StartDrainer();
+        await environment.WaitForDrainerStartedAsync(s_timeout);
         await server.WaitForRequestAsync(s_timeout);
+        await environment.WaitForTelemetryBlobsDeletedAsync(s_timeout);
+        drainer.HasExited.Should().BeFalse("the child retains its three-minute lifetime even after the first upload");
         environment.TelemetryBlobPaths.Should().BeEmpty("accepted telemetry blobs should be deleted");
     }
 
@@ -36,9 +38,10 @@ public class TelemetryDrainE2ETests
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
 
-        (int exitCode, string output) = environment.RunDotnetup(["--help"]);
-
-        exitCode.Should().Be(0, output);
+        using var foreground = environment.StartCommand("--help");
+        foreground.WaitForExit(10_000).Should().BeTrue("the foreground must not wait for the three-minute child");
+        foreground.ExitCode.Should().Be(0);
+        await environment.WaitForDrainerStartedAsync(s_timeout);
         await server.WaitForRequestAsync(s_timeout);
         await environment.WaitForTelemetryBlobsDeletedAsync(s_timeout);
         environment.TelemetryBlobPaths.Should().BeEmpty("the detached child should delete accepted blobs");

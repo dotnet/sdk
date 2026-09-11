@@ -124,6 +124,9 @@ public sealed class DotnetupTelemetry : IDisposable
 
             var storageDirectory = DotnetupPaths.ResolveTelemetryStorageDirectory(getEnvironmentVariable);
 
+            AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown", IsOneAndDoneEnvironment);
+            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0);
+
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
@@ -134,7 +137,7 @@ public sealed class DotnetupTelemetry : IDisposable
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
 
-            // Local runs persist synchronously and deliver via a detached drainer on exit.
+            // Local shutdown persists queued records; the detached process gives Azure time to upload them.
             _shouldSpawnDetachedDrainer = !IsOneAndDoneEnvironment && !disableExport && !string.IsNullOrWhiteSpace(storageDirectory);
         }
         catch (Exception)
@@ -211,26 +214,8 @@ public sealed class DotnetupTelemetry : IDisposable
                 builder.AddOtlpExporter();
             }
 
-            if (isOneAndDone)
-            {
-                // CI: Deliver telemetry before the program can fully exit as it will not rerun.
-                builder.AddAzureMonitorTraceExporter(o =>
-                {
-                    o.ConnectionString = connectionString;
-                    o.EnableLiveMetrics = false;
-                    o.StorageDirectory = storageDirectory;
-                });
-            }
-            else
-            {
-                // Local: persist synchronously and let the detached drainer POST out of band.
-                builder.AddPersistentStorageExporter(o =>
-                {
-                    o.ConnectionString = connectionString;
-                    o.StorageDirectory = storageDirectory;
-                    o.StartBackgroundDrain = false;
-                });
-            }
+            builder.AddAzureMonitorTraceExporter(o => ConfigureAzureExporter(o, connectionString, storageDirectory));
+            builder.SetSampler(new AlwaysOnSampler());
         }
 
         if (debugConsole)
@@ -261,24 +246,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 // OTLP is only for explicitly enabled local scenarios.
                 if (!disableExport)
                 {
-                    if (isOneAndDone)
-                    {
-                        o.AddAzureMonitorLogExporter(amo =>
-                        {
-                            amo.ConnectionString = connectionString;
-                            amo.EnableLiveMetrics = false;
-                            amo.StorageDirectory = storageDirectory;
-                        });
-                    }
-                    else
-                    {
-                        o.AddPersistentStorageExporter(pso =>
-                        {
-                            pso.ConnectionString = connectionString;
-                            pso.StorageDirectory = storageDirectory;
-                            pso.StartBackgroundDrain = false;
-                        });
-                    }
+                    o.AddAzureMonitorLogExporter(amo => ConfigureAzureExporter(amo, connectionString, storageDirectory));
 
                     if (enableOtlpExporter)
                     {
@@ -293,6 +261,17 @@ public sealed class DotnetupTelemetry : IDisposable
             });
         });
         return services.BuildServiceProvider();
+    }
+
+    internal static void ConfigureAzureExporter(AzureMonitorExporterOptions options, string connectionString, string storageDirectory)
+    {
+        options.ConnectionString = connectionString;
+        options.StorageDirectory = storageDirectory;
+        options.EnableLiveMetrics = false;
+        options.EnableStandardMetrics = false;
+        options.EnablePerformanceCounters = false;
+        options.EnableTraceBasedLogsSampler = false;
+        options.Retry.NetworkTimeout = TimeSpan.FromMilliseconds(Math.Max(1, GetCiShutdownBudgetMs()));
     }
 
     /// <summary>
@@ -476,8 +455,8 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Monitor batch exporter and awaits the in-flight HTTP POST so telemetry is delivered before
     /// the process exits (see <see cref="GetCiShutdownBudgetMs"/>).
     ///
-    /// Local: telemetry is already persisted synchronously, so shutdown just releases the providers.
-    /// A short-lived detached drainer is spawned to POST the persisted blobs.
+    /// Local: Azure persists queued records within the existing shutdown budget.
+    /// A detached process gives Azure time to upload persisted records after the foreground exits.
     /// </summary>
     /// <param name="exitCode">
     /// The process exit code of dotnetup, to determine if it was a success or failure.
@@ -489,7 +468,7 @@ public sealed class DotnetupTelemetry : IDisposable
             ShutdownProviders(GetLocalShutdownBudgetMs(exitCode));
 
             // Skip the out-of-band drainer on the latency-critical shell-startup hot path; those
-            // blobs are delivered by the next dotnetup run or the SDK CLI sharing the store.
+            // blobs are delivered by a later dotnetup invocation using the same storage partition.
             if (!IsShellStartupCommand)
             {
                 DotnetupTelemetryDrainProcess.SpawnDetachedDrainer();

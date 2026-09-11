@@ -85,5 +85,6 @@ internal static class Constants
 
         internal const string E2EConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
         internal const string TestShutdownBudgetPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_SHUTDOWN_BUDGET_PATH";
+        internal const string TestDrainerProcessPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_DRAINER_PROCESS_PATH";
     }
 }

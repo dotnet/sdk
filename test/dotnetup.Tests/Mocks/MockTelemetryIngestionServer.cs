@@ -65,9 +65,14 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
     private static async Task ServeRequestAsync(TcpClient client)
     {
         using NetworkStream stream = client.GetStream();
-        if (await ReadHeadersAsync(stream))
+        var (chunked, contentLength) = await ReadHeadersAsync(stream);
+        if (chunked)
         {
             await ReadChunkedBodyAsync(stream);
+        }
+        else
+        {
+            await ReadExactlyAsync(stream, contentLength);
         }
 
         byte[] response = Encoding.ASCII.GetBytes(
@@ -77,7 +82,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         client.Client.Shutdown(SocketShutdown.Send);
     }
 
-    private static async Task<bool> ReadHeadersAsync(NetworkStream stream)
+    private static async Task<(bool Chunked, int ContentLength)> ReadHeadersAsync(NetworkStream stream)
     {
         string requestLine = await ReadLineAsync(stream, 1024);
         if (!requestLine.Equals("POST /v2.1/track HTTP/1.1", StringComparison.Ordinal))
@@ -86,6 +91,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         }
 
         bool chunked = false;
+        int contentLength = 0;
         int bytesRead = Encoding.ASCII.GetByteCount(requestLine) + 2;
         while (true)
         {
@@ -93,9 +99,17 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
             bytesRead += Encoding.ASCII.GetByteCount(line) + 2;
             if (line.Length == 0)
             {
-                return chunked;
+                return (chunked, contentLength);
             }
 
+            if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
+            {
+                contentLength = int.Parse(line["Content-Length:".Length..].Trim(), CultureInfo.InvariantCulture);
+                if (contentLength < 0 || contentLength > MaxBodyBytes)
+                {
+                    throw new InvalidDataException("Invalid telemetry content length.");
+                }
+            }
             chunked |= line.Equals("Transfer-Encoding: chunked", StringComparison.OrdinalIgnoreCase);
         }
     }
