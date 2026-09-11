@@ -129,7 +129,8 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         {
             // Wait for agent to create the named pipe and send capabilities over.
             // the agent blocks the app execution until initial updates are applied (if any).
-            var managedCodeUpdateCapabilities = await clients.GetUpdateCapabilitiesAsync(processCommunicationCancellationToken);
+            var managedCodeUpdateCapabilities = HotReloadClients.UnionCapabilities(
+                await clients.GetConnectedAgentsInfoAsync(processCommunicationCancellationToken));
 
             var runningProject = new RunningProject(
                 projectNode,

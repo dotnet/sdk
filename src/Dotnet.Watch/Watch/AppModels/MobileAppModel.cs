@@ -24,7 +24,7 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
                 clientLogger,
                 cancellationToken);
 
-            clients = [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), handlesStaticAssetUpdates: true, transport)];
+            clients = [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), transport, handlesStaticAssetUpdates: true, hasRemoteAgent: true)];
         }
         else
         {

@@ -64,10 +64,10 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     public abstract Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Returns update capabilities of the target process.
+    /// Returns information about the connected agent.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public abstract Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken);
+    public abstract Task<HotReloadAgentInfo> GetConnectedAgentInfoAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns a task that applies managed code updates to the target process.
@@ -111,7 +111,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
 
     protected async Task<IReadOnlyList<HotReloadManagedCodeUpdate>> FilterApplicableUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
     {
-        var availableCapabilities = await GetUpdateCapabilitiesAsync(cancellationToken);
+        var agentInfo = await GetConnectedAgentInfoAsync(cancellationToken);
         var applicableUpdates = new List<HotReloadManagedCodeUpdate>();
 
         foreach (var update in updates)
@@ -122,7 +122,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
                 continue;
             }
 
-            if (update.RequiredCapabilities.Except(availableCapabilities).Any())
+            if (update.RequiredCapabilities.Except(agentInfo.ManagedCodeUpdateCapabilities).Any())
             {
                 // required capability not available:
                 _frozenModules.Add(update.ModuleId);
