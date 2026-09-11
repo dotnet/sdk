@@ -38,12 +38,14 @@ internal sealed class EvaluationResult(
             includeSubdirectories: true);
     }
 
-    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions)
+    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions, string browserToolsPublicKey)
     {
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
-        return BuildUtilities.ParseBuildProperties(buildArguments)
-            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
+        return ReservedBuildProperties.SetBrowserToolsProperties(
+                BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments),
+                environmentOptions,
+                browserToolsPublicKey)
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")

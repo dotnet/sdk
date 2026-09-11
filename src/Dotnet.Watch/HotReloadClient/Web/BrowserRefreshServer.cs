@@ -6,13 +6,10 @@
 #if NET
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
@@ -25,11 +22,12 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-    string middlewareAssemblyPath,
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     string dotnetPath,
+    SharedSecretProvider sessionKey,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKey, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
@@ -42,30 +40,13 @@ internal sealed class BrowserRefreshServer(
             webSocketConfig = webSocketConfig.WithSecurePort(null);
         }
 
-        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, WebSocketRequestAsync, cancellationToken);
+        // The browser reaches the provider through the application's own origin, so the provider only
+        // listens on loopback. DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME no longer applies to this hop.
+        var router = new BrowserToolsEndpointRouter(this);
+        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig.WithHostName(null), router.HandleAsync, cancellationToken);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(server, server.ServerUrls, virtualDirectory: "/");
-    }
-
-    private async Task WebSocketRequestAsync(HttpContext context)
-    {
-        if (!context.WebSockets.IsWebSocketRequest)
-        {
-            context.Response.StatusCode = 400;
-            return;
-        }
-
-        if (context.WebSockets.WebSocketRequestedProtocols is not [var subProtocol])
-        {
-            subProtocol = null;
-        }
-
-        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-
-        // client socket ownership is transferred to the connection:
-        var connection = OnBrowserConnected(clientSocket, subProtocol);
-        await connection.Disconnected.Task;
+        return new WebServerHost(server, server.ServerUrls, server.HttpServerUrls);
     }
 }
 

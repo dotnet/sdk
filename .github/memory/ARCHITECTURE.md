@@ -49,6 +49,83 @@ after it. Those files select language and cross-targeting imports, then compose 
 shipping targets and tasks. Specialized SDKs expose the same `Sdk.props`/`Sdk.targets`
 shape; see [API_MAP.md](API_MAP.md#msbuild-sdk-entry-points).
 
+### `dotnet watch` Browser-Tool Activation
+
+`dotnet watch` owns browser-tool availability. The browser authenticates the provider with
+an RSA public key that the build pins into the application, so **the executable
+browser-tools JavaScript must come from the application's own build output and never from
+the provider being authenticated**; downloading the client from that provider would make
+the authentication meaningless.
+
+[`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs)
+creates one RSA keypair per `dotnet watch` invocation, before any project is built. Only
+the base64 `SubjectPublicKeyInfo` half reaches MSBuild, through the reserved
+`DotNetWatchBrowserToolsPublicKey` property alongside `DotNetWatchBrowserTools`; see
+[`ReservedBuildProperties`](../../src/Dotnet.Watch/Watch/Build/ReservedBuildProperties.cs),
+[`EvaluationResult.GetGlobalBuildProperties`](../../src/Dotnet.Watch/Watch/Build/EvaluationResult.cs)
+and [`BuildEvaluator`](../../src/Dotnet.Watch/dotnet-watch/Watch/BuildEvaluator.cs). The
+private key stays in the watch process; the 32-byte secret the browser generates is never
+persisted and travels only RSA-OAEP encrypted as the WebSocket subprotocol.
+
+[`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
+turns those two properties into build-only static web assets under
+`obj/<configuration>/<tfm>/dotnet-watch/`: the SDK-specific activation initializer, the
+[browser-tools client](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.js),
+and a configuration module generated from a
+[checked-in template](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.config.js.template)
+that pins the public key and the fixed `/_framework/dotnet-browser-tools` route. The assets
+are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `FileWrites`,
+and are written only when their content changes so that the stable per-invocation key keeps
+rebuilds incremental. Publish output and plain builds contain none of them. Apps that
+disable `StaticWebAssetsEnabled` or `JSModulesEnabled` therefore cannot receive browser
+tools.
+
+The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
+[Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
+prefix and initializer
+([WebAssembly module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template),
+[Web module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js)).
+The WebAssembly initializer signals the Hot Reload agent through the watch-private
+`__DOTNET_WATCH_BROWSER_TOOLS` runtime configuration variable rather than a shared global
+or the legacy `__ASPNETCORE_BROWSER_TOOLS` switch, and must not capture globals at module
+evaluation because Blazor runs every `onRuntimeConfigLoaded` before any `onRuntimeReady`
+and does not guarantee initializer load order. .NET 9 is the single exception: its runtime
+creates the Hot Reload agent only when `__ASPNETCORE_BROWSER_TOOLS` is set, so the
+initializer is generated from a template whose gate the targets substitute for that target
+framework version alone. MVC and Razor Pages responses are activated
+by
+[`BrowserRefreshTagHelperComponent`](../../src/Dotnet.Watch/Web.Middleware/BrowserRefreshTagHelperComponent.cs),
+which does not run for `.razor` root components. Activating more than once is harmless:
+module imports are cached per URL and the browser client keeps its own injection sentinel.
+
+Application hosts reach the provider through the shared
+[`BrowserToolsForwarder`](../../src/Dotnet.Watch/Web.Middleware/BrowserToolsForwarder.cs),
+which
+[`WebApplicationAppModel`](../../src/Dotnet.Watch/Watch/AppModels/WebApplicationAppModel.cs)
+installs through the hosting-startup path. The forwarder relays the provider's pre-upgrade
+HTTP error status for a rejected WebSocket handshake and reports 502 for everything else,
+including a provider that never answered. Standalone WebAssembly projects need both paths:
+[`BlazorWebAssemblyAppModel`](../../src/Dotnet.Watch/Watch/AppModels/BlazorWebAssemblyAppModel.cs)
+adds a gateway reverse-proxy route to the provider through `ReverseProxy__*`
+environment variables, because the Blazor Gateway is a separate YARP host that does not
+activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
+configuration because older target frameworks are served by `blazor-devserver`, an ordinary
+ASP.NET Core host.
+
+The provider serves no JavaScript. Its remaining HTTP surface is the `/connect` WebSocket
+and `/clear-cache`; see
+[`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
+There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire
+level generation id: replay is serialized on the authenticated WebSocket, which sends the
+current snapshot first and releases live messages only after the browser acknowledges it.
+That gate is per connection, so the provider fans out to connected browsers in parallel and
+one slow or unacknowledged browser cannot delay delivery to the others. All supported target
+frameworks use this contract; there is no parallel legacy
+response-rewriting path. The one legacy route that survives,
+`/_framework/blazor-hotreload`, is answered locally by the injected middleware with an empty
+update array purely because the .NET 9 WebAssembly runtime probes it during initialization;
+it is never forwarded and never carries deltas.
+
 ### Resolver Plugins
 
 MSBuild loads [`DotNetMSBuildSdkResolver`](../../src/Resolvers/Microsoft.DotNet.MSBuildSdkResolver/MSBuildSdkResolver.cs)

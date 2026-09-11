@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.HotReload;
@@ -16,39 +16,97 @@ public class BrowserRefreshServerTests
         }
     }
 
+    private static async ValueTask<TestBrowserRefreshServer> CreateStartedServerAsync(
+        Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+        LogLevel enabledLogLevel = LogLevel.Information)
+    {
+        var server = new TestBrowserRefreshServer(configureLaunchEnvironment)
+        {
+            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
+        };
+
+        ((TestLogger)server.Logger).IsEnabledImpl = level => level == enabledLogLevel;
+
+        await server.StartAsync(CancellationToken.None);
+        return server;
+    }
+
+    /// <summary>
+    /// The server owns no knowledge of how the application is made to expose the provider routes:
+    /// it delegates to the app model supplied callback.
+    /// </summary>
+    /// <summary>
+    /// dotnet-watch reports an update as applied when a browser acknowledges it. A browser that could
+    /// not apply the update must therefore fail the acknowledgement instead of answering with an empty
+    /// log, which would be indistinguishable from a successful apply.
+    /// </summary>
+    [TestMethod]
+    public void ReceiveUpdateApplyResponse_BrowserReportsFailure()
+    {
+        var logger = new TestLogger();
+        var response = """
+            {"success":false,"log":[{"message":"Unable to apply managed code updates because this build of the app does not support runtime metadata updates.","severity":2}]}
+            """u8;
+
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+
+        Assert.IsFalse(success);
+        Assert.IsTrue(logger.HasError);
+        Assert.IsTrue(logger.GetAndClearMessages().Any(m => m.Contains("does not support runtime metadata updates")));
+    }
+
+    [TestMethod]
+    public void ReceiveUpdateApplyResponse_BrowserReportsSuccess()
+    {
+        var logger = new TestLogger();
+        var response = """
+            {"success":true,"log":[]}
+            """u8;
+
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+
+        Assert.IsTrue(success);
+        Assert.IsFalse(logger.HasError);
+    }
+
+    [TestMethod]
+    public async Task ConfigureLaunchEnvironment_DelegatesToAppModel()
+    {
+        AbstractBrowserRefreshServer? observedServer = null;
+
+        var server = await CreateStartedServerAsync((environment, s) =>
+        {
+            observedServer = s;
+            environment["CUSTOM"] = s.ProviderAddress.AbsoluteUri;
+        });
+
+        var envBuilder = new Dictionary<string, string>();
+        server.ConfigureLaunchEnvironment(envBuilder);
+
+        Assert.AreSame(server, observedServer);
+        AssertEx.SequenceEqual(["CUSTOM=http://test.endpoint/"], envBuilder.Select(e => $"{e.Key}={e.Value}"));
+    }
+
     [TestMethod]
     [CombinatorialData]
-    public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload) 
+    public async Task HostingStartupEnvironment(LogLevel logLevel)
     {
         var middlewarePath = Path.GetTempPath();
         var middlewareFileName = Path.GetFileNameWithoutExtension(middlewarePath);
 
-        var server = new TestBrowserRefreshServer(middlewarePath)
-        {
-            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["http://test.endpoint"], virtualDirectory: "/test/virt/dir")
-        };
-
-        ((TestLogger)server.Logger).IsEnabledImpl = level => level == logLevel;
-
-        await server.StartAsync(CancellationToken.None);
+        var server = await CreateStartedServerAsync(
+            (environment, s) => WebApplicationAppModel.AddHostingStartupEnvironment(environment, s, middlewarePath),
+            enabledLogLevel: logLevel);
 
         var envBuilder = new Dictionary<string, string>();
-        server.ConfigureLaunchEnvironment(envBuilder, enableHotReload);
-
-        Assert.IsTrue(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
+        server.ConfigureLaunchEnvironment(envBuilder);
 
         var expected = new List<string>()
         {
-            "ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir",
-            "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint",
+            "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS=http://test.endpoint/",
             "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=" + middlewareFileName,
             "DOTNET_STARTUP_HOOKS=" + middlewarePath,
         };
-
-        if (enableHotReload)
-        {
-            expected.Add("DOTNET_MODIFIABLE_ASSEMBLIES=debug");
-        }
 
         if (logLevel == LogLevel.Trace)
         {
@@ -56,5 +114,27 @@ public class BrowserRefreshServerTests
         }
 
         AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
+    }
+
+    /// <summary>
+    /// A standalone WebAssembly app is served by blazor-gateway, which does not activate hosting
+    /// startups. Without the proxy route the provider routes fall through to the SPA fallback.
+    /// </summary>
+    [TestMethod]
+    public async Task GatewayProxyEnvironment()
+    {
+        var server = await CreateStartedServerAsync(BlazorWebAssemblyAppModel.AddGatewayProxyEnvironment);
+
+        var envBuilder = new Dictionary<string, string>();
+        server.ConfigureLaunchEnvironment(envBuilder);
+
+        AssertEx.SequenceEqual(
+            [
+                "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
+                "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
+                "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
+                "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
+            ],
+            envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
     }
 }

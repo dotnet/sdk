@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 if (args is not [var urlArg])
@@ -16,43 +17,98 @@ Log($"Test browser opened at '{urlArg}'.");
 
 var url = new Uri(urlArg, UriKind.Absolute);
 
-var (webSocketUrls, publicKey) = await GetWebSocketUrlsAndPublicKey(url);
+// The configuration module is part of the application's build output. Reading the public key from it
+// - rather than from the provider - is what makes authenticating the provider meaningful.
+var (configUrl, publicKey) = await GetConfigurationAsync(url);
 
-var secret = RandomNumberGenerator.GetBytes(32);
+var webSocketUrl = new UriBuilder(url)
+{
+    Scheme = url.Scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : Uri.UriSchemeWs,
+    Path = "/_framework/dotnet-browser-tools/connect",
+    Query = string.Empty,
+}.Uri.AbsoluteUri;
+
+Log($"WebSocket url is '{webSocketUrl}'.");
+Log($"Key is '{publicKey}'.");
+
+var secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 var encryptedSecret = GetEncryptedSecret(publicKey, secret);
 
-using var webSocket = await OpenWebSocket(webSocketUrls, encryptedSecret);
-var buffer = new byte[8 * 1024];
-
-while (await TryReceiveMessageAsync(webSocket, message => Log($"Received: {Encoding.UTF8.GetString(message)}")))
+while (true)
 {
-}
+    using var webSocket = await OpenWebSocket(webSocketUrl, encryptedSecret);
 
-Log("WebSocket closed");
-
-return 0;
-
-static async Task<WebSocket> OpenWebSocket(string[] urls, string encryptedSecret)
-{
-    foreach (var url in urls)
+    while (await TryReceiveMessageAsync(webSocket, message =>
     {
-        try
+        var text = Encoding.UTF8.GetString(message);
+
+        // The provider replays the current snapshot as part of the connection handshake and only
+        // releases live messages on this connection once the browser acknowledges it. Report it
+        // separately so that 'Received' keeps meaning 'live message'.
+        if (TryGetSessionInitializationUpdateCount(text, out var updateCount))
         {
-            var webSocket = new ClientWebSocket();
-            webSocket.Options.AddSubProtocol(Uri.EscapeDataString(encryptedSecret));
-            await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
-            return webSocket;
+            Log($"Session initialized with {updateCount} update(s).");
+            return true;
         }
-        catch (Exception e)
-        {
-            Log($"Error connecting to '{url}': {e.Message}");
-        }
+
+        Log($"Received: {text}");
+        return RequiresAcknowledgement(text);
+    }))
+    {
     }
 
-    throw new InvalidOperationException("Unable to establish a connection.");
+    await WaitForApplicationAsync(configUrl);
+    Log("""Received: {"type":"Reload"}""");
 }
 
-static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<ReadOnlySpan<byte>> receiver)
+static async Task<WebSocket> OpenWebSocket(string url, string encryptedSecret)
+{
+    var webSocket = new ClientWebSocket();
+    webSocket.Options.AddSubProtocol(Uri.EscapeDataString(encryptedSecret));
+    await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
+    return webSocket;
+}
+
+// The provider withholds live messages until the session initialization message is acknowledged and
+// expects an acknowledgement for each update batch. All other messages are one way.
+static bool TryGetSessionInitializationUpdateCount(string message, out int updateCount)
+{
+    using var document = JsonDocument.Parse(message);
+    if (document.RootElement.TryGetProperty("type", out var type) &&
+        type.GetString() == "InitializeSession")
+    {
+        updateCount = document.RootElement.TryGetProperty("updates", out var updates)
+            ? updates.GetArrayLength()
+            : 0;
+
+        return true;
+    }
+
+    updateCount = 0;
+    return false;
+}
+
+static bool RequiresAcknowledgement(string message)
+{
+    using var document = JsonDocument.Parse(message);
+    return document.RootElement.TryGetProperty("type", out var type) &&
+        type.GetString() is "ApplyManagedCodeUpdates";
+}
+
+static async Task AcknowledgeAsync(WebSocket socket)
+{
+    var response = Encoding.UTF8.GetBytes("""{"success":true,"log":[]}""");
+    try
+    {
+        await socket.SendAsync(response, WebSocketMessageType.Text, endOfMessage: true, CancellationToken.None);
+    }
+    catch (Exception e) when (e is not OperationCanceledException)
+    {
+        Log($"Failed to acknowledge: {e.Message}");
+    }
+}
+
+static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Func<byte[], bool> receiver)
 {
     var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
@@ -82,61 +138,77 @@ static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<Rea
         }
     }
 
-    receiver(writer.WrittenSpan);
+    if (receiver(writer.WrittenSpan.ToArray()))
+    {
+        await AcknowledgeAsync(socket);
+    }
+
     return true;
 }
 
-static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri baseUrl)
+static async Task<(Uri configUrl, string key)> GetConfigurationAsync(Uri baseUrl)
 {
-    var refreshScriptUrl = new Uri(baseUrl, "/_framework/aspnetcore-browser-refresh.js");
-
-    Log($"Fetching: {refreshScriptUrl}");
-
     using var httpClient = new HttpClient();
-    var content = await httpClient.GetStringAsync(refreshScriptUrl);
 
-    Log($"Request for '{refreshScriptUrl}' succeeded");
-    var webSocketUrl = GetWebSocketUrls(content);
-    var key = GetSharedSecretKey(content);
-
-    Log($"WebSocket urls are '{string.Join(',', webSocketUrl)}'.");
-    Log($"Key is '{key}'.");
-
-    return (webSocketUrl, key);
-}
-
-static string[] GetWebSocketUrls(string refreshScript)
-{
-    var pattern = "const webSocketUrls = '([^']+)'";
-
-    var match = Regex.Match(refreshScript, pattern);
-    if (!match.Success)
+    foreach (var candidate in GetConfigurationUrls(baseUrl))
     {
-        throw new InvalidOperationException($"Can't find web socket URL pattern in the script: {pattern}{Environment.NewLine}{refreshScript}");
+        using var response = await httpClient.GetAsync(candidate);
+        if (!response.IsSuccessStatusCode)
+        {
+            continue;
+        }
+
+        Log($"Request for '{candidate}' succeeded");
+        var content = await response.Content.ReadAsStringAsync();
+        return (candidate, ParsePublicKey(content));
     }
 
-    return match.Groups[1].Value.Split(",");
+    throw new InvalidOperationException("The application does not host a browser tools configuration module.");
 }
 
-static string GetSharedSecretKey(string refreshScript)
+static IEnumerable<Uri> GetConfigurationUrls(Uri baseUrl)
 {
-    var pattern = @"const sharedSecret = await getSecret\('([^']+)'\)";
-
-    var match = Regex.Match(refreshScript, pattern);
-    if (!match.Success)
-    {
-        throw new InvalidOperationException($"Can't find web socket shared secret pattern in the script: {pattern}{Environment.NewLine}{refreshScript}");
-    }
-
-    return match.Groups[1].Value;
+    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.Web.DotNetWatch.BrowserTools.Config.js");
+    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.BrowserTools.Config.js");
 }
 
-// Equivalent to getSecret function in WebSocketScriptInjection.js:
-static string GetEncryptedSecret(string key, byte[] secret)
+static string ParsePublicKey(string moduleContent)
+{
+    var match = Regex.Match(moduleContent, @"publicKey:\s*'(?<key>[^']*)'");
+    return match.Success
+        ? match.Groups["key"].Value
+        : throw new InvalidOperationException("The browser tools configuration module does not contain a public key.");
+}
+
+static async Task WaitForApplicationAsync(Uri configUrl)
+{
+    using var httpClient = new HttpClient();
+
+    while (true)
+    {
+        try
+        {
+            using var response = await httpClient.GetAsync(configUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            Log($"Waiting for the application to return: {e.Message}");
+        }
+
+        await Task.Delay(100);
+    }
+}
+
+// Equivalent to the browser tools client's shared-secret encryption:
+static string GetEncryptedSecret(string key, string secret)
 {
     using var rsa = RSA.Create();
     rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(key), out _);
-    return Convert.ToBase64String(rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256));
+    return Convert.ToBase64String(rsa.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
 }
 
 static void Log(string message)

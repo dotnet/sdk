@@ -21,13 +21,13 @@ internal static class DotNetWatcher
             context.Logger.LogDebug("MSBuild incremental optimizations suppressed.");
         }
 
-        var environmentBuilder = new Dictionary<string, string>();
-
         ChangedFile? changedFile = null;
         var buildEvaluator = new BuildEvaluator(context);
 
         for (var iteration = 0;;iteration++)
         {
+            var environmentBuilder = new Dictionary<string, string>();
+
             if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
             {
                 context.Logger.LogError("Failed to find a list of files to watch");
@@ -65,7 +65,7 @@ internal static class DotNetWatcher
                 ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                 : null;
 
-            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
+            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
 
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)

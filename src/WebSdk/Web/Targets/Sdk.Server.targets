@@ -32,6 +32,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
 
+  <!-- Activates the dotnet-watch browser tools client in Blazor apps that render on the server
+       (static SSR or Interactive Server), which the browser refresh TagHelper does not reach.
+       The assets are produced by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. -->
+  <PropertyGroup>
+    <DotNetWatchBrowserToolsAssetPrefix>Microsoft.NET.Sdk.Web.DotNetWatch</DotNetWatchBrowserToolsAssetPrefix>
+    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js</DotNetWatchBrowserToolsInitializerFile>
+    <DotNetWatchBrowserToolsRegisterInitializerAsJSModule>true</DotNetWatchBrowserToolsRegisterInitializerAsJSModule>
+  </PropertyGroup>
+
   <!--
   ============================================================
     DefaultRuntimeHostConfigurationOptions

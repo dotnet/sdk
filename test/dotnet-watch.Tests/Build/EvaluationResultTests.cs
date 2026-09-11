@@ -167,4 +167,26 @@ public class EvaluationResultTests
             "main (net8.0)",
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
+
+    [TestMethod]
+    [DataRow(false, "True", "test-public-key")]
+    [DataRow(true, "False", "")]
+    public void GetGlobalBuildProperties_OverridesReservedWatchProperties(
+        bool suppressBrowserRefresh,
+        string expectedBrowserToolsValue,
+        string expectedPublicKey)
+    {
+        var environmentOptions = TestOptions.GetEnvironmentOptions() with
+        {
+            SuppressBrowserRefresh = suppressBrowserRefresh
+        };
+
+        var properties = EvaluationResult.GetGlobalBuildProperties(
+            ["-p:dotnetwatchbrowsertools=user-value", "-p:dotnetwatchbrowsertoolspublickey=user-key"],
+            environmentOptions,
+            browserToolsPublicKey: "test-public-key");
+
+        Assert.AreEqual(expectedBrowserToolsValue, properties["DotNetWatchBrowserTools"]);
+        Assert.AreEqual(expectedPublicKey, properties["DotNetWatchBrowserToolsPublicKey"]);
+    }
 }

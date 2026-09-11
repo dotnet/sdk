@@ -4,11 +4,13 @@
 #nullable enable
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.Watch.BrowserRefresh.HostingStartup))]
 
@@ -18,44 +20,50 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
 {
     public void Configure(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services => services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this)));
+        builder.ConfigureServices(services => ConfigureServices(services, BrowserToolsEnvironment.GetProviderAddress()));
+    }
+
+    internal void ConfigureServices(IServiceCollection services, Uri providerAddress)
+    {
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
+        services.TryAddSingleton(services => new BrowserToolsForwarder(providerAddress, services.GetRequiredService<ILogger<BrowserToolsForwarder>>()));
+        services.AddHttpContextAccessor();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
     }
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
         return app =>
         {
+            // Only the endpoints the provider actually exposes are forwarded. The route is registered
+            // ahead of UsePathBase so it is absolute, which matches the route pinned into the
+            // generated configuration module.
             app.MapWhen(
-                static (context) =>
+                static context =>
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsConnect, StringComparison.OrdinalIgnoreCase) ||
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.OrdinalIgnoreCase),
+                static browserTools =>
                 {
-                    var path = context.Request.Path;
-                    return path.StartsWithSegments(ApplicationPaths.FrameworkRoot) &&
-                        (path.StartsWithSegments(ApplicationPaths.ClearSiteData) ||
-                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadMiddleware) ||
-                        path.StartsWithSegments(ApplicationPaths.BrowserRefreshJS) ||
-                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadJS));
-                },
-                static app =>
-                {
-                    app.Map(ApplicationPaths.ClearSiteData, static app => app.Run(context =>
-                    {
-                        // Scoped css files can contain links to other css files. We'll try clearing out the http caches to force the browser to re-download.
-                        // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data#directives
-                        context.Response.Headers["Clear-Site-Data"] = "\"cache\"";
-                        return Task.CompletedTask;
-                    }));
-
-                    app.Map(ApplicationPaths.BlazorHotReloadMiddleware, static app => app.UseMiddleware<BlazorWasmHotReloadMiddleware>());
-
-                    app.Map(ApplicationPaths.BrowserRefreshJS,
-                        static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BrowserRefreshJS, BrowserScriptMiddleware.GetBrowserRefreshJS()));
-
-                    // backwards compat only:
-                    app.Map(ApplicationPaths.BlazorHotReloadJS,
-                        static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BlazorHotReloadJS, BrowserScriptMiddleware.GetBlazorHotReloadJS()));
+                    browserTools.UseWebSockets();
+                    browserTools.Run(
+                        context => context.RequestServices.GetRequiredService<BrowserToolsForwarder>().ForwardAsync(context));
                 });
 
-            app.UseMiddleware<BrowserRefreshMiddleware>();
+            // The .NET 9 WebAssembly runtime probes the legacy HTTP replay endpoint when its Hot Reload
+            // agent starts and reports an error unless it receives a successful JSON response. Updates
+            // produced before a browser connected are replayed over the authenticated WebSocket, so the
+            // application answers the probe locally with an empty update set. Nothing is forwarded to the
+            // provider and no update is ever served over this unauthenticated route.
+            app.MapWhen(
+                static context =>
+                    HttpMethods.IsGet(context.Request.Method) &&
+                    context.Request.Path.Equals(ApplicationPaths.LegacyPreviousDeltas, StringComparison.OrdinalIgnoreCase),
+                static legacyReplay => legacyReplay.Run(static context =>
+                {
+                    context.Response.ContentType = "application/json";
+                    return context.Response.WriteAsync("[]", context.RequestAborted);
+                }));
+
             next(app);
         };
     }

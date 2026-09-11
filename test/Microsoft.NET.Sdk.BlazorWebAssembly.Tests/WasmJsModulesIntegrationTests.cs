@@ -56,6 +56,72 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
+        [DataRow("net8.0", false, false)]
+        [DataRow("net9.0", false, true)]
+        [DataRow("net10.0", true, false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true, false)]
+        public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectHotReloadAgent, bool expectRuntimeHotReloadAgent)
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
+                .WithTargetFramework(targetFramework);
+
+            var build = CreateBuildCommand(ProjectDirectory);
+
+            // The browser tools assets are only produced when dotnet-watch supplies the public half of
+            // the session key it created for the invocation, so both properties are required.
+            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true", "/p:DotNetWatchBrowserToolsPublicKey=TestPublicKey").Should().Pass();
+
+            var initializers = GetLibraryInitializers(build, targetFramework);
+
+            // The watch activation initializer is added for all target frameworks. It activates the browser tools
+            // client, which applies updates via the Hot Reload agent shipped by the SDK on .NET 10+, via the
+            // runtime's own agent on .NET 9.0, and via window.Blazor._internal.applyHotReload on .NET 8.0.
+            initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*.lib.module.js");
+
+            if (expectHotReloadAgent)
+            {
+                initializers.Should().ContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
+            }
+            else
+            {
+                initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*");
+            }
+
+            // .NET 9.0 only creates its built-in WebAssembly Hot Reload agent when __ASPNETCORE_BROWSER_TOOLS
+            // is set, and without that agent every apply entry point silently applies nothing. .NET 8.0 must
+            // not set it because its InitializeAsync imports a blazor-hotreload.js module the SDK no longer
+            // produces, and .NET 10.0 and later ship their own agent instead.
+            var initializerPath = Path.Combine(
+                build.GetIntermediateDirectory(targetFramework, "Debug").ToString(),
+                "dotnet-watch",
+                "Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js");
+            var initializerContent = File.ReadAllText(initializerPath);
+
+            initializerContent.Should().Contain($"const useRuntimeHotReloadAgent = {(expectRuntimeHotReloadAgent ? "true" : "false")};");
+            initializerContent.Should().NotContain("__RUNTIME_HOT_RELOAD_AGENT__");
+        }
+
+        [TestMethod]
+        public void Build_DoesNotAddDotNetWatchInitializer_WhenBrowserToolsAreDisabled()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*");
+        }
+
+        private static string[] GetLibraryInitializers(BuildCommand build, string targetFramework)
+        {
+            var manifestPath = Path.Combine(build.GetIntermediateDirectory(targetFramework, "Debug").ToString(), "staticwebassets.build.json");
+            return StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath)).Assets
+                .Where(asset => asset.AssetTraitValue == "JSLibraryModule")
+                .Select(asset => asset.RelativePath)
+                .ToArray();
+        }
+
+        [TestMethod]
         [RequiresMSBuildVersion("17.12")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {

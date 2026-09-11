@@ -49,6 +49,7 @@ internal class BuildEvaluator
             MainProjectOptions.Representation.PhysicalPath,
             MainProjectOptions.TargetFramework,
             _context.BuildArguments,
+            _context.BrowserRefreshServerFactory.PublicKey,
             _context.ProcessRunner,
             _context.BuildLogger,
             _context.Options,
@@ -96,6 +97,13 @@ internal class BuildEvaluator
         }
 
         arguments.AddRange(MainProjectOptions.CommandArguments);
+
+        if (MainProjectOptions.Command is "build" or "clean" or "msbuild" or "pack" or "publish" or "restore" or "run" or "test")
+        {
+            var applicationArgumentsSeparator = arguments.IndexOf("--");
+            var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : arguments.Count;
+            arguments.InsertRange(reservedPropertiesIndex, ReservedBuildProperties.GetBrowserToolsArguments(_context.EnvironmentOptions, _context.BrowserRefreshServerFactory.PublicKey));
+        }
 
         return arguments;
     }

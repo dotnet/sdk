@@ -69,8 +69,11 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
             // Exclude bundle files as they are regenarated when scoped CSS files are updated.
             // Exclude compressed asset files as they are not directly editable.
             // Exclude external content URLs as they are not directly included in the project.
+            // Exclude generated build outputs of the watcher itself and the JS initializer manifest.
             if (!StaticWebAsset.IsCompressedAssetFile(filePath) &&
                 !StaticWebAsset.IsScopedCssBundleFile(filePath) &&
+                !StaticWebAsset.IsBrowserToolsAssetFile(filePath) &&
+                !StaticWebAsset.IsGeneratedJSModuleManifestFile(filePath) &&
                 !StaticWebAsset.IsExternalContentUrl(url))
             {
                 yield return (filePath, url);

@@ -1,191 +1,106 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Watch.BrowserRefresh
+namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
+
+[TestClass]
+public class HostingStartupTest
 {
-    [TestClass]
-    public class HostingStartupTest
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
+    public void ConfigureServices_RegistersBrowserToolsServices()
     {
-        [TestMethod]
-        public async Task ClearSiteDataWorks()
+        var services = new ServiceCollection();
+
+        new HostingStartup().ConfigureServices(services, new Uri("http://127.0.0.1:5000"));
+
+        var tagHelperDescriptors = services
+            .Where(static descriptor => descriptor.ServiceType == typeof(ITagHelperComponent))
+            .ToArray();
+        Assert.HasCount(1, tagHelperDescriptors);
+        Assert.AreEqual(typeof(BrowserRefreshTagHelperComponent), tagHelperDescriptors[0].ImplementationType);
+        Assert.Contains(
+            static descriptor => descriptor.ServiceType == typeof(BrowserToolsForwarder),
+            services);
+    }
+
+    /// <summary>
+    /// The .NET 9 WebAssembly runtime fetches the legacy replay endpoint from the application origin
+    /// when its Hot Reload agent starts. The endpoint no longer exists, so without a local answer the
+    /// SPA fallback returns the application's HTML and the runtime reports a JSON parse failure. The
+    /// application answers it with an empty update set: replay happens over the authenticated
+    /// WebSocket, so nothing may be served over this unauthenticated route.
+    /// </summary>
+    [TestMethod]
+    public async Task LegacyPreviousDeltas_IsAnsweredLocallyWithAnEmptyUpdateSet()
+    {
+        await using var application = await StartApplicationAsync();
+        using var client = new HttpClient { BaseAddress = GetAddress(application) };
+
+        using var response = await client.GetAsync(ApplicationPaths.LegacyPreviousDeltas, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual("[]", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
+    /// <summary>
+    /// Only the runtime's GET probe is answered. Anything else keeps reaching the application, which
+    /// is what stops the route from becoming an update surface of its own.
+    /// </summary>
+    [TestMethod]
+    public async Task LegacyPreviousDeltas_DoesNotHandleNonGetRequests()
+    {
+        await using var application = await StartApplicationAsync();
+        using var client = new HttpClient { BaseAddress = GetAddress(application) };
+
+        using var response = await client.PostAsync(
+            ApplicationPaths.LegacyPreviousDeltas,
+            content: null,
+            TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual("application", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
+    private static async Task<WebApplication> StartApplicationAsync()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
+        new HostingStartup().ConfigureServices(builder.Services, new Uri("http://127.0.0.1:5000"));
+
+        var application = builder.Build();
+
+        // Stands in for the application's own terminal middleware, which in a real Blazor WebAssembly
+        // host is the SPA fallback that would otherwise answer the runtime's probe with HTML.
+        application.Run(context =>
         {
-            // Arrange
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/_framework/clear-browser-cache";
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return context.Response.WriteAsync("application", context.RequestAborted);
+        });
 
-            // Act
-            await requestDelegate(context);
+        await application.StartAsync();
+        return application;
+    }
 
-            // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.AreEqual("\"cache\"", context.Response.Headers["Clear-Site-Data"].ToString());
-        }
+    private static Uri GetAddress(WebApplication application)
+    {
+        var addresses = application.Services
+            .GetRequiredService<IServer>()
+            .Features
+            .Get<IServerAddressesFeature>()!
+            .Addresses;
 
-        [TestMethod]
-        public async Task GetBlazorHotReloadMiddlewareWorks()
-        {
-            // Arrange
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Method = "GET";
-            context.Request.Path = "/_framework/blazor-hotreload";
-            context.Response.Body = new MemoryStream();
-
-            // Act
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status204NoContent, context.Response.StatusCode);
-        }
-
-        [TestMethod]
-        public async Task PostBlazorHotReloadMiddlewareWorks()
-        {
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/_framework/blazor-hotreload";
-            context.Request.Method = "POST";
-
-            var updateJson = """
-                {"id":0,"deltas":[{"moduleId":"9BBB9BBD-48F0-4EB2-B7A3-956CFC220CC4","metadataDelta":"","ilDelta":"","pdbDelta":"","updatedTypes":[1,2,3]}]}
-                """;
-
-            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(updateJson));
-
-            await requestDelegate(context);
-
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-
-            context.Request.Path = "/_framework/blazor-hotreload";
-            context.Request.Method = "GET";
-
-            var body = new MemoryStream();
-            context.Response.Body = body;
-
-            await requestDelegate(context);
-
-            var bodyJson = Encoding.UTF8.GetString(body.ToArray());
-
-            Assert.AreEqual($"[{updateJson}]", bodyJson);
-        }
-
-        [TestMethod]
-        public async Task GetBlazorHotReloadJsWorks()
-        {
-            // Arrange
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/_framework/blazor-hotreload.js";
-            var responseBody = new MemoryStream();
-            context.Response.Body = responseBody;
-
-            // Act
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.IsNotEmpty(responseBody.ToArray());
-        }
-
-        [TestMethod]
-        public async Task GetAspNetCoreBrowserRefreshWorks()
-        {
-            // Arrange
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/_framework/aspnetcore-browser-refresh.js";
-            var responseBody = new MemoryStream();
-            context.Response.Body = responseBody;
-
-            // Act
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.IsNotEmpty(responseBody.ToArray());
-        }
-
-        [TestMethod]
-        public async Task GetUnknownUrlWorks()
-        {
-            // Arrange
-            var requestDelegate = GetRequestDelegate();
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/someurl";
-
-            // Act
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
-        }
-
-        [TestMethod]
-        public async Task GetUnknownFrameworkPathWorks()
-        {
-            // Arrange
-            var requestDelegate = GetRequestDelegate(builder =>
-            {
-                builder.Use((context, next) =>
-                {
-                    var path = context.Request.Path;
-                    if (path == "/_framework/blazor.webassembly.js")
-                    {
-                        context.Response.StatusCode = StatusCodes.Status206PartialContent;
-                        return Task.CompletedTask;
-                    }
-                    else if (path == "/_framework/System.dll")
-                    {
-                        context.Response.StatusCode = StatusCodes.Status226IMUsed;
-                        return Task.CompletedTask;
-                    }
-
-                    return next();
-                });
-            });
-
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/_framework/blazor.webassembly.js";
-
-            // Act
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status206PartialContent, context.Response.StatusCode);
-
-
-            // Act - 2
-            context.Request.Path = "/_framework/System.dll";
-            await requestDelegate(context);
-
-            // Assert
-            Assert.AreEqual(StatusCodes.Status226IMUsed, context.Response.StatusCode);
-        }
-
-        private static RequestDelegate GetRequestDelegate(Action<IApplicationBuilder>? configureBuilder = null)
-        {
-            configureBuilder ??= static builder =>
-            {
-                builder.Run(context =>
-                {
-                    context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                    return Task.CompletedTask;
-                });
-            };
-
-            var action = new HostingStartup().Configure(configureBuilder);
-
-            var serviceProvider = new ServiceCollection()
-                .AddLogging()
-                .BuildServiceProvider();
-            var builder = new ApplicationBuilder(serviceProvider);
-            action(builder);
-            return builder.Build();
-        }
+        return new Uri(addresses.Single());
     }
 }

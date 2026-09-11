@@ -19,6 +19,7 @@ internal sealed class WebAssemblyHotReloadClient(
     ILogger logger,
     ILogger agentLogger,
     AbstractBrowserRefreshServer browserRefreshServer,
+    int baselineEpoch,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
     bool suppressBrowserRequestsForTesting)
@@ -79,7 +80,14 @@ internal sealed class WebAssemblyHotReloadClient(
 
     public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
-        // the environment is configued via browser refesh server
+        // Note:
+        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions expects
+        // DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing
+        // Hot Reload in this process. The value is converted to the DOTNET-MODIFIABLE-ASSEMBLIES header, which is in
+        // turn converted back to an environment variable in the Mono browser runtime loader:
+        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
+        // .NET 10+ apps set the variable from the Hot Reload agent JS module instead.
+        environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
     }
 
     public override void InitiateConnection(CancellationToken cancellationToken)
@@ -101,51 +109,38 @@ internal sealed class WebAssemblyHotReloadClient(
             return Task.FromResult(true);
         }
 
-        // When testing abstract away the browser and pretend all changes have been applied:
-        if (suppressBrowserRequestsForTesting)
-        {
-            return Task.FromResult(true);
-        }
-
         // Make sure to send the same update to all browsers, the only difference is the shared secret.
-        var deltas = updates.Select(static update => new JsonDelta
-        {
-            ModuleId = update.ModuleId,
-            MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
-            ILDelta = ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
-            PdbDelta = ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
-            UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
-        }).ToArray();
+        var deltas = applicableUpdates.Select(static update => new BrowserToolsManagedCodeUpdate(
+            update.ModuleId,
+            ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!)).ToArray();
 
         var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
-
-        // If no browser is connected we assume the changes have been applied.
-        // If at least one browser suceeds we consider the changes successfully applied.
-        // TODO: 
-        // The refresh server should remember the deltas and apply them to browsers connected in future.
-        // Currently the changes are remembered on the dev server and sent over there from the browser.
-        // If no browser is connected the changes are not sent though.
 
         return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
-                var result = await browserRefreshServer.SendAndReceiveAsync(
+                // When testing abstract away the browser and pretend all changes have been applied:
+                if (suppressBrowserRequestsForTesting)
+                {
+                    return true;
+                }
+
+                var success = await browserRefreshServer.SendManagedCodeUpdateAsync(
+                    baselineEpoch,
+                    new BrowserToolsUpdateBatch([.. deltas]),
                     request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
                     {
                         SharedSecret = sharedSecret,
-                        UpdateId = batchId,
                         Deltas = deltas,
                         ResponseLoggingLevel = (int)loggingLevel
                     },
-                    response: new ResponseFunc<bool>((value, logger) =>
-                    {
-                        var success = ReceiveUpdateResponse(value, logger);
-                        Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
-                        return success;
-                    }),
                     applyOperationCancellationToken);
 
-                return result ?? false;
+                Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                return success;
             },
             applyOperationCancellationToken);
     }
@@ -153,18 +148,6 @@ internal sealed class WebAssemblyHotReloadClient(
     public override Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
         // static asset updates are handled by browser refresh server:
         => Task.FromResult(Task.FromResult(true));
-
-    private static bool ReceiveUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
-    {
-        var data = AbstractBrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
-
-        foreach (var entry in data.Log)
-        {
-            ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
-        }
-
-        return data.Success;
-    }
 
     public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
@@ -174,34 +157,7 @@ internal sealed class WebAssemblyHotReloadClient(
         public string Type => "ApplyManagedCodeUpdates";
         public string? SharedSecret { get; init; }
 
-        public int UpdateId { get; init; }
-        public JsonDelta[] Deltas { get; init; }
+        public BrowserToolsManagedCodeUpdate[] Deltas { get; init; }
         public int ResponseLoggingLevel { get; init; }
-    }
-
-    private readonly struct JsonDelta
-    {
-        public Guid ModuleId { get; init; }
-        public byte[] MetadataDelta { get; init; }
-        public byte[] ILDelta { get; init; }
-        public byte[] PdbDelta { get; init; }
-        public int[] UpdatedTypes { get; init; }
-    }
-
-    private readonly struct JsonApplyDeltasResponse
-    {
-        public bool Success { get; init; }
-        public IEnumerable<JsonLogEntry> Log { get; init; }
-    }
-
-    private readonly struct JsonLogEntry
-    {
-        public string Message { get; init; }
-        public int Severity { get; init; }
-    }
-
-    private readonly struct JsonGetApplyUpdateCapabilitiesRequest
-    {
-        public string Type => "GetApplyUpdateCapabilities";
     }
 }

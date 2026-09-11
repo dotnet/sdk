@@ -13,12 +13,20 @@ src/StaticWebAssetsSdk/
 │   ├── Utils/                      # Utilities (PathTokenizer, OSPath, etc.)
 │   └── *.cs                        # Task implementations
 ├── Targets/                        # MSBuild targets (.targets files)
+│   └── DotNetWatch/                # dotnet-watch browser tools client and config template
 └── Sdk/                            # SDK props and targets
 
 test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
 ├── StaticWebAssets/                # Unit tests for tasks
 └── *.cs                            # Integration tests
 ```
+
+`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets` is shared by the Web and
+WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the browser tools
+client must be an application static asset: the browser authenticates the watch provider
+with a build-pinned public key, so the provider must not be the source of the executable
+code. Its assets are build only and must never reach publish output. See
+[`src/Dotnet.Watch/AGENTS.md`](../Dotnet.Watch/AGENTS.md).
 
 ## Architecture
 

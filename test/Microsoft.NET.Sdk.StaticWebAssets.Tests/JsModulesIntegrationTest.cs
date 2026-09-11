@@ -58,6 +58,42 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
+        public void DotNetWatchBrowserToolsInitializer_IsWatchOnlyAndBuildOnly()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
+            var build = CreateBuildCommand(projectDirectory);
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var jsModulesManifestPath = Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json");
+
+            // The assets are only produced when dotnet-watch supplies the public half of the key it
+            // created for the invocation, so both properties are required to activate them.
+            string[] watchArguments = ["/p:DotNetWatchBrowserTools=true", "/p:DotNetWatchBrowserToolsPublicKey=TestPublicKey"];
+
+            ExecuteCommand(build, watchArguments).Should().Pass();
+            File.ReadAllText(jsModulesManifestPath)
+                .Should().Contain("Microsoft.NET.Sdk.Web.DotNetWatch")
+                .And.Contain("lib.module.js");
+
+            ExecuteCommand(build).Should().Pass();
+            if (File.Exists(jsModulesManifestPath))
+            {
+                File.ReadAllText(jsModulesManifestPath).Should().NotContain("Microsoft.NET.Sdk.Web.DotNetWatch");
+            }
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, watchArguments).Should().Pass();
+
+            var publishManifestPath = Path.Combine(
+                publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "staticwebassets.publish.json");
+            File.ReadAllText(publishManifestPath).Should().NotContain("Microsoft.NET.Sdk.Web.DotNetWatch");
+            Directory.GetFiles(
+                publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
+                "*DotNetWatch*",
+                SearchOption.AllDirectories).Should().BeEmpty();
+        }
+
+        [TestMethod]
         public void Build_DiscoversJsModulesBasedOnPatterns()
         {
             var testAsset = "RazorComponentApp";

@@ -20,6 +20,7 @@ internal class MSBuildFileSetFactory(
     string rootProjectFile,
     string? targetFramework,
     IEnumerable<string> buildArguments,
+    string browserToolsPublicKey,
     ProcessRunner processRunner,
     ILogger logger,
     GlobalOptions globalOptions,
@@ -32,7 +33,10 @@ internal class MSBuildFileSetFactory(
 
     private readonly ProjectGraphFactory _buildGraphFactory = new(
         [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
-        buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
+        buildProperties: ReservedBuildProperties.SetBrowserToolsProperties(
+            BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments),
+            environmentOptions,
+            browserToolsPublicKey),
         logger,
         globalOptions,
         environmentOptions);
@@ -173,6 +177,7 @@ internal class MSBuildFileSetFactory(
 
         arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
         arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
+        arguments.AddRange(ReservedBuildProperties.GetBrowserToolsArguments(environmentOptions, browserToolsPublicKey, prefix: "/p:"));
         arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
         arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
         arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
