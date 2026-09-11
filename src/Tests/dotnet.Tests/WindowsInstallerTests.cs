@@ -250,8 +250,16 @@ namespace Microsoft.DotNet.Tests
 
         [WindowsOnlyTheory]
         [InlineData(@"..\..\evil")]
+        [InlineData(".")]
+        [InlineData("..")]
+        [InlineData("C:")]
+        [InlineData(@"C:\escape")]
+        [InlineData("C:relative")]
         [InlineData(@"good\evil")]
         [InlineData("good/evil")]
+        [InlineData("invalid:name")]
+        [InlineData("trailingdot.")]
+        [InlineData("trailingspace ")]
         [InlineData("")]
         [InlineData(null)]
         public void ValidatePathComponent_ShouldRejectInvalidInput(string input)

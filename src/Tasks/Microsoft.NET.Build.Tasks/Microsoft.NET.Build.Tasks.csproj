@@ -88,8 +88,10 @@
     <Compile Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="WorkloadManifestReader" />
     <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader"/>
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\PathComponentUtilities.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>

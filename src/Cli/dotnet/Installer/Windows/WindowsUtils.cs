@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
@@ -252,14 +253,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
         public static bool ValidatePathComponent(string component)
         {
-            if (string.IsNullOrWhiteSpace(component))
-            {
-                return false;
-            }
-
-            return !component.Contains(Path.DirectorySeparatorChar)
-                && !component.Contains(Path.AltDirectorySeparatorChar)
-                && !component.Contains("..");
+            return PathComponentUtilities.IsValidPathComponent(component);
         }
 
         /// <summary>
