@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Telemetry;
-using Moq;
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -19,14 +17,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetCleanInvocation));
-        private static readonly ILLMEnvironmentDetector NoLLMEnvironmentDetector =
-            Mock.Of<ILLMEnvironmentDetector>(detector => !detector.IsLLMEnvironment());
 
         [TestMethod]
         public void ItAddsProjectToMsbuildInvocation()
         {
             var msbuildPath = "<msbuildpath>";
-            ((CleanCommand)CleanCommand.FromArgs(new string[] { "<project>" }, NoLLMEnvironmentDetector, msbuildPath))
+            ((CleanCommand)CleanCommand.FromArgs(new string[] { "<project>" }, msbuildPath))
                 .GetArgumentTokensToMSBuild()
                 .Should()
                 .BeEquivalentTo([.. ExpectedPrefix, "<project>"]);
@@ -63,7 +59,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                ((CleanCommand)CleanCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath))
+                ((CleanCommand)CleanCommand.FromArgs(args, msbuildPath))
                     .GetArgumentTokensToMSBuild()
                     .Should()
                     .BeSubsetOf([.. ExpectedPrefix, .. expectedAdditionalArgs]);

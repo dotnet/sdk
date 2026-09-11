@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.SdkVulnerability;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
@@ -39,29 +38,12 @@ public class RestoringCommand : MSBuildForwardingApp
         string? msbuildPath = null,
         string? userProfileDir = null,
         bool? advertiseWorkloadUpdates = null)
-        : this(
-            msbuildArgs,
-            noRestore,
-            new LLMEnvironmentDetectorForTelemetry(),
-            msbuildPath,
-            userProfileDir,
-            advertiseWorkloadUpdates)
-    {
-    }
-
-    internal RestoringCommand(
-        MSBuildArgs msbuildArgs,
-        bool noRestore,
-        ILLMEnvironmentDetector llmEnvironmentDetector,
-        string? msbuildPath = null,
-        string? userProfileDir = null,
-        bool? advertiseWorkloadUpdates = null)
-        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath, llmEnvironmentDetector)
+        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
         Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
         SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
-        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath, llmEnvironmentDetector);
+        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
         if (!noRestore)
@@ -119,8 +101,7 @@ public class RestoringCommand : MSBuildForwardingApp
     private static MSBuildForwardingApp? GetSeparateRestoreCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath,
-        ILLMEnvironmentDetector llmEnvironmentDetector)
+        string? msbuildPath)
     {
         // if the user asked for no restores, or there are no properties that would trigger a separate restore,
         // then we don't need to create a separate restore command. This is mututally exclusive with the similar
@@ -149,7 +130,7 @@ public class RestoringCommand : MSBuildForwardingApp
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
-        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath, llmEnvironmentDetector);
+        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 
     private static bool HasPropertyToExcludeFromRestore(MSBuildArgs msbuildArgs)

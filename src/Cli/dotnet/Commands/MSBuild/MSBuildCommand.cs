@@ -4,23 +4,14 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-public class MSBuildCommand : MSBuildForwardingApp
-{
-    public MSBuildCommand(IEnumerable<string> msbuildArgs, string? msbuildPath = null)
-        : this(msbuildArgs, new LLMEnvironmentDetectorForTelemetry(), msbuildPath)
-    {
-    }
-
-    internal MSBuildCommand(
-        IEnumerable<string> msbuildArgs,
-        ILLMEnvironmentDetector llmEnvironmentDetector,
-        string? msbuildPath = null)
-        : base(MSBuildArgs.AnalyzeMSBuildArguments(
+public class MSBuildCommand(
+    IEnumerable<string> msbuildArgs,
+    string? msbuildPath = null
+) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
         [.. msbuildArgs],
         CommonOptions.CreatePropertyOption(),
         CommonOptions.CreateRestorePropertyOption(),
@@ -30,32 +21,15 @@ public class MSBuildCommand : MSBuildForwardingApp
         // This is different from other commands that default to hiding the logo - but this command is meant to mimic
         // the behavior of calling MSBuild directly, which shows the logo by default.
         CommonOptions.CreateNoLogoOption(false)
-    ), msbuildPath, llmEnvironmentDetector)
-    {
-    }
-
+    ), msbuildPath)
+{
     public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
     {
         var result = Parser.Parse(["dotnet", "msbuild", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 
-    internal static MSBuildCommand FromArgs(
-        string[] args,
-        ILLMEnvironmentDetector llmEnvironmentDetector,
-        string? msbuildPath = null)
-    {
-        var result = Parser.Parse(["dotnet", "msbuild", .. args]);
-        return FromParseResult(result, llmEnvironmentDetector, msbuildPath);
-    }
-
     public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
-        => FromParseResult(parseResult, new LLMEnvironmentDetectorForTelemetry(), msbuildPath);
-
-    internal static MSBuildCommand FromParseResult(
-        ParseResult parseResult,
-        ILLMEnvironmentDetector llmEnvironmentDetector,
-        string? msbuildPath = null)
     {
         var definition = (MSBuildCommandDefinition)parseResult.CommandResult.Command;
 
@@ -65,7 +39,6 @@ public class MSBuildCommand : MSBuildForwardingApp
                 ..parseResult.GetValue(definition.Arguments) ?? [],
                 ..parseResult.OptionValuesToBeForwarded(definition)
             ],
-            llmEnvironmentDetector: llmEnvironmentDetector,
             msbuildPath: msbuildPath);
     }
 

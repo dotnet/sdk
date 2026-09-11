@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tests.TelemetryTests;
 using Moq;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
@@ -24,8 +25,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
-        private static readonly ILLMEnvironmentDetector NoLLMEnvironmentDetector =
-            Mock.Of<ILLMEnvironmentDetector>(detector => !detector.IsLLMEnvironment());
 
         [TestMethod]
         [DataRow(new string[] { }, new string[] { })]
@@ -57,7 +56,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 var commandArgs = command.GetArgumentTokensToMSBuild();
@@ -72,7 +71,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, NoLLMEnvironmentDetector, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, msbuildPath);
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 command.GetArgumentTokensToMSBuild().Should().NotContain("-restore");
@@ -117,7 +116,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
                 List<string> expectedItems = [.. ExpectedPrefix, NugetInteractiveProperty, .. expectedAdditionalArgsForRestore, .. RestoreExpectedPrefixForSeparateRestore];
                 expectedItems.Should().BeSubsetOf(command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild());
@@ -129,34 +128,26 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
-        public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(bool isLLMEnvironment)
+        [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
+        public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
-            var llmEnvironmentDetector = new Mock<ILLMEnvironmentDetector>(MockBehavior.Strict);
-            llmEnvironmentDetector
-                .Setup(detector => detector.IsLLMEnvironment())
-                .Returns(isLLMEnvironment);
+            var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+            environmentProvider
+                .Setup(provider => provider.GetEnvironmentVariable(It.IsAny<string>()))
+                .Returns((string name) => llmEnvVarsToSet?.GetValueOrDefault(name));
 
-            var command = (RestoringCommand)BuildCommand.FromArgs(
-                ["-f", "net11.0"],
-                llmEnvironmentDetector.Object);
-            var commands = new[]
-            {
-                command,
-                command.SeparateRestoreCommand!
-            };
+            var llmEnvironmentDetector = new LLMEnvironmentDetectorForTelemetry(environmentProvider.Object);
+            llmEnvironmentDetector.GetLLMEnvironment().Should().Be(expectedLLMName);
 
-            foreach (var forwardingCommand in commands)
+            var command = new MSBuildForwardingApp([], null, llmEnvironmentDetector);
+
+            if (expectedLLMName is not null)
             {
-                if (isLLMEnvironment)
-                {
-                    forwardingCommand.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
-                }
-                else
-                {
-                    forwardingCommand.GetArgumentTokensToMSBuild().Should().NotContain(Constants.TerminalLogger_DisableNodeDisplay);
-                }
+                command.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
+            }
+            else
+            {
+                command.GetArgumentTokensToMSBuild().Should().NotContain(Constants.TerminalLogger_DisableNodeDisplay);
             }
         }
     }

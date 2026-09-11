@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
-using Microsoft.DotNet.Cli.Telemetry;
-using Moq;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -17,8 +15,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         static readonly string[] ArgsPrefix = ["--manifest", "<project>"];
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
-        private static readonly ILLMEnvironmentDetector NoLLMEnvironmentDetector =
-            Mock.Of<ILLMEnvironmentDetector>(detector => !detector.IsLLMEnvironment());
 
         [TestMethod]
         [DataRow("-m")]
@@ -27,7 +23,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             string[] args = new string[] { optionName, "<project>" };
-            StoreCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath)
                 .GetArgumentTokensToMSBuild().Should().Contain(ExpectedPrefix);
         }
 
@@ -54,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 List<string> expected = [.. ExpectedPrefix, .. expectedarr];
                 expected.Should().BeSubsetOf(
-                    StoreCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath).GetArgumentTokensToMSBuild()
+                    StoreCommand.FromArgs(args, msbuildPath).GetArgumentTokensToMSBuild()
                 );
             });
         }
@@ -68,7 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var args = ArgsPrefix.Concat(new string[] { optionName, path }).ToArray();
 
             var msbuildPath = "<msbuildpath>";
-            StoreCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath)
                 .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }
