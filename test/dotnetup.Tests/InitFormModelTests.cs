@@ -280,7 +280,6 @@ public class InitFormModelTests
         return new MigrationWorkflow.MigrationSelection(
             component,
             new UpdateChannel(channel),
-            new ReleaseVersion(version),
-            InstallerUtilities.GetDefaultInstallArchitecture());
+            new ReleaseVersion(version));
     }
 }

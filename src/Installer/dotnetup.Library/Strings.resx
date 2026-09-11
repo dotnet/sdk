@@ -360,10 +360,6 @@
     <value>{0} {1}</value>
     <comment>{0} is the localized .NET component name; {1} is a channel name.</comment>
   </data>
-  <data name="InitMigrationDisplayWithArchitecture" xml:space="preserve">
-    <value>{0} {1} [{2}]</value>
-    <comment>{0} is the localized .NET component name; {1} is a channel name; {2} is an architecture such as x64. Preserve the square brackets around {2}.</comment>
-  </data>
   <data name="InitMigrationComponentSdk" xml:space="preserve">
     <value>.NET SDK</value>
     <comment>{Locked=".NET"}{Locked="SDK"}</comment>

@@ -290,7 +290,6 @@ public class MigrationWorkflowTests : IDisposable
         return new MigrationWorkflow.MigrationSelection(
             component,
             new UpdateChannel(channel),
-            new ReleaseVersion(version),
-            InstallerUtilities.GetDefaultInstallArchitecture());
+            new ReleaseVersion(version));
     }
 }

@@ -22,8 +22,7 @@ internal static class MigrationWorkflow
     internal sealed record MigrationSelection(
         InstallComponent Component,
         UpdateChannel Channel,
-        ReleaseVersion ExampleVersion,
-        InstallArchitecture Architecture);
+        ReleaseVersion ExampleVersion);
 
     /// <summary>
     /// Returns the system-managed .NET installs that are candidates for migration into the dotnetup
@@ -82,8 +81,7 @@ internal static class MigrationWorkflow
             deduped.Add(new MigrationSelection(
                 install.Component,
                 new UpdateChannel(channelName),
-                install.Version,
-                install.InstallRoot.Architecture));
+                install.Version));
         }
 
         return deduped;

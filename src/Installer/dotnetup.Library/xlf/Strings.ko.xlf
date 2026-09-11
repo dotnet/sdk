@@ -641,11 +641,6 @@ Or open a new terminal.</target>
         <target state="new">{0} {1}</target>
         <note>{0} is the localized .NET component name; {1} is a channel name.</note>
       </trans-unit>
-      <trans-unit id="InitMigrationDisplayWithArchitecture">
-        <source>{0} {1} [{2}]</source>
-        <target state="new">{0} {1} [{2}]</target>
-        <note>{0} is the localized .NET component name; {1} is a channel name; {2} is an architecture such as x64. Preserve the square brackets around {2}.</note>
-      </trans-unit>
       <trans-unit id="InitMigrationPromptSkipped">
         <source>Skipping the migration prompt because interactive input is not available. {0}</source>
         <target state="new">Skipping the migration prompt because interactive input is not available. {0}</target>

@@ -154,21 +154,6 @@ public class InitWorkflowTests : IDisposable
         result.Should().ContainSingle(i => i.Component == InstallComponent.Runtime && i.Version.ToString() == "8.0.22");
     }
 
-    [TestMethod]
-    public void FormatMigrationDisplayItems_IncludesArchitecture_WhenMultipleArchitecturesArePresent()
-    {
-        List<MigrationWorkflow.MigrationSelection> migrationSelections =
-        [
-            new(InstallComponent.SDK, new UpdateChannel("10.0.1xx"), new ReleaseVersion("10.0.100"), InstallArchitecture.x64),
-            new(InstallComponent.SDK, new UpdateChannel("10.0.1xx"), new ReleaseVersion("10.0.100"), InstallArchitecture.arm64),
-        ];
-
-        var items = InitWorkflows.FormatMigrationDisplayItems(migrationSelections);
-
-        items.Should().HaveCount(2);
-        items.Should().OnlyContain(i => i.Contains("10.0.1xx") && i.Contains("["));
-    }
-
     // ── GetDefaultAccessMode ──
 
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]

@@ -378,27 +378,14 @@ internal class InitWorkflows
 
     internal static List<string> FormatMigrationDisplayItems(List<MigrationWorkflow.MigrationSelection> migrationSelections)
     {
-        bool showArchitecture = migrationSelections
-            .Select(i => i.Architecture)
-            .Distinct()
-            .Skip(1)
-            .Any();
-
         return migrationSelections
             .OrderBy(i => i.Component)
             .ThenBy(i => i.Channel.Name)
-            .Select(i => showArchitecture
-                ? string.Format(
-                    CultureInfo.InvariantCulture,
-                    Strings.InitMigrationDisplayWithArchitecture,
-                    GetMigrationComponentName(i.Component),
-                    i.Channel.Name,
-                    i.Architecture)
-                : string.Format(
-                    CultureInfo.InvariantCulture,
-                    Strings.InitMigrationDisplay,
-                    GetMigrationComponentName(i.Component),
-                    i.Channel.Name))
+            .Select(i => string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.InitMigrationDisplay,
+                GetMigrationComponentName(i.Component),
+                i.Channel.Name))
             .ToList();
     }
 

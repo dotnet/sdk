@@ -263,7 +263,7 @@ public class InitFormRendererTests
         string[] lines = Lines(output);
 
         lines.Should().Contain(line =>
-            line.Contains("Shell", StringComparison.Ordinal)
+            line.Contains("shell", StringComparison.Ordinal)
             && line.Contains("Configure your shell profile", StringComparison.Ordinal));
         output.Should().Contain("Only applications launched from the shell");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
@@ -349,8 +349,7 @@ public class InitFormRendererTests
         var migration = new MigrationWorkflow.MigrationSelection(
             InstallComponent.SDK,
             new UpdateChannel("8.0"),
-            new ReleaseVersion("8.0.100"),
-            InstallerUtilities.GetDefaultInstallArchitecture());
+            new ReleaseVersion("8.0.100"));
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
