@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
@@ -56,8 +57,14 @@ public static class RestoreCommand
     }
 
     public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
+        => CreateForwarding(msbuildArgs, msbuildPath, new LLMEnvironmentDetectorForTelemetry());
+
+    internal static MSBuildForwardingApp CreateForwarding(
+        MSBuildArgs msbuildArgs,
+        string? msbuildPath,
+        ILLMEnvironmentDetector llmEnvironmentDetector)
     {
-        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
+        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, llmEnvironmentDetector);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
         return forwardingApp;
     }

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Telemetry;
+using Moq;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -16,6 +18,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         private static readonly string[] ExpectedProperties = ["--property:_IsPublishing=true"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
+        private static readonly ILLMEnvironmentDetector NoLLMEnvironmentDetector =
+            Mock.Of<ILLMEnvironmentDetector>(detector => !detector.IsLLMEnvironment());
 
         [TestMethod]
         [DataRow(new string[] { }, new string[] { })]
@@ -45,7 +49,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+                var command = (PublishCommand)PublishCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath);
 
                 command.SeparateRestoreCommand
                     .Should()
@@ -62,7 +66,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string[] expectedAdditionalArgs)
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath);
 
             var restoreTokens =
                 command.SeparateRestoreCommand! // for this scenario, we expect a separate restore command
@@ -87,7 +91,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForNoBuild()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, NoLLMEnvironmentDetector, msbuildPath);
 
             command.SeparateRestoreCommand
                    .Should()
@@ -102,7 +106,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void CommandAcceptsMultipleCustomProperties()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, NoLLMEnvironmentDetector, msbuildPath);
 
             command.GetArgumentTokensToMSBuild()
                .Should()
@@ -110,4 +114,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Telemetry;
+using Moq;
 using MSBuildCommand = Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -13,6 +15,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         private static readonly string[] ExpectedPrefix = [ "-maxcpucount", "--verbosity:m", "-tlp:default=auto" ];
         private static readonly string WorkingDirectory = TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
+        private static readonly ILLMEnvironmentDetector NoLLMEnvironmentDetector =
+            Mock.Of<ILLMEnvironmentDetector>(detector => !detector.IsLLMEnvironment());
 
         [TestMethod]
         [DataRow(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
@@ -21,11 +25,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = MSBuildCommand.FromArgs(args, msbuildPath);
+                var command = MSBuildCommand.FromArgs(args, NoLLMEnvironmentDetector, msbuildPath);
 
                 command.GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, ..expectedAdditionalArgs]);
             });
         }
     }
 }
-

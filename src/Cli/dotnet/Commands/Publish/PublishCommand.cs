@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
@@ -17,8 +18,9 @@ public class PublishCommand : RestoringCommand
     private PublishCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
         string? msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
+        : base(msbuildArgs, noRestore, llmEnvironmentDetector, msbuildPath)
     {
     }
 
@@ -28,7 +30,22 @@ public class PublishCommand : RestoringCommand
         return FromParseResult(parseResult);
     }
 
+    internal static CommandBase FromArgs(
+        string[] args,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string? msbuildPath = null)
+    {
+        var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
+        return FromParseResult(parseResult, llmEnvironmentDetector, msbuildPath);
+    }
+
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+        => FromParseResult(parseResult, new LLMEnvironmentDetectorForTelemetry(), msbuildPath);
+
+    internal static CommandBase FromParseResult(
+        ParseResult parseResult,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string? msbuildPath = null)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 
@@ -56,6 +73,7 @@ public class PublishCommand : RestoringCommand
             (msbuildArgs, msbuildPath) => new PublishCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
+                llmEnvironmentDetector: llmEnvironmentDetector,
                 msbuildPath: msbuildPath
             ),
             optionsToUseWhenParsingMSBuildFlags:

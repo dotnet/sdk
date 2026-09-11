@@ -114,9 +114,14 @@ internal static class CommonRunHelpers
     /// <summary>
     /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
     /// </summary>
-    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs)
+    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs) =>
+        AdjustMSBuildForLLMs(msbuildArgs, new Telemetry.LLMEnvironmentDetectorForTelemetry());
+
+    internal static MSBuildArgs AdjustMSBuildForLLMs(
+        MSBuildArgs msbuildArgs,
+        Telemetry.ILLMEnvironmentDetector llmEnvironmentDetector)
     {
-        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        if (llmEnvironmentDetector.IsLLMEnvironment())
         {
             // disable the live-update display of the TerminalLogger, which wastes tokens
             return msbuildArgs.CloneWithAdditionalArgs(Constants.TerminalLogger_DisableNodeDisplay);

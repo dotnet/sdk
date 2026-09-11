@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
@@ -17,7 +18,22 @@ public static class BuildCommand
         return FromParseResult(parseResult, msbuildPath);
     }
 
+    internal static CommandBase FromArgs(
+        string[] args,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string? msbuildPath = null)
+    {
+        var parseResult = Parser.Parse(["dotnet", "build", .. args]);
+        return FromParseResult(parseResult, llmEnvironmentDetector, msbuildPath);
+    }
+
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+        => FromParseResult(parseResult, new LLMEnvironmentDetectorForTelemetry(), msbuildPath);
+
+    internal static CommandBase FromParseResult(
+        ParseResult parseResult,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string? msbuildPath = null)
     {
         var definition = (BuildCommandDefinition)parseResult.CommandResult.Command;
 
@@ -42,6 +58,7 @@ public static class BuildCommand
             createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
                 msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
+                llmEnvironmentDetector: llmEnvironmentDetector,
                 msbuildPath: msbuildPath
             ),
             optionsToUseWhenParsingMSBuildFlags:

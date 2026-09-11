@@ -7,14 +7,18 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 public sealed class StoreCommand : MSBuildForwardingApp
 {
-    private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-        : base(msbuildArgs, msbuildPath)
+    private StoreCommand(
+        IEnumerable<string> msbuildArgs,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string msbuildPath = null)
+        : base(msbuildArgs, msbuildPath, llmEnvironmentDetector)
     {
     }
 
@@ -24,7 +28,22 @@ public sealed class StoreCommand : MSBuildForwardingApp
         return FromParseResult(result, msbuildPath);
     }
 
+    internal static StoreCommand FromArgs(
+        string[] args,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string msbuildPath = null)
+    {
+        var result = Parser.Parse(["dotnet", "store", .. args]);
+        return FromParseResult(result, llmEnvironmentDetector, msbuildPath);
+    }
+
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
+        => FromParseResult(result, new LLMEnvironmentDetectorForTelemetry(), msbuildPath);
+
+    internal static StoreCommand FromParseResult(
+        ParseResult result,
+        ILLMEnvironmentDetector llmEnvironmentDetector,
+        string msbuildPath = null)
     {
         var definition = (StoreCommandDefinition)result.CommandResult.Command;
 
@@ -41,7 +60,7 @@ public sealed class StoreCommand : MSBuildForwardingApp
 
         msbuildArgs.AddRange(result.GetValue(definition.Argument) ?? []);
 
-        return new StoreCommand(msbuildArgs, msbuildPath);
+        return new StoreCommand(msbuildArgs, llmEnvironmentDetector, msbuildPath);
     }
 
     public static int Run(ParseResult parseResult)
