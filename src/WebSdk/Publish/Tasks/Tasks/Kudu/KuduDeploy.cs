@@ -196,14 +196,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return System.Threading.Tasks.Task.Factory.StartNew(
                 () =>
                 {
-                    if (File.Exists(tempFilePath))
+                    if (Path.GetDirectoryName(tempFilePath) is string tempSubdirectory)
                     {
                         try
                         {
-                            if (Path.GetDirectoryName(tempFilePath) is string tempSubdirectory)
-                            {
-                                Directory.Delete(tempSubdirectory, recursive: true);
-                            }
+                            Directory.Delete(tempSubdirectory, recursive: true);
                         }
                         catch
                         {
