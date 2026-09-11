@@ -33,6 +33,22 @@ actions, Fix All, or controlled reference sets. It gives you:
 Span-accurate location testing is the main reason to use this harness: it catches
 the "fires, but squiggles the wrong token" bug that a presence-only check misses.
 
+### Keep fixtures readable and discriminating
+
+- Give each language a short verifier alias instead of repeating the full generic
+  harness type at every call site.
+- When the test language supports them, use raw string literals for multiline source so
+  fixture indentation follows the test method rather than escaping or starting at column
+  zero.
+- Collapse mechanical permutations into the test framework's data rows or equivalent
+  data source. Keep conditional logic out of the test body; split cases when inputs need
+  different setup or assertions.
+- Use realistic source that would compile in its intended context. A contrived call that
+  no real API could accept is weak evidence even when the analyzer reports as expected.
+- Treat `LanguageVersion` and reference assemblies as part of the fixture. Harness
+  defaults are often older or smaller than the product surface under test, so set them
+  explicitly when syntax or APIs depend on a particular compiler or framework version.
+
 ### A lightweight in-memory harness
 
 A minimal hand-written harness (`AnalyzerTestHarness.cs`)

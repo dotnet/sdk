@@ -125,6 +125,18 @@ hand. Compilation-invariant data belongs at compilation scope; pass the current
 semantic model into the individual query rather than caching equivalent state once
 per model.
 
+When measurement justifies a memo, cache negative results as well as positive ones.
+Otherwise every non-match repeats the expensive lookup while only the uncommon match
+benefits. Keep the representation able to distinguish "not computed" from "computed and
+absent."
+
+For an invocation rule that matches a fixed set of library members with different
+behaviors, build a symbol-to-rule map once at compilation start. The hot callback should
+perform one symbol lookup rather than walk the member set with repeated `Contains` calls
+for every invocation. Use the symbol identity policy chosen in
+[design.md](design.md#rule-3-prefer-ioperation-over-raw-syntax-when-semantics-matter)
+for both insertion and lookup.
+
 ## Enable concurrency
 
 `context.EnableConcurrentExecution()` lets the host parallelize your callbacks

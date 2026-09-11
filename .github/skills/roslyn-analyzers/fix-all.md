@@ -110,3 +110,10 @@ provider so the test proves it used the intended bulk path. Include a positive
 control with at least two independent occurrences: mutating the fixture or
 provider to process only one diagnostic must fail the test. A passing single-item
 fixture does not distinguish FixAll from an ordinary code fix.
+
+Read harness failures before changing the expected iteration count. In
+`Microsoft.CodeAnalysis.Testing`, `Expected '1' iterations but found '2'` usually means
+the provider did not converge in one bulk pass. A `CodeActionValidationMode` failure means
+the changed syntax tree differs from reparsing its text; fix the transformation rather
+than weakening validation. Also distinguish either failure from an ordinary expected-text
+diff, including a fixture whose newline convention differs from the generated document.

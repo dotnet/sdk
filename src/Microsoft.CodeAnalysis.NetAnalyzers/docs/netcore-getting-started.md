@@ -6,7 +6,8 @@ servicing fixes target the relevant `release/<major>.<minor>.<band>xx` branch.
 
 For the step-by-step authoring workflow — ID allocation, resource strings, release
 tracking, tests — use the
-[`add-net-analyzer`](../../../.github/skills/add-net-analyzer/SKILL.md) skill and
+[`roslyn-analyzers`](../../../.github/skills/roslyn-analyzers/SKILL.md) skill and its .NET
+SDK overlay, plus
 [`AGENTS.md`](../AGENTS.md). This document covers the parts that skill doesn't: the
 definition of done, and validating a rule against real code.
 

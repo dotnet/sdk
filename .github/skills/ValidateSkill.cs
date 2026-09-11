@@ -103,5 +103,105 @@ if (lineCount > 500)
     return 1;
 }
 
+string? binding = GetMetadataString(frontmatter, "binding");
+string overlayFile = Path.Combine(skillDir, "overlay.md");
+bool overlayExists = File.Exists(overlayFile);
+
+if (binding is not null && binding is not ("none" or "optional-overlay" or "required-overlay"))
+{
+    Console.Error.WriteLine($"Invalid metadata.binding '{binding}'. Expected none, optional-overlay, or required-overlay.");
+    return 1;
+}
+
+if (overlayExists && binding is null)
+{
+    Console.Error.WriteLine("overlay.md requires metadata.binding in SKILL.md.");
+    return 1;
+}
+
+if (binding is "optional-overlay" or "required-overlay" &&
+    !text.Contains("If `overlay.md` exists beside this file, read it before acting", StringComparison.Ordinal))
+{
+    Console.Error.WriteLine($"metadata.binding '{binding}' requires an overlay loader instruction in SKILL.md.");
+    return 1;
+}
+
+if (binding == "required-overlay" && !overlayExists)
+{
+    Console.Error.WriteLine("metadata.binding 'required-overlay' requires overlay.md beside SKILL.md.");
+    return 1;
+}
+
+if (binding == "none" && overlayExists)
+{
+    Console.Error.WriteLine("overlay.md exists but metadata.binding is 'none'.");
+    return 1;
+}
+
+if (overlayExists)
+{
+    Dictionary<string, object> overlayFrontmatter = ReadFrontmatter(overlayFile, "overlay.md", deserializer);
+
+    if (!TryGetNonEmptyString(overlayFrontmatter, "core", out string? overlayCore))
+    {
+        Console.Error.WriteLine("overlay.md frontmatter missing non-empty 'core' field.");
+        return 1;
+    }
+
+    if (!string.Equals(overlayCore, skillName, StringComparison.Ordinal))
+    {
+        Console.Error.WriteLine($"overlay.md core '{overlayCore}' does not match skill directory '{skillName}'.");
+        return 1;
+    }
+
+    if (!TryGetNonEmptyString(overlayFrontmatter, "core-pin", out _))
+    {
+        Console.Error.WriteLine("overlay.md frontmatter missing non-empty 'core-pin' field.");
+        return 1;
+    }
+}
+
 Console.WriteLine($"Skill '{frontmatterName}' is valid.");
 return 0;
+
+static string? GetMetadataString(Dictionary<string, object> frontmatter, string key)
+{
+    if (!frontmatter.TryGetValue("metadata", out object? metadataValue) ||
+        metadataValue is not IDictionary<object, object> metadata ||
+        !metadata.TryGetValue(key, out object? value))
+    {
+        return null;
+    }
+
+    return value as string;
+}
+
+static Dictionary<string, object> ReadFrontmatter(string path, string displayName, IDeserializer deserializer)
+{
+    string text = File.ReadAllText(path);
+    Match match = Regex.Match(
+        text,
+        @"\A---\r?\n(?<yaml>.*?)(?:\r?\n)---(?:\r?\n|$)",
+        RegexOptions.Singleline);
+
+    if (!match.Success)
+    {
+        throw new InvalidDataException($"{displayName} has missing or unterminated YAML frontmatter.");
+    }
+
+    return deserializer.Deserialize<Dictionary<string, object>>(match.Groups["yaml"].Value.Trim());
+}
+
+static bool TryGetNonEmptyString(Dictionary<string, object> frontmatter, string key, out string? value)
+{
+    if (frontmatter.TryGetValue(key, out object? rawValue) &&
+        rawValue is string stringValue &&
+        !string.IsNullOrWhiteSpace(stringValue))
+    {
+        value = stringValue;
+        return true;
+    }
+
+    value = null;
+    return false;
+}
