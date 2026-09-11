@@ -77,7 +77,7 @@ public class CliSchemaTests : SdkTest
       ],
       "helpName": "CONFIGURATION",
       "valueType": "System.String",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -799,7 +799,7 @@ public class CliSchemaTests : SdkTest
       ],
       "helpName": "CONFIGURATION",
       "valueType": "System.String",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
       "arity": {
         "minimum": 1,
         "maximum": 1

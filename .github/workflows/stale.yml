@@ -5,6 +5,7 @@ on:
   workflow_dispatch: # Allow manual trigger for testing
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   KBE_LABEL: 'Known Build Error'
   STALE_LABEL: 'stale'
   KEEP_OPEN_LABEL: 'keep-open'
@@ -20,7 +21,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9 # https://github.com/actions/stale/blob/v9/README.md
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           ascending: true # Process the oldest issues first
           stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'Stale'. It will be closed if no further activity occurs within 14 more days. Any new comment will remove the label."
@@ -39,7 +40,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const CLOSE_KBE_AFTER_DAYS = 7;

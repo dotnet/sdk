@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
   <!-- FluentAssertions namespace is provided by the AwesomeAssertions package (kept by name
        for backward compat) added below for MSTest.Sdk projects. -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true' OR '$(UsingMSTestSdk)' == 'true'">

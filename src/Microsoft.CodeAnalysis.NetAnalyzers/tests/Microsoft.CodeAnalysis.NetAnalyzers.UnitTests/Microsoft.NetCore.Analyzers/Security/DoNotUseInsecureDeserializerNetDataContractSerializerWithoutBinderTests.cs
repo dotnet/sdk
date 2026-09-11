@@ -24,29 +24,31 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected async Task VerifyCSharpAnalyzerWithMyBinderDefinedAsync(string source, params DiagnosticResult[] expected)
         {
-            string myBinderCSharpSourceCode = @"
-using System;
-using System.Runtime.Serialization;
+            string myBinderCSharpSourceCode = """
 
-namespace Blah
-{
-    public class MyBinder : SerializationBinder
-    {
-        public override Type BindToType(string assemblyName, string typeName)
-        {
-            throw new NotImplementedException();
-        }
-    }
+                using System;
+                using System.Runtime.Serialization;
 
-    public class SomeOtherSerializer
-    {
-        public object Deserialize(byte[] bytes)
-        {
-            return null;
-        }
-    }
-}
-            ";
+                namespace Blah
+                {
+                    public class MyBinder : SerializationBinder
+                    {
+                        public override Type BindToType(string assemblyName, string typeName)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    public class SomeOtherSerializer
+                    {
+                        public object Deserialize(byte[] bytes)
+                        {
+                            return null;
+                        }
+                    }
+                }
+                            
+                """;
 
             var csharpTest = new VerifyCS.Test
             {
@@ -65,556 +67,574 @@ namespace Blah
         [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-[DataContract]
-public class BookRecord
-{
-    [DataMember]
-    public string Title { get; set; }
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-    [DataMember]
-    public AisleLocation Location { get; set; }
-}
+                [DataContract]
+                public class BookRecord
+                {
+                    [DataMember]
+                    public string Title { get; set; }
 
-[DataContract]
-public class AisleLocation
-{
-    [DataMember]
-    public char Aisle { get; set; }
+                    [DataMember]
+                    public AisleLocation Location { get; set; }
+                }
 
-    [DataMember]
-    public byte Shelf { get; set; }
-}
+                [DataContract]
+                public class AisleLocation
+                {
+                    [DataMember]
+                    public char Aisle { get; set; }
 
-public class ExampleClass
-{
-    public BookRecord DeserializeBookRecord(byte[] bytes)
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            return (BookRecord) serializer.Deserialize(ms);    // CA2312 violation
-        }
-    }
-}",
+                    [DataMember]
+                    public byte Shelf { get; set; }
+                }
+
+                public class ExampleClass
+                {
+                    public BookRecord DeserializeBookRecord(byte[] bytes)
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                        using (MemoryStream ms = new MemoryStream(bytes))
+                        {
+                            return (BookRecord) serializer.Deserialize(ms);    // CA2312 violation
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(33, 33, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
 
-<DataContract()>
-Public Class BookRecord
-    <DataMember()>
-    Public Property Title As String
+                Imports System
+                Imports System.IO
+                Imports System.Runtime.Serialization
 
-    <DataMember()>
-    Public Property Location As AisleLocation
-End Class
+                <DataContract()>
+                Public Class BookRecord
+                    <DataMember()>
+                    Public Property Title As String
 
-<DataContract()>
-Public Class AisleLocation
-    <DataMember()>
-    Public Property Aisle As Char
+                    <DataMember()>
+                    Public Property Location As AisleLocation
+                End Class
 
-    <DataMember()>
-    Public Property Shelf As Byte
-End Class
+                <DataContract()>
+                Public Class AisleLocation
+                    <DataMember()>
+                    Public Property Aisle As Char
 
-Public Class ExampleClass
-    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
-        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
-        Using ms As MemoryStream = New MemoryStream(bytes)
-            Return CType(serializer.Deserialize(ms), BookRecord)    ' CA2312 violation
-        End Using
-    End Function
-End Class",
+                    <DataMember()>
+                    Public Property Shelf As Byte
+                End Class
+
+                Public Class ExampleClass
+                    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
+                        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
+                        Using ms As MemoryStream = New MemoryStream(bytes)
+                            Return CType(serializer.Deserialize(ms), BookRecord)    ' CA2312 violation
+                        End Using
+                    End Function
+                End Class
+                """,
                 GetBasicResultAt(28, 26, BinderNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
         [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-public class BookRecordSerializationBinder : SerializationBinder
-{
-    public override Type BindToType(string assemblyName, string typeName)
-    {
-        // One way to discover expected types is through testing deserialization
-        // of **valid** data and logging the types used.
+                public class BookRecordSerializationBinder : SerializationBinder
+                {
+                    public override Type BindToType(string assemblyName, string typeName)
+                    {
+                        // One way to discover expected types is through testing deserialization
+                        // of **valid** data and logging the types used.
 
-        ////Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"");
+                        ////Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')");
 
-        if (typeName == ""BookRecord"" || typeName == ""AisleLocation"")
-        {
-            return null;
-        }
-        else
-        {
-            throw new ArgumentException(""Unexpected type"", nameof(typeName));
-        }
-    }
-}
+                        if (typeName == "BookRecord" || typeName == "AisleLocation")
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Unexpected type", nameof(typeName));
+                        }
+                    }
+                }
 
-[DataContract]
-public class BookRecord
-{
-    [DataMember]
-    public string Title { get; set; }
+                [DataContract]
+                public class BookRecord
+                {
+                    [DataMember]
+                    public string Title { get; set; }
 
-    [DataMember]
-    public AisleLocation Location { get; set; }
-}
+                    [DataMember]
+                    public AisleLocation Location { get; set; }
+                }
 
-[DataContract]
-public class AisleLocation
-{
-    [DataMember]
-    public char Aisle { get; set; }
+                [DataContract]
+                public class AisleLocation
+                {
+                    [DataMember]
+                    public char Aisle { get; set; }
 
-    [DataMember]
-    public byte Shelf { get; set; }
-}
+                    [DataMember]
+                    public byte Shelf { get; set; }
+                }
 
-public class ExampleClass
-{
-    public BookRecord DeserializeBookRecord(byte[] bytes)
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
-        serializer.Binder = new BookRecordSerializationBinder();
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            return (BookRecord) serializer.Deserialize(ms);
-        }
-    }
-}");
+                public class ExampleClass
+                {
+                    public BookRecord DeserializeBookRecord(byte[] bytes)
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                        serializer.Binder = new BookRecordSerializationBinder();
+                        using (MemoryStream ms = new MemoryStream(bytes))
+                        {
+                            return (BookRecord) serializer.Deserialize(ms);
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
+                Imports System
+                Imports System.IO
+                Imports System.Runtime.Serialization
 
-Public Class BookRecordSerializationBinder
-    Inherits SerializationBinder
+                Public Class BookRecordSerializationBinder
+                    Inherits SerializationBinder
 
-    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
-        ' One way to discover expected types is through testing deserialization
-        ' of **valid** data and logging the types used.
+                    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
+                        ' One way to discover expected types is through testing deserialization
+                        ' of **valid** data and logging the types used.
 
-        'Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"")
+                        'Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')")
 
-        If typeName = ""BinaryFormatterVB.BookRecord"" Or typeName = ""BinaryFormatterVB.AisleLocation"" Then
-            Return Nothing
-        Else
-            Throw New ArgumentException(""Unexpected type"", NameOf(typeName))
-        End If
-    End Function
-End Class
+                        If typeName = "BinaryFormatterVB.BookRecord" Or typeName = "BinaryFormatterVB.AisleLocation" Then
+                            Return Nothing
+                        Else
+                            Throw New ArgumentException("Unexpected type", NameOf(typeName))
+                        End If
+                    End Function
+                End Class
 
-<DataContract()>
-Public Class BookRecord
-    <DataMember()>
-    Public Property Title As String
+                <DataContract()>
+                Public Class BookRecord
+                    <DataMember()>
+                    Public Property Title As String
 
-    <DataMember()>
-    Public Property Location As AisleLocation
-End Class
+                    <DataMember()>
+                    Public Property Location As AisleLocation
+                End Class
 
-<DataContract()>
-Public Class AisleLocation
-    <DataMember()>
-    Public Property Aisle As Char
+                <DataContract()>
+                Public Class AisleLocation
+                    <DataMember()>
+                    Public Property Aisle As Char
 
-    <DataMember()>
-    Public Property Shelf As Byte
-End Class
+                    <DataMember()>
+                    Public Property Shelf As Byte
+                End Class
 
-Public Class ExampleClass
-    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
-        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
-        serializer.Binder = New BookRecordSerializationBinder()
-        Using ms As MemoryStream = New MemoryStream(bytes)
-            Return CType(serializer.Deserialize(ms), BookRecord)
-        End Using
-    End Function
-End Class");
+                Public Class ExampleClass
+                    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
+                        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
+                        serializer.Binder = New BookRecordSerializationBinder()
+                        Using ms As MemoryStream = New MemoryStream(bytes)
+                            Return CType(serializer.Deserialize(ms), BookRecord)
+                        End Using
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-[DataContract]
-public class BookRecord
-{
-    [DataMember]
-    public string Title { get; set; }
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-    [DataMember]
-    public AisleLocation Location { get; set; }
-}
+                [DataContract]
+                public class BookRecord
+                {
+                    [DataMember]
+                    public string Title { get; set; }
 
-[DataContract]
-public class AisleLocation
-{
-    [DataMember]
-    public char Aisle { get; set; }
+                    [DataMember]
+                    public AisleLocation Location { get; set; }
+                }
 
-    [DataMember]
-    public byte Shelf { get; set; }
-}
+                [DataContract]
+                public class AisleLocation
+                {
+                    [DataMember]
+                    public char Aisle { get; set; }
 
-public class ExampleClass
-{
-    public NetDataContractSerializer Serializer { get; set; }
+                    [DataMember]
+                    public byte Shelf { get; set; }
+                }
 
-    public BookRecord DeserializeBookRecord(byte[] bytes)
-    {
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            return (BookRecord) this.Serializer.Deserialize(ms);
-        }
-    }
-}",
+                public class ExampleClass
+                {
+                    public NetDataContractSerializer Serializer { get; set; }
+
+                    public BookRecord DeserializeBookRecord(byte[] bytes)
+                    {
+                        using (MemoryStream ms = new MemoryStream(bytes))
+                        {
+                            return (BookRecord) this.Serializer.Deserialize(ms);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(34, 33, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
 
-<DataContract()>
-Public Class BookRecord
-    <DataMember()>
-    Public Property Title As String
+                Imports System
+                Imports System.IO
+                Imports System.Runtime.Serialization
 
-    <DataMember()>
-    Public Property Location As AisleLocation
-End Class
+                <DataContract()>
+                Public Class BookRecord
+                    <DataMember()>
+                    Public Property Title As String
 
-<DataContract()>
-Public Class AisleLocation
-    <DataMember()>
-    Public Property Aisle As Char
+                    <DataMember()>
+                    Public Property Location As AisleLocation
+                End Class
 
-    <DataMember()>
-    Public Property Shelf As Byte
-End Class
+                <DataContract()>
+                Public Class AisleLocation
+                    <DataMember()>
+                    Public Property Aisle As Char
 
-Public Class ExampleClass
-    Public Property Serializer As NetDataContractSerializer
+                    <DataMember()>
+                    Public Property Shelf As Byte
+                End Class
 
-    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
-        Using ms As MemoryStream = New MemoryStream(bytes)
-            Return CType(Me.Serializer.Deserialize(ms), BookRecord)
-        End Using
-    End Function
-End Class",
+                Public Class ExampleClass
+                    Public Property Serializer As NetDataContractSerializer
+
+                    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
+                        Using ms As MemoryStream = New MemoryStream(bytes)
+                            Return CType(Me.Serializer.Deserialize(ms), BookRecord)
+                        End Using
+                    End Function
+                End Class
+                """,
                 GetBasicResultAt(29, 26, BinderMaybeNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
         [TestMethod]
         public async Task DocSample3_CSharp_Violation_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-public class BookRecordSerializationBinder : SerializationBinder
-{
-    public override Type BindToType(string assemblyName, string typeName)
-    {
-        // One way to discover expected types is through testing deserialization
-        // of **valid** data and logging the types used.
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-        ////Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"");
+                public class BookRecordSerializationBinder : SerializationBinder
+                {
+                    public override Type BindToType(string assemblyName, string typeName)
+                    {
+                        // One way to discover expected types is through testing deserialization
+                        // of **valid** data and logging the types used.
 
-        if (typeName == ""BookRecord"" || typeName == ""AisleLocation"")
-        {
-            return null;
-        }
-        else
-        {
-            throw new ArgumentException(""Unexpected type"", nameof(typeName));
-        }
-    }
-}
+                        ////Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')");
 
-[DataContract]
-public class BookRecord
-{
-    [DataMember]
-    public string Title { get; set; }
+                        if (typeName == "BookRecord" || typeName == "AisleLocation")
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Unexpected type", nameof(typeName));
+                        }
+                    }
+                }
 
-    [DataMember]
-    public AisleLocation Location { get; set; }
-}
+                [DataContract]
+                public class BookRecord
+                {
+                    [DataMember]
+                    public string Title { get; set; }
 
-[DataContract]
-public class AisleLocation
-{
-    [DataMember]
-    public char Aisle { get; set; }
+                    [DataMember]
+                    public AisleLocation Location { get; set; }
+                }
 
-    [DataMember]
-    public byte Shelf { get; set; }
-}
+                [DataContract]
+                public class AisleLocation
+                {
+                    [DataMember]
+                    public char Aisle { get; set; }
 
-public class Binders
-{
-    public static SerializationBinder BookRecord = new BookRecordSerializationBinder();
-}
+                    [DataMember]
+                    public byte Shelf { get; set; }
+                }
 
-public class ExampleClass
-{
-    public BookRecord DeserializeBookRecord(byte[] bytes)
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
-        serializer.Binder = Binders.BookRecord;
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            return (BookRecord) serializer.Deserialize(ms);
-        }
-    }
-}",
+                public class Binders
+                {
+                    public static SerializationBinder BookRecord = new BookRecordSerializationBinder();
+                }
+
+                public class ExampleClass
+                {
+                    public BookRecord DeserializeBookRecord(byte[] bytes)
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                        serializer.Binder = Binders.BookRecord;
+                        using (MemoryStream ms = new MemoryStream(bytes))
+                        {
+                            return (BookRecord) serializer.Deserialize(ms);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(59, 33, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task DocSample3_VB_Violation_DiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
 
-Public Class BookRecordSerializationBinder
-    Inherits SerializationBinder
+                Imports System
+                Imports System.IO
+                Imports System.Runtime.Serialization
 
-    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
-        ' One way to discover expected types is through testing deserialization
-        ' of **valid** data and logging the types used.
+                Public Class BookRecordSerializationBinder
+                    Inherits SerializationBinder
 
-        'Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"")
+                    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
+                        ' One way to discover expected types is through testing deserialization
+                        ' of **valid** data and logging the types used.
 
-        If typeName = ""BinaryFormatterVB.BookRecord"" Or typeName = ""BinaryFormatterVB.AisleLocation"" Then
-            Return Nothing
-        Else
-            Throw New ArgumentException(""Unexpected type"", NameOf(typeName))
-        End If
-    End Function
-End Class
+                        'Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')")
 
-<DataContract()>
-Public Class BookRecord
-    <DataMember()>
-    Public Property Title As String
+                        If typeName = "BinaryFormatterVB.BookRecord" Or typeName = "BinaryFormatterVB.AisleLocation" Then
+                            Return Nothing
+                        Else
+                            Throw New ArgumentException("Unexpected type", NameOf(typeName))
+                        End If
+                    End Function
+                End Class
 
-    <DataMember()>
-    Public Property Location As AisleLocation
-End Class
+                <DataContract()>
+                Public Class BookRecord
+                    <DataMember()>
+                    Public Property Title As String
 
-<DataContract()>
-Public Class AisleLocation
-    <DataMember()>
-    Public Property Aisle As Char
+                    <DataMember()>
+                    Public Property Location As AisleLocation
+                End Class
 
-    <DataMember()>
-    Public Property Shelf As Byte
-End Class
+                <DataContract()>
+                Public Class AisleLocation
+                    <DataMember()>
+                    Public Property Aisle As Char
 
-Public Class Binders
-    Public Shared Property BookRecord As SerializationBinder = New BookRecordSerializationBinder()
-End Class
+                    <DataMember()>
+                    Public Property Shelf As Byte
+                End Class
+
+                Public Class Binders
+                    Public Shared Property BookRecord As SerializationBinder = New BookRecordSerializationBinder()
+                End Class
 
 
-Public Class ExampleClass
-    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
-        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
-        serializer.Binder = Binders.BookRecord
-        Using ms As MemoryStream = New MemoryStream(bytes)
-            Return CType(serializer.Deserialize(ms), BookRecord)   ' CA2312 violation
-        End Using
-    End Function
-End Class",
+                Public Class ExampleClass
+                    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
+                        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
+                        serializer.Binder = Binders.BookRecord
+                        Using ms As MemoryStream = New MemoryStream(bytes)
+                            Return CType(serializer.Deserialize(ms), BookRecord)   ' CA2312 violation
+                        End Using
+                    End Function
+                End Class
+                """,
                 GetBasicResultAt(51, 26, BinderMaybeNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
         [TestMethod]
         public async Task DocSample3_CSharp_Solution_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-public class BookRecordSerializationBinder : SerializationBinder
-{
-    public override Type BindToType(string assemblyName, string typeName)
-    {
-        // One way to discover expected types is through testing deserialization
-        // of **valid** data and logging the types used.
+                public class BookRecordSerializationBinder : SerializationBinder
+                {
+                    public override Type BindToType(string assemblyName, string typeName)
+                    {
+                        // One way to discover expected types is through testing deserialization
+                        // of **valid** data and logging the types used.
 
-        ////Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"");
+                        ////Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')");
 
-        if (typeName == ""BookRecord"" || typeName == ""AisleLocation"")
-        {
-            return null;
-        }
-        else
-        {
-            throw new ArgumentException(""Unexpected type"", nameof(typeName));
-        }
-    }
-}
+                        if (typeName == "BookRecord" || typeName == "AisleLocation")
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Unexpected type", nameof(typeName));
+                        }
+                    }
+                }
 
-[DataContract]
-public class BookRecord
-{
-    [DataMember]
-    public string Title { get; set; }
+                [DataContract]
+                public class BookRecord
+                {
+                    [DataMember]
+                    public string Title { get; set; }
 
-    [DataMember]
-    public AisleLocation Location { get; set; }
-}
+                    [DataMember]
+                    public AisleLocation Location { get; set; }
+                }
 
-[DataContract]
-public class AisleLocation
-{
-    [DataMember]
-    public char Aisle { get; set; }
+                [DataContract]
+                public class AisleLocation
+                {
+                    [DataMember]
+                    public char Aisle { get; set; }
 
-    [DataMember]
-    public byte Shelf { get; set; }
-}
+                    [DataMember]
+                    public byte Shelf { get; set; }
+                }
 
-public class Binders
-{
-    public static SerializationBinder BookRecord = new BookRecordSerializationBinder();
-}
+                public class Binders
+                {
+                    public static SerializationBinder BookRecord = new BookRecordSerializationBinder();
+                }
 
-public class ExampleClass
-{
-    public BookRecord DeserializeBookRecord(byte[] bytes)
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                public class ExampleClass
+                {
+                    public BookRecord DeserializeBookRecord(byte[] bytes)
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
 
-        // Ensure that Binder is always non-null before deserializing
-        serializer.Binder = Binders.BookRecord ?? throw new Exception(""Expected non-null"");
+                        // Ensure that Binder is always non-null before deserializing
+                        serializer.Binder = Binders.BookRecord ?? throw new Exception("Expected non-null");
 
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            return (BookRecord) serializer.Deserialize(ms);
-        }
-    }
-}");
+                        using (MemoryStream ms = new MemoryStream(bytes))
+                        {
+                            return (BookRecord) serializer.Deserialize(ms);
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task DocSample3_VB_Solution_NoDiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Runtime.Serialization
+            await VerifyBasicAnalyzerAsync("""
+                Imports System
+                Imports System.IO
+                Imports System.Runtime.Serialization
 
-Public Class BookRecordSerializationBinder
-    Inherits SerializationBinder
+                Public Class BookRecordSerializationBinder
+                    Inherits SerializationBinder
 
-    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
-        ' One way to discover expected types is through testing deserialization
-        ' of **valid** data and logging the types used.
+                    Public Overrides Function BindToType(assemblyName As String, typeName As String) As Type
+                        ' One way to discover expected types is through testing deserialization
+                        ' of **valid** data and logging the types used.
 
-        'Console.WriteLine($""BindToType('{assemblyName}', '{typeName}')"")
+                        'Console.WriteLine($"BindToType('{assemblyName}', '{typeName}')")
 
-        If typeName = ""BinaryFormatterVB.BookRecord"" Or typeName = ""BinaryFormatterVB.AisleLocation"" Then
-            Return Nothing
-        Else
-            Throw New ArgumentException(""Unexpected type"", NameOf(typeName))
-        End If
-    End Function
-End Class
+                        If typeName = "BinaryFormatterVB.BookRecord" Or typeName = "BinaryFormatterVB.AisleLocation" Then
+                            Return Nothing
+                        Else
+                            Throw New ArgumentException("Unexpected type", NameOf(typeName))
+                        End If
+                    End Function
+                End Class
 
-<DataContract()>
-Public Class BookRecord
-    <DataMember()>
-    Public Property Title As String
+                <DataContract()>
+                Public Class BookRecord
+                    <DataMember()>
+                    Public Property Title As String
 
-    <DataMember()>
-    Public Property Location As AisleLocation
-End Class
+                    <DataMember()>
+                    Public Property Location As AisleLocation
+                End Class
 
-<DataContract()>
-Public Class AisleLocation
-    <DataMember()>
-    Public Property Aisle As Char
+                <DataContract()>
+                Public Class AisleLocation
+                    <DataMember()>
+                    Public Property Aisle As Char
 
-    <DataMember()>
-    Public Property Shelf As Byte
-End Class
+                    <DataMember()>
+                    Public Property Shelf As Byte
+                End Class
 
-Public Class Binders
-    Public Shared Property BookRecord As SerializationBinder = New BookRecordSerializationBinder()
-End Class
+                Public Class Binders
+                    Public Shared Property BookRecord As SerializationBinder = New BookRecordSerializationBinder()
+                End Class
 
-Public Class ExampleClass
-    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
-        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
+                Public Class ExampleClass
+                    Public Function DeserializeBookRecord(bytes As Byte()) As BookRecord
+                        Dim serializer As NetDataContractSerializer = New NetDataContractSerializer()
 
-        ' Ensure that Binder is always non-null before deserializing
-        serializer.Binder = If(Binders.BookRecord, New Exception(""Expected non-null""))
+                        ' Ensure that Binder is always non-null before deserializing
+                        serializer.Binder = If(Binders.BookRecord, New Exception("Expected non-null"))
 
-        Using ms As MemoryStream = New MemoryStream(bytes)
-            Return CType(serializer.Deserialize(ms), BookRecord)
-        End Using
-    End Function
-End Class");
+                        Using ms As MemoryStream = New MemoryStream(bytes)
+                            Return CType(serializer.Deserialize(ms), BookRecord)
+                        End Using
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task Deserialize_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 20, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
@@ -622,129 +642,138 @@ namespace Blah
         [TestMethod]
         public async Task DeserializeWithInstanceField_Diagnostic_NotIdealAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        NetDataContractSerializer serializer = new NetDataContractSerializer();
+                using System.IO;
+                using System.Runtime.Serialization;
 
-        public object TestMethod(byte[] bytes)
-        {
-            return this.serializer.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        NetDataContractSerializer serializer = new NetDataContractSerializer();
+
+                        public object TestMethod(byte[] bytes)
+                        {
+                            return this.serializer.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(13, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task Deserialize_BinderMaybeSet_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            if (Environment.MachineName.StartsWith(""a""))
-            {
-                serializer.Binder = new MyBinder();
-            }
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-            return serializer.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            if (Environment.MachineName.StartsWith("a"))
+                            {
+                                serializer.Binder = new MyBinder();
+                            }
+
+                            return serializer.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(18, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task Deserialize_BinderSet_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            serializer.Binder = new MyBinder();
-            return serializer.Deserialize(new MemoryStream(bytes));
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            serializer.Binder = new MyBinder();
+                            return serializer.Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TwoDeserializersOneBinderOnFirst_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes1, byte[] bytes2)
-        {
-            if (Environment.GetEnvironmentVariable(""USEFIRST"") == ""1"")
-            {
-                NetDataContractSerializer bf = new NetDataContractSerializer();
-                bf.Binder = new MyBinder();
-                return bf.Deserialize(new MemoryStream(bytes1));
-            }
-            else
-            {
-                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes2));
-            }
-        }
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes1, byte[] bytes2)
+                        {
+                            if (Environment.GetEnvironmentVariable("USEFIRST") == "1")
+                            {
+                                NetDataContractSerializer bf = new NetDataContractSerializer();
+                                bf.Binder = new MyBinder();
+                                return bf.Deserialize(new MemoryStream(bytes1));
+                            }
+                            else
+                            {
+                                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes2));
+                            }
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(20, 24, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task TwoDeserializersOneBinderOnSecond_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes1, byte[] bytes2)
-        {
-            if (Environment.GetEnvironmentVariable(""USEFIRST"") == ""1"")
-            {
-                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes1));
-            }
-            else
-            {
-                return (new NetDataContractSerializer() { Binder = new MyBinder() }).Deserialize(new MemoryStream(bytes2));
-            }
-        }
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes1, byte[] bytes2)
+                        {
+                            if (Environment.GetEnvironmentVariable("USEFIRST") == "1")
+                            {
+                                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes1));
+                            }
+                            else
+                            {
+                                return (new NetDataContractSerializer() { Binder = new MyBinder() }).Deserialize(new MemoryStream(bytes2));
+                            }
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(14, 24, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
 
         }
@@ -752,28 +781,30 @@ namespace Blah
         [TestMethod]
         public async Task TwoDeserializersNoBinder_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes1, byte[] bytes2)
-        {
-            if (Environment.GetEnvironmentVariable(""USEFIRST"") == ""1"")
-            {
-                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes1));
-            }
-            else
-            {
-                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes2));
-            }
-        }
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes1, byte[] bytes2)
+                        {
+                            if (Environment.GetEnvironmentVariable("USEFIRST") == "1")
+                            {
+                                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes1));
+                            }
+                            else
+                            {
+                                return new NetDataContractSerializer().Deserialize(new MemoryStream(bytes2));
+                            }
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(14, 24, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"),
                 GetCSharpResultAt(18, 24, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
 
@@ -782,258 +813,276 @@ namespace Blah
         [TestMethod]
         public async Task BinderSetInline_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            return (new NetDataContractSerializer() { Binder = new MyBinder() }).Deserialize(new MemoryStream(bytes));
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            return (new NetDataContractSerializer() { Binder = new MyBinder() }).Deserialize(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public byte[] S(object o)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            MemoryStream ms = new MemoryStream();
-            serializer.Serialize(ms, o);
-            return ms.ToArray();
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public byte[] S(object o)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            MemoryStream ms = new MemoryStream();
+                            serializer.Serialize(ms, o);
+                            return ms.ToArray();
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Deserialize_InvokedAsDelegate_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        delegate object DeserializeDelegate(Stream s);
+                using System.IO;
+                using System.Runtime.Serialization;
 
-        public object DeserializeWithDelegate(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            DeserializeDelegate del = serializer.Deserialize;
-            return del(new MemoryStream(bytes));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        delegate object DeserializeDelegate(Stream s);
+
+                        public object DeserializeWithDelegate(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            DeserializeDelegate del = serializer.Deserialize;
+                            return del(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(15, 20, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject(new MemoryStream(bytes));
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 20, BinderNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_BinderMaybeSet_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            if (Environment.MachineName.StartsWith(""a""))
-            {
-                serializer.Binder = new MyBinder();
-            }
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-            return serializer.ReadObject(new MemoryStream(bytes));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            if (Environment.MachineName.StartsWith("a"))
+                            {
+                                serializer.Binder = new MyBinder();
+                            }
+
+                            return serializer.ReadObject(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(18, 20, BinderMaybeNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_BinderSet_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            serializer.Binder = new MyBinder();
-            return serializer.ReadObject(new MemoryStream(bytes));
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            serializer.Binder = new MyBinder();
+                            return serializer.ReadObject(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task ReadObject_Stream_InvokedAsDelegate_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        delegate object DeserializeDelegate(Stream s);
+                using System.IO;
+                using System.Runtime.Serialization;
 
-        public object DeserializeWithDelegate(byte[] bytes)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            DeserializeDelegate del = serializer.ReadObject;
-            return del(new MemoryStream(bytes));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        delegate object DeserializeDelegate(Stream s);
+
+                        public object DeserializeWithDelegate(byte[] bytes)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            DeserializeDelegate del = serializer.ReadObject;
+                            return del(new MemoryStream(bytes));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(15, 20, BinderNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(XmlReader xmlReader)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            return serializer.ReadObject(xmlReader);
-        }
-    }
-}",
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(XmlReader xmlReader)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            return serializer.ReadObject(xmlReader);
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(13, 20, BinderNotSetRule, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_BinderMaybeSet_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(XmlReader xmlReader)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            if (Environment.MachineName.StartsWith(""a""))
-            {
-                serializer.Binder = new MyBinder();
-            }
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
 
-            return serializer.ReadObject(xmlReader);
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(XmlReader xmlReader)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            if (Environment.MachineName.StartsWith("a"))
+                            {
+                                serializer.Binder = new MyBinder();
+                            }
+
+                            return serializer.ReadObject(xmlReader);
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(19, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_BinderSet_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
-using System;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerWithMyBinderDefinedAsync("""
+                using System;
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
 
-namespace Blah
-{
-    public class Program
-    {
-        public object TestMethod(XmlReader xmlReader)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            serializer.Binder = new MyBinder();
-            return serializer.ReadObject(xmlReader);
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object TestMethod(XmlReader xmlReader)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            serializer.Binder = new MyBinder();
+                            return serializer.ReadObject(xmlReader);
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task ReadObject_XmlReader_InvokedAsDelegate_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        delegate object DeserializeDelegate(XmlReader r);
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Xml;
 
-        public object DeserializeWithDelegate(XmlReader xmlReader)
-        {
-            NetDataContractSerializer serializer = new NetDataContractSerializer();
-            DeserializeDelegate del = serializer.ReadObject;
-            return del(xmlReader);
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        delegate object DeserializeDelegate(XmlReader r);
+
+                        public object DeserializeWithDelegate(XmlReader xmlReader)
+                        {
+                            NetDataContractSerializer serializer = new NetDataContractSerializer();
+                            DeserializeDelegate del = serializer.ReadObject;
+                            return del(xmlReader);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(16, 20, BinderNotSetRule, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 

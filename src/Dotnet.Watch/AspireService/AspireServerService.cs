@@ -291,6 +291,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var socketTcs = new TaskCompletionSource();
+        using var shutdownRegistration = _shutdownCancellationSource.Token.Register(() => socketTcs.TrySetResult());
 
         // Track this connection.
         _socketConnectionManager.AddSocketConnection(webSocket, socketTcs,  context.GetDcpId(), context.RequestAborted);
@@ -394,29 +395,31 @@ internal partial class AspireServerService : IAsyncDisposable
             return false;
         }
 
-        var success = false;
+        using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken, _shutdownCancellationSource.Token, connection.HttpRequestAborted);
+
+        var lockAcquired = false;
         try
         {
-            using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken, _shutdownCancellationSource.Token, connection.HttpRequestAborted);
-
             await _webSocketAccess.WaitAsync(cancelTokenSource.Token);
-            await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
+            lockAcquired = true;
 
-            success = true;
+            await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
+            return true;
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            // If the connection throws it almost certainly means the client has gone away, so clean up that connection
+            _socketConnectionManager.RemoveSocketConnection(connection);
+            return false;
         }
         finally
         {
-            if (!success)
+            if (lockAcquired)
             {
-                // If the connection throws it almost certainly means the client has gone away, so clean up that connection
-                _socketConnectionManager.RemoveSocketConnection(connection);
+                _webSocketAccess.Release();
             }
-
-            _webSocketAccess.Release();
         }
-
-        return success;
     }
 
     private async Task HandleStopSessionRequestAsync(HttpContext context, string sessionId)

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         : IAsyncDisposable
     {
         public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
-            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
+            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["--trace", "-bl"]);
 
         public DebugTestOutputLogger Logger { get; } = new DebugTestOutputLogger(logger);
 
@@ -37,10 +37,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SuppressVerboseLogging()
         {
-            // remove default -bl args
+            // remove default --trace and -bl args
             WatchArgs.Clear();
 
-            // override the default used for testing ("trace"):
+            // override the default used for testing ("true"):
             EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
         }
 
@@ -119,31 +119,31 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return matchingLine;
         }
 
-        public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             LogWaitingForOutput(text, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => line.Contains(text));
+            var line = await Process.GetRequiredOutputLineAsync(line => line.Contains(text));
             LogFoundOutput(text, testPath, testLine);
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
+        public async Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
         {
             var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             var patternDisplay = pattern.ToString();
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
+            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "true");
 
             // Aspire DCP logging:
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));

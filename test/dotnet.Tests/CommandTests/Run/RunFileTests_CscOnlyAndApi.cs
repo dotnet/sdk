@@ -1,21 +1,40 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
+using FluentAssertions.Execution;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
+    private const string OptimizationReportingProgram = """
+        #!/usr/bin/env dotnet
+        using System.Diagnostics;
+        using System.Reflection;
+
+        var attribute = Assembly.GetExecutingAssembly().GetCustomAttribute<DebuggableAttribute>();
+        Console.WriteLine(attribute?.IsJITOptimizerDisabled == true ? "not optimized" : "optimized");
+        """;
+
+    private static string GetOptimizationProps(bool optimize) => $$"""
+        <Project>
+          <PropertyGroup>
+            <Optimize>{{optimize}}</Optimize>
+          </PropertyGroup>
+        </Project>
+        """;
+
+    /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
     {
@@ -258,6 +277,267 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(originalPath, code, utf8NoBom);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink"/> but for ImplicitBuildFiles part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ImplicitBuildFiles()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var targetPath = Path.Join(testInstance.Path, "LinkTarget.props");
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: false));
+
+        var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: targetPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, OptimizationReportingProgram);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
+
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: true));
+
+        // MSBuild isn't detecting the change (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "not optimized");
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink"/> but for AdditionalSources part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_AdditionalSources()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var targetPath = Path.Join(testInstance.Path, "x.cs");
+        var code = """
+            using System.IO;
+            using System.Runtime.CompilerServices;
+            static class C
+            {
+                public static string M1([CallerFilePath] string caller = "") => M2(caller);
+                public static string M2(string caller1, [CallerFilePath] string caller2 = "") => $"v1/{Path.GetFileName(caller1)}/{Path.GetFileName(caller2)}";
+            }
+            """;
+        File.WriteAllText(targetPath, code);
+
+        var linkedPath = Path.Join(testInstance.Path, "linked.cs");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: targetPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            #:include linked.cs
+            Console.WriteLine(C.M1());
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1/Program.cs/linked.cs");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1/Program.cs/linked.cs");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(targetPath, code);
+
+        // MSBuild isn't detecting the change on Unix (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "v2/Program.cs/linked.cs" : "v1/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v2/Program.cs/linked.cs");
+    }
+
+    /// <summary>
+    /// <see cref="UpToDate"/> optimization should see when symlink target changes.
+    /// See <see href="https://github.com/dotnet/sdk/issues/56065"/>.
+    /// </summary>
+    [TestMethod, CombinatorialData]
+    public void UpToDate_SymbolicLink_ChangeTarget(bool cscOnly)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+        static string GetFileContent(string name) => $$"""
+            #!/usr/bin/env dotnet
+            Console.WriteLine($"{{name}}/{M1()}/{M2()}/{M3()}");
+            static string M1([System.Runtime.CompilerServices.CallerFilePath] string caller = "") => Path.GetFileName(caller);
+            static string M2() => Path.GetFileName((string)AppContext.GetData("EntryPointFilePath")!);
+            static string M3() => System.Reflection.Assembly.GetExecutingAssembly().GetName().Name!;
+            """;
+
+        var xPath = Path.Join(testInstance.Path, "x.cs");
+        File.WriteAllText(xPath, GetFileContent("x"), utf8NoBom);
+
+        var yPath = Path.Join(testInstance.Path, "y.cs");
+        File.WriteAllText(yPath, GetFileContent("y"), utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: xPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, cscOnly ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
+
+        File.Delete(programPath);
+        File.CreateSymbolicLink(path: programPath, pathToTarget: yPath);
+
+        if (cscOnly)
+        {
+            Build(testInstance, BuildLevel.Csc, expectedOutput: "y/linked/linked/linked", programFileName: programFileName);
+        }
+        else
+        {
+            // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+            // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+            string expectedOutput = OperatingSystem.IsWindows() ? "x/linked/linked/linked" : "y/linked/linked/linked";
+            Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, programFileName: programFileName);
+            Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput, programFileName: programFileName);
+
+            new DotnetCommand(Log, "build", "--no-incremental", programFileName)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+
+            Build(testInstance, BuildLevel.All, expectedOutput: "y/linked/linked/linked", programFileName: programFileName);
+        }
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink_ChangeTarget"/> but for ImplicitBuildFiles part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ChangeTarget_ImplicitBuildFiles()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var xPath = Path.Join(testInstance.Path, "x.props");
+        File.WriteAllText(xPath, GetOptimizationProps(optimize: false));
+
+        var yPath = Path.Join(testInstance.Path, "y.props");
+        File.WriteAllText(yPath, GetOptimizationProps(optimize: true));
+
+        var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: xPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, OptimizationReportingProgram);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
+
+        File.Delete(linkedPath);
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
+
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "not optimized" : "optimized";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink_ChangeTarget"/> but for AdditionalSources part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ChangeTarget_AdditionalSources()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        static string GetFileContent(string name) => $$"""
+            using System.IO;
+            using System.Runtime.CompilerServices;
+            static class C
+            {
+                public static string M1([CallerFilePath] string caller = "") => M2(caller);
+                public static string M2(string caller1, [CallerFilePath] string caller2 = "") => $"{{name}}/{Path.GetFileName(caller1)}/{Path.GetFileName(caller2)}";
+            }
+            """;
+
+        var xPath = Path.Join(testInstance.Path, "x.cs");
+        File.WriteAllText(xPath, GetFileContent("X"));
+
+        var yPath = Path.Join(testInstance.Path, "y.cs");
+        File.WriteAllText(yPath, GetFileContent("Y"));
+
+        var linkedPath = Path.Join(testInstance.Path, "linked.cs");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: xPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            #:include linked.cs
+            Console.WriteLine(C.M1());
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "X/Program.cs/linked.cs");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "X/Program.cs/linked.cs");
+
+        File.Delete(linkedPath);
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
+
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "X/Program.cs/linked.cs" : "Y/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Y/Program.cs/linked.cs");
     }
 
     /// <summary>
@@ -1390,12 +1670,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1475,12 +1752,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>A</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1551,12 +1825,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1626,12 +1897,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1724,6 +1992,47 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     [TestMethod]
+    public void Api_RunCommand_LaunchProfileExpansionUsesArtifactsPath()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        string programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
+            {
+              "profiles": {
+                "Program": {
+                  "commandName": "Executable",
+                  "executablePath": "$(ArtifactsPath)",
+                  "workingDirectory": "$(ArtifactsPath)",
+                  "environmentVariables": {
+                    "PROFILE_ARTIFACTS": "$(ArtifactsPath)"
+                  }
+                }
+              }
+            }
+            """);
+
+        string artifactsPath = Path.Join(testInstance.Path, "custom-artifacts");
+
+        new DotnetCommand(Log, "run-api")
+            .WithEnvironmentVariable("DOTNET_ROOT", string.Empty)
+            .WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty)
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(artifactsPath)}},"CommandLineArguments":"","WorkingDirectory":{{ToJson(artifactsPath)}}
+                """)
+            .And.HaveStdOutContaining($$"""
+                "PROFILE_ARTIFACTS":{{ToJson(artifactsPath)}}
+                """);
+    }
+
+    [TestMethod]
     public void Api_VirtualProjectBuilder_CreateProjectRootElement()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1772,6 +2081,110 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
 
         projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+    }
+
+    [TestMethod]
+    public async Task Api_VirtualProjectBuilder_CreateProjectRootElement_TargetFrameworkUnspecified()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var virtualProjectBuilder = new VirtualProjectBuilder(BuildService.Instance, appPath, targetFramework: null);
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter);
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // correct target framework is used
+            .And.Contain("<TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>");
+
+        result.ProjectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+
+        // TargetFramework can be evaluated.
+        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
+    }
+
+    [TestMethod, CombinatorialData]
+    public async Task Api_VirtualProjectBuilder_ArtifactsPathCompatibility(
+        bool supportsFileBasedAppArtifactsPath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, "Console.WriteLine();");
+
+        var artifactsPath = Path.Join(testInstance.Path, "artifacts");
+        var virtualProjectBuilder = new VirtualProjectBuilder(
+            BuildService.Instance,
+            programPath,
+            VirtualProjectBuildingCommand.TargetFramework,
+            artifactsPath: artifactsPath);
+
+        using var projectCollection = new ProjectCollection();
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            additionalGlobalProperties: new Dictionary<string, string>
+            {
+                ["_SupportsFileBasedAppArtifactsPath"] = supportsFileBasedAppArtifactsPath.ToString(),
+            });
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        if (!supportsFileBasedAppArtifactsPath)
+        {
+            xml.Should()
+                .Contain("<IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>")
+                .And.Contain($"<ArtifactsPath>{SecurityElement.Escape(artifactsPath)}</ArtifactsPath>")
+                .And.Contain("<PublishDir>artifacts/$(AssemblyName)</PublishDir>")
+                .And.Contain("<PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>")
+                .And.NotContain("<FileBasedAppArtifactsPath>");
+        }
+        else
+        {
+            xml.Should()
+                .Contain($"<FileBasedAppArtifactsPath>{SecurityElement.Escape(artifactsPath)}</FileBasedAppArtifactsPath>")
+                .And.NotContain("<IncludeProjectNameInArtifactsPaths>")
+                .And.NotContain("<ArtifactsPath>")
+                .And.NotContain("<PublishDir>")
+                .And.NotContain("<PackageOutputPath>");
+        }
     }
 
     [TestMethod, CombinatorialData]
@@ -2138,9 +2551,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
+        CSharpCompilerCommand.SdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        CSharpCompilerCommand.NuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -2148,7 +2560,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var nuGetPackageFilePaths = new List<string>();
         bool referenceSpreadInserted = false;
         bool analyzerSpreadInserted = false;
-        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
+        const string NetCoreAppRefPackPath = "/microsoft.netcore.app.ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -2206,23 +2618,23 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             string msbuildArgToVerify = rewritten;
 
             // Use variable SDK path.
-            if (rewritten.Contains(sdkPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.SdkPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(sdkPath, "{SdkPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.SdkPath, "{" + nameof(CSharpCompilerCommand.SdkPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable .NET root path.
-            if (rewritten.Contains(dotNetRootPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.DotNetRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(dotNetRootPath, "{DotNetRootPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.DotNetRootPath, "{" + nameof(CSharpCompilerCommand.DotNetRootPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable NuGet cache path.
-            if (rewritten.Contains(nuGetCachePath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.NuGetCachePath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(nuGetCachePath, "{NuGetCachePath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.NuGetCachePath, "{" + nameof(CSharpCompilerCommand.NuGetCachePath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
                 fromNuGetPackage = true;
             }

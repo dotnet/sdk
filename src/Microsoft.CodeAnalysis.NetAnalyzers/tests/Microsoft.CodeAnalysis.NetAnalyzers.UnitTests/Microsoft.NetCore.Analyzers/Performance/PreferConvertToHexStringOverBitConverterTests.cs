@@ -1459,6 +1459,62 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source, ReferenceAssemblies.NetCore.NetCoreApp31);
         }
 
+        [TestMethod]
+        public async Task NestedInsideItsOwnArgument_FixAllRewritesBoth_CS()
+        {
+            string source = """
+                using System;
+
+                class C
+                {
+                    void M(string s, byte[] data)
+                    {
+                        s = [|BitConverter.ToString(Convert.FromHexString([|BitConverter.ToString(data).Replace("-", "")|])).Replace("-", "")|];
+                    }
+                }
+                """;
+
+            string fixedSource = """
+                using System;
+
+                class C
+                {
+                    void M(string s, byte[] data)
+                    {
+                        s = Convert.ToHexString(Convert.FromHexString(Convert.ToHexString(data)));
+                    }
+                }
+                """;
+
+            await VerifyCSharpCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedInsideItsOwnArgument_FixAllRewritesBoth_VB()
+        {
+            string source = """
+                Imports System
+
+                Class C
+                    Sub M(s As String, data As Byte())
+                        s = [|BitConverter.ToString(Convert.FromHexString([|BitConverter.ToString(data).Replace("-", "")|])).Replace("-", "")|]
+                    End Sub
+                End Class
+                """;
+
+            string fixedSource = """
+                Imports System
+
+                Class C
+                    Sub M(s As String, data As Byte())
+                        s = Convert.ToHexString(Convert.FromHexString(Convert.ToHexString(data)))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyBasicCodeFixAsync(source, fixedSource);
+        }
+
         private static async Task VerifyCSharpCodeFixAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies = null)
         {
             await new VerifyCS.Test

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Reflection;
 #endif
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -51,7 +52,7 @@ public class MSBuildForwardingApp : CommandBase
 #else
                 string loggerTypeFullName = "Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildLogger";
                 string forwardingLoggerTypeFullName = "Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildForwardingLogger";
-                string loggerTypeLocation = Path.Combine(AppContext.BaseDirectory, "dotnet.dll");
+                string loggerTypeLocation = Path.Combine(SdkPaths.SdkDirectory, "dotnet.dll");
                 string forwardingLoggerTypeLocation = loggerTypeLocation;
 #endif
 
@@ -112,6 +113,14 @@ public class MSBuildForwardingApp : CommandBase
     private void InitializeRequiredEnvironmentVariables()
     {
         EnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID, TelemetryClient.CurrentSessionId);
+
+        if (ActivityContextFactory.MakeActivityContextEnvironment() is { } activityContextEnvironment)
+        {
+            foreach ((string name, string value) in activityContextEnvironment)
+            {
+                EnvironmentVariable(name, value);
+            }
+        }
     }
 
     /// <summary>

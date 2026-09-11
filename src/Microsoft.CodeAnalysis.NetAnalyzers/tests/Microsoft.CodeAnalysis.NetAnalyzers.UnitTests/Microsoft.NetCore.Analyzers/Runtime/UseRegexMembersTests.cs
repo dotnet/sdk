@@ -250,5 +250,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """
             }.RunAsync(CancellationToken.None);
         }
+
+        [TestMethod]
+        public async Task Regex_NestedMatchSuccess_FixAllRewritesBoth_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    bool M(Regex r)
+                    {
+                        return {|CA1874:r.Match({|CA1874:r.Match("input").Success|}.ToString()).Success|};
+                    }
+                }
+                """,
+                """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    bool M(Regex r)
+                    {
+                        return r.IsMatch(r.IsMatch("input").ToString());
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task Regex_NestedMatchSuccess_FixAllRewritesBoth_BasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System.Text.RegularExpressions
+
+                Class C
+                    Function M(r As Regex) As Boolean
+                        Return {|CA1874:r.Match({|CA1874:r.Match("input").Success|}.ToString()).Success|}
+                    End Function
+                End Class
+                """,
+                """
+                Imports System.Text.RegularExpressions
+
+                Class C
+                    Function M(r As Regex) As Boolean
+                        Return r.IsMatch(r.IsMatch("input").ToString())
+                    End Function
+                End Class
+                """);
+        }
     }
 }

@@ -26,6 +26,7 @@ public partial class MTPHelpSnapshotTests : SdkTest
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable(TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable, "0")
             .Execute(CliConstants.HelpOptionKey);
 
         result.ExitCode.Should().Be(ExitCodes.Success);

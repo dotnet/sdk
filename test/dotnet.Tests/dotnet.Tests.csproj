@@ -11,8 +11,8 @@
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- Methods within a fixture share test state. Cross-fixture process state is isolated with ResourceLock or DoNotParallelize. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,12 +28,17 @@
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\Install\GivenAWindowsMsiManifestInstaller.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
     <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AspireCliVersion</_Parameter1>
+      <_Parameter2>$(AspireCliVersion)</_Parameter2>
+    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MSTestVersion</_Parameter1>
       <_Parameter2>$(MSTestVersion)</_Parameter2>
@@ -74,6 +79,7 @@
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
   </ItemGroup>
 
@@ -88,13 +94,12 @@
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Global usings -->
   <ItemGroup>
     <Using Include="Microsoft.DotNet.Cli.Telemetry" />
-    <Using Include="Combinatorial.MSTest" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial" />
     <!-- Aliases -->
     <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />

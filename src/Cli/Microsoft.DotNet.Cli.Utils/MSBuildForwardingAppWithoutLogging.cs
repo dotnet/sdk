@@ -21,8 +21,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// as a place to cache data and prevent re-doing CoreCLR startup/JITting for small builds.
     /// By default, the MSBuild server is enabled, but users that hit stability/correctness concerns with some
     /// 1P tasks that keep static state around can opt out by setting this to false.
+    /// The value is evaluated for each forwarding app so in-process invocations honor the current environment.
     /// </summary>
-    private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true);
+    private static bool UseMSBuildServer => Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true);
 
     /// <summary>
     /// What the SDK's opinion is on the default terminal logger. The SDK defaults to '<c>auto</c>' which will use the terminal logger if the output is going to a terminal, otherwise it will use the console logger.
@@ -98,12 +99,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-        // The MSBuild server is enabled by default. Force MSBUILDUSESERVER on unless the user has opted out
-        // via DOTNET_CLI_USE_MSBUILD_SERVER, or has already set MSBUILDUSESERVER themselves - in which case we
-        // leave their value untouched so it can toggle the server on its own.
-        if (UseMSBuildServer && Env.GetEnvironmentVariable("MSBUILDUSESERVER") is null)
+        // The MSBuild server is enabled by default. Set MSBUILDUSESERVER based on DOTNET_CLI_USE_MSBUILD_SERVER,
+        // unless the user has already set MSBUILDUSESERVER themselves - in which case we leave their value untouched.
+        // An empty value is treated as unset.
+        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDUSESERVER")))
         {
-            EnvironmentVariable("MSBUILDUSESERVER", "1");
+            EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
         }
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set, the caller requires it (e.g. the AOT CLI, which
@@ -206,35 +207,60 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
     public int ExecuteInProc(string[] arguments)
     {
-        // Save current environment variables before overwriting them.
+        using var _ = SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+        try
+        {
+            // Execute MSBuild in the current process by calling its Main method.
+            return Build.CommandLine.MSBuildApp.Main(arguments);
+        }
+        catch (Exception exception)
+        {
+            // MSBuild, like all well-behaved CLI tools, handles all exceptions. In the unlikely case
+            // that something still escapes, we print the exception and fail the call. Non-localized
+            // string is OK here.
+            Console.Error.Write("Unhandled exception: ");
+            Console.Error.WriteLine(exception.ToString());
+
+            return unchecked((int)0xe0434352); // EXCEPTION_COMPLUS
+        }
+    }
+
+    /// <summary>
+    /// Sets the required MSBuild environment variables for a direct in-process MSBuild operation.
+    /// Restores their original values when disposed.
+    /// </summary>
+    internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
+        => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
+
+    private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
+    {
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
-            foreach (KeyValuePair<string, string?> kvp in _msbuildRequiredEnvironmentVariables)
+            foreach (KeyValuePair<string, string?> kvp in environmentVariables)
             {
                 savedEnvironmentVariables[kvp.Key] = Environment.GetEnvironmentVariable(kvp.Key);
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
             }
-
-            try
-            {
-                // Execute MSBuild in the current process by calling its Main method.
-                return Build.CommandLine.MSBuildApp.Main(arguments);
-            }
-            catch (Exception exception)
-            {
-                // MSBuild, like all well-behaved CLI tools, handles all exceptions. In the unlikely case
-                // that something still escapes, we print the exception and fail the call. Non-localized
-                // string is OK here.
-                Console.Error.Write("Unhandled exception: ");
-                Console.Error.WriteLine(exception.ToString());
-
-                return unchecked((int)0xe0434352); // EXCEPTION_COMPLUS
-            }
         }
-        finally
+        catch
         {
-            // Restore saved environment variables.
+            EnvironmentVariableRestorer.Restore(savedEnvironmentVariables);
+            throw;
+        }
+
+        return new EnvironmentVariableRestorer(savedEnvironmentVariables);
+    }
+
+    private sealed class EnvironmentVariableRestorer(Dictionary<string, string?> savedEnvironmentVariables) : IDisposable
+    {
+        public void Dispose()
+        {
+            Restore(savedEnvironmentVariables);
+        }
+
+        internal static void Restore(Dictionary<string, string?> savedEnvironmentVariables)
+        {
             foreach (KeyValuePair<string, string?> kvp in savedEnvironmentVariables)
             {
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
@@ -256,7 +282,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private static string GetMSBuildExePath()
     {
         return Path.Combine(
-            AppContext.BaseDirectory,
+            SdkPaths.SdkDirectory,
             MSBuildExeName);
     }
 
@@ -275,7 +301,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
 
         return Path.Combine(
-            AppContext.BaseDirectory,
+            SdkPaths.SdkDirectory,
             SdksDirectoryName);
     }
 
@@ -294,7 +320,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     {
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? AppContext.BaseDirectory },
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? SdkPaths.SdkDirectory },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
         };
