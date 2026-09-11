@@ -69,7 +69,7 @@ In addition to the default Application Insights exporter, the SDK can also expor
   - `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL`, `OTEL_EXPORTER_OTLP_METRICS_PROTOCOL`
   - `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, `OTEL_EXPORTER_OTLP_METRICS_HEADERS`
   - `OTEL_EXPORTER_OTLP_TIMEOUT`, `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`, `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`
-  
+
   and of course the overall OTel SDK disablement flag OTEL_SDK_DISABLED must not be `true`
 
 When the OTLP exporter is enabled, all standard OpenTelemetry OTLP environment variables (endpoint, protocol, headers, timeout, etc.) are honored by the OpenTelemetry SDK's `OtlpExporterOptions` to configure the export destination.
@@ -115,7 +115,7 @@ production managed assembly and normal muxer entry point. Live endpoint acceptan
 `DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING`; `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
 checking downstream ingestion. HTTP acceptance alone does not verify arrival in a destination table.
 
-The upstream shutdown fixes are documented in
+1.9.0 or later must be leveraged, as older versions did not work well and we requested fixes. Our requested upstream shutdown fixes are documented in
 [azure-sdk-for-net#61818](https://github.com/Azure/azure-sdk-for-net/pull/61818) and
 [azure-sdk-for-net#62340](https://github.com/Azure/azure-sdk-for-net/pull/62340). They provide lifecycle-scoped
 persistence rather than the public persist-only/manual-drain API proposed in
