@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Xml.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -81,14 +82,40 @@ namespace Microsoft.TemplateEngine.Tests
         }
 
         /// <summary>
-        /// Creates a NuGet.config in the specified directory with sources for both
-        /// shipping packages and locally-built test packages.
+        /// Creates a NuGet.config in the specified directory with the managed test sources,
+        /// shipping packages, and locally-built test packages.
         /// </summary>
         internal static void SetupNuGetConfigForPackagesLocation(string projectDirectory)
         {
-            TestUtils.SetupNuGetConfigForPackagesLocation(
-                projectDirectory,
-                new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
+            XDocument nuGetConfig = XDocument.Load(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config"));
+            XElement configuration = nuGetConfig.Root
+                ?? throw new InvalidOperationException("The test NuGet.config has no configuration element.");
+            XElement config = configuration.Element("config") ?? new XElement("config");
+            if (config.Parent is null)
+            {
+                configuration.AddFirst(config);
+            }
+
+            config.Elements("add")
+                .Where(element => string.Equals((string?)element.Attribute("key"), "globalPackagesFolder", StringComparison.OrdinalIgnoreCase))
+                .Remove();
+            config.Add(
+                new XElement(
+                    "add",
+                    new XAttribute("key", "globalPackagesFolder"),
+                    new XAttribute("value", TestUtils.CreateTemporaryFolder("Packages"))));
+
+            XElement packageSources = configuration.Element("packageSources")
+                ?? throw new InvalidOperationException("The test NuGet.config has no packageSources element.");
+            string[] localPackageSources = [ShippingPackagesLocation, SdkTestContext.Current.TestPackages];
+            packageSources.Add(
+                localPackageSources.Select(
+                    (location, index) => new XElement(
+                        "add",
+                        new XAttribute("key", $"testPackages{index}"),
+                        new XAttribute("value", location))));
+
+            nuGetConfig.Save(Path.Combine(projectDirectory, "nuget.config"));
         }
     }
 }
