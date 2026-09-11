@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -18,12 +19,6 @@ internal static class InitFormRenderer
     private const int ChoiceRowIndent = 2;
     private const int FieldDetailIndent = 4;
     private const int ChoiceDetailIndent = 6;
-
-    // Marker appended to the recommended default choice.
-    private const string DefaultSuffix = "  (default)";
-
-    private const string WelcomeMessage = "Welcome to dotnetup!";
-    private const string ConfirmationPrompt = "Install .NET with these settings?";
 
     // Fallback console dimensions used when the real dimensions are unavailable.
     private const int FallbackWindowWidth = 80;
@@ -64,7 +59,7 @@ internal static class InitFormRenderer
     {
         if (compression < FormCompressionLevel.WithoutWelcome)
         {
-            yield return new Markup($"[bold {theme.Brand}]{WelcomeMessage.EscapeMarkup()}[/]");
+            yield return new Markup($"[bold {theme.Brand}]{Strings.InitFormWelcome.EscapeMarkup()}[/]");
             if (compression < FormCompressionLevel.Compact)
             {
                 // Add a blank line for spacing if there's room for it
@@ -74,10 +69,11 @@ internal static class InitFormRenderer
 
         if (compression < FormCompressionLevel.WithoutInstallLocation)
         {
-            yield return new Markup(
-                $"[{theme.Dim}]dotnetup will install .NET SDKs and runtimes in [/]" +
-                $"[{theme.Accent}]{model.InstallPath.EscapeMarkup()}[/]" +
-                $"[{theme.Dim}].[/]");
+            string installLocation = string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.InitFormInstallLocation.EscapeMarkup(),
+                $"[{theme.Accent}]{model.InstallPath.EscapeMarkup()}[/]");
+            yield return new Markup($"[{theme.Dim}]{installLocation}[/]");
             yield return Text.Empty;
         }
 
@@ -91,7 +87,7 @@ internal static class InitFormRenderer
 
         if (compression < FormCompressionLevel.WithoutConfirmationPrompt)
         {
-            yield return new Markup($"[white]{ConfirmationPrompt.EscapeMarkup()}[/]");
+            yield return new Markup($"[white]{Strings.InitFormConfirmationPrompt.EscapeMarkup()}[/]");
         }
 
         // Show the accept row unless we're editing a field and need to save space.
@@ -99,11 +95,10 @@ internal static class InitFormRenderer
             && compression >= FormCompressionLevel.FocusedEdit;
         if (!focusedEdit)
         {
-            const string accept = "Accept and install";
             string acceptStyle = state.IsAcceptFocused ? $"{theme.Success} bold" : theme.Dim;
             string acceptArrow = state.IsAcceptFocused && showArrow ? "> " : "  ";
             yield return new Markup(
-                $"[{acceptStyle}]{acceptArrow.EscapeMarkup()}{accept.EscapeMarkup()}[/]");
+                $"[{acceptStyle}]{acceptArrow.EscapeMarkup()}{Strings.InitFormAccept.EscapeMarkup()}[/]");
 
             if (compression < FormCompressionLevel.Compact)
             {
@@ -116,15 +111,15 @@ internal static class InitFormRenderer
             string legend;
             if (state.Mode != FormMode.EditingField)
             {
-                legend = "↑/↓ move · Enter edit/accept · Esc quit";
+                legend = Strings.InitFormNavigationForm;
             }
             else if (state.IsCustomChoiceHighlighted)
             {
-                legend = "type · ↑/↓ choose · Enter set · Esc back";
+                legend = Strings.InitFormNavigationCustomInput;
             }
             else
             {
-                legend = "↑/↓ choose · Enter select · Esc back";
+                legend = Strings.InitFormNavigationField;
             }
 
             yield return new Markup($"[{theme.Dim}]{legend.EscapeMarkup()}[/]");
@@ -157,7 +152,7 @@ internal static class InitFormRenderer
 
         //  Render the field label and possibly the value, with a selection marker in front if the current field is selected
         string arrow = focused && showArrow ? "> " : "  ";
-        string label = field.Label.PadRight(labelWidth);
+        string label = PadToCellWidth(field.Label, labelWidth);
         string labelStyle = focused ? $"{theme.Success} bold" : "white";
         if (editing)
         {
@@ -241,7 +236,8 @@ internal static class InitFormRenderer
         {
             bool selected = state.EditChoiceIndex == index;
             choices.Add(BuildChoiceMarkup(field, index, selected, showArrow,
-                trailing: null, choiceColumnWidth: 0, showDefaultSuffix: false, theme));
+                trailing: null, choiceColumnWidth: 0, showDefaultSuffix: false,
+                defaultSuffix: string.Empty, theme: theme));
         }
 
         yield return Indent(ChoiceRowIndent, new Columns(choices));
@@ -264,8 +260,9 @@ internal static class InitFormRenderer
         FormCompressionLevel compression, bool showDerived, bool showArrow, ThemeColors theme)
     {
         bool showHelpInline = field.InlineHelp || compression >= FormCompressionLevel.InlineChoiceHelp;
-        int maxChoiceWidth = field.Choices.Select((choice, index) => choice.Title.Length +
-            (index == field.DefaultIndex ? DefaultSuffix.Length : 0)).Max();
+        string defaultSuffix = $"  {Strings.InitFormDefaultSuffix}";
+        int maxChoiceWidth = field.Choices.Select((choice, index) => choice.Title.GetCellWidth() +
+            (index == field.DefaultIndex ? defaultSuffix.GetCellWidth() : 0)).Max();
         int choiceColumnWidth = showHelpInline ? maxChoiceWidth : 0;
 
         for (int index = 0; index < field.Choices.Count; index++)
@@ -290,7 +287,7 @@ internal static class InitFormRenderer
             yield return Indent(
                 ChoiceRowIndent,
                 BuildChoiceMarkup(field, index, selected, showArrow,
-                    trailing, choiceColumnWidth, showDefaultSuffix: true, theme));
+                    trailing, choiceColumnWidth, showDefaultSuffix: true, defaultSuffix, theme));
 
             if (!showHelpInline)
             {
@@ -328,10 +325,13 @@ internal static class InitFormRenderer
     // and optional trailing help or custom input aligned after the choice column.
     private static Markup BuildChoiceMarkup(
         FormField field, int index, bool selected, bool showArrow,
-        string? trailing, int choiceColumnWidth, bool showDefaultSuffix, ThemeColors theme)
+        string? trailing, int choiceColumnWidth, bool showDefaultSuffix,
+        string defaultSuffix, ThemeColors theme)
     {
         FieldChoice choice = field.Choices[index];
-        string suffix = showDefaultSuffix && index == field.DefaultIndex ? DefaultSuffix : string.Empty;
+        string suffix = showDefaultSuffix && index == field.DefaultIndex
+            ? defaultSuffix
+            : string.Empty;
         // Green marks the highlighted choice, consistent with the focused row and the Accept action.
         string titleStyle = selected ? $"{theme.Success} bold" : "white";
         string arrow = selected && showArrow ? "> " : "  ";
@@ -340,7 +340,7 @@ internal static class InitFormRenderer
         if (trailing is not null)
         {
             // Pad so the trailing slot starts at the same column for every choice (a simple table).
-            int pad = Math.Max(0, choiceColumnWidth - (choice.Title.Length + suffix.Length));
+            int pad = Math.Max(0, choiceColumnWidth - (choice.Title.GetCellWidth() + suffix.GetCellWidth()));
             tail = new string(' ', pad) + "  " + trailing;
         }
 
@@ -359,7 +359,7 @@ internal static class InitFormRenderer
             return
                 $"[{theme.Dim}]> [/]" +
                 $"[{theme.Accent}]{cursor}[/]" +
-                $"[{theme.Dim} italic]  type a channel[/]";
+                $"[{theme.Dim} italic]  {Strings.InitFormCustomChannelPrompt.EscapeMarkup()}[/]";
         }
 
         return
@@ -378,9 +378,12 @@ internal static class InitFormRenderer
         int width = 0;
         foreach (FormField field in fields)
         {
-            width = Math.Max(width, field.Label.Length);
+            width = Math.Max(width, field.Label.GetCellWidth());
         }
 
         return width;
     }
+
+    private static string PadToCellWidth(string value, int width) =>
+        value + new string(' ', Math.Max(0, width - value.GetCellWidth()));
 }
