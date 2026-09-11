@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: nie można załadować obrazów z wieloma architekturami do usługi WSLC. Opublikuj obraz z jedną platformą lub opublikuj obraz z wieloma architekturami w rejestrze.</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,17 +206,17 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">Obszar elementu nośnego „{0}” używa schematu „{1}”, który jest niedozwolony; akceptowany jest tylko element „https” (lub „http”, gdy rejestr jest skonfigurowany jako niezabezpieczony)</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">obszar elementu nośnego „{0}” jest rozpoznawany jako „{1}”, który jest prywatny, jest sprzężeniem zwrotnym, linkiem lokalnym lub nieokreślonym adresem literału IP</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">obszar elementu nośnego „{0}” nie jest prawidłowym bezwzględnym identyfikatorem URI</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">

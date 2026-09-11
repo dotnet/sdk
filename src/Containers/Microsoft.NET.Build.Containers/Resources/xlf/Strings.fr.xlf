@@ -206,17 +206,17 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">le realm bearer « {0} » utilise le schéma « {1} » qui n’est pas autorisé; seul « https » est accepté (ou « http » lorsque le registre est configuré comme non sécurisé)</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">le realm bearer « {0} » se résout en « {1} », qui est une adresse IP littérale privée, de bouclage, locale de lien ou non spécifiée</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">le domaine du porteur « {0} » n’est pas une URI absolue valide</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">

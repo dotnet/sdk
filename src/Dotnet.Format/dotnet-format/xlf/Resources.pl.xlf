@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_framework">
         <source>Cannot specify the '--folder' option with '--framework'.</source>
-        <target state="new">Cannot specify the '--folder' option with '--framework'.</target>
+        <target state="translated">Nie można określić opcji „--folder” z elementem „--framework”.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
@@ -334,7 +334,7 @@
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app">
         <source>The file '{0}' does not appear to be a valid project, solution file, or file-based app.</source>
-        <target state="new">The file '{0}' does not appear to be a valid project, solution file, or file-based app.</target>
+        <target state="translated">Plik „{0}” prawdopodobnie nie jest prawidłowym projektem, plikiem rozwiązania ani aplikacją opartą na plikach.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="The_target_framework_to_use_when_loading_the_workspace">
         <source>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</source>
-        <target state="new">The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</target>
+        <target state="translated">Platforma docelowa (moniker platformy docelowej), która ma być używana podczas ładowania obszaru roboczego. Ogranicza przywracanie i analizę tylko do określonej struktury.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">

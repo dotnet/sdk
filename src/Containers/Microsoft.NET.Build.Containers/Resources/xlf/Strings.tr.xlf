@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: Çok mimarili görüntüler WSLC'ye yüklenemiyor. Tek platformlu bir görüntü yayımlayın veya çok mimarili görüntüyü bir kayıt defterinde yayımlayın.</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,7 +206,7 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">taşıyıcı bölge '{0}', izin verilmeyen '{1}' şemasını kullanıyor; yalnızca 'https' kabul edilir (ve kayıt defteri güvensiz olarak yapılandırıldığında 'http' kabul edilir)</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
@@ -216,7 +216,7 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">Taşıyıcı alanı '{0}' geçerli bir mutlak URI değil</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">

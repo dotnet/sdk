@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: Imagens com multi-arquitetura não podem ser carregadas no WSLC. Publique uma imagem de plataforma única ou publique a imagem de multi-arquitetura em um registro.</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -216,7 +216,7 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">o domínio do portador '{0}' não é um URI absoluto válido</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
