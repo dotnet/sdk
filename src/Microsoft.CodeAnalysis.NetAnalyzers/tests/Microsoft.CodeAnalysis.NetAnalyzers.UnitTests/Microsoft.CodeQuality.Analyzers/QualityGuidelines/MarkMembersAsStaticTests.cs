@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
 using Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines;
 using Test.Utilities;
@@ -1577,6 +1578,47 @@ public class Test
                     """,
                 LanguageVersion = LanguageVersion.Preview,
             }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(51644, "https://github.com/dotnet/sdk/issues/51644")]
+        public Task UserDefinedInstanceOperators_NoDiagnostic()
+        {
+            return new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+                TestCode = """
+                    public class C
+                    {
+                        public void operator +=(int value) { }
+                        public void operator checked +=(int value) { }
+                        public void operator >>>=(int value) { }
+                        public void operator ++() { }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp14,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task UserDefinedImplicitConversionOperator_NoDiagnostic()
+        {
+            return VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static implicit operator int(C value) => 0;
+                }
+                """);
+        }
+
+        [TestMethod]
+        public Task UserDefinedExplicitConversionOperator_NoDiagnostic()
+        {
+            return VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static explicit operator int(C value) => 0;
+                }
+                """);
         }
     }
 }
