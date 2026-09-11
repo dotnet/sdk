@@ -5,15 +5,20 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+#if !CLI_AOT
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#endif
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
+using Microsoft.DotNet.FileBasedPrograms;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -26,7 +31,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
         string invocationWorkingDirectory = Directory.GetCurrentDirectory();
 
-        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+        BuildOptions buildOptions = TestCommandOptions.GetBuildOptions(parseResult);
         (buildOptions, bool forwardedCollectTestMap, bool forwardedAffectedTests) =
             NormalizeForwardedAffectedTestsOptions(buildOptions);
         bool forwardedMinimumExpectedTests = HasForwardedOption(
@@ -42,6 +47,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             affectedTests,
             forwardedMinimumExpectedTests);
 
+#if !CLI_AOT
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
         // --list-devices and --list-tests describe incompatible behaviors: the former lists
@@ -64,6 +70,32 @@ internal partial class MicrosoftTestingPlatformTestCommand
             throw new GracefulException(CliCommandStrings.CmdDeviceOptionsRequireProject);
         }
 
+        if (buildOptions.PathOptions.ProjectOrSolutionPath is { } projectOrSolutionPath
+            && VirtualProjectBuilder.IsValidEntryPointPath(projectOrSolutionPath)
+            && (buildOptions.ListDevices || !string.IsNullOrWhiteSpace(buildOptions.Device)))
+        {
+            throw new GracefulException(CliCommandStrings.CmdDeviceOptionsNotSupportedForFileBasedApps);
+        }
+#endif
+
+#if CLI_AOT
+        var testHandler = new TestModulesFilterHandler(buildOptions.PathOptions.TestModules!, parseResult);
+        if (!testHandler.Initialize())
+        {
+            return ExitCode.GenericFailure;
+        }
+
+        (bool responseFileCollectTestMap, bool responseFileAffectedTests, bool responseFileMinimumExpectedTests) =
+            DetectAffectedTestsOptionsInForwardedResponseFiles(
+                buildOptions.TestApplicationArguments,
+                testHandler.GetTestApplicationWorkingDirectories(),
+                invocationWorkingDirectory);
+        collectTestMap |= responseFileCollectTestMap;
+        affectedTests |= responseFileAffectedTests;
+        forwardedCollectTestMap |= responseFileCollectTestMap;
+        forwardedAffectedTests |= responseFileAffectedTests;
+        forwardedMinimumExpectedTests |= responseFileMinimumExpectedTests;
+#else
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
         ITestHandler testHandler;
         MSBuildSession? buildSession = null;
@@ -127,6 +159,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             buildSession?.Dispose();
             logger?.ReallyShutdown();
         }
+#endif
 
         ValidateAffectedTestsOptions(
             definition,
@@ -195,10 +228,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             if (ShouldPostProcessArtifacts(
                 testOptions,
                 parseResult.GetValue(definition.NoArtifactPostProcessingOption),
-                ctrlC.Token.IsCancellationRequested,
-                cancellationReason))
+                ctrlC.Token.IsCancellationRequested))
             {
-                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
+                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC, cancellationReason).GetAwaiter().GetResult();
             }
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
@@ -240,23 +272,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// Decides whether the artifacts of a finished run should be consolidated.
     /// </summary>
     /// <remarks>
-    /// Help and discovery produce no artifacts to merge, and <c>--no-artifact-post-processing</c> is
-    /// the explicit opt-out. The two cancellation cases are the interesting ones: a run stopped by
-    /// Ctrl+C, <c>--maximum-failed-tests</c> or <c>--timeout</c> produced the artifacts of a
-    /// truncated run — modules that never started contributed nothing, and modules killed mid-flight
-    /// wrote whatever they had. Merging those into a single report would hide the truncation behind
-    /// one authoritative-looking artifact, so the per-module artifacts are left as they are.
+    /// Help and discovery produce no artifacts to merge, <c>--no-artifact-post-processing</c> is the
+    /// explicit opt-out, and Ctrl+C is an unconditional user cancellation. Policy-truncated runs
+    /// continue into planning, which selects only processors that explicitly advertised support for
+    /// the incomplete set of complete artifacts observed before cancellation.
     /// </remarks>
     internal static bool ShouldPostProcessArtifacts(
         TestOptions testOptions,
         bool noArtifactPostProcessingRequested,
-        bool cancellationRequested,
-        TestRunCancellationReason cancellationReason)
+        bool cancellationRequested)
         => !testOptions.IsHelp
             && !testOptions.IsDiscovery
             && !noArtifactPostProcessingRequested
-            && !cancellationRequested
-            && cancellationReason == TestRunCancellationReason.None;
+            && !cancellationRequested;
 
     internal static (BuildOptions BuildOptions, bool CollectTestMap, bool AffectedTests) NormalizeForwardedAffectedTestsOptions(
         BuildOptions buildOptions)
@@ -713,6 +741,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         return degreeOfParallelism;
     }
 
+#if !CLI_AOT
     /// <summary>
     /// Creates the MSBuild session shared by every target the test command invokes itself. It owns the
     /// project collection all those projects have to be evaluated in; the collection has no global
@@ -870,4 +899,5 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         return ExitCode.Success;
     }
+#endif
 }

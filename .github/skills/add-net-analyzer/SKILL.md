@@ -141,9 +141,12 @@ mirroring the analyzer's folder. Full conventions are in
 ```powershell
 # ~10s incremental once .dotnet is provisioned; the first run provisions it.
 ./build.cmd -projects src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.slnx -c Debug
-
-./.dotnet/dotnet test src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj --filter "FullyQualifiedName~<Name>Tests"
 ```
+
+Then invoke the [`run-tests`](../run-tests/SKILL.md) skill for
+`src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj`
+with a filter for `<Name>Tests`. This project does not consume the assembled SDK, so the
+runner may skip its redist check.
 
 Then `git status` and commit the regenerated files along with your change. `./build.sh` on
 Linux/macOS; never pass `-restore`/`-build` alongside `-projects`.
@@ -186,4 +189,3 @@ dead help link in every user's IDE.
 - [ ] Every shape the fix offers itself on produces compiling code.
 - [ ] Rule run against a real codebase and hits triaged, at `IdeSuggestion` or stronger.
 - [ ] `dotnet/docs` PR raised with the user as a condition of merging.
-

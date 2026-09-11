@@ -45,11 +45,17 @@ differ".
 
 ```jsonc
 {
+  // Area labels applied to every entry's drift issues, in addition to the
+  // `area-vendored-sync` label. Today all entries are `dotnet test`/MTP source.
+  "default_area_labels": ["Area-dotnet test (MTP)"],
   "entries": [
     {
       "id": "stable-kebab-case-id",
       "local_path": "src/path/to/Local.cs",
       "notes": "free-form description of local adaptations",
+      // Optional. Overrides `default_area_labels` for this entry. Set it when
+      // the entry is vendored for a different area than the manifest default.
+      "area_labels": ["Area-SomethingElse"],
       "sources": [
         {
           "repo": "owner/repo",
@@ -64,6 +70,15 @@ differ".
   ]
 }
 ```
+
+The drift-detection mechanism itself is upstream-agnostic — a source may point at
+any repo — so area routing is manifest data rather than something hard-coded in
+the script. If you vendor a file for a different area, set `area_labels` on that
+entry so its issues are not misrouted to the default area's triage queue. Every
+declared area label must already exist in the repository's triage taxonomy; the
+workflow only creates its own `area-vendored-sync` label. Existing sync issues
+are reconciled to the entry's current area-label set while retaining unrelated
+labels.
 
 A single local file may declare multiple upstream sources. For example the
 terminal reporter is one file in this repo
@@ -92,7 +107,8 @@ For every `(entry, source)` pair the workflow:
 3. Otherwise fetches the baseline content (via the blobs API, robust to
    force-pushes) and the current content (via `raw.githubusercontent.com`),
    computes a unified diff, and opens/updates a tracking issue labelled
-   `area-vendored-sync` containing:
+   `area-vendored-sync` plus the entry's area labels (see `default_area_labels` /
+   `area_labels` above) containing:
    - links to the upstream file history, baseline blob, current blob, and the
      whole-repo compare URL,
    - the upstream-only diff (truncated at 300 lines),
@@ -117,7 +133,10 @@ reconciliation PR is merged.
      (`gh api repos/{repo}/commits/{ref} --jq .sha`),
    - `baseline_blob_sha`: the upstream file's blob SHA at that ref
      (`gh api "repos/{repo}/contents/{path}?ref={ref}" --jq .sha`).
-3. Run `python .github/scripts/check_vendored_files.py validate` locally to
+3. If the file does not belong to the area in `default_area_labels`, set
+   `area_labels` on the entry to existing repository triage labels so its drift
+   issues reach the right triage queue.
+4. Run `python .github/scripts/check_vendored_files.py validate` locally to
    confirm the structure is correct.
 
 ## Reconciling drift

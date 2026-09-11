@@ -98,6 +98,8 @@ internal static class HandshakeMessagePropertyNames
     // supported by post-processors registered in the test application.
     internal const byte SupportedPostProcessorKinds = 14;
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
+    internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
+    internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
 }
 
 internal static class HandshakeMessageExecutionModes

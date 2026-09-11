@@ -489,6 +489,11 @@ Cela équivaut à supprimer project.assets.json.</target>
         <target state="translated">Ne mettez pas en cache les packages et les requêtes HTTP.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Ne restaurez pas les références de projet à projet, et restaurez uniquement le projet spécifié.</target>
@@ -585,8 +590,8 @@ Cela équivaut à supprimer project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Définit le chemin d’accès du projet ou du fichier solution à tester. Utiliser le chemin du fichier projet ou celui du répertoire contenant ce fichier. Si rien n’est spécifié, la valeur par défaut est le répertoire actif.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Définit le chemin d’accès du projet ou du fichier solution à tester. Utiliser le chemin du fichier projet ou celui du répertoire contenant ce fichier. Si rien n’est spécifié, la valeur par défaut est le répertoire actif.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

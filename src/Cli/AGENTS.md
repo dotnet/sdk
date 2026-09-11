@@ -14,10 +14,11 @@ SDK-owned CLI code has three process entry points of equal importance:
 
 Treat the logger as an independent entry point. Do not assume that it runs after managed
 `Program.Main` or the Native AOT bootstrap. Initialize process-wide telemetry and tracing
-when MSBuild loads the logger directly. Use `BuildStarted` and `BuildFinished` for
-request-specific state. `Shutdown` completes one logger instance. It does not necessarily
-end the process. Refresh the environment and trace context for each persistent-server
-request.
+when MSBuild loads the logger directly. Start request-specific state at `BuildStarted`,
+record the result at `BuildFinished`, and keep the activity open until `Shutdown` because
+MSBuild emits final telemetry after `BuildFinished`. `Shutdown` completes one logger
+instance. It does not necessarily end the process. Refresh the environment and trace
+context for each persistent-server request.
 
 ## Three-project command split
 

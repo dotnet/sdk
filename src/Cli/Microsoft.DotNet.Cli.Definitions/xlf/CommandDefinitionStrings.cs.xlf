@@ -489,6 +489,11 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <target state="translated">Neukládat balíčky a požadavky http do mezipaměti</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Neobnoví odkazy mezi projekty a obnoví jen konkrétní projekt.</target>
@@ -585,8 +590,8 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k projektu nebo souboru řešení, který se má otestovat. Použijte cestu k souboru projektu nebo cestu k adresáři obsahujícímu soubor projektu. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Definuje cestu k projektu nebo souboru řešení, který se má otestovat. Použijte cestu k souboru projektu nebo cestu k adresáři obsahujícímu soubor projektu. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

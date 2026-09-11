@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 {
     public class PackageManager : IDisposable
     {
-        private const string NuGetOrgFeed = "https://api.nuget.org/v3/index.json";
+        private const string NuGetOrgFeed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json";
         private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
         private readonly string _packageLocation = TestUtils.CreateTemporaryFolder("packages");
         private readonly ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);

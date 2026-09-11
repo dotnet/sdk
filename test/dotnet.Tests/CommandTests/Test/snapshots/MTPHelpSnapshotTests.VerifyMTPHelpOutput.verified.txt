@@ -5,7 +5,7 @@ Usage:
   dotnet test [options] [platform options] [extension options]
 
 Options:
-  --project <PROJECT_OR_SOLUTION_PATH>            Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.
+  --project <PROJECT_OR_SOLUTION_PATH>            Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.
   --solution <SOLUTION_PATH>                      Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.
   --test-modules <EXPRESSION>                     Run tests for the specified test modules.
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
@@ -61,8 +61,8 @@ Platform Options:
                                   When both --ansi and --no-ansi are provided, --ansi wins.
   --debug                         Allows to pause execution in order to attach to the process for debug purposes.
   --diagnostic                    Enable the diagnostic logging. The default log level is 'Trace'.
-                                  The file will be written in the output directory with the name log_[yyMMddHHmmssfff].diag
-  --diagnostic-file-prefix        Prefix for the log file name that will replace '[log]_.'
+                                  The file will be written in the output directory with the name log_[yyMMddHHmmssfff].diag.
+  --diagnostic-file-prefix        Replace '[log]_.' with the specified log file name prefix.
   --diagnostic-synchronous-write  Force the built-in file logger to write the log synchronously.
                                   Useful for scenario where you don't want to lose any log (i.e. in case of crash).
                                   Note that this is slowing down the test execution.
@@ -88,11 +88,14 @@ Platform Options:
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
+  --show-test-results             Selects which test outcomes render a per-test result block (with its informative details, stack trace, and captured output) in the terminal.
+                                  Valid values are 'passed', 'failed' (also covers errored, timed out, and canceled tests), 'skipped', 'all', and 'none'. Combine multiple values as a comma- or space-separated list, or by repeating the option; 'all' and 'none' cannot be combined with any other value.
+                                  Default is 'failed' when '--output' is 'Minimal', 'failed' and 'skipped' when it is 'Normal' or omitted, and 'all' when it is 'Detailed'. An explicit '--show-test-results' always takes precedence over '--output', regardless of the order they are passed in.
   --zero-tests-policy             Specifies how a run that executed no tests is treated.
                                   Valid values are 'allow-skipped' (the default) which counts skipped tests as run, so only a run where no test was found at all fails with exit code 8, and 'strict' which treats skipped tests as not run, so a run where every test was skipped (or no test was found) fails with exit code 8.
 
 Extension Options:
-  --report-trx           Enable generating TRX report
+  --report-trx           Enable generating TRX report.
   --report-trx-filename  The name of the generated TRX report. May include a relative or absolute path; relative paths are resolved against the test results directory and missing directories are created.
                          Supports the following placeholders: {pname} (test application name), {pid} (process ID), {asm} (entry assembly name), {tfm} (target framework moniker), {arch} (process architecture), {time} (timestamp).
-                         Example: MyReport_{tfm}.trx
+                         Example: 'MyReport_{tfm}.trx'.

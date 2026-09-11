@@ -35,6 +35,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("global.json file", "globaljson", null)]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "false" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "true" })]
+        [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--allow-prerelease", "false" })]
+        [DataRow("global.json file", "globaljson", new[] { "--no-sdk-version" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "false", "--no-sdk-version" })]
         [DataRow("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
         [DataRow("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
@@ -99,7 +104,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // globaljson is appending current sdk version. Due to the 'base' dotnet used to run test this version differs
             //  on dev and CI runs and possibly from the version within test host. Easiest is just to scrub it away
             if (expectedTemplateName.Equals("global.json file") &&
-                (args == null || !args.Contains("--sdk-version")))
+                (args == null || (!args.Contains("--sdk-version") && !args.Contains("--no-sdk-version"))))
             {
                 string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.CancellationToken);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");

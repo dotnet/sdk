@@ -13,25 +13,9 @@ using Microsoft.DotNet.Cli.Utils;
 namespace Microsoft.DotNet.Cli.Tests;
 
 [TestClass]
+[ResourceLock(nameof(SdkDirectoryScope))]
 public class MSBuildEvaluationTests
 {
-    private readonly struct SdkDirectoryScope : IDisposable
-    {
-        private readonly object? _previousSdkRoot = AppContext.GetData(SdkPaths.DataName);
-
-        public SdkDirectoryScope(string sdkDirectory)
-        {
-            AppContext.SetData(SdkPaths.DataName, sdkDirectory);
-            SdkPaths.ClearSdkDirectoryCacheForTests();
-        }
-
-        public void Dispose()
-        {
-            AppContext.SetData(SdkPaths.DataName, _previousSdkRoot);
-            SdkPaths.ClearSdkDirectoryCacheForTests();
-        }
-    }
-
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]

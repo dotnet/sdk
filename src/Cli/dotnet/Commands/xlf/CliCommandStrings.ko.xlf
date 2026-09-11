@@ -132,6 +132,11 @@
         <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
+        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
+        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
@@ -2892,7 +2897,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
         <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
-        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <target state="translated">경고: '--' 뒤에 어떤 애플리케이션 인수가 나왔는지 확인할 수 없습니다. 로거 인수를 별도로 처리하지 않고 모든 애플리케이션 인수가 애플리케이션에 전달됩니다.</target>
         <note>{Locked="--"}</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
@@ -3880,12 +3885,12 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</target>
+        <target state="translated">경고: '{0}'은(는) 파일 기반 앱으로 보이지만 파일을 찾을 수 없으며 MSBuild 인수로 처리되었습니다. 인식할 수 없는 인수: {1}.</target>
         <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</target>
+        <target state="translated">경고: '{0}'은(는) 파일 기반 앱으로 보이지만 MSBuild 인수로 처리되었습니다. 파일 기반 앱으로 처리하려면 'dotnet {1} {0}'를 사용하고 지원되지 않는 인수 {2}은(는) 제거하세요.</target>
         <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">

@@ -32,8 +32,6 @@ internal abstract class LaunchProfileParser
         return builder.ToImmutable();
     }
 
-    // TODO: Expand MSBuild variables $(...): https://github.com/dotnet/sdk/issues/50157
-    // See https://github.com/dotnet/project-system/blob/main/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/Debug/DebugTokenReplacer.cs#L35-L57
     protected static string ExpandVariables(string value)
         => Environment.ExpandEnvironmentVariables(value);
 }
