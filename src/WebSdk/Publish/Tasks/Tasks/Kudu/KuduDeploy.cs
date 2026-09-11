@@ -164,18 +164,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                 return null;
             }
 
-            // Zip the files from PublishOutput path.
-#if NETFRAMEWORK
-            string tempSubdirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())).FullName;
-#else
-            string tempSubdirectory = Directory.CreateTempSubdirectory().FullName;
-#endif
-
-            string zipFileFullPath = Path.Combine(tempSubdirectory, "Publish.zip");
-            Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
-
+            string zipFileFullPath;
             try
             {
+                // Zip the files from PublishOutput path.
+#if NETFRAMEWORK
+                string tempSubdirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())).FullName;
+#else
+                string tempSubdirectory = Directory.CreateTempSubdirectory().FullName;
+#endif
+
+                zipFileFullPath = Path.Combine(tempSubdirectory, "Publish.zip");
+                Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
+
                 System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
             }
             catch (Exception e)
