@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Default inheritance to apply to directory ACLs.
         /// </summary>
         private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
+        private static bool s_ProgramDataRootValidated;
 
         /// <summary>
         /// SID that matches built-in administrators.
@@ -71,12 +72,36 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="path">The path of the directory to create.</param>
         public static void CreateSecureDirectory(string path)
         {
+            if (TrustedMachinePath.IsUnderRoot(path, TrustedMachinePath.ProgramDataDotnetRoot))
+            {
+                EnsureSecureProgramDataRoot();
+            }
+
             if (!Directory.Exists(path))
             {
                 DirectorySecurity ds = new();
                 SecurityUtils.SetDirectoryAccessRules(ds);
                 ds.CreateDirectory(path);
             }
+        }
+
+        internal static void EnsureSecureProgramDataRoot()
+        {
+            if (s_ProgramDataRootValidated)
+            {
+                return;
+            }
+
+            string programDataDotnetRoot = TrustedMachinePath.ProgramDataDotnetRoot;
+            if (!Directory.Exists(programDataDotnetRoot))
+            {
+                DirectorySecurity ds = new();
+                SecurityUtils.SetDirectoryAccessRules(ds);
+                ds.CreateDirectory(programDataDotnetRoot);
+            }
+
+            TrustedMachinePath.ValidateDirectory(programDataDotnetRoot);
+            s_ProgramDataRootValidated = true;
         }
 
         /// <summary>

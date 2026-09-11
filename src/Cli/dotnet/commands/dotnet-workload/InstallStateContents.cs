@@ -3,6 +3,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Runtime.InteropServices;
+#if NET
+using System.Runtime.Versioning;
+#endif
+using Microsoft.DotNet.Installer.Windows;
 
 #pragma warning disable CS8632
 
@@ -33,13 +38,40 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public static InstallStateContents FromPath(string path)
         {
-            return File.Exists(path) ? FromString(File.ReadAllText(path)) : new InstallStateContents();
+            if (IsRunningOnWindows())
+            {
+                return FromPath(path, TrustedMachinePath.ProgramDataDotnetRoot);
+            }
+
+            return FromPath(path, programDataDotnetRoot: null);
+        }
+
+        internal static InstallStateContents FromPath(string path, string? programDataDotnetRoot)
+        {
+            if (!File.Exists(path))
+            {
+                return new InstallStateContents();
+            }
+
+            if (programDataDotnetRoot != null && IsRunningOnWindows() && TrustedMachinePath.IsUnderRoot(path, programDataDotnetRoot))
+            {
+                TrustedMachinePath.ValidateDirectory(programDataDotnetRoot);
+            }
+
+            return FromString(File.ReadAllText(path));
         }
 
         public override string ToString()
         {
             return JsonSerializer.Serialize<InstallStateContents>(this, s_options);
         }
+
+#if NET
+        [SupportedOSPlatformGuard("windows")]
+        private static bool IsRunningOnWindows() => OperatingSystem.IsWindows();
+#else
+        private static bool IsRunningOnWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
     }
 }
 

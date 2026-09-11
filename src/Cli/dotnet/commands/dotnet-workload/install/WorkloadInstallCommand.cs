@@ -45,14 +45,28 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
         }
 
-        private void ValidateWorkloadIdsInput()
+        private IReadOnlyCollection<string> GetValidWorkloadIds()
+        {
+            var validWorkloadIds = new List<string>();
+
+            foreach (var workloadId in _workloadIds)
+            {
+                _ = ParseWorkloadId(workloadId);
+                validWorkloadIds.Add(workloadId);
+            }
+
+            return validWorkloadIds.AsReadOnly();
+        }
+
+        private void ValidateWorkloadIdsInput(IReadOnlyCollection<string> validWorkloadIds)
         {
             var availableWorkloads = _workloadResolver.GetAvailableWorkloads();
-            foreach (var workloadId in _workloadIds)
+
+            foreach (var workloadId in validWorkloadIds)
             {
                 if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
                 {
-                    var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)) ?
+                    var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(ParseWorkloadId(workloadId)) ?
                         LocalizableStrings.WorkloadNotSupportedOnPlatform : LocalizableStrings.WorkloadNotRecognized;
 
                     throw new GracefulException(string.Format(exceptionMessage, workloadId), isUserError: false);
@@ -63,17 +77,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public override int Execute()
         {
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+            var validWorkloadIds = GetValidWorkloadIds();
             if (_printDownloadLinkOnly)
             {
-                ValidateWorkloadIdsInput();
+                ValidateWorkloadIdsInput(validWorkloadIds);
 
-                Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
+                Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", validWorkloadIds)));
 
                 //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
                 //  which require new packs for currently installed workloads, those packs will be downloaded.
                 //  If the packs are already installed, they won't be included in the results
                 var existingWorkloads = GetInstalledWorkloads(false);
-                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+                var workloadsToDownload = existingWorkloads.Union(validWorkloadIds.Select(ParseWorkloadId)).ToList();
 
                 var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
 
@@ -83,7 +98,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
             {
-                ValidateWorkloadIdsInput();
+                ValidateWorkloadIdsInput(validWorkloadIds);
 
                 try
                 {
@@ -91,7 +106,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     //  which require new packs for currently installed workloads, those packs will be downloaded.
                     //  If the packs are already installed, they won't be included in the results
                     var existingWorkloads = GetInstalledWorkloads(false);
-                    var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+                    var workloadsToDownload = existingWorkloads.Union(validWorkloadIds.Select(ParseWorkloadId)).ToList();
 
                     DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
                 }
@@ -125,13 +140,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     //  workload set installed yet, and trying to list the available workloads would throw an error
                     if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
                     {
-                        ValidateWorkloadIdsInput();
+                        ValidateWorkloadIdsInput(validWorkloadIds);
                     }
 
                     Reporter.WriteLine();
 
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                    var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                    var workloadIds = validWorkloadIds.Select(ParseWorkloadId);
 
                     // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
                     var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
