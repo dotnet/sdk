@@ -252,6 +252,10 @@ namespace Microsoft.DotNet.Tests
         [InlineData(@"..\..\evil")]
         [InlineData(@"good\evil")]
         [InlineData("good/evil")]
+        [InlineData("C:")]
+        [InlineData(".")]
+        [InlineData("trailingdot.")]
+        [InlineData("trailingspace ")]
         [InlineData("")]
         [InlineData(null)]
         public void ValidatePathComponent_ShouldRejectInvalidInput(string input)
