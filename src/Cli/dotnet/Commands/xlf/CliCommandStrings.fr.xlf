@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingStarted">
         <source>Merging compatible artifacts produced by different test applications...</source>
-        <target state="new">Merging compatible artifacts produced by different test applications...</target>
+        <target state="translated">Fusion des artefacts compatibles produits par différentes applications de test...</target>
         <note />
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
@@ -109,17 +109,17 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">La sélection de tests affectés est expérimentale. Définissez la valeur de la variable d’environnement « {0} » sur « 1 » pour l’activer.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">Vous ne pouvez pas utiliser les options « --collect-test-map » et « --affected-tests » ensemble.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsResponseFilesMustBeConsistent">
         <source>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</source>
-        <target state="new">Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</target>
+        <target state="translated">Les fichiers de réponse transférés doivent sélectionner la même opération de sélection des tests affectés pour chaque application de test. Spécifiez « --collect-test-map » ou « --affected-tests » directement sur « dotnet test » à la place.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
@@ -129,12 +129,12 @@
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">Vous ne pouvez pas combiner l’option « --collect-test-map » avec « --max-parallel-test-modules ». Les mappages de test sont collectés un seul module à la fois.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
-        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <target state="translated">Les options « --device » et « --list-devices » nécessitent un projet et ne peuvent pas être utilisées avec « --test-modules ».</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListDevicesAndAffectedTestsMutuallyExclusive">
@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
         <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
-        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <target state="translated">Les options « --list-devices » et « --list-tests » ne peuvent pas être utilisées ensemble.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
         <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
-        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <target state="translated">Microsoft.Testing.Platform a renvoyé plus d’un message de poignée de handshake sur la même connexion de canal.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
@@ -209,12 +209,12 @@
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
-        <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
+        <target state="translated">L’hôte de test a signalé le mode d’exécution « {0} », mais « dotnet test » attendait « {1} ». Cela se produit généralement lorsqu’une option telle que « --help », « -? » ou « --list-tests » a été injectée dans l’hôte de test via un canal non CLI (par exemple, les propriétés MSBuild « TestingPlatformCommandLineArguments » ou « RunArguments » ou « launchSettings.json » commandLineArgs). Passez ces options directement à « dotnet test » à la place.</target>
         <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeHostType">
         <source>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</source>
-        <target state="new">The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</target>
+        <target state="translated">L’hôte de test a signalé le type d’hôte « {0} », mais « dotnet test » attendait « {1} ».</target>
         <note>{Locked="dotnet test"}</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
@@ -775,7 +775,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
-        <target state="new">The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</target>
+        <target state="translated">L’architecture des options, la configuration, l’infrastructure, le système d’exploitation, le runtime et l’utilisation du runtime actuel ne peuvent pas être utilisés avec l’option « --test-modules ».</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -1935,7 +1935,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="new">No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</target>
+        <target state="translated">Aucune charge de travail n’est installée, rien à réparer. Exécutez `dotnet workload search` pour trouver les charges de travail à installer.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -2710,7 +2710,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RetriedColon">
         <source>retried:</source>
-        <target state="new">retried:</target>
+        <target state="translated">retenté :</target>
         <note>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</note>
       </trans-unit>
       <trans-unit id="RetriedTestsAndRuns">
@@ -2750,7 +2750,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="RunAsyncCalledMoreThanOnce">
         <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
-        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <target state="translated">« TestApplication.RunAsync » a déjà été appelé sur cette instance et ne peut pas être invoqué plus d’une fois.</target>
         <note>{Locked="TestApplication.RunAsync"}</note>
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
@@ -3239,7 +3239,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
-        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <target state="translated">... sortie tronquée, {0} lignes omises ...</target>
         <note>{0} is the number of output lines that were omitted from the summary.</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3433,7 +3433,7 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
-        <target state="new">A package ID was not specified for tool installation.</target>
+        <target state="translated">Aucun ID de package n’a été spécifié pour l’installation de l’outil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3725,7 +3725,7 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       </trans-unit>
       <trans-unit id="UnknownSessionEventType">
         <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
-        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
+        <target state="translated">Microsoft.Testing.Platform a reçu un type d’événement de session inconnu « {0} ».</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -4142,7 +4142,7 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
         <source>Search for available workloads or workload versions.</source>
-        <target state="new">Search for available workloads or workload versions.</target>
+        <target state="translated">Recherchez des charges de travail disponibles ou des versions de charge de travail.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
@@ -4157,12 +4157,12 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
       </trans-unit>
       <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
         <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</target>
+        <target state="translated">« {0} » n’est pas une version valide de l’ensemble de charges de travail. La version de l’ensemble de charges de travail doit avoir « 0 » comme composant mineur (par exemple, « 10.0.105 ou « 10.0.103.1 »). Voulez-vous dire « {1} » ?{2}</target>
         <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionSpecifiedInGlobalJson">
         <source> (Specified in '{0}')</source>
-        <target state="new"> (Specified in '{0}')</target>
+        <target state="translated"> (Spécifié dans « {0} »)</target>
         <note>{0} is the path to the global.json file.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
