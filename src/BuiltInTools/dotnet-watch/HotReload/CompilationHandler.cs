@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Watch
 
             // It is important to first create the named pipe connection (delta applier is the server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.
-            deltaApplier.CreateConnection(namedPipeName, processCommunicationCancellationSource.Token);
+            deltaApplier.CreateConnection(namedPipeName, projectOptions.LaunchEnvironmentVariables, processCommunicationCancellationSource.Token);
 
             processSpec.OnExit += (_, _) =>
             {

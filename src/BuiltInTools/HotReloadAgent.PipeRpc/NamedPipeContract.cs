@@ -22,9 +22,15 @@ internal interface IUpdateRequest : IRequest
 
 internal enum RequestType
 {
-    ManagedCodeUpdate = 1,
-    StaticAssetUpdate = 2,
-    InitialUpdatesCompleted = 3,
+    SetEnvironmentVariables = 1,
+    ManagedCodeUpdate = 2,
+    StaticAssetUpdate = 3,
+    InitialUpdatesCompleted = 4,
+}
+
+internal enum ResponseType : byte
+{
+    EnvironmentVariablesSet = 2,
 }
 
 internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest

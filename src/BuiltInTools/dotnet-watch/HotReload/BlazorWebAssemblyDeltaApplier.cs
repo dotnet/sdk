@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watch
             // Do nothing.
         }
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void CreateConnection(string namedPipeName, IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
         {
         }
 
