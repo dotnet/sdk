@@ -375,8 +375,8 @@ Ayrıntılar: {1}.</target>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}</source>
-        <target state="new">Failed to create template.
-Details: {0}</target>
+        <target state="translated">Şablon oluşturulamadı.
+Ayrıntılar: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -421,8 +421,8 @@ Ayrıntılar: {1}</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
-        <target state="new">Failed to store template cache, details: {0}
-Template cache will be recreated on the next run.</target>
+        <target state="translated">Şablon önbelleği depolanamadı, ayrıntılar: {0}
+Şablon önbelleği sonraki çalıştırmada yeniden oluşturulacak.</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict">
