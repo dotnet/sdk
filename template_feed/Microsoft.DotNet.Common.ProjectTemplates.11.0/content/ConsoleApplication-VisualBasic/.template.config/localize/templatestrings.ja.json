@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "コンソール アプリ",
-  "description": "A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS",
+  "description": "Windows、Linux、macOS 上の .NET で実行できる空のコマンドライン アプリケーションを作成するためのプロジェクト",
   "symbols/TargetFrameworkOverride/description": "ターゲット フレームワークをオーバーライドします",
   "symbols/TargetFrameworkOverride/displayName": "ターゲット フレームワークのオーバーライド",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",

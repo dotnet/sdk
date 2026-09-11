@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "控制台应用",
-  "description": "A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS",
+  "description": "用于创建空命令行应用程序的项目，该程序可在 Windows、Linux 和 macOS 上的 .NET 上运行",
   "symbols/TargetFrameworkOverride/description": "替代目标框架",
   "symbols/TargetFrameworkOverride/displayName": "目标框架替代",
   "symbols/Framework/description": "项目的目标框架。",

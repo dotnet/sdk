@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplikacja konsoli",
-  "description": "A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS",
+  "description": "Projekt służący do tworzenia pustej aplikacji wiersza polecenia, która może działać na platformie .NET w systemach Windows, Linux i macOS",
   "symbols/TargetFrameworkOverride/description": "Zastępuje platformę docelową",
   "symbols/TargetFrameworkOverride/displayName": "Zastąpienie struktury docelowej",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
