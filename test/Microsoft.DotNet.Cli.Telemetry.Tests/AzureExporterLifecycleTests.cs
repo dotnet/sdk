@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -30,10 +29,7 @@ public class AzureExporterLifecycleTests
             using var activity = scope.Emit($"session-{index}");
         }
 
-        var elapsed = Stopwatch.StartNew();
         provider.Shutdown().Should().BeTrue();
-        elapsed.Stop();
-        TestContext.WriteLine($"Persisting {activityCount} queued activities at shutdown took {elapsed.Elapsed.TotalMilliseconds:F2} ms.");
 
         handler.Payloads.Should().BeEmpty();
         string[] payloads = scope.StoredFiles().Select(File.ReadAllText).ToArray();
@@ -204,11 +200,8 @@ public class AzureExporterLifecycleTests
         };
         settings.EnableEagerDrain();
         string connection = $"InstrumentationKey={scope.InstrumentationKey};IngestionEndpoint=https://telemetry.invalid/;ApplicationId={Guid.NewGuid()}";
-        var elapsed = Stopwatch.StartNew();
         using var nextProvider = scope.CreateProvider(handler, connection);
         await uploaded.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
-        elapsed.Stop();
-        TestContext.WriteLine($"First persisted-payload POST arrived {elapsed.Elapsed.TotalMilliseconds:F2} ms after starting provider creation.");
 
         SpinWait.SpinUntil(() => scope.StoredFiles().Length == 0, TimeSpan.FromSeconds(5)).Should().BeTrue();
         handler.Payloads.Should().Contain(payload => payload.Contains("previous-invocation", StringComparison.Ordinal));
