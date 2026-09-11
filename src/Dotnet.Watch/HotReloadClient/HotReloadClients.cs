@@ -110,24 +110,19 @@ internal sealed class HotReloadClients(
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async ValueTask<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+    public async ValueTask<ImmutableArray<HotReloadAgentInfo>> GetConnectedAgentsInfoAsync(CancellationToken cancellationToken)
     {
         if (!IsManagedAgentSupported)
         {
-            // empty capabilities will cause rude edit ENC0097: NotSupportedByRuntime.
             return [];
         }
 
         if (clients is [var singleClient])
         {
-            return await singleClient.GetUpdateCapabilitiesAsync(cancellationToken);
+            return [await singleClient.GetConnectedAgentInfoAsync(cancellationToken)];
         }
 
-        var results = await Task.WhenAll(clients.Select(c => c.GetUpdateCapabilitiesAsync(cancellationToken)));
-
-        // Allow updates that are supported by at least one process.
-        // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-        return [.. results.SelectMany(r => r).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
+        return [.. await Task.WhenAll(clients.Select(c => c.GetConnectedAgentInfoAsync(cancellationToken)))];
     }
 
     /// <summary>
@@ -225,4 +220,13 @@ internal sealed class HotReloadClients(
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public ValueTask ReportCompilationErrorsInApplicationAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         => browserRefreshServer?.ReportCompilationErrorsInBrowserAsync(compilationErrors, cancellationToken) ?? ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Returns union of capabilities reported by each agent.
+    /// When applying changes the updates applied to a specific process will be filtered based on their required capabilities.
+    /// </summary>
+    public static ImmutableArray<string> UnionCapabilities(ImmutableArray<HotReloadAgentInfo> agentInfos)
+        => agentInfos is [var singleInfo]
+            ? singleInfo.ManagedCodeUpdateCapabilities
+            : [.. agentInfos.SelectMany(r => r.ManagedCodeUpdateCapabilities).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
 }

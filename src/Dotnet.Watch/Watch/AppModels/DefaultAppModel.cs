@@ -15,7 +15,13 @@ internal sealed class DefaultAppModel(ProjectGraphNode project) : HotReloadAppMo
     public override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
         => new(new HotReloadClients(
             clients: IsManagedAgentSupported(project, clientLogger)
-                ? [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), handlesStaticAssetUpdates: true, new NamedPipeClientTransport(clientLogger))]
+                ? [new DefaultHotReloadClient(
+                    clientLogger,
+                    agentLogger,
+                    GetStartupHookPath(project),
+                    new NamedPipeClientTransport(clientLogger),
+                    handlesStaticAssetUpdates: true,
+                    hasRemoteAgent: false)]
                 : [],
             browserRefreshServer: null,
             useRefreshServerToApplyStaticAssets: false));
