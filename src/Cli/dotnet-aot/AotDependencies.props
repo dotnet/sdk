@@ -40,6 +40,15 @@
     <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
                                     Value="true"
                                     Trim="true" />
+    <RuntimeHostConfigurationOption Include="Newtonsoft.Json.Linq.JToken.SerializationIsSupported"
+                                    Value="false"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Newtonsoft.Json.Linq.JToken.ComponentModelIsSupported"
+                                    Value="false"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Newtonsoft.Json.Linq.JToken.DynamicIsSupported"
+                                    Value="false"
+                                    Trim="true" />
   </ItemGroup>
 
   <!-- The package's current-TFM _._ prevents NuGet from importing its minimum-TFM buildTransitive target.
