@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Template Package",
-  "description": "A project for a template package containing .NET templates.",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md."
+  "name": "範本套件",
+  "description": "包含 .NET 範本之範本套件的專案。",
+  "postActions/instructions/description": "需要手動動作",
+  "postActions/instructions/manualInstructions/default/text": "在編輯器中開啟 *.csproj，並完成套件中繼資料設定。將範本複製到 'content' 資料夾。填寫 README.md。"
 }

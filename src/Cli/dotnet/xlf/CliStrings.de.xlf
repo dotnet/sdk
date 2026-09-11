@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">Der verwaltete Fallback konnte nicht gefunden werden. Es wurden „{0}“ und „{1}“ erwartet.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -725,7 +725,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkDirectoryCouldNotBeDetermined">
         <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="new">warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</target>
+        <target state="translated">Warnung: Das SDK-Verzeichnis konnte nicht ermittelt werden – es wurde kein sdk_dir angegeben und dotnet-aot konnte sein eigenes Modul nicht finden. Die SDK-bezogene Auflösung ist möglicherweise falsch.</target>
         <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">Der Projektmappenordner „{0}“ enthält bereits ein Projekt mit dem Dateinamen „{1}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">

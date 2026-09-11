@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">Le chemin d’accès résolu « {0} » échappe au répertoire cible « {1} ».</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -725,12 +725,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkDirectoryCouldNotBeDetermined">
         <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="new">warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</target>
+        <target state="translated">avertissement : nous n’avons pas pu déterminer le répertoire du Kit de développement logiciel (SDK) – aucun sdk_dir n’a été fourni et dotnet-aot n’a pas pu localiser son propre module, la résolution relative au Kit de développement logiciel (SDK) peut être incorrecte.</target>
         <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">Le répertoire racine du Kit de développement logiciel (SDK) « {0} », fourni via le paramètre « {1} », n’existe pas.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">

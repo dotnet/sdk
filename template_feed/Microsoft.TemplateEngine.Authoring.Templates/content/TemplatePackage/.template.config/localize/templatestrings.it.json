@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Template Package",
-  "description": "A project for a template package containing .NET templates.",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md."
+  "name": "Pacchetto modello",
+  "description": "Progetto per un pacchetto di modelli contenente i modelli .NET.",
+  "postActions/instructions/description": "Azioni manuali necessarie",
+  "postActions/instructions/manualInstructions/default/text": "Aprire *.csproj nell'editor e completare la configurazione dei metadati del pacchetto. Copiare i modelli nella cartella 'content'. Compilare README.md."
 }
