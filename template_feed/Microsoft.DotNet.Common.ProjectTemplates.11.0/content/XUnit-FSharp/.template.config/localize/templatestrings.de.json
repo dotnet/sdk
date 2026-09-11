@@ -10,7 +10,7 @@
   "symbols/XUnitVersion/description": "Die Version von xUnit.net, die verwendet werden soll.",
   "symbols/XUnitVersion/displayName": "xUnit.net-Version",
   "symbols/XUnitVersion/choices/v2/description": "Verwenden Sie xUnit.net v2 (veraltet, aus Gründen der Abwärtskompatibilität beibehalten).",
-  "symbols/XUnitVersion/choices/v3/description": "Use xUnit.net v3 with Microsoft.Testing.Platform enabled by default. See https://xunit.net/docs/getting-started/v3/cmdline for more information.",
+  "symbols/XUnitVersion/choices/v3/description": "Verwenden Sie für xUnit.net v3 die standardmäßig aktivierte Microsoft.Testing.Platform. Weitere Informationen finden Sie unter https://xunit.net/docs/getting-started/v3/cmdline.",
   "symbols/TestRunner/description": "Wählen Sie den Runner/die Plattform aus.",
   "symbols/TestRunner/displayName": "Test Runner",
   "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Verwenden Sie Microsoft.Testing.Platform. Weitere Informationen finden Sie unter https://aka.ms/mtp-overview.",
