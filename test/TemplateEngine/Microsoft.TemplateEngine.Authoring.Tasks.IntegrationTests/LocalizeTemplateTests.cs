@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.HasCount(14, Directory.GetFiles(locFolder));
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
 
-            Directory.Delete(tmpDir, true);
+            DeleteDirectoryWithRetry(tmpDir);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(File.Exists(Path.Combine(locFolder, "templatestrings.fr.json")));
 
-            Directory.Delete(tmpDir, true);
+            DeleteDirectoryWithRetry(tmpDir);
         }
 
         [TestMethod]
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(Directory.Exists(noLocFolder));
 
-            Directory.Delete(tmpDir, true);
+            DeleteDirectoryWithRetry(tmpDir);
         }
 
         [TestMethod]
@@ -134,7 +134,23 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.IsFalse(Directory.Exists(locFolder));
-            Directory.Delete(tmpDir, true);
+            DeleteDirectoryWithRetry(tmpDir);
+        }
+
+        private static void DeleteDirectoryWithRetry(string path, int maxRetries = 10)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch (IOException) when (i < maxRetries - 1)
+                {
+                    Thread.Sleep(100 * (i + 1));
+                }
+            }
         }
     }
 }
