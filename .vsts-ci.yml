@@ -81,6 +81,20 @@ extends:
         os: windows
 
     stages:
+    ############### ONELOCBUILD STAGE ###############
+    - ${{ if and(or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI')), eq(variables['Build.SourceBranch'], 'refs/heads/release/11.0.1xx')) }}:
+      - stage: onelocbuild
+        displayName: OneLocBuild
+        dependsOn: []
+        jobs:
+        - template: /eng/common/templates-official/job/onelocbuild.yml@self
+          parameters:
+            CreatePr: true
+            LclSource: lclFilesfromPackage
+            LclPackageId: LCL-JUNO-PROD-DOTNETSDK
+            MirrorBranch: release/11.0.1xx
+            MirrorRepo: sdk
+
     ############### BUILD STAGE ###############
     # Run build jobs for non-check-in runs.
     - ${{ if and(ne(variables['Build.Reason'], 'IndividualCI'), ne(variables['Build.Reason'], 'BatchedCI')) }}:

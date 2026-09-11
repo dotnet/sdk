@@ -25,6 +25,12 @@ internal sealed class WorkloadSearchVersionsCommandDefinition : WorkloadCommandD
 
     public readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
+    public readonly Option<string> ConfigOption = CreateConfigOption();
+
+    public readonly Option<string[]> SourceOption = CreateSourceOption();
+
+    public override NuGetRestoreOptions RestoreOptions { get; } = new();
+
     public WorkloadSearchVersionsCommandDefinition()
         : base("version", CommandDefinitionStrings.PrintSetVersionsDescription)
     {
@@ -32,6 +38,9 @@ internal sealed class WorkloadSearchVersionsCommandDefinition : WorkloadCommandD
         Options.Add(FormatOption);
         Options.Add(TakeOption);
         Options.Add(IncludePreviewsOption);
+        Options.Add(ConfigOption);
+        Options.Add(SourceOption);
+        RestoreOptions.AddTo(Options);
 
         TakeOption.Validators.Add(optionResult =>
         {

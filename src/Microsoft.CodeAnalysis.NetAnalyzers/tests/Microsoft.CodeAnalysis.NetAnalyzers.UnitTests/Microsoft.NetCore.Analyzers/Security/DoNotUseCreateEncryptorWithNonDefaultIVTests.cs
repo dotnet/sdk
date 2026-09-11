@@ -25,18 +25,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        aesCng.IV = rgbIV;
-        aesCng.CreateEncryptor();
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.IV = rgbIV;
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -56,19 +58,21 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        byte[] rgbIV = new byte[] { 1, 2, 3};
-        var aesCng  = new AesCng();
-        aesCng.IV = rgbIV;
-        aesCng.CreateEncryptor();
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod()
+                                {
+                                    byte[] rgbIV = new byte[] { 1, 2, 3};
+                                    var aesCng  = new AesCng();
+                                    aesCng.IV = rgbIV;
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
 
                     },
                     ExpectedDiagnostics =
@@ -89,25 +93,27 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        Random r = new Random();
+                            using System;
+                            using System.Security.Cryptography;
 
-        if (r.Next(6) == 4)
-        {
-            aesCng.IV = rgbIV;
-        }
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    Random r = new Random();
 
-        aesCng.CreateEncryptor();
-    }
-}",
+                                    if (r.Next(6) == 4)
+                                    {
+                                        aesCng.IV = rgbIV;
+                                    }
+
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
 
                     },
                     ExpectedDiagnostics =
@@ -128,17 +134,19 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbKey, byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        aesCng.CreateEncryptor(rgbKey, rgbIV);
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbKey, byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.CreateEncryptor(rgbKey, rgbIV);
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -157,17 +165,18 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
+                            using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var aesCng  = new AesCng();
-        aesCng.CreateEncryptor();
-    }
-}",
+                            class TestClass
+                            {
+                                public void TestMethod()
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);

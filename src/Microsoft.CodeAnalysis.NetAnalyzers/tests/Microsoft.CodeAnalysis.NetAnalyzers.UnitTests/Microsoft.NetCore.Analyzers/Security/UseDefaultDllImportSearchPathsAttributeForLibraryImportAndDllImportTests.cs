@@ -408,11 +408,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $@"root = true
+            var config = ("/.editorconfig", $"""
+                root = true
 
-[*]
-{editorConfigText}
-");
+                [*]
+                {editorConfigText}
+
+                """);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config,
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"));
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config,
@@ -442,11 +444,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $@"root = true
+            var config = ("/.editorconfig", $"""
+                root = true
 
-[*]
-{editorConfigText}
-");
+                [*]
+                {editorConfigText}
+
+                """);
             await RunAnalyzerWithConfigAsync(source + MessageBoxImplementation_DllImport, "", config, GetCSharpResultAt(9, 31,
                     UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "System32"));
             await RunAnalyzerWithConfigAsync(source + MessageBoxImplementation_NoDllImport, "", config, GetCSharpResultAt(9, 31,
@@ -476,11 +480,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $@"root = true
+            var config = ("/.editorconfig", $"""
+                root = true
 
-[*]
-{editorConfigText}
-");
+                [*]
+                {editorConfigText}
+
+                """);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config,
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UserDirectories"));
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config,
@@ -492,7 +498,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_LibraryImportAndDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -521,7 +526,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             string editorConfigText)
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -538,11 +542,12 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $@"root = true
+            var config = ("/.editorconfig", $"""
+                root = true
 
-[*]
-{editorConfigText}
-");
+                [*]
+                {editorConfigText}
+                """);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config);
         }
@@ -553,7 +558,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             string editorConfigText)
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -570,11 +574,12 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $@"root = true
+            var config = ("/.editorconfig", $"""
+                root = true
 
-[*]
-{editorConfigText}
-");
+                [*]
+                {editorConfigText}
+                """);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config);
         }
@@ -583,7 +588,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_NoAttribute_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -607,7 +611,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_LibraryImportAndAssemblyDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -635,7 +638,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -659,7 +661,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_AssemblyDefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -691,7 +692,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     [LibraryImport("user32.dll")]
                     public static partial int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-                } 
+                }
                 """ + LibraryImportAttribute;
 
             await RunAnalyzerAsync(source, MessageBoxImplementation_DllImport, GetCSharpResultAt(8, 31,
@@ -705,7 +706,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_LibraryImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -731,7 +731,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_LibraryImportAttributeWithAbsolutePath_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -754,7 +753,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnosticAsync()
         {
             var source = """
-
                 using System;
                 using System.Runtime.InteropServices;
 
