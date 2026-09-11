@@ -20,16 +20,17 @@ namespace Microsoft.DotNet.Cli.Commands.Pack;
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
-    string? msbuildPath = null
-    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath)
+    string? msbuildPath = null,
+    CommandServices? services = null
+    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath, services: services)
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
-        return FromParseResult(parseResult, msbuildPath);
+        return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null, CommandServices? services = null)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -42,7 +43,8 @@ public class PackCommand(
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs)
+                msbuildArgs: msbuildArgs,
+                services: services)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -51,7 +53,8 @@ public class PackCommand(
             (msbuildArgs, msbuildPath) => new PackCommand(
                 msbuildArgs,
                 noRestore,
-                msbuildPath),
+                msbuildPath,
+                services),
             optionsToUseWhenParsingMSBuildFlags:
             [
                 CommonOptions.CreatePropertyOption(),

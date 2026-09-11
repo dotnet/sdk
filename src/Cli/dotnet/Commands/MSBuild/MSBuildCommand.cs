@@ -10,7 +10,8 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public class MSBuildCommand(
     IEnumerable<string> msbuildArgs,
-    string? msbuildPath = null
+    string? msbuildPath = null,
+    CommandServices? services = null
 ) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
         [.. msbuildArgs],
         CommonOptions.CreatePropertyOption(),
@@ -21,15 +22,15 @@ public class MSBuildCommand(
         // This is different from other commands that default to hiding the logo - but this command is meant to mimic
         // the behavior of calling MSBuild directly, which shows the logo by default.
         CommonOptions.CreateNoLogoOption(false)
-    ), msbuildPath)
+    ), msbuildPath, services)
 {
-    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
+    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
     {
         var result = Parser.Parse(["dotnet", "msbuild", .. args]);
-        return FromParseResult(result, msbuildPath);
+        return FromParseResult(result, msbuildPath, services);
     }
 
-    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null, CommandServices? services = null)
     {
         var definition = (MSBuildCommandDefinition)parseResult.CommandResult.Command;
 
@@ -39,7 +40,8 @@ public class MSBuildCommand(
                 ..parseResult.GetValue(definition.Arguments) ?? [],
                 ..parseResult.OptionValuesToBeForwarded(definition)
             ],
-            msbuildPath: msbuildPath);
+            msbuildPath: msbuildPath,
+            services: services);
     }
 
     public static int Run(ParseResult parseResult)

@@ -135,8 +135,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Setup(detector => detector.IsLLMEnvironment())
                 .Returns(isLLMEnvironment);
 
-            using var _ = CommandBase.UseLLMEnvironmentDetectorForTests(llmEnvironmentDetector.Object);
-            var command = (RestoringCommand)BuildCommand.FromArgs([]);
+            var services = new CommandServices(llmEnvironmentDetector.Object);
+            var command = (RestoringCommand)BuildCommand.FromArgs([], services: services);
 
             if (isLLMEnvironment)
             {

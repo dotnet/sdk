@@ -77,6 +77,21 @@ rest are supporting libraries:
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
 
+## Per-command services
+
+[`CommandServices`](dotnet/CommandServices.cs) holds immutable service dependencies.
+[`CommandBase`](dotnet/CommandBase.cs) retains them per instance, resolving production
+defaults when none are supplied. The build-family factories accept an optional
+`services` argument; pass the same instance to subordinate commands, as
+[`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs) does for separate restore.
+
+For in-process LLM tests, inject a detector through these services rather than changing
+the process environment or adding ambient overrides. Keep command-path tests entering
+through the real factory; see
+[`GivenCommandServices`](../../test/dotnet.Tests/CommandTests/MSBuild/GivenCommandServices.cs).
+Test the detector's environment-variable mapping separately with an `IEnvironmentProvider`.
+For subprocess tests, set environment variables on the child process instead.
+
 ## Verify (approval) snapshot tests
 
 Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):

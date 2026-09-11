@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public static class RestoreCommand
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
     {
         var result = Parser.Parse(["dotnet", "restore", .. args]);
-        return FromParseResult(result, msbuildPath);
+        return FromParseResult(result, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null, CommandServices? services = null)
     {
         var definition = (RestoreCommandDefinition)result.CommandResult.Command;
 
@@ -27,20 +27,21 @@ public static class RestoreCommand
         return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
-            static (msbuildArgs, appFilePath) =>
+            (msbuildArgs, appFilePath) =>
             {
                 return new VirtualProjectBuildingCommand(
                     entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                    msbuildArgs: msbuildArgs
+                    msbuildArgs: msbuildArgs,
+                    services: services
                 )
                 {
                     NoBuild = true,
                     NoCache = true,
                 };
             },
-            static (msbuildArgs, msbuildPath) =>
+            (msbuildArgs, msbuildPath) =>
             {
-                return CreateForwarding(msbuildArgs, msbuildPath);
+                return CreateForwarding(msbuildArgs, msbuildPath, services);
             },
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -55,9 +56,9 @@ public static class RestoreCommand
         );
     }
 
-    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null, CommandServices? services = null)
     {
-        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
+        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, services);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
         return forwardingApp;
     }
