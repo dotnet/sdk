@@ -805,9 +805,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
-         PackageSourceLocation packageSourceLocation = null)
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);

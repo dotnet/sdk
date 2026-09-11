@@ -385,6 +385,74 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
+        [DataRow("exec", false)]
+        [DataRow("exec", true)]
+        [DataRow("dnx", false)]
+        [DataRow("dnx", true)]
+        public void ToolExecUsesCachedToolWhenSourceIsUnavailable(string command, bool useExactVersion)
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings();
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            CreateToolExecCommand(command, toolSettings.ToolPackageId, toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+
+            string unavailableSource = Path.Combine(testDirectory.Path, "unavailable-source");
+            string packageId = useExactVersion
+                ? $"{toolSettings.ToolPackageId}@{toolSettings.ToolPackageVersion}"
+                : toolSettings.ToolPackageId;
+            CreateToolExecCommand(
+                    command,
+                    packageId,
+                    unavailableSource)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+        }
+
+        [TestMethod]
+        [DataRow("option")]
+        [DataRow("environment")]
+        public void ToolExecCacheBypassRequiresAnAvailableSource(string bypass)
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings();
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            CreateToolExecCommand("exec", toolSettings.ToolPackageId, toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass();
+
+            string unavailableSource = Path.Combine(testDirectory.Path, "unavailable-source");
+            TestCommand command = CreateToolExecCommand(
+                    "exec",
+                    toolSettings.ToolPackageId,
+                    unavailableSource,
+                    bypass == "option" ? ["--no-cache"] : []);
+            if (bypass == "environment")
+            {
+                command = command.WithEnvironmentVariable("NO_CACHE", "1");
+            }
+
+            command
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Fail();
+        }
+
+        [TestMethod]
         public void StripsPackageTypesFromInnerToolPackages()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -700,6 +768,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             zipArchive.Entries.Should().NotContain(
                 e => e.FullName.EndsWith(dll, StringComparison.OrdinalIgnoreCase),
                 $"The package {Path.GetFileName(packagePath)} should not contain a dependency on {dll}.");
+        }
+
+        private TestCommand CreateToolExecCommand(
+            string command,
+            string packageId,
+            string source,
+            string[]? additionalArguments = null)
+        {
+            string[] args = [command, packageId, "--verbosity", "diagnostic", "--yes", "--source", source, .. additionalArguments ?? []];
+            return command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
         }
     }
 

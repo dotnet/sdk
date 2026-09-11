@@ -139,7 +139,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync().GetAwaiter().GetResult();
+
+    private async Task<int> ExecuteAsync()
     {
         if (_updateAll)
         {
@@ -151,7 +153,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
             foreach (var toolId in toolIds)
             {
-                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null);
+                await ExecuteInstallCommandAsync(new PackageId(toolId.Id.ToString()), versionRange: null);
             }
             return 0;
         }
@@ -164,10 +166,10 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
+        return await ExecuteInstallCommandAsync(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private async Task<int> ExecuteInstallCommandAsync(PackageId packageId, VersionRange? versionRange)
     {
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
@@ -196,7 +198,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
         if (oldPackage != null)
         {
-            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+            NuGetVersion nugetVersion = await GetBestMatchNugetVersionAsync(packageId, versionRange, toolPackageDownloader);
             _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
             _activity?.SetTag("tool.package.id", packageId);
             _activity?.SetTag("tool.package.version", nugetVersion);
@@ -268,15 +270,16 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return 0;
     }
 
-    private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
+    private async Task<NuGetVersion> GetBestMatchNugetVersionAsync(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
     {
-        return toolPackageDownloader.GetNuGetVersion(
+        var (version, _) = await toolPackageDownloader.GetNuGetVersionAsync(
             packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
             packageId: packageId,
             versionRange: versionRange,
             verbosity: _verbosity,
-            restoreActionConfig: restoreActionConfig
-        ).version;
+            restoreActionConfig: restoreActionConfig,
+            cancellationToken: CancellationToken.None);
+        return version;
     }
 
     private static bool ToolVersionAlreadyInstalled(IToolPackage? oldPackageNullable, NuGetVersion nuGetVersion)

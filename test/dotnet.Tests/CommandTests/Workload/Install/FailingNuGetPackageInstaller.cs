@@ -44,7 +44,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
+            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null,
+            CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,
