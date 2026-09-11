@@ -159,17 +159,17 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsDescription">
         <source>Run only tests linked in the test map to sources changed in Git.</source>
-        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <target state="translated">Nur Tests ausführen, die in der Testzuordnung mit in Git geänderten Quellen verknüpft sind.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">Die Auswahl der betroffenen Tests ist experimentell. Legen Sie zum Aktivieren die Umgebungsvariablen „{0}“ auf „1“ fest.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">Die Optionen „--collect-test-map“ und „--affected-tests“ können nicht zusammen verwendet werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -261,7 +261,7 @@ Für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">Die Option „--collect-test-map“ kann nicht mit „--minimum-expected-tests“ kombiniert werden. Sammlungsbatches melden keine Testergebnisse an den übergeordneten Prozess.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
@@ -271,7 +271,7 @@ Für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
         <source>Run tests and write the source-to-test map used by affected-test selection.</source>
-        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <target state="translated">Tests ausführen und die Quelle-zu-Test-Zuordnung schreiben, die von der Auswahl betroffener Tests verwendet wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -333,7 +333,7 @@ Sofern nicht angegeben, wird die Datei im Standardverzeichnis „TestResults“ 
       </trans-unit>
       <trans-unit id="CmdDurationName">
         <source>DURATION</source>
-        <target state="new">DURATION</target>
+        <target state="translated">DAUER</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
@@ -347,14 +347,14 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Legt den Wert einer Umgebungsvariablen fest. 
+Erstellt die Variable, wenn Sie nicht vorhanden ist, und überschreibt sie andernfalls. 
+Dieses Argument kann mehrmals angegeben werden, um mehrere Variablen bereitzustellen.
 
-Examples:
+Beispiele:
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;separated with;semicolons"
+-e VARIABLE="Wert mit Leerzeichen"
+-e VARIABLE="Wert;getrennt durch;Semikolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -413,7 +413,7 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
+        <target state="translated">Hiermit werden die gefundenen Tests aufgelistet, sie werden nicht ausgeführt. Optional wird folgendes Format akzeptiert: „text“ (Standard) für menschenlesbare Ausgabe oder „json“ für maschinenlesbare Ausgabe.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -456,7 +456,7 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdMaximumFailedTestsDescription">
         <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
-        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <target state="translated">Beendet die Testausführung, wenn die angegebene Anzahl von Fehlern in allen Testanwendungen erreicht ist. Nach „--“ übergeben, um es pro Testanwendung anzuwenden, wenn dies unterstützt wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
@@ -471,7 +471,7 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdNoArtifactPostProcessingDescription">
         <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
-        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <target state="translated">Führen Sie keine kompatiblen Artefakte wie TRX-Berichte oder Codeabdeckungsdateien zusammen, die von verschiedenen Testanwendungen erstellt wurden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -610,14 +610,14 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <source>Specifies how test results are organized within the results directory.
 'flat' (the default) places the results of every test project directly in the results directory.
 'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
-        <target state="new">Specifies how test results are organized within the results directory.
-'flat' (the default) places the results of every test project directly in the results directory.
-'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <target state="translated">Gibt an, wie Testergebnisse im Ergebnisverzeichnis organisiert werden.
+Bei „flat“ (Standard) werden die Ergebnisse jedes Testprojekts direkt im Ergebnisverzeichnis abgelegt.
+Bei „per-module“ erhält jedes Testprojekt ein eigenes Unterverzeichnis „&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;“, sodass Berichte mit demselben Dateinamen sich nicht gegenseitig überschreiben können.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdResultsDirectoryLayoutName">
         <source>LAYOUT</source>
-        <target state="new">LAYOUT</target>
+        <target state="translated">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -714,22 +714,22 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Legt den Wert einer Umgebungsvariablen fest. 
+Erstellt die Variable, wenn Sie nicht vorhanden ist, und überschreibt sie andernfalls. 
+Dadurch wird die Ausführung der Tests in einem isolierten Prozess erzwungen. 
+Dieses Argument kann mehrmals angegeben werden, um mehrere Variablen bereitzustellen.
 
-Examples:
+Beispiele:
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;separated with;semicolons"
+-e VARIABLE="Wert mit Leerzeichen"
+-e VARIABLE="Wert;getrennt durch;Semikolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestInvalidTimeout">
         <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
-        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <target state="translated">Der Timeout muss eine positive Dauer mit einem expliziten Einheiten-Suffix wie ms, s, m, h oder d sein (längere Formen wie „seconds“, „minutes“, „hours“ und „days“ werden ebenfalls akzeptiert).</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
@@ -754,7 +754,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
-        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
+        <target state="translated">Beendet die Testausführung, wenn die angegebene Testausführungszeit in allen Testanwendungen erreicht ist. Nach „--“ übergeben, um dies pro Testanwendung anzuwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -824,7 +824,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescriptionForTest">
         <source>The device identifier to use for running tests.</source>
-        <target state="new">The device identifier to use for running tests.</target>
+        <target state="translated">Der Gerätebezeichner, der zum Ausführen der Tests verwendet werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
@@ -859,7 +859,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescriptionForTest">
         <source>List available devices for running tests.</source>
-        <target state="new">List available devices for running tests.</target>
+        <target state="translated">Listet die verfügbaren Geräte zum Ausführen von Tests auf.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -1364,7 +1364,7 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
       </trans-unit>
       <trans-unit id="Option_Install_Prerelease">
         <source>Allows prerelease template packages to be installed when no version is specified.</source>
-        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <target state="translated">Ermöglicht die Installation von Vorabversionen von Vorlagenpaketen, wenn keine Version angegeben ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">
