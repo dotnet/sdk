@@ -119,14 +119,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedItems.Should().BeSubsetOf(command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild());
 
                 command.GetArgumentTokensToMSBuild()
-                    .WithoutLLMSpecificArguments()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        // MSBuild invocation tests outside this class read these variables without participating in the resource lock.
+        [DoNotParallelize]
         [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {

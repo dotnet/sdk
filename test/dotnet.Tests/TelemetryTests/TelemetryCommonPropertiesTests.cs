@@ -222,7 +222,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
     // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
     // Tests must clear these before each run so that ambient env vars (e.g. when
     // tests execute inside the Copilot CLI desktop app) don't pollute results.
-    public static readonly string[] AllLLMEnvironmentVariables = [
+    internal static readonly string[] AllLLMEnvironmentVariables = [
         "CLAUDE_CODE_IS_COWORK", "CLAUDECODE", "CLAUDE_CODE", "CLAUDE_CODE_ENTRYPOINT",
         "CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT",
         "GEMINI_CLI",
@@ -247,7 +247,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
     ];
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    // Environment-variable readers outside this class cannot participate in the resource lock.
+    [DoNotParallelize]
     [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {

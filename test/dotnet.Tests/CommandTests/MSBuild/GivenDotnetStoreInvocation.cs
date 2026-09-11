@@ -65,10 +65,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             var msbuildPath = "<msbuildpath>";
             StoreCommand.FromArgs(args, msbuildPath)
-                .GetArgumentTokensToMSBuild()
-                .WithoutLLMSpecificArguments()
-                .Should()
-                .BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
+                .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }
 }
+
