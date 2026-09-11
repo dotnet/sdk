@@ -3,6 +3,15 @@
   <!-- Set TemplateFrameworkVersion to a different value than '$(MajorMinorVersion)' during rebranding. -->
   <PropertyGroup>
     <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
+    <_IncrementalLayoutStateDirectory>$(IntermediateOutputPath)incremental-layout\</_IncrementalLayoutStateDirectory>
+    <_TemplatesSdkLayoutStatePrefix>$(_IncrementalLayoutStateDirectory)templates-sdk-$(ProductMonikerRid)</_TemplatesSdkLayoutStatePrefix>
+    <_TemplatesSdkLayoutInputManifest>$(_TemplatesSdkLayoutStatePrefix).inputs</_TemplatesSdkLayoutInputManifest>
+    <_TemplatesSdkLayoutOutputInventoryFile>$(_TemplatesSdkLayoutStatePrefix).outputs</_TemplatesSdkLayoutOutputInventoryFile>
+    <_TemplatesSdkLayoutCompletionStamp>$(_TemplatesSdkLayoutStatePrefix).complete</_TemplatesSdkLayoutCompletionStamp>
+    <_TemplatesMsiLayoutStatePrefix>$(_IncrementalLayoutStateDirectory)templates-msi-$(ProductMonikerRid)</_TemplatesMsiLayoutStatePrefix>
+    <_TemplatesMsiLayoutInputManifest>$(_TemplatesMsiLayoutStatePrefix).inputs</_TemplatesMsiLayoutInputManifest>
+    <_TemplatesMsiLayoutOutputInventoryFile>$(_TemplatesMsiLayoutStatePrefix).outputs</_TemplatesMsiLayoutOutputInventoryFile>
+    <_TemplatesMsiLayoutCompletionStamp>$(_TemplatesMsiLayoutStatePrefix).complete</_TemplatesMsiLayoutCompletionStamp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,30 +69,220 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
-    <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(RedistInstallerLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
-
-    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+  <Target Name="_PrepareLayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
     <PropertyGroup>
       <CurrentTemplateInstallPath>%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
     </PropertyGroup>
 
-    <Copy SourceFiles="@(RepoTemplate)"
-          DestinationFiles="$(RedistInstallerLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+    <ItemGroup>
+      <!-- Build one source-to-destination mapping for every bundled package. Keeping the
+           destination on the source item lets Copy preserve MSBuild's positional mapping. -->
+      <_SdkBundledTemplateLayoutInput Include="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)">
+        <DestinationDirectory>$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)', 'templates', '%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)'))</DestinationDirectory>
+      </_SdkBundledTemplateLayoutInput>
+
+      <_SdkBundledTemplateLayoutInput Update="@(_SdkBundledTemplateLayoutInput)">
+        <DestinationPath>$([MSBuild]::NormalizePath('%(DestinationDirectory)', '%(Filename)%(Extension)'))</DestinationPath>
+      </_SdkBundledTemplateLayoutInput>
+
+      <!-- Repo-built common templates share the current bundled-template install directory.
+           Their package names are normalized to match the names used by template installation. -->
+      <_SdkRepoTemplateLayoutInput Include="@(RepoTemplate)">
+        <DestinationPath>$([MSBuild]::NormalizePath('$(RedistInstallerLayoutPath)', 'templates', '$(CurrentTemplateInstallPath)', '$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())'))</DestinationPath>
+      </_SdkRepoTemplateLayoutInput>
+
+      <!-- The canonical manifest detects additions, removals, renames, and destination
+           remaps that ordinary per-file timestamp comparisons cannot represent. -->
+      <_SdkTemplateLayoutInput Include="@(_SdkBundledTemplateLayoutInput);@(_SdkRepoTemplateLayoutInput)" />
+
+      <_SdkTemplateLayoutInput Update="@(_SdkTemplateLayoutInput)">
+        <NormalizedSourcePath>%(FullPath)</NormalizedSourcePath>
+        <NormalizedDestinationPath>%(DestinationPath)</NormalizedDestinationPath>
+      </_SdkTemplateLayoutInput>
+
+      <_SdkTemplateLayoutInput Update="@(_SdkTemplateLayoutInput)"
+                               Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <NormalizedSourcePath>$([System.String]::Copy('%(NormalizedSourcePath)').ToUpperInvariant())</NormalizedSourcePath>
+        <NormalizedDestinationPath>$([System.String]::Copy('%(NormalizedDestinationPath)').ToUpperInvariant())</NormalizedDestinationPath>
+      </_SdkTemplateLayoutInput>
+
+      <_SdkTemplateLayoutInput Update="@(_SdkTemplateLayoutInput)">
+        <InputManifestLine>%(NormalizedSourcePath)|%(NormalizedDestinationPath)</InputManifestLine>
+      </_SdkTemplateLayoutInput>
+
+      <!-- Ownership is deliberately limited to .nupkg files beneath the SDK templates
+           tree. Other files in that tree are siblings and must never be deleted here. -->
+      <_ExpectedSdkTemplateOutput Include="@(_SdkTemplateLayoutInput->'%(DestinationPath)')" />
+      <_MissingSdkTemplateOutput Include="@(_ExpectedSdkTemplateOutput)"
+                                 Condition="!Exists('%(Identity)')" />
+      <_ExistingSdkTemplateOutput Include="$(RedistInstallerLayoutPath)templates\**\*.nupkg" />
+      <_StaleSdkTemplateOutput Include="@(_ExistingSdkTemplateOutput)"
+                               Exclude="@(_ExpectedSdkTemplateOutput)" />
+    </ItemGroup>
+
+    <!-- Keep mappings and expected outputs as independently repairable state without
+         treating inventory entries as deletion authority; ownership comes from the glob
+         above. WriteOnlyWhenDifferent preserves timestamps for no-op target skipping. -->
+    <WriteLinesToFile File="$(_TemplatesSdkLayoutInputManifest)"
+                      Lines="@(_SdkTemplateLayoutInput->'%(InputManifestLine)')"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(_TemplatesSdkLayoutOutputInventoryFile)"
+                     Lines="@(_SdkTemplateLayoutInput->'%(NormalizedDestinationPath)')"
+                     Overwrite="true"
+                     WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_TemplatesSdkLayoutCompletionStamp)"
+                      Condition="Exists('$(_TemplatesSdkLayoutCompletionStamp)')">
+      <Output TaskParameter="Lines" PropertyName="_TemplatesSdkLayoutCompletionValue" />
+    </ReadLinesFromFile>
+    <!-- A missing owned output, a newly stale owned output, or an invalid completion
+         marker makes the prior layout incomplete and forces the mutating target to run. -->
+    <Delete Files="$(_TemplatesSdkLayoutCompletionStamp)"
+           Condition="'@(_MissingSdkTemplateOutput)' != '' or '@(_StaleSdkTemplateOutput)' != '' or (Exists('$(_TemplatesSdkLayoutCompletionStamp)') and '$(_TemplatesSdkLayoutCompletionValue)' != 'complete')" />
   </Target>
 
-  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win'))">
-    <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(IntermediateOutputPath)templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
+  <Target Name="LayoutTemplatesForSDK"
+          DependsOnTargets="_PrepareLayoutTemplatesForSDK"
+          Inputs="@(_SdkTemplateLayoutInput);$(_TemplatesSdkLayoutInputManifest);$(_TemplatesSdkLayoutOutputInventoryFile)"
+          Outputs="$(_TemplatesSdkLayoutCompletionStamp)">
 
-    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+    <!-- Remove completion before any mutation so interruption cannot leave a successful
+         stamp describing a partially updated layout. -->
+    <Delete Files="$(_TemplatesSdkLayoutCompletionStamp)" />
+
+    <!-- Validate the positional copy mapping and calculate stale files only from the
+         already constrained ownership glob prepared above. -->
+    <PrepareIncrementalLayout
+        SourceFiles="@(_SdkTemplateLayoutInput)"
+        DestinationFiles="@(_ExpectedSdkTemplateOutput)"
+        ExistingOutputs="@(_ExistingSdkTemplateOutput)">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_PreparedSdkTemplateOutput" />
+      <Output TaskParameter="StaleOutputs" ItemName="_PreparedStaleSdkTemplateOutput" />
+    </PrepareIncrementalLayout>
+
+    <!-- Delete stale owned packages before copying current inputs. -->
+    <Delete Files="@(_PreparedStaleSdkTemplateOutput)" />
+    <Copy SourceFiles="@(_SdkTemplateLayoutInput)"
+          DestinationFiles="@(_PreparedSdkTemplateOutput)"
+          SkipUnchangedFiles="true" />
+
+    <!-- Verify every expected package exists, then atomically recreate completion last. -->
+    <CompleteIncrementalLayout
+        ExpectedOutputs="@(_PreparedSdkTemplateOutput)"
+        CompletionStampFile="$(_TemplatesSdkLayoutCompletionStamp)" />
+  </Target>
+
+  <Target Name="_PrepareLayoutTemplatesForMSI"
+          DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates"
+          Condition="$(ProductMonikerRid.StartsWith('win'))">
     <PropertyGroup>
       <CurrentTemplateInstallPath>%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
       <CurrentTemplateFrameworkVersion>%(BundledTemplate.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
-    <Copy SourceFiles="@(RepoTemplate)"
-          DestinationFiles="$(IntermediateOutputPath)templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+
+    <ItemGroup>
+      <!-- Build one source-to-destination mapping for every bundled package in its
+           version-specific MSI staging tree. -->
+      <_MsiBundledTemplateLayoutInput Include="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)">
+        <DestinationDirectory>$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)', 'templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)', 'templates', '%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)'))</DestinationDirectory>
+      </_MsiBundledTemplateLayoutInput>
+      <_MsiBundledTemplateLayoutInput Update="@(_MsiBundledTemplateLayoutInput)">
+        <DestinationPath>$([MSBuild]::NormalizePath('%(DestinationDirectory)', '%(Filename)%(Extension)'))</DestinationPath>
+      </_MsiBundledTemplateLayoutInput>
+
+      <!-- Repo-built common templates join the staging tree for their framework version
+           and share the current bundled-template install directory. -->
+      <_MsiRepoTemplateLayoutInput Include="@(RepoTemplate)">
+        <DestinationPath>$([MSBuild]::NormalizePath('$(IntermediateOutputPath)', 'templates-$(CurrentTemplateFrameworkVersion)', 'templates', '$(CurrentTemplateInstallPath)', '$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())'))</DestinationPath>
+      </_MsiRepoTemplateLayoutInput>
+
+      <!-- Canonical source/destination mappings make item-list and destination changes
+           visible to MSBuild even when no remaining source file has a newer timestamp. -->
+      <_MsiTemplateLayoutInput Include="@(_MsiBundledTemplateLayoutInput);@(_MsiRepoTemplateLayoutInput)" />
+      <_MsiTemplateLayoutInput Update="@(_MsiTemplateLayoutInput)">
+        <NormalizedSourcePath>%(FullPath)</NormalizedSourcePath>
+        <NormalizedDestinationPath>%(DestinationPath)</NormalizedDestinationPath>
+      </_MsiTemplateLayoutInput>
+      <_MsiTemplateLayoutInput Update="@(_MsiTemplateLayoutInput)"
+                               Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <NormalizedSourcePath>$([System.String]::Copy('%(NormalizedSourcePath)').ToUpperInvariant())</NormalizedSourcePath>
+        <NormalizedDestinationPath>$([System.String]::Copy('%(NormalizedDestinationPath)').ToUpperInvariant())</NormalizedDestinationPath>
+      </_MsiTemplateLayoutInput>
+      <_MsiTemplateLayoutInput Update="@(_MsiTemplateLayoutInput)">
+        <InputManifestLine>%(NormalizedSourcePath)|%(NormalizedDestinationPath)</InputManifestLine>
+      </_MsiTemplateLayoutInput>
+      <_ExpectedMsiTemplateOutput Include="@(_MsiTemplateLayoutInput->'%(DestinationPath)')" />
+      <_MissingMsiTemplateOutput Include="@(_ExpectedMsiTemplateOutput)"
+                                 Condition="!Exists('%(Identity)')" />
+
+      <!-- MSI ownership is narrower than the initial glob: only .nupkg files under
+           numeric templates-<major>.<minor>\templates trees belong to this target.
+           Use Windows path casing rules without weakening case sensitivity elsewhere. -->
+      <_ExistingMsiTemplateOutput Include="$(IntermediateOutputPath)templates-*\templates\**\*.nupkg" />
+      <_ExistingMsiTemplateOutput Update="@(_ExistingMsiTemplateOutput)">
+        <RelativePath>$([MSBuild]::MakeRelative('$(IntermediateOutputPath)', '%(FullPath)'))</RelativePath>
+      </_ExistingMsiTemplateOutput>
+      <_ExistingMsiTemplateOutput Remove="@(_ExistingMsiTemplateOutput)"
+                                  Condition="!$([MSBuild]::IsOSPlatform('Windows')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '^templates-[0-9]+\.[0-9]+[\\/]templates[\\/]'))" />
+      <_ExistingMsiTemplateOutput Remove="@(_ExistingMsiTemplateOutput)"
+                                  Condition="$([MSBuild]::IsOSPlatform('Windows')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)^templates-[0-9]+\.[0-9]+[\\/]templates[\\/]'))" />
+      <_StaleMsiTemplateOutput Include="@(_ExistingMsiTemplateOutput)"
+                               Exclude="@(_ExpectedMsiTemplateOutput)" />
+    </ItemGroup>
+
+    <!-- Keep mappings and expected outputs as independently repairable state without
+         treating inventory entries as deletion authority; ownership comes from the glob
+         above. Stable timestamps allow no-op target skipping. -->
+    <WriteLinesToFile File="$(_TemplatesMsiLayoutInputManifest)"
+                      Lines="@(_MsiTemplateLayoutInput->'%(InputManifestLine)')"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(_TemplatesMsiLayoutOutputInventoryFile)"
+                     Lines="@(_MsiTemplateLayoutInput->'%(NormalizedDestinationPath)')"
+                     Overwrite="true"
+                     WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_TemplatesMsiLayoutCompletionStamp)"
+                      Condition="Exists('$(_TemplatesMsiLayoutCompletionStamp)')">
+      <Output TaskParameter="Lines" PropertyName="_TemplatesMsiLayoutCompletionValue" />
+    </ReadLinesFromFile>
+    <!-- Invalidate completion when repair, stale cleanup, or corrupt-state recovery is
+         required so the staging target cannot incorrectly remain up to date. -->
+    <Delete Files="$(_TemplatesMsiLayoutCompletionStamp)"
+           Condition="'@(_MissingMsiTemplateOutput)' != '' or '@(_StaleMsiTemplateOutput)' != '' or (Exists('$(_TemplatesMsiLayoutCompletionStamp)') and '$(_TemplatesMsiLayoutCompletionValue)' != 'complete')" />
+  </Target>
+
+  <Target Name="LayoutTemplatesForMSI"
+          DependsOnTargets="_PrepareLayoutTemplatesForMSI"
+          Condition="$(ProductMonikerRid.StartsWith('win'))"
+          Inputs="@(_MsiTemplateLayoutInput);$(_TemplatesMsiLayoutInputManifest);$(_TemplatesMsiLayoutOutputInventoryFile)"
+          Outputs="$(_TemplatesMsiLayoutCompletionStamp)">
+
+    <!-- Remove completion before changing the staging tree so an interrupted update
+         cannot be mistaken for a layout that WiX may safely harvest. -->
+    <Delete Files="$(_TemplatesMsiLayoutCompletionStamp)" />
+
+    <!-- Validate the copy mapping and derive stale outputs exclusively from the numeric
+         template staging roots constrained during preparation. -->
+    <PrepareIncrementalLayout
+        SourceFiles="@(_MsiTemplateLayoutInput)"
+        DestinationFiles="@(_ExpectedMsiTemplateOutput)"
+        ExistingOutputs="@(_ExistingMsiTemplateOutput)">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_PreparedMsiTemplateOutput" />
+      <Output TaskParameter="StaleOutputs" ItemName="_PreparedStaleMsiTemplateOutput" />
+    </PrepareIncrementalLayout>
+
+    <!-- Remove obsolete owned packages before copying current packages, while preserving
+         unowned siblings and timestamps of unchanged outputs. -->
+    <Delete Files="@(_PreparedStaleMsiTemplateOutput)" />
+    <Copy SourceFiles="@(_MsiTemplateLayoutInput)"
+          DestinationFiles="@(_PreparedMsiTemplateOutput)"
+          SkipUnchangedFiles="true" />
+
+    <!-- Verify the complete staged package set and atomically publish completion last.
+         WiX consumes this stamp to detect layout removals. -->
+    <CompleteIncrementalLayout
+        ExpectedOutputs="@(_PreparedMsiTemplateOutput)"
+        CompletionStampFile="$(_TemplatesMsiLayoutCompletionStamp)" />
   </Target>
 
 </Project>
