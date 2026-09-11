@@ -1861,6 +1861,53 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     [TestMethod, CombinatorialData]
+    public async Task Api_VirtualProjectBuilder_ArtifactsPathCompatibility(
+        bool supportsFileBasedAppArtifactsPath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, "Console.WriteLine();");
+
+        var artifactsPath = Path.Join(testInstance.Path, "artifacts");
+        var virtualProjectBuilder = new VirtualProjectBuilder(
+            BuildService.Instance,
+            programPath,
+            VirtualProjectBuildingCommand.TargetFramework,
+            artifactsPath: artifactsPath);
+
+        using var projectCollection = new ProjectCollection();
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            additionalGlobalProperties: new Dictionary<string, string>
+            {
+                ["_SupportsFileBasedAppArtifactsPath"] = supportsFileBasedAppArtifactsPath.ToString(),
+            });
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        if (!supportsFileBasedAppArtifactsPath)
+        {
+            xml.Should()
+                .Contain("<IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>")
+                .And.Contain($"<ArtifactsPath>{SecurityElement.Escape(artifactsPath)}</ArtifactsPath>")
+                .And.Contain("<PublishDir>artifacts/$(AssemblyName)</PublishDir>")
+                .And.Contain("<PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>")
+                .And.NotContain("<FileBasedAppArtifactsPath>");
+        }
+        else
+        {
+            xml.Should()
+                .Contain($"<FileBasedAppArtifactsPath>{SecurityElement.Escape(artifactsPath)}</FileBasedAppArtifactsPath>")
+                .And.NotContain("<IncludeProjectNameInArtifactsPaths>")
+                .And.NotContain("<ArtifactsPath>")
+                .And.NotContain("<PublishDir>")
+                .And.NotContain("<PackageOutputPath>");
+        }
+    }
+
+    [TestMethod, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
