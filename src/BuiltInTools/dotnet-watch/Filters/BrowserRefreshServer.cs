@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
@@ -51,6 +52,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         public async ValueTask<IEnumerable<string>> StartAsync(CancellationToken cancellationToken)
         {
             var envHostName = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+            var autoReloadWebSocketOrigins = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_ORIGINS");
             var hostName = envHostName ?? "127.0.0.1";
 
             var supportsTLS = await SupportsTLS();
@@ -68,10 +70,21 @@ namespace Microsoft.DotNet.Watcher.Tools
                         builder.UseUrls($"http://{hostName}:0");
                     }
 
+                    var allowedHosts = new List<string>() { "localhost", "127.0.0.1", "[::1]" };
+                    if (!string.IsNullOrEmpty(autoReloadWebSocketOrigins))
+                    {
+                        allowedHosts.AddRange(autoReloadWebSocketOrigins.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                    }
+
+                    if (!string.IsNullOrEmpty(envHostName))
+                    {
+                        allowedHosts.Add(envHostName);
+                    }
+
                     builder.Configure(app =>
                     {
                         app.UseWebSockets();
-                        app.Run(WebSocketRequest);
+                        app.Run(context => WebSocketRequest(context, allowedHosts.ToImmutableArray()));
                     });
                 })
                 .Build();
@@ -102,11 +115,19 @@ namespace Microsoft.DotNet.Watcher.Tools
              };
         }
 
-        private async Task WebSocketRequest(HttpContext context)
+        private async Task WebSocketRequest(HttpContext context, ImmutableArray<string> allowedHosts)
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            // check the domain of the Origin header:
+            if (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+                !allowedHosts.Contains(originUri.Host, StringComparer.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
 
