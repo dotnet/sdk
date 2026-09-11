@@ -66,7 +66,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             var restoreTokens =
                 command.SeparateRestoreCommand! // for this scenario, we expect a separate restore command
-                   .GetArgumentTokensToMSBuild();
+                   .GetArgumentTokensToMSBuild()
+                   .WithoutLLMSpecificArguments();
             Log.WriteLine("restore tokens:");
             Log.WriteLine(string.Join(" ", restoreTokens));
             restoreTokens
@@ -74,7 +75,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                    .BeEquivalentTo([.. ExpectedPrefix, "--target:Restore", "-tlp:verbosity=quiet", .. ExpectedProperties, NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForSeparateRestore]);
 
             var buildTokens =
-                command.GetArgumentTokensToMSBuild();
+                command.GetArgumentTokensToMSBuild()
+                    .WithoutLLMSpecificArguments();
             Log.WriteLine("build tokens:");
             Log.WriteLine(string.Join(" ", buildTokens));
 
@@ -94,6 +96,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                    .BeNull();
 
             command.GetArgumentTokensToMSBuild()
+                   .WithoutLLMSpecificArguments()
                    .Should()
                    .BeEquivalentTo([.. ExpectedPrefix, "--target:Publish", .. ExpectedProperties, "--property:NoBuild=true", NuGetDisabledProperty]);
         }
@@ -110,4 +113,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

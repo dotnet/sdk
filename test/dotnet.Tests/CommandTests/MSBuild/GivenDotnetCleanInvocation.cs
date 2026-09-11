@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var msbuildPath = "<msbuildpath>";
             ((CleanCommand)CleanCommand.FromArgs(new string[] { "<project>" }, msbuildPath))
                 .GetArgumentTokensToMSBuild()
+                .WithoutLLMSpecificArguments()
                 .Should()
                 .BeEquivalentTo([.. ExpectedPrefix, "<project>"]);
         }
@@ -61,10 +62,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 ((CleanCommand)CleanCommand.FromArgs(args, msbuildPath))
                     .GetArgumentTokensToMSBuild()
+                    .WithoutLLMSpecificArguments()
                     .Should()
                     .BeSubsetOf([.. ExpectedPrefix, .. expectedAdditionalArgs]);
             });
         }
     }
 }
-

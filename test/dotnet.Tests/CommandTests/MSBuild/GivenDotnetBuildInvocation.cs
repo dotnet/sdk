@@ -119,6 +119,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedItems.Should().BeSubsetOf(command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild());
 
                 command.GetArgumentTokensToMSBuild()
+                    .WithoutLLMSpecificArguments()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });
@@ -131,11 +132,16 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                var originalValues = llmEnvVarsToSet?
-                    .ToDictionary(pair => pair.Key, pair => Environment.GetEnvironmentVariable(pair.Key));
+                var originalValues = TelemetryCommonPropertiesTests.AllLLMEnvironmentVariables
+                    .ToDictionary(key => key, Environment.GetEnvironmentVariable);
 
                 try
                 {
+                    foreach (var key in TelemetryCommonPropertiesTests.AllLLMEnvironmentVariables)
+                    {
+                        Environment.SetEnvironmentVariable(key, null);
+                    }
+
                     // Set environment variables to simulate LLM environment
                     if (llmEnvVarsToSet is not null)
                     {
@@ -158,12 +164,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
                 finally
                 {
-                    if (originalValues is not null)
+                    foreach (var (key, value) in originalValues)
                     {
-                        foreach (var (key, value) in originalValues)
-                        {
-                            Environment.SetEnvironmentVariable(key, value);
-                        }
+                        Environment.SetEnvironmentVariable(key, value);
                     }
                 }
             });

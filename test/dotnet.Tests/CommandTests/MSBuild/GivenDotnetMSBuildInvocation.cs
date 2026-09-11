@@ -23,9 +23,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 var command = MSBuildCommand.FromArgs(args, msbuildPath);
 
-                command.GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, ..expectedAdditionalArgs]);
+                command.GetArgumentTokensToMSBuild()
+                    .WithoutLLMSpecificArguments()
+                    .Should()
+                    .BeEquivalentTo([..ExpectedPrefix, ..expectedAdditionalArgs]);
             });
         }
     }
 }
-
