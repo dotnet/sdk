@@ -50,14 +50,9 @@ public class TelemetryClient : ITelemetryClient
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
 
-    // A CI process is one-shot: there is no subsequent CLI invocation to drain persisted
-    // telemetry. In that case we register the standard Azure Monitor exporter (see the static
-    // constructor) and call Shutdown on exit so the provider fully drains the export pipeline
-    // (including waiting for inflight HTTP POSTs to complete). Locally we only need a brief
-    // flush because spans are persisted synchronously as they end and delivered by a later
-    // invocation.
     private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
-    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs();
+    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs(
+        Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS));
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -67,19 +62,18 @@ public class TelemetryClient : ITelemetryClient
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     /// <summary>
-    /// Returns the shutdown timeout in milliseconds. In CI this defaults to 20 seconds (bounded
-    /// to avoid hanging builds) but can be overridden via DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS.
-    /// Locally it is irrelevant (we use ForceFlush with a brief timeout instead).
+    /// Returns the shutdown timeout in milliseconds, defaulting to five seconds.
+    /// DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS can override the default with a positive value.
+    /// Locally Azure Monitor persists pending telemetry at shutdown without waiting for its drain.
     /// </summary>
-    private static int GetShutdownTimeoutMs()
+    internal static int GetShutdownTimeoutMs(string? envValue)
     {
-        const int defaultCiTimeoutMs = 20_000;
-        var envValue = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS);
+        const int defaultTimeoutMs = 5_000;
         if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
         {
             return parsed;
         }
-        return defaultCiTimeoutMs;
+        return defaultTimeoutMs;
     }
 
     public static string? CurrentSessionId { get; private set; } = null;
@@ -135,31 +129,19 @@ public class TelemetryClient : ITelemetryClient
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
         if (!s_disableTraceExport && !string.IsNullOrWhiteSpace(s_connectionString))
         {
-            if (s_isCIEnvironment)
+            AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown", s_isCIEnvironment);
+            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0); //  background upload will occur next time - reduce exit latency. This only impacts storage persistThenDrain, so not CI.
+            AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush", !s_isCIEnvironment);
+            s_tracerProviderBuilder.AddAzureMonitorTraceExporter(options =>
             {
-                // CI runs are one-shot, so there is no "next" invocation to drain persisted
-                // telemetry. Use the standard Azure Monitor exporter and call Shutdown (see
-                // FlushProviders) with a bounded timeout so the full export pipeline —
-                // including inflight HTTP POSTs — completes before the process exits.
-                s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
-                {
-                    o.ConnectionString = s_connectionString;
-                    o.EnableLiveMetrics = false;
-                    o.StorageDirectory = s_telemetryStorageDirectory;
-                });
-            }
-            else
-            {
-                // Persist spans to durable storage synchronously as they end (Phase 1), so a
-                // short-lived CLI process captures its telemetry before exiting. The exporter
-                // itself starts a background drain (Phase 2) the first time it runs, which
-                // uploads telemetry persisted by this and previous invocations.
-                s_tracerProviderBuilder.AddPersistentStorageExporter(o =>
-                {
-                    o.ConnectionString = s_connectionString;
-                    o.StorageDirectory = s_telemetryStorageDirectory;
-                });
-            }
+                options.ConnectionString = s_connectionString;
+                options.EnableLiveMetrics = false;
+                options.EnableStandardMetrics = false;
+                options.EnablePerformanceCounters = false;
+                options.StorageDirectory = s_telemetryStorageDirectory;
+                options.Retry.NetworkTimeout = TimeSpan.FromMilliseconds(s_shutdownTimeoutMs);
+            });
+            s_tracerProviderBuilder.SetSampler(new AlwaysOnSampler());
         }
 #endif
 
@@ -265,24 +247,25 @@ public class TelemetryClient : ITelemetryClient
             // and waits for inflight HTTP POSTs to complete, bounded by the configured timeout.
             // This is necessary in CI because there is no subsequent invocation to drain, and
             // for OTLP because the exporter does not use the local persistent-storage pipeline.
+            long started = Stopwatch.GetTimestamp();
             s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
-            s_metricsProvider?.Shutdown(s_shutdownTimeoutMs);
+            int remaining = Math.Max(0, s_shutdownTimeoutMs - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            s_metricsProvider?.Shutdown(remaining);
         }
         else
         {
-            // Locally, persisted-storage exporters write synchronously as spans end. A bounded
-            // shutdown also cancels any background drain so it can release its active lease
-            // before exit.
-            s_tracerProvider?.Shutdown(timeoutMilliseconds: 10);
+            s_tracerProvider?.Shutdown();
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
     }
 
     internal static void ForceFlushProviders()
     {
-        int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : 10;
+        int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : Timeout.Infinite;
+        long started = Stopwatch.GetTimestamp();
         s_tracerProvider?.ForceFlush(timeout);
-        s_metricsProvider?.ForceFlush(timeout);
+        int remaining = timeout == Timeout.Infinite ? 10 : Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        s_metricsProvider?.ForceFlush(remaining);
     }
 
     internal static void RegisterProviderShutdownOnProcessExit()

@@ -14,6 +14,22 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 [TestClass]
 public class TelemetryClientTests : SdkTest
 {
+    [TestMethod]
+    [DataRow(null, 5_000)]
+    [DataRow("", 5_000)]
+    [DataRow("invalid", 5_000)]
+    [DataRow("0", 5_000)]
+    [DataRow("-1", 5_000)]
+    [DataRow("100", 100)]
+    [DataRow("5000", 5_000)]
+    [DataRow("20000", 20_000)]
+    [DataRow("2147483647", int.MaxValue)]
+    [DataRow("2147483648", 5_000)]
+    public void ShutdownTimeoutUsesPositiveOverrideOrFiveSecondDefault(string? value, int expected)
+    {
+        TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
+    }
+
     public static IEnumerable<object[]> CommandsWithExitCode =>
     [
         [new[] { "--help" }, "0"],

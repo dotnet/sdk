@@ -44,9 +44,9 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   telemetry to Azure Monitor (both persistence and upload). Metrics/OTLP export and the local disk log are
   unaffected. This does not disable telemetry collection itself — use `DOTNET_CLI_TELEMETRY_OPTOUT` for that.
 
-- **`DOTNET_CLI_TELEMETRY_STORAGE_PATH`**: Overrides the directory used to persist trace telemetry before it is
-  uploaded (see [Telemetry Delivery](#telemetry-delivery)). Defaults to `TelemetryStorageService` under the .NET
-  user profile folder (e.g. `~/.dotnet/TelemetryStorageService`).
+- **`DOTNET_CLI_TELEMETRY_STORAGE_PATH`**: Overrides the base directory used by Azure Monitor to persist trace
+  telemetry (see [Telemetry Delivery](#telemetry-delivery)). Defaults to `TelemetryStorageService` under the .NET
+  user profile folder (e.g. `~/.dotnet/TelemetryStorageService`). Azure creates its own partitioned subdirectories.
 
 - **`DOTNET_CLI_TELEMETRY_LOG_PATH`**: When set, trace telemetry activities are also written to this path as a
   local JSON log (used for diagnostics and testing). This does not affect Azure Monitor delivery.
@@ -69,35 +69,61 @@ In addition to the default Application Insights exporter, the SDK can also expor
   - `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL`, `OTEL_EXPORTER_OTLP_METRICS_PROTOCOL`
   - `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, `OTEL_EXPORTER_OTLP_METRICS_HEADERS`
   - `OTEL_EXPORTER_OTLP_TIMEOUT`, `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`, `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`
-  
+
   and of course the overall OTel SDK disablement flag OTEL_SDK_DISABLED must not be `true`
 
 When the OTLP exporter is enabled, all standard OpenTelemetry OTLP environment variables (endpoint, protocol, headers, timeout, etc.) are honored by the OpenTelemetry SDK's `OtlpExporterOptions` to configure the export destination.
 
 ### Telemetry Delivery
 
-The .NET CLI is a short-lived process, which makes the standard "buffer in memory, POST on shutdown" delivery
-model used by long-running services unreliable — a command frequently exits before an HTTP request to Azure
-Monitor can complete. To make delivery robust, trace telemetry is delivered using a **persist-then-drain**
-pipeline:
+The CLI uses Azure Monitor OpenTelemetry Exporter 1.9.0 or later for trace serialization, persistent storage,
+and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.cs) registers the exporter through
+`AddAzureMonitorTraceExporter`, which installs Azure's shutdown-aware batch processor.
 
-1. **Persist (in the current process).** As each activity (span) ends, it is mapped to the Application Insights
-   wire format and written synchronously to durable on-disk storage under the telemetry storage directory (see
-   `DOTNET_CLI_TELEMETRY_STORAGE_PATH`). Local disk writes are fast and reliable, so telemetry is captured before
-   the process exits.
-2. **Drain (in the background).** On startup, a background worker leases previously persisted payloads and POSTs
-   them to the Azure Monitor ingestion endpoint. Successfully delivered payloads are deleted; failed uploads are
-   retained and retried on a later invocation.
-3. **CI exception.** In CI environments (detected automatically), the CLI uses the standard Azure Monitor exporter
-   and calls `Shutdown` with a bounded timeout (default 20 seconds, configurable via
-   `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS`) at the end of the process. This ensures the full export pipeline —
-   including inflight HTTP POSTs — completes before exit, since there is no subsequent invocation to drain
-   persisted telemetry. If the timeout expires, remaining data is abandoned.
+1. **Local invocations.** On orderly shutdown, Azure persists queued trace batches before starting a background
+  drain. The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds` to zero, so it does
+  not wait for that drain. Normal exports before shutdown remain network-first; this is not synchronous
+  persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
+  can still delay shutdown. Local shutdown waits for the batch processor to finish rather than applying the
+  old 10-ms timeout to persistence.
+2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
+  start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
+  Accepted payloads are deleted; retryable failures remain for later attempts. Storage partitioning, retention,
+  leases, and response handling belong to Azure. Blobs written directly into the storage root by the previous
+  SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
+  untouched; this migration does not delete old telemetry files.
+3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
+  calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
+  wait budget is five seconds, shared across trace and metric providers. A positive
+  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` can shorten or extend it. That value also configures Azure's
+  network timeout. This selects network-first shutdown, not guaranteed ingestion: retryable failures can still
+  be persisted, and a timeout can leave telemetry undelivered.
+4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
+  same provider to handle later builds. Locally the SDK enables
+  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush`; process exit uses `Shutdown`. CI uses a bounded
+  network-first flush. A force-flush result is not an ingestion acknowledgment.
 
-Because a command usually exits before it can upload its *own* telemetry, that data is delivered by a subsequent
-CLI invocation. This means Azure Monitor delivery is *eventually consistent across invocations* rather than
-guaranteed within a single run. The background drain never blocks or delays command execution, and all upload
-errors are swallowed so telemetry never affects the CLI.
+These Azure settings are process-wide. OTLP-enabled invocations retain bounded provider shutdown, and the trace
+and metric providers share the configured wait budget. This bounds provider waits, not all process-exit work. Azure's
+zero drain-wait setting does not control OTLP delivery. Storage failures and abnormal process termination can
+still cause data loss; telemetry delivery remains best-effort.
+
+The lifecycle behavior is covered by
+[AzureExporterLifecycleTests](../../test/Microsoft.DotNet.Cli.Telemetry.Tests/AzureExporterLifecycleTests.cs)
+using the real exporter, isolated storage, and a controlled HTTP transport. The test-only reflection hooks
+disable background drains when asserting persisted payloads and are restored after each test. The retained
+[CLI subprocess test](../../test/dotnet.Tests/TelemetryTests/PersistentStorageTelemetryE2ETests.cs) checks the
+production managed assembly and normal muxer entry point. Live endpoint acceptance tests are skipped unless
+explicitly enabled. Set `DOTNET_CLI_TELEMETRY_E2E_ENABLED=true` (or `1`) to send synthetic telemetry to the SDK's
+fixed destination, or set `DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` to opt in with another destination.
+`DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
+checking downstream ingestion. HTTP acceptance alone does not verify arrival in a destination table.
+
+1.9.0 or later must be leveraged, as older versions did not work well and we requested fixes. Our requested upstream shutdown fixes are documented in
+[azure-sdk-for-net#61818](https://github.com/Azure/azure-sdk-for-net/pull/61818) and
+[azure-sdk-for-net#62340](https://github.com/Azure/azure-sdk-for-net/pull/62340). They provide lifecycle-scoped
+persistence rather than the public persist-only/manual-drain API proposed in
+[azure-sdk-for-net#60838](https://github.com/Azure/azure-sdk-for-net/issues/60838).
 
 This pipeline only applies to **trace** telemetry sent to Azure Monitor. Metrics, OTLP export, and the local disk
 log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable it.
