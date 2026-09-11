@@ -138,9 +138,13 @@ public static class ParseResultExtensions
         parseResult.IsDotnetBuiltInCommand()
         || parseResult.Tokens.Any(token => token.Type == TokenType.Directive);
 
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || parseResult.RootCommandResult.Children.OfType<CommandResult>().Any();
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
+    {
+        string rootSubCommand = parseResult.RootSubCommandResult();
+        return string.IsNullOrEmpty(rootSubCommand)
+            || parseResult.RootCommandResult.Children.OfType<CommandResult>()
+                .Any(result => result.Command.Name.Equals(rootSubCommand, StringComparison.OrdinalIgnoreCase));
+    }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {

@@ -61,5 +61,16 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             rootCommand.Parse(["command"]).CanBeInvoked().Should().BeTrue();
         }
+
+        [TestMethod]
+        [DataRow("watch run")]
+        [DataRow("Program.cs build")]
+        public void CanBeInvoked_BuiltInLookingArgument_DoesNotMakeExternalCommandInvocable(string input)
+        {
+            ParseResult parseResult = Parser.Parse(input);
+
+            parseResult.IsDotnetBuiltInCommand().Should().BeFalse();
+            parseResult.CanBeInvoked().Should().BeFalse();
+        }
     }
 }

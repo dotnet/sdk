@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -128,11 +130,31 @@ public class GenericCommandHelpParserTests
     }
 
     [TestMethod]
-    public void IsDotnetBuiltInCommand_DistinguishesBuiltInAndExternalCommands()
+    [DataRow("add")]
+    [DataRow("package")]
+    public void TryParseGenericCommandHelp_PreservesPackageIdCompletionSources(string commandName)
     {
-        Assert.IsTrue(Parser.Parse(["build"]).IsDotnetBuiltInCommand());
-        Assert.IsFalse(Parser.Parse(["external-command"]).IsDotnetBuiltInCommand());
+        Assert.IsTrue(Parser.TryParseGenericCommandHelp([commandName, "--help"], out ParseResult? parseResult));
+
+        Command minimalCommand = parseResult.RootCommandResult.Command.Subcommands.Single();
+        Command fullCommand = Parser.RootCommand.Subcommands.Single(command => command.Name == commandName);
+
+        Assert.AreEqual(
+            GetPackageIdCompletionSourceCount(fullCommand),
+            GetPackageIdCompletionSourceCount(minimalCommand));
     }
+
+    [TestMethod]
+    [DataRow("build")]
+    [DataRow("sln")]
+    public void IsDotnetBuiltInCommand_RecognizesBuiltInCommands(string commandName)
+    {
+        Assert.IsTrue(Parser.Parse([commandName]).IsDotnetBuiltInCommand());
+    }
+
+    [TestMethod]
+    public void IsDotnetBuiltInCommand_RejectsExternalCommand()
+        => Assert.IsFalse(Parser.Parse(["external-command"]).IsDotnetBuiltInCommand());
 
     [TestMethod]
     [DataRow("new --help")]
@@ -188,4 +210,11 @@ public class GenericCommandHelpParserTests
 
         return (parseResult.Invoke(configuration), output.ToString(), error.ToString());
     }
+
+    private static int GetPackageIdCompletionSourceCount(Command command) => command switch
+    {
+        AddCommandDefinition add => add.PackageCommand.PackageIdArgument.CompletionSources.Count,
+        PackageCommandDefinition package => package.AddCommand.PackageIdArgument.CompletionSources.Count,
+        _ => throw new ArgumentException($"Unexpected command '{command.Name}'.", nameof(command))
+    };
 }

@@ -144,12 +144,17 @@ public static class Parser
 
         rootCommand.Subcommands.Add(command);
 #if !CLI_AOT
-        if (command is CompletionsCommandDefinition completionsCommand)
+        if (command is AddCommandDefinition addCommand)
+        {
+            AddCommandParser.ConfigureCommand(addCommand);
+        }
+        else if (command is CompletionsCommandDefinition completionsCommand)
         {
             CompletionsCommandParser.ConfigureCommand(completionsCommand);
         }
-        else if (command is PackageCommandDefinition)
+        else if (command is PackageCommandDefinition packageCommand)
         {
+            PackageCommandParser.ConfigureCommand(packageCommand);
             NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true), NuGetVirtualProjectBuilder.Instance);
         }
 #endif
