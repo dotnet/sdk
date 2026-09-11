@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsDescription">
         <source>Run only tests linked in the test map to sources changed in Git.</source>
-        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <target state="translated">Execute apenas os testes vinculados no mapa de testes aos arquivos alterados no Git.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">As opções '--collect-test-map' e '--affected-tests' não podem ser usadas juntas.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -261,7 +261,7 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
         <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <target state="translated">A opção '--collect-test-map' não pode ser combinada com '--minimum-expected-tests'. Os lotes de coleta não informam totais de testes ao processo pai.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
@@ -271,7 +271,7 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
         <source>Run tests and write the source-to-test map used by affected-test selection.</source>
-        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <target state="translated">Execute os testes e grave o mapa de origem para teste usado pela seleção de testes afetados.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -333,7 +333,7 @@ Se não for especificado, o arquivo será gerado dentro do diretório padrão "T
       </trans-unit>
       <trans-unit id="CmdDurationName">
         <source>DURATION</source>
-        <target state="new">DURATION</target>
+        <target state="translated">DURAÇÃO</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
@@ -347,11 +347,11 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Define o valor de uma variável de ambiente. 
+Cria a variável se ela não existir, substitui se existir. 
+Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
 
-Examples:
+Exemplos:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -413,7 +413,7 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
+        <target state="translated">Listar os testes detectados em vez de executar os testes. Opcionalmente, aceita o formato: 'text' (padrão), para saída legível por humanos, ou 'json', para saída legível por máquina.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -471,7 +471,7 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdNoArtifactPostProcessingDescription">
         <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
-        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <target state="translated">Não mescle artefatos compatíveis, como relatórios TRX ou arquivos de cobertura de código, produzidos por diferentes aplicativos de teste.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -617,7 +617,7 @@ O diretório especificado será criado se ele ainda não existir.</target>
       </trans-unit>
       <trans-unit id="CmdResultsDirectoryLayoutName">
         <source>LAYOUT</source>
-        <target state="new">LAYOUT</target>
+        <target state="translated">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -714,12 +714,12 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Define o valor de uma variável de ambiente. 
+Cria a variável se ela não existir, substitui se existir. 
+Isso forçará a execução dos testes em um processo isolado. 
+Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
 
-Examples:
+Exemplos:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -729,7 +729,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestInvalidTimeout">
         <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
-        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <target state="translated">O tempo limite deve ser uma duração positiva com um sufixo de unidade explícito, como ms, s, m, h ou d (formas mais longas, como 'segundos', 'minutos', 'horas' e 'dias', também são aceitas).</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
@@ -859,7 +859,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescriptionForTest">
         <source>List available devices for running tests.</source>
-        <target state="new">List available devices for running tests.</target>
+        <target state="translated">Listar os dispositivos disponíveis para executar os testes.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">

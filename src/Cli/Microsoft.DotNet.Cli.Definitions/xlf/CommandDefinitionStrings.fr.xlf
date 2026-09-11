@@ -159,17 +159,17 @@
       </trans-unit>
       <trans-unit id="CmdAffectedTestsDescription">
         <source>Run only tests linked in the test map to sources changed in Git.</source>
-        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <target state="translated">Exécutez uniquement les tests liés aux sources modifiées dans Git dans le mappage de test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsFeatureDisabled">
         <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
-        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <target state="translated">La sélection de tests affectés est expérimentale. Définissez la valeur de la variable d’environnement « {0} » sur « 1 » pour l’activer.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
         <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
-        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <target state="translated">Vous ne pouvez pas utiliser les options « --collect-test-map » et « --affected-tests » ensemble.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -266,12 +266,12 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       </trans-unit>
       <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
         <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
-        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <target state="translated">Vous ne pouvez pas combiner l’option « --collect-test-map » avec « --max-parallel-test-modules ». Les mappages de test sont collectés un seul module à la fois.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCollectTestMapDescription">
         <source>Run tests and write the source-to-test map used by affected-test selection.</source>
-        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <target state="translated">Exécutez les tests et écrivez le mappage source-test utilisé par la sélection de tests affectés.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -333,7 +333,7 @@ S’il n’est pas spécifié, le fichier est généré dans le répertoire « 
       </trans-unit>
       <trans-unit id="CmdDurationName">
         <source>DURATION</source>
-        <target state="new">DURATION</target>
+        <target state="translated">DURÉE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
@@ -347,11 +347,11 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Définit la valeur d’une variable d’environnement. 
+Permet de créer la variable si elle n’existe pas et de la remplacer si elle existe. 
+Vous pouvez spécifier cet argument plusieurs fois pour fournir plusieurs variables.
 
-Examples:
+Exemples :
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -413,7 +413,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
-        <target state="new">List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</target>
+        <target state="translated">Répertoriez les tests découverts au lieu d’exécuter les tests. Permet d’accepter éventuellement un format : « texte » (par défaut) pour une sortie lisible par un utilisateur ou « json » pour une sortie lisible par un ordinateur.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -456,7 +456,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMaximumFailedTestsDescription">
         <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
-        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <target state="translated">Permet d’arrêter l’exécution des tests lorsque le nombre spécifié d’échecs est atteint pour l’ensemble des applications de test. Ajoutez l’option après « -- » pour l’appliquer à chaque application de test lorsque cela est pris en charge.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
@@ -471,7 +471,7 @@ Cela équivaut à supprimer project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdNoArtifactPostProcessingDescription">
         <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
-        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <target state="translated">Ne fusionnez pas les artefacts compatibles, tels que des rapports TRX ou des fichiers de couverture du code produits par différentes applications de test.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -610,14 +610,14 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
         <source>Specifies how test results are organized within the results directory.
 'flat' (the default) places the results of every test project directly in the results directory.
 'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
-        <target state="new">Specifies how test results are organized within the results directory.
-'flat' (the default) places the results of every test project directly in the results directory.
-'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <target state="translated">Permet de spécifier comment les résultats des tests sont organisés dans le répertoire des résultats.
+« flat » (par défaut) place les résultats de chaque projet de test directement dans le répertoire des résultats.
+« per-module » attribue à chaque projet de test son propre sous-répertoire « &lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt; » afin que les rapports portant le même nom de fichier ne puissent pas se remplacer les uns les autres.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdResultsDirectoryLayoutName">
         <source>LAYOUT</source>
-        <target state="new">LAYOUT</target>
+        <target state="translated">DISPOSITION</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -714,12 +714,12 @@ Examples:
 -e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Définit la valeur d’une variable d’environnement. 
+Permet de créer la variable si elle n’existe pas et de la remplacer si elle existe. 
+Cela entraîne l’exécution forcée des tests dans un processus isolé. 
+Vous pouvez spécifier cet argument plusieurs fois pour fournir plusieurs variables.
 
-Examples:
+Exemples :
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;separated with;semicolons"
@@ -729,7 +729,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdTestInvalidTimeout">
         <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
-        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <target state="translated">Le délai d’expiration doit être une durée positive avec un suffixe d’unité explicite tel que ms, s, m, h ou d (les formes complètes comme « seconds », « minutes », « hours » et « days » sont également acceptées).</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
@@ -859,7 +859,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandOptionListDevicesDescriptionForTest">
         <source>List available devices for running tests.</source>
-        <target state="new">List available devices for running tests.</target>
+        <target state="translated">Répertoriez les appareils disponibles pour exécuter les tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
