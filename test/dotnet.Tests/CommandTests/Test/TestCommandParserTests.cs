@@ -187,6 +187,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandDefaultsToNormalOutputPreset()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be(OutputOptions.Normal);
+        }
+
+        [TestMethod]
         [DataRow("--maximum-failed-tests=5")]
         [DataRow("--maximum-failed-tests:5")]
         public void MTPCommandParsesInlineGlobalMaximumFailedTests(string argument)
