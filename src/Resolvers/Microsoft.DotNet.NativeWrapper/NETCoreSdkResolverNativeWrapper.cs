@@ -59,6 +59,9 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 
 #if NET
+        /// <summary>
+        ///  No-op error writer used to suppress hostfxr error output.
+        /// </summary>
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
         private static void SwallowErrors(PlatformString message)
         {
