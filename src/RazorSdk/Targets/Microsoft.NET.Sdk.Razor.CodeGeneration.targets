@@ -109,6 +109,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
       Version="$(RazorLangVersion)"
+      CSharpLanguageVersion="$(LangVersion)"
       Configuration="@(ResolvedRazorConfiguration)"
       Extensions="@(ResolvedRazorExtension)"
       Assemblies="@(RazorReferencePath)"

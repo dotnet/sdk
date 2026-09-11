@@ -117,7 +117,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             {
                 // Discover via the hosted source generator.
                 var manifestPath = Path.Combine(tempDir, "manifest.json");
-                var discoverExitCode = RunDiscoverCommand(assemblies, tempDir, manifestPath, useSourceGenerator: true);
+                var discoverExitCode = RunDiscoverCommand(
+                    assemblies,
+                    tempDir,
+                    manifestPath,
+                    useSourceGenerator: true,
+                    csharpLanguageVersion: "preview");
                 Assert.AreEqual(0, discoverExitCode, $"Discover command failed with exit code {discoverExitCode}");
                 Assert.Contains("Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", File.ReadAllText(manifestPath));
 
@@ -166,6 +171,16 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
+        [TestMethod]
+        public void CreateParseOptions_UsesParsedCSharpLanguageVersion()
+        {
+            var languageVersion = RazorSourceGeneratorHost.GetCSharpLanguageVersion("preview");
+
+            Assert.AreEqual(
+                Microsoft.CodeAnalysis.CSharp.LanguageVersion.Preview,
+                RazorSourceGeneratorHost.CreateParseOptions(languageVersion).LanguageVersion);
+        }
+
         private static Application CreateApplication(TextWriter outputWriter = null, TextWriter errorWriter = null)        {
             var checker = new Mock<ExtensionDependencyChecker>();
             checker.Setup(c => c.Check(It.IsAny<IEnumerable<string>>())).Returns(true);
@@ -179,7 +194,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 errorWriter ?? new StringWriter());
         }
 
-        private static int RunDiscoverCommand(string[] assemblies, string projectDir, string manifestPath, bool useSourceGenerator = false)
+        private static int RunDiscoverCommand(
+            string[] assemblies,
+            string projectDir,
+            string manifestPath,
+            bool useSourceGenerator = false,
+            string csharpLanguageVersion = null)
         {
             var application = CreateApplication();
 
@@ -189,6 +209,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             if (useSourceGenerator)
             {
                 args.Add("--use-source-generator");
+            }
+            if (csharpLanguageVersion is not null)
+            {
+                args.Add("--csharp-language-version");
+                args.Add(csharpLanguageVersion);
             }
 
             return application.Execute(args.ToArray());
