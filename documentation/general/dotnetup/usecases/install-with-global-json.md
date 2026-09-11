@@ -61,7 +61,7 @@ The install-path precedence is:
 
 1. `--install-path`
 2. The first `sdk.paths` entry
-3. The default dotnetup hive
+3. The default dotnetup-managed .NET installation root
 
 ### The `$host$` sentinel
 
@@ -70,10 +70,10 @@ The install-path precedence is:
 | First meaningful `sdk.paths` entry | Where dotnetup installs |
 |------------------------------------|-------------------------|
 | A relative or absolute path (e.g. `.dotnet`) | That path, resolved relative to the directory containing `global.json` |
-| `$host$` | The default dotnetup hive (e.g. `~/.dotnet`) |
-| *(no usable entry — empty, or only null/whitespace)* | The default dotnetup hive |
+| `$host$` | The default dotnetup-managed .NET installation root |
+| *(no usable entry — empty, or only null/whitespace)* | The default dotnetup-managed .NET installation root |
 
-Because `sdk.paths` is ordered, the first meaningful entry wins. `["$host$", ".dotnet"]` installs to the default hive and ignores `.dotnet`, while `[".dotnet", "$host$"]` installs to `.dotnet`. A literal path does *not* take precedence over `$host$` unless it appears first.
+Because `sdk.paths` is ordered, the first meaningful entry wins. `["$host$", ".dotnet"]` installs to the default installation root and ignores `.dotnet`, while `[".dotnet", "$host$"]` installs to `.dotnet`. A literal path does *not* take precedence over `$host$` unless it appears first.
 
 ## Update `global.json`
 

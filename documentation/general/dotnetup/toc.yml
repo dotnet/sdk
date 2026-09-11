@@ -68,8 +68,8 @@
     href: usecases/update-installations.md
   - name: Manage the environment
     href: usecases/manage-environment.md
-  - name: Manage custom hives
-    href: usecases/manage-custom-hives.md
+  - name: Manage custom installation roots
+    href: usecases/manage-custom-installation-roots.md
   - name: Use preview and daily builds
     href: usecases/try-daily-builds.md
   - name: Use dotnetup in automation

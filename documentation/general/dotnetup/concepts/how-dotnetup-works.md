@@ -1,6 +1,6 @@
 ---
 title: How dotnetup works
-description: Learn about dotnetup hives, components, install specifications, installations, and state files.
+description: Learn about dotnetup installation roots, components, install specifications, installations, and state files.
 ms.topic: conceptual
 ms.date: 08/07/2026
 ---
@@ -11,9 +11,10 @@ ms.date: 08/07/2026
 model lets several requirements share one .NET installation and lets
 `dotnetup` remove files that are no longer required.
 
-## Hives
+## Installation roots
 
-A **hive** is a .NET installation root that `dotnetup` tracks. A hive has:
+A **.NET installation root** is a directory that `dotnetup` tracks. An
+installation root has:
 
 - A fully qualified directory path.
 - An architecture: `x86`, `x64`, or `arm64`.
@@ -23,17 +24,18 @@ A **hive** is a .NET installation root that `dotnetup` tracks. A hive has:
 The current CLI installs for the architecture of the running `dotnetup`
 process. It does not have an architecture option.
 
-The default hive is the `dotnet` subdirectory of the dotnetup data directory:
+The default dotnetup-managed .NET installation root is the `dotnet`
+subdirectory of the dotnetup data directory:
 
-| Platform | Default hive |
+| Platform | Default installation root |
 | --- | --- |
 | Windows | `%LOCALAPPDATA%\dotnetup\dotnet` |
 | macOS | `~/Library/Application Support/dotnetup/dotnet` |
 | Linux | `$XDG_DATA_HOME/dotnetup/dotnet`, or `~/.local/share/dotnetup/dotnet` when `XDG_DATA_HOME` is not set |
 
-Use `--install-path` to select another hive. An explicit install path takes
+Use `--install-path` to select another installation root. An explicit install path takes
 precedence over a path from `global.json`, which takes precedence over the
-default hive.
+default installation root.
 
 `dotnetup` does not write to a system-managed .NET directory, such as
 `Program Files\dotnet` or `/usr/share/dotnet`.
@@ -102,7 +104,7 @@ The dotnetup data directory contains these user-level state files:
 
 | File | Purpose |
 | --- | --- |
-| `dotnetup_manifest.json` | Tracks hives, install specifications, installations, and shared subcomponents. |
+| `dotnetup_manifest.json` | Tracks installation roots, install specifications, installations, and shared subcomponents. |
 | `dotnetup_manifest.json.sha256` | Detects changes to manifest content that dotnetup did not write. |
 | `dotnetup.config.json` | Stores the .NET access mode and whether the `dotnetup` directory is on `PATH`. |
 
@@ -111,7 +113,7 @@ Do not edit these files. Use `dotnetup install`, `update`, `uninstall`, and
 
 The `DOTNET_DOTNETUP_DATA_DIR` environment variable changes the data
 directory. The `--manifest-path` option changes only the manifest used by one
-command. It does not change the configuration file or default hive.
+command. It does not change the configuration file or default installation root.
 
 ## Concurrent operations
 
