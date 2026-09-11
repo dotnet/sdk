@@ -291,20 +291,22 @@ analyzers must stay Workspaces-free so they load in the command-line compiler. S
 a repo that ships code fixes needs a second project:
 
 - `<root>.analyzers` - the `DiagnosticAnalyzer`s. References
-  `Microsoft.CodeAnalysis.CSharp`, `EnforceExtendedAnalyzerRules=true`.
+  the compiler packages for its supported languages and sets
+  `EnforceExtendedAnalyzerRules=true`.
 - `<root>.analyzers.codefixes` -
   the `CodeFixProvider`s. `netstandard2.0`, signed, `IsPackable=false`,
-  `IncludeBuildOutput=false`. References
-  `Microsoft.CodeAnalysis.CSharp.Workspaces`. Do **not** set
+  `IncludeBuildOutput=false`. References the corresponding Roslyn Workspaces
+  packages. Do **not** set
   `EnforceExtendedAnalyzerRules` and do **not** add
   `Microsoft.CodeAnalysis.Analyzers` here - those are for the analyzer assembly.
 
-Both assemblies pack into `analyzers/dotnet/cs/` from the **same**
-`_AddAnalyzersToPackage` target (a second `MSBuild Targets="GetTargetPath"` call
-feeding the same `_PackageFiles` group). The command-line compiler loads the
-code-fix dll but never instantiates the provider (no analyzer in it), so the
-absence of Workspaces at build time is fine; the IDE supplies Workspaces when it
-offers the fix. This is the standard StyleCop/Roslynator split.
+Package C#-only assemblies under `analyzers/dotnet/cs/` and Visual Basic-only
+assemblies under `analyzers/dotnet/vb/`. Make language-neutral analyzers and their
+dependencies available to every language they advertise, using the neutral or
+per-language layout supported by the package tooling. Do not hardcode the C# folder
+when Visual Basic is supported. Add analyzer and code-fix outputs through the same
+pack target. The command-line compiler may load the code-fix assembly but does not
+instantiate its provider; the IDE supplies Workspaces when it offers the fix.
 
 **Packaging gotcha:** `MSBuild Targets="GetTargetPath"` returns the code-fix
 assembly path but does **not** build it, and nothing else in the library's graph builds
