@@ -113,9 +113,10 @@ The lifecycle behavior is covered by
 using the real exporter, isolated storage, and a controlled HTTP transport. The test-only reflection hooks
 disable background drains when asserting persisted payloads and are restored after each test. The retained
 [CLI subprocess test](../../test/dotnet.Tests/TelemetryTests/PersistentStorageTelemetryE2ETests.cs) checks the
-production managed assembly and normal muxer entry point. Live endpoint acceptance tests use the SDK's fixed
-connection string by default, so running them sends synthetic telemetry to that destination.
-`DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` overrides the destination; `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
+production managed assembly and normal muxer entry point. Live endpoint acceptance tests are skipped unless
+explicitly enabled. Set `DOTNET_CLI_TELEMETRY_E2E_ENABLED=true` (or `1`) to send synthetic telemetry to the SDK's
+fixed destination, or set `DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` to opt in with another destination.
+`DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
 checking downstream ingestion. HTTP acceptance alone does not verify arrival in a destination table.
 
 1.9.0 or later must be leveraged, as older versions did not work well and we requested fixes. Our requested upstream shutdown fixes are documented in

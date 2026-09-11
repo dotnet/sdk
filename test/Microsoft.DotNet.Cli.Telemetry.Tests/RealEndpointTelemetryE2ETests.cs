@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.Tests;
 [TestClass]
 public class RealEndpointTelemetryE2ETests
 {
+    private const string EnableLiveTestsEnvVar = "DOTNET_CLI_TELEMETRY_E2E_ENABLED";
     private const string ConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
     private const string DefaultConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
     private static readonly string s_runId = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_E2E_RUN_ID")
@@ -93,12 +94,42 @@ public class RealEndpointTelemetryE2ETests
         message.GetProperty("properties").GetProperty("SessionId").GetString().Should().Be(s_runId);
     }
 
+    [TestMethod]
+    [DataRow(null, null, false)]
+    [DataRow("", "", false)]
+    [DataRow("false", null, false)]
+    [DataRow("0", null, false)]
+    [DataRow("invalid", " ", false)]
+    [DataRow("true", null, true)]
+    [DataRow("TRUE", null, true)]
+    [DataRow("1", null, true)]
+    [DataRow(null, "explicit-test-destination", true)]
+    [DataRow("true", "explicit-test-destination", true)]
+    public void LiveTestsRequireExplicitOptIn(string? enabled, string? connectionString, bool expectedEnabled)
+    {
+        string? resolved = ResolveConnectionString(enabled, connectionString);
+        if (expectedEnabled)
+        {
+            resolved.Should().Be(string.IsNullOrWhiteSpace(connectionString) ? DefaultConnectionString : connectionString);
+        }
+        else
+        {
+            resolved.Should().BeNull();
+        }
+    }
+
+    private static string? ResolveConnectionString(string? enabled, string? connectionString) =>
+        !string.IsNullOrWhiteSpace(connectionString) ? connectionString :
+        enabled == "1" || string.Equals(enabled, "true", StringComparison.OrdinalIgnoreCase) ? DefaultConnectionString : null;
+
     private string RequireConnectionString()
     {
-        string? connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvVar);
-        if (string.IsNullOrWhiteSpace(connectionString))
+        string? connectionString = ResolveConnectionString(
+            Environment.GetEnvironmentVariable(EnableLiveTestsEnvVar),
+            Environment.GetEnvironmentVariable(ConnectionStringEnvVar));
+        if (connectionString is null)
         {
-            connectionString = DefaultConnectionString;
+            Assert.Inconclusive($"Live ingestion is opt-in. Set {EnableLiveTestsEnvVar}=true to use the SDK destination, or set {ConnectionStringEnvVar} to select another destination.");
         }
         TestContext.WriteLine($"Real-endpoint event='{AzureExporterTestScope.CliEventName}', SessionId='{s_runId}'.");
         TestContext.WriteLine("After ingestion, query the CLI destination table for this SessionId to verify downstream delivery.");
