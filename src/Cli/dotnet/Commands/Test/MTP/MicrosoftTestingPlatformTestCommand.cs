@@ -583,7 +583,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         var console = new SystemConsole();
-        var showPassedTests = parseResult.GetValue(definition.OutputOption) == OutputOptions.Detailed;
+        OutputOptions outputOption = parseResult.GetValue(definition.OutputOption);
         var noProgress = parseResult.HasOption(definition.NoProgressOption);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
 
@@ -616,7 +616,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = showPassedTests,
+            ShowTestResults = GetTestResultVisibility(outputOption, parseResult.GetArguments()),
             ShowProgress = !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
@@ -633,11 +633,73 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // a second press can force-kill running test app child processes and exit with
         // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
-        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
-        var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
-
+        // Retry-specific rendering is enabled authoritatively by the retry orchestrator handshake.
+        // Keep the raw option check only for older platform versions that support retries but do not
+        // send that handshake, so they can still label attempt 1.
+        bool isRetry = IsLegacyRetryOptionEnabled(parseResult.GetArguments());
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
+    }
+
+    internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
+        => arguments.Contains("--retry-failed-tests");
+
+    internal static TestResultVisibility GetTestResultVisibility(OutputOptions output, IReadOnlyList<string> arguments)
+    {
+        TestResultVisibility visibility = TestResultVisibility.None;
+        bool hasExplicitSelection = false;
+
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            string argument = arguments[i];
+            if (!string.Equals(argument, "--show-test-results", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results=", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            int separatorIndex = argument.IndexOfAny('=', ':');
+            if (separatorIndex >= 0)
+            {
+                AddValues(argument[(separatorIndex + 1)..]);
+                continue;
+            }
+
+            while (i + 1 < arguments.Count && !arguments[i + 1].StartsWith("-", StringComparison.Ordinal))
+            {
+                AddValues(arguments[++i]);
+            }
+        }
+
+        if (hasExplicitSelection)
+        {
+            return visibility;
+        }
+
+        return output switch
+        {
+            OutputOptions.Minimal => TestResultVisibility.Failed,
+            OutputOptions.Detailed => TestResultVisibility.All,
+            _ => TestResultVisibility.Failed | TestResultVisibility.Skipped,
+        };
+
+        void AddValues(string value)
+        {
+            foreach (string item in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                hasExplicitSelection = true;
+                visibility |= item.ToLowerInvariant() switch
+                {
+                    "passed" => TestResultVisibility.Passed,
+                    "failed" => TestResultVisibility.Failed,
+                    "skipped" => TestResultVisibility.Skipped,
+                    "all" => TestResultVisibility.All,
+                    "none" => TestResultVisibility.None,
+                    _ => TestResultVisibility.None,
+                };
+            }
+        }
     }
 
     /// <summary>

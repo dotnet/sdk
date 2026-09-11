@@ -280,6 +280,72 @@ public class TerminalTestReporterTests
         StripAnsi(capturingConsole.GetOutput()).Should().Contain("Test run summary: Failed!");
     }
 
+    [TestMethod]
+    [DataRow(false, "Test run completed with non-success exit code: 5. The command-line arguments are invalid.")]
+    [DataRow(true, "Test discovery completed with non-success exit code: 5. The command-line arguments are invalid.")]
+    public void TestExecutionCompleted_WithKnownExitCode_PrintsDescription(bool isDiscovery, string expected)
+    {
+        var capturingConsole = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery, isHelp: false, isRetry: false);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.InvalidCommandLine);
+
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain(expected);
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithMixedOutcomes_ColorizesSkippedCount()
+    {
+        var capturingConsole = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowTestResults = TestResultVisibility.None,
+        });
+
+        const string assembly = "/repo/bin/Debug/net9.0/Mixed.Tests.dll";
+        const string executionId = "exec-mixed";
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId, instanceId: "inst-1");
+        ReportTest(reporter, assembly, executionId, instanceId: "inst-1", testUid: "passed", TestOutcome.Passed);
+        ReportTest(reporter, assembly, executionId, instanceId: "inst-1", testUid: "skipped", TestOutcome.Skipped);
+        reporter.AssemblyRunCompleted(executionId, exitCode: 0, outputData: null, errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+
+        capturingConsole.GetOutput().Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.DarkYellow}{AnsiCodes.SetColor}  skipped: 1");
+    }
+
+    [TestMethod]
+    public void TestCompleted_OnlyRendersSelectedOutcomes()
+    {
+        var capturingConsole = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowTestResults = TestResultVisibility.Failed | TestResultVisibility.Skipped,
+        });
+
+        const string assembly = "/repo/bin/Debug/net9.0/Filtered.Tests.dll";
+        const string executionId = "exec-filtered";
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId, instanceId: "inst-1");
+        ReportTest(reporter, assembly, executionId, instanceId: "inst-1", testUid: "passed-test", TestOutcome.Passed);
+        ReportTest(reporter, assembly, executionId, instanceId: "inst-1", testUid: "failed-test", TestOutcome.Fail);
+        ReportTest(reporter, assembly, executionId, instanceId: "inst-1", testUid: "skipped-test", TestOutcome.Skipped);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().NotContain("passed-test");
+        output.Should().Contain("failed-test");
+        output.Should().Contain("skipped-test");
+    }
+
     /// <summary>
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.
@@ -762,6 +828,31 @@ public class TerminalTestReporterTests
     [DataRow(new[] { "--show-flaky-tests", "0" }, false)]
     public void GetShowFlakyTests_ParsesForwardedOption(string[] arguments, bool expected)
         => MicrosoftTestingPlatformTestCommand.GetShowFlakyTests(arguments).Should().Be(expected);
+
+    [TestMethod]
+    [DataRow((int)OutputOptions.Minimal, (int)TestResultVisibility.Failed)]
+    [DataRow((int)OutputOptions.Normal, (int)(TestResultVisibility.Failed | TestResultVisibility.Skipped))]
+    [DataRow((int)OutputOptions.Detailed, (int)TestResultVisibility.All)]
+    public void GetTestResultVisibility_UsesOutputPreset(int output, int expected)
+        => MicrosoftTestingPlatformTestCommand.GetTestResultVisibility((OutputOptions)output, [])
+            .Should().Be((TestResultVisibility)expected);
+
+    [TestMethod]
+    [DataRow(new[] { "--show-test-results", "passed" }, (int)TestResultVisibility.Passed)]
+    [DataRow(new[] { "--show-test-results=failed,skipped" }, (int)(TestResultVisibility.Failed | TestResultVisibility.Skipped))]
+    [DataRow(new[] { "--show-test-results", "passed", "skipped" }, (int)(TestResultVisibility.Passed | TestResultVisibility.Skipped))]
+    [DataRow(new[] { "--show-test-results", "none" }, (int)TestResultVisibility.None)]
+    [DataRow(new[] { "--show-test-results", "all" }, (int)TestResultVisibility.All)]
+    public void GetTestResultVisibility_ExplicitSelectionOverridesOutput(string[] arguments, int expected)
+        => MicrosoftTestingPlatformTestCommand.GetTestResultVisibility(OutputOptions.Detailed, arguments)
+            .Should().Be((TestResultVisibility)expected);
+
+    [TestMethod]
+    [DataRow(new string[0], false)]
+    [DataRow(new[] { "--retry-failed-tests", "3" }, true)]
+    [DataRow(new[] { "test", "--", "--retry-failed-tests", "3" }, true)]
+    public void IsLegacyRetryOptionEnabled_ParsesForwardedOption(string[] arguments, bool expected)
+        => MicrosoftTestingPlatformTestCommand.IsLegacyRetryOptionEnabled(arguments).Should().Be(expected);
 
     /// <summary>
     /// Finds the per-assembly summary line for the given assembly. Multiple lines may mention the
