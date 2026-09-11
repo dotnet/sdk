@@ -157,6 +157,7 @@ public class AzureMonitorExporterDifferentialTests
                 options.DisableOfflineStorage = true;
                 options.Transport = new HttpClientTransport(new HttpClient(handler));
             })
+            .SetSampler(new AlwaysOnSampler())
             .Build())
         {
             activity = source.StartActivity(displayName, kind)
