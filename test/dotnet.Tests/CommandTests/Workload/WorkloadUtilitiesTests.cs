@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Workload.List.Tests;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Workload.Tests;
@@ -21,6 +24,23 @@ public class WorkloadUtilitiesTests : SdkTest
         bool resultExplicit = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false);
 
         resultParameterless.Should().Be(resultExplicit);
+    }
+
+    [TestMethod]
+    public void WorkloadList_InteractiveFalse_DisablesInteractiveMode()
+    {
+        string testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+        var parseResult = Parser.Parse("dotnet workload list --interactive false");
+        parseResult.Errors.Should().BeEmpty();
+
+        var command = new WorkloadListCommand(
+            parseResult,
+            workloadRecordRepo: new MockWorkloadRecordRepo([]),
+            currentSdkVersion: "6.0.100",
+            dotnetDir: testDirectory,
+            userProfileDir: testDirectory);
+
+        command.IsInteractive.Should().BeFalse();
     }
 
     [TestMethod]

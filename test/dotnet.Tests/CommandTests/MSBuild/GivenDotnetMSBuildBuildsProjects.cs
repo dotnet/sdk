@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Help;
+
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [TestClass]
@@ -60,6 +63,22 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             result.ExitCode.Should().Be(0);
             result.StdOut.Should().Contain(MSBuildHelpText);
+        }
+
+        [TestMethod]
+        public void When_help_is_formatted_Then_flags_do_not_display_boolean_defaults()
+        {
+            var flag = new Option<bool>("--flag")
+            {
+                Arity = ArgumentArity.Zero
+            };
+            var booleanArgument = new Option<bool>("--boolean")
+            {
+                Arity = ArgumentArity.ZeroOrOne
+            };
+
+            HelpBuilder.Default.GetArgumentDefaultValue(flag).Should().BeEmpty();
+            HelpBuilder.Default.GetArgumentDefaultValue(booleanArgument).Should().Be("False");
         }
 
         [TestMethod]

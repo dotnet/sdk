@@ -36,9 +36,8 @@ Arguments:
   <PROJECT_PATH>  The paths to the projects to add to the solution.
 
 Options:
-  --in-root                                Place project in root of the solution, rather than creating a solution folder. [default: False]
+  --in-root                                Place project in root of the solution, rather than creating a solution folder.
   -s, --solution-folder <solution-folder>  The destination solution folder path to add the projects to.
-  --include-references                     Recursively add projects' ReferencedProjects to solution [default: True]
   -?, -h, --help                           Show command line help";
 
         public GivenDotnetSlnAdd()
@@ -1218,7 +1217,6 @@ Options:
                 .WithWorkingDirectory(Path.Join(projectDirectory))
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd, option);
             cmd.Should().Pass();
-            // Should have two projects
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, $"App{solutionExtension}"));
             SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
 
