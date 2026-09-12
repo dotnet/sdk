@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.TemplateLocator
         /// <summary>
         /// Test constructor
         /// </summary>
-        public TemplateLocator(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
+        internal TemplateLocator(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
             IWorkloadManifestProvider? workloadManifestProvider, IWorkloadResolver? workloadResolver)
         {
             _netCoreSdkResolver =

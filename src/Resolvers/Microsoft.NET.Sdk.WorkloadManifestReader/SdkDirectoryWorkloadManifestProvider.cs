@@ -11,7 +11,12 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
     {
         public const string WorkloadSetsFolderName = "workloadsets";
 

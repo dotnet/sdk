@@ -12,6 +12,8 @@
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Linked shared types must not become public API in this host assembly. -->
+    <DefineConstants>$(DefineConstants);INTERNALIZE_SHARED_TYPES</DefineConstants>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
@@ -77,6 +79,7 @@
     <!-- Netfx version builds against the lowest version of these dependencies that's guaranteed to be shipped with MSBuild in VS -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />

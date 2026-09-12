@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 extern alias sdkResolver;
+extern alias templateLocator;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.DotNetSdkResolver;
@@ -596,7 +597,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", sdkVersion);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
-            var resolver = new TemplateLocator.TemplateLocator(
+            var resolver = new templateLocator::Microsoft.DotNet.TemplateLocator.TemplateLocator(
                 environment.GetEnvironmentVariable,
                 () => environment.ProcessPath,
                 new sdkResolver::Microsoft.DotNet.DotNetSdkResolver.VSSettings(environment.VSSettingsFile?.FullName, environment.DisallowPrereleaseByDefault), null, null);

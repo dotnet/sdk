@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class WorkloadManifestInfo
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class WorkloadManifestInfo
     {
         public WorkloadManifestInfo(string id, string version, string manifestDirectory, string manifestFeatureBand)
         {

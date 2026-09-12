@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public enum WorkloadPackKind
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    enum WorkloadPackKind
     {
         Sdk,
         Framework,
