@@ -142,6 +142,11 @@
         <target state="translated">Il valore del campo '{1}' nell'enumerazione '{0}' è stato modificato da '{2}' a '{3}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalApiBecomesStable">
+        <source>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</source>
+        <target state="new">API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">L'indice {0} deve essere compreso nell'intervallo compreso tra zero e {1} incluso.</target>
@@ -165,6 +170,11 @@
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
         <target state="translated">Il valore di '{0}' deve essere maggiore di 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StableApiBecomesExperimental">
+        <source>API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</source>
+        <target state="new">API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

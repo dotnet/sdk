@@ -6,6 +6,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Moq;
 
 namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
@@ -14,26 +15,35 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
     public class ApiCompatRunnerTests
     {
         private static ApiCompatRunner MockApiCompatRunner(MetadataInformation left = default,
-            MetadataInformation right = default)
+            MetadataInformation right = default,
+            DifferenceSeverity severity = DifferenceSeverity.Error,
+            bool isSuppressed = false,
+            Mock<ISuppressibleLog> logMock = null,
+            Mock<ISuppressionEngine> suppressionEngineMock = null)
         {
             // Mock the api comparer's GetDifferences method so that it returns items.
             Mock<IApiComparer> apiComparerMock = new();
             apiComparerMock
-                .Setup(y => y.GetDifferences(It.IsAny<ElementContainer<IAssemblySymbol>>(), It.IsAny<IReadOnlyList<ElementContainer<IAssemblySymbol>>>()))
+                .Setup(y => y.GetDifferences(
+                    It.IsAny<IEnumerable<ElementContainer<IAssemblySymbol>>>(),
+                    It.IsAny<IReadOnlyList<IEnumerable<ElementContainer<IAssemblySymbol>>>>()))
                 .Returns(new CompatDifference[]
                 {
-                    new CompatDifference(left, right, "CP0001", "Invalid", DifferenceType.Removed, "X01")
+                    new CompatDifference(left, right, "CP0001", "Invalid", DifferenceType.Removed, "X01", severity)
                 });
+            apiComparerMock
+                .SetupGet(y => y.Settings)
+                .Returns(new ApiComparerSettings());
             Mock<IApiComparerFactory> apiComparerFactoryMock = new();
             apiComparerFactoryMock
                 .Setup(x => x.Create())
                 .Returns(apiComparerMock.Object);
 
             // Mock the suppression engine
-            Mock<ISuppressionEngine> suppressionEngineMock = new();
+            suppressionEngineMock ??= new();
             suppressionEngineMock
                 .Setup(m => m.IsErrorSuppressed(It.IsAny<Suppression>()))
-                .Returns(false);
+                .Returns(isSuppressed);
 
             // Mock the assembly symbol loader factory to return a default assembly symbol loader.
             Mock<IAssemblySymbolLoader> assemblySymbolLoaderMock = new();
@@ -41,7 +51,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
                 .Setup(y => y.LoadAssemblies(It.IsAny<string[]>()))
                 .Returns(new IAssemblySymbol[]
                 {
-                    null
+                    Mock.Of<IAssemblySymbol>()
                 });
 
             Mock<IAssemblySymbolLoaderFactory> assemblyLoaderFactoryMock = new();
@@ -49,7 +59,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
                 .Setup(m => m.Create(It.IsAny<bool>()))
                 .Returns(assemblySymbolLoaderMock.Object);
 
-            return new(Mock.Of<ISuppressibleLog>(),
+            return new((logMock ?? new()).Object,
                 suppressionEngineMock.Object,
                 apiComparerFactoryMock.Object,
                 assemblyLoaderFactoryMock.Object);
@@ -123,6 +133,28 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             apiCompatRunner.ExecuteWorkItems();
 
             Assert.IsEmpty(apiCompatRunner.WorkItems);
+        }
+
+        [TestMethod]
+        public void ExecuteWorkItems_InformationalDifference_IsLoggedWithoutSuppression()
+        {
+            MetadataInformation left = new("A.dll", @"lib\netstandard2.0\A.dll");
+            MetadataInformation right = new("A.dll", @"lib\net462\A.dll");
+            Mock<ISuppressibleLog> logMock = new();
+            Mock<ISuppressionEngine> suppressionEngineMock = new();
+            ApiCompatRunner apiCompatRunner = MockApiCompatRunner(
+                left,
+                right,
+                DifferenceSeverity.Informational,
+                isSuppressed: true,
+                logMock,
+                suppressionEngineMock);
+            apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, new ApiCompatRunnerOptions(), right));
+
+            apiCompatRunner.ExecuteWorkItems();
+
+            suppressionEngineMock.Verify(m => m.IsErrorSuppressed(It.IsAny<Suppression>()), Times.Never);
+            logMock.Verify(m => m.LogMessage(MessageImportance.Normal, "info CP0001: Invalid"), Times.Once);
         }
     }
 }
