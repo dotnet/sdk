@@ -6,10 +6,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidZeroLengthArrayAllocationsAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicAvoidZeroLengthArrayAllocationsAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -462,6 +462,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
+        [TestMethod]
+        public async Task EmptyArrayCSharp_UsedInAttributeNamedArgument_NoDiagnosticsAsync()
+        {
+            const string source = """
+                using System;
+
+                [AttributeUsage(AttributeTargets.All)]
+                class CustomAttribute : Attribute
+                {
+                    public int[] Field;
+                    public int[] Property { get; set; }
+                }
+
+                [Custom(Field = new int[0], Property = new int[0])]
+                class C
+                {
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [TestMethod]
+        public async Task EmptyArrayVisualBasic_UsedInAttributeNamedArgument_NoDiagnosticsAsync()
+        {
+            const string source = """
+                Imports System
+
+                <AttributeUsage(AttributeTargets.All)>
+                Class CustomAttribute
+                    Inherits Attribute
+
+                    Public Field As Integer()
+                    Public Property [Property] As Integer()
+                End Class
+
+                <Custom(Field:=New Integer(-1) {}, [Property]:=New Integer(-1) {})>
+                Class C
+                End Class
+                """;
+            await VerifyVB.VerifyAnalyzerAsync(source);
+        }
+
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [TestMethod]
         public async Task EmptyArrayCSharp_FieldOrPropertyInitializerAsync()
@@ -774,6 +816,54 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task ExplicitZeroLengthArrayArgumentToParams_CSharpAsync()
+        {
+            const string source = """
+                class C
+                {
+                    public C(params int[] values)
+                    {
+                    }
+
+                    void Direct(params int[] values)
+                    {
+                    }
+
+                    void Object(params object[] values)
+                    {
+                    }
+
+                    void Jagged(params int[][] values)
+                    {
+                    }
+
+                    int this[params int[] values] => 0;
+
+                    void M()
+                    {
+                        Direct({|#0:new int[0]|});
+                        Object({|#1:new int[0]|});
+                        Jagged({|#2:new int[0]|});
+                        _ = new C({|#3:new int[0]|});
+                        _ = this[{|#4:new int[0]|}];
+                        int[] values = {|#5:{}|};
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyAnalyzerAsync(
+                source,
+#pragma warning disable RS0030 // Do not use banned APIs
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(0).WithArguments("Array.Empty<int>()"),
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(1).WithArguments("Array.Empty<int>()"),
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(2).WithArguments("Array.Empty<int>()"),
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(3).WithArguments("Array.Empty<int>()"),
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(4).WithArguments("Array.Empty<int>()"),
+                VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(5).WithArguments("Array.Empty<int>()"));
+#pragma warning restore RS0030 // Do not use banned APIs
+        }
+
+        [TestMethod]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
         public async Task NoDiagnosticInExpressionTree_CSharpAsync()
         {
@@ -822,6 +912,82 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = source,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_ParamsArrayConstructor_CSharpAsync()
+        {
+            const string source = """
+                using System.Collections;
+                using System.Collections.Generic;
+
+                class Collection : IEnumerable<int>
+                {
+                    public Collection(params int[] values)
+                    {
+                    }
+
+                    public void Add(int value)
+                    {
+                    }
+
+                    public IEnumerator<int> GetEnumerator()
+                    {
+                        yield break;
+                    }
+
+                    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                }
+
+                class C
+                {
+                    Collection first = [1, 2];
+                }
+                """;
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestCode = source,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_WithElement_ParamsArrayConstructor_CSharpAsync()
+        {
+            const string source = """
+                using System.Collections;
+                using System.Collections.Generic;
+
+                class Collection : IEnumerable<int>
+                {
+                    public Collection(params int[] values)
+                    {
+                    }
+
+                    public void Add(int value)
+                    {
+                    }
+
+                    public IEnumerator<int> GetEnumerator()
+                    {
+                        yield break;
+                    }
+
+                    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                }
+
+                class C
+                {
+                    Collection collection = [with(), 1, 2];
+                }
+                """;
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
                 TestCode = source,
             }.RunAsync(CancellationToken.None);
         }
