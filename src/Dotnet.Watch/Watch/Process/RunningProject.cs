@@ -19,6 +19,7 @@ internal delegate ValueTask RestartOperation(CancellationToken cancellationToken
 /// </param>
 internal sealed class RunningProject(
     ProjectGraphNode projectNode,
+    ProjectGraphNode staticAssetProject,
     ProjectOptions options,
     HotReloadClients clients,
     ILogger clientLogger,
@@ -29,6 +30,7 @@ internal sealed class RunningProject(
     private volatile int _isRestarting;
 
     public ProjectGraphNode ProjectNode => projectNode;
+    public ProjectGraphNode StaticAssetProject => staticAssetProject;
     public ProjectOptions Options => options;
     public HotReloadClients Clients => clients;
     public ILogger ClientLogger => clientLogger;

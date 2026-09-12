@@ -117,11 +117,9 @@ internal sealed partial class ProjectUpdatesBuilder
 
     private IEnumerable<RunningProject> GetCorrespondingRunningProjects(ProjectInstanceId project)
     {
-        if (!RunningProjects.TryGetValue(project.ProjectPath, out var projectsWithPath))
-        {
-            return [];
-        }
-
-        return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), project.TargetFramework, StringComparison.OrdinalIgnoreCase));
+        return RunningProjects.Values
+            .SelectMany(static projects => projects)
+            .Where(p => string.Equals(p.StaticAssetProject.ProjectInstance.FullPath, project.ProjectPath, PathUtilities.OSSpecificPathComparison) &&
+                        string.Equals(p.StaticAssetProject.ProjectInstance.GetTargetFramework(), project.TargetFramework, StringComparison.OrdinalIgnoreCase));
     }
 }
