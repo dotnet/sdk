@@ -88,7 +88,7 @@ internal class ForwardingAppImplementation
 
     public ForwardingAppImplementation WithEnvironmentVariable(string name, string? value)
     {
-        _environmentVariables.Add(name, value);
+        _environmentVariables[name] = value;
 
         return this;
     }

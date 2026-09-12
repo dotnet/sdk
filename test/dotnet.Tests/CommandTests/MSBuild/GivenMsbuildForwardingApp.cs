@@ -64,6 +64,57 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        public void ItCanRefreshEnvironmentalVariables()
+        {
+            var forwardingApp = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>");
+
+            forwardingApp.EnvironmentVariable("TEST_VARIABLE", "initial");
+            forwardingApp.EnvironmentVariable("TEST_VARIABLE", "updated");
+
+            forwardingApp.GetProcessStartInfo().Environment["TEST_VARIABLE"].Should().Be("updated");
+        }
+
+        [TestMethod]
+        public void ItClearsStaleActivityContextWhenRefreshingEnvironmentalVariables()
+        {
+            using var initialActivity = new Activity("initial")
+                .SetIdFormat(ActivityIdFormat.W3C)
+                .Start();
+            initialActivity.TraceStateString = "vendor=value";
+
+            var forwardingApp = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>");
+
+            initialActivity.Stop();
+            forwardingApp.RefreshRequiredEnvironmentVariables();
+
+            var environment = forwardingApp.GetProcessStartInfo().Environment;
+            environment[Activities.TRACEPARENT].Should().BeNull();
+            environment[Activities.TRACESTATE].Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ItClearsStaleTraceStateWhenRefreshingEnvironmentalVariables()
+        {
+            using var initialActivity = new Activity("initial")
+                .SetIdFormat(ActivityIdFormat.W3C)
+                .Start();
+            initialActivity.TraceStateString = "vendor=value";
+
+            var forwardingApp = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>");
+
+            using var currentActivity = new Activity("current")
+                .SetIdFormat(ActivityIdFormat.W3C)
+                .SetParentId(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.None)
+                .Start();
+            currentActivity.Context.TraceState.Should().BeNull();
+            forwardingApp.RefreshRequiredEnvironmentVariables();
+
+            var environment = forwardingApp.GetProcessStartInfo().Environment;
+            environment[Activities.TRACEPARENT].Should().NotBeNull();
+            environment[Activities.TRACESTATE].Should().BeNull();
+        }
+
+        [TestMethod]
         public void ItSetsMSBuildExtensionPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";

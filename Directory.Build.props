@@ -66,7 +66,11 @@
     <IsShippingPackage>false</IsShippingPackage>
 
     <!-- TFMs -->
-    <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
+    <!-- NetTFMUpdate: Use explicit values until Arcade advances NetCurrent to net12.0. -->
+    <NetCurrent>net12.0</NetCurrent>
+    <SdkTargetFramework>net12.0</SdkTargetFramework>
+    <!-- NetTFMUpdate: Remove this override when Arcade advances NETCoreAppMaximumVersion to 12. -->
+    <NETCoreAppMaximumVersion>12</NETCoreAppMaximumVersion>
 
     <!-- TFM for projects that are deployed to run on .NET shipping with Visual Studio -->
     <VisualStudioServiceTargetFramework>net10.0</VisualStudioServiceTargetFramework>

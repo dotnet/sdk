@@ -209,8 +209,8 @@ public sealed class MSBuildLogger : INodeLogger
         StopActivity();
 
         ActivityContext parentContext =
-            Activity.Current?.Context
-            ?? TelemetryClient.GetParentActivityContext()
+            TelemetryClient.GetParentActivityContext(preferEnvironmentVariables: true)
+            ?? Activity.Current?.Context
             ?? TelemetryClient.ParentActivityContext;
         _activity = Activities.Source.StartActivity(
             "msbuild",

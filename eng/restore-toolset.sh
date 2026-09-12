@@ -44,6 +44,9 @@ function InitializeCustomSDKToolset {
     if [[ -n "$aspnetcore_version" ]]; then
       runtime_specs+=("aspnetcore@$aspnetcore_version")
     fi
+    local bootstrap_runtime_version
+    bootstrap_runtime_version=$(ReadBootstrapRuntimeVersion)
+    runtime_specs+=("$bootstrap_runtime_version" "aspnetcore@$bootstrap_runtime_version")
 
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
@@ -72,6 +75,20 @@ function InitializeCustomSDKToolset {
 function ReadVersionDetailsProperty {
   local property_name=$1
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
+}
+
+function ReadBootstrapRuntimeVersion {
+  ReadGlobalVersion "dotnet"
+  local runtime_config="$DOTNET_INSTALL_DIR/sdk/$_ReadGlobalVersion/dotnet.runtimeconfig.json"
+  local runtime_version
+  runtime_version=$(sed -n '/"name"[[:space:]]*:[[:space:]]*"Microsoft.NETCore.App"/{n;s/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p;q;}' "$runtime_config")
+
+  if [[ -z "$runtime_version" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Error: Cannot find the bootstrap Microsoft.NETCore.App runtime version in '$runtime_config'."
+    ExitWithExitCode 1
+  fi
+
+  echo "$runtime_version"
 }
 
 # Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of

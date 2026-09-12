@@ -123,6 +123,8 @@ runtime-pack tests that consume the built bundled versions props.
 
 - Flow netN runtime, WindowsDesktop, and ASP.NET Core dependencies.
 - Update `global.json` to a bootstrap SDK build that supports targeting netN.
+- Add the `dotnetN` and `dotnetN-transport` package sources to `NuGet.config` before
+  restoring bootstrap-associated packages published to the new SDK channel.
 - Update restore-toolset inputs for the `N-1` runtime where required.
 
 Do not hand-edit generated dependency-flow properties. Follow the repository's
