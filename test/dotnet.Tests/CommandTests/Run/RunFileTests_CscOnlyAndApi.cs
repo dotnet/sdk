@@ -4,6 +4,7 @@
 using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
+using FluentAssertions.Execution;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -16,6 +17,23 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
+    private const string OptimizationReportingProgram = """
+        #!/usr/bin/env dotnet
+        using System.Diagnostics;
+        using System.Reflection;
+
+        var attribute = Assembly.GetExecutingAssembly().GetCustomAttribute<DebuggableAttribute>();
+        Console.WriteLine(attribute?.IsJITOptimizerDisabled == true ? "not optimized" : "optimized");
+        """;
+
+    private static string GetOptimizationProps(bool optimize) => $$"""
+        <Project>
+          <PropertyGroup>
+            <Optimize>{{optimize}}</Optimize>
+          </PropertyGroup>
+        </Project>
+        """;
+
     /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
@@ -259,6 +277,267 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(originalPath, code, utf8NoBom);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink"/> but for ImplicitBuildFiles part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ImplicitBuildFiles()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var targetPath = Path.Join(testInstance.Path, "LinkTarget.props");
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: false));
+
+        var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: targetPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, OptimizationReportingProgram);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
+
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: true));
+
+        // MSBuild isn't detecting the change (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "not optimized");
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink"/> but for AdditionalSources part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_AdditionalSources()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var targetPath = Path.Join(testInstance.Path, "x.cs");
+        var code = """
+            using System.IO;
+            using System.Runtime.CompilerServices;
+            static class C
+            {
+                public static string M1([CallerFilePath] string caller = "") => M2(caller);
+                public static string M2(string caller1, [CallerFilePath] string caller2 = "") => $"v1/{Path.GetFileName(caller1)}/{Path.GetFileName(caller2)}";
+            }
+            """;
+        File.WriteAllText(targetPath, code);
+
+        var linkedPath = Path.Join(testInstance.Path, "linked.cs");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: targetPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            #:include linked.cs
+            Console.WriteLine(C.M1());
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1/Program.cs/linked.cs");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1/Program.cs/linked.cs");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(targetPath, code);
+
+        // MSBuild isn't detecting the change on Unix (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "v2/Program.cs/linked.cs" : "v1/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v2/Program.cs/linked.cs");
+    }
+
+    /// <summary>
+    /// <see cref="UpToDate"/> optimization should see when symlink target changes.
+    /// See <see href="https://github.com/dotnet/sdk/issues/56065"/>.
+    /// </summary>
+    [TestMethod, CombinatorialData]
+    public void UpToDate_SymbolicLink_ChangeTarget(bool cscOnly)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+        static string GetFileContent(string name) => $$"""
+            #!/usr/bin/env dotnet
+            Console.WriteLine($"{{name}}/{M1()}/{M2()}/{M3()}");
+            static string M1([System.Runtime.CompilerServices.CallerFilePath] string caller = "") => Path.GetFileName(caller);
+            static string M2() => Path.GetFileName((string)AppContext.GetData("EntryPointFilePath")!);
+            static string M3() => System.Reflection.Assembly.GetExecutingAssembly().GetName().Name!;
+            """;
+
+        var xPath = Path.Join(testInstance.Path, "x.cs");
+        File.WriteAllText(xPath, GetFileContent("x"), utf8NoBom);
+
+        var yPath = Path.Join(testInstance.Path, "y.cs");
+        File.WriteAllText(yPath, GetFileContent("y"), utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: xPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, cscOnly ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
+
+        File.Delete(programPath);
+        File.CreateSymbolicLink(path: programPath, pathToTarget: yPath);
+
+        if (cscOnly)
+        {
+            Build(testInstance, BuildLevel.Csc, expectedOutput: "y/linked/linked/linked", programFileName: programFileName);
+        }
+        else
+        {
+            // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+            // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+            string expectedOutput = OperatingSystem.IsWindows() ? "x/linked/linked/linked" : "y/linked/linked/linked";
+            Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, programFileName: programFileName);
+            Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput, programFileName: programFileName);
+
+            new DotnetCommand(Log, "build", "--no-incremental", programFileName)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+
+            Build(testInstance, BuildLevel.All, expectedOutput: "y/linked/linked/linked", programFileName: programFileName);
+        }
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink_ChangeTarget"/> but for ImplicitBuildFiles part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ChangeTarget_ImplicitBuildFiles()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var xPath = Path.Join(testInstance.Path, "x.props");
+        File.WriteAllText(xPath, GetOptimizationProps(optimize: false));
+
+        var yPath = Path.Join(testInstance.Path, "y.props");
+        File.WriteAllText(yPath, GetOptimizationProps(optimize: true));
+
+        var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: xPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, OptimizationReportingProgram);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
+
+        File.Delete(linkedPath);
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
+
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "not optimized" : "optimized";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
+    }
+
+    /// <summary>
+    /// Like <see cref="UpToDate_SymbolicLink_ChangeTarget"/> but for AdditionalSources part of the cache.
+    /// </summary>
+    [TestMethod]
+    public void UpToDate_SymbolicLink_ChangeTarget_AdditionalSources()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        static string GetFileContent(string name) => $$"""
+            using System.IO;
+            using System.Runtime.CompilerServices;
+            static class C
+            {
+                public static string M1([CallerFilePath] string caller = "") => M2(caller);
+                public static string M2(string caller1, [CallerFilePath] string caller2 = "") => $"{{name}}/{Path.GetFileName(caller1)}/{Path.GetFileName(caller2)}";
+            }
+            """;
+
+        var xPath = Path.Join(testInstance.Path, "x.cs");
+        File.WriteAllText(xPath, GetFileContent("X"));
+
+        var yPath = Path.Join(testInstance.Path, "y.cs");
+        File.WriteAllText(yPath, GetFileContent("Y"));
+
+        var linkedPath = Path.Join(testInstance.Path, "linked.cs");
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: xPath);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            #:include linked.cs
+            Console.WriteLine(C.M1());
+            """);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "X/Program.cs/linked.cs");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "X/Program.cs/linked.cs");
+
+        File.Delete(linkedPath);
+        File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
+
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "X/Program.cs/linked.cs" : "Y/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Y/Program.cs/linked.cs");
     }
 
     /// <summary>

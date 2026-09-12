@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.TemplateEngine.Abstractions;
@@ -136,6 +137,124 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return info;
             }
 
+            internal static TemplateInfo FromJsonElement(JsonElement entry)
+            {
+                string identity = GetStringValue(entry, nameof(Identity)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Identity)} property.", nameof(entry));
+                string name = GetStringValue(entry, nameof(Name)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
+                string mountPointUri = GetStringValue(entry, nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
+                string configPlace = GetStringValue(entry, nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
+                string generatorId = GetStringValue(entry, nameof(GeneratorId)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(GeneratorId)} property.", nameof(entry));
+                IReadOnlyList<string> shortNames = TryGetPropertyCaseInsensitive(entry, nameof(ShortNameList), out JsonElement shortNameToken)
+                    ? GetStringCollection(shortNameToken)
+                    : [];
+
+                TemplateInfo info = new(identity, name, shortNames, mountPointUri, configPlace)
+                {
+                    Author = GetStringValue(entry, nameof(Author))
+                };
+
+                if (TryGetPropertyCaseInsensitive(entry, nameof(Classifications), out JsonElement classificationsToken)
+                    && classificationsToken.ValueKind == JsonValueKind.Array)
+                {
+                    List<string> classifications = new();
+                    foreach (JsonElement item in classificationsToken.EnumerateArray())
+                    {
+                        if (item.ValueKind != JsonValueKind.Null)
+                        {
+                            classifications.Add(item.GetString()!);
+                        }
+                    }
+                    info.Classifications = classifications;
+                }
+
+                info.DefaultName = GetStringValue(entry, nameof(DefaultName));
+                info.PreferDefaultName = GetBoolValue(entry, nameof(PreferDefaultName));
+                info.Description = GetStringValue(entry, nameof(Description));
+                info.GeneratorId = Guid.Parse(generatorId);
+                info.GroupIdentity = GetStringValue(entry, nameof(GroupIdentity));
+                info.Precedence = GetInt32Value(entry, nameof(Precedence));
+                info.LocaleConfigPlace = GetStringValue(entry, nameof(LocaleConfigPlace));
+                info.HostConfigPlace = GetStringValue(entry, nameof(HostConfigPlace));
+                info.ThirdPartyNotices = GetStringValue(entry, nameof(ThirdPartyNotices));
+
+                Dictionary<string, IBaselineInfo> baselineInfo = new();
+                if (TryGetPropertyCaseInsensitive(entry, nameof(ITemplateInfo.BaselineInfo), out JsonElement baselineToken)
+                    && baselineToken.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (JsonProperty item in baselineToken.EnumerateObject())
+                    {
+                        if (item.Value.ValueKind == JsonValueKind.Null)
+                        {
+                            continue;
+                        }
+
+                        IReadOnlyDictionary<string, string> defaultOverrides = GetStringDictionary(item.Value, nameof(IBaselineInfo.DefaultOverrides));
+                        baselineInfo.Add(item.Name, new BaselineInfo(defaultOverrides, GetStringValue(item.Value, nameof(IBaselineInfo.Description))));
+                    }
+                    info.BaselineInfo = baselineInfo;
+                }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (TryGetPropertyCaseInsensitive(entry, nameof(Parameters), out JsonElement parametersToken)
+                    && parametersToken.ValueKind == JsonValueKind.Array)
+#pragma warning restore CS0618 // Type or member is obsolete
+                {
+                    List<ITemplateParameter> templateParameters = new();
+                    foreach (JsonElement item in parametersToken.EnumerateArray())
+                    {
+                        if (item.ValueKind == JsonValueKind.Object)
+                        {
+                            templateParameters.Add(ParameterFromJsonElement(item));
+                        }
+                    }
+                    info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);
+                }
+
+                if (TryGetPropertyCaseInsensitive(entry, nameof(TagsCollection), out JsonElement tagsToken)
+                    && tagsToken.ValueKind == JsonValueKind.Object)
+                {
+                    Dictionary<string, string> tags = new();
+                    foreach (JsonProperty item in tagsToken.EnumerateObject())
+                    {
+                        tags.Add(item.Name, item.Value.ValueKind == JsonValueKind.Null ? string.Empty : item.Value.GetString()!);
+                    }
+                    info.TagsCollection = tags;
+                }
+
+                info.HostData = GetStringValue(entry, nameof(info.HostData));
+                if (TryGetPropertyCaseInsensitive(entry, nameof(info.PostActions), out JsonElement postActionsToken)
+                    && postActionsToken.ValueKind == JsonValueKind.Array)
+                {
+                    List<Guid> postActions = new();
+                    foreach (JsonElement item in postActionsToken.EnumerateArray())
+                    {
+                        if (item.ValueKind != JsonValueKind.Null && Guid.TryParse(item.GetString(), out Guid id))
+                        {
+                            postActions.Add(id);
+                        }
+                    }
+                    info.PostActions = postActions;
+                }
+
+                if (TryGetPropertyCaseInsensitive(entry, nameof(info.Constraints), out JsonElement constraintsToken)
+                    && constraintsToken.ValueKind == JsonValueKind.Array)
+                {
+                    List<TemplateConstraintInfo> constraints = new();
+                    foreach (JsonElement item in constraintsToken.EnumerateArray())
+                    {
+                        string? type = GetStringValue(item, nameof(TemplateConstraintInfo.Type));
+                        if (string.IsNullOrWhiteSpace(type))
+                        {
+                            throw new ArgumentException($"{nameof(entry)} has {nameof(info.Constraints)} property which item doesn't have {nameof(TemplateConstraintInfo.Type)}.", nameof(entry));
+                        }
+                        constraints.Add(new TemplateConstraintInfo(type, GetStringValue(item, nameof(TemplateConstraintInfo.Args))));
+                    }
+                    info.Constraints = constraints;
+                }
+
+                return info;
+            }
+
             /// <summary>
             /// Parses <see cref="ITemplateParameter"/> from <see cref="JsonObject"/>.
             /// </summary>
@@ -191,6 +310,175 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         AllowMultipleValues = allowMultipleValues,
                         Choices = choices
                     });
+            }
+
+            private static ITemplateParameter ParameterFromJsonElement(JsonElement element)
+            {
+                string? name = GetStringValue(element, nameof(ITemplateParameter.Name));
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    throw new ArgumentException($"{nameof(ITemplateParameter.Name)} property should not be null or whitespace", nameof(element));
+                }
+
+                string type = GetStringValue(element, nameof(ITemplateParameter.Type)) ?? "parameter";
+                string dataType = GetStringValue(element, nameof(ITemplateParameter.DataType)) ?? "string";
+                Dictionary<string, ParameterChoice>? choices = null;
+                if (dataType.Equals("choice", StringComparison.OrdinalIgnoreCase))
+                {
+                    choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
+                    if (TryGetPropertyCaseInsensitive(element, nameof(ITemplateParameter.Choices), out JsonElement choicesToken)
+                        && choicesToken.ValueKind == JsonValueKind.Object)
+                    {
+                        foreach (JsonProperty choice in choicesToken.EnumerateObject())
+                        {
+                            choices.Add(
+                                choice.Name,
+                                new ParameterChoice(
+                                    GetStringValue(choice.Value, nameof(ParameterChoice.DisplayName)),
+                                    GetStringValue(choice.Value, nameof(ParameterChoice.Description))));
+                        }
+                    }
+                }
+
+                return new CacheTemplateParameter(
+                    new TemplateParameter(name, type, dataType)
+                    {
+                        DisplayName = GetStringValue(element, nameof(ITemplateParameter.DisplayName)),
+                        Precedence = GetTemplateParameterPrecedence(element, nameof(ITemplateParameter.Precedence)),
+                        IsName = GetBoolValue(element, nameof(ITemplateParameter.IsName)),
+                        DefaultValue = GetStringValue(element, nameof(ITemplateParameter.DefaultValue)),
+                        DefaultIfOptionWithoutValue = GetStringValue(element, nameof(ITemplateParameter.DefaultIfOptionWithoutValue)),
+                        Description = GetStringValue(element, nameof(ITemplateParameter.Description)),
+                        AllowMultipleValues = GetBoolValue(element, nameof(ITemplateParameter.AllowMultipleValues)),
+                        Choices = choices
+                    });
+            }
+
+            private static bool TryGetPropertyCaseInsensitive(JsonElement element, string propertyName, out JsonElement value)
+            {
+                if (element.ValueKind == JsonValueKind.Object)
+                {
+                    if (element.TryGetProperty(propertyName, out value))
+                    {
+                        return true;
+                    }
+
+                    bool found = false;
+                    foreach (JsonProperty property in element.EnumerateObject())
+                    {
+                        if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            value = property.Value;
+                            found = true;
+                        }
+                    }
+                    if (found)
+                    {
+                        return true;
+                    }
+                }
+
+                value = default;
+                return false;
+            }
+
+            private static string? GetStringValue(JsonElement element, string propertyName)
+            {
+                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement value)
+                    || value.ValueKind == JsonValueKind.Null)
+                {
+                    return null;
+                }
+
+                return value.ValueKind == JsonValueKind.String ? value.GetString() : value.GetRawText();
+            }
+
+            private static bool GetBoolValue(JsonElement element, string propertyName)
+            {
+                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement value))
+                {
+                    return false;
+                }
+
+                return value.ValueKind switch
+                {
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.String => bool.TryParse(value.GetString(), out bool result) && result,
+                    _ => false
+                };
+            }
+
+            private static int GetInt32Value(JsonElement element, string propertyName)
+            {
+                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement value))
+                {
+                    return 0;
+                }
+
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int result))
+                {
+                    return result;
+                }
+                if (value.ValueKind == JsonValueKind.String && int.TryParse(value.GetString(), out result))
+                {
+                    return result;
+                }
+                return 0;
+            }
+
+            private static IReadOnlyList<string> GetStringCollection(JsonElement element)
+            {
+                if (element.ValueKind == JsonValueKind.String)
+                {
+                    return new List<string> { element.GetString()! };
+                }
+                if (element.ValueKind != JsonValueKind.Array)
+                {
+                    return [];
+                }
+
+                List<string> values = new();
+                foreach (JsonElement item in element.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        values.Add(item.GetString()!);
+                    }
+                }
+                return values;
+            }
+
+            private static IReadOnlyDictionary<string, string> GetStringDictionary(JsonElement element, string propertyName)
+            {
+                Dictionary<string, string> result = new(StringComparer.Ordinal);
+                if (TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement dictionaryToken)
+                    && dictionaryToken.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (JsonProperty property in dictionaryToken.EnumerateObject())
+                    {
+                        if (property.Value.ValueKind == JsonValueKind.String)
+                        {
+                            result[property.Name] = property.Value.GetString()!;
+                        }
+                    }
+                }
+                return result;
+            }
+
+            private static TemplateParameterPrecedence GetTemplateParameterPrecedence(JsonElement element, string propertyName)
+            {
+                if (!TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement precedenceToken)
+                    || precedenceToken.ValueKind == JsonValueKind.Null)
+                {
+                    return TemplateParameterPrecedence.Default;
+                }
+
+                return new TemplateParameterPrecedence(
+                    (PrecedenceDefinition)GetInt32Value(precedenceToken, nameof(PrecedenceDefinition)),
+                    GetStringValue(precedenceToken, nameof(TemplateParameterPrecedence.IsRequiredCondition)),
+                    GetStringValue(precedenceToken, nameof(TemplateParameterPrecedence.IsEnabledCondition)),
+                    GetBoolValue(precedenceToken, nameof(TemplateParameterPrecedence.IsRequired)));
             }
 
             /// <summary>

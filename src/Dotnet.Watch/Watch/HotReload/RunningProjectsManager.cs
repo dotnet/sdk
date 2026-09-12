@@ -70,7 +70,13 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
         // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
         // and then start the process (named pipe client). Otherwise, the connection would fail.
-        clients.InitiateConnection(processCommunicationCancellationToken);
+        //
+        // Send project defined environment variables through RPC to avoid leaking potentially sensitive data.
+        // On Linux the command line of a process can be read by other users via `/proc/<pid>/cmdline`.
+        // Only environment variables that are necessary to establish communication with the agent are passed through command line (`-e` switch).
+        // The agent variables can't be set directly on `dotnet run` process as Hot Reload should not be enabled for that process. 
+        // Other variables are not set directly either to avoid leakage to `dotnet build` or other processes that `dotnet run` might execute.
+        clients.InitiateConnection(projectOptions.LaunchEnvironmentVariables, processCommunicationCancellationToken);
 
         RunningProject? publishedRunningProject = null;
 

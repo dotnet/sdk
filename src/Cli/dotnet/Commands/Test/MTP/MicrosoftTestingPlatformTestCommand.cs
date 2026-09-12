@@ -812,7 +812,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         var console = new SystemConsole();
-        var showPassedTests = parseResult.GetValue(definition.OutputOption) == OutputOptions.Detailed;
+        OutputOptions outputOption = parseResult.GetValue(definition.OutputOption);
         var noProgress = parseResult.HasOption(definition.NoProgressOption);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
 
@@ -845,7 +845,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = showPassedTests,
+            ShowTestResults = GetTestResultVisibility(outputOption, parseResult.GetArguments()),
             ShowProgress = !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
@@ -872,6 +872,64 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
         => arguments.Contains("--retry-failed-tests");
+
+    internal static TestResultVisibility GetTestResultVisibility(OutputOptions output, IReadOnlyList<string> arguments)
+    {
+        TestResultVisibility visibility = TestResultVisibility.None;
+        bool hasExplicitSelection = false;
+
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            string argument = arguments[i];
+            if (!string.Equals(argument, "--show-test-results", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results=", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            int separatorIndex = argument.IndexOfAny('=', ':');
+            if (separatorIndex >= 0)
+            {
+                AddValues(argument[(separatorIndex + 1)..]);
+                continue;
+            }
+
+            while (i + 1 < arguments.Count && !arguments[i + 1].StartsWith("-", StringComparison.Ordinal))
+            {
+                AddValues(arguments[++i]);
+            }
+        }
+
+        if (hasExplicitSelection)
+        {
+            return visibility;
+        }
+
+        return output switch
+        {
+            OutputOptions.Minimal => TestResultVisibility.Failed,
+            OutputOptions.Detailed => TestResultVisibility.All,
+            _ => TestResultVisibility.Failed | TestResultVisibility.Skipped,
+        };
+
+        void AddValues(string value)
+        {
+            foreach (string item in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                hasExplicitSelection = true;
+                visibility |= item.ToLowerInvariant() switch
+                {
+                    "passed" => TestResultVisibility.Passed,
+                    "failed" => TestResultVisibility.Failed,
+                    "skipped" => TestResultVisibility.Skipped,
+                    "all" => TestResultVisibility.All,
+                    "none" => TestResultVisibility.None,
+                    _ => TestResultVisibility.None,
+                };
+            }
+        }
+    }
 
     /// <summary>
     /// Reads the Microsoft.Testing.Platform <c>--show-slowest-tests N</c> option out of the raw command line.

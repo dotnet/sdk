@@ -60,8 +60,16 @@ internal sealed record EnvironmentOptions(
         RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
         CliContextVerbose: EnvironmentVariables.CliContextVerbose,
         BrowserPath: EnvironmentVariables.BrowserPath,
-        BrowserWebSocketConfig: new(EnvironmentVariables.BrowserWebSocketPort, EnvironmentVariables.BrowserWebSocketSecurePort, EnvironmentVariables.BrowserWebSocketHostName),
-        AgentWebSocketConfig: new(EnvironmentVariables.AgentWebSocketPort, EnvironmentVariables.AgentWebSocketSecurePort, hostName: null),
+        BrowserWebSocketConfig: new(
+            port: EnvironmentVariables.BrowserWebSocketPort,
+            securePort: EnvironmentVariables.BrowserWebSocketSecurePort,
+            hostName: EnvironmentVariables.BrowserWebSocketHostName,
+            additionalAllowedOrigins: EnvironmentVariables.DotNetWatchWebSocketAllowedOrigins),
+        AgentWebSocketConfig: new(
+            port: EnvironmentVariables.AgentWebSocketPort,
+            securePort: EnvironmentVariables.AgentWebSocketSecurePort,
+            hostName: null,
+            additionalAllowedOrigins: []),
         TestFlags: EnvironmentVariables.TestFlags,
         TestOutput: EnvironmentVariables.TestOutputDir
     );

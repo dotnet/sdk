@@ -8,6 +8,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [TestClass]
+    // Concurrent SDK processes from this class and CommonTemplatesTests can hang on two-core Helix agents.
+    // https://github.com/dotnet/sdk/issues/56229
+    [ResourceLock(nameof(DotnetBuildCommand))]
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
         private const string _nuGetPackageId = "Microsoft.Android.Templates";
