@@ -42,10 +42,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--  This target is not part of the build. Only used by dotnet workload restore command. Global property "SkipResolvePackageAssets"
-        need to be set to "true" to avoid requiring restore (which would likely fail if the required workloads aren't already installed).
+        needs to be set to "true" to avoid requiring restore (which would likely fail if the required workloads aren't already installed).
         In addition, since this is a target that is called on potentially-unsupported project types like esproj, we need to not fail
-        if the Target is missing. -->
-  <Target Name="_GetRequiredWorkloads" DependsOnTargets="GetSuggestedWorkloads;PrepareProjectReferences" Returns="@(_ResolvedSuggestedWorkload)">
+        if the Target is missing. Workload discovery must not use PrepareProjectReferences because it traverses references that may not
+        have a target framework compatible with the current project. -->
+  <Target Name="_GetRequiredWorkloads"
+          DependsOnTargets="GetSuggestedWorkloads;_AddOutputPathToGlobalPropertiesToRemove;AssignProjectConfiguration;_SplitProjectReferencesByFileExistence"
+          Returns="@(_ResolvedSuggestedWorkload)">
     <MSBuild
       Projects="@(_MSBuildProjectReferenceExistent)"
       Targets="_GetRequiredWorkloads"
