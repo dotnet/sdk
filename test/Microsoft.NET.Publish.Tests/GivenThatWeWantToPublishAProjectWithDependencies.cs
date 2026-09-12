@@ -305,6 +305,39 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
+        // Regression test for https://github.com/dotnet/sdk/issues/37585:
+        // a referenced project's .pdb should not be copied to the publish directory when
+        // that referenced project has opted out of publishing via IsPublishable=false, even
+        // though its output assembly is still needed at run time and should still be copied.
+        [TestMethod]
+        public void It_does_not_publish_symbols_of_a_non_publishable_referenced_project()
+        {
+            var kitchenSinkAsset = TestAssetsManager
+                .CopyTestAsset("KitchenSink")
+                .WithSource()
+                .WithProjectChanges((path, project) =>
+                {
+                    if (Path.GetFileNameWithoutExtension(path) != "TestLibrary")
+                    {
+                        return;
+                    }
+
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "IsPublishable", "false"));
+                });
+
+            var publishCommand = new PublishCommand(kitchenSinkAsset, "TestApp");
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework);
+
+            publishDirectory.Should().HaveFile("TestLibrary.dll");
+            publishDirectory.Should().NotHaveFile("TestLibrary.pdb");
+        }
+
         private static JObject ReadJson(string path)
         {
             using (JsonTextReader jsonReader = new(File.OpenText(path)))
