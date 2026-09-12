@@ -3,19 +3,12 @@
 
 #nullable disable warnings
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-
-#if HAS_IOPERATION
-using System.Threading;
 using Microsoft.CodeAnalysis.Operations;
-#endif
 
 namespace Analyzer.Utilities.Extensions
 {
@@ -342,12 +335,8 @@ namespace Analyzer.Utilities.Extensions
             if (method.ContainingType.IsDisposable(iDisposable, iAsyncDisposable, configuredAsyncDisposable))
             {
                 if (IsDisposeImplementation(method, iDisposable) ||
-                    (SymbolEqualityComparer.Default.Equals(method.ContainingType, iDisposable) &&
-                     method.HasDisposeMethodSignature())
-#if CODEANALYSIS_V3_OR_BETTER
-                    || (method.ContainingType.IsRefLikeType &&
-                     method.HasDisposeSignatureByConvention())
-#endif
+                    (SymbolEqualityComparer.Default.Equals(method.ContainingType, iDisposable) && method.HasDisposeMethodSignature()) ||
+                    (method.ContainingType.IsRefLikeType && method.HasDisposeSignatureByConvention())
                 )
                 {
                     return DisposeMethodKind.Dispose;
@@ -550,7 +539,6 @@ namespace Analyzer.Utilities.Extensions
                SymbolEqualityComparer.Default.Equals(method.ContainingType.OriginalDefinition, taskAsyncEnumerableExtensions) &&
                taskAsyncEnumerableExtensions.IsStatic;
 
-#if HAS_IOPERATION
         /// <summary>
         /// PERF: Cache from method symbols to their topmost block operations to enable interprocedural flow analysis
         /// across analyzers and analyzer callbacks to re-use the operations, semanticModel and control flow graph.
@@ -600,7 +588,6 @@ namespace Analyzer.Utilities.Extensions
                 return null;
             }
         }
-#endif
 
         public static bool IsLambdaOrLocalFunctionOrDelegate(this IMethodSymbol method)
         {

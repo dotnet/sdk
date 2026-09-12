@@ -15,13 +15,11 @@ namespace Analyzer.Utilities.Extensions
     {
         public const TypeKind ExtensionTypeKind = (TypeKind)14;
 
-#if CODEANALYSIS_V3_OR_BETTER
         public static bool IsAssignableTo(
             [NotNullWhen(returnValue: true)] this ITypeSymbol? fromSymbol,
             [NotNullWhen(returnValue: true)] ITypeSymbol? toSymbol,
             Compilation compilation)
             => fromSymbol != null && toSymbol != null && compilation.ClassifyCommonConversion(fromSymbol, toSymbol).IsImplicit;
-#endif
 
         public static bool IsPrimitiveType(this ITypeSymbol type)
         {
@@ -156,13 +154,11 @@ namespace Analyzer.Utilities.Extensions
                 return true;
             }
 
-#if CODEANALYSIS_V3_OR_BETTER
             if (type.IsRefLikeType)
             {
                 return type.GetMembers("Dispose").OfType<IMethodSymbol>()
                     .Any(method => method.HasDisposeSignatureByConvention());
             }
-#endif
 
             return false;
 
@@ -319,10 +315,8 @@ namespace Analyzer.Utilities.Extensions
         public static ITypeSymbol? GetNullableValueTypeUnderlyingType(this ITypeSymbol? typeSymbol)
             => typeSymbol.IsNullableValueType() ? ((INamedTypeSymbol)typeSymbol).TypeArguments[0] : null;
 
-#if HAS_IOPERATION
         public static ITypeSymbol? GetUnderlyingValueTupleTypeOrThis(this ITypeSymbol? typeSymbol)
             => (typeSymbol as INamedTypeSymbol)?.TupleUnderlyingType ?? typeSymbol;
-#endif
 
         /// <summary>
         /// Checks whether the current type contains one of the following count property:
