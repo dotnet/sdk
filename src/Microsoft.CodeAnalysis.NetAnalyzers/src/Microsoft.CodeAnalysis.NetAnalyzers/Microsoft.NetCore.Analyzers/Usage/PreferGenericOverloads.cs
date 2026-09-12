@@ -83,7 +83,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 }
 
                 if (method.Arity != invocationContext.TypeArguments.Length ||
-                    method.Parameters.Length != invocationContext.OtherArguments.Length ||
+                    !invocationContext.HasCompatibleParameterCount(method) ||
                     SymbolEqualityComparer.Default.Equals(method, context.ContainingSymbol))
                 {
                     return false;
@@ -142,10 +142,12 @@ namespace Microsoft.NetCore.Analyzers.Usage
         {
             private RuntimeTypeInvocationContext(
                 IInvocationOperation invocation,
+                ImmutableArray<IArgumentOperation> typeOfArguments,
                 ImmutableArray<ITypeSymbol> typeArguments,
                 ImmutableArray<IArgumentOperation> otherArguments)
             {
                 Invocation = invocation;
+                TypeOfArguments = typeOfArguments;
                 TypeArguments = typeArguments;
                 OtherArguments = otherArguments;
             }
@@ -154,8 +156,20 @@ namespace Microsoft.NetCore.Analyzers.Usage
             {
                 invocationContext = default;
 
+                var systemType = invocation.SemanticModel?.Compilation.GetTypeByMetadataName("System.Type");
+                if (systemType is null)
+                {
+                    return false;
+                }
+
+                // Normalize named and optional arguments before splitting them so the remaining arguments
+                // stay aligned with the corresponding parameters on a candidate generic overload.
                 var argumentsInParameterOrder = invocation.Arguments.GetArgumentsInParameterOrder();
-                var typeOfArguments = argumentsInParameterOrder.WhereAsArray(a => a.Value is ITypeOfOperation);
+                var typeOfArguments = argumentsInParameterOrder.WhereAsArray(
+                    a => a.Value is ITypeOfOperation &&
+                        // A constructed generic parameter can become System.Type, but a typeof value passed
+                        // to that parameter is still ordinary data. Only a declared System.Type parameter is a selector.
+                        SymbolEqualityComparer.Default.Equals(a.Parameter?.OriginalDefinition.Type, systemType));
 
                 // Bail out if there is no argument using the typeof operator.
                 if (typeOfArguments.Length == 0)
@@ -179,12 +193,13 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
                 var otherArguments = argumentsInParameterOrder.RemoveRange(typeOfArguments);
 
-                invocationContext = new RuntimeTypeInvocationContext(invocation, typeArguments, otherArguments);
+                invocationContext = new RuntimeTypeInvocationContext(invocation, typeOfArguments, typeArguments, otherArguments);
 
                 return true;
             }
 
             public IInvocationOperation Invocation { get; }
+            private ImmutableArray<IArgumentOperation> TypeOfArguments { get; }
             public ImmutableArray<ITypeSymbol> TypeArguments { get; }
             public ImmutableArray<IArgumentOperation> OtherArguments { get; }
             public SemanticModel? SemanticModel => Invocation.SemanticModel;
@@ -218,11 +233,35 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 return method.ReturnType.IsAssignableTo(Method.ReturnType, compilation);
             }
 
+            public bool HasCompatibleParameterCount(IMethodSymbol method)
+            {
+                // Expanded params arguments can outnumber the candidate's declared parameters.
+                return method.Parameters.Length == OtherArguments.Length ||
+                    method.Parameters.Length > 0 &&
+                    method.Parameters[method.Parameters.Length - 1].IsParams &&
+                    OtherArguments.Length >= method.Parameters.Length - 1;
+            }
+
+            public bool IsTypeOfArgumentSyntax(SyntaxNode argumentSyntax)
+                => TypeOfArguments.Any(a => a.Syntax.SyntaxTree == argumentSyntax.SyntaxTree && a.Syntax.Span == argumentSyntax.Span);
+
             public bool AreOtherArgumentsCompatible(IMethodSymbol method, Compilation compilation)
             {
                 for (int i = 0; i < OtherArguments.Length; i++)
                 {
-                    if (!OtherArguments[i].Value.WalkDownConversion().Type.IsAssignableTo(method.Parameters[i].Type, compilation))
+                    var parameter = method.Parameters[i < method.Parameters.Length ? i : method.Parameters.Length - 1];
+                    var argumentType = OtherArguments[i].Value.WalkDownConversion().Type;
+                    var parameterType = parameter.Type;
+                    // Preserve both forms of a params argument: an explicit array binds to the array parameter,
+                    // while each expanded argument must be compatible with its element type.
+                    if (parameter.IsParams &&
+                        parameterType is IArrayTypeSymbol arrayType &&
+                        !argumentType.IsAssignableTo(parameterType, compilation))
+                    {
+                        parameterType = arrayType.ElementType;
+                    }
+
+                    if (!argumentType.IsAssignableTo(parameterType, compilation))
                     {
                         return false;
                     }

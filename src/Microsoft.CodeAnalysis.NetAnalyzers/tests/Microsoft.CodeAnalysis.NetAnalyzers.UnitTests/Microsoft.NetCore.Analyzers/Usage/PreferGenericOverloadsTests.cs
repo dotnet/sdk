@@ -1144,30 +1144,80 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
-        public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_CS()
+        [TestMethod, WorkItem(52654, "https://github.com/dotnet/sdk/issues/52654")]
+        public async Task TypeOfPassedToGenericTypeParameter_NoDiagnostic_CS()
         {
             string source = """
                 class C
                 {
                     void Test()
                     {
-                        [|System.Collections.Immutable.ImmutableHashSet.Create(typeof(C))|];
+                        System.Collections.Immutable.ImmutableHashSet<System.Type> x = System.Collections.Immutable.ImmutableHashSet.Create(typeof(System.Type));
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod, WorkItem(53189, "https://github.com/dotnet/sdk/issues/53189")]
+        public async Task ExpandedParamsArgumentsArePreserved_OffersFixer_CS()
+        {
+            string source = """
+                class MyClass {}
+
+                class Activator
+                {
+                    public T Create<T>(params string[] args) => default;
+                    public object Create(System.Type type, params string[] args) => default;
+                }
+
+                class C
+                {
+                    void Test()
+                    {
+                        var activator = new Activator();
+                        object value = [|activator.Create(typeof(MyClass), "hello", "world")|];
                     }
                 }
                 """;
 
             string fixedSource = """
+                class MyClass {}
+
+                class Activator
+                {
+                    public T Create<T>(params string[] args) => default;
+                    public object Create(System.Type type, params string[] args) => default;
+                }
+
                 class C
                 {
                     void Test()
                     {
-                        System.Collections.Immutable.ImmutableHashSet.Create<C>();
+                        var activator = new Activator();
+                        object value = activator.Create<MyClass>("hello", "world");
                     }
                 }
                 """;
 
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_CS()
+        {
+            string source = """
+                class C
+                {
+                    void Test()
+                    {
+                        System.Collections.Immutable.ImmutableHashSet.Create(typeof(C));
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [TestMethod]
@@ -2302,26 +2352,82 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
-        public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_VB()
+        [TestMethod, WorkItem(52654, "https://github.com/dotnet/sdk/issues/52654")]
+        public async Task GetTypePassedToGenericTypeParameter_NoDiagnostic_VB()
         {
             string source = """
                 Class C
                     Sub Test()
-                        [|System.Collections.Immutable.ImmutableHashSet.Create(GetType(C))|]
+                        Dim x As System.Collections.Immutable.ImmutableHashSet(Of System.Type) = System.Collections.Immutable.ImmutableHashSet.Create(GetType(System.Type))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod, WorkItem(53189, "https://github.com/dotnet/sdk/issues/53189")]
+        public async Task ExpandedParamArrayArgumentsArePreserved_OffersFixer_VB()
+        {
+            string source = """
+                Class SampleClass
+                End Class
+
+                Class Factory
+                    Public Function Create(Of T)(ParamArray args As String()) As T
+                        Return Nothing
+                    End Function
+
+                    Public Function Create(type As System.Type, ParamArray args As String()) As Object
+                        Return Nothing
+                    End Function
+                End Class
+
+                Class C
+                    Sub Test()
+                        Dim factory = New Factory()
+                        Dim value As Object = [|factory.Create(GetType(SampleClass), "hello", "world")|]
                     End Sub
                 End Class
                 """;
 
             string fixedSource = """
+                Class SampleClass
+                End Class
+
+                Class Factory
+                    Public Function Create(Of T)(ParamArray args As String()) As T
+                        Return Nothing
+                    End Function
+
+                    Public Function Create(type As System.Type, ParamArray args As String()) As Object
+                        Return Nothing
+                    End Function
+                End Class
+
                 Class C
                     Sub Test()
-                        System.Collections.Immutable.ImmutableHashSet.Create(Of C)()
+                        Dim factory = New Factory()
+                        Dim value As Object = factory.Create(Of SampleClass)("hello", "world")
                     End Sub
                 End Class
                 """;
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_VB()
+        {
+            string source = """
+                Class C
+                    Sub Test()
+                        System.Collections.Immutable.ImmutableHashSet.Create(GetType(C))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [TestMethod]
