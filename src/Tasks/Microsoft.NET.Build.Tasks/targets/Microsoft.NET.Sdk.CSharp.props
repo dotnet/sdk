@@ -13,9 +13,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <NoWarn Condition=" '$(NoWarn)' == '' ">1701;1702</NoWarn>
-
-    <!-- Remove the line below once https://github.com/Microsoft/visualfsharp/issues/3207 gets fixed -->
-    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition=" '$(DefineConstants)' != '' ">$(DefineConstants);</DefineConstants>
