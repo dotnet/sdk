@@ -145,6 +145,25 @@ public class GenericCommandHelpParserTests
     }
 
     [TestMethod]
+    [DataRow("add")]
+    [DataRow("package")]
+    public void TryParseGenericCommandHelp_DoesNotEvaluatePackageIdCompletionsWhenRenderingParentHelp(string commandName)
+    {
+        Assert.IsTrue(Parser.TryParseGenericCommandHelp([commandName, "--help"], out ParseResult? parseResult));
+
+        Argument packageIdArgument = GetPackageIdArgument(parseResult.RootCommandResult.Command.Subcommands.Single());
+        packageIdArgument.CompletionSources.Clear();
+        packageIdArgument.CompletionSources.Add(_ => throw new InvalidOperationException("Package ID completions should not be evaluated when rendering help."));
+
+        (int exitCode, string output, string error) = InvokeWithCapture(parseResult);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsNotEmpty(output);
+        Assert.IsEmpty(error);
+        Assert.HasCount(1, packageIdArgument.CompletionSources);
+    }
+
+    [TestMethod]
     [DataRow("build")]
     [DataRow("sln")]
     public void IsDotnetBuiltInCommand_RecognizesBuiltInCommands(string commandName)
@@ -211,10 +230,12 @@ public class GenericCommandHelpParserTests
         return (parseResult.Invoke(configuration), output.ToString(), error.ToString());
     }
 
-    private static int GetPackageIdCompletionSourceCount(Command command) => command switch
+    private static int GetPackageIdCompletionSourceCount(Command command) => GetPackageIdArgument(command).CompletionSources.Count;
+
+    private static Argument GetPackageIdArgument(Command command) => command switch
     {
-        AddCommandDefinition add => add.PackageCommand.PackageIdArgument.CompletionSources.Count,
-        PackageCommandDefinition package => package.AddCommand.PackageIdArgument.CompletionSources.Count,
+        AddCommandDefinition add => add.PackageCommand.PackageIdArgument,
+        PackageCommandDefinition package => package.AddCommand.PackageIdArgument,
         _ => throw new ArgumentException($"Unexpected command '{command.Name}'.", nameof(command))
     };
 }
