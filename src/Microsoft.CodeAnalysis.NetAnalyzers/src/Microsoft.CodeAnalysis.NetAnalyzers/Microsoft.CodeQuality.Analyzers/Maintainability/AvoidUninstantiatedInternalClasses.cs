@@ -264,7 +264,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             });
         }
 
-        private bool HasInstantiatedNestedType(INamedTypeSymbol type, IEnumerable<INamedTypeSymbol> instantiatedTypes)
+        private static bool HasInstantiatedNestedType(INamedTypeSymbol type, IEnumerable<INamedTypeSymbol> instantiatedTypes)
         {
             var nestedTypes = type.GetTypeMembers();
 

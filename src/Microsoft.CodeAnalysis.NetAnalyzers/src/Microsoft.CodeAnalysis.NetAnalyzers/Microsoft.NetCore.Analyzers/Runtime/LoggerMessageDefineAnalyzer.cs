@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             });
         }
 
-        private void AnalyzeInvocation(OperationAnalysisContext context, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType, INamedTypeSymbol loggerMessageType)
+        private static void AnalyzeInvocation(OperationAnalysisContext context, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType, INamedTypeSymbol loggerMessageType)
         {
             var invocation = (IInvocationOperation)context.Operation;
 
@@ -192,7 +192,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes, IMethodSymbol methodSymbol)
+        private static void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes, IMethodSymbol methodSymbol)
         {
             var text = TryGetFormatText(formatExpression);
             if (text == null)
@@ -246,7 +246,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             operation.Language == LanguageNames.CSharp ?
                 SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;
 
-        private string? TryGetFormatText(IOperation? argumentExpression)
+        private static string? TryGetFormatText(IOperation? argumentExpression)
         {
             if (argumentExpression is null)
                 return null;
