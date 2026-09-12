@@ -18,23 +18,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 
-    internal static DateTime? ParseSourceDateEpoch(string? value)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return null;
-        }
-    }
-
     public override bool Execute()
     {
         try
@@ -112,6 +95,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        if (!ContainerAnnotationScopes.TryFilter(Annotations, ContainerAnnotationScope.Manifest, Log, out ITaskItem[] manifestAnnotations))
+        {
+            return false;
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
@@ -181,7 +169,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
             destinationImageReference);
-        DateTime createdAt = ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
+
+        if (manifestAnnotations.Length > 0 && imageBuilder.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        {
+            Log.LogError(Resource.GetString("ManifestAnnotationsRequireOci"));
+            return false;
+        }
+
+        DateTime createdAt = SourceDateEpochParser.Parse(SourceDateEpoch) ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,
@@ -217,11 +212,25 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 (baseImageLabel, baseImageDigest) = imageBuilder.AddBaseImageDigestLabel();
             }
         }
+
         else
         {
             if (GenerateDigestLabel)
             {
                 Log.LogMessageFromResources(nameof(Strings.GenerateDigestLabelWithoutGenerateLabels));
+            }
+        }
+
+        foreach (ITaskItem annotation in manifestAnnotations)
+        {
+            string value = ContainerAnnotationScopes.GetValue(annotation, createdAt);
+            if (annotation.ItemSpec == ImageBuilder.BaseImageDigestName && string.IsNullOrEmpty(value))
+            {
+                imageBuilder.AddBaseImageDigestAnnotation();
+            }
+            else
+            {
+                imageBuilder.AddAnnotation(annotation.ItemSpec, value);
             }
         }
 

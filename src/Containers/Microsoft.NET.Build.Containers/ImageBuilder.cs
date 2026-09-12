@@ -14,6 +14,8 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed class ImageBuilder
 {
+    internal const string BaseImageDigestName = "org.opencontainers.image.base.digest";
+
     // a snapshot of the manifest that this builder is based on
     private readonly ManifestV2 _baseImageManifest;
 
@@ -21,6 +23,7 @@ internal sealed class ImageBuilder
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
+    private Dictionary<string, string>? _annotations;
 
     /// <summary>
     /// This is a parser for ASPNETCORE_URLS based on https://github.com/dotnet/aspnetcore/blob/main/src/Http/Http/src/BindingAddress.cs
@@ -83,7 +86,8 @@ internal sealed class ImageBuilder
             Config = newManifestConfig,
             SchemaVersion = _manifest.SchemaVersion,
             MediaType = ManifestMediaType,
-            Layers = _manifest.Layers
+            Layers = _manifest.Layers,
+            Annotations = ManifestMediaType == SchemaTypes.OciManifestV1 ? _annotations : null
         };
 
         return new BuiltImage()
@@ -111,15 +115,33 @@ internal sealed class ImageBuilder
 
     internal (string name, string value) AddBaseImageDigestLabel()
     {
-        var label = ("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
+        var label = (BaseImageDigestName, _baseImageManifest.GetDigest());
         AddLabel(label.Item1, label.Item2);
         return label;
+    }
+
+    internal void AddBaseImageDigestAnnotation()
+    {
+        string digest = _baseImageManifest.GetDigest();
+        if (!string.IsNullOrEmpty(digest))
+        {
+            AddAnnotation(BaseImageDigestName, digest);
+        }
     }
 
     /// <summary>
     /// Adds a label to a base image.
     /// </summary>
     internal void AddLabel(string name, string value) => _baseImageConfig.AddLabel(name, value);
+
+    /// <summary>
+    /// Adds an annotation to the generated OCI image manifest.
+    /// </summary>
+    internal void AddAnnotation(string name, string value)
+    {
+        _annotations ??= new(StringComparer.Ordinal);
+        _annotations[name] = value;
+    }
 
     /// <summary>
     /// Adds environment variables to a base image.
