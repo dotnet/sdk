@@ -400,4 +400,50 @@ public sealed class RunCommandTests : SdkTest
 
         Assert.AreEqual(expectedArguments, command.StartInfo.Arguments);
     }
+
+    [TestMethod]
+    public void Project_LaunchSettingsWorkingDirectoryOverridesRunWorkingDirectory()
+    {
+        var root = TestAssetsManager.CreateTestDirectory().Path;
+        var projectPath = Path.Combine(root, "myproj.csproj");
+        var launchSettingsDirectory = Path.Combine(root, "Properties");
+
+        Directory.CreateDirectory(launchSettingsDirectory);
+        File.WriteAllText(projectPath, $$"""
+            <Project>
+              <PropertyGroup>
+                <TargetFramework>{{ToolsetInfo.CurrentTargetFramework}}</TargetFramework>
+                <RunCommand>executable</RunCommand>
+                <RunWorkingDirectory>should_be_overridden</RunWorkingDirectory>
+              </PropertyGroup>
+              <Target Name="ComputeRunArguments" />
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Combine(launchSettingsDirectory, "launchSettings.json"), """
+            {
+              "profiles": {
+                "MyProfile": {
+                  "commandName": "Project",
+                  "workingDirectory": "working"
+                }
+              }
+            }
+            """);
+
+        var runCommand = CreateRunCommand(projectPath);
+        var result = runCommand.ReadLaunchProfileSettings(
+            projectFactory: null,
+            expandExecutableProfile: false,
+            out _);
+
+        var command = (Command)runCommand.GetTargetCommand(
+            result.Profile,
+            projectFactory: null,
+            cachedRunProperties: null,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(Path.Combine(launchSettingsDirectory, "working"), command.StartInfo.WorkingDirectory);
+    }
 }

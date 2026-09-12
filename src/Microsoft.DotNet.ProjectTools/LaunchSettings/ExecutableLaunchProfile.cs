@@ -7,12 +7,8 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ExecutableLaunchProfile : LaunchProfile
 {
-    public const string WorkingDirectoryPropertyName = "workingDirectory";
     public const string ExecutablePathPropertyName = "executablePath";
 
     [JsonPropertyName("executablePath")]
     public required string ExecutablePath { get; init; }
-
-    [JsonPropertyName("workingDirectory")]
-    public string? WorkingDirectory { get; init; }
 }
