@@ -20,6 +20,16 @@ public abstract class CommandBase
 
     protected CommandBase() { }
 
+    internal string MSBuildSubmissionMetricCommandName { get; set; }
+
+    protected void RecordManagedEntryToMSBuildSubmission()
+    {
+        if (MSBuildSubmissionMetricCommandName is not null)
+        {
+            Microsoft.DotNet.Cli.Utils.CliMetrics.RecordManagedEntryToMSBuildSubmission(MSBuildSubmissionMetricCommandName);
+            MSBuildSubmissionMetricCommandName = null;
+        }
+    }
 
     public abstract int Execute();
 }

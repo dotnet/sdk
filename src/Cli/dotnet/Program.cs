@@ -30,6 +30,7 @@ public class Program
     static Program()
     {
         var preTelemetry = DateTime.UtcNow;
+        CliMetrics.SetManagedEntryTimeUtc(preTelemetry);
         s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
