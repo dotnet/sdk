@@ -645,6 +645,35 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
         }
 
         [TestMethod]
+        public async Task FieldArgumentAwaitedElsewhereBeforeDispose_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    private StreamReader _field = null;
+
+    public async Task M(CancellationToken ct)
+    {
+        CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        Task t = Local(_field, cts.Token);
+        await Task.Yield();
+        await t;
+        cts.Dispose();
+
+        async Task Local(StreamReader r, CancellationToken token)
+        {
+            await Task.Yield();
+        }
+    }
+}
+");
+        }
+
+        [TestMethod]
         public async Task AwaitedElsewhereBeforeDisposeMultipleArgs_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
