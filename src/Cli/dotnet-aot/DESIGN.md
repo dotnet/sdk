@@ -118,10 +118,12 @@ A NativeAOT shared library (`NativeLib=Shared`) that exports a single
 the dual-path dispatch logic.
 
 **Fast path** — Unless `DOTNET_CLI_ENABLEAOT` is explicitly disabled, the AOT
-bridge builds the
-**full** command tree (the same `DotNetCommandDefinition` used by the managed
-CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
+bridge normally builds the **full** command tree (the same `DotNetCommandDefinition`
+used by the managed CLI). Exact top-level `<command> <help-alias>` invocations instead
+build a minimal root containing only the selected static command definition. Dynamic
+`new` and `test` help still defers to the managed CLI, and `completions` remains on the
+full-tree managed path because its configuration is not in the AOT dependency closure.
+Commands that can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
 subcommands, the narrow file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
 Other built-in command shapes are wired with a fallback action that throws
@@ -258,7 +260,10 @@ the appropriate implementation:
 In the shared files:
 
 - **`Parser.cs`** — A single shared `Parser` class builds the same full
-  `DotNetCommandDefinition` tree in both modes. Only the action wiring differs,
+  `DotNetCommandDefinition` tree in both modes for ordinary parsing. Exact static
+  top-level help may use a minimal root containing one command; managed-only dynamic
+  augmentation and the AOT exclusions above keep its output aligned with the full path.
+  Full-tree action wiring differs,
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
