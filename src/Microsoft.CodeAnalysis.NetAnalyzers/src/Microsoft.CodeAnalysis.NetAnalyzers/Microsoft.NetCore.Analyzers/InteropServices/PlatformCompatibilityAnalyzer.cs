@@ -1342,6 +1342,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
+            // A 'nameof' expression only captures the name of the member at compile time, the member itself is never accessed
+            if (operation.GetAncestor<INameOfOperation>(OperationKind.NameOf) != null)
+            {
+                return;
+            }
+
             var symbol = GetOperationSymbol(operation);
 
             if (symbol == null || symbol is ITypeSymbol type && type.SpecialType != SpecialType.None)
@@ -1415,6 +1421,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         containingSymbol = method.AssociatedSymbol!;
                     }
 
+                    // A guard member sheds the platform requirements of its containing type so that it can be referenced
+                    // from any call site, therefore its body cannot rely on them either. The assembly wide requirements
+                    // still hold though, as every call site within the assembly is bound by them
+                    if (HasGuardAttribute(containingSymbol) && containingSymbol.ContainingAssembly is { } containingAssembly)
+                    {
+                        containingSymbol = containingAssembly;
+                    }
+
                     if (TryGetOrCreatePlatformAttributes(containingSymbol, true, crossPlatform, platformSpecificMembers, relatedPlatforms, out var callSiteAttributes))
                     {
                         if (callSiteAttributes.Callsite != Callsite.Empty &&
@@ -1435,6 +1449,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool OperationHasOnlyAssemblyAttributesAndCalledFromSameAssembly(PlatformAttributes operationAttributes, ISymbol symbol, ISymbol containingSymbol) =>
             operationAttributes.IsAssemblyAttribute && containingSymbol.ContainingAssembly == symbol.ContainingAssembly;
+
+        private static bool HasGuardAttribute(ISymbol symbol)
+        {
+            foreach (AttributeData attribute in symbol.GetAttributes())
+            {
+                if (attribute.AttributeClass?.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private static bool UsedInCreatingNotSupportedException(IArgumentOperation operation, ITypeSymbol? notSupportedExceptionType)
         {
