@@ -63,3 +63,7 @@ internal record BuildOptions(
     string? Device,
     bool ListDevices,
     IReadOnlyDictionary<string, string> EnvironmentVariables);
+
+internal readonly record struct TestApplicationPolicy(
+    bool FailOnAllSkippedTests,
+    string? IgnoredExitCodes);

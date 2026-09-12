@@ -294,7 +294,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int totalRetriedTests = 0;
         int totalRetriedExecutions = 0;
         int totalFlakyTests = 0;
-        bool anyAssemblyUnsuccessful = false;
         int failedAssembliesWithoutFailedTests = 0;
 
         foreach (TestProgressState assembly in assemblies)
@@ -308,7 +307,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             totalFlakyTests += assembly.FlakyTests;
             if (!assembly.Success)
             {
-                anyAssemblyUnsuccessful = true;
                 if (assembly.FailedTests == 0)
                 {
                     failedAssembliesWithoutFailedTests++;
@@ -316,49 +314,33 @@ internal sealed partial class TerminalTestReporter : IDisposable
             }
         }
 
-        bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
-        bool allTestsWereSkipped = (totalTests == 0 && !_options.AllowZeroTests)
-            || (totalTests > 0 && totalTests == totalSkippedTests);
-        bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = anyAssemblyUnsuccessful || HasHandshakeFailure;
-        bool unexpectedNonZeroExitCode = exitCode is not null
-            && exitCode != ExitCode.Success
-            && exitCode != ExitCode.ZeroTests
-            && exitCode != ExitCode.MinimumExpectedTestsPolicyViolation;
-        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || unexpectedNonZeroExitCode || _wasCancelled;
+        bool runFailed = exitCode is null || exitCode != ExitCode.Success;
+        bool zeroTestsFailure = exitCode == ExitCode.ZeroTests;
+        bool minimumExpectedTestsFailure = exitCode == ExitCode.MinimumExpectedTestsPolicyViolation;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
 
-        if (_wasCancelled)
+        if (!runFailed)
+        {
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+        }
+        else if (_wasCancelled)
         {
             terminal.Append(CliCommandStrings.Aborted);
         }
-        else if (notEnoughTests)
+        else if (minimumExpectedTestsFailure && _options.MinimumExpectedTests > 0)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
-        else if (anyTestFailed || HasHandshakeFailure || unexpectedNonZeroExitCode)
-        {
-            // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
-            // hand-shake we want the headline to reflect that the run failed, not that no tests ran
-            // (which would imply a benign empty run). We intentionally do NOT escalate the broader
-            // anyAssemblyFailed here, because a project that legitimately contains zero tests exits
-            // with ExitCodes.ZeroTests (non-zero) and would otherwise be misclassified as a failure.
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
-        }
-        else if (allTestsWereSkipped)
+        else if (zeroTestsFailure)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
-        else if (anyAssemblyFailed)
-        {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
-        }
         else
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
 
         if (!_options.ShowAssembly && assemblies.Count == 1)
