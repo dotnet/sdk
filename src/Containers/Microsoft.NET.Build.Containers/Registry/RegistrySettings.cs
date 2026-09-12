@@ -13,10 +13,10 @@ internal class RegistrySettings
 
         ChunkedUploadSizeBytes = environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes) ??
             environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytesLegacy);
-        ForceChunkedUpload = Environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
+        ForceChunkedUpload = environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
             environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false) :
             environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUploadLegacy, defaultValue: false);
-        ParallelUploadEnabled = Environment.GetEnvironmentVariable(EnvVariables.ParallelUploadEnabled) is not null ?
+        ParallelUploadEnabled = environment.GetEnvironmentVariable(EnvVariables.ParallelUploadEnabled) is not null ?
             environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true) :
             environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabledLegacy, defaultValue: true);
 
@@ -26,19 +26,13 @@ internal class RegistrySettings
         }
     }
 
-    private const int DefaultChunkSizeBytes = 1024 * 64;
-    private const int FiveMegs = 5_242_880;
-
     /// <summary>
-    /// When chunking is enabled, allows explicit control over the size of the chunks uploaded
+    /// When chunking is enabled, allows explicit control over the size of the chunks uploaded.
     /// </summary>
-    /// <remarks>
-    /// Our default of 64KB is very conservative, so raising this to 1MB or more can speed up layer uploads reasonably well.
-    /// </remarks>
     internal int? ChunkedUploadSizeBytes { get; init; }
 
     /// <summary>
-    /// Allows to force chunked upload for debugging purposes.
+    /// Allows forcing chunked upload for debugging purposes.
     /// </summary>
     internal bool ForceChunkedUpload { get; init; }
 
