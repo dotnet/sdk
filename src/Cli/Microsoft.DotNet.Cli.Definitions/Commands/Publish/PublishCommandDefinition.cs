@@ -55,6 +55,8 @@ internal sealed class PublishCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
+    public readonly Option<IEnumerable<string>> LoggerOption = CommonOptions.CreateLoggerOption();
+
     public readonly Option<bool> NoDependenciesOption = RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false);
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
     public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
@@ -86,6 +88,7 @@ internal sealed class PublishCommandDefinition : Command
         Options.Add(InteractiveOption);
         Options.Add(NoRestoreOption);
         Options.Add(VerbosityOption);
+        Options.Add(LoggerOption);
         TargetPlatformOptions.AddTo(Options);
         Options.Add(DisableBuildServersOption);
         Options.Add(TargetOption);
