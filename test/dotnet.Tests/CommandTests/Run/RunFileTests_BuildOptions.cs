@@ -893,7 +893,8 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             File.WriteAllText(Path.Join(directory, name + ".cs"), $"public static class {name} {{ public static string Value => \"{name}\"; }}");
         }
 
-        new DotnetCommand(Log, "build", "Program.cs", argument)
+        // Shared compilation uses a named mutex, which is unrelated to testing MSBuild's in-process nodes and can fail independently.
+        new DotnetCommand(Log, "build", "Program.cs", argument, "-p:UseSharedCompilation=false")
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", force)
             .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
