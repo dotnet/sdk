@@ -4375,6 +4375,36 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        // An 'invalid' combination: 'Supported' and 'Unsupported' naming the *same* version cancel each other out,
+        // so the platform is dropped from the call site entirely and the call site is treated as reachable on all
+        // platforms (see 'AddAttribute', which discards the pair). The macOS-only API is therefore still reported.
+        [TestMethod]
+        public async Task SupportedAndUnsupportedWithSameVersionCancelOut()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+
+                partial class TestType
+                {
+                    [UnsupportedOSPlatform("macos12.0")]
+                    [SupportedOSPlatform("macos12.0")]
+                    void DoSomething()
+                    {
+                        Console.WriteLine({|#0:MacApi|});
+                    }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    public ulong? MacApi { get; private set; }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0)
+                    .WithArguments("TestType.MacApi", "'macOS/OSX' 11.0 and later"));
+        }
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 

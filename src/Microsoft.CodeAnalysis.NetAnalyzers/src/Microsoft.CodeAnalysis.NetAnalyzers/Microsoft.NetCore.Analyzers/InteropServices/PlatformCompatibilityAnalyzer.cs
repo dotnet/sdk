@@ -497,6 +497,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (analysisValue is PlatformMethodValue info)
                     {
+                        // A negated guard can exclude this platform entirely at the call site's minimum version.
+                        if (info.Negated && IsPlatformExcludedByCallsite(info, originalCsAttributes))
+                        {
+                            attributes.Remove(info.PlatformName);
+                            continue;
+                        }
+
                         if (attributes.TryGetValue(info.PlatformName, out var attribute))
                         {
                             if (info.Negated)
@@ -595,7 +602,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             // it is checking one exact platform, other unsupported should be suppressed
                             RemoveUnsupportsOnDifferentPlatforms(attributes, info.PlatformName);
-                            csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            if (IsPlatformSupportSuppressedByCallsite(info, attributes, originalAttributes, originalCsAttributes))
+                            {
+                                RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
+                            }
+                            else
+                            {
+                                csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            }
                         }
                     }
                 }
@@ -656,10 +670,57 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
+            // Excludes a platform from a negated guard branch when that branch cannot be reached at the call site.
+            //
+            // This is only sound when *every* call site attribute is an allow list, because an allow list is the only
+            // form that restricts the call site to the listed platforms. Consider these two call sites, both guarded
+            // by 'if (!IsMacOS15)', which leaves the branch reachable on macOS versions below 15.0:
+            //
+            //   [SupportedOSPlatform("macos15.0")]                                  <- allow list
+            //     Reachable on macOS 15.0+ and nothing else, so the branch is unreachable and macOS can be excluded.
+            //
+            //   [UnsupportedOSPlatform("macos12.0"), SupportedOSPlatform("macos15.0")] <- deny list ('AddAttribute'
+            //     records UnsupportedFirst = 12.0 and SupportedFirst = 15.0, and 'DenyList' classifies it as such)
+            //     Reachable on macOS 15.0+ *and on every other platform*, so the branch is still reachable on, say,
+            //     Linux. Excluding macOS here would drop a macOS-only API's requirement and hide a real CA1416.
+            //
+            // 'AllowList' already implies a non-null 'SupportedFirst', so no separate null check is needed.
+            static bool IsPlatformExcludedByCallsite(
+                PlatformMethodValue value,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+                => callsiteAttributes != null &&
+                    callsiteAttributes.Values.All(AllowList) &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
+                    attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
+
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
                 => !parentValue.Negated && !attributes.ContainsKey(parentValue.PlatformName) &&
                     originalAttributes.TryGetValue(parentValue.PlatformName, out Versions? version) &&
                     parentValue.Version.IsGreaterThanOrEqualTo(version.SupportedFirst);
+
+            // Detects a supported guard that the call site's own support already satisfies, so that the guarded flow is
+            // preserved instead of being re-applied as a call site attribute.
+            //
+            // For example, with '[SupportedOSPlatform("macos11.0"), SupportedOSPlatform("tvos13.0")]' on the API and a
+            // guard declaring '[SupportedOSPlatformGuard("macos11.0"), SupportedOSPlatformGuard("tvos13.0")]', a call
+            // site supporting macOS 12.0 already covers the macOS half of the guard. Only tvOS still needs guarding,
+            // so macOS must not be re-applied as a call site attribute (see https://github.com/dotnet/roslyn-analyzers/issues/7665).
+            //
+            // Unlike 'IsPlatformExcludedByCallsite' this does not require an allow-list call site: it never removes a
+            // platform requirement, it only avoids narrowing the call site further. A null 'SupportedFirst' on either
+            // side means there is no minimum version to compare, so the guard is not considered covered.
+            static bool IsPlatformSupportSuppressedByCallsite(
+                PlatformMethodValue value,
+                SmallDictionary<string, Versions> attributes,
+                SmallDictionary<string, Versions> originalAttributes,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+                => !attributes.ContainsKey(value.PlatformName) &&
+                    originalAttributes.TryGetValue(value.PlatformName, out Versions? originalVersion) &&
+                    originalVersion.SupportedFirst != null &&
+                    callsiteAttributes != null &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? callsiteVersion) &&
+                    callsiteVersion.SupportedFirst != null &&
+                    callsiteVersion.SupportedFirst.IsGreaterThanOrEqualTo(originalVersion.SupportedFirst);
 
             static bool IsOnlySupportNeedsGuard(string platformName, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> csAttributes)
                  => csAttributes.TryGetValue(platformName, out var versions) &&
@@ -2065,18 +2126,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     attributes[platformName] = new Versions();
                 }
 
-                if (!AddAttribute(attribute, version, attributes[platformName]))
+                var added = AddAttribute(attribute, version, attributes[platformName]);
+                if (!added)
                 {
                     attributes.Remove(platformName);
                 }
-                else if (relatedPlatforms.TryGetValue(platformName, out var relation) && relation.isSubset)
-                {
-                    if (!attributes.TryGetValue(relation.relatedPlatform, out var _))
-                    {
-                        attributes[relation.relatedPlatform] = new Versions();
-                    }
 
-                    AddAttribute(attribute, version, attributes[relation.relatedPlatform]);
+                if (relatedPlatforms.TryGetValue(platformName, out var relation) && relation.isSubset)
+                {
+                    if (added)
+                    {
+                        if (!attributes.TryGetValue(relation.relatedPlatform, out var _))
+                        {
+                            attributes[relation.relatedPlatform] = new Versions();
+                        }
+
+                        AddAttribute(attribute, version, attributes[relation.relatedPlatform]);
+                    }
+                    // A 'Supported' and an 'Unsupported' attribute naming the same version cancel each other out,
+                    // and 'AddAttribute' reports that by returning false so the platform can be dropped. The related
+                    // platform was given a copy of the earlier attribute, so it has to be cancelled as well -
+                    // otherwise '[UnsupportedOSPlatform("ios12.0"), SupportedOSPlatform("ios12.0")]' would clear 'ios'
+                    // but strand 'maccatalyst' with the unsupported 12.0 that was only ever inferred from 'ios'.
+                    // Nothing is created here: with the primary platform cancelled there would be nothing to mirror.
+                    else if (attributes.TryGetValue(relation.relatedPlatform, out var relatedVersions) &&
+                        !AddAttribute(attribute, version, relatedVersions))
+                    {
+                        attributes.Remove(relation.relatedPlatform);
+                    }
                 }
 
                 return true;

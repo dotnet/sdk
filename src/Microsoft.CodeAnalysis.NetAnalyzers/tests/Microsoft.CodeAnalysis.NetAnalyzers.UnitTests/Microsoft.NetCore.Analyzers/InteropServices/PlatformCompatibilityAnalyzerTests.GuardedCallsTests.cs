@@ -5522,6 +5522,144 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             await VerifyAnalyzerCSAsync(source, msBuildPlatforms);
         }
 
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task MultipleCustomGuardsSuppressedByCallsite()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                [assembly: SupportedOSPlatform("macos12.0")]
+                [assembly: SupportedOSPlatform("tvos12.2")]
+
+                partial class TestType
+                {
+                    void DoSomething()
+                    {
+                        if (IsAtLeastXcode11)
+                        {
+                            Console.WriteLine(PerformanceRating);
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    [SupportedOSPlatform("tvos13.0")]
+                    public ulong? PerformanceRating { get; private set; }
+
+                    [SupportedOSPlatformGuard("macos11.0")]
+                    [SupportedOSPlatformGuard("tvos13.0")]
+                    internal static bool IsAtLeastXcode11 => true;
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        // The three tests below document how a negated custom guard interacts with the *call site's* own attributes,
+        // which is the subtle part of the rules: whether the guarded branch can be proven unreachable depends on
+        // whether the call site is an allow list or a deny list.
+        //
+        // Allow list  - '[SupportedOSPlatform("windows12.0")]' restricts the call site to Windows 12.0+ and nothing
+        //               else, so a '!IsWindows12' branch is unreachable and the platform can be excluded.
+        // Deny list   - '[UnsupportedOSPlatform("windows10.0"), SupportedOSPlatform("windows12.0")]' restricts only
+        //               Windows; the call site is still reachable on *every other platform*, so the branch remains
+        //               reachable and a Windows-only API must still be reported.
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedGuardWithDenyListCallsiteStillReportsOtherPlatforms()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                partial class TestType
+                {
+                    [UnsupportedOSPlatform("windows10.0")]
+                    [SupportedOSPlatform("windows12.0")]
+                    void DoSomething()
+                    {
+                        if (!IsWindows12)
+                        {
+                            // Still reachable on Linux, macOS, ... where a Windows-only API does not exist.
+                            Console.WriteLine({|CA1416:WindowsOnlyApi|});
+                        }
+                    }
+
+                    [SupportedOSPlatform("windows8.0")]
+                    public ulong? WindowsOnlyApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("windows12.0")]
+                    internal static bool IsWindows12 => true;
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedGuardWithAllowListCallsiteIsUnreachable()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                partial class TestType
+                {
+                    [SupportedOSPlatform("windows12.0")]
+                    void DoSomething()
+                    {
+                        if (!IsWindows12)
+                        {
+                            // Unreachable: the call site only runs on Windows 12.0 and later.
+                            Console.WriteLine(WindowsOnlyApi);
+                        }
+                    }
+
+                    [SupportedOSPlatform("windows8.0")]
+                    public ulong? WindowsOnlyApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("windows12.0")]
+                    internal static bool IsWindows12 => true;
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        // 'maccatalyst' is treated as a subset of 'ios', so an ios-only attribute implies the matching maccatalyst one.
+        // Here the call site allows ios/maccatalyst 13.0+ while the API needs 15.0, so the '!IsIOS15' branch is still
+        // reachable on 13.0-15.0 and the diagnostic names *both* platforms even though the API only declared ios.
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedGuardWithRelatedSubsetPlatformImpliesBothPlatforms()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                partial class TestType
+                {
+                    [SupportedOSPlatform("ios13.0")]
+                    [SupportedOSPlatform("maccatalyst13.0")]
+                    void DoSomething()
+                    {
+                        if (!IsIOS15)
+                        {
+                            Console.WriteLine({|#0:NewApi|});
+                        }
+                    }
+
+                    [SupportedOSPlatform("ios15.0")]
+                    public ulong? NewApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("ios15.0")]
+                    internal static bool IsIOS15 => true;
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0)
+                    .WithArguments("TestType.NewApi", "'ios' 15.0 and later, 'maccatalyst' 15.0 and later", "'ios' 13.0 and later, 'maccatalyst' 13.0 and later"));
+        }
+
         private readonly string TargetTypesForTest = """
 
             namespace PlatformCompatDemo.SupportedUnupported
