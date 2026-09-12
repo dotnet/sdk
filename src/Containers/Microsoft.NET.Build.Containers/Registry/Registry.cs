@@ -311,6 +311,7 @@ internal sealed class Registry
             "amd64" => "x64",
             "x386" => "x86",
             "arm" => $"arm{(platform.variant != "v7" ? platform.variant : "")}",
+            "armel" => "armel",
             "arm64" => "arm64",
             "ppc64le" => "ppc64le",
             "s390x" => "s390x",
