@@ -32,7 +32,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 "install",
                 "Microsoft.TemplateSearch.TemplateDiscovery",
                 "--version",
-                TemplatePackageVersion.MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)
+                TemplatePackageVersion.MicrosoftTemplateSearchTemplateDiscoveryPackageVersion,
+                "--add-source",
+                AppContext.BaseDirectory)
                 .WithWorkingDirectory(dotnetNewTestExecutionDir)
                 .Execute()
                 .Should()
