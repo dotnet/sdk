@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 

@@ -4,7 +4,6 @@
 
     <!--
       Tests code used in in-proc VS and VS Code.
-      Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
     -->
     <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
