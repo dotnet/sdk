@@ -1,0 +1,14 @@
+{
+  "name": "blazor-wasm-mtp-poc",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node run-browser-tests.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.62.0"
+  }
+}
