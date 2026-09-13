@@ -51,7 +51,7 @@ public sealed class PrepareHelixNuGetConfig : Build.Utilities.Task
             new XElement(
                 "add",
                 new XAttribute("key", "dotnet-under-test"),
-                new XAttribute("value", "%DOTNET_ROOT%/.nuget")),
+                new XAttribute("value", "%HELIX_CORRELATION_PAYLOAD%/d/.nuget")),
             new XElement(
                 "add",
                 new XAttribute("key", "testpackages"),

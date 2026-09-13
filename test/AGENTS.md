@@ -13,7 +13,9 @@ Guidance for changes under `test/`.
 
 - **Derive from `SdkTest`** (in `Microsoft.NET.TestFramework.MSTest`). This gives you
   `TestAssetsManager`, `Log` (wired to MSTest's `TestContext`), and
-  `BinLogArgument(...)` for binlog paths collected by Helix.
+  `BinLogArgument(...)` for binlog paths collected by Helix. It also initializes the
+  SDK/MSBuild environment before in-process MSBuild APIs such as `ProjectCollection`
+  cache toolset paths.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 

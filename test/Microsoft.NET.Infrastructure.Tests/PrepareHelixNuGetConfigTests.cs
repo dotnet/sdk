@@ -45,7 +45,7 @@ public class PrepareHelixNuGetConfigTests : SdkTest
 
         Assert.HasCount(3, sources);
         Assert.AreEqual("https://example.test/dotnet11", sources["dotnet11"]);
-        Assert.AreEqual("%DOTNET_ROOT%/.nuget", sources["dotnet-under-test"]);
+        Assert.AreEqual("%HELIX_CORRELATION_PAYLOAD%/d/.nuget", sources["dotnet-under-test"]);
         Assert.AreEqual(
             "%DOTNET_SDK_TEST_EXECUTION_DIRECTORY%/Testpackages",
             sources["testpackages"]);
