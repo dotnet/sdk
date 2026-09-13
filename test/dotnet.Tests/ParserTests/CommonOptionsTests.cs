@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 namespace Microsoft.DotNet.Tests.ParserTests;
 
 [TestClass]
+[DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
 public class CommonOptionsTests
 {
     [TestMethod]

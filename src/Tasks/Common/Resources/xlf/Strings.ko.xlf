@@ -344,6 +344,16 @@
         <target state="translated">NETSDK1154: UseCrossgen2가 true로 설정된 경우 Crossgen2Tool을 지정해야 합니다.</target>
         <note>{StrBegins="NETSDK1154: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedHostRuntimeIdentifier">
+        <source>NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</source>
+        <target state="new">NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</target>
+        <note>{StrBegins="NETSDK1245: "}</note>
+      </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedTargetFramework">
+        <source>NETSDK1246: The crossgen2 pack is not available for the target framework.</source>
+        <target state="new">NETSDK1246: The crossgen2 pack is not available for the target framework.</target>
+        <note>{StrBegins="NETSDK1246: "}</note>
+      </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
         <source>NETSDK1166: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
         <target state="translated">NETSDK1166: 복합 모드를 사용하여 Crossgen2를 사용하여 .NET 5에 게시할 때 기호를 내보낼 수 없습니다.</target>

@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public TestContext TestContext { get; set; } = null!;
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public async Task GetInstalledVersionsAsync_ShouldContainCurrentVersion()
         {
             string? dotnetRootUnderTest = SdkTestContext.Current.ToolsetUnderTest?.DotNetRoot;

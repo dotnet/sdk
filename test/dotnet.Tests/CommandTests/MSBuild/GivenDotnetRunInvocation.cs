@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 
         [TestMethod]
+        // CurrentDirectory is process-wide and is read by code throughout this project that cannot participate in a resource lock.
+        [DoNotParallelize]
         [DataRow(new string[] { "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
         [DataRow(new string[] { "--property:prop1=true" }, new string[] { "--property:prop1=true" })]
         [DataRow(new string[] { "--property", "prop1=true" }, new string[] { "--property:prop1=true" })]
@@ -62,4 +64,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

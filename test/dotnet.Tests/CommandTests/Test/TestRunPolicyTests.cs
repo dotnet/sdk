@@ -78,16 +78,21 @@ public class TestRunPolicyTests
     public async Task TimeoutOnlyCountsTimeWithActiveTestApplications()
     {
         CancellationToken cancellationToken = TestContext.CancellationToken;
-        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(300));
+        var timeProvider = new ManualTimeProvider();
+        using var policy = new TestRunPolicy(
+            maximumFailedTests: null,
+            timeout: TimeSpan.FromMilliseconds(300),
+            timeProvider: timeProvider);
 
         policy.OnTestApplicationStarted();
-        await Task.Delay(100, cancellationToken);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(100));
         policy.OnTestApplicationExited();
 
-        await Task.Delay(300, cancellationToken);
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
         policy.Reason.Should().Be(TestRunCancellationReason.None);
 
         policy.OnTestApplicationStarted();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(200));
         TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
 
         reason.Should().Be(TestRunCancellationReason.Timeout);
@@ -145,5 +150,87 @@ public class TestRunPolicyTests
         await Task.WhenAll(workers).WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
 
         policy.Reason.Should().Be(TestRunCancellationReason.Timeout);
+    }
+
+    private sealed class ManualTimeProvider : TimeProvider
+    {
+        private readonly Lock _lock = new();
+        private ManualTimer? _timer;
+        private long _timestamp;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp() => Volatile.Read(ref _timestamp);
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            lock (_lock)
+            {
+                _timer = new ManualTimer(this, callback, state);
+                _timer.Change(dueTime, period);
+                return _timer;
+            }
+        }
+
+        public void Advance(TimeSpan elapsed)
+        {
+            long timestamp = Interlocked.Add(ref _timestamp, elapsed.Ticks);
+            _timer?.InvokeIfDue(timestamp);
+        }
+
+        private sealed class ManualTimer(
+            ManualTimeProvider timeProvider,
+            TimerCallback callback,
+            object? state) : ITimer
+        {
+            private long _dueTimestamp = long.MaxValue;
+            private bool _disposed;
+
+            public bool Change(TimeSpan dueTime, TimeSpan period)
+            {
+                lock (timeProvider._lock)
+                {
+                    if (_disposed)
+                    {
+                        return false;
+                    }
+
+                    _dueTimestamp = dueTime == Timeout.InfiniteTimeSpan
+                        ? long.MaxValue
+                        : timeProvider.GetTimestamp() + dueTime.Ticks;
+                    return true;
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (timeProvider._lock)
+                {
+                    _disposed = true;
+                    _dueTimestamp = long.MaxValue;
+                }
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return ValueTask.CompletedTask;
+            }
+
+            public void InvokeIfDue(long timestamp)
+            {
+                lock (timeProvider._lock)
+                {
+                    if (_disposed || timestamp < _dueTimestamp)
+                    {
+                        return;
+                    }
+
+                    _dueTimestamp = long.MaxValue;
+                }
+
+                callback(state);
+            }
+        }
     }
 }

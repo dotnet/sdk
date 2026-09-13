@@ -102,7 +102,7 @@ namespace Microsoft.NET.Pack.Tests
         public void It_packs_with_release_if_PackRelease_property_set_in_csproj(string valueOfPackRelease)
         {
             var helloWorldAsset = TestAssetsManager
-               .CopyTestAsset("HelloWorld")
+               .CopyTestAsset("HelloWorld", identifier: valueOfPackRelease)
                .WithSource()
                .WithProjectChanges(project =>
                {

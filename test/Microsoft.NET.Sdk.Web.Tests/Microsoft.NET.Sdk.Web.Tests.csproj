@@ -3,6 +3,7 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>

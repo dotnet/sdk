@@ -125,6 +125,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
         {
             string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
@@ -170,6 +171,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             parseResult.Errors.Should().BeEmpty();
             parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
             parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("Minimal", (int)OutputOptions.Minimal)]
+        [DataRow("Normal", (int)OutputOptions.Normal)]
+        [DataRow("Detailed", (int)OutputOptions.Detailed)]
+        public void MTPCommandParsesOutputPreset(string value, int expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--output", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be((OutputOptions)expected);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandDefaultsToNormalOutputPreset()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be(OutputOptions.Normal);
         }
 
         [TestMethod]
@@ -280,6 +305,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandAcceptsAffectedTestOptions(string option)
@@ -298,6 +324,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsAffectedTestOptionsTogether()
         {
             WithAffectedTestsFeature(enabled: true, () =>
@@ -311,6 +338,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandRejectsAffectedTestOptionsWhenFeatureIsDisabled(string option)
@@ -328,6 +356,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithParallelModules()
         {
             WithAffectedTestsFeature(enabled: true, () =>
@@ -606,6 +635,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithMinimumExpectedTests()
         {
             WithAffectedTestsFeature(enabled: true, () =>
