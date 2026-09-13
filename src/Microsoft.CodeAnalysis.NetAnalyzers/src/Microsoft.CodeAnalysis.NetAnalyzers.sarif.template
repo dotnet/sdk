@@ -455,6 +455,25 @@
             ]
           }
         },
+        "CA1878": {
+          "id": "CA1878",
+          "shortDescription": "Prefer ReadOnlySpan<T> properties over readonly array fields",
+          "fullDescription": "If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan<T> property.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1878",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",

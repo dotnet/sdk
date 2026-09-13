@@ -43,8 +43,8 @@ namespace MyNamespace
         // Creating a TestAsset and building it for each test
         // creates a lot of overhead, using the cache
         // speeds up test execution ~3x in this test assembly.
-        // Tests within the same class run serially in xunit, so
-        // it is fine to reuse the same asset.
+        // MSTest ClassLevel parallelization keeps methods in this class serial,
+        // so it is fine to reuse the same asset.
         private class TestAssetCache
         {
             public static TestAssetCache Instance = new();

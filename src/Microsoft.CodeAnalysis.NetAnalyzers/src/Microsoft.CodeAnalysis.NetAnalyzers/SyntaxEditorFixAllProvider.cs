@@ -160,7 +160,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
                 cancellationToken);
         }
 
-        private static async Task<Document> ApplyFixesAsync<TState>(
+        internal static async Task<Document> ApplyFixesAsync<TState>(
             Document document,
             ImmutableArray<Diagnostic> diagnostics,
             TState state,

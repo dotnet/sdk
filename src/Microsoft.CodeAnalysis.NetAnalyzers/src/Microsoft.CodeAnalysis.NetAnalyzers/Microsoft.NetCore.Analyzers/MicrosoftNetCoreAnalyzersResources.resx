@@ -2336,4 +2336,20 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="PreferReadOnlySpanOverSpanCodeFixTitle" xml:space="preserve">
     <value>Change to '{0}'</value>
   </data>
+  <data name="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsDescription" xml:space="preserve">
+    <value>If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan&lt;T&gt; property.</value>
+    <comment>{Locked="readonly"}{Locked="ReadOnlySpan&lt;T&gt;"}</comment>
+  </data>
+  <data name="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsMessage" xml:space="preserve">
+    <value>Prefer static ReadOnlySpan&lt;{0}&gt; property over static readonly {0}[] field</value>
+    <comment>{Locked="static"}{Locked="ReadOnlySpan"}{Locked="readonly"}</comment>
+  </data>
+  <data name="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsTitle" xml:space="preserve">
+    <value>Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</value>
+    <comment>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</comment>
+  </data>
+  <data name="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsCodeFixTitle" xml:space="preserve">
+    <value>Use ReadOnlySpan&lt;T&gt; property</value>
+    <comment>{Locked="ReadOnlySpan&lt;T&gt;"}</comment>
+  </data>
 </root>

@@ -53,7 +53,7 @@ renamed, or changes purpose. Its loading map must list exactly the files that ex
 
 Review the affected area for:
 
-- `.github/copilot-instructions.md` and the nearest `AGENTS.md`
+- the root and nearest area `AGENTS.md`
 - `.github/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, and `.github/agents/*.agent.md`
 - contributor and area guidance under `documentation/`
 - command help, usage text, completion and Verify snapshots

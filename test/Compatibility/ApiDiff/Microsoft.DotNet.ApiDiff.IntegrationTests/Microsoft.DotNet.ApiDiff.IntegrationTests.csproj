@@ -5,6 +5,7 @@
          path that needs to be exercised from desktop MSBuild. Single-target the netcore TFM. -->
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

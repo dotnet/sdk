@@ -763,6 +763,166 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     }
 
     [TestMethod]
+    [DataRow("true", "-mt:\"true\"")]
+    [DataRow("false", "-mt:\"false\"")]
+    [DataRow("quoted-empty", "-mt:\"\"")]
+    [DataRow("whole-switch", "\"--mt:false\"")]
+    public void MultiThreadedArgument_ResponseFile(string id, string argument)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: id);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "mt.rsp"), argument);
+
+        new DotnetCommand(Log, "build", "Program.cs", "@mt.rsp")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs", "@mt.rsp")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [TestMethod]
+    [DataRow(null, null, new string[0], false)]
+    [DataRow("1", null, new string[0], true)]
+    [DataRow("1", null, new[] { "-mt:false" }, true)]
+    [DataRow(null, "1", new string[0], true)]
+    [DataRow(null, "1", new[] { "-mt:false" }, false)]
+    [DataRow(null, null, new[] { "-mt:false", "-mt:" }, false)]
+    [DataRow(null, null, new[] { "-mt:false", "-mt:\"\"" }, false)]
+    [DataRow(null, null, new[] { "-mt:false", "-mt" }, true)]
+    [DataRow(null, null, new[] { "-mt:" }, true)]
+    public void MultiThreadedArgument_EnvironmentAndNodeCount(
+        string? force, string? enable, string[] arguments, bool enabled)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
+
+        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
+        string actual = GetBuildNodeCount(testInstance.Path, "build", "Program.cs", arguments, force, enable);
+
+        actual.Should().Be(enabled ? logicalCoreCount : "1");
+    }
+
+    [TestMethod]
+    [DataRow("-mt", new string[0], true)]
+    [DataRow("-mt:false", new string[0], false)]
+    [DataRow("-mt", new[] { "-mt:false" }, false)]
+    [DataRow("-mt:false", new[] { "-mt" }, true)]
+    [DataRow("-mt:false", new[] { "-mt:" }, false)]
+    [DataRow("-mt:false", new[] { "-mt:\"\"" }, false)]
+    public void MultiThreadedArgument_DirectoryResponseFile(string responseSwitch, string[] arguments, bool enabled)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "@concurrency.rsp");
+        File.WriteAllText(Path.Join(testInstance.Path, "concurrency.rsp"), responseSwitch);
+
+        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
+        string actual = GetBuildNodeCount(testInstance.Path, "build", "Program.cs", arguments, null, null);
+
+        actual.Should().Be(enabled ? logicalCoreCount : "1");
+    }
+
+    [TestMethod]
+    public void MultiThreadedArgument_ProjectResponseFilePrecedence()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "-mt:false");
+        File.WriteAllText(Path.Join(testInstance.Path, "MSBuild.rsp"), "-mt");
+
+        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
+        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", [], null, null).Should().Be(logicalCoreCount);
+        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", ["-mt:false"], null, null).Should().Be("1");
+        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", ["-mt:false"], "1", null).Should().Be(logicalCoreCount);
+    }
+
+    [TestMethod]
+    public void MultiThreadedArgument_ResponseFileSearchUsesSourceDirectory()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        string nested = Directory.CreateDirectory(Path.Join(testInstance.Path, "nested")).FullName;
+        string app = Directory.CreateDirectory(Path.Join(nested, "app")).FullName;
+        string program = Path.Join(app, "Program.cs");
+        File.WriteAllText(program, s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "-mt:false");
+        File.WriteAllText(Path.Join(nested, "Directory.Build.rsp"), "-mt");
+
+        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
+        GetBuildNodeCount(testInstance.Path, "build", program, [], null, null).Should().Be(logicalCoreCount);
+    }
+
+    [TestMethod]
+    [DataRow("0", "-mt")]
+    [DataRow("1", "-mt:false")]
+    public void MultiThreadedArgument_BuildsProjectReferencesInProcess(string force, string argument)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: force);
+        string processIds = Directory.CreateDirectory(Path.Join(testInstance.Path, "node-pids")).FullName;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:project LibraryA/LibraryA.csproj
+            #:project LibraryB/LibraryB.csproj
+            Console.WriteLine(LibraryA.Value + LibraryB.Value);
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="RecordBuildNode" AfterTargets="Build">
+                <WriteLinesToFile File="$(MSBuildThisFileDirectory)node-pids/$(MSBuildProjectName).pid"
+                                  Lines="$([System.Environment]::ProcessId)" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        foreach (string name in new[] { "LibraryA", "LibraryB" })
+        {
+            string directory = Directory.CreateDirectory(Path.Join(testInstance.Path, name)).FullName;
+            File.WriteAllText(Path.Join(directory, name + ".csproj"), $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                  </PropertyGroup>
+                </Project>
+                """);
+            File.WriteAllText(Path.Join(directory, name + ".cs"), $"public static class {name} {{ public static string Value => \"{name}\"; }}");
+        }
+
+        new DotnetCommand(Log, "build", "Program.cs", argument)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", force)
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
+            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
+            .Execute()
+            .Should().Pass();
+
+        string[] files = Directory.GetFiles(processIds, "*.pid");
+        files.Should().HaveCount(3);
+        files.Select(path => File.ReadAllText(path).Trim()).Distinct().Should().ContainSingle();
+    }
+
+    private string GetBuildNodeCount(
+        string directory, string command, string projectOrFile, string[] arguments, string? force, string? enable)
+    {
+        var result = new DotnetCommand(Log, [command, projectOrFile, "-getProperty:MSBuildNodeCount", .. arguments])
+            .WithWorkingDirectory(directory)
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", force ?? "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", enable ?? "0")
+            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
+            .Execute();
+
+        result.Should().Pass();
+        Assert.IsNotNull(result.StdOut);
+        return result.StdOut.Trim();
+    }
+
+    [TestMethod]
     public void NoConsoleLogger_Run_SuppressesBuildOutput()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

@@ -47,7 +47,7 @@ internal static class TestCommandOptions
             out int unmatchedTokenCountBeforeDoubleDash,
             out string[] argumentsAfterDoubleDash))
         {
-            LoggerUtility.SeparateLoggerArguments(
+            LoggerUtility.SeparateMSBuildArguments(
                 unmatchedTokens[..unmatchedTokenCountBeforeDoubleDash],
                 out loggerArgs,
                 out var argumentsBeforeDoubleDash);
@@ -56,7 +56,7 @@ internal static class TestCommandOptions
         }
         else
         {
-            LoggerUtility.SeparateLoggerArguments(unmatchedTokens, out loggerArgs, out otherArgs);
+            LoggerUtility.SeparateMSBuildArguments(unmatchedTokens, out loggerArgs, out otherArgs);
             positionalArgumentCount = otherArgs.Length;
         }
 #endif

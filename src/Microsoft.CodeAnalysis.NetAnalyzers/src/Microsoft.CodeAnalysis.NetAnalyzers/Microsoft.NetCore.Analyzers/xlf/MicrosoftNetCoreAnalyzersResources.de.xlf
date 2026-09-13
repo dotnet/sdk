@@ -2453,6 +2453,26 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsCodeFixTitle">
+        <source>Use ReadOnlySpan&lt;T&gt; property</source>
+        <target state="new">Use ReadOnlySpan&lt;T&gt; property</target>
+        <note>{Locked="ReadOnlySpan&lt;T&gt;"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsDescription">
+        <source>If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan&lt;T&gt; property.</source>
+        <target state="new">If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan&lt;T&gt; property.</target>
+        <note>{Locked="readonly"}{Locked="ReadOnlySpan&lt;T&gt;"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsMessage">
+        <source>Prefer static ReadOnlySpan&lt;{0}&gt; property over static readonly {0}[] field</source>
+        <target state="new">Prefer static ReadOnlySpan&lt;{0}&gt; property over static readonly {0}[] field</target>
+        <note>{Locked="static"}{Locked="ReadOnlySpan"}{Locked="readonly"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsTitle">
+        <source>Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</source>
+        <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
+        <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">Stream verfügt über eine Überladung "ReadAsync", die "Memory&lt;Byte&gt;" als erstes Argument akzeptiert, sowie über eine Überladung "WriteAsync", die "ReadOnlyMemory&lt;Byte&gt;" als erstes Argument akzeptiert. Rufen Sie möglichst arbeitsspeicherbasierte Überladungen auf, da diese effizienter sind.</target>

@@ -107,7 +107,6 @@ public class ProgramTests_Arguments : DotNetWatchTestBase
 
         App.Start(testAsset, arguments: new[]
         {
-            "--verbose",
             "--no-hot-reload",
             "-lp",
             profileName
@@ -128,7 +127,6 @@ public class ProgramTests_Arguments : DotNetWatchTestBase
 
         App.Start(testAsset, arguments: new[]
         {
-            "--verbose",
             "-lp",
             profileName
         });

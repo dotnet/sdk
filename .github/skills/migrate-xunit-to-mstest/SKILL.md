@@ -376,7 +376,7 @@ public sealed class MyTests
 | xUnit companion | MSTest equivalent |
 |---|---|
 | `Xunit.SkippableFact` (`[SkippableFact]`, `Skip.If`, `Skip.IfNot`) | For environmental predicates (OS/CI/arch): MSTest 3.10+ condition attributes (`[OSCondition]`, `[CICondition]`, etc.). Otherwise: `[Ignore]` (compile-time) or `Assert.Inconclusive("reason")` (runtime). Remove the package |
-| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | [`Combinatorial.MSTest`](https://github.com/Youssef1313/Combinatorial.MSTest) (community port; attribute surface matches xUnit.Combinatorial). Or expand combinations into explicit `[DataRow]`s / `[DynamicData]` |
+| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | MSTest 4.4+'s built-in combinatorial data support. Import `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial`; the attribute surface matches `Xunit.Combinatorial`. |
 | `Xunit.StaFact` (`[StaFact]`, `[WpfFact]`) | `[TestMethod]` + manual STA thread. No MSTest equivalent for `[WpfFact]`; flag for manual conversion |
 | `Verify.Xunit` | `Verify.MSTest` -- swap the package; usage is similar |
 | `FluentAssertions` / `Shouldly` / `AwesomeAssertions` | Keep -- assertion library is framework-agnostic |

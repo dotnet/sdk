@@ -116,9 +116,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
-    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for both runtime and emsdk packages since they're aligned in VMR builds -->
+    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for the runtime packages, and the Emscripten.Internal
+         version for the emsdk packages, whose own IDs contain the Emscripten version and the RID -->
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]" />
   </ItemGroup>
 
   <Target Name="_AddMsiPackageDownloads"
