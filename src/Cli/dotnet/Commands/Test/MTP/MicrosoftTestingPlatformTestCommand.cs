@@ -633,12 +633,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // a second press can force-kill running test app child processes and exit with
         // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
-        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
-        var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
-
+        // Retry-specific rendering is enabled authoritatively by the retry orchestrator handshake.
+        // Keep the raw option check only for older platform versions that support retries but do not
+        // send that handshake, so they can still label attempt 1.
+        bool isRetry = IsLegacyRetryOptionEnabled(parseResult.GetArguments());
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
     }
+
+    internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
+        => arguments.Contains("--retry-failed-tests");
 
     /// <summary>
     /// Reads the Microsoft.Testing.Platform <c>--show-slowest-tests N</c> option out of the raw command line.
@@ -647,8 +651,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// The option belongs to the test application, not to the 'dotnet test' CLI, so it is forwarded verbatim. Under
     /// the pipe protocol the test host's own terminal reporter is not plugged in (the SDK owns user-facing output),
     /// so the section has to be rendered by the SDK's reporter instead — which means the SDK has to observe the
-    /// option. Same approach as the '--retry-failed-tests' detection above. A missing, non-numeric or non-positive
-    /// argument leaves the section off, mirroring the upstream option validator.
+    /// option. A missing, non-numeric or non-positive argument leaves the section off, mirroring the upstream
+    /// option validator.
     /// </remarks>
     internal static int GetSlowestTestsCount(IReadOnlyList<string> arguments)
     {

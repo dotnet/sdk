@@ -61,7 +61,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
-    private bool _isRetry;
+    private volatile bool _isRetry;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -127,6 +127,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
+    /// <summary>
+    /// Enables retry-specific rendering for the current execution. This is a monotonic transition
+    /// because orchestrator and test-host handshakes can arrive on different connections.
+    /// </summary>
+    internal void EnableRetry()
+        => _isRetry = true;
+
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
         => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null);
 
@@ -147,10 +154,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         int currentAttemptNumber = assemblyRun.GetAttemptNumber(instanceId);
 
-        // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
-        // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
-        // least show (try 2) etc. So user is still aware there is retry going on, and counts of tests won't break.
-        _isRetry |= assemblyRun.TryCount > 1;
+        // If no retry orchestrator handshake or legacy option signal was available, infer retry
+        // from a later assembly instance. This cannot label attempt 1, but it still labels attempt 2
+        // and later while preserving retry accounting.
+        if (assemblyRun.TryCount > 1)
+        {
+            EnableRetry();
+        }
 
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
