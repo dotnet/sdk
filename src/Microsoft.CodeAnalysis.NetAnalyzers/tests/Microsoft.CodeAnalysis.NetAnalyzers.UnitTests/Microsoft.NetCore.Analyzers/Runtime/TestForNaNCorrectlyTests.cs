@@ -18,373 +18,409 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForEqualityWithFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f == float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f == float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForEqualityWithFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f = Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f = Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForInequalityWithFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f != float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f != float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForInEqualityWithFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f <> Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f <> Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForGreaterThanFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f > float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f > float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForGreaterThanFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f > Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f > Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f >= float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f >= float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f >= Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f >= Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForLessThanFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f < float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f < float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForLessThanFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f < Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f < Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f <= float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f <= float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f <= Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f <= Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithDoubleNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(double d)
-    {
-        return d == double.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(double d)
+                    {
+                        return d == double.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForComparisonWithDoubleNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(d As Double) As Boolean
-        Return d < Double.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(d As Double) As Boolean
+                        Return d < Double.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNOnLeftAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(double d)
-    {
-        return double.NaN == d;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare(double d)
+                    {
+                        return double.NaN == d;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForComparisonWithNaNOnLeftAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(d As Double) As Boolean
-        Return Double.NaN = d
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare(d As Double) As Boolean
+                        Return Double.NaN = d
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForComparisonWithBadExpressionAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f == float.{|CS0117:NbN|}; // Misspelled.
-    }
-}
-";
+            var code = """
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f == float.{|CS0117:NbN|}; // Misspelled.
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForComparisonWithBadExpressionAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f = {|BC30456:Single.NbN|}   ' Misspelled
-    End Function
-End Class
-";
+            var code = """
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f = {|BC30456:Single.NbN|}   ' Misspelled
+                    End Function
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f == NaNFunc();
-    }
+            var code = """
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f == NaNFunc();
+                    }
 
-    private float NaNFunc()
-    {
-        return float.NaN;
-    }
-}
-";
+                    private float NaNFunc()
+                    {
+                        return float.NaN;
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f = NaNFunc()
-    End Function
+            var code = """
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f = NaNFunc()
+                    End Function
 
-    Private Function NaNFunc() As Single
-        Return Single.NaN
-    End Function
-End Class
-";
+                    Private Function NaNFunc() As Single
+                        Return Single.NaN
+                    End Function
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForEqualityWithNonNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare(float f)
-    {
-        return f == 1.0;
-    }
-}
-";
+            var code = """
+                public class A
+                {
+                    public bool Compare(float f)
+                    {
+                        return f == 1.0;
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForEqualityWithNonNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare(f As Single) As Boolean
-        Return f = 1.0
-    End Function
-End Class
-";
+            var code = """
+                Public Class A
+                    Public Function Compare(f As Single) As Boolean
+                        Return f = 1.0
+                    End Function
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForNonComparisonOperationWithNaNAsync()
         {
-            var code = @"
-public class A
-{
-    public float OperateOn(float f)
-    {
-        return f + float.NaN;
-    }
-}
-";
+            var code = """
+                public class A
+                {
+                    public float OperateOn(float f)
+                    {
+                        return f + float.NaN;
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForNonComparisonOperationWithNonNaNAsync()
         {
-            var code = @"
-Public Class A
-    Public Function OperateOn(f As Single) As Single
-        Return f + Single.NaN
-    End Function
-End Class
-";
+            var code = """
+                Public Class A
+                    Public Function OperateOn(f As Single) As Single
+                        Return f + Single.NaN
+                    End Function
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpOnlyOneDiagnosticForComparisonWithNaNOnBothSidesAsync()
         {
-            var code = @"
-public class A
-{
-    public bool Compare()
-    {
-        return float.NaN == float.NaN;
-    }
-}
-";
+            var code = """
+
+                public class A
+                {
+                    public bool Compare()
+                    {
+                        return float.NaN == float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
         [TestMethod]
         public async Task BasicOnlyOneDiagnosticForComparisonWithNonNaNOnBothSidesAsync()
         {
-            var code = @"
-Public Class A
-    Public Function Compare() As Boolean
-        Return Single.NaN = Single.NaN
-    End Function
-End Class
-";
+            var code = """
+
+                Public Class A
+                    Public Function Compare() As Boolean
+                        Return Single.NaN = Single.NaN
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
@@ -398,54 +434,60 @@ End Class
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        G(_n == float.NaN);
-    }
+                public class A
+                {
+                    float _n = 42.0F;
 
-    public void G(bool comparison) {}
-}
-";
+                    public void F()
+                    {
+                        G(_n == float.NaN);
+                    }
+
+                    public void G(bool comparison) {}
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 11));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
-            var code = @"
-Public Class A
-    Private _n As Single = 42.0F
+            var code = """
 
-    Public Sub F()
-        G(_n = Single.NaN)
-    End Sub
+                Public Class A
+                    Private _n As Single = 42.0F
 
-    Public Sub G(comparison As Boolean)
-    End Sub
-End Class
-";
+                    Public Sub F()
+                        G(_n = Single.NaN)
+                    End Sub
+
+                    Public Sub G(comparison As Boolean)
+                    End Sub
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(6, 11));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInTernaryOperatorAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public int F()
-    {
-        return _n == float.NaN ? 1 : 0;
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public int F()
+                    {
+                        return _n == float.NaN ? 1 : 0;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
@@ -453,155 +495,171 @@ public class A
         public async Task BasicDiagnosticForComparisonWithNaNInIfOperatorAsync()
         {
             // VB doesn't have the ternary operator, but we add this test for symmetry.
-            var code = @"
-Public Class A
-    Private _n As Single = 42.0F
+            var code = """
 
-    Public Function F() As Integer
-        Return If(_n = Single.NaN, 1, 0)
-    End Function
-End Class
-";
+                Public Class A
+                    Private _n As Single = 42.0F
+
+                    Public Function F() As Integer
+                        Return If(_n = Single.NaN, 1, 0)
+                    End Function
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(6, 19));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInThrowStatementAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        throw _n != float.NaN ? new System.Exception() : new System.ArgumentException();
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        throw _n != float.NaN ? new System.Exception() : new System.ArgumentException();
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 15));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInCatchFilterClauseAsync()
         {
-            var code = @"
-using System;
+            var code = """
 
-public class A
-{
-    float _n = 42.0F;
+                using System;
 
-    public void F()
-    {
-        try
-        {
-        }
-        catch (Exception ex) when (_n != float.NaN)
-        {
-        }
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        try
+                        {
+                        }
+                        catch (Exception ex) when (_n != float.NaN)
+                        {
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(13, 36));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInYieldReturnStatementAsync()
         {
-            var code = @"
-using System.Collections.Generic;
+            var code = """
 
-public class A
-{
-    float _n = 42.0F;
+                using System.Collections.Generic;
 
-    public IEnumerable<bool> F()
-    {
-        yield return _n != float.NaN;
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public IEnumerable<bool> F()
+                    {
+                        yield return _n != float.NaN;
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(10, 22));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInSwitchStatementAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        switch (_n != float.NaN)
-        {
-            default:
-                throw new System.NotImplementedException();
-        }
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        switch (_n != float.NaN)
+                        {
+                            default:
+                                throw new System.NotImplementedException();
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 17));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInForLoopAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        for (; _n != float.NaN; )
-        {
-            throw new System.Exception();
-        }
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        for (; _n != float.NaN; )
+                        {
+                            throw new System.Exception();
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInWhileLoopAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        while (_n != float.NaN)
-        {
-        }
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        while (_n != float.NaN)
+                        {
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInDoWhileLoopAsync()
         {
-            var code = @"
-public class A
-{
-    float _n = 42.0F;
+            var code = """
 
-    public void F()
-    {
-        do
-        {
-        }
-        while (_n != float.NaN);
-    }
-}
-";
+                public class A
+                {
+                    float _n = 42.0F;
+
+                    public void F()
+                    {
+                        do
+                        {
+                        }
+                        while (_n != float.NaN);
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(11, 16));
         }
 

@@ -47,23 +47,26 @@ internal static class TelemetryDiskLogger
         s_jsonContext = new(s_jsonOptions);
     }
 
-    public static void WriteLog(string logPath, IEnumerable<Activity> activies)
+    public static bool WriteLog(string logPath, IEnumerable<Activity> activities)
     {
         try
         {
             var jsonText = !File.Exists(logPath) ? """{"activities":[]}""" : File.ReadAllText(logPath);
             var root = JsonNode.Parse(jsonText)!;
             var activitiesArray = root["activities"]!.AsArray();
-            foreach (var activity in activies)
+
+            foreach (var activity in activities)
             {
                 activitiesArray.Add(JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(activity), s_jsonContext.ActivityModel)));
             }
             root["activities"] = activitiesArray;
             File.WriteAllText(logPath, root.ToJsonString(s_jsonOptions));
+            return true;
         }
         catch
         {
             // Swallow any exceptions to avoid interfering with telemetry shutdown.
+            return false;
         }
     }
 

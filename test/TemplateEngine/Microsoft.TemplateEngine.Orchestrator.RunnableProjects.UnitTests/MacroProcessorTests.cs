@@ -241,6 +241,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [TestMethod]
+        public void GlobalRunConfigCachesSortedMacros()
+        {
+            DependencyMacroConfig macroConfig = new("dependent", "source");
+            GlobalRunConfig runConfig = new()
+            {
+                Macros = [macroConfig],
+                SymbolNames = ["source", "dependent"]
+            };
+            IReadOnlyList<IMacroConfig>[] sortedMacros = new IReadOnlyList<IMacroConfig>[16];
+
+            Parallel.For(0, sortedMacros.Length, iteration => sortedMacros[iteration] = runConfig.SortedMacros);
+
+            Assert.IsTrue(sortedMacros.All(sorted => ReferenceEquals(sortedMacros[0], sorted)));
+            Assert.AreEqual(1, macroConfig.ResolveCount);
+        }
+
+        [TestMethod]
         public void CanThrowErrorOnSortWhenMacrosHaveDepsCircle()
         {
             var switchMacroName = "switchMacro";
@@ -278,18 +295,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, environment: environment, additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)macro) });
 
-            IReadOnlyList<IMacroConfig> macros = new[] { (IMacroConfig)new UndeterministicMacroConfig("test"), new GuidMacroConfig("test-guid", "string", "Nn", "n") };
+            GlobalRunConfig runConfig = new()
+            {
+                Macros = [(IMacroConfig)new UndeterministicMacroConfig("test"), new GuidMacroConfig("test-guid", "string", "Nn", "n")]
+            };
 
             IVariableCollection collection = new VariableCollection();
 
-            MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, collection);
+            MacroProcessor.ProcessMacros(engineEnvironmentSettings, runConfig.SortedMacros, collection);
             Assert.AreEqual("deterministic", collection["test"]);
             Assert.AreEqual(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
 
             A.CallTo(() => environment.GetEnvironmentVariable("TEMPLATE_ENGINE_ENABLE_DETERMINISTIC_MODE")).Returns("false");
             collection = new VariableCollection();
 
-            MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, collection);
+            MacroProcessor.ProcessMacros(engineEnvironmentSettings, runConfig.SortedMacros, collection);
             Assert.AreEqual("undeterministic", collection["test"]);
             Assert.AreNotEqual(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
         }
@@ -481,13 +501,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             public HashSet<string> Dependencies { get; private set; } = new HashSet<string>();
 
+            public int ResolveCount => _resolveCount;
+
             public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
             {
+                Interlocked.Increment(ref _resolveCount);
                 Dependencies = new HashSet<string>()
                 {
                     DependentSymbolName
                 };
             }
+
+            private int _resolveCount;
         }
     }
 }

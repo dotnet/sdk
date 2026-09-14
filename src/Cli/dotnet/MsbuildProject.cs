@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 
-#if !CLI_AOT
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -18,7 +17,6 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
-#endif
 
 namespace Microsoft.DotNet.Cli;
 
@@ -32,7 +30,6 @@ internal class MsbuildProject
     public static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string projectFilePath)
         => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
-#if !CLI_AOT
     const string ProjectItemElementType = "ProjectReference";
 
     public ProjectRootElement ProjectRootElement { get; private set; }
@@ -153,7 +150,6 @@ internal class MsbuildProject
         _cachedTfms = [.. project.GetTargetFrameworks()];
         return _cachedTfms;
     }
-
     public IEnumerable<string> GetConfigurations()
     {
         return cachedConfigurations ??= GetEvaluatedProject().GetPropertyCommaSeparatedValues("Configurations");
@@ -184,7 +180,6 @@ internal class MsbuildProject
 
         return false;
     }
-
     private ProjectInstance GetEvaluatedProject()
     {
         // Reuse a single evaluation across the RID/TFM/Configuration getters. A ProjectInstance is a
@@ -195,6 +190,7 @@ internal class MsbuildProject
             return _cachedEvaluatedProject;
         }
 
+        string originalDotnetHostPath = null;
         try
         {
             // Only evaluated properties (RuntimeIdentifier(s), TargetFramework(s), Configurations) are read
@@ -208,6 +204,7 @@ internal class MsbuildProject
             if (_interactive)
             {
                 // NuGet need this environment variable to call plugin dll
+                originalDotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
                 Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
                 // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
                 _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
@@ -225,7 +222,10 @@ internal class MsbuildProject
         }
         finally
         {
-            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", null);
+            if (_interactive)
+            {
+                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", originalDotnetHostPath);
+            }
         }
     }
 
@@ -294,5 +294,4 @@ internal class MsbuildProject
             return null;
         }
     }
-#endif
 }

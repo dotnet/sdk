@@ -82,7 +82,7 @@ internal sealed class WebAssemblyHotReloadClient(
         // the environment is configued via browser refesh server
     }
 
-    public override void InitiateConnection(CancellationToken cancellationToken)
+    public override void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
     {
     }
 

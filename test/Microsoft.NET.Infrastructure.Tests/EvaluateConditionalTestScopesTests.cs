@@ -247,6 +247,79 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     }
 
     [TestMethod]
+    public async Task ListTestProjects_ExpandsConfiguredScopeGlobs()
+    {
+        using var repo = new TestRepo(
+            CreateBasicProps("test/MyFeature.Tests/**/*.csproj"),
+            BasicPropsDirs);
+        CreateFile(repo.Root, "test/MyFeature.Tests/First.Tests.csproj");
+        CreateFile(repo.Root, "test/MyFeature.Tests/Nested/Second.Tests.csproj");
+        CreateFile(repo.Root, "test/Other.Tests/Other.Tests.csproj");
+
+        var result = await RunScript(
+            repo.Root,
+            targetBranch: null,
+            buildReason: "PullRequest",
+            listTestProjects: "TestScope");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdErr);
+        Assert.Contains("Targeted test project: test/MyFeature.Tests/First.Tests.csproj", result.StdOut);
+        Assert.Contains("Targeted test project: test/MyFeature.Tests/Nested/Second.Tests.csproj", result.StdOut);
+        Assert.DoesNotContain("Other.Tests.csproj", result.StdOut);
+    }
+
+    [TestMethod]
+    public async Task ListTestProjects_UnknownScope_ReturnsError()
+    {
+        using var repo = new TestRepo(CreateBasicProps(), BasicPropsDirs);
+
+        var result = await RunScript(
+            repo.Root,
+            targetBranch: null,
+            buildReason: "PullRequest",
+            listTestProjects: "MissingScope");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        Assert.Contains("Conditional test scope 'MissingScope' was not found", result.StdErr);
+    }
+
+    [TestMethod]
+    public async Task ListTestProjects_DuplicateScopeNames_ReturnsClearError()
+    {
+        var props = """
+            <Project>
+              <ItemGroup>
+                <ConditionalTestScope Include="TestScope">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/*.csproj</TestProjects>
+                  <TriggerPaths>src/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="testscope">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/*.csproj</TestProjects>
+                  <TriggerPaths>src/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        using var repo = new TestRepo(props, "src", "test");
+
+        var result = await RunScript(
+            repo.Root,
+            targetBranch: null,
+            buildReason: "PullRequest",
+            listTestProjects: "TestScope");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        Assert.Contains(
+            "Conditional test scope name 'testscope' is duplicated. Scope names must be unique (case-insensitive).",
+            result.StdOut);
+    }
+
+    [TestMethod]
     public async Task Validation_MissingMechanism_ReturnsError()
     {
         var props = """
@@ -445,7 +518,7 @@ public class EvaluateConditionalTestScopesTests : SdkTest
 
     // --- Helpers ---
 
-    private static string CreateBasicProps() => """
+    private static string CreateBasicProps(string testProjects = "test/MyFeature.Tests/*.csproj") => $$"""
         <Project>
           <PropertyGroup>
             <GlobalTriggerPaths>
@@ -455,7 +528,7 @@ public class EvaluateConditionalTestScopesTests : SdkTest
           <ItemGroup>
             <ConditionalTestScope Include="TestScope">
               <Mechanism>project</Mechanism>
-              <TestProjects>test/MyFeature.Tests/*.csproj</TestProjects>
+              <TestProjects>{{testProjects}}</TestProjects>
               <TriggerPaths>src/MyFeature/**;test/MyFeature.Tests/**</TriggerPaths>
               <RunAlways>CI</RunAlways>
             </ConditionalTestScope>
@@ -467,7 +540,12 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     private static readonly string[] BasicPropsDirs =
         ["test/Microsoft.NET.TestFramework", "src/MyFeature", "test/MyFeature.Tests"];
 
-    private async Task<ScriptResult> RunScript(string repoRoot, string? targetBranch, string buildReason, string? outputVariable = null)
+    private async Task<ScriptResult> RunScript(
+        string repoRoot,
+        string? targetBranch,
+        string buildReason,
+        string? outputVariable = null,
+        string? listTestProjects = null)
     {
         var args = $"run \"{_scriptPath}\" -- --repo-root \"{repoRoot}\" --build-reason \"{buildReason}\"";
         if (targetBranch != null)
@@ -477,6 +555,10 @@ public class EvaluateConditionalTestScopesTests : SdkTest
         if (outputVariable != null)
         {
             args += $" --output-variable \"{outputVariable}\"";
+        }
+        if (listTestProjects != null)
+        {
+            args += $" --list-test-projects \"{listTestProjects}\"";
         }
 
         var psi = new ProcessStartInfo(_dotnetPath, args)
@@ -522,6 +604,13 @@ public class EvaluateConditionalTestScopesTests : SdkTest
         }
 
         return new ScriptResult(output.ExitStatus.ExitCode, output.StandardOutput, output.StandardError);
+    }
+
+    private static void CreateFile(string repoRoot, string relativePath)
+    {
+        var fullPath = Path.Combine(repoRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllText(fullPath, "<Project />");
     }
 
     private record ScriptResult(int ExitCode, string StdOut, string StdErr);

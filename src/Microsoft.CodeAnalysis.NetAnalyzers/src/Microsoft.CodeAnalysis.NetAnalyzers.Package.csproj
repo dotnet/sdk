@@ -73,7 +73,6 @@
 
       <AnalyzerDocumentationFileDir>$(NetAnalyzersRootDir)src</AnalyzerDocumentationFileDir>
       <AnalyzerSarifFileDir>$(NetAnalyzersRootDir)src</AnalyzerSarifFileDir>
-      <AnalyzerConfigurationFileDir>$(NetAnalyzersRootDir)docs</AnalyzerConfigurationFileDir>
 
       <PackagePropsFileName>$(PackageId).props</PackagePropsFileName>
       <PackageTargetsFileName>$(PackageId).targets</PackageTargetsFileName>
@@ -81,7 +80,6 @@
       <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
       <AnalyzerSarifFileName>$(PackageId).sarif.template</AnalyzerSarifFileName>
       <AnalyzerSarifTemplateProperties>AnalyzerVersion=$(VersionPrefix)</AnalyzerSarifTemplateProperties>
-      <AnalyzerConfigurationFileName>analyzer-configuration.md</AnalyzerConfigurationFileName>
 
       <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
       <ValidateOnlyFlag>false</ValidateOnlyFlag>

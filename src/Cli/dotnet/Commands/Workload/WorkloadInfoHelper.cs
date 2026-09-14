@@ -64,7 +64,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         // read-only construction in WorkloadInstallDetector.
         WorkloadRecordRepo = workloadRecordRepo ?? CreateInstallationRecordRepository(DotnetPath, _currentSdkFeatureBand, userProfileDir);
 
-        UserLocalPath = dotnetDir ?? (IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
+        UserLocalPath = dotnetDir ?? (FileBasedWorkloadInstallationRecordRepositoryFactory.IsUserLocal(DotnetPath, _currentSdkFeatureBand) ? userProfileDir : DotnetPath);
 #else
         var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
@@ -95,16 +95,9 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     private static IWorkloadInstallationRecordRepository CreateInstallationRecordRepository(string dotnetDir, SdkFeatureBand sdkFeatureBand, string userProfileDir)
         => WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir) switch
         {
-            InstallType.Msi => new RegistryWorkloadInstallationRecordRepository(),
-            _ => new FileBasedInstallationRecordRepository(Path.Combine(
-                     IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) ? userProfileDir : dotnetDir,
-                     "metadata", "workloads")),
+            InstallType.Msi => new ReadOnlyWindowsWorkloadInstallationRecordRepository(),
+            _ => FileBasedWorkloadInstallationRecordRepositoryFactory.Create(dotnetDir, sdkFeatureBand, userProfileDir),
         };
-
-    // Inlined equivalent of WorkloadFileBasedInstall.IsUserLocal, avoiding that type's workload-history
-    // (System.Text.Json) helpers compiled under '#if DotnetCsproj'.
-    private static bool IsUserLocal(string dotnetDir, string sdkFeatureBand)
-        => File.Exists(Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand, "userlocal"));
 #endif
 
 #if !CLI_AOT
