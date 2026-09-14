@@ -246,8 +246,8 @@ expected loopback origin:
 ```js
 globalThis.testingPlatformBrowser = {
     contractVersion: 1,
-    getArguments(): string[],
-    complete(exitCode: number): void
+    getArguments() { /* returns MTP arguments */ },
+    complete(exitCode) { /* reports the managed exit code */ }
 };
 ```
 
@@ -461,8 +461,8 @@ cooperative cancellation is deferred.
 ## Compatibility
 
 - Existing non-browser projects remain unchanged.
-- The optional package activates only for `browser-*` unless explicitly
-  enabled or disabled.
+- The optional package activates only for `browser-*` and can be explicitly
+  disabled.
 - The package consumes the evaluated project's host instead of requiring one
   SDK-owned host implementation.
 - Hosts with the generic launch-info contract are preferred; supported legacy
