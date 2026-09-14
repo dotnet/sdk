@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-workload-install" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-workload-install" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet workload install
 .PP
@@ -109,92 +109,65 @@ The workload ID or multiple IDs to install.
 Use dotnet workload search to learn what workloads are available.
 .RE
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
-.RS 2
 .PP
 The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
-.RS 2
 .PP
 Prevents restoring multiple projects in parallel.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--ignore-failed-sources\f[B]\f[R]
-.RS 2
 .PP
 Treats package source failures as warnings.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--include-previews\f[B]\f[R]
-.RS 2
 .PP
 Allows prerelease workload manifests.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--no-cache\f[B]\f[R]
-.RS 2
 .PP
 Prevents caching of packages and http requests.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--skip-manifest-update\f[B]\f[R]
-.RS 2
 .PP
 Skip updating the workload manifests.
 The workload manifests define what assets and versions need to be installed for each workload.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-s|--source <SOURCE>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the URI of the NuGet package source to use.
 This setting overrides all of the sources specified in the \f[I]nuget.config\f[R] files.
 Multiple sources can be provided by specifying this option multiple times.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--temp-dir <PATH>\f[B]\f[R]
-.RS 2
 .PP
 Specify the temporary directory used to download and extract NuGet packages (must be secure).
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 If you specify \f[V]detailed\f[R] or \f[V]diagnostic\f[R] verbosity, the command displays information about the Nuget packages that it downloads.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--version\f[B]\f[R]
-.RS 2
 .PP
-The workload set version to install or update to.
-If you specify the workload-set version in global.json, you can\[cq]t use the \f[V]--version\f[R] option to specify the workload-set version.
-To make it possible to use the \f[V]--version\f[R] option in that case, run the command outside of the path containing the global.json file.
-Available since 8.0.400 SDK.
-For more information, see .NET SDK workload sets.
-.RE
+\f[B]\f[VB]version <WORKLOAD_VERSION>\f[B]\f[R]
+.PP
+A workload version to display, or one or more workloads and their versions joined by the \f[V]\[at]\f[R] character.
+Support for the \f[V]\[at]\f[R] character is available since 9.0.200 SDK.
 .SH EXAMPLES
 .IP \[bu] 2
 Install the \f[V]maui\f[R] workload:
@@ -213,6 +186,16 @@ Install the \f[V]maui-android\f[R] and \f[V]maui-ios\f[R] workloads:
 .nf
 \f[C]
 dotnet workload install maui-android maui-ios
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Install the workload version specified by the \f[V]\[at]\f[R] character:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet workload install maui\[at]10.0.100
 \f[R]
 .fi
 .RE

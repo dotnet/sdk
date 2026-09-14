@@ -5,11 +5,15 @@ namespace Microsoft.NET.TestFramework
 {
     public class PlatformSpecificTheory : TheoryAttribute
     {
-        public PlatformSpecificTheory(TestPlatforms platforms)
+        public PlatformSpecificTheory(TestPlatforms platforms, TestArchitectures architectures = TestArchitectures.All)
         {
             if (PlatformSpecificFact.ShouldSkip(platforms))
             {
                 Skip = "This test is not supported on this platform.";
+            }
+            else if (PlatformSpecificFact.ShouldSkipArchitecture(architectures))
+            {
+                Skip = "This test is not supported on this architecture.";
             }
         }
     }
