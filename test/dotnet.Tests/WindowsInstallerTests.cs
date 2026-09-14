@@ -13,10 +13,12 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
+#pragma warning disable MSTEST0084 // OSCondition cannot represent the minimum Windows version.
     [SupportedOSPlatform("windows5.1.2600")]
     [TestClass]
     public class WindowsInstallerTests
     {
+#pragma warning restore MSTEST0084
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");
         public TestContext TestContext { get; set; } = null!;
 

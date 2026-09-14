@@ -12,6 +12,7 @@ using Microsoft.Win32;
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
     [SupportedOSPlatform("windows")]
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class GivenAnMsiInstallation : IDisposable
     {
