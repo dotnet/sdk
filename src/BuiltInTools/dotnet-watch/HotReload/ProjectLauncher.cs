@@ -61,18 +61,6 @@ internal sealed class ProjectLauncher(
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
         var namedPipeName = Guid.NewGuid().ToString();
 
-        foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
-        {
-            // ignore dotnet-watch reserved variables -- these shouldn't be set by the project
-            if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase) ||
-                name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            environmentBuilder.SetVariable(name, value);
-        }
-
         // override any project settings:
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));

@@ -19,10 +19,10 @@ namespace Microsoft.DotNet.Watch
             _wasmApplier.Dispose();
         }
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void CreateConnection(string namedPipeName, IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
         {
-            _wasmApplier.CreateConnection(namedPipeName, cancellationToken);
-            _hostApplier.CreateConnection(namedPipeName, cancellationToken);
+            _wasmApplier.CreateConnection(namedPipeName, environmentVariables, cancellationToken);
+            _hostApplier.CreateConnection(namedPipeName, environmentVariables, cancellationToken);
         }
 
         public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)

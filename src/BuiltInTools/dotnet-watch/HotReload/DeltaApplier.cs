@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watch
 
         public static readonly string StartupHookPath = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
 
-        public abstract void CreateConnection(string namedPipeName, CancellationToken cancellationToken);
+        public abstract void CreateConnection(string namedPipeName, IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken);
 
         /// <summary>
         /// Waits for the application process to start.

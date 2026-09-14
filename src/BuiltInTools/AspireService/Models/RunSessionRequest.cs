@@ -76,7 +76,7 @@ internal class RunSessionRequest
             ProjectPath = projectLaunchConfig.ProjectPath,
             Debug = string.Equals(projectLaunchConfig.LaunchMode, DebugLaunchMode, StringComparison.OrdinalIgnoreCase),
             Arguments = Arguments,
-            Environment = Environment.Select(envVar => new KeyValuePair<string, string>(envVar.Name, envVar.Value!)),
+            Environment = Environment.Select(envVar => new KeyValuePair<string, string>(envVar.Name, envVar.Value ?? "")),
             LaunchProfile = projectLaunchConfig.LaunchProfile,
             DisableLaunchProfile = projectLaunchConfig.DisableLaunchProfile
         };

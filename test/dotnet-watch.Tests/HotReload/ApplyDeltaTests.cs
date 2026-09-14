@@ -650,6 +650,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
+            // DEBUG_* environment variables should be set for app host process:
+            await App.WaitUntilOutputContains("Setting environment variables (3)");
+
             await App.AssertWaitingForChanges();
 
             // check that Aspire server output is logged via dotnet-watch reporter:
