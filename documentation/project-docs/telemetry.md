@@ -82,10 +82,16 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
 
 1. **Local invocations.** On orderly shutdown, Azure persists queued trace batches before starting a background
   drain. The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds` to zero, so it does
-  not wait for that drain. Normal exports before shutdown remain network-first; this is not synchronous
+  not wait for that drain on successful exits. When a command returns a nonzero exit code, the SDK temporarily
+  sets the drain budget to 300 ms and calls trace-provider `Shutdown(300)`, giving persistence and background
+  delivery a bounded opportunity to finish. This is a maximum requested wait, not a sleep or delivery guarantee.
+  The previous drain setting is restored afterward; metrics retain their separate 10-ms shutdown allowance.
+  Both managed and Native AOT entry points pass the actual command exit code. A managed fallback can therefore
+  use a separate 300-ms trace allowance in each runtime; there is no cross-runtime deadline coordination.
+  Normal exports before shutdown remain network-first; this is not synchronous
   persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
-  can still delay shutdown. Local shutdown waits for the batch processor to finish rather than applying the
-  old 10-ms timeout to persistence.
+  can still delay shutdown. Successful local shutdown waits for the batch processor to finish rather than
+  applying the old 10-ms timeout to persistence. Failed-command persistence is subject to the 300-ms timeout.
 2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
   start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
   Accepted payloads are deleted; retryable failures remain for later attempts. Storage partitioning, retention,

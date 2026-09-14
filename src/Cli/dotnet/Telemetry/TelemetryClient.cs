@@ -240,6 +240,9 @@ public class TelemetryClient : ITelemetryClient
         parentActivityContext is ActivityContext { IsRemote: true } ? ActivityKind.Server : ActivityKind.Internal;
 
     public static void FlushProviders()
+        => FlushProviders(0);
+
+    internal static void FlushProviders(int exitCode)
     {
         if (s_isCIEnvironment || s_enableOtlpExporter)
         {
@@ -251,6 +254,26 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
             int remaining = Math.Max(0, s_shutdownTimeoutMs - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             s_metricsProvider?.Shutdown(remaining);
+        }
+        else if (exitCode != 0)
+        {
+            const int errorShutdownTimeoutMs = 300;
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+            const string drainBudgetName = "Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds";
+            object? previousDrainBudget = AppContext.GetData(drainBudgetName);
+            AppContext.SetData(drainBudgetName, errorShutdownTimeoutMs);
+            try
+            {
+#endif
+                s_tracerProvider?.Shutdown(errorShutdownTimeoutMs);
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+            }
+            finally
+            {
+                AppContext.SetData(drainBudgetName, previousDrainBudget);
+            }
+#endif
+            s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
         else
         {
