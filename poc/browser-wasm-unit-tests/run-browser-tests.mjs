@@ -16,20 +16,54 @@ const projectDirectory = path.join(
 );
 const projectPath = path.join(projectDirectory, "BlazorWasmTestApp.csproj");
 const skipBuild = process.env.BROWSER_WASM_POC_SKIP_BUILD === "1";
-const dotnetPath =
-  process.platform === "win32" &&
-  fs.existsSync(path.join(repoRoot, ".dotnet", "dotnet.exe"))
-    ? path.join(repoRoot, ".dotnet", "dotnet.exe")
-    : "dotnet";
+const dotnetPath = resolveDotnetPath(repoRoot);
+const projectExtensionsPath = ensureTrailingSeparator(
+  path.join(
+    repoRoot,
+    "artifacts",
+    "tmp",
+    "wasm-standalone",
+    "project-extensions",
+  ),
+);
+const intermediateOutputPath = ensureTrailingSeparator(
+  path.join(
+    repoRoot,
+    "artifacts",
+    "tmp",
+    "wasm-standalone",
+    "obj",
+  ),
+);
+const outputPath = ensureTrailingSeparator(
+  path.join(
+    repoRoot,
+    "artifacts",
+    "tmp",
+    "wasm-standalone",
+    "bin",
+  ),
+);
+const standaloneProperties = [
+  `-p:MSBuildProjectExtensionsPath=${projectExtensionsPath}`,
+  `-p:BaseIntermediateOutputPath=${intermediateOutputPath}`,
+  `-p:BaseOutputPath=${outputPath}`,
+];
 
 let browser;
 let server;
+let activeProcess;
 let stopping = false;
+let signalExitCode;
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.once(signal, async () => {
-    process.exitCode = signal === "SIGINT" ? 130 : 143;
-    await cleanup();
+  process.once(signal, () => {
+    if (signalExitCode !== undefined) {
+      return;
+    }
+
+    signalExitCode = signal === "SIGINT" ? 130 : 143;
+    void cleanup().finally(() => process.exit(signalExitCode));
   });
 }
 
@@ -37,8 +71,9 @@ try {
   if (!skipBuild) {
     await runProcess(
       dotnetPath,
-      ["build", projectPath, "-c", "Debug"],
+      ["build", projectPath, "-c", "Debug", ...standaloneProperties],
       projectDirectory,
+      true,
     );
   }
 
@@ -52,6 +87,7 @@ try {
       "Debug",
       "--project",
       projectPath,
+      ...standaloneProperties,
       "--",
       "--urls",
       "http://127.0.0.1:0",
@@ -113,7 +149,10 @@ try {
 
   try {
     await page.waitForFunction(
-      () => document.querySelector('[role="status"]')?.textContent === "Passed",
+      () => {
+        const status = document.querySelector('[role="status"]')?.textContent;
+        return status === "Passed" || status?.startsWith("Failed");
+      },
       undefined,
       { timeout: 60_000 },
     );
@@ -132,6 +171,12 @@ try {
   }
 
   const status = await page.locator('[role="status"]').textContent();
+  if (status !== "Passed") {
+    throw new Error(
+      [`The browser test failed: ${status}`, ...browserDiagnostics].join("\n"),
+    );
+  }
+
   const title = await page.title();
   if (!sawTestStart || !sawPassingSummary) {
     throw new Error(
@@ -178,7 +223,7 @@ function observeServerOutput(stream, destination, listening) {
   });
 }
 
-async function runProcess(command, args, cwd) {
+async function runProcess(command, args, cwd, trackForCleanup = false) {
   const child = spawn(command, args, {
     cwd,
     env: {
@@ -187,17 +232,27 @@ async function runProcess(command, args, cwd) {
     },
     stdio: "inherit",
     windowsHide: true,
+    detached: trackForCleanup && process.platform !== "win32",
   });
+  if (trackForCleanup) {
+    activeProcess = child;
+  }
 
-  const exit = await new Promise((resolve, reject) => {
-    child.once("error", reject);
-    child.once("exit", (code, signal) => resolve({ code, signal }));
-  });
+  try {
+    const exit = await new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("exit", (code, signal) => resolve({ code, signal }));
+    });
 
-  if (exit.code !== 0) {
-    throw new Error(
-      `${command} ${args.join(" ")} failed (code=${exit.code}, signal=${exit.signal}).`,
-    );
+    if (exit.code !== 0) {
+      throw new Error(
+        `${command} ${args.join(" ")} failed (code=${exit.code}, signal=${exit.signal}).`,
+      );
+    }
+  } finally {
+    if (activeProcess === child) {
+      activeProcess = undefined;
+    }
   }
 }
 
@@ -260,10 +315,29 @@ async function cleanup() {
   }
 
   try {
+    await stopProcess(activeProcess);
+  } catch (error) {
+    console.error(`Failed to stop the active dotnet command: ${error}`);
+  }
+
+  try {
     await stopProcess(server);
   } catch (error) {
     console.error(`Failed to stop the Blazor Gateway: ${error}`);
   }
+}
+
+function resolveDotnetPath(root) {
+  const executable = process.platform === "win32" ? "dotnet.exe" : "dotnet";
+  const candidates = [
+    path.join(root, "artifacts", "bin", "redist", "Debug", "dotnet", executable),
+    path.join(root, ".dotnet", executable),
+  ];
+  return candidates.find(fs.existsSync) ?? "dotnet";
+}
+
+function ensureTrailingSeparator(value) {
+  return value.endsWith(path.sep) ? value : `${value}${path.sep}`;
 }
 
 async function stopWindowsProcessTree(pid) {

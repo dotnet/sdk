@@ -12,7 +12,8 @@
         globalThis.browserWasmTest ??= {
             getContractVersion: () => globalThis.testingPlatformBrowser?.contractVersion ?? 0,
             getArguments: () => globalThis.testingPlatformBrowser.getArguments(),
-            setResult: exitCode => globalThis.testingPlatformBrowser.complete(exitCode)
+            setResult: exitCode => globalThis.testingPlatformBrowser.complete(exitCode),
+            reportFatalError: message => globalThis.testingPlatformBrowser.reportFatalError(message)
         };
     </script>
     <script src="_framework/blazor.webassembly.js"></script>

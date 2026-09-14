@@ -14,6 +14,8 @@
 
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
 
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+    <DefineConstants Condition="'$(BrowserWasmUseMtpPackage)' == 'true'">$(DefineConstants);BROWSER_WASM_MTP_PACKAGE</DefineConstants>
     <TestingPlatformBrowserGenerateHostAssets Condition="'$(BrowserWasmUseMtpPackage)' == 'true'">false</TestingPlatformBrowserGenerateHostAssets>
     <RestoreAdditionalProjectSources Condition="'$(BrowserWasmMtpPackageSource)' != ''">$(RestoreAdditionalProjectSources);$(BrowserWasmMtpPackageSource)</RestoreAdditionalProjectSources>
   </PropertyGroup>
@@ -26,4 +28,13 @@
                       Version="$(BrowserWasmMtpPackageVersion)"
                       Condition="'$(BrowserWasmUseMtpPackage)' == 'true'" />
   </ItemGroup>
+
+  <Target Name="_ConfigureBlazorBrowserTestHost"
+          AfterTargets="_CaptureTestingPlatformBrowserHost"
+          BeforeTargets="_ConfigureTestingPlatformBrowserRun"
+          Condition="'$(BrowserWasmUseMtpPackage)' == 'true'">
+    <PropertyGroup>
+      <TestingPlatformBrowserHostArguments>$(_TestingPlatformBrowserComputedHostArguments) --urls http://127.0.0.1:0</TestingPlatformBrowserHostArguments>
+    </PropertyGroup>
+  </Target>
 </Project>

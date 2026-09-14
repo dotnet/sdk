@@ -38,6 +38,16 @@ $env:MTP_BROWSER_EXECUTABLE = "$env:LOCALAPPDATA\ms-playwright\chromium-1234\chr
 npm run test:dotnet
 ```
 
+If the package directory contains multiple versions, also set
+`MTP_BROWSER_PACKAGE_VERSION`. The runner restores into a package-hash-specific
+cache and verifies that NuGet consumed the selected `.nupkg`, so rebuilding a
+development version cannot silently reuse stale package contents. Standalone
+and package-based runs also use separate intermediate and output directories.
+The package runner rejects `--no-build` and `--no-restore`, which cannot safely
+reuse its per-invocation isolated build state. Set
+`MTP_BROWSER_KEEP_RUN_OUTPUTS=1` to retain that state for diagnostics; otherwise
+completed run directories are deleted and package caches are bounded.
+
 This path uses the SDK's authenticated HTTP `dotnettestcli` gateway. The
 package's launcher starts the existing Gateway host, expands the owner-only
 response file in memory, injects the arguments before Blazor starts, and lets

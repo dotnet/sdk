@@ -19,9 +19,19 @@
         _running = true;
         _status = "Running...";
 
-        int exitCode = await TestRunner.RunAsync();
-
-        _status = exitCode == 0 ? "Passed" : $"Failed (exit code {exitCode})";
-        _running = false;
+        try
+        {
+            int exitCode = await TestRunner.RunAsync();
+            _status = exitCode == 0 ? "Passed" : $"Failed (exit code {exitCode})";
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            _status = $"Failed ({ex.Message})";
+        }
+        finally
+        {
+            _running = false;
+        }
     }
 }
