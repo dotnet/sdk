@@ -919,7 +919,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1. An unexpected error occurred. See: https://aka.ms/testingplatform/exitcodes");
             }
         }
 
@@ -948,7 +948,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47. The exit code is not recognized. See: https://aka.ms/testingplatform/exitcodes");
             }
         }
 
