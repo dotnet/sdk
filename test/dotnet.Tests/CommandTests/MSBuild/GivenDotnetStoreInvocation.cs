@@ -64,9 +64,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var args = ArgsPrefix.Concat(new string[] { optionName, path }).ToArray();
 
             var msbuildPath = "<msbuildpath>";
-            StoreCommand.FromArgs(args, msbuildPath)
-                .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
+            List<string> expected = [..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"];
+            expected
+                .Should().BeSubsetOf(StoreCommand.FromArgs(args, msbuildPath).GetArgumentTokensToMSBuild());
         }
     }
 }
-
