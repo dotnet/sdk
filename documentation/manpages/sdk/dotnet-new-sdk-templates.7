@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-sdk-templates" "7" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-new-sdk-templates" "7" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -219,6 +219,16 @@ T}@T{
 Config
 T}@T{
 6.0
+T}
+T{
+\&.gitignore file
+T}@T{
+\f[V]gitignore\f[R]
+T}@T{
+T}@T{
+Config
+T}@T{
+3.0
 T}
 T{
 global.json file
@@ -686,6 +696,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -694,11 +709,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .RE
@@ -728,7 +738,7 @@ The possible values are:
 .IP \[bu] 2
 \f[V]VSTest\f[R] - VSTest platform (Default).
 .IP \[bu] 2
-\f[V]MSTest\f[R] - Microsoft.Testing.Platform.
+\f[V]MSTest\f[R] - Microsoft.Testing.Platform (MTP).
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--coverage-tool <COVERAGE_TOOL>\f[B]\f[R]
@@ -745,7 +755,7 @@ The possible values are:
 \f[B]\f[VB]--extensions-profile <EXTENSIONS_PROFILE>\f[B]\f[R]
 .RS 2
 .PP
-The SDK extensions profile when using Microsoft.Testing.Platform.
+The SDK extensions profile when using MTP.
 The possible values are:
 .IP \[bu] 2
 \f[V]Default\f[R] - Default extensions profile (Default).
@@ -830,6 +840,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -838,11 +853,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .RE
@@ -884,6 +894,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -892,11 +907,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .RE
@@ -1053,6 +1063,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -1061,11 +1076,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .PP
@@ -1241,6 +1251,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -1249,11 +1264,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .PP
@@ -1342,6 +1352,11 @@ T}@T{
 Default value
 T}
 _
+T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
 T{
 9.0
 T}@T{
@@ -1505,6 +1520,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -1513,11 +1533,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .PP
@@ -1576,7 +1591,7 @@ For more information, see global-json.
 \f[B]\f[VB]--test-runner <TEST_RUNNER>\f[B]\f[R]
 .RS 2
 .PP
-This option was introduced in .NET 10 SDK and specifies the test runner to use, either VSTest or Microsoft.Testing.Platform.
+This option was introduced in .NET 10 SDK and specifies the test runner to use, either VSTest or MTP.
 The default is VSTest.
 .RE
 .SS \f[V]sln\f[R]
@@ -1935,6 +1950,11 @@ Default value
 T}
 _
 T{
+10.0
+T}@T{
+\f[V]net10.0\f[R]
+T}
+T{
 9.0
 T}@T{
 \f[V]net9.0\f[R]
@@ -1943,11 +1963,6 @@ T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
-T}
-T{
-7.0
-T}@T{
-\f[V]net7.0\f[R]
 T}
 .TE
 .PP
@@ -2145,7 +2160,7 @@ dotnet new command
 .IP \[bu] 2
 dotnet new list command
 .IP \[bu] 2
-Custom templates for dotnet new
+\&.NET templates for authors
 .IP \[bu] 2
 Create a custom template for dotnet new
 .IP \[bu] 2

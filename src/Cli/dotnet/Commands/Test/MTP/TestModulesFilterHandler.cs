@@ -10,10 +10,10 @@ using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+internal sealed class TestModulesFilterHandler(TerminalTestReporter output)
 {
-    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
+    private List<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
     public bool RunWithTestModulesFilter(ParseResult parseResult, string testModules)
     {
@@ -46,7 +46,25 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             return false;
         }
 
+        _testApplications = BuildTestApplications(testModulePaths);
+        return true;
+    }
+
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
+    public void EnqueueTestApplications(TestApplicationActionQueue actionQueue)
+    {
+        foreach (ParallelizableTestModuleGroupWithSequentialInnerModules testApplication in _testApplications)
+        {
+            actionQueue.Enqueue(testApplication);
+        }
+    }
+
+    private static List<ParallelizableTestModuleGroupWithSequentialInnerModules> BuildTestApplications(IEnumerable<string> testModulePaths)
+    {
         var muxerPath = new Muxer().MuxerPath;
+        List<ParallelizableTestModuleGroupWithSequentialInnerModules> testApplications = [];
         foreach (string testModule in testModulePaths)
         {
             // We want to produce the right RunCommand and RunArguments for TestApplication implementation to consume directly.
@@ -56,12 +74,11 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
-            // Write the test application to the channel
-            _actionQueue.Enqueue(testApp);
+            testApplications.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(
+                new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null)));
         }
 
-        return true;
+        return testApplications;
     }
 
     private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)

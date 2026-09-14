@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
@@ -68,7 +67,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 // squashing snapshots by creating output unique for template (but not alias) and preventing item to have name by alias
                 TemplateSpecificArgs = new[] { "-o", itemName, "-n", "item" }.Concat(args ?? Enumerable.Empty<string>()),
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
@@ -94,7 +93,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (expectedTemplateName.Equals("global.json file") &&
                 (args == null || !args.Contains("--sdk-version")))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
+                string sdkVersionUnderTest = SdkTestContext.Current.ToolsetUnderTest?.SdkVersion
+                    ?? throw new InvalidOperationException("The SDK under test is not configured.");
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
         //    {
-        //        SnapshotsDirectory = "Approvals",
+        //        SnapshotsDirectory = ApprovalsDirectory,
         //        SettingsDirectory = _fixture.HomeDirectory,
         //    }
         //    .WithCustomDirectoryVerifier(async (content, contentFetcher) =>
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
@@ -404,7 +404,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,

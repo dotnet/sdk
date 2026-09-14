@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="Always" />
+    <None Include="ParserTests/Approvals/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

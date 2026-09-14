@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             DerivePathInfo(
                    (_, _, type, method) => new(
-                       directory: "Approvals",
+                       directory: Path.Combine(AppContext.BaseDirectory, "ParserTests", "Approvals"),
                        typeName: type.Name,
                        methodName: method.Name));
 

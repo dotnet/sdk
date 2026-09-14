@@ -199,5 +199,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
         }
+
+        [Fact]
+        public void RuntimeIdentifierChainUsesProductVersionWhenInstalled()
+        {
+            string sdkPath = _testAssetsManager.CreateTestDirectory().Path;
+            string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
+            CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
+
+            TargetPlatformOptions.GetRuntimeIdentifierChainPath(sdkPath, "10.0.100").Should().Be(expectedPath);
+        }
+
+        [Fact]
+        public void RuntimeIdentifierChainUsesLatestSdkWhenProductVersionHasNoChainFile()
+        {
+            string sdkPath = _testAssetsManager.CreateTestDirectory().Path;
+            CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
+            string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
+            Directory.CreateDirectory(Path.Combine(sdkPath, "10.0.200-ci"));
+
+            TargetPlatformOptions.GetRuntimeIdentifierChainPath(sdkPath, "10.0.200-ci").Should().Be(expectedPath);
+        }
+
+        private static string CreateRuntimeIdentifierChainFile(string sdkPath, string sdkVersion)
+        {
+            string sdkVersionPath = Path.Combine(sdkPath, sdkVersion);
+            Directory.CreateDirectory(sdkVersionPath);
+            string ridFilePath = Path.Combine(sdkVersionPath, "NETCoreSdkRuntimeIdentifierChain.txt");
+            File.WriteAllText(ridFilePath, "test-x64");
+            return ridFilePath;
+        }
     }
 }

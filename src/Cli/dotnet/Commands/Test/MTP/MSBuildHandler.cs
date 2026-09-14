@@ -74,6 +74,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions)
         }
     }
 
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         if (!Logger.TraceEnabled)

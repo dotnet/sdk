@@ -89,6 +89,15 @@
           IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+  <!-- Temporary workaround for https://github.com/microsoft/vstest/pull/15794:
+       Microsoft.CodeCoverage overwrites project-selected publish assets, so restore them afterward. -->
+  <Target Name="RestoreResolvedFilesAfterCodeCoverageCopy"
+          AfterTargets="CopyTraceDataCollectorArtifacts"
+          Condition="'$(IsTestProject)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Copy SourceFiles="@(ResolvedFileToPublish)"
+          DestinationFiles="@(ResolvedFileToPublish->'$(PublishDir)%(RelativePath)')" />
+  </Target>
+
   <Import Project="..\Directory.Build.targets" />
 
 </Project>
