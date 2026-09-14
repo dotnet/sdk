@@ -10,4 +10,17 @@ public sealed class SampleTests
     {
         Assert.IsTrue(OperatingSystem.IsBrowser());
     }
+
+    [TestMethod]
+    public void RunsAnotherTestInsideBrowserWasm()
+    {
+        Assert.IsTrue(OperatingSystem.IsBrowser());
+    }
+
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/54091")]
+    public void SkipsInsideBrowserWasm()
+    {
+        Assert.Fail("This test verifies browser-hosted skip reporting.");
+    }
 }

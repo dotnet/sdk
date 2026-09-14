@@ -10,13 +10,9 @@
     <div id="app">Loading...</div>
     <script>
         globalThis.browserWasmTest ??= {
-            getArguments: () => globalThis.__mtpBrowserArguments ?? [],
-            setResult: exitCode => {
-                globalThis.__mtpBrowserResult = {
-                    completed: true,
-                    exitCode
-                };
-            }
+            getContractVersion: () => globalThis.testingPlatformBrowser?.contractVersion ?? 0,
+            getArguments: () => globalThis.testingPlatformBrowser.getArguments(),
+            setResult: exitCode => globalThis.testingPlatformBrowser.complete(exitCode)
         };
     </script>
     <script src="_framework/blazor.webassembly.js"></script>

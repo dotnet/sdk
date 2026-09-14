@@ -11,6 +11,12 @@ public sealed class BrowserTestRunner(IJSRuntime jsRuntime)
         string[] args;
         try
         {
+            int contractVersion = await jsRuntime.InvokeAsync<int>("browserWasmTest.getContractVersion");
+            if (contractVersion != 1)
+            {
+                throw new InvalidOperationException($"Unsupported browser testing contract version '{contractVersion}'.");
+            }
+
             args = await jsRuntime.InvokeAsync<string[]>("browserWasmTest.getArguments");
         }
         catch (JSException ex)

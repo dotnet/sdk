@@ -8,7 +8,8 @@
   "scripts": {
     "test": "node run-browser-tests.mjs",
     "test:dotnet": "node run-dotnet-test.mjs",
-    "list:dotnet": "node run-dotnet-test.mjs --list-tests"
+    "list:dotnet": "node run-dotnet-test.mjs --list-tests",
+    "filter:dotnet": "node run-dotnet-test.mjs --filter FullyQualifiedName~RunsInsideBrowserWasm"
   },
   "dependencies": {
     "playwright": "1.62.0"
