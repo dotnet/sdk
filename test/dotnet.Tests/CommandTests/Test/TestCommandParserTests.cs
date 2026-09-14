@@ -67,6 +67,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
         }
 
+        [Theory]
+        [InlineData(null, nameof(ResultsDirectoryLayout.Flat))]
+        [InlineData("flat", nameof(ResultsDirectoryLayout.Flat))]
+        [InlineData("per-module", nameof(ResultsDirectoryLayout.PerModule))]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = value is null
+                ? command.Parse([])
+                : command.Parse(["--results-directory-layout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).PathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+        }
+
+        [Fact]
+        public void MTPCommandRejectsInvalidResultsDirectoryLayout()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
         [Fact]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {

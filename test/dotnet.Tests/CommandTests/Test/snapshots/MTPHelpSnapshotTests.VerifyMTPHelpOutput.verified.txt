@@ -11,6 +11,9 @@ Options:
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
   --results-directory <RESULTS_DIR>               The directory where the test results will be placed.
                                                   The specified directory will be created if it does not exist.
+  --results-directory-layout <LAYOUT>             Specifies how test results are organized within the results directory.
+                                                  'flat' (the default) places the results of every test project directly in the results directory.
+                                                  'per-module' gives every test project its own '<project>/<target-framework>_<runtime>' subdirectory, so reports with the same file name cannot overwrite each other.
   --config-file <CONFIG_FILE>                     Specifies a testconfig.json file.
   --diagnostic-output-directory <DIAGNOSTIC_DIR>  Output directory of the diagnostic logging.
                                                   If not specified the file will be generated inside the default 'TestResults' directory.

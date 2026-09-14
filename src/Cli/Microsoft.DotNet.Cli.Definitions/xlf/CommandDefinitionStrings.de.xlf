@@ -561,6 +561,20 @@ The specified directory will be created if it does not exist.</source>
 Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdRootPathName">
         <source>ROOT_PATH</source>
         <target state="translated">ROOT_PATH</target>
