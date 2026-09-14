@@ -11,6 +11,10 @@ ownership and launch boundaries described as **current prototype** below; it
 does not make the package, properties, JavaScript API, or support policy a
 committed product contract.
 
+The package commits cited below are local and unpushed. This RFC is not an
+announcement of an available NuGet package; publishing reviewable source and
+exact package/SDK prerequisites is part of preview release preparation.
+
 ## Decision summary
 
 Browser-hosted Microsoft.Testing.Platform (MTP) support should be an optional
@@ -69,11 +73,33 @@ The prototype proves that:
 7. The package can capture bounded browser console, page-error,
    request-failure, crash, host-output, and cleanup diagnostics.
 
-The locally packed prototype reviewed on September 14, 2026 is 205,268,810
-bytes (about 196 MiB or 205 MB). It deliberately makes
-`Microsoft.Playwright` a private dependency and packs Playwright's
-platform-specific Node drivers and JavaScript payloads into the package. It
-does not include browser binaries.
+The locally packed prototype is approximately 200 MB, varying by build
+configuration. This is a measured prototype size, not a product-size promise
+or an addition to the SDK layout. It makes `Microsoft.Playwright` a private
+dependency and packs Playwright's platform-specific Node drivers and
+JavaScript payloads into the package. It does not include browser binaries.
+
+### Primary-source snapshots
+
+The implementation claims above refer to the following inspected snapshots.
+Unpublished commits are identified by repository, commit, and path instead of
+GitHub links that a reader cannot resolve. TestFX package paths in this table
+are relative to `src/Platform/Microsoft.Testing.Platform.Browser/`.
+
+| Claim | Primary source |
+| --- | --- |
+| Optional package, private Playwright dependency, five Node payloads, and launcher runtime configuration | `microsoft/testfx` commit `086b0636d9fa0fe400351a54dc4c1cbb6bd4196d`: `Microsoft.Testing.Platform.Browser.csproj` |
+| Private Playwright transport and diagnostic redaction | `microsoft/testfx` commit `066ab8d55f34537834719b5cb846e1ddc173a21f`: `ChromiumBrowser.cs`, `DiagnosticBuffer.cs` |
+| Default page/supervisor opt-out | `microsoft/testfx` commit `083be6dab`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.props`, `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `PACKAGE.md` |
+| Evaluated host wrapping, page API v1, and readiness fallback | `microsoft/testfx` commit `ab878a385322d6ec82846055d9c7baa6fb4bf1d1`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `BrowserLauncherOptions.cs`, `ChromiumBrowser.cs`, `HostProcess.cs`, `PACKAGE.md` |
+| Package-owned browser assets | Same TestFX snapshot: `buildMultiTargeting/assets/index.html`, `buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js` |
+| Package consumption and framework-owned Blazor page | `dotnet/sdk` commits `054ab8eeb93626cd0a2d214ea4032acfe3f934b9` and `bbde2cfa89b2248709352efc09e71c8be406a154`: `test/TestAssets/TestProjects/BlazorWasmTestApp/BlazorWasmTestApp.csproj`, `wwwroot/index.html`, `BrowserTestRunner.cs` |
+| Normal SDK test invocation of the consumer | Same SDK snapshots: `poc/browser-wasm-unit-tests/run-dotnet-test.mjs` and `README.md` |
+
+The local Blazor consumer was reported to exercise passing/skipped tests,
+discovery, filtering, and cleanup against TestFX `ab878a385`. Those reports
+demonstrate one combination, not a cross-platform support or cancellation
+guarantee. The prototype sources are not part of this documentation-only PR.
 
 ### Proposed product
 
@@ -93,9 +119,9 @@ make the implementation reviewable, not to reserve them permanently.
 
 ## Scope
 
-The package is framework-neutral and applies only to MTP applications whose
-runtime identifier starts with `browser-`. The initial scenario is
-`browser-wasm`.
+The package is framework-neutral. Its preview targets use a `browser-*`
+condition, but the supported scenario proposed here is exactly `browser-wasm`;
+that condition is not evidence for other browser RIDs.
 
 It supports both:
 
@@ -108,6 +134,13 @@ WASI is a different host model and is out of scope. VSTest mode, host-side
 Playwright UI/E2E tests, dynamic assembly loading from the browser virtual file
 system, managed browser debugging, and browser process reuse are also out of
 scope for the initial design.
+
+The framework-owned page seam is in scope; UI/component testing behavior and
+Blazor-specific renderer or JavaScript interop testing remain separate work.
+`--test-modules` is also outside this project/package launch model: it bypasses
+the evaluated targets and cannot infer the browser host or bundle from a DLL.
+Tests are statically referenced and registered at build time; a new run uses a
+fresh page/runtime, not assembly unloading.
 
 ## Existing foundation
 
@@ -157,6 +190,10 @@ An illustrative general WebAssembly test project is:
 </Project>
 ```
 
+This is illustrative XML with placeholder package versions, not a currently
+restoreable public-package recipe. It assumes MTP mode for `dotnet test` and
+an MTP-compatible SDK and MSTest version.
+
 The package defaults to enabled only for `browser-*` runtime identifiers.
 Referencing it does not alter an ordinary desktop test application.
 
@@ -203,10 +240,22 @@ Explicit package properties may override the captured host command,
 arguments, or working directory for hosts that do not participate in the
 normal run protocol.
 
+In the preview, an empty override means "use the computed value"; computed
+empty and quoted arguments are preserved.
+
 This is intentionally host-agnostic. The launcher does not special-case
 `blazor-gateway.dll`, a dev-server assembly name, or a launch profile. The
 Blazor proof of concept starts the same packaged Gateway that `dotnet run`
 selected and adds no test routes or middleware.
+
+The current target hook is not limited to `dotnet test`: other callers of
+`ComputeRunArguments`, including `dotnet run`/MSBuild `Run`, can see the launcher
+substitution without an SDK HTTP bootstrap. Before preview, define and verify
+an invocation gate or an explicit opt-out so ordinary run/build/publish and
+referencing non-test projects are not accidentally routed through a test-only
+launcher. Also verify repeated evaluation, `--no-build`, multi-targeting,
+and concurrent invocations; the preview writes launcher settings to a fixed
+intermediate-project file, not a per-run protected configuration.
 
 ## Host readiness
 
@@ -225,6 +274,13 @@ creates the owner-only file:
 
 Only a loopback HTTP or HTTPS URL is accepted.
 
+These are host obligations, not fully enforced file protections: the preview
+checks Unix permission bits when reading launch-info, but its Windows
+validation returns without checking the ACL. Before preview release, the
+contract must cover restrictive directory/file creation and validation on all
+supported platforms, including symlink/reparse-point and concurrent-writer
+handling. A random temporary filename is not an owner-only directory.
+
 The current Blazor Gateway does not implement this contract. For compatibility,
 the launcher also recognizes the existing ASP.NET Core
 `Now listening on: <URL>` message from captured output. This fallback is part
@@ -232,11 +288,22 @@ of the current compatibility story; the RFC must not claim that browser
 testing waits exclusively on launch-info or that host unification blocks a
 preview.
 
+The file is checked before waiting for stdout, but once console readiness is
+accepted the launcher does not wait for a later launch-info file. Version 1 of
+this experimental schema is separate from version 1 of the browser page API.
+
 Productization should define a generic launch-info contract usable by
 `dotnet run`, browser testing, tools, and multiple WebAssembly hosts. It should
 remain host information, not a test-specific Gateway feature. The console
 fallback can be retired only after the supported host matrix reliably
 implements that contract.
+
+The agreed host contract must also define URL/base-path resolution, redirects,
+and asset readiness: a fallback page returning HTTP 200 is not evidence that
+the test bootstrap exists. Let the host bind loopback port zero atomically
+where supported; do not assume a probe-and-release port remains free. HTTPS
+requires a trusted certificate and compatible browser policy, not a silent
+context-wide certificate bypass.
 
 ## Browser page API
 
@@ -266,6 +333,16 @@ The contract is:
 The underlying Playwright binding is private launcher transport, not a public
 page API.
 
+Completion means the MTP operation has finished, not merely that navigation
+succeeded. The page must await live protocol replies and any supported
+artifact acknowledgements before calling `complete`, and the launcher must
+forward the managed exit code. Preserve the SDK's existing
+[missing-session-end check](../../src/Cli/dotnet/Commands/Test/MTP/TestApplication.cs#L248-L260)
+for executed sessions; browser completion must not turn a prematurely exited
+test run into success. Help and discovery have their own completion paths.
+Missing/duplicate completion, page crash, and a disconnect before completion
+need bounded, non-success outcomes.
+
 ### Package-owned page
 
 By default the package supplies `index.html` and a JavaScript supervisor. The
@@ -283,8 +360,9 @@ A framework sets:
 </TestingPlatformBrowserGenerateHostAssets>
 ```
 
-and provides its own page and startup code. Its adapter follows the same
-contract:
+and provides its own page and startup code. For a general WebAssembly page
+that owns runtime creation and whose managed main returns, its adapter follows
+the same contract (after importing `dotnet` from `./_framework/dotnet.js`):
 
 ```js
 const api = globalThis.testingPlatformBrowser;
@@ -315,6 +393,12 @@ if (failure !== undefined) {
 The framework continues to own page rendering, its boot script, and Static Web
 Assets. The browser package owns only the test bootstrap and completion
 boundary.
+
+This `runMain` example is not a Blazor startup recipe: a framework whose main
+continues for the application's lifetime must call `complete` when its MTP
+run finishes, not wait for the application to exit. The Blazor consumer does
+that through `BrowserTestRunner.cs`; see
+[Primary-source snapshots](#primary-source-snapshots).
 
 ## MTP result path
 
@@ -354,8 +438,8 @@ response-file path is included with the other test application arguments. The
 browser launcher:
 
 1. expands the response file in its own process;
-2. validates that the endpoint is loopback HTTP and that a bearer token is
-   present;
+2. validates that the endpoint is loopback HTTP or HTTPS and that a bearer
+   token is present;
 3. retains the token in memory;
 4. injects the MTP arguments through Playwright before application startup;
 5. redacts the token and protocol endpoint path from launcher, host, and
@@ -367,8 +451,15 @@ obtain the arguments because it must start MTP, so the design narrows rather
 than eliminates that trust boundary.
 
 The SDK gateway's existing CORS behavior pins the first accepted browser
-origin. The prototype does not add a pre-navigation origin-registration
-operation or any other gateway API.
+origin, including an unauthenticated preflight. The prototype does not add a
+pre-navigation origin-registration operation or any other gateway API.
+
+The page's CSP `connect-src`, CORS/PNA preflights, and browser network policy
+still apply to MTP requests; Playwright argument injection bypasses none of
+them. A framework-owned page must permit the selected SDK endpoint explicitly
+or fail with an actionable diagnostic, not disable CSP. The preview does not
+implement dynamic CSP composition or a race-free pre-navigation origin
+registration contract. These need validation in the selected preview matrix.
 
 The package rejects user browser arguments that could replace Playwright's
 private debugging transport or isolated user-data directory. Productization
@@ -388,7 +479,8 @@ Playwright provides:
 - an isolated non-persistent browser context;
 - navigation and top-level-page bindings;
 - console, page-error, failed-request, crash, and disconnect diagnostics;
-- deterministic browser/context closure.
+- browser/context close operations, with deadline enforcement and fallback
+  cleanup remaining the launcher's responsibility.
 
 Playwright does not provide the MTP result protocol, host Static Web Assets,
 managed artifact export, or cooperative cancellation of blocked managed code.
@@ -418,9 +510,28 @@ It captures bounded diagnostics, owns the host process tree, and controls the
 Playwright browser lifetime. Disposal closes the Playwright binding, context,
 and browser and kills the host process tree when necessary.
 
+These are implemented observation/cleanup paths, not proof of prompt
+termination in every failure mode. For example, the current page-crash handler
+records a diagnostic; it does not itself complete the pending test wait.
+Before preview, failure events and timeouts must converge on bounded cleanup,
+including an independent force-kill path if Playwright closure or the launcher
+itself stops responding. No cleanup path may kill unrelated user processes.
+
 A synchronous infinite loop on the single browser WebAssembly thread cannot
 observe managed cancellation or flush final results. The outer launcher can
 still enforce a deadline and terminate the owned processes.
+
+Await asynchronous test bodies and yield between cases to keep the browser
+event loop responsive; a framework cannot make a synchronous infinite loop
+cooperative. Record a per-test-start breadcrumb before invoking the test body
+so crash/hang diagnostics can identify the last started test. The current
+launcher alone does not establish that MTP producer guarantee.
+
+Diagnostics should retain phase, elapsed time, exit code/signal, and bounded
+host/browser output. They must not guess a cause from an ambiguous symptom
+such as `Failed to fetch`. Screenshots/traces are optional future diagnostics,
+not present coverage or substitutes for a test result; their capture must
+preserve bootstrap redaction.
 
 ## Artifacts
 
@@ -434,19 +545,38 @@ bounded, authenticated, and designed in TestFX with the SDK result
 materialization contract. Existing file-only producers could then open their
 VFS file and copy it through the same sink.
 
+The SDK must select destinations under its results directory, reject
+traversal/symlink escapes and overwrite collisions, validate length/hash and
+per-file/run quotas, and remove incomplete transfers. Transfer must not block
+live results. Use bounded chunks as the baseline; browser response streaming
+does not establish request-streaming support for the loopback gateway.
+
 Artifact export is not automatically a preview blocker. It becomes a blocker
 only if the agreed preview contract promises physical TRX files, attachments,
 diagnostic files, or another artifact that cannot be delivered. A preview may
 instead document those outputs as unsupported while retaining live discovery,
 output, and results.
 
+Documenting a limitation must not allow an unsupported option to appear to
+succeed.
+Before preview, requests such as `--report-trx` must fail explicitly or be
+capability-gated when host export is unavailable. Likewise, host paths in
+`--config-file`, `--results-directory`, and `--diagnostic-output-directory`
+cannot simply be passed into the browser VFS. Define supported mappings or
+reject unsupported uses. Remote configuration remains future TestFX/SDK work,
+not an existing Gateway feature; user extension arguments are not
+automatically path-translated.
+
 ## Cancellation
 
-Cooperative browser cancellation is not implemented by the prototype. Today,
-the SDK can eventually force-kill the launcher process tree, and the launcher
-performs browser and host cleanup when it receives a cancellation signal and
-can still run its disposal path. Neither path can ask a yielding MTP
-application in the page to flush a graceful final summary.
+Cooperative browser cancellation is not implemented by the prototype. The SDK
+has force-kill paths and the launcher has startup/completion deadlines and
+disposal paths, but their presence does not prove end-to-end cancellation.
+In the inspected TestFX `Program.cs` at `ab878a385`, the running-test wait
+uses a separate cancellation source not linked to the Ctrl+C source used for
+startup. Cancellation must reach every phase before preview release.
+Force-killing the launcher also cannot be assumed to execute its `finally`
+blocks. Neither approach can ask browser MTP to flush a graceful final summary.
 
 A future design may use SDK-to-launcher local control followed by Playwright
 evaluation of a versioned page/MTP cancellation hook. It does not require a
@@ -467,7 +597,8 @@ cooperative cancellation is deferred.
   SDK-owned host implementation.
 - Hosts with the generic launch-info contract are preferred; supported legacy
   hosts may use console readiness as a compatibility fallback.
-- Framework-owned pages negotiate the versioned browser page API.
+- Framework-owned pages validate browser page API version 1; optional
+  capability negotiation is future work.
 - Older MTP/SDK combinations fail through package activation, argument, or
   transport diagnostics rather than silently switching to another result
   protocol.
@@ -476,6 +607,10 @@ cooperative cancellation is deferred.
 
 The supported matrix must eventually name compatible SDK, TestFX package,
 target framework, host, operating system, architecture, and browser versions.
+The preview desktop launcher targets `net8.0` with major roll-forward; that
+does not define the browser application's minimum TFM. SDK, package, launcher
+runtime, page API, host readiness, and MTP protocol versions must be considered
+separately rather than assumed to match.
 
 ## Productization plan
 
@@ -497,7 +632,7 @@ Implemented in the cross-repository prototype:
 
 Required before a preview:
 
-- publish and version the optional package;
+- publish reviewable source and version the optional package;
 - define SDK/TestFX compatibility and failure diagnostics;
 - select a package-size and platform-distribution strategy;
 - validate offline restore, source-build, VMR, signing, and servicing;
@@ -505,10 +640,12 @@ Required before a preview:
   supported operating-system/architecture matrix;
 - complete security review of bootstrap, Playwright transport, redaction,
   origin validation, and cleanup;
-- run end-to-end `dotnet test`, discovery, filtering, failure, timeout, and
-  framework-owned-page tests;
-- document unsupported preview features, including artifacts or cooperative
-  cancellation if they remain deferred.
+- run end-to-end `dotnet test`, discovery, filtering, failure, timeout,
+  cancellation at every phase, and framework-owned-page tests;
+- document and explicitly reject/gate unsupported preview options, including
+  artifact and host-path options if they remain deferred;
+- verify ordinary non-test launch behavior and isolate concurrent launcher
+  configuration writes.
 
 The preview does not require a new application server or changes to the Blazor
 Gateway.
@@ -525,6 +662,15 @@ Gateway.
 ## Test plan
 
 ### Current prototype coverage
+
+The TestFX snapshot in [Primary-source snapshots](#primary-source-snapshots)
+contains `BrowserPackageExecutionTests.cs` under
+`test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/`
+and `BrowserLauncherOptionsTests.cs` under
+`test/UnitTests/Microsoft.Testing.Extensions.UnitTests/`. The browser integration
+tests report inconclusive when Node or a browser is missing; that outcome is
+not execution evidence. The Blazor filtering result is the separately reported
+consumer run, not a package-wide compatibility claim.
 
 - `dotnet test` runs a test inside `browser-wasm` through the SDK HTTP gateway.
 - `--list-tests` discovers browser tests.
@@ -543,15 +689,21 @@ Gateway.
 - passing, failing, skipped, filtered, and zero-test runs;
 - help and unsupported-option behavior;
 - host launch-info and console-fallback compatibility;
+- Windows ACL and Unix permissions, link/redirect/base-path rejection, and
+  invalid or concurrently written launch-info;
 - host exit, browser crash/disconnect, page error, request failure, test
   timeout, and cleanup;
-- token redaction, owner-only files, exact-origin injection, CORS/PNA, and
-  rejected browser arguments;
+- token redaction, response-file expansion bounds, owner-only files,
+  exact-origin injection, CORS/PNA/CSP, and rejected browser arguments;
 - Windows, Linux, and macOS on each packaged architecture;
 - installed Edge, Chrome, and Chromium versions in the support policy;
 - offline/source-build/VMR package construction and use;
 - parallel projects and multi-targeting;
+- `--no-build`, repeated evaluation, ordinary `dotnet run`/build/publish,
+  conflicting generated/custom assets, and unsupported module-only launch;
 - framework-owned pages, including Blazor;
+- completion ordering, premature zero exit, per-test-start crash breadcrumbs,
+  and cancellation/forced cleanup at every phase;
 - artifact and cooperative-cancellation tests only when those capabilities are
   added to the preview contract.
 
