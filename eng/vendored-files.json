@@ -4,14 +4,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props).",
+      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "9abf6c1c70ab832033cfca805078df74ee87cc9b",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "b895c69e438c5acbde2a44e11c92873c1f58ac2a",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -34,14 +34,14 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled at f935d2d3 (#55472/#55473): the retry/flaky accounting (TestProgressState.RetriedTests/RetriedExecutions/FlakyTests/GetFlakyTests), the 'flaky: N' and 'retried: N test(s), M extra run(s)' summary lines, the 'Flaky tests:' listing (.FlakyTests.cs), the 'Slowest tests:' listing (.SlowestTests.cs, fed by TestProgressState.RecordTestDuration/GetSlowestTests) and the TerminalTestReporterOptions switches (ShowFlakyTests, SlowestTestsCount, ShowRunSummary) are now ported. The '(+N retried)' suffix on the total line was replaced by the two dedicated lines, matching upstream. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- upstream's own orchestrator path passes 'retryAttempt: null' because the attempt number of a framework-level [Retry] is not carried over the pipe either; the SDK attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': it exists so the fork stays shape-compatible, but the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled through 45f54c96: retry/flaky and slowest-test summaries, per-outcome test-result visibility, skipped-count coloring, and descriptive exit-code summaries are ported. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- the SDK does not yet receive framework-level retry metadata and attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "51bf9c46545d06d31f2944c88c20c68f76654acc",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "a0f8cdd5ee8f4db4595e7bb9b64727e314e5acba",
           "scope": "reporter partial"
         },
         {
@@ -80,8 +80,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Lifecycle.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "f60f6e6844e0ce77e3c16696bfd541e7e5a02c15",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "847577197225ece92f57378af4fe7c6a1066fd5a",
           "scope": "reporter partial"
         },
         {
@@ -96,16 +96,16 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Summary.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "70615451a89acbc84f4ab235bb0957ee4061f6a0",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "345211d2bd3dbbac5542d5c39e4facb7634b714b",
           "scope": "reporter partial"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestCompletion.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "ea0de7643f09d8a37239f7cb60218a15d35ace33",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "b240829ccd143e8431404522eaaa0c39b8df5a6d",
           "scope": "reporter partial"
         },
         {
@@ -364,14 +364,14 @@
     {
       "id": "dotnet-test-terminal-terminaltestreporteroptions",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. ShowFlakyTests and ShowRunSummary are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. The SDK mirrors ShowTestResults, ShowFlakyTests, SlowestTestsCount, and ShowRunSummary; SDK-specific option parsing adapts the upstream settings to the dotnet test command.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "a5c412ae64d9e719299d8ce77ec04b812af45560",
+          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
+          "baseline_blob_sha": "f0ecdbdb56e3a40383f0276017853e3b2313c97a",
           "scope": "entire file"
         }
       ]
