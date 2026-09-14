@@ -8,6 +8,7 @@ using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 [TestClass]
+[DoNotParallelize]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
     private readonly string _originalCwd = Directory.GetCurrentDirectory();

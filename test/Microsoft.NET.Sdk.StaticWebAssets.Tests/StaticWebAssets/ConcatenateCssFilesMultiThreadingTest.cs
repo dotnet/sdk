@@ -10,9 +10,8 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide: the MSTest.Sdk project sets
-// MSTestParallelizeScope=None, which emits [assembly: DoNotParallelize] and runs
-// tests sequentially, isolating the process-CWD mutation this test performs.
+// ResourceLock cannot protect unrelated tests that implicitly read the process current directory which this test mutates.
+[DoNotParallelize]
 [TestClass]
 public class ConcatenateCssFilesMultiThreadingTest
 {

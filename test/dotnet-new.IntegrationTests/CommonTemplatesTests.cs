@@ -13,6 +13,9 @@ using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [TestClass]
+    // Concurrent builds from this class and DotnetClassTemplateTests can hang on two-core Helix agents.
+    // https://github.com/dotnet/sdk/issues/56019
+    [ResourceLock(nameof(DotnetBuildCommand))]
     public class CommonTemplatesTests : BaseIntegrationTest
     {
         private ITestOutputHelper _log => Log;

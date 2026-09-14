@@ -30,38 +30,40 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 {
                     Sources=
                     {
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
-    public static void M()
-    {{
-        var a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}});
-        var b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}});
-        var c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}));
-    }}
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+                        public static void M()
+                        {
+                            var a = 1.Equals({|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|});
+                            var b = 1.Equals({|{{UseCountProperlyAnalyzer.CA1829}}:(GetData()).Count()|});
+                            var c = 1.Equals(({|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|}));
+                        }
+                    }
+                    """,
                     },
                 },
                 FixedState =
                 {
                     Sources=
                     {
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
-    public static void M()
-    {{
-        var a = 1.Equals(GetData().Length);
-        var b = 1.Equals((GetData()).Length);
-        var c = 1.Equals((GetData().Length));
-    }}
-}}
-" ,
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+                        public static void M()
+                        {
+                            var a = 1.Equals(GetData().Length);
+                            var b = 1.Equals((GetData()).Length);
+                            var c = 1.Equals((GetData().Length));
+                        }
+                    }
+                    """ ,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -74,38 +76,40 @@ public static class C
                 {
                     Sources=
                     {
-                $@"Imports System
-Imports System.Linq
-Public Class Program
-    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
-        Return Nothing
-    End Function
-    Public Sub M()
-        Dim a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}})
-        Dim b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}})
-        Dim c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}))
-    End Sub
-End Class
-",
+                $$"""
+                    Imports System
+                    Imports System.Linq
+                    Public Class Program
+                        Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+                            Return Nothing
+                        End Function
+                        Public Sub M()
+                            Dim a = 1.Equals({|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|})
+                            Dim b = 1.Equals({|{{UseCountProperlyAnalyzer.CA1829}}:(GetData()).Count()|})
+                            Dim c = 1.Equals(({|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|}))
+                        End Sub
+                    End Class
+                    """,
                     },
                 },
                 FixedState =
                 {
                     Sources=
                     {
-                $@"Imports System
-Imports System.Linq
-Public Class Program
-    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
-        Return Nothing
-    End Function
-    Public Sub M()
-        Dim a = 1.Equals(GetData().Length)
-        Dim b = 1.Equals((GetData()).Length)
-        Dim c = 1.Equals((GetData().Length))
-    End Sub
-End Class
-" ,
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Class Program
+                        Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+                            Return Nothing
+                        End Function
+                        Public Sub M()
+                            Dim a = 1.Equals(GetData().Length)
+                            Dim b = 1.Equals((GetData()).Length)
+                            Dim c = 1.Equals((GetData().Length))
+                        End Sub
+                    End Class
+                    """ ,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -118,30 +122,32 @@ End Class
                 {
                     Sources=
                     {
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
-    public static int M() => {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}};
-    public static int N() => {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}};
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+                        public static int M() => {|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|};
+                        public static int N() => {|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|};
+                    }
+                    """,
                     },
                 },
                 FixedState =
                 {
                     Sources=
                     {
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
-    public static int M() => GetData().Length;
-    public static int N() => GetData().Length;
-}}
-" ,
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+                        public static int M() => GetData().Length;
+                        public static int N() => GetData().Length;
+                    }
+                    """ ,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -154,40 +160,42 @@ public static class C
                 {
                     Sources=
                     {
-                $@"Imports System
-Imports System.Linq
-Public Module C
-    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}
-    End Function
-    Public Function G() As Integer
-        Return {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}
-    End Function
-End Module
-",
+                $$"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module C
+                        Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return {|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|}
+                        End Function
+                        Public Function G() As Integer
+                            Return {|{{UseCountProperlyAnalyzer.CA1829}}:GetData().Count()|}
+                        End Function
+                    End Module
+                    """,
                     },
                 },
                 FixedState =
                 {
                     Sources=
                     {
-                $@"Imports System
-Imports System.Linq
-Public Module C
-    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData().Length
-    End Function
-    Public Function G() As Integer
-        Return GetData().Length
-    End Function
-End Module
-" ,
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module C
+                        Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData().Length
+                        End Function
+                        Public Function G() As Integer
+                            Return GetData().Length
+                        End Function
+                    End Module
+                    """ ,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -200,27 +208,29 @@ End Module
         [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
         public async Task CSharp_FixedAsync(string type, string propertyName)
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static {type} GetData() => default;
-    public static int M() => GetData().Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static {{type}} GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(6, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments(propertyName),
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static {type} GetData() => default;
-    public static int M() => GetData().{propertyName};
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static {{type}} GetData() => default;
+                        public static int M() => GetData().{{propertyName}};
+                    }
+                    """);
 
         [TestMethod]
         [DataRow("string[]", nameof(Array.Length))]
@@ -230,122 +240,130 @@ public static class C
         [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
         public async Task CSharp_Conditional_FixedAsync(string type, string propertyName)
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static {type} GetData() => default;
-    public static int? M() => GetData()?.Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static {{type}} GetData() => default;
+                        public static int? M() => GetData()?.Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(6, 41)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments(propertyName),
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static {type} GetData() => default;
-    public static int? M() => GetData()?.{propertyName};
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static {{type}} GetData() => default;
+                        public static int? M() => GetData()?.{{propertyName}};
+                    }
+                    """);
 
         [TestMethod]
         [DataRow("string()", nameof(Array.Length))]
         [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)", nameof(ImmutableArray<int>.Length))]
         public async Task Basic_FixedAsync(string type, string propertyName)
             => await VerifyVB.VerifyCodeFixAsync(
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData().Count()
-    End Function
-End Module
-",
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData().Count()
+                        End Function
+                    End Module
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 16)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments(propertyName),
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData().{propertyName}
-    End Function
-End Module
-");
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData().{propertyName}
+                        End Function
+                    End Module
+                    """);
 
         [TestMethod]
         [DataRow("string()", nameof(Array.Length))]
         [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)?", nameof(ImmutableArray<int>.Length))]
         public async Task Basic_Conditional_FixedAsync(string type, string propertyName)
             => await VerifyVB.VerifyCodeFixAsync(
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData()?.Count()
-    End Function
-End Module
-",
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData()?.Count()
+                        End Function
+                    End Module
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 26)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments(propertyName),
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData()?.{propertyName}
-    End Function
-End Module
-");
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData()?.{propertyName}
+                        End Function
+                    End Module
+                    """);
 
         [TestMethod]
         [DataRow("System.Collections.Generic.IEnumerable<int>")]
         public async Task CSharp_NoDiagnosticAsync(string type)
             => await VerifyCS.VerifyAnalyzerAsync(
-                $@"using System;
-using System.Linq;
-public static class C
-{{
-    public static {type} GetData() => default;
-    public static int M() => GetData().Count();
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public static class C
+                    {
+                        public static {{type}} GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """);
 
         [TestMethod]
         [DataRow("System.Collections.Generic.IEnumerable(Of Integer)")]
         public async Task Basic_NoDiagnosticAsync(string type)
             => await VerifyVB.VerifyAnalyzerAsync(
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData().Count()
-    End Function
-End Module
-");
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData().Count()
+                        End Function
+                    End Module
+                    """);
 
         [TestMethod]
         [DataRow("System.Collections.Generic.List(Of Integer)")]
@@ -353,320 +371,336 @@ End Module
         [DataRow("System.Collections.Generic.ICollection(Of Integer)")]
         public async Task Basic_PropertyInvocationWithParenthesis_NoDiagnosticAsync(string type)
             => await VerifyVB.VerifyAnalyzerAsync(
-                $@"Imports System
-Imports System.Linq
-Public Module M
-    Public Function GetData() As {type}
-        Return Nothing
-    End Function
-    Public Function F() As Integer
-        Return GetData().Count()
-    End Function
-End Module
-");
+                $"""
+                    Imports System
+                    Imports System.Linq
+                    Public Module M
+                        Public Function GetData() As {type}
+                            Return Nothing
+                        End Function
+                        Public Function F() As Integer
+                            Return GetData().Count()
+                        End Function
+                    End Module
+                    """);
 
         [TestMethod]
         public async Task CSharp_ICollectionOfTImplementerWithImplicitCount_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    public int Count => throw new NotImplementedException();
-    public bool IsReadOnly => throw new NotImplementedException();
-    public void Add(string item) => throw new NotImplementedException();
-    public void Clear() => throw new NotImplementedException();
-    public bool Contains(string item) => throw new NotImplementedException();
-    public void CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    public bool Remove(string item) => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T : global::System.Collections.Generic.ICollection<string>
+                    {
+                        public int Count => throw new NotImplementedException();
+                        public bool IsReadOnly => throw new NotImplementedException();
+                        public void Add(string item) => throw new NotImplementedException();
+                        public void Clear() => throw new NotImplementedException();
+                        public bool Contains(string item) => throw new NotImplementedException();
+                        public void CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        public bool Remove(string item) => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(18, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    public int Count => throw new NotImplementedException();
-    public bool IsReadOnly => throw new NotImplementedException();
-    public void Add(string item) => throw new NotImplementedException();
-    public void Clear() => throw new NotImplementedException();
-    public bool Contains(string item) => throw new NotImplementedException();
-    public void CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    public bool Remove(string item) => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count;
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T : global::System.Collections.Generic.ICollection<string>
+                    {
+                        public int Count => throw new NotImplementedException();
+                        public bool IsReadOnly => throw new NotImplementedException();
+                        public void Add(string item) => throw new NotImplementedException();
+                        public void Clear() => throw new NotImplementedException();
+                        public bool Contains(string item) => throw new NotImplementedException();
+                        public void CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        public bool Remove(string item) => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count;
+                    }
+                    """);
 
         [TestMethod]
         public async Task CSharp_ICollectionImplementerWithImplicitCount_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public class T :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{{
-    public int Count => throw new NotImplementedException();
-    bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
-    object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
-    void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T :
+                        global::System.Collections.Generic.IEnumerable<string>,
+                        global::System.Collections.ICollection
+                    {
+                        public int Count => throw new NotImplementedException();
+                        bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
+                        object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
+                        void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(17, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-                $@"using System;
-using System.Linq;
-public class T :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{{
-    public int Count => throw new NotImplementedException();
-    bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
-    object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
-    void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count;
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T :
+                        global::System.Collections.Generic.IEnumerable<string>,
+                        global::System.Collections.ICollection
+                    {
+                        public int Count => throw new NotImplementedException();
+                        bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
+                        object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
+                        void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count;
+                    }
+                    """);
 
         [TestMethod]
         public async Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnosticAsync()
             => await VerifyCS.VerifyAnalyzerAsync(
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count();
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T : global::System.Collections.Generic.ICollection<string>
+                    {
+                        int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """);
 
         [TestMethod]
         public async Task CSharp_InterfaceShadowingICollectionOfT_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                @"using System;
-using System.Linq;
-public interface I : global::System.Collections.Generic.ICollection<string>
-{
-    new int Count { get; }
-}
-public static class C
-{
-    public static I GetData() => default;
-    public static int M() => GetData().Count();
-}
-",
+                """
+                    using System;
+                    using System.Linq;
+                    public interface I : global::System.Collections.Generic.ICollection<string>
+                    {
+                        new int Count { get; }
+                    }
+                    public static class C
+                    {
+                        public static I GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(10, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-@"using System;
-using System.Linq;
-public interface I : global::System.Collections.Generic.ICollection<string>
-{
-    new int Count { get; }
-}
-public static class C
-{
-    public static I GetData() => default;
-    public static int M() => GetData().Count;
-}
-");
+"""
+    using System;
+    using System.Linq;
+    public interface I : global::System.Collections.Generic.ICollection<string>
+    {
+        new int Count { get; }
+    }
+    public static class C
+    {
+        public static I GetData() => default;
+        public static int M() => GetData().Count;
+    }
+    """);
 
         [TestMethod]
         public async Task CSharp_InterfaceShadowingICollection_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                @"using System;
-using System.Linq;
-public interface I :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{
-    new int Count { get; }
-}
-public static class C
-{
-    public static I GetData() => default;
-    public static int M() => GetData().Count();
-}
-",
+                """
+                    using System;
+                    using System.Linq;
+                    public interface I :
+                        global::System.Collections.Generic.IEnumerable<string>,
+                        global::System.Collections.ICollection
+                    {
+                        new int Count { get; }
+                    }
+                    public static class C
+                    {
+                        public static I GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(12, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-@"using System;
-using System.Linq;
-public interface I :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{
-    new int Count { get; }
-}
-public static class C
-{
-    public static I GetData() => default;
-    public static int M() => GetData().Count;
-}
-");
+"""
+    using System;
+    using System.Linq;
+    public interface I :
+        global::System.Collections.Generic.IEnumerable<string>,
+        global::System.Collections.ICollection
+    {
+        new int Count { get; }
+    }
+    public static class C
+    {
+        public static I GetData() => default;
+        public static int M() => GetData().Count;
+    }
+    """);
 
         [TestMethod]
         public async Task CSharp_ClassShadowingICollectionOfT_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    public int Count => throw new NotImplementedException();
-    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T : global::System.Collections.Generic.ICollection<string>
+                    {
+                        public int Count => throw new NotImplementedException();
+                        int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(19, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    public int Count => throw new NotImplementedException();
-    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count;
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T : global::System.Collections.Generic.ICollection<string>
+                    {
+                        public int Count => throw new NotImplementedException();
+                        int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
+                        void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+                        bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count;
+                    }
+                    """);
 
         [TestMethod]
         public async Task CSharp_ClassShadowingICollection_FixedAsync()
             => await VerifyCS.VerifyCodeFixAsync(
-                $@"using System;
-using System.Linq;
-public class T :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{{
-    public int Count => throw new NotImplementedException();
-    int global::System.Collections.ICollection.Count => throw new NotImplementedException();
-    bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
-    object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
-    void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count();
-}}
-",
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T :
+                        global::System.Collections.Generic.IEnumerable<string>,
+                        global::System.Collections.ICollection
+                    {
+                        public int Count => throw new NotImplementedException();
+                        int global::System.Collections.ICollection.Count => throw new NotImplementedException();
+                        bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
+                        object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
+                        void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count();
+                    }
+                    """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(18, 30)
 #pragma warning restore RS0030 // Do not use banned APIs
                     .WithArguments("Count"),
-                $@"using System;
-using System.Linq;
-public class T :
-    global::System.Collections.Generic.IEnumerable<string>,
-    global::System.Collections.ICollection
-{{
-    public int Count => throw new NotImplementedException();
-    int global::System.Collections.ICollection.Count => throw new NotImplementedException();
-    bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
-    object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
-    void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count;
-}}
-");
+                $$"""
+                    using System;
+                    using System.Linq;
+                    public class T :
+                        global::System.Collections.Generic.IEnumerable<string>,
+                        global::System.Collections.ICollection
+                    {
+                        public int Count => throw new NotImplementedException();
+                        int global::System.Collections.ICollection.Count => throw new NotImplementedException();
+                        bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
+                        object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
+                        void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
+                        public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+                        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+                    }
+                    public static class C
+                    {
+                        public static T GetData() => default;
+                        public static int M() => GetData().Count;
+                    }
+                    """);
 
         [TestMethod, WorkItem(2974, "https://github.com/dotnet/roslyn-analyzers/issues/2974")]
         public async Task CA1829_IReadOnlyCollectionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
-using System.Linq;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class SomeClass
-{
-    public IReadOnlyCollection<int> GetData() => null;
-    public int M() => GetData().Count();
-}",
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class SomeClass
+                {
+                    public IReadOnlyCollection<int> GetData() => null;
+                    public int M() => GetData().Count();
+                }
+                """,
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 23)
@@ -679,66 +713,68 @@ public class SomeClass
         {
             await new VerifyCS.Test
             {
-                TestCode = @"
-using System.Collections.Generic;
-using System.Linq;
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Linq;
 
-public class C
-{
-    public static bool IsChildPath(string parentPath, string childPath)
-    {
-        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
-            IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
-    }
+                    public class C
+                    {
+                        public static bool IsChildPath(string parentPath, string childPath)
+                        {
+                            return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+                                IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
+                        }
 
-    public static bool IsDirectorySeparator(char c) => false;
-}",
-                FixedCode = @"
-using System.Collections.Generic;
-using System.Linq;
+                        public static bool IsDirectorySeparator(char c) => false;
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Linq;
 
-public class C
-{
-    public static bool IsChildPath(string parentPath, string childPath)
-    {
-        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
-            IsDirectorySeparator(childPath[parentPath.Length]));
-    }
+                    public class C
+                    {
+                        public static bool IsChildPath(string parentPath, string childPath)
+                        {
+                            return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+                                IsDirectorySeparator(childPath[parentPath.Length]));
+                        }
 
-    public static bool IsDirectorySeparator(char c) => false;
-}",
+                        public static bool IsDirectorySeparator(char c) => false;
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
-                TestCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
+                TestCode = """
+                    Imports System.Collections.Generic
+                    Imports System.Linq
 
-Public Class C
-    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
-        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
-    End Function
+                    Public Class C
+                        Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+                            Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
+                        End Function
 
-    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
-        Return False
-    End Function
-End Class
-",
-                FixedCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
+                        Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+                            Return False
+                        End Function
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System.Collections.Generic
+                    Imports System.Linq
 
-Public Class C
-    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
-        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
-    End Function
+                    Public Class C
+                        Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+                            Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
+                        End Function
 
-    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
-        Return False
-    End Function
-End Class
-",
+                        Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+                            Return False
+                        End Function
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -746,85 +782,89 @@ End Class
         public async Task CS_NestedCount_FixAllRewritesBothAsync()
             => await new VerifyCS.Test
             {
-                TestCode = @"
-using System.Collections.Generic;
-using System.Linq;
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Linq;
 
-public class C
-{
-    public int M(List<List<int>> lists)
-    {
-        return {|CA1829:lists[{|CA1829:lists.Count()|}].Count()|};
-    }
-}",
-                FixedCode = @"
-using System.Collections.Generic;
-using System.Linq;
+                    public class C
+                    {
+                        public int M(List<List<int>> lists)
+                        {
+                            return {|CA1829:lists[{|CA1829:lists.Count()|}].Count()|};
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Linq;
 
-public class C
-{
-    public int M(List<List<int>> lists)
-    {
-        return lists[lists.Count].Count;
-    }
-}",
+                    public class C
+                    {
+                        public int M(List<List<int>> lists)
+                        {
+                            return lists[lists.Count].Count;
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
         [TestMethod]
         public async Task VB_NestedCount_FixAllRewritesBothAsync()
             => await new VerifyVB.Test
             {
-                TestCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
+                TestCode = """
+                    Imports System.Collections.Generic
+                    Imports System.Linq
 
-Public Class C
-    Public Function M(items As Integer()()) As Integer
-        Return {|CA1829:items({|CA1829:items.Count()|}).Count()|}
-    End Function
-End Class
-",
-                FixedCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
+                    Public Class C
+                        Public Function M(items As Integer()()) As Integer
+                            Return {|CA1829:items({|CA1829:items.Count()|}).Count()|}
+                        End Function
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System.Collections.Generic
+                    Imports System.Linq
 
-Public Class C
-    Public Function M(items As Integer()()) As Integer
-        Return items(items.Length).Length
-    End Function
-End Class
-",
+                    Public Class C
+                        Public Function M(items As Integer()()) As Integer
+                            Return items(items.Length).Length
+                        End Function
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
 
         [TestMethod]
         public async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Linq;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Linq;
 
-class C
-{
-    void M(IQueryable<string> strings)
-    {
-        var result = strings.Where(s => s.Count() > 0);
-    }
-}");
+                class C
+                {
+                    void M(IQueryable<string> strings)
+                    {
+                        var result = strings.Where(s => s.Count() > 0);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1836_ExpressionTree_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Concurrent;
-using System.Linq;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Collections.Concurrent;
+                using System.Linq;
 
-class C
-{
-    void M(IQueryable<string> strings, ConcurrentQueue<int> queue)
-    {
-        var result = strings.Select(s => queue.Count == 0 ? ""empty"" : ""not empty"");
-    }
-}");
+                class C
+                {
+                    void M(IQueryable<string> strings, ConcurrentQueue<int> queue)
+                    {
+                        var result = strings.Select(s => queue.Count == 0 ? "empty" : "not empty");
+                    }
+                }
+                """);
         }
     }
 

@@ -143,12 +143,15 @@ per-module inputs and double-count tests.
 
 ## What currently merges
 
-Today only **TRX** consolidates: the only shipping post-processor is the one in the
-`Microsoft.Testing.Extensions.TrxReport` package. Code coverage and other formats will only be
-merged once a post-processor ships in the extension that produces them; until then those
-artifacts are listed individually, exactly as before. This is a capability question, not a
-configuration one — the SDK merges whatever the installed extensions advertise. The contract for
-adding a format is public; see [Extending it to another artifact format](#extending-it-to-another-artifact-format).
+Shipping Microsoft.Testing.Platform extensions provide post-processors for **TRX, Microsoft code
+coverage, JUnit, CTRF, and HTML reports**, as well as aggregated GitHub Actions and Azure DevOps
+summaries. The formats available to a run still depend on which extensions its test applications
+reference and enable; the SDK does not install a processor or infer mergeability from a file name.
+It merges whatever the installed extensions advertise.
+
+Other formats continue to be listed individually until their producing extension ships a
+post-processor. The contract for adding one is public; see
+[Extending it to another artifact format](#extending-it-to-another-artifact-format).
 
 ## Extending it to another artifact format
 

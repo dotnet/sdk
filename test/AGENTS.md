@@ -13,7 +13,9 @@ Guidance for changes under `test/`.
 
 - **Derive from `SdkTest`** (in `Microsoft.NET.TestFramework.MSTest`). This gives you
   `TestAssetsManager`, `Log` (wired to MSTest's `TestContext`), and
-  `BinLogArgument(...)` for binlog paths collected by Helix.
+  `BinLogArgument(...)` for binlog paths collected by Helix. It also initializes the
+  SDK/MSBuild environment before in-process MSBuild APIs such as `ProjectCollection`
+  cache toolset paths.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 
@@ -29,15 +31,16 @@ Guidance for changes under `test/`.
   installed one.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
-- **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
-  `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
-  into `ClassLevel` or `MethodLevel` after auditing their shared resources. Cranking it
-  up without that audit causes Helix over-subscription/timeouts and test interference.
+- **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`
+  in `test/Directory.Build.props` until their shared resources have been audited.
+  Runnable test projects override that default with `ClassLevel` or `MethodLevel` when
+  safe; keep `None` only when the whole assembly depends on one inherently serial
+  resource. Raising the scope without an audit causes Helix over-subscription/timeouts
+  and test interference.
 - **In parallelized projects, prefer `[ResourceLock]` over `[DoNotParallelize]`.** In the
-  projects that do opt in (`Microsoft.NET.Build.Tests`, `dotnet-watch.Tests`,
-  `Microsoft.NET.Build.Containers.UnitTests`, `Microsoft.TemplateEngine.Cli.UnitTests`),
-  MSTest's parallel-safety analyzers (MSTEST0073–MSTEST0077) are active, and
-  `MSTestAnalysisMode=Recommended` plus `TreatWarningsAsErrors` makes them build errors.
+  projects that opt in, MSTest's parallel-safety analyzers
+  (MSTEST0073–MSTEST0077) are active, and `MSTestAnalysisMode=Recommended` plus
+  `TreatWarningsAsErrors` makes them build errors.
   Fix them in this order:
   1. **Eliminate the shared state** — pass an environment variable to the child process
      via `TestCommand.WithEnvironmentVariable(...)` instead of
@@ -58,12 +61,16 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
-- **Run focused tests through `targeted-test`.** It runs the smallest relevant tests and
-  preserves actionable output and diagnostics when a local run fails.
+- **Use MSTest's built-in combinatorial data support.** Import
+  `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
+  `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add
+  the third-party `Combinatorial.MSTest` package.
+- **Run all local tests through `run-tests`.** It selects and executes the appropriate
+  test platform while preserving actionable output and diagnostics.
 - **Map new substantive test areas for targeted testing.** Prefer adding a
   `ConditionalTestScope` when reliable trigger paths can be defined. When the area is too
   broad for practical conditional filtering, add its primary project to the fallback
-  table in the `targeted-test` skill.
+  table in the `run-tests` skill.
 - **Skips must point to a tracking issue URL** — `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 - **Verify (approval) snapshots**: `*.verified.*` is checked in; the runner writes a
   `*.received.*` on mismatch — promote received → verified when you change output

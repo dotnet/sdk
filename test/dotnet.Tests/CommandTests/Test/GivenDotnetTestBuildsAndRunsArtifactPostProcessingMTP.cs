@@ -46,6 +46,39 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
     }
 
     [TestMethod]
+    public void MultiProjectRun_MergesCodeCoverageArtifacts()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString())
+            .WithSource();
+        string solutionPath = CreateMultiProjectCoverageSolution(testInstance);
+
+        string unmergedResultsDirectory = Path.Combine(testInstance.Path, "UnmergedTestResults");
+        CommandResult unmergedResult = RunCoverage(
+            testInstance.Path,
+            solutionPath,
+            unmergedResultsDirectory,
+            "--no-artifact-post-processing");
+
+        AssertTestFailures(unmergedResult);
+        string[] unmergedCoveragePaths =
+            Directory.GetFiles(unmergedResultsDirectory, "*.coverage", SearchOption.AllDirectories);
+        unmergedCoveragePaths.Should().HaveCount(2, "each test application keeps its own coverage artifact");
+        GetReportedCoveragePaths(unmergedResult).Should().BeEquivalentTo(unmergedCoveragePaths);
+
+        string mergedResultsDirectory = Path.Combine(testInstance.Path, "MergedTestResults");
+        CommandResult mergedResult = RunCoverage(testInstance.Path, solutionPath, mergedResultsDirectory);
+
+        AssertTestFailures(mergedResult);
+        string mergedCoveragePath = GetReportedCoveragePaths(mergedResult).Should().ContainSingle().Subject;
+        File.Exists(mergedCoveragePath).Should().BeTrue();
+        string[] mergedCoveragePaths =
+            Directory.GetFiles(mergedResultsDirectory, "*.coverage", SearchOption.AllDirectories);
+        mergedCoveragePaths.Should().HaveCount(3, "the two original reports remain on disk beside the merged report");
+        mergedCoveragePaths.Should().Contain(mergedCoveragePath);
+    }
+
+    [TestMethod]
     public void MultiProjectRun_WithNoArtifactPostProcessing_KeepsOneReportPerTestApplication()
     {
         TestAsset testInstance = TestAssetsManager
@@ -186,6 +219,79 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
 
         return command.Execute(arguments);
     }
+
+    private CommandResult RunCoverage(
+        string workingDirectory,
+        string solutionPath,
+        string resultsDirectory,
+        params string[] additionalArguments)
+    {
+        string[] arguments =
+        [
+            "--solution", solutionPath,
+            "--coverage",
+            "--results-directory", resultsDirectory,
+            "--configuration", TestingConstants.Debug,
+            .. additionalArguments
+        ];
+
+        Microsoft.NET.TestFramework.Commands.TestCommand command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(workingDirectory);
+        command.EnvironmentToRemove.Add("TESTINGPLATFORM_DOTNETTEST_EXECUTIONID");
+
+        return command.Execute(arguments);
+    }
+
+    private static string CreateMultiProjectCoverageSolution(TestAsset testInstance)
+    {
+        string firstProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
+        string secondProjectDirectory = Path.Combine(testInstance.Path, "OtherTestProject");
+        Directory.CreateDirectory(secondProjectDirectory);
+
+        foreach (string fileName in new[] { "Program.cs", "Test1.cs" })
+        {
+            string source = File.ReadAllText(Path.Combine(firstProjectDirectory, fileName))
+                .Replace("namespace TestProject", "namespace OtherTestProject", StringComparison.Ordinal);
+            File.WriteAllText(Path.Combine(secondProjectDirectory, fileName), source);
+        }
+
+        string firstProjectPath = Path.Combine(firstProjectDirectory, "TestProject.csproj");
+        string secondProjectPath = Path.Combine(secondProjectDirectory, "OtherTestProject.csproj");
+        File.Copy(firstProjectPath, secondProjectPath);
+
+        string versionsRoot = SdkTestContext.Current.ToolsetUnderTest.RepoRoot
+            ?? SdkTestContext.Current.TestExecutionDirectory;
+        string versionsPropsPath = Path.Combine(versionsRoot, "eng", "Version.Details.props");
+        string mstestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
+        testInstance.UpdateProjectFileWithMSTestPackageVersion(firstProjectPath, mstestVersion);
+        testInstance.UpdateProjectFileWithMSTestPackageVersion(secondProjectPath, mstestVersion);
+
+        string solutionPath = Path.Combine(testInstance.Path, "CoverageTests.slnx");
+        File.WriteAllText(
+            solutionPath,
+            """
+            <Solution>
+              <Project Path="OtherTestProject/OtherTestProject.csproj" />
+              <Project Path="TestProject/TestProject.csproj" />
+            </Solution>
+            """);
+        return solutionPath;
+    }
+
+    private static void AssertTestFailures(CommandResult result)
+        => result.ExitCode.Should().Be(
+            ExitCodes.AtLeastOneTestFailed,
+            $"the test output was:{Environment.NewLine}{result.StdOut}{Environment.NewLine}{result.StdErr}");
+
+    private static string[] GetReportedCoveragePaths(CommandResult result)
+        =>
+        [
+            .. Regex.Matches(
+                    result.StdOut ?? string.Empty,
+                    @"(?m)^\s*-\s+(?<path>.*\.coverage)\s*$",
+                    RegexOptions.CultureInvariant)
+                .Select(match => match.Groups["path"].Value)
+        ];
 
     private static string GetMergedTrxPath(CommandResult result)
     {
