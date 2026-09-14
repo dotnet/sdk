@@ -6,7 +6,9 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node run-browser-tests.mjs"
+    "test": "node run-browser-tests.mjs",
+    "test:dotnet": "node run-dotnet-test.mjs",
+    "list:dotnet": "node run-dotnet-test.mjs --list-tests"
   },
   "dependencies": {
     "playwright": "1.62.0"

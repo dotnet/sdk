@@ -8,6 +8,17 @@
 </head>
 <body>
     <div id="app">Loading...</div>
+    <script>
+        globalThis.browserWasmTest ??= {
+            getArguments: () => globalThis.__mtpBrowserArguments ?? [],
+            setResult: exitCode => {
+                globalThis.__mtpBrowserResult = {
+                    completed: true,
+                    exitCode
+                };
+            }
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>
