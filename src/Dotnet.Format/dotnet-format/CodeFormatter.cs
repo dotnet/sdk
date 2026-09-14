@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -24,8 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken,
-            string? binaryLogPath = null)
+            CancellationToken cancellationToken)
         {
             var logWorkspaceWarnings = formatOptions.LogLevel == LogLevel.Trace;
 
@@ -35,14 +35,16 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var workspaceStopwatch = Stopwatch.StartNew();
 
-            using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
+            using var loadedWorkspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken);
 
-            if (workspace is null)
+            if (loadedWorkspace is null)
             {
                 return new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 1);
             }
+
+            var workspace = loadedWorkspace.Workspace;
 
             if (formatOptions.LogLevel <= LogLevel.Debug)
             {
@@ -58,13 +60,12 @@ namespace Microsoft.CodeAnalysis.Tools
             var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, loadWorkspaceMS);
 
-            var projectPath = formatOptions.WorkspaceType == WorkspaceType.Project ? formatOptions.WorkspaceFilePath : string.Empty;
             var solution = workspace.CurrentSolution;
 
             logger.LogTrace(Resources.Determining_formattable_files);
 
             var (fileCount, formatableFiles) = await DetermineFormattableFilesAsync(
-                solution, projectPath, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                solution, loadedWorkspace.ProjectId, formatOptions, logger, cancellationToken);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
             logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -73,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var formattedFiles = new List<FormattedFile>(fileCount);
             var formattedSolution = await RunCodeFormattersAsync(
-                workspace, solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                workspace, solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken);
 
             var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
             logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
@@ -84,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var documentWithError = solution.GetDocument(documentId);
                 if (documentWithError is null)
                 {
-                    documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken).ConfigureAwait(false);
+                    documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken);
                 }
 
                 logger.LogInformation(Resources.Formatted_code_file_0, documentWithError!.FilePath);
@@ -110,14 +111,14 @@ namespace Microsoft.CodeAnalysis.Tools
             return new WorkspaceFormatResult(documentIdsWithErrors.Length, fileCount, exitCode);
         }
 
-        private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
+        private static LoadedWorkspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
         {
             var folderWorkspace = FolderWorkspace.Create();
             folderWorkspace.OpenFolder(workspacePath, fileMatcher);
-            return folderWorkspace;
+            return new LoadedWorkspace(folderWorkspace, ProjectId: null);
         }
 
-        private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
+        private static async Task<LoadedWorkspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
             bool noRestore,
@@ -125,6 +126,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string? binaryLogPath,
             bool logWorkspaceWarnings,
             ILogger logger,
+            string? targetFramework,
             CancellationToken cancellationToken)
         {
             if (requiresSemantics &&
@@ -134,7 +136,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 throw new Exception("Restore operation failed.");
             }
 
-            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
+            return await MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, targetFramework, cancellationToken);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(
@@ -156,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     continue;
                 }
 
-                formattedSolution = await s_codeFormatters[index].FormatAsync(workspace, formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await s_codeFormatters[index].FormatAsync(workspace, formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken);
             }
 
             return formattedSolution;
@@ -164,11 +166,13 @@ namespace Microsoft.CodeAnalysis.Tools
 
         internal static async Task<(int, ImmutableArray<DocumentId>)> DetermineFormattableFilesAsync(
             Solution solution,
-            string projectPath,
+            ProjectId? projectId,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            Debug.Assert((formatOptions.WorkspaceType is WorkspaceType.Project) == (projectId is not null));
+
             var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
             var projectFileCount = 0;
 
@@ -186,7 +190,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
 
                 // If a project is used as a workspace, then ignore other referenced projects.
-                if (!string.IsNullOrEmpty(projectPath) && !project.FilePath.Equals(projectPath, StringComparison.OrdinalIgnoreCase))
+                if (projectId != null && project.Id != projectId)
                 {
                     logger.LogDebug(Resources.Skipping_referenced_project_0, project.Name);
                     continue;
@@ -219,13 +223,13 @@ namespace Microsoft.CodeAnalysis.Tools
                         continue;
                     }
 
-                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
                     if (syntaxTree is null)
                     {
                         throw new Exception($"Unable to get a syntax tree for '{document.Name}'");
                     }
 
-                    if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken).ConfigureAwait(false))
+                    if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken))
                     {
                         if (!formatOptions.IncludeGeneratedFiles)
                         {
@@ -255,7 +259,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 if (formatOptions.IncludeGeneratedFiles)
                 {
-                    var generatedDocuments = await project.GetSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false);
+                    var generatedDocuments = await project.GetSourceGeneratedDocumentsAsync(cancellationToken);
                     foreach (var generatedDocument in generatedDocuments)
                     {
                         Debug.WriteLine($"Including source generated file '{generatedDocument.FilePath}'.");

@@ -8,20 +8,21 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Publish.Tests
 {
+    [TestClass]
     public class GivenDotnetPublishPublishesProjects : SdkTest
     {
 
         private static string _defaultConfiguration = "Release";
 
-        public GivenDotnetPublishPublishesProjects(ITestOutputHelper log) : base(log)
+        public GivenDotnetPublishPublishesProjects()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPublishesARunnablePortableApp()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -44,11 +45,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                          .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItImplicitlyRestoresAProjectWhenPublishing()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -59,10 +60,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPublishAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "NETFrameworkReferenceNETStandard20",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -75,11 +76,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotImplicitlyRestoreAProjectWhenPublishingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -91,13 +92,13 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [Theory]
-        [InlineData("publish", "-property", "Configuration=Debug")]
-        [InlineData("publish", "-p", "Configuration=Debug")]
-        [InlineData("publish", "--property", "Configuration=Debug")]
+        [TestMethod]
+        [DataRow("publish", "-property", "Configuration=Debug")]
+        [DataRow("publish", "-p", "Configuration=Debug")]
+        [DataRow("publish", "--property", "Configuration=Debug")]
         public void ItParsesSpacedPropertiesInPublishReleaseEvaluationPhase(string command, string propertyKey, string propertyVal)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -109,12 +110,12 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Should().Pass().And.NotHaveStdErr();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("--sc")]
-        [InlineData("--self-contained")]
-        [InlineData("--sc=true")]
-        [InlineData("--self-contained=true")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("--sc")]
+        [DataRow("--self-contained")]
+        [DataRow("--sc=true")]
+        [DataRow("--self-contained=true")]
         public void ItPublishesSelfContainedWithRid(string args)
         {
             var testAppName = "MSBuildTestApp";
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPublishesSelfContainedWithPublishSelfContainedTrue()
         {
             var testAppName = "MSBuildTestApp";
@@ -148,10 +149,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
-        [InlineData(true, false, false)] // PublishSC sets SC to true even if SC is false in the project file
-        [InlineData(false, false, false)] // PublishSC sets SC to false even if SC is true in the project file
-        [InlineData(true, true, false)] // PublishSC does not take effect if SC is global
+        [TestMethod]
+        [DataRow(true, false, false)] // PublishSC sets SC to true even if SC is false in the project file
+        [DataRow(false, false, false)] // PublishSC sets SC to false even if SC is true in the project file
+        [DataRow(true, true, false)] // PublishSC does not take effect if SC is global
         public void PublishSelfContainedPropertyDoesOrDoesntOverrideSelfContained(bool publishSelfContained, bool selfContainedIsGlobal, bool publishSelfContainedIsGlobal)
         {
             bool selfContained = !publishSelfContained;
@@ -170,7 +171,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             if (!selfContainedIsGlobal)
                 testProject.AdditionalProperties["SelfContained"] = selfContained.ToString();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
             var publishCommand = new DotnetCommand(Log);
             List<string> args = new()
             {
@@ -189,14 +190,14 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
             if (resultShouldBeSelfContained)
             {
-                Assert.True(bool.Parse(properties["SelfContained"]) == true);
+                Assert.IsTrue(bool.Parse(properties["SelfContained"]));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsWith1193IfPublishSelfContainedHasInvalidValue()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: "NET1193Failure")
                 .WithSource();
 
@@ -208,10 +209,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("NETSDK1193");
         }
 
-        [Theory]
-        [InlineData("--sc=false")]
-        [InlineData("--self-contained=false")]
-        [InlineData("--no-self-contained")]
+        [TestMethod]
+        [DataRow("--sc=false")]
+        [DataRow("--self-contained=false")]
+        [DataRow("--no-self-contained")]
         public void ItPublishesFrameworkDependentWithRid(string args)
         {
             var testAppName = "MSBuildTestApp";
@@ -236,11 +237,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
-        [InlineData("--sc=false")]
-        [InlineData("--self-contained=false")]
-        [InlineData(null)]
-        [InlineData("--no-self-contained")]
+        [TestMethod]
+        [DataRow("--sc=false")]
+        [DataRow("--self-contained=false")]
+        [DataRow(null)]
+        [DataRow("--no-self-contained")]
         public void ItPublishesFrameworkDependentWithoutRid(string args)
         {
             var testAppName = "MSBuildTestApp";
@@ -260,17 +261,17 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
-        [InlineData("--sc --no-self-contained")]
-        [InlineData("--self-contained --no-self-contained")]
-        [InlineData("--sc=true --no-self-contained")]
-        [InlineData("--self-contained=true --no-self-contained")]
+        [TestMethod]
+        [DataRow("--sc --no-self-contained")]
+        [DataRow("--self-contained --no-self-contained")]
+        [DataRow("--sc=true --no-self-contained")]
+        [DataRow("--self-contained=true --no-self-contained")]
         public void ItFailsToPublishWithConflictingArgument(string args)
         {
             var testAppName = "MSBuildTestApp";
             var rid = EnvironmentInfo.GetCompatibleRid();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: args)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: args)
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -285,7 +286,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
         private DirectoryInfo PublishApp(string testAppName, string rid, string args = null, [CallerMemberName] string callingMethod = "")
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: $"{rid ?? "none"}_{args ?? "none"}")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: $"{rid ?? "none"}_{args ?? "none"}")
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -300,13 +301,13 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             return new DirectoryInfo(OutputPathCalculator.FromProject(testProjectDirectory).GetPublishDirectory(configuration: configuration, runtimeIdentifier: rid));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPublishesAppWhenRestoringToSpecificPackageDirectory()
         {
             string dir = "pkgs";
             string args = $"--packages {dir}";
 
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -327,10 +328,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsToPublishWithNoBuildIfNotPreviouslyBuilt()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -344,12 +345,12 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("MSB3030"); // "Could not copy ___ because it was not found."
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void ItPublishesSuccessfullyWithNoBuildIfPreviouslyBuilt(bool selfContained)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple", identifier: selfContained.ToString())
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple", identifier: selfContained.ToString())
                 .WithSource();
 
             var rootPath = testInstance.Path;
@@ -380,10 +381,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsToPublishWithNoBuildIfPreviouslyBuiltWithoutRid()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var rootPath = testInstance.Path;
@@ -400,10 +401,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPublishDoesNotPrintCopyrightInfo()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource();
 
             var cmd = new DotnetPublishCommand(Log)
@@ -418,10 +419,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPublishAllowsPublishOutputDir()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -435,10 +436,10 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         }
 
 
-        [Fact]
+        [TestMethod]
         public void A_PublishRelease_property_does_not_override_other_command_configuration()
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld", "PublishPropertiesHelloWorld")
                .WithSource();
 
@@ -449,7 +450,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                .Execute();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release");
-            Assert.False(Directory.Exists(expectedAssetPath));
+            Assert.IsFalse(Directory.Exists(expectedAssetPath));
         }
     }
 }

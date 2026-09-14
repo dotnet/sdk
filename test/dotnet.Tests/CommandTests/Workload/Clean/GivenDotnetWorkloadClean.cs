@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,11 +9,13 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadClean : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -27,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private (string testDirectory, string dotnetRoot, string userProfileDir, WorkloadResolver workloadResolver, MockNuGetPackageDownloader nugetDownloader) Setup(bool userLocal, bool cleanAll)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
             var dotnetRoot = Path.Combine(testDirectory, dotnet);
             var userProfileDir = Path.Combine(testDirectory, _profileDirectoryLeafName);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -36,17 +38,17 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             return (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader);
         }
 
-        public GivenDotnetWorkloadClean(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadClean()
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
-        [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [DataRow(true, true)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(false, false)]
         public void GivenWorkloadCleanFileBasedItRemovesPacksAndPackRecords(bool userLocal, bool cleanAll)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, cleanAll);
@@ -73,14 +75,14 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             AssertAdjacentCommandsStillPass(userProfileDir, dotnetRoot, testDirectory, workloadResolver, nugetDownloader);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenWorkloadCleanAllFileBasedItCleansAllFeatureBands(bool userLocal)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
 
-            const string aboveSdkFeatureBand = ToolsetInfo.NextTargetFrameworkVersion + ".100";
+            const string aboveSdkFeatureBand = ToolsetInfo.CurrentTargetFrameworkVersion + ".100";
             const string belowSdkFeatureBand = "5.0.100"; // At the time of writing this test, it would only run on 7-8.0 SDKs or above.
 
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
@@ -146,7 +148,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             var packRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkBand);
             var packPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, packPath, "Test.Pack.A"));
+            var packRecordContents = JsonSerializer.Serialize(new WorkloadResolver.PackInfo(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, packPath, "Test.Pack.A"), PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(packRecordPath, packRecordContents);
             return packRecordPath;
         }
@@ -176,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private void AssertWorkloadInstallationRecordIsRemoved(string workloadInstallationRecordDirectory)
         {
-            Assert.Equal(Directory.GetFiles(workloadInstallationRecordDirectory), Array.Empty<string>());
+            Assert.AreSequenceEqual(Array.Empty<string>(), Directory.GetFiles(workloadInstallationRecordDirectory));
         }
 
         private void AssertValidPackCountsMatchExpected(string installRoot, int expectedPackCount, int expectedPackRecordCount)

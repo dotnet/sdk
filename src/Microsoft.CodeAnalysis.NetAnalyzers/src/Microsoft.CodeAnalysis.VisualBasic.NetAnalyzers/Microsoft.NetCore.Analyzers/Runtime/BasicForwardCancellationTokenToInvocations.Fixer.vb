@@ -1,6 +1,7 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Collections.Immutable
+Imports System.Composition
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
@@ -15,7 +16,7 @@ Imports Microsoft.NetCore.Analyzers.Runtime
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic)>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Partial Public NotInheritable Class BasicForwardCancellationTokenToInvocationsFixer
         Inherits ForwardCancellationTokenToInvocationsFixer(Of ArgumentSyntax)
 

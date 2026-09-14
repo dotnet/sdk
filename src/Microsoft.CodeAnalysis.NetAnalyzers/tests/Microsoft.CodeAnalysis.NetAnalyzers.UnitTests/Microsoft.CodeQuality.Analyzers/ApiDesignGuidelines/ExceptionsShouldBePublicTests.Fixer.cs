@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicFixer>;
@@ -11,94 +11,163 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class ExceptionsShouldBePublicFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpNonPublicExceptionAsync()
         {
-            var original = @"
-using System;
+            var original = """
+                using System;
 
-class [|InternalException|] : Exception
-{
-}";
+                class [|InternalException|] : Exception
+                {
+                }
+                """;
 
-            var expected = @"
-using System;
+            var expected = """
+                using System;
 
-public class InternalException : Exception
-{
-}";
+                public class InternalException : Exception
+                {
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(original, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpNonPublicException2Async()
         {
-            var original = @"
-using System;
+            var original = """
+                using System;
 
-public class Outer
-{
-    private class [|PrivateException|] : SystemException
-    {
-    }
-}";
+                public class Outer
+                {
+                    private class [|PrivateException|] : SystemException
+                    {
+                    }
+                }
+                """;
 
-            var expected = @"
-using System;
+            var expected = """
+                using System;
 
-public class Outer
-{
-    public class PrivateException : SystemException
-    {
-    }
-}";
+                public class Outer
+                {
+                    public class PrivateException : SystemException
+                    {
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(original, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBasicNonPublicExceptionAsync()
         {
-            var original = @"
-Imports System
+            var original = """
+                Imports System
 
-Class [|InternalException|]
-   Inherits Exception
-End Class";
+                Class [|InternalException|]
+                   Inherits Exception
+                End Class
+                """;
 
-            var expected = @"
-Imports System
+            var expected = """
+                Imports System
 
-Public Class InternalException
-   Inherits Exception
-End Class";
+                Public Class InternalException
+                   Inherits Exception
+                End Class
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(original, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBasicNonPublicException2Async()
         {
-            var original = @"
-Imports System
+            var original = """
+                Imports System
 
-public class Outer
-    Private Class [|PrivateException|]
-       Inherits SystemException
-    End Class
-End Class";
+                public class Outer
+                    Private Class [|PrivateException|]
+                       Inherits SystemException
+                    End Class
+                End Class
+                """;
 
-            var expected = @"
-Imports System
+            var expected = """
+                Imports System
 
-public class Outer
-    Public Class PrivateException
-       Inherits SystemException
-    End Class
-End Class";
+                public class Outer
+                    Public Class PrivateException
+                       Inherits SystemException
+                    End Class
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(original, expected);
+        }
+
+        [TestMethod]
+        public async Task TestCSharpFixAllAsync()
+        {
+            var original = """
+                using System;
+
+                class [|FirstException|] : Exception
+                {
+                }
+
+                class [|SecondException|] : Exception
+                {
+                }
+                """;
+
+            var expected = """
+                using System;
+
+                public class FirstException : Exception
+                {
+                }
+
+                public class SecondException : Exception
+                {
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(original, expected);
+        }
+
+        [TestMethod]
+        public async Task TestVBasicFixAllAsync()
+        {
+            var original = """
+                Imports System
+
+                Class [|FirstException|]
+                   Inherits Exception
+                End Class
+
+                Class [|SecondException|]
+                   Inherits Exception
+                End Class
+                """;
+
+            var expected = """
+                Imports System
+
+                Public Class FirstException
+                   Inherits Exception
+                End Class
+
+                Public Class SecondException
+                   Inherits Exception
+                End Class
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(original, expected);
         }

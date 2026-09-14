@@ -1,15 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToSetPropertiesInDirectoryBuildProps : SdkTest
     {
-        public GivenThatWeWantToSetPropertiesInDirectoryBuildProps(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void The_default_configuration_can_be_set_to_release()
         {
             TestProject project = new()
@@ -18,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.4",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project);
+            var testAsset = TestAssetsManager.CreateTestProject(project);
 
             string directoryBuildPropsPath = Path.Combine(testAsset.Path, "Directory.Build.props");
 

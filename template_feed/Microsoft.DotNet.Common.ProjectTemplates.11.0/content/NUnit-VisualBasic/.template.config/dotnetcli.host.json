@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "TargetFrameworkOverride": {
+      "isHidden": "true",
+      "longName": "target-framework-override",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "EnablePack": {
+      "shortName": "p",
+      "longName": "enable-pack"
+    },
+    "TestRunner": {
+      "shortName": "",
+      "longName": "test-runner"
+    },
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}

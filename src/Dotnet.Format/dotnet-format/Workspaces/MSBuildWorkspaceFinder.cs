@@ -1,9 +1,12 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // Original License:
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // See https://github.com/aspnet/DotNetTools/blob/261b27b70027871143540af10a5cba57ce07ff97/src/dotnet-watch/Internal/MsBuildProjectFinder.cs
+
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
@@ -61,10 +64,12 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             var isProject = !isSolution
                 && workspaceExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
                 && !workspaceExtension.Equals(DnxProjectExtension, StringComparison.OrdinalIgnoreCase);
+            var isFileBasedApp = !isSolution && !isProject
+                && VirtualProjectBuilder.IsValidEntryPointPath(workspacePath, requireFileToExist: false);
 
-            if (!isSolution && !isProject)
+            if (!isSolution && !isProject && !isFileBasedApp)
             {
-                throw new FileNotFoundException(string.Format(Resources.The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file, Path.GetFileName(workspacePath)));
+                throw new FileNotFoundException(string.Format(Resources.The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app, Path.GetFileName(workspacePath)));
             }
 
             if (!File.Exists(workspacePath))

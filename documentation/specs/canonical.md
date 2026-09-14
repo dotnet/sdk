@@ -24,7 +24,7 @@ Each scenario is organized around a narrative, which provides an explanation on 
 These scenarios are focused on console applications and libraries.
 
 # Acquisition
-All of the scenarios below assume that the CLI tools have been acquired in some way. The acquisition of the CLI tools is explained in detail in a [separate specification](cli-install-experience.md). This document only contains a very short summary of that document.
+All of the scenarios below assume that the CLI tools have been acquired in some way. The acquisition of the CLI tools is explained in detail in a [separate specification](cli-installation-scenarios.md). This document only contains a very short summary of that document.
 
 There are two main ways to acquire the CLI toolset:
 1. Using targeted platform's native installers - this approach is used by developers who want to get stable bits on their development machines and don't mind the system-wide installation and need for elevated privileges. 
@@ -218,15 +218,15 @@ Hello, World!
 # Running unit tests
 
 ## Narrative
-Writing tests is important, and our developer knows that. She is now writing out the shared logic in her class library and she wants to make sure that she has test coverage. Investigating the manuals, she realizes that the CLI toolset comes with support for xUnit tests including the test runner.  
+Writing tests is important, and our developer knows that. She is now writing out the shared logic in her class library and she wants to make sure that she has test coverage. Investigating the manuals, she realizes that the CLI toolset comes with support for MSTest tests including the test runner.
 
 ## Steps
 
-1. Create a new xunit test project using `dotnet new`
+1. Create a new MSTest test project using `dotnet new`
 
 ```
-/> dotnet new tests --type xunit
-Created "tests" xunit test project in "tests".
+/> dotnet new mstest -o tests
+Created "tests" MSTest test project in "tests".
 
 /tests>
 ```
@@ -246,17 +246,18 @@ Created "tests" xunit test project in "tests".
 
 3. Add a test to the test class
 ```
-using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace tests
 {
+    [TestClass]
     public class Tests
     {
-        [Fact]
-        public void AssertTrue() {
-            Assert.True(true);
-        }        
+        [TestMethod]
+        public void AssertTrue()
+        {
+            Assert.IsTrue(true);
+        }
     }
 }
 ```
@@ -441,5 +442,4 @@ As our developer is going further with her usage of the CLI tools, she figures o
 
 ## Steps 
 >**TODO:** at this point, this needs more work to figure out how it will surface; it is listed here so it is not forgotten.
-
 

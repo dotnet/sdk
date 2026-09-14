@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidUnsealedAttributesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,118 +12,124 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidUnsealedAttributeTests
     {
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestFiredAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C
-{
-    public class AttributeClass: Attribute
-    {
-    }
+                using System;
 
-    private class AttributeClass2: Attribute
-    {
-    }
-}
-",
+                public class C
+                {
+                    public class AttributeClass: Attribute
+                    {
+                    }
+
+                    private class AttributeClass2: Attribute
+                    {
+                    }
+                }
+
+                """,
             GetCSharpResultAt(6, 18),
             GetCSharpResultAt(10, 19));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestFiredWithScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class [|AttributeClass|]: Attribute
-{
-}
+                public class [|AttributeClass|]: Attribute
+                {
+                }
 
-public class Outer
-{
-    private class [|AttributeClass2|]: Attribute
-    {
-    }
-}
-");
+                public class Outer
+                {
+                    private class [|AttributeClass2|]: Attribute
+                    {
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestNotFiredAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public sealed class AttributeClass: Attribute
-{
-    private abstract class AttributeClass2: Attribute
-    {
-        public abstract void F();
-    }
-}");
+                public sealed class AttributeClass: Attribute
+                {
+                    private abstract class AttributeClass2: Attribute
+                    {
+                        public abstract void F();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestFiredAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class AttributeClass
-    Inherits Attribute
-End Class
+                Imports System
 
-Public Class Outer
-    Private Class AttributeClass2
-        Inherits Attribute
-    End Class
-End Class
-",
+                Public Class AttributeClass
+                    Inherits Attribute
+                End Class
+
+                Public Class Outer
+                    Private Class AttributeClass2
+                        Inherits Attribute
+                    End Class
+                End Class
+
+                """,
             GetBasicResultAt(4, 14),
             GetBasicResultAt(9, 19));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestFiredwithScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class [|AttributeClass|]
-    Inherits Attribute
-End Class
+                Public Class [|AttributeClass|]
+                    Inherits Attribute
+                End Class
 
-Public Class Outer
-    Private Class [|AttributeClass2|]
-        Inherits Attribute
-    End Class
-End Class
-");
+                Public Class Outer
+                    Private Class [|AttributeClass2|]
+                        Inherits Attribute
+                    End Class
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestNotFiredAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public NotInheritable Class AttributeClass
-    Inherits Attribute
+                Public NotInheritable Class AttributeClass
+                    Inherits Attribute
 
-    Private MustInherit Class AttributeClass2
-        Inherits Attribute
-        MustOverride Sub F()
-    End Class
-End Class
-");
+                    Private MustInherit Class AttributeClass2
+                        Inherits Attribute
+                        MustOverride Sub F()
+                    End Class
+                End Class
+                """);
         }
 
         #endregion

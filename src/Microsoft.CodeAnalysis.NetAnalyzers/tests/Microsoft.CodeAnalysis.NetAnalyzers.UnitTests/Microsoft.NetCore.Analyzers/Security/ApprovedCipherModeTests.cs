@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.ApprovedCipherModeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,145 +12,162 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ApprovedCipherModeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestECBModeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass {
-    private static void TestMethod () {
-        RijndaelManaged rijn = new RijndaelManaged();
-        rijn.Mode  = CipherMode.ECB;
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Security.Cryptography;
+
+                class TestClass {
+                    private static void TestMethod () {
+                        RijndaelManaged rijn = new RijndaelManaged();
+                        rijn.Mode  = CipherMode.ECB;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 22, "ECB"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Security.Cryptography
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Module SecurityCenter
-    Sub TestSub()
-        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create(""AES"")
-        encripter.Mode = CipherMode.ECB
-    End Sub
-End Module",
+                Imports System.Security.Cryptography
+
+                Public Module SecurityCenter
+                    Sub TestSub()
+                        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create("AES")
+                        encripter.Mode = CipherMode.ECB
+                    End Sub
+                End Module
+                """,
             GetBasicResultAt(7, 26, "ECB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOFBModeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass {
-    private static void TestMethod () {
-        RijndaelManaged rijn = new RijndaelManaged();
-        rijn.Mode  = CipherMode.OFB;
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Security.Cryptography;
+
+                class TestClass {
+                    private static void TestMethod () {
+                        RijndaelManaged rijn = new RijndaelManaged();
+                        rijn.Mode  = CipherMode.OFB;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 22, "OFB"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Security.Cryptography
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Module SecurityCenter
-    Sub TestSub()
-        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create(""AES"")
-        encripter.Mode = CipherMode.OFB
-    End Sub
-End Module",
+                Imports System.Security.Cryptography
+
+                Public Module SecurityCenter
+                    Sub TestSub()
+                        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create("AES")
+                        encripter.Mode = CipherMode.OFB
+                    End Sub
+                End Module
+                """,
             GetBasicResultAt(7, 26, "OFB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCFBModeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass {
-    private static void TestMethod () {
-        RijndaelManaged rijn = new RijndaelManaged();
-        rijn.Mode  = CipherMode.CFB;;
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Security.Cryptography;
+
+                class TestClass {
+                    private static void TestMethod () {
+                        RijndaelManaged rijn = new RijndaelManaged();
+                        rijn.Mode  = CipherMode.CFB;;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 22, "CFB"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Security.Cryptography
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Module SecurityCenter
-    Sub TestSub()
-        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create(""AES"")
-        encripter.Mode = CipherMode.CFB
-    End Sub
-End Module",
+                Imports System.Security.Cryptography
+
+                Public Module SecurityCenter
+                    Sub TestSub()
+                        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create("AES")
+                        encripter.Mode = CipherMode.CFB
+                    End Sub
+                End Module
+                """,
             GetBasicResultAt(7, 26, "CFB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCBCModeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Security.Cryptography;
 
-class TestClass {
-    private static void TestMethod () {
-        RijndaelManaged rijn = new RijndaelManaged();
-        rijn.Mode  = CipherMode.CBC;
-    }
-}"
+                class TestClass {
+                    private static void TestMethod () {
+                        RijndaelManaged rijn = new RijndaelManaged();
+                        rijn.Mode  = CipherMode.CBC;
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Security.Cryptography
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Security.Cryptography
 
-Public Module SecurityCenter
-    Sub TestSub()
-        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create(""AES"")
-        encripter.Mode = CipherMode.CBC
-    End Sub
-End Module"
+                Public Module SecurityCenter
+                    Sub TestSub()
+                        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create("AES")
+                        encripter.Mode = CipherMode.CBC
+                    End Sub
+                End Module
+                """
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCTSModeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Security.Cryptography;
 
-class TestClass {
-    private static void TestMethod () {
-        RijndaelManaged rijn = new RijndaelManaged();
-        rijn.Mode  = CipherMode.CTS;
-    }
-}"
+                class TestClass {
+                    private static void TestMethod () {
+                        RijndaelManaged rijn = new RijndaelManaged();
+                        rijn.Mode  = CipherMode.CTS;
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Security.Cryptography
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Security.Cryptography
 
-Public Module SecurityCenter
-    Sub TestSub()
-        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create(""AES"")
-        encripter.Mode = CipherMode.CTS
-    End Sub
-End Module"
+                Public Module SecurityCenter
+                    Sub TestSub()
+                        Dim encripter As System.Security.Cryptography.Aes = System.Security.Cryptography.Aes.Create("AES")
+                        encripter.Mode = CipherMode.CTS
+                    End Sub
+                End Module
+                """
             );
         }
 

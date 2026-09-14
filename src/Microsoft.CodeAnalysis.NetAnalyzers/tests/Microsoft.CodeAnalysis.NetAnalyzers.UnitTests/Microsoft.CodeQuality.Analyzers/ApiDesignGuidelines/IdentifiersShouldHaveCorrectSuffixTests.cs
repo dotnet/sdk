@@ -1,23 +1,24 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectSuffixAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldHaveCorrectSuffixFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectSuffixAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicIdentifiersShouldHaveCorrectSuffixFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldHaveCorrectSuffixTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1710_AllScenarioDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -26,201 +27,205 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
+                        """
 
-public class EventsItemsEventArgs : EventArgs { }
-public class EventsItemsDerived : EventsItemsEventArgs { }
+                            using System;
+                            using System.Collections;
+                            using System.Collections.Generic;
+                            using System.Collections.Specialized;
+                            using System.Data;
+                            using System.IO;
+                            using System.Linq;
+                            using System.Runtime.Serialization;
+                            using System.Security;
+                            using System.Security.Policy;
+                            using System.Text;
+                            using System.Threading.Tasks;
 
-public class EventsItems : EventArgs { }
+                            public class EventsItemsEventArgs : EventArgs { }
+                            public class EventsItemsDerived : EventsItemsEventArgs { }
 
-public delegate void EventCallback(object sender, EventArgs e);
+                            public class EventsItems : EventArgs { }
 
-public class EventHandlerTest
-{
-    public event EventCallback EventOne;
-}
+                            public delegate void EventCallback(object sender, EventArgs e);
 
-[Serializable]
-public class DiskError : Exception
-{
-    public DiskError() { }
+                            public class EventHandlerTest
+                            {
+                                public event EventCallback EventOne;
+                            }
 
-    public DiskError(string message) : base(message) { }
-    public DiskError(string message, Exception innerException) : base(message, innerException) { }
-    protected DiskError(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
+                            [Serializable]
+                            public class DiskError : Exception
+                            {
+                                public DiskError() { }
+
+                                public DiskError(string message) : base(message) { }
+                                public DiskError(string message, Exception innerException) : base(message, innerException) { }
+                                protected DiskError(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                            }
 
 
-[AttributeUsage(AttributeTargets.Class)]
-public sealed class Verifiable : Attribute
-{
-}
+                            [AttributeUsage(AttributeTargets.Class)]
+                            public sealed class Verifiable : Attribute
+                            {
+                            }
 
-public class ConditionClass : IMembershipCondition
-{
-    public bool Check(Evidence evidence) { return false; }
-    public IMembershipCondition Copy() { return (IMembershipCondition)null; }
-    public void FromXml(SecurityElement e, PolicyLevel level) { }
-    public SecurityElement ToXml(PolicyLevel level) { return (SecurityElement)null; }
-    public void FromXml(SecurityElement e) { }
-    public SecurityElement ToXml() { return (SecurityElement)null; }
-}
+                            public class ConditionClass : IMembershipCondition
+                            {
+                                public bool Check(Evidence evidence) { return false; }
+                                public IMembershipCondition Copy() { return (IMembershipCondition)null; }
+                                public void FromXml(SecurityElement e, PolicyLevel level) { }
+                                public SecurityElement ToXml(PolicyLevel level) { return (SecurityElement)null; }
+                                public void FromXml(SecurityElement e) { }
+                                public SecurityElement ToXml() { return (SecurityElement)null; }
+                            }
 
-[Serializable]
-public class MyTable<TKey, TValue> : System.Collections.Generic.Dictionary<TKey, TValue>
-{
-    protected MyTable(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
+                            [Serializable]
+                            public class MyTable<TKey, TValue> : System.Collections.Generic.Dictionary<TKey, TValue>
+                            {
+                                protected MyTable(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                            }
 
-[Serializable]
-public class MyStringObjectHashtable : System.Collections.Generic.Dictionary<string, object>
-{
-    protected MyStringObjectHashtable(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
+                            [Serializable]
+                            public class MyStringObjectHashtable : System.Collections.Generic.Dictionary<string, object>
+                            {
+                                protected MyStringObjectHashtable(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                            }
 
-public class MyList<T> : System.Collections.ObjectModel.Collection<T> { }
+                            public class MyList<T> : System.Collections.ObjectModel.Collection<T> { }
 
-public class StringGrouping<T> : System.Collections.ObjectModel.Collection<T> { }
+                            public class StringGrouping<T> : System.Collections.ObjectModel.Collection<T> { }
 
-public class LastInFirstOut<T> : System.Collections.Generic.Stack<T> { }
+                            public class LastInFirstOut<T> : System.Collections.Generic.Stack<T> { }
 
-public class StackOfIntegers : System.Collections.Generic.Stack<int> { }
+                            public class StackOfIntegers : System.Collections.Generic.Stack<int> { }
 
-public class FirstInFirstOut<T> : System.Collections.Generic.Queue<T> { }
+                            public class FirstInFirstOut<T> : System.Collections.Generic.Queue<T> { }
 
-public class QueueOfNumbers : System.Collections.Generic.Queue<int> { }
+                            public class QueueOfNumbers : System.Collections.Generic.Queue<int> { }
 
-public class MyDataStructure : Stack { }
+                            public class MyDataStructure : Stack { }
 
-public class AnotherDataStructure : Queue { }
+                            public class AnotherDataStructure : Queue { }
 
-public class WronglyNamedPermissionClass : CodeAccessPermission
-{
-    public override IPermission Copy() { return (IPermission)null; }
-    public override void FromXml(SecurityElement e) { }
-    public override IPermission Intersect(IPermission target) { return (IPermission)null; }
-    public override bool IsSubsetOf(IPermission target) { return false; }
-    public override SecurityElement ToXml() { return (SecurityElement)null; }
-}
+                            public class WronglyNamedPermissionClass : CodeAccessPermission
+                            {
+                                public override IPermission Copy() { return (IPermission)null; }
+                                public override void FromXml(SecurityElement e) { }
+                                public override IPermission Intersect(IPermission target) { return (IPermission)null; }
+                                public override bool IsSubsetOf(IPermission target) { return false; }
+                                public override SecurityElement ToXml() { return (SecurityElement)null; }
+                            }
 
-public class WronglyNamedIPermissionClass : IPermission
-{
-    public IPermission Copy() { return (IPermission)null; }
-    public void FromXml(SecurityElement e) { }
-    public IPermission Intersect(IPermission target) { return (IPermission)null; }
-    public bool IsSubsetOf(IPermission target) { return false; }
-    public SecurityElement ToXml() { return (SecurityElement)null; }
-    public IPermission Union(IPermission target) { return (IPermission)null; }
-    public void Demand() { }
-}
+                            public class WronglyNamedIPermissionClass : IPermission
+                            {
+                                public IPermission Copy() { return (IPermission)null; }
+                                public void FromXml(SecurityElement e) { }
+                                public IPermission Intersect(IPermission target) { return (IPermission)null; }
+                                public bool IsSubsetOf(IPermission target) { return false; }
+                                public SecurityElement ToXml() { return (SecurityElement)null; }
+                                public IPermission Union(IPermission target) { return (IPermission)null; }
+                                public void Demand() { }
+                            }
 
-public class WronglyNamedType : Stream
-{
-    public override bool CanRead { get { return false; } }
-    public override bool CanSeek { get { return false; } }
-    public override bool CanWrite { get { return false; } }
-    public override long Length { get { return 0; } }
-    public override long Position { get { return 0; } set { } }
-    public override void Close() { base.Close(); }
-    public override void Flush() { }
-    public override int Read(byte[] buffer, int offset, int count) { return 0; }
-    public override long Seek(long offset, SeekOrigin origin) { return 0; }
-    public override void SetLength(long value) { }
-    public override void Write(byte[] buffer, int offset, int count) { }
-}
+                            public class WronglyNamedType : Stream
+                            {
+                                public override bool CanRead { get { return false; } }
+                                public override bool CanSeek { get { return false; } }
+                                public override bool CanWrite { get { return false; } }
+                                public override long Length { get { return 0; } }
+                                public override long Position { get { return 0; } set { } }
+                                public override void Close() { base.Close(); }
+                                public override void Flush() { }
+                                public override int Read(byte[] buffer, int offset, int count) { return 0; }
+                                public override long Seek(long offset, SeekOrigin origin) { return 0; }
+                                public override void SetLength(long value) { }
+                                public override void Write(byte[] buffer, int offset, int count) { }
+                            }
 
-public class MyCollectionIsEnumerable : IEnumerable
-{
-    public void CopyTo(Array destination, int index)
-    {
-        System.Console.WriteLine(this);
-        System.Console.WriteLine(destination);
-        System.Console.WriteLine(index);
-    }
-    public int Count
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return 0;
-        }
-        set
-        {
-            System.Console.WriteLine(this);
-            System.Console.WriteLine(value);
-        }
-    }
-    public bool IsSynchronized
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return true;
-        }
-        set
-        {
-            System.Console.WriteLine(this);
-            System.Console.WriteLine(value);
-        }
-    }
-    public object SyncRoot
-    {
-        get
-        {
-            return this;
-        }
-        set
-        {
-            System.Console.WriteLine(this);
-            System.Console.WriteLine(value);
-        }
-    }
-    public IEnumerator GetEnumerator() { return null; }
-}
+                            public class MyCollectionIsEnumerable : IEnumerable
+                            {
+                                public void CopyTo(Array destination, int index)
+                                {
+                                    System.Console.WriteLine(this);
+                                    System.Console.WriteLine(destination);
+                                    System.Console.WriteLine(index);
+                                }
+                                public int Count
+                                {
+                                    get
+                                    {
+                                        Console.WriteLine(this);
+                                        return 0;
+                                    }
+                                    set
+                                    {
+                                        System.Console.WriteLine(this);
+                                        System.Console.WriteLine(value);
+                                    }
+                                }
+                                public bool IsSynchronized
+                                {
+                                    get
+                                    {
+                                        Console.WriteLine(this);
+                                        return true;
+                                    }
+                                    set
+                                    {
+                                        System.Console.WriteLine(this);
+                                        System.Console.WriteLine(value);
+                                    }
+                                }
+                                public object SyncRoot
+                                {
+                                    get
+                                    {
+                                        return this;
+                                    }
+                                    set
+                                    {
+                                        System.Console.WriteLine(this);
+                                        System.Console.WriteLine(value);
+                                    }
+                                }
+                                public IEnumerator GetEnumerator() { return null; }
+                            }
 
-public class CollectionDoesNotEndInCollectionClass : StringCollection { }
+                            public class CollectionDoesNotEndInCollectionClass : StringCollection { }
 
-[Serializable]
-public class DictionaryDoesNotEndInDictionaryClass : Hashtable
-{
-    protected DictionaryDoesNotEndInDictionaryClass(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
-}
+                            [Serializable]
+                            public class DictionaryDoesNotEndInDictionaryClass : Hashtable
+                            {
+                                protected DictionaryDoesNotEndInDictionaryClass(SerializationInfo info, StreamingContext context)
+                                    : base(info, context) { }
+                            }
 
-public class MyTest<T> : List<T>
-{
-}
+                            public class MyTest<T> : List<T>
+                            {
+                            }
 
-[Serializable]
-public class DataSetWithWrongSuffix : DataSet
-{
-    protected DataSetWithWrongSuffix(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
-}
+                            [Serializable]
+                            public class DataSetWithWrongSuffix : DataSet
+                            {
+                                protected DataSetWithWrongSuffix(SerializationInfo info, StreamingContext context)
+                                    : base(info, context) { }
+                            }
 
-[Serializable]
-public class DataTableWithWrongSuffix : DataTable
-{
-    protected DataTableWithWrongSuffix(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
-}",
+                            [Serializable]
+                            public class DataTableWithWrongSuffix : DataTable
+                            {
+                                protected DataTableWithWrongSuffix(SerializationInfo info, StreamingContext context)
+                                    : base(info, context) { }
+                            }
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
 
-[*]
-dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                        [*]
+                        dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(line: 16, column: 14, typeName: "EventsItemsDerived", suffix: "EventArgs"),
@@ -250,188 +255,189 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                         GetCA1710CSharpResultAt(line: 186, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", additionalSuffixes: "Collection"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_NoDiagnostics_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Collections;
+                using System.Collections.Generic;
+                using System.Collections.Specialized;
+                using System.Data;
+                using System.IO;
+                using System.Linq;
+                using System.Runtime.Serialization;
+                using System.Security;
+                using System.Security.Policy;
+                using System.Text;
+                using System.Threading.Tasks;
 
-[Serializable]
-public class MyDictionary<TKey, TValue> : System.Collections.Generic.Dictionary<TKey, TValue>
-{
-    protected MyDictionary(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
+                [Serializable]
+                public class MyDictionary<TKey, TValue> : System.Collections.Generic.Dictionary<TKey, TValue>
+                {
+                    protected MyDictionary(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                }
 
-[Serializable]
-public class MyStringObjectDictionary : System.Collections.Generic.Dictionary<string, object>
-{
-    protected MyStringObjectDictionary(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
+                [Serializable]
+                public class MyStringObjectDictionary : System.Collections.Generic.Dictionary<string, object>
+                {
+                    protected MyStringObjectDictionary(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                }
 
-public class MyCollection<T> : System.Collections.ObjectModel.Collection<T> { }
+                public class MyCollection<T> : System.Collections.ObjectModel.Collection<T> { }
 
-public class MyStringCollection : System.Collections.ObjectModel.Collection<string> { }
+                public class MyStringCollection : System.Collections.ObjectModel.Collection<string> { }
 
-public class MyStack<T> : System.Collections.Generic.Stack<T> { }
+                public class MyStack<T> : System.Collections.Generic.Stack<T> { }
 
-public class MyIntegerStack : System.Collections.Generic.Stack<int> { }
+                public class MyIntegerStack : System.Collections.Generic.Stack<int> { }
 
-public class StackCollection<T> : System.Collections.Generic.Stack<T> { }
+                public class StackCollection<T> : System.Collections.Generic.Stack<T> { }
 
-public class IntegerStackCollection : System.Collections.Generic.Stack<int> { }
+                public class IntegerStackCollection : System.Collections.Generic.Stack<int> { }
 
-public class MyQueue<T> : System.Collections.Generic.Queue<T> { }
+                public class MyQueue<T> : System.Collections.Generic.Queue<T> { }
 
-public class MyIntegerQueue : System.Collections.Generic.Queue<int> { }
+                public class MyIntegerQueue : System.Collections.Generic.Queue<int> { }
 
-public class QueueCollection<T> : System.Collections.Generic.Queue<T> { }
+                public class QueueCollection<T> : System.Collections.Generic.Queue<T> { }
 
-public class IntegerQueueCollection : System.Collections.Generic.Queue<int> { }
+                public class IntegerQueueCollection : System.Collections.Generic.Queue<int> { }
 
-public delegate void SimpleEventHandler(object sender, EventArgs e);
+                public delegate void SimpleEventHandler(object sender, EventArgs e);
 
-public class EventHandlerTest
-{
-    public event SimpleEventHandler EventOne;
+                public class EventHandlerTest
+                {
+                    public event SimpleEventHandler EventOne;
 
-    public event EventHandler<EventArgs> EventTwo;
-}
+                    public event EventHandler<EventArgs> EventTwo;
+                }
 
-[Serializable]
-public class DiskErrorException : Exception
-{
-    public DiskErrorException() { }
-    public DiskErrorException(string message) : base(message) { }
-    public DiskErrorException(string message, Exception innerException) : base(message, innerException) { }
-    protected DiskErrorException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-}
-
-
-[AttributeUsage(AttributeTargets.Class)]
-public sealed class VerifiableAttribute : Attribute
-{
-}
-
-public class MyCondition : IMembershipCondition
-{
-    public bool Check(Evidence evidence) { return false; }
-    public IMembershipCondition Copy() { return (IMembershipCondition)null; }
-    public void FromXml(SecurityElement e, PolicyLevel level) { }
-    public SecurityElement ToXml(PolicyLevel level) { return (SecurityElement)null; }
-    public void FromXml(SecurityElement e) { }
-    public SecurityElement ToXml() { return (SecurityElement)null; }
-}
-
-public class CorrectlyNamedPermission : CodeAccessPermission
-{
-    public override IPermission Copy() { return (IPermission)null; }
-    public override void FromXml(SecurityElement e) { }
-    public override IPermission Intersect(IPermission target) { return (IPermission)null; }
-    public override bool IsSubsetOf(IPermission target) { return false; }
-    public override SecurityElement ToXml() { return (SecurityElement)null; }
-}
-
-public class CorrectlyNamedIPermission : IPermission
-{
-    public IPermission Copy() { return (IPermission)null; }
-    public void FromXml(SecurityElement e) { }
-    public IPermission Intersect(IPermission target) { return (IPermission)null; }
-    public bool IsSubsetOf(IPermission target) { return false; }
-    public SecurityElement ToXml() { return (SecurityElement)null; }
-    public IPermission Union(IPermission target) { return (IPermission)null; }
-    public void Demand() { }
-}
+                [Serializable]
+                public class DiskErrorException : Exception
+                {
+                    public DiskErrorException() { }
+                    public DiskErrorException(string message) : base(message) { }
+                    public DiskErrorException(string message, Exception innerException) : base(message, innerException) { }
+                    protected DiskErrorException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                }
 
 
-public class CorrectlyNamedTypeStream : Stream
-{
-    public override bool CanRead { get { return false; } }
-    public override bool CanSeek { get { return false; } }
-    public override bool CanWrite { get { return false; } }
-    public override long Length { get { return 0; } }
-    public override long Position { get { return 0; } set { } }
-    public override void Close() { base.Close(); }
-    public override void Flush() { }
-    public override int Read(byte[] buffer, int offset, int count) { return 0; }
-    public override long Seek(long offset, SeekOrigin origin) { return 0; }
-    public override void SetLength(long value) { }
-    public override void Write(byte[] buffer, int offset, int count) { }
-}
+                [AttributeUsage(AttributeTargets.Class)]
+                public sealed class VerifiableAttribute : Attribute
+                {
+                }
+
+                public class MyCondition : IMembershipCondition
+                {
+                    public bool Check(Evidence evidence) { return false; }
+                    public IMembershipCondition Copy() { return (IMembershipCondition)null; }
+                    public void FromXml(SecurityElement e, PolicyLevel level) { }
+                    public SecurityElement ToXml(PolicyLevel level) { return (SecurityElement)null; }
+                    public void FromXml(SecurityElement e) { }
+                    public SecurityElement ToXml() { return (SecurityElement)null; }
+                }
+
+                public class CorrectlyNamedPermission : CodeAccessPermission
+                {
+                    public override IPermission Copy() { return (IPermission)null; }
+                    public override void FromXml(SecurityElement e) { }
+                    public override IPermission Intersect(IPermission target) { return (IPermission)null; }
+                    public override bool IsSubsetOf(IPermission target) { return false; }
+                    public override SecurityElement ToXml() { return (SecurityElement)null; }
+                }
+
+                public class CorrectlyNamedIPermission : IPermission
+                {
+                    public IPermission Copy() { return (IPermission)null; }
+                    public void FromXml(SecurityElement e) { }
+                    public IPermission Intersect(IPermission target) { return (IPermission)null; }
+                    public bool IsSubsetOf(IPermission target) { return false; }
+                    public SecurityElement ToXml() { return (SecurityElement)null; }
+                    public IPermission Union(IPermission target) { return (IPermission)null; }
+                    public void Demand() { }
+                }
 
 
-public class CollectionEndsInCollection : StringCollection { }
+                public class CorrectlyNamedTypeStream : Stream
+                {
+                    public override bool CanRead { get { return false; } }
+                    public override bool CanSeek { get { return false; } }
+                    public override bool CanWrite { get { return false; } }
+                    public override long Length { get { return 0; } }
+                    public override long Position { get { return 0; } set { } }
+                    public override void Close() { base.Close(); }
+                    public override void Flush() { }
+                    public override int Read(byte[] buffer, int offset, int count) { return 0; }
+                    public override long Seek(long offset, SeekOrigin origin) { return 0; }
+                    public override void SetLength(long value) { }
+                    public override void Write(byte[] buffer, int offset, int count) { }
+                }
 
-[Serializable]
-public class DictionaryEndsInDictionary : Hashtable
-{
-    public DictionaryEndsInDictionary() { }
-    protected DictionaryEndsInDictionary(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
-}
 
-[Serializable]
-public class MySpecialQueue : Queue { }
+                public class CollectionEndsInCollection : StringCollection { }
 
-public class QueueCollection : Queue { }
+                [Serializable]
+                public class DictionaryEndsInDictionary : Hashtable
+                {
+                    public DictionaryEndsInDictionary() { }
+                    protected DictionaryEndsInDictionary(SerializationInfo info, StreamingContext context)
+                        : base(info, context) { }
+                }
 
-[Serializable]
-public class MyStack : Stack { }
+                [Serializable]
+                public class MySpecialQueue : Queue { }
 
-public class StackCollection : Stack { }
+                public class QueueCollection : Queue { }
 
-[Serializable]
-public class MyDataSet : DataSet
-{
-    public MyDataSet() { }
+                [Serializable]
+                public class MyStack : Stack { }
 
-    protected MyDataSet(SerializationInfo info, StreamingContext context) : base(info, context) { }
+                public class StackCollection : Stack { }
 
-    public void DoWork() { Console.WriteLine(this); }
-}
+                [Serializable]
+                public class MyDataSet : DataSet
+                {
+                    public MyDataSet() { }
 
-[Serializable]
-public class MyDataTable : DataTable
-{
-    public MyDataTable() { }
+                    protected MyDataSet(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
-    protected MyDataTable(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
+                    public void DoWork() { Console.WriteLine(this); }
+                }
 
-    public void DoWork() { Console.WriteLine(this); }
-}
+                [Serializable]
+                public class MyDataTable : DataTable
+                {
+                    public MyDataTable() { }
 
-[Serializable]
-public class MyCollectionDataTable : DataTable, IEnumerable
-{
-    public MyCollectionDataTable() { }
+                    protected MyDataTable(SerializationInfo info, StreamingContext context)
+                        : base(info, context) { }
 
-    protected MyCollectionDataTable(SerializationInfo info, StreamingContext context)
-        : base(info, context) { }
+                    public void DoWork() { Console.WriteLine(this); }
+                }
 
-    public void DoWork() { Console.WriteLine(this); }
+                [Serializable]
+                public class MyCollectionDataTable : DataTable, IEnumerable
+                {
+                    public MyCollectionDataTable() { }
 
-    public IEnumerator GetEnumerator()
-    {
-        return null;
-    }
-}");
+                    protected MyCollectionDataTable(SerializationInfo info, StreamingContext context)
+                        : base(info, context) { }
+
+                    public void DoWork() { Console.WriteLine(this); }
+
+                    public IEnumerator GetEnumerator()
+                    {
+                        return null;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_AllScenarioDiagnostics_VisualBasicAsync()
         {
             await new VerifyVB.Test
@@ -440,333 +446,337 @@ public class MyCollectionDataTable : DataTable, IEnumerable
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Collections
-Imports System.Collections.Generic
-Imports System.Collections.ObjectModel
-Imports System.Collections.Specialized
-Imports System.Data
-Imports System.IO
-Imports System.Runtime.Serialization
-Imports System.Security
-Imports System.Security.Policy
+                        """
 
-Public Class AnotherDataStructure
-    Inherits Queue
+                            Imports System
+                            Imports System.Collections
+                            Imports System.Collections.Generic
+                            Imports System.Collections.ObjectModel
+                            Imports System.Collections.Specialized
+                            Imports System.Data
+                            Imports System.IO
+                            Imports System.Runtime.Serialization
+                            Imports System.Security
+                            Imports System.Security.Policy
 
-End Class
-Public Class CollectionDoesNotEndInCollectionClass
-    Inherits StringCollection
+                            Public Class AnotherDataStructure
+                                Inherits Queue
 
-End Class
+                            End Class
+                            Public Class CollectionDoesNotEndInCollectionClass
+                                Inherits StringCollection
 
-Public Class ConditionClass
-    Implements IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
+                            End Class
 
-    ' Methods
-    Public Function Check(ByVal evidence As Evidence) As Boolean Implements IMembershipCondition.Check
-        Return False
-    End Function
+                            Public Class ConditionClass
+                                Implements IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
 
-    Public Function Copy() As IMembershipCondition Implements IMembershipCondition.Copy
-        Return Nothing
-    End Function
+                                ' Methods
+                                Public Function Check(ByVal evidence As Evidence) As Boolean Implements IMembershipCondition.Check
+                                    Return False
+                                End Function
 
-    Public Sub FromXml(ByVal e As SecurityElement) Implements ISecurityEncodable.FromXml
+                                Public Function Copy() As IMembershipCondition Implements IMembershipCondition.Copy
+                                    Return Nothing
+                                End Function
 
-    End Sub
+                                Public Sub FromXml(ByVal e As SecurityElement) Implements ISecurityEncodable.FromXml
 
-    Public Sub FromXml(ByVal e As SecurityElement, ByVal level As PolicyLevel) Implements ISecurityPolicyEncodable.FromXml
+                                End Sub
 
-    End Sub
+                                Public Sub FromXml(ByVal e As SecurityElement, ByVal level As PolicyLevel) Implements ISecurityPolicyEncodable.FromXml
 
-    Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
-        Return Nothing
-    End Function
+                                End Sub
 
-    Public Function ToXml(ByVal level As PolicyLevel) As SecurityElement Implements ISecurityPolicyEncodable.ToXml
-        Return Nothing
-    End Function
+                                Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
+                                    Return Nothing
+                                End Function
 
-    Public Overrides Function ToString() As String Implements IMembershipCondition.ToString
-        Return MyBase.ToString()
-    End Function
+                                Public Function ToXml(ByVal level As PolicyLevel) As SecurityElement Implements ISecurityPolicyEncodable.ToXml
+                                    Return Nothing
+                                End Function
 
-    Public Overrides Function Equals(ByVal obj As Object) As Boolean Implements IMembershipCondition.Equals
-        Return MyBase.Equals(obj)
-    End Function
+                                Public Overrides Function ToString() As String Implements IMembershipCondition.ToString
+                                    Return MyBase.ToString()
+                                End Function
 
-    Public Overrides Function GetHashCode() As Integer
-        Return MyBase.GetHashCode()
-    End Function
-End Class
+                                Public Overrides Function Equals(ByVal obj As Object) As Boolean Implements IMembershipCondition.Equals
+                                    Return MyBase.Equals(obj)
+                                End Function
 
-<Serializable()>
-Public Class DataSetWithWrongSuffix
-    Inherits DataSet
+                                Public Overrides Function GetHashCode() As Integer
+                                    Return MyBase.GetHashCode()
+                                End Function
+                            End Class
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                            <Serializable()>
+                            Public Class DataSetWithWrongSuffix
+                                Inherits DataSet
 
-End Class
+                                ' Methods
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-<Serializable()>
-Public Class DataTableWithWrongSuffix
-    Inherits DataTable
+                            End Class
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                            <Serializable()>
+                            Public Class DataTableWithWrongSuffix
+                                Inherits DataTable
 
-End Class
+                                ' Methods
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-<Serializable()>
-Public Class DictionaryDoesNotEndInDictionaryClass
-    Inherits Hashtable
+                            End Class
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                            <Serializable()>
+                            Public Class DictionaryDoesNotEndInDictionaryClass
+                                Inherits Hashtable
 
-End Class
+                                ' Methods
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-<Serializable()>
-Public Class DiskError
-    Inherits Exception
+                            End Class
 
-    ' Methods
-    Public Sub New()
-    End Sub
+                            <Serializable()>
+                            Public Class DiskError
+                                Inherits Exception
 
-    Public Sub New(ByVal message As String)
-        MyBase.New(message)
-    End Sub
+                                ' Methods
+                                Public Sub New()
+                                End Sub
 
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                                Public Sub New(ByVal message As String)
+                                    MyBase.New(message)
+                                End Sub
 
-    Public Sub New(ByVal message As String, ByVal innerException As Exception)
-        MyBase.New(message, innerException)
-    End Sub
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-End Class
+                                Public Sub New(ByVal message As String, ByVal innerException As Exception)
+                                    MyBase.New(message, innerException)
+                                End Sub
 
-Public Delegate Sub EventCallback(ByVal sender As Object, ByVal e As EventArgs)
+                            End Class
 
-Public Class EventHandlerTest
-    ' Events
-    Public Event EventOne As EventCallback
-End Class
+                            Public Delegate Sub EventCallback(ByVal sender As Object, ByVal e As EventArgs)
 
-Public Class EventsItems
-    Inherits EventArgs
+                            Public Class EventHandlerTest
+                                ' Events
+                                Public Event EventOne As EventCallback
+                            End Class
 
-End Class
+                            Public Class EventsItems
+                                Inherits EventArgs
 
-Public Class FirstInFirstOut(Of T)
-    Inherits Queue(Of T)
+                            End Class
 
-End Class
+                            Public Class FirstInFirstOut(Of T)
+                                Inherits Queue(Of T)
 
-Public Class LastInFirstOut(Of T)
-    Inherits Stack(Of T)
+                            End Class
 
-End Class
+                            Public Class LastInFirstOut(Of T)
+                                Inherits Stack(Of T)
 
-Public Class MyCollectionIsEnumerable
-    Implements IEnumerable
+                            End Class
 
-    Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class
+                            Public Class MyCollectionIsEnumerable
+                                Implements IEnumerable
 
-Public Class MyDataStructure
-    Inherits Stack
+                                Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+                                    Return Nothing
+                                End Function
+                            End Class
 
-End Class
+                            Public Class MyDataStructure
+                                Inherits Stack
 
-Public Class MyList(Of T)
-    Inherits Collection(Of T)
+                            End Class
 
-End Class
+                            Public Class MyList(Of T)
+                                Inherits Collection(Of T)
 
-<Serializable()>
-Public Class MyStringObjectHashtable
-    Inherits Dictionary(Of String, Object)
+                            End Class
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                            <Serializable()>
+                            Public Class MyStringObjectHashtable
+                                Inherits Dictionary(Of String, Object)
 
-End Class
+                                ' Methods
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-<Serializable()>
-Public Class MyTable(Of TKey, TValue)
-    Inherits Dictionary(Of TKey, TValue)
+                            End Class
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                            <Serializable()>
+                            Public Class MyTable(Of TKey, TValue)
+                                Inherits Dictionary(Of TKey, TValue)
 
-End Class
+                                ' Methods
+                                Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                                    MyBase.New(info, context)
+                                End Sub
 
-Public Class MyTest(Of T)
-    Inherits List(Of T)
+                            End Class
 
-End Class
+                            Public Class MyTest(Of T)
+                                Inherits List(Of T)
 
-Public Class QueueOfNumbers
-    Inherits Queue(Of Integer)
+                            End Class
 
-End Class
+                            Public Class QueueOfNumbers
+                                Inherits Queue(Of Integer)
 
-Public Class StackOfIntegers
-    Inherits Stack(Of Integer)
+                            End Class
 
-End Class
+                            Public Class StackOfIntegers
+                                Inherits Stack(Of Integer)
 
-Public Class StringGrouping(Of T)
-    Inherits Collection(Of T)
+                            End Class
 
-End Class
+                            Public Class StringGrouping(Of T)
+                                Inherits Collection(Of T)
 
-<AttributeUsage(AttributeTargets.Class)>
-Public NotInheritable Class Verifiable
-    Inherits Attribute
+                            End Class
 
-End Class
+                            <AttributeUsage(AttributeTargets.Class)>
+                            Public NotInheritable Class Verifiable
+                                Inherits Attribute
 
-Public Class WronglyNamedIPermissionClass
-    Implements IPermission, ISecurityEncodable
+                            End Class
 
-    ' Methods
-    Public Function Copy() As IPermission Implements IPermission.Copy
-        Return Nothing
-    End Function
+                            Public Class WronglyNamedIPermissionClass
+                                Implements IPermission, ISecurityEncodable
 
-    Public Sub Demand() Implements IPermission.Demand
-    End Sub
+                                ' Methods
+                                Public Function Copy() As IPermission Implements IPermission.Copy
+                                    Return Nothing
+                                End Function
 
-    Public Sub FromXml(ByVal e As SecurityElement) Implements ISecurityEncodable.FromXml
-    End Sub
+                                Public Sub Demand() Implements IPermission.Demand
+                                End Sub
 
-    Public Function Intersect(ByVal target As IPermission) As IPermission Implements IPermission.Intersect
-        Return Nothing
-    End Function
+                                Public Sub FromXml(ByVal e As SecurityElement) Implements ISecurityEncodable.FromXml
+                                End Sub
 
-    Public Function IsSubsetOf(ByVal target As IPermission) As Boolean Implements IPermission.IsSubsetOf
-        Return False
-    End Function
+                                Public Function Intersect(ByVal target As IPermission) As IPermission Implements IPermission.Intersect
+                                    Return Nothing
+                                End Function
 
-    Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
-        Return Nothing
-    End Function
+                                Public Function IsSubsetOf(ByVal target As IPermission) As Boolean Implements IPermission.IsSubsetOf
+                                    Return False
+                                End Function
 
-    Public Function Union(ByVal target As IPermission) As IPermission Implements IPermission.Union
-        Return Nothing
-    End Function
+                                Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
+                                    Return Nothing
+                                End Function
 
-End Class
+                                Public Function Union(ByVal target As IPermission) As IPermission Implements IPermission.Union
+                                    Return Nothing
+                                End Function
 
-Public Class WronglyNamedPermissionClass
-    Inherits CodeAccessPermission
+                            End Class
 
-    ' Methods
-    Public Overrides Function Copy() As IPermission
-        Return Nothing
-    End Function
+                            Public Class WronglyNamedPermissionClass
+                                Inherits CodeAccessPermission
 
-    Public Overrides Sub FromXml(ByVal e As SecurityElement)
-    End Sub
+                                ' Methods
+                                Public Overrides Function Copy() As IPermission
+                                    Return Nothing
+                                End Function
 
-    Public Overrides Function Intersect(ByVal target As IPermission) As IPermission
-        Return Nothing
-    End Function
+                                Public Overrides Sub FromXml(ByVal e As SecurityElement)
+                                End Sub
 
-    Public Overrides Function IsSubsetOf(ByVal target As IPermission) As Boolean
-        Return False
-    End Function
+                                Public Overrides Function Intersect(ByVal target As IPermission) As IPermission
+                                    Return Nothing
+                                End Function
 
-    Public Overrides Function ToXml() As SecurityElement
-        Return Nothing
-    End Function
+                                Public Overrides Function IsSubsetOf(ByVal target As IPermission) As Boolean
+                                    Return False
+                                End Function
 
-End Class
+                                Public Overrides Function ToXml() As SecurityElement
+                                    Return Nothing
+                                End Function
 
-Public Class WronglyNamedType
-    Inherits Stream
+                            End Class
 
-    ' Methods
-    Public Overrides Sub Close()
-        MyBase.Close()
-    End Sub
+                            Public Class WronglyNamedType
+                                Inherits Stream
 
-    Public Overrides Sub Flush()
-    End Sub
+                                ' Methods
+                                Public Overrides Sub Close()
+                                    MyBase.Close()
+                                End Sub
 
-    Public Overrides Function Read(ByVal buffer As Byte(), ByVal offset As Integer, ByVal count As Integer) As Integer
-        Return 0
-    End Function
+                                Public Overrides Sub Flush()
+                                End Sub
 
-    Public Overrides Function Seek(ByVal offset As Long, ByVal origin As SeekOrigin) As Long
-        Return CType(0, Long)
-    End Function
+                                Public Overrides Function Read(ByVal buffer As Byte(), ByVal offset As Integer, ByVal count As Integer) As Integer
+                                    Return 0
+                                End Function
 
-    Public Overrides Sub SetLength(ByVal value As Long)
-    End Sub
+                                Public Overrides Function Seek(ByVal offset As Long, ByVal origin As SeekOrigin) As Long
+                                    Return CType(0, Long)
+                                End Function
 
-    Public Overrides Sub Write(ByVal buffer As Byte(), ByVal offset As Integer, ByVal count As Integer)
-    End Sub
+                                Public Overrides Sub SetLength(ByVal value As Long)
+                                End Sub
 
+                                Public Overrides Sub Write(ByVal buffer As Byte(), ByVal offset As Integer, ByVal count As Integer)
+                                End Sub
 
-    ' Properties
-    Public Overrides ReadOnly Property CanRead() As Boolean
-        Get
-            Return False
-        End Get
-    End Property
 
-    Public Overrides ReadOnly Property CanSeek() As Boolean
-        Get
-            Return False
-        End Get
-    End Property
+                                ' Properties
+                                Public Overrides ReadOnly Property CanRead() As Boolean
+                                    Get
+                                        Return False
+                                    End Get
+                                End Property
 
-    Public Overrides ReadOnly Property CanWrite() As Boolean
-        Get
-            Return False
-        End Get
-    End Property
+                                Public Overrides ReadOnly Property CanSeek() As Boolean
+                                    Get
+                                        Return False
+                                    End Get
+                                End Property
 
-    Public Overrides ReadOnly Property Length() As Long
-        Get
-            Return CType(0, Long)
-        End Get
-    End Property
+                                Public Overrides ReadOnly Property CanWrite() As Boolean
+                                    Get
+                                        Return False
+                                    End Get
+                                End Property
 
-    Public Overrides Property Position() As Long
-        Get
-            Return CType(0, Long)
-        End Get
-        Set(ByVal value As Long)
-        End Set
-    End Property
+                                Public Overrides ReadOnly Property Length() As Long
+                                    Get
+                                        Return CType(0, Long)
+                                    End Get
+                                End Property
 
-End Class",
+                                Public Overrides Property Position() As Long
+                                    Get
+                                        Return CType(0, Long)
+                                    End Get
+                                    Set(ByVal value As Long)
+                                    End Set
+                                End Property
+
+                            End Class
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
 
-[*]
-dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                        [*]
+                        dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetCA1710BasicResultAt(line: 13, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", additionalSuffixes: "Collection"),
@@ -795,370 +805,375 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                         GetCA1710BasicResultAt(line: 263, column: 14, typeName: "WronglyNamedType", suffix: "Stream"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_NoDiagnostics_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Collections
-Imports System.Collections.Generic
-Imports System.Collections.ObjectModel
-Imports System.Collections.Specialized
-Imports System.Data
-Imports System.IO
-Imports System.Runtime.Serialization
-Imports System.Security
-Imports System.Security.Policy
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Collections
+                Imports System.Collections.Generic
+                Imports System.Collections.ObjectModel
+                Imports System.Collections.Specialized
+                Imports System.Data
+                Imports System.IO
+                Imports System.Runtime.Serialization
+                Imports System.Security
+                Imports System.Security.Policy
 
-Public Class CollectionEndsInCollection
-    Inherits StringCollection
+                Public Class CollectionEndsInCollection
+                    Inherits StringCollection
 
-End Class
+                End Class
 
-Public Class CorrectlyNamedIPermission
-    Implements IPermission, ISecurityEncodable
+                Public Class CorrectlyNamedIPermission
+                    Implements IPermission, ISecurityEncodable
 
 
-    Public Function Copy() As System.Security.IPermission Implements System.Security.IPermission.Copy
-        Return Me
+                    Public Function Copy() As System.Security.IPermission Implements System.Security.IPermission.Copy
+                        Return Me
 
-    End Function
+                    End Function
 
-    Public Sub Demand() Implements System.Security.IPermission.Demand
+                    Public Sub Demand() Implements System.Security.IPermission.Demand
 
-    End Sub
+                    End Sub
 
-    Public Function Intersect(ByVal target As System.Security.IPermission) As System.Security.IPermission Implements System.Security.IPermission.Intersect
-        Return Nothing
+                    Public Function Intersect(ByVal target As System.Security.IPermission) As System.Security.IPermission Implements System.Security.IPermission.Intersect
+                        Return Nothing
 
-    End Function
+                    End Function
 
-    Public Function IsSubsetOf(ByVal target As System.Security.IPermission) As Boolean Implements System.Security.IPermission.IsSubsetOf
-        Return False
-    End Function
+                    Public Function IsSubsetOf(ByVal target As System.Security.IPermission) As Boolean Implements System.Security.IPermission.IsSubsetOf
+                        Return False
+                    End Function
 
-    Public Function Union(ByVal target As System.Security.IPermission) As System.Security.IPermission Implements System.Security.IPermission.Union
-        Return Me
+                    Public Function Union(ByVal target As System.Security.IPermission) As System.Security.IPermission Implements System.Security.IPermission.Union
+                        Return Me
 
-    End Function
+                    End Function
 
-    Public Sub FromXml(ByVal e As System.Security.SecurityElement) Implements System.Security.ISecurityEncodable.FromXml
+                    Public Sub FromXml(ByVal e As System.Security.SecurityElement) Implements System.Security.ISecurityEncodable.FromXml
 
-    End Sub
+                    End Sub
 
-    Public Function ToXml() As System.Security.SecurityElement Implements System.Security.ISecurityEncodable.ToXml
+                    Public Function ToXml() As System.Security.SecurityElement Implements System.Security.ISecurityEncodable.ToXml
 
-    End Function
-End Class
+                    End Function
+                End Class
 
-Public Class CorrectlyNamedPermission
-    Inherits CodeAccessPermission
+                Public Class CorrectlyNamedPermission
+                    Inherits CodeAccessPermission
 
-    Public Overrides Function Copy() As System.Security.IPermission
+                    Public Overrides Function Copy() As System.Security.IPermission
 
-    End Function
+                    End Function
 
-    Public Overrides Sub FromXml(ByVal elem As System.Security.SecurityElement)
+                    Public Overrides Sub FromXml(ByVal elem As System.Security.SecurityElement)
 
-    End Sub
+                    End Sub
 
-    Public Overrides Function Intersect(ByVal target As System.Security.IPermission) As System.Security.IPermission
+                    Public Overrides Function Intersect(ByVal target As System.Security.IPermission) As System.Security.IPermission
 
-    End Function
+                    End Function
 
-    Public Overrides Function IsSubsetOf(ByVal target As System.Security.IPermission) As Boolean
+                    Public Overrides Function IsSubsetOf(ByVal target As System.Security.IPermission) As Boolean
 
-    End Function
+                    End Function
 
-    Public Overrides Function ToXml() As System.Security.SecurityElement
+                    Public Overrides Function ToXml() As System.Security.SecurityElement
 
-    End Function
-End Class
+                    End Function
+                End Class
 
-Public Class CorrectlyNamedTypeStream
-    Inherits FileStream
+                Public Class CorrectlyNamedTypeStream
+                    Inherits FileStream
 
-    Public Sub New()
-        MyBase.New("""", FileMode.Open)
-    End Sub
-End Class
+                    Public Sub New()
+                        MyBase.New("", FileMode.Open)
+                    End Sub
+                End Class
 
-<Serializable()>
-Public Class DictionaryEndsInDictionary
-    Inherits Hashtable
+                <Serializable()>
+                Public Class DictionaryEndsInDictionary
+                    Inherits Hashtable
 
-    ' Methods
-    Public Sub New()
-    End Sub
+                    ' Methods
+                    Public Sub New()
+                    End Sub
 
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class DiskErrorException
-    Inherits Exception
+                <Serializable()>
+                Public Class DiskErrorException
+                    Inherits Exception
 
-    ' Methods
-    Public Sub New()
-    End Sub
+                    ' Methods
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(ByVal message As String)
-        MyBase.New(message)
-    End Sub
+                    Public Sub New(ByVal message As String)
+                        MyBase.New(message)
+                    End Sub
 
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-    Public Sub New(ByVal message As String, ByVal innerException As Exception)
-        MyBase.New(message, innerException)
-    End Sub
+                    Public Sub New(ByVal message As String, ByVal innerException As Exception)
+                        MyBase.New(message, innerException)
+                    End Sub
 
-End Class
+                End Class
 
-Public Class EventHandlerTest
-    ' Events
-    Public Event EventOne As SimpleEventHandler
-End Class
+                Public Class EventHandlerTest
+                    ' Events
+                    Public Event EventOne As SimpleEventHandler
+                End Class
 
-Public Class EventsItemsEventArgs
-    Inherits EventArgs
+                Public Class EventsItemsEventArgs
+                    Inherits EventArgs
 
-End Class
+                End Class
 
-Public Class IntegerQueueCollection
-    Inherits Queue(Of Integer)
+                Public Class IntegerQueueCollection
+                    Inherits Queue(Of Integer)
 
-End Class
+                End Class
 
-Public Class IntegerStackCollection
-    Inherits Stack(Of Integer)
+                Public Class IntegerStackCollection
+                    Inherits Stack(Of Integer)
 
-End Class
+                End Class
 
-Public Class MyCollection(Of T)
-    Inherits Collection(Of T)
+                Public Class MyCollection(Of T)
+                    Inherits Collection(Of T)
 
-End Class
+                End Class
 
-Public Class MyCondition
-    Implements IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
+                Public Class MyCondition
+                    Implements IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
 
-    Public Sub FromXml(ByVal e As System.Security.SecurityElement) Implements System.Security.ISecurityEncodable.FromXml
+                    Public Sub FromXml(ByVal e As System.Security.SecurityElement) Implements System.Security.ISecurityEncodable.FromXml
 
-    End Sub
+                    End Sub
 
-    Public Function ToXml() As System.Security.SecurityElement Implements System.Security.ISecurityEncodable.ToXml
+                    Public Function ToXml() As System.Security.SecurityElement Implements System.Security.ISecurityEncodable.ToXml
 
-    End Function
+                    End Function
 
-    Public Sub FromXml1(ByVal e As System.Security.SecurityElement, ByVal level As System.Security.Policy.PolicyLevel) Implements System.Security.ISecurityPolicyEncodable.FromXml
+                    Public Sub FromXml1(ByVal e As System.Security.SecurityElement, ByVal level As System.Security.Policy.PolicyLevel) Implements System.Security.ISecurityPolicyEncodable.FromXml
 
-    End Sub
+                    End Sub
 
-    Public Function ToXml1(ByVal level As System.Security.Policy.PolicyLevel) As System.Security.SecurityElement Implements System.Security.ISecurityPolicyEncodable.ToXml
+                    Public Function ToXml1(ByVal level As System.Security.Policy.PolicyLevel) As System.Security.SecurityElement Implements System.Security.ISecurityPolicyEncodable.ToXml
 
-    End Function
+                    End Function
 
-    Public Function Check(ByVal evidence As System.Security.Policy.Evidence) As Boolean Implements System.Security.Policy.IMembershipCondition.Check
+                    Public Function Check(ByVal evidence As System.Security.Policy.Evidence) As Boolean Implements System.Security.Policy.IMembershipCondition.Check
 
-    End Function
+                    End Function
 
-    Public Function Copy() As System.Security.Policy.IMembershipCondition Implements System.Security.Policy.IMembershipCondition.Copy
+                    Public Function Copy() As System.Security.Policy.IMembershipCondition Implements System.Security.Policy.IMembershipCondition.Copy
 
-    End Function
+                    End Function
 
-    Public Function Equals1(ByVal obj As Object) As Boolean Implements System.Security.Policy.IMembershipCondition.Equals
+                    Public Function Equals1(ByVal obj As Object) As Boolean Implements System.Security.Policy.IMembershipCondition.Equals
 
-    End Function
+                    End Function
 
-    Public Function ToString1() As String Implements System.Security.Policy.IMembershipCondition.ToString
+                    Public Function ToString1() As String Implements System.Security.Policy.IMembershipCondition.ToString
 
-    End Function
-End Class
+                    End Function
+                End Class
 
-<Serializable()>
-Public Class MyDataSet
-    Inherits DataSet
+                <Serializable()>
+                Public Class MyDataSet
+                    Inherits DataSet
 
-    ' Methods
-    Public Sub New()
-    End Sub
+                    ' Methods
+                    Public Sub New()
+                    End Sub
 
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-    Public Sub DoWork()
-        Console.WriteLine(Me)
-    End Sub
+                    Public Sub DoWork()
+                        Console.WriteLine(Me)
+                    End Sub
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class MyDataTable
-    Inherits DataTable
+                <Serializable()>
+                Public Class MyDataTable
+                    Inherits DataTable
 
-    ' Methods
-    Public Sub New()
-    End Sub
+                    ' Methods
+                    Public Sub New()
+                    End Sub
 
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-    Public Sub DoWork()
-        Console.WriteLine(Me)
-    End Sub
+                    Public Sub DoWork()
+                        Console.WriteLine(Me)
+                    End Sub
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class MyDictionary(Of TKey, TValue)
-    Inherits Dictionary(Of TKey, TValue)
+                <Serializable()>
+                Public Class MyDictionary(Of TKey, TValue)
+                    Inherits Dictionary(Of TKey, TValue)
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    ' Methods
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-End Class
+                End Class
 
-Public Class MyIntegerQueue
-    Inherits Queue(Of Integer)
+                Public Class MyIntegerQueue
+                    Inherits Queue(Of Integer)
 
-End Class
+                End Class
 
-Public Class MyIntegerStack
-    Inherits Stack(Of Integer)
+                Public Class MyIntegerStack
+                    Inherits Stack(Of Integer)
 
-End Class
+                End Class
 
-Public Class MyQueue(Of T)
-    Inherits Queue(Of T)
+                Public Class MyQueue(Of T)
+                    Inherits Queue(Of T)
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class MySpecialQueue
-    Inherits Queue
+                <Serializable()>
+                Public Class MySpecialQueue
+                    Inherits Queue
 
-End Class
+                End Class
 
-Public Class MyStack(Of T)
-    Inherits Stack(Of T)
+                Public Class MyStack(Of T)
+                    Inherits Stack(Of T)
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class MyStack
-    Inherits Stack
+                <Serializable()>
+                Public Class MyStack
+                    Inherits Stack
 
-End Class
+                End Class
 
-Public Class MyStringCollection
-    Inherits Collection(Of String)
+                Public Class MyStringCollection
+                    Inherits Collection(Of String)
 
-End Class
+                End Class
 
-<Serializable()>
-Public Class MyStringObjectDictionary
-    Inherits Dictionary(Of String, Object)
+                <Serializable()>
+                Public Class MyStringObjectDictionary
+                    Inherits Dictionary(Of String, Object)
 
-    ' Methods
-    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
+                    ' Methods
+                    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+                        MyBase.New(info, context)
+                    End Sub
 
-End Class
+                End Class
 
-Public Class QueueCollection(Of T)
-    Inherits Queue(Of T)
+                Public Class QueueCollection(Of T)
+                    Inherits Queue(Of T)
 
-End Class
+                End Class
 
-Public Class QueueCollection
-    Inherits Queue
+                Public Class QueueCollection
+                    Inherits Queue
 
-End Class
+                End Class
 
-Public Delegate Sub SimpleEventHandler(ByVal sender As Object, ByVal e As EventArgs)
+                Public Delegate Sub SimpleEventHandler(ByVal sender As Object, ByVal e As EventArgs)
 
-Public Class StackCollection(Of T)
-    Inherits Stack(Of T)
+                Public Class StackCollection(Of T)
+                    Inherits Stack(Of T)
 
-End Class
+                End Class
 
-Public Class StackCollection
-    Inherits Stack
+                Public Class StackCollection
+                    Inherits Stack
 
-End Class
+                End Class
 
-<AttributeUsage(AttributeTargets.Class)>
-Public NotInheritable Class VerifiableAttribute
-    Inherits Attribute
+                <AttributeUsage(AttributeTargets.Class)>
+                Public NotInheritable Class VerifiableAttribute
+                    Inherits Attribute
 
-End Class");
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
+        [TestMethod, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
         public async Task CA1710_SystemAction_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C
-{
-    public event Action MyEvent;
-}");
+                public class C
+                {
+                    public event Action MyEvent;
+                }
+                """);
         }
 
-        [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
+        [TestMethod, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
         public async Task CA1710_CustomDelegate_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C
-{
-    public delegate void MyDelegate(int param);
-    public event MyDelegate MyEvent;
-}");
+                public class C
+                {
+                    public delegate void MyDelegate(int param);
+                    public event MyDelegate MyEvent;
+                }
+                """);
         }
 
-        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        [TestMethod, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
         public async Task CA1710_IReadOnlyDictionaryAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C : IReadOnlyDictionary<int, string>
-{
-    public string this[int key] => throw new System.NotImplementedException();
+                using System;
+                using System.Collections;
+                using System.Collections.Generic;
 
-    public IEnumerable<int> Keys => throw new System.NotImplementedException();
+                public class C : IReadOnlyDictionary<int, string>
+                {
+                    public string this[int key] => throw new System.NotImplementedException();
 
-    public IEnumerable<string> Values => throw new System.NotImplementedException();
+                    public IEnumerable<int> Keys => throw new System.NotImplementedException();
 
-    public int Count => throw new System.NotImplementedException();
+                    public IEnumerable<string> Values => throw new System.NotImplementedException();
 
-    public bool ContainsKey(int key) => throw new System.NotImplementedException();
-    public IEnumerator<KeyValuePair<int, string>> GetEnumerator() => throw new System.NotImplementedException();
-    public bool TryGetValue(int key, out string value) => throw new System.NotImplementedException();
-    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
-}",
+                    public int Count => throw new System.NotImplementedException();
+
+                    public bool ContainsKey(int key) => throw new System.NotImplementedException();
+                    public IEnumerator<KeyValuePair<int, string>> GetEnumerator() => throw new System.NotImplementedException();
+                    public bool TryGetValue(int key, out string value) => throw new System.NotImplementedException();
+                    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+                }
+                """,
                 GetCA1710CSharpResultAt(6, 14, "C", "Dictionary", "Collection"));
         }
 
-        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        [TestMethod, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
         public async Task CA1710_IReadOnlyCollection_IncludeIndirectBaseTypes()
         {
             await new VerifyCS.Test
@@ -1167,47 +1182,53 @@ public class C : IReadOnlyDictionary<int, string>
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                        """
 
-public class C : IReadOnlyCollection<int>
-{
-    public int Count => throw new System.NotImplementedException();
+                            using System;
+                            using System.Collections;
+                            using System.Collections.Generic;
 
-    public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
-    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
-}",
+                            public class C : IReadOnlyCollection<int>
+                            {
+                                public int Count => throw new System.NotImplementedException();
+
+                                public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
+                                IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+                            }
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
 
-[*]
-dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                        [*]
+                        dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(6, 14, "C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
         // In case of duplicated entries, only the first is kept
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
         public async Task CA1710_AdditionalSuffixesAsync(string editorConfigText)
         {
-            editorConfigText = $@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
-{editorConfigText}";
+            editorConfigText = $"""
+                dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                {editorConfigText}
+                """;
 
             var csharpTest = new VerifyCS.Test
             {
@@ -1215,33 +1236,37 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-namespace MyNamespace
-{
-    public interface IMyInterface {}
-    public class SomeClass {}
+                            using System;
 
-    public class SomeSubClass : SomeClass {}
-    public class SomeSubSubClass : SomeSubClass {}
+                            namespace MyNamespace
+                            {
+                                public interface IMyInterface {}
+                                public class SomeClass {}
 
-    public class C : ICloneable, IMyInterface
-    {
-        public object Clone() => null;
-    }
-}
+                                public class SomeSubClass : SomeClass {}
+                                public class SomeSubSubClass : SomeSubClass {}
 
-public class SomeOtherClass
-{
-}
+                                public class C : ICloneable, IMyInterface
+                                {
+                                    public object Clone() => null;
+                                }
+                            }
 
-public class SomeOtherSubClass : SomeOtherClass {}"},
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                            public class SomeOtherClass
+                            {
+                            }
 
-[*]
-{editorConfigText}
-")  },
+                            public class SomeOtherSubClass : SomeOtherClass {}
+                            """},
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                 }
             };
 
@@ -1267,7 +1292,7 @@ public class SomeOtherSubClass : SomeOtherClass {}"},
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1275,45 +1300,49 @@ public class SomeOtherSubClass : SomeOtherClass {}"},
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-Namespace MyNamespace
-    Interface IMyInterface
-    End Interface
+                            Imports System
 
-    Public Class SomeClass
-    End Class
+                            Namespace MyNamespace
+                                Interface IMyInterface
+                                End Interface
 
-    Public Class SomeSubClass
-        Inherits SomeClass
-    End Class
+                                Public Class SomeClass
+                                End Class
 
-    Public Class SomeSubSubClass
-        Inherits SomeSubClass
-    End Class
+                                Public Class SomeSubClass
+                                    Inherits SomeClass
+                                End Class
 
-    Public Class C
-        Implements ICloneable, IMyInterface
+                                Public Class SomeSubSubClass
+                                    Inherits SomeSubClass
+                                End Class
 
-        Public Function Clone() As Object Implements ICloneable.Clone
-            Return Nothing
-        End Function
-    End Class
-End Namespace
+                                Public Class C
+                                    Implements ICloneable, IMyInterface
 
-Public Class SomeOtherClass
-End Class
+                                    Public Function Clone() As Object Implements ICloneable.Clone
+                                        Return Nothing
+                                    End Function
+                                End Class
+                            End Namespace
 
-Public Class SomeOtherSubClass
-    Inherits SomeOtherClass
-End Class"
+                            Public Class SomeOtherClass
+                            End Class
+
+                            Public Class SomeOtherSubClass
+                                Inherits SomeOtherClass
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                 }
             };
 
@@ -1339,18 +1368,18 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         // methods are not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
         // namespaces are not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
         // more than one -> is not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
         // no suffix
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
         public async Task CA1710_InvalidSyntaxNoSuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1359,22 +1388,24 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
-namespace MyNamespace
-{
-    public class SomeClass
-    {
-        public void MyMethod() {}
-    }
-}"
+                        """
+                            namespace MyNamespace
+                            {
+                                public class SomeClass
+                                {
+                                    public void MyMethod() {}
+                                }
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+                        """)  },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1382,28 +1413,32 @@ namespace MyNamespace
                 {
                     Sources =
                     {
-                        @"
-Namespace MyNamespace
-    Public Class SomeClass
-        Public Sub MyMethod()
-        End Sub
-    End Class
-End Namespace"
+                        """
+                            Namespace MyNamespace
+                                Public Class SomeClass
+                                    Public Sub MyMethod()
+                                    End Sub
+                                End Class
+                            End Namespace
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+                        """)  },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         public async Task CA1710_UserMappingWinsOverHardcodedAsync()
         {
-            var editorConfigText = @"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
-dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2->MySuffix";
+            var editorConfigText = """
+                dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2->MySuffix
+                """;
 
             await new VerifyCS.Test
             {
@@ -1411,25 +1446,29 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
                 {
                     Sources =
                     {
-                        @"
-using System.Collections.Generic;
+                        """
 
-public class SomeClass : Dictionary<string, string>
-{
-}
-"
+                            using System.Collections.Generic;
+
+                            public class SomeClass : Dictionary<string, string>
+                            {
+                            }
+
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                     ExpectedDiagnostics =
                     {
                         GetCA1710CSharpResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1437,65 +1476,71 @@ public class SomeClass : Dictionary<string, string>
                 {
                     Sources =
                     {
-                        @"
-Imports System.Collections.Generic
+                        """
 
-Public Class SomeClass
-    Inherits Dictionary(Of String, String)
-End Class"
+                            Imports System.Collections.Generic
+
+                            Public Class SomeClass
+                                Inherits Dictionary(Of String, String)
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                     ExpectedDiagnostics =
                     {
                         GetCA1710BasicResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        [TestMethod, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
         public async Task CA1710_DefaultValueForExclusionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Collections;
+                using System.Collections.Generic;
+                using System.Collections.ObjectModel;
 
-public class FreezableList : ReadOnlyCollection<int>
-{
-    public FreezableList(IList<int> list) : base(list)
-    {
-    }
-}");
+                public class FreezableList : ReadOnlyCollection<int>
+                {
+                    public FreezableList(IList<int> list) : base(list)
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Collections
-Imports System.Collections.Generic
-Imports System.Collections.ObjectModel
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Collections
+                Imports System.Collections.Generic
+                Imports System.Collections.ObjectModel
 
-Public Class FreezableList
-    Inherits ReadOnlyCollection(Of Integer)
+                Public Class FreezableList
+                    Inherits ReadOnlyCollection(Of Integer)
 
-    Public Sub New(ByVal list As IList(Of Integer))
-        MyBase.New(list)
-    End Sub
-End Class");
+                    Public Sub New(ByVal list As IList(Of Integer))
+                        MyBase.New(list)
+                    End Sub
+                End Class
+                """);
         }
 
-        [Theory, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
+        [TestMethod, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
         public async Task CA1710_AllowEmptySuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1504,61 +1549,62 @@ End Class");
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Data;
+                        """
+                            using System;
+                            using System.Data;
 
-public class SomeClass : IDataReader
-{
-    public object this[int i] => throw new NotImplementedException();
+                            public class SomeClass : IDataReader
+                            {
+                                public object this[int i] => throw new NotImplementedException();
 
-    public object this[string name] => throw new NotImplementedException();
+                                public object this[string name] => throw new NotImplementedException();
 
-    public int Depth => throw new NotImplementedException();
+                                public int Depth => throw new NotImplementedException();
 
-    public bool IsClosed => throw new NotImplementedException();
+                                public bool IsClosed => throw new NotImplementedException();
 
-    public int RecordsAffected => throw new NotImplementedException();
+                                public int RecordsAffected => throw new NotImplementedException();
 
-    public int FieldCount => throw new NotImplementedException();
+                                public int FieldCount => throw new NotImplementedException();
 
-    public void Close() => throw new NotImplementedException();
-    public void Dispose() => throw new NotImplementedException();
-    public bool GetBoolean(int i) => throw new NotImplementedException();
-    public byte GetByte(int i) => throw new NotImplementedException();
-    public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
-    public char GetChar(int i) => throw new NotImplementedException();
-    public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
-    public IDataReader GetData(int i) => throw new NotImplementedException();
-    public string GetDataTypeName(int i) => throw new NotImplementedException();
-    public DateTime GetDateTime(int i) => throw new NotImplementedException();
-    public decimal GetDecimal(int i) => throw new NotImplementedException();
-    public double GetDouble(int i) => throw new NotImplementedException();
-    public Type GetFieldType(int i) => throw new NotImplementedException();
-    public float GetFloat(int i) => throw new NotImplementedException();
-    public Guid GetGuid(int i) => throw new NotImplementedException();
-    public short GetInt16(int i) => throw new NotImplementedException();
-    public int GetInt32(int i) => throw new NotImplementedException();
-    public long GetInt64(int i) => throw new NotImplementedException();
-    public string GetName(int i) => throw new NotImplementedException();
-    public int GetOrdinal(string name) => throw new NotImplementedException();
-    public DataTable GetSchemaTable() => throw new NotImplementedException();
-    public string GetString(int i) => throw new NotImplementedException();
-    public object GetValue(int i) => throw new NotImplementedException();
-    public int GetValues(object[] values) => throw new NotImplementedException();
-    public bool IsDBNull(int i) => throw new NotImplementedException();
-    public bool NextResult() => throw new NotImplementedException();
-    public bool Read() => throw new NotImplementedException();
-}
-"
+                                public void Close() => throw new NotImplementedException();
+                                public void Dispose() => throw new NotImplementedException();
+                                public bool GetBoolean(int i) => throw new NotImplementedException();
+                                public byte GetByte(int i) => throw new NotImplementedException();
+                                public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+                                public char GetChar(int i) => throw new NotImplementedException();
+                                public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+                                public IDataReader GetData(int i) => throw new NotImplementedException();
+                                public string GetDataTypeName(int i) => throw new NotImplementedException();
+                                public DateTime GetDateTime(int i) => throw new NotImplementedException();
+                                public decimal GetDecimal(int i) => throw new NotImplementedException();
+                                public double GetDouble(int i) => throw new NotImplementedException();
+                                public Type GetFieldType(int i) => throw new NotImplementedException();
+                                public float GetFloat(int i) => throw new NotImplementedException();
+                                public Guid GetGuid(int i) => throw new NotImplementedException();
+                                public short GetInt16(int i) => throw new NotImplementedException();
+                                public int GetInt32(int i) => throw new NotImplementedException();
+                                public long GetInt64(int i) => throw new NotImplementedException();
+                                public string GetName(int i) => throw new NotImplementedException();
+                                public int GetOrdinal(string name) => throw new NotImplementedException();
+                                public DataTable GetSchemaTable() => throw new NotImplementedException();
+                                public string GetString(int i) => throw new NotImplementedException();
+                                public object GetValue(int i) => throw new NotImplementedException();
+                                public int GetValues(object[] values) => throw new NotImplementedException();
+                                public bool IsDBNull(int i) => throw new NotImplementedException();
+                                public bool NextResult() => throw new NotImplementedException();
+                                public bool Read() => throw new NotImplementedException();
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+                        """)  },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1566,197 +1612,199 @@ public class SomeClass : IDataReader
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Data
+                        """
+                            Imports System
+                            Imports System.Data
 
-Public Class SomeClass
-    Implements System.Data.IDataReader
+                            Public Class SomeClass
+                                Implements System.Data.IDataReader
 
-    Public ReadOnly Property Depth As Integer Implements IDataReader.Depth
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Public ReadOnly Property Depth As Integer Implements IDataReader.Depth
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Public ReadOnly Property IsClosed As Boolean Implements IDataReader.IsClosed
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Public ReadOnly Property IsClosed As Boolean Implements IDataReader.IsClosed
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Public ReadOnly Property RecordsAffected As Integer Implements IDataReader.RecordsAffected
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Public ReadOnly Property RecordsAffected As Integer Implements IDataReader.RecordsAffected
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Public ReadOnly Property FieldCount As Integer Implements IDataRecord.FieldCount
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Public ReadOnly Property FieldCount As Integer Implements IDataRecord.FieldCount
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Default Public ReadOnly Property Item(i As Integer) As Object Implements IDataRecord.Item
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Default Public ReadOnly Property Item(i As Integer) As Object Implements IDataRecord.Item
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Default Public ReadOnly Property Item(name As String) As Object Implements IDataRecord.Item
-        Get
-            Throw New NotImplementedException()
-        End Get
-    End Property
+                                Default Public ReadOnly Property Item(name As String) As Object Implements IDataRecord.Item
+                                    Get
+                                        Throw New NotImplementedException()
+                                    End Get
+                                End Property
 
-    Public Sub Close() Implements IDataReader.Close
-        Throw New NotImplementedException()
-    End Sub
+                                Public Sub Close() Implements IDataReader.Close
+                                    Throw New NotImplementedException()
+                                End Sub
 
-    Public Function GetSchemaTable() As DataTable Implements IDataReader.GetSchemaTable
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetSchemaTable() As DataTable Implements IDataReader.GetSchemaTable
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function NextResult() As Boolean Implements IDataReader.NextResult
-        Throw New NotImplementedException()
-    End Function
+                                Public Function NextResult() As Boolean Implements IDataReader.NextResult
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function Read() As Boolean Implements IDataReader.Read
-        Throw New NotImplementedException()
-    End Function
+                                Public Function Read() As Boolean Implements IDataReader.Read
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetBoolean(i As Integer) As Boolean Implements IDataRecord.GetBoolean
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetBoolean(i As Integer) As Boolean Implements IDataRecord.GetBoolean
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetByte(i As Integer) As Byte Implements IDataRecord.GetByte
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetByte(i As Integer) As Byte Implements IDataRecord.GetByte
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetBytes(i As Integer, fieldOffset As Long, buffer() As Byte, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetBytes
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetBytes(i As Integer, fieldOffset As Long, buffer() As Byte, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetBytes
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetChar(i As Integer) As Char Implements IDataRecord.GetChar
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetChar(i As Integer) As Char Implements IDataRecord.GetChar
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetChars(i As Integer, fieldoffset As Long, buffer() As Char, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetChars
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetChars(i As Integer, fieldoffset As Long, buffer() As Char, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetChars
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetData(i As Integer) As IDataReader Implements IDataRecord.GetData
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetData(i As Integer) As IDataReader Implements IDataRecord.GetData
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetDataTypeName(i As Integer) As String Implements IDataRecord.GetDataTypeName
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetDataTypeName(i As Integer) As String Implements IDataRecord.GetDataTypeName
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetDateTime(i As Integer) As Date Implements IDataRecord.GetDateTime
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetDateTime(i As Integer) As Date Implements IDataRecord.GetDateTime
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetDecimal(i As Integer) As Decimal Implements IDataRecord.GetDecimal
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetDecimal(i As Integer) As Decimal Implements IDataRecord.GetDecimal
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetDouble(i As Integer) As Double Implements IDataRecord.GetDouble
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetDouble(i As Integer) As Double Implements IDataRecord.GetDouble
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetFieldType(i As Integer) As Type Implements IDataRecord.GetFieldType
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetFieldType(i As Integer) As Type Implements IDataRecord.GetFieldType
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetFloat(i As Integer) As Single Implements IDataRecord.GetFloat
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetFloat(i As Integer) As Single Implements IDataRecord.GetFloat
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetGuid(i As Integer) As Guid Implements IDataRecord.GetGuid
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetGuid(i As Integer) As Guid Implements IDataRecord.GetGuid
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetInt16(i As Integer) As Short Implements IDataRecord.GetInt16
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetInt16(i As Integer) As Short Implements IDataRecord.GetInt16
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetInt32(i As Integer) As Integer Implements IDataRecord.GetInt32
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetInt32(i As Integer) As Integer Implements IDataRecord.GetInt32
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetInt64(i As Integer) As Long Implements IDataRecord.GetInt64
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetInt64(i As Integer) As Long Implements IDataRecord.GetInt64
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetName(i As Integer) As String Implements IDataRecord.GetName
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetName(i As Integer) As String Implements IDataRecord.GetName
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetOrdinal(name As String) As Integer Implements IDataRecord.GetOrdinal
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetOrdinal(name As String) As Integer Implements IDataRecord.GetOrdinal
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetString(i As Integer) As String Implements IDataRecord.GetString
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetString(i As Integer) As String Implements IDataRecord.GetString
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetValue(i As Integer) As Object Implements IDataRecord.GetValue
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetValue(i As Integer) As Object Implements IDataRecord.GetValue
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function GetValues(values() As Object) As Integer Implements IDataRecord.GetValues
-        Throw New NotImplementedException()
-    End Function
+                                Public Function GetValues(values() As Object) As Integer Implements IDataRecord.GetValues
+                                    Throw New NotImplementedException()
+                                End Function
 
-    Public Function IsDBNull(i As Integer) As Boolean Implements IDataRecord.IsDBNull
-        Throw New NotImplementedException()
-    End Function
+                                Public Function IsDBNull(i As Integer) As Boolean Implements IDataRecord.IsDBNull
+                                    Throw New NotImplementedException()
+                                End Function
 
-#Region ""IDisposable Support""
-    Private disposedValue As Boolean ' To detect redundant calls
+                            #Region "IDisposable Support"
+                                Private disposedValue As Boolean ' To detect redundant calls
 
-    ' IDisposable
-    Protected Overridable Sub Dispose(disposing As Boolean)
-        If Not disposedValue Then
-            If disposing Then
-                ' TODO: dispose managed state (managed objects).
-            End If
+                                ' IDisposable
+                                Protected Overridable Sub Dispose(disposing As Boolean)
+                                    If Not disposedValue Then
+                                        If disposing Then
+                                            ' TODO: dispose managed state (managed objects).
+                                        End If
 
-            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
-            ' TODO: set large fields to null.
-        End If
-        disposedValue = True
-    End Sub
+                                        ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+                                        ' TODO: set large fields to null.
+                                    End If
+                                    disposedValue = True
+                                End Sub
 
-    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
-    'Protected Overrides Sub Finalize()
-    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-    '    Dispose(False)
-    '    MyBase.Finalize()
-    'End Sub
+                                ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+                                'Protected Overrides Sub Finalize()
+                                '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+                                '    Dispose(False)
+                                '    MyBase.Finalize()
+                                'End Sub
 
-    ' This code added by Visual Basic to correctly implement the disposable pattern.
-    Public Sub Dispose() Implements IDisposable.Dispose
-        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-        Dispose(True)
-        ' TODO: uncomment the following line if Finalize() is overridden above.
-        ' GC.SuppressFinalize(Me)
-    End Sub
-#End Region
+                                ' This code added by Visual Basic to correctly implement the disposable pattern.
+                                Public Sub Dispose() Implements IDisposable.Dispose
+                                    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+                                    Dispose(True)
+                                    ' TODO: uncomment the following line if Finalize() is overridden above.
+                                    ' GC.SuppressFinalize(Me)
+                                End Sub
+                            #End Region
 
-End Class"
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+                        """)  },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
+        [TestMethod, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
         public async Task CA1710_AllowEmptySuffix2Async()
         {
             await new VerifyCS.Test
@@ -1765,52 +1813,53 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
-using System.Collections;
-using System.Collections.Generic;
+                        """
+                            using System.Collections;
+                            using System.Collections.Generic;
 
-public class C : IReadOnlyDictionary<string, object>
-{
-    public object this[string key] => throw new System.NotImplementedException();
+                            public class C : IReadOnlyDictionary<string, object>
+                            {
+                                public object this[string key] => throw new System.NotImplementedException();
 
-    public IEnumerable<string> Keys => throw new System.NotImplementedException();
+                                public IEnumerable<string> Keys => throw new System.NotImplementedException();
 
-    public IEnumerable<object> Values => throw new System.NotImplementedException();
+                                public IEnumerable<object> Values => throw new System.NotImplementedException();
 
-    public int Count => throw new System.NotImplementedException();
+                                public int Count => throw new System.NotImplementedException();
 
-    public bool ContainsKey(string key)
-    {
-        throw new System.NotImplementedException();
-    }
+                                public bool ContainsKey(string key)
+                                {
+                                    throw new System.NotImplementedException();
+                                }
 
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-    {
-        throw new System.NotImplementedException();
-    }
+                                public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+                                {
+                                    throw new System.NotImplementedException();
+                                }
 
-    public bool TryGetValue(string key, out object value)
-    {
-        throw new System.NotImplementedException();
-    }
+                                public bool TryGetValue(string key, out object value)
+                                {
+                                    throw new System.NotImplementedException();
+                                }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new System.NotImplementedException();
-    }
-}
-"
+                                IEnumerator IEnumerable.GetEnumerator()
+                                {
+                                    throw new System.NotImplementedException();
+                                }
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
 
-[*]
-dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
-")  },
+                        [*]
+                        dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
+                        """)  },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
+        [TestMethod, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
         public async Task CA1710_AllowEmptySuffix3Async()
         {
             await new VerifyCS.Test
@@ -1819,61 +1868,69 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
                 {
                     Sources =
                     {
-                        @"
-using System.Collections;
-using System.Collections.Generic;
+                        """
 
-public class C : IReadOnlyDictionary<string, object>, ICollection<KeyValuePair<string, object>>
-{
-    public object this[string key] => throw new System.NotImplementedException();
+                            using System.Collections;
+                            using System.Collections.Generic;
 
-    public IEnumerable<string> Keys => throw new System.NotImplementedException();
+                            public class C : IReadOnlyDictionary<string, object>, ICollection<KeyValuePair<string, object>>
+                            {
+                                public object this[string key] => throw new System.NotImplementedException();
 
-    public IEnumerable<object> Values => throw new System.NotImplementedException();
+                                public IEnumerable<string> Keys => throw new System.NotImplementedException();
 
-    public int Count => throw new System.NotImplementedException();
+                                public IEnumerable<object> Values => throw new System.NotImplementedException();
 
-    public bool IsReadOnly => throw new System.NotImplementedException();
+                                public int Count => throw new System.NotImplementedException();
 
-    public void Add(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
+                                public bool IsReadOnly => throw new System.NotImplementedException();
 
-    public void Clear() => throw new System.NotImplementedException();
+                                public void Add(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
 
-    public bool Contains(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
+                                public void Clear() => throw new System.NotImplementedException();
 
-    public bool ContainsKey(string key) => throw new System.NotImplementedException();
+                                public bool Contains(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
 
-    public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => throw new System.NotImplementedException();
+                                public bool ContainsKey(string key) => throw new System.NotImplementedException();
 
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => throw new System.NotImplementedException();
+                                public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => throw new System.NotImplementedException();
 
-    public bool Remove(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
+                                public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => throw new System.NotImplementedException();
 
-    public bool TryGetValue(string key, out object value) => throw new System.NotImplementedException();
+                                public bool Remove(KeyValuePair<string, object> item) => throw new System.NotImplementedException();
 
-    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
-}
-"
+                                public bool TryGetValue(string key, out object value) => throw new System.NotImplementedException();
+
+                                IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+                            }
+
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
 
-[*]
-dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
-")  },
+                        [*]
+                        dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
+
+                        """)  },
                     ExpectedDiagnostics = { GetCA1710CSharpResultAt(5, 14, "C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
-        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = true
-                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
-        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
-                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
+        [DataRow("""
+            dotnet_code_quality.CA1710.exclude_indirect_base_types = true
+                                  dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1
+            """)]
+        [DataRow("""
+            dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                                  dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1
+            """)]
         public async Task CA1710_ExcludeIndirectTypesAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1882,31 +1939,35 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+                        """
 
-public class C : Exception {}
-public class Sub : C {}
+                            using System;
+                            using System.Collections;
+                            using System.Collections.Generic;
+                            using System.Collections.ObjectModel;
 
-public class FreezableList : ReadOnlyCollection<int>
-{
-    public FreezableList(IList<int> list) : base(list)
-    {
-    }
-}
+                            public class C : Exception {}
+                            public class Sub : C {}
 
-public class SomeClass {}
-public class SomeSubClass : SomeClass {}
-public class SomeSubSubClass : SomeSubClass {}"
+                            public class FreezableList : ReadOnlyCollection<int>
+                            {
+                                public FreezableList(IList<int> list) : base(list)
+                                {
+                                }
+                            }
+
+                            public class SomeClass {}
+                            public class SomeSubClass : SomeClass {}
+                            public class SomeSubSubClass : SomeSubClass {}
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                     ExpectedDiagnostics = { GetCA1710CSharpResultAt(7, 14, "C", "Exception") },
                 }
             };
@@ -1936,7 +1997,7 @@ public class SomeSubSubClass : SomeSubClass {}"
                 }
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1944,44 +2005,48 @@ public class SomeSubSubClass : SomeSubClass {}"
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Collections
-Imports System.Collections.Generic
-Imports System.Collections.ObjectModel
+                        """
 
-Public Class C
-    Inherits Exception
-End Class
+                            Imports System
+                            Imports System.Collections
+                            Imports System.Collections.Generic
+                            Imports System.Collections.ObjectModel
 
-Public Class [Sub]
-    Inherits C
-End Class
+                            Public Class C
+                                Inherits Exception
+                            End Class
 
-Public Class FreezableList
-    Inherits ReadOnlyCollection(Of Integer)
+                            Public Class [Sub]
+                                Inherits C
+                            End Class
 
-    Public Sub New(ByVal list As IList(Of Integer))
-        MyBase.New(list)
-    End Sub
-End Class
+                            Public Class FreezableList
+                                Inherits ReadOnlyCollection(Of Integer)
 
-Public Class SomeClass
-End Class
+                                Public Sub New(ByVal list As IList(Of Integer))
+                                    MyBase.New(list)
+                                End Sub
+                            End Class
 
-Public Class SomeSubClass
-    Inherits SomeClass
-End Class
+                            Public Class SomeClass
+                            End Class
 
-Public Class SomeSubSubClass
-    Inherits SomeSubClass
-End Class"
+                            Public Class SomeSubClass
+                                Inherits SomeClass
+                            End Class
+
+                            Public Class SomeSubSubClass
+                                Inherits SomeSubClass
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-")  },
+                        [*]
+                        {editorConfigText}
+
+                        """)  },
                     ExpectedDiagnostics = { GetCA1710BasicResultAt(7, 14, "C", "Exception") },
                 }
             };
@@ -2011,204 +2076,212 @@ End Class"
                 }
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
+        [TestMethod, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
         public async Task CA1710_InterfacesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public interface I
-{
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public interface I
+                {
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EventArgsNotInheritingFromSystemEventArgs_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-// Reproduce UWP specific EventArgs
-namespace Windows.UI.Xaml
-{
-    public class RoutedEventArgs {}
-}
-public class C
-{
-    public delegate void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e);
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                // Reproduce UWP specific EventArgs
+                namespace Windows.UI.Xaml
+                {
+                    public class RoutedEventArgs {}
+                }
+                public class C
+                {
+                    public delegate void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e);
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-' Reproduce UWP specific EventArgs
-Namespace Windows.UI.Xaml
-    Public Class RoutedEventArgs
-    End Class
-End Namespace
+            await VerifyVB.VerifyAnalyzerAsync("""
+                ' Reproduce UWP specific EventArgs
+                Namespace Windows.UI.Xaml
+                    Public Class RoutedEventArgs
+                    End Class
+                End Namespace
 
-Public Class C
-    Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
-End Class");
+                Public Class C
+                    Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
+                End Class
+                """);
         }
 
-        [Theory, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
-        [InlineData("")]
-        [InlineData("Set")]
-        [InlineData("Collection")]
+        [TestMethod, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        [DataRow("")]
+        [DataRow("Set")]
+        [DataRow("Collection")]
         public async Task CA1710_ISet_IReadOnlySet(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-public class {|#0:First" + typeNameSuffix + @"|} : ISet<int>
-{
-    public int Count => throw new NotImplementedException();
-
-    public bool IsReadOnly => throw new NotImplementedException();
-
-    public bool Add(int item)
+                    public class {|#0:First
+                    """ + typeNameSuffix + """
+    |} : ISet<int>
     {
-        throw new NotImplementedException();
+        public int Count => throw new NotImplementedException();
+
+        public bool IsReadOnly => throw new NotImplementedException();
+
+        public bool Add(int item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(int item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(int[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExceptWith(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void IntersectWith(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsProperSubsetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsProperSupersetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSubsetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSupersetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Overlaps(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(int item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetEquals(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SymmetricExceptWith(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UnionWith(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<int>.Add(int item)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public void Clear()
+    public class {|#1:Second
+    """ + typeNameSuffix + """
+    |} : IReadOnlySet<int>
     {
-        throw new NotImplementedException();
-    }
+        public int Count => throw new NotImplementedException();
 
-    public bool Contains(int item)
-    {
-        throw new NotImplementedException();
-    }
+        public bool Contains(int item)
+        {
+            throw new NotImplementedException();
+        }
 
-    public void CopyTo(int[] array, int arrayIndex)
-    {
-        throw new NotImplementedException();
-    }
+        public IEnumerator<int> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
 
-    public void ExceptWith(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
+        public bool IsProperSubsetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public IEnumerator<int> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+        public bool IsProperSupersetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public void IntersectWith(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
+        public bool IsSubsetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool IsProperSubsetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
+        public bool IsSupersetOf(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool IsProperSupersetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
+        public bool Overlaps(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool IsSubsetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
+        public bool SetEquals(IEnumerable<int> other)
+        {
+            throw new NotImplementedException();
+        }
 
-    public bool IsSupersetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
-
-    public bool Overlaps(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Remove(int item)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool SetEquals(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void SymmetricExceptWith(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void UnionWith(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    void ICollection<int>.Add(int item)
-    {
-        throw new NotImplementedException();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class {|#1:Second" + typeNameSuffix + @"|} : IReadOnlySet<int>
-{
-    public int Count => throw new NotImplementedException();
-
-    public bool Contains(int item)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerator<int> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsProperSubsetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsProperSupersetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsSubsetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsSupersetOf(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Overlaps(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool SetEquals(IEnumerable<int> other)
-    {
-        throw new NotImplementedException();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-}",
+    """,
             };
 
             if (typeNameSuffix.Length == 0)
@@ -2224,28 +2297,31 @@ public class {|#1:Second" + typeNameSuffix + @"|} : IReadOnlySet<int>
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
-        [InlineData("")]
-        [InlineData("Collection")]
+        [TestMethod, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        [DataRow("")]
+        [DataRow("Collection")]
         public async Task CA1710_IReadOnlyCollection(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-public class {|#0:C" + typeNameSuffix + @"|} : IReadOnlyCollection<int>
-{
-    public int Count => throw new System.NotImplementedException();
+                    public class {|#0:C
+                    """ + typeNameSuffix + """
+    |} : IReadOnlyCollection<int>
+    {
+        public int Count => throw new System.NotImplementedException();
 
-    public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
-    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
-}",
+        public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
+        IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+    }
+    """,
             };
 
             if (typeNameSuffix.Length == 0)
@@ -2256,174 +2332,181 @@ public class {|#0:C" + typeNameSuffix + @"|} : IReadOnlyCollection<int>
                         .WithArguments("C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Dictionary")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Dictionary")]
+        [DataRow("Collection")]
         public async Task CA1710_IDictionary_IDictionary2_IReadOnlyDictionary2(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-public class {|#0:First" + typeNameSuffix + @"|} : IDictionary
-{
-    public object this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-    public bool IsFixedSize => throw new NotImplementedException();
-
-    public bool IsReadOnly => throw new NotImplementedException();
-
-    public ICollection Keys => throw new NotImplementedException();
-
-    public ICollection Values => throw new NotImplementedException();
-
-    public int Count => throw new NotImplementedException();
-
-    public bool IsSynchronized => throw new NotImplementedException();
-
-    public object SyncRoot => throw new NotImplementedException();
-
-    public void Add(object key, object value)
+                    public class {|#0:First
+                    """ + typeNameSuffix + """
+    |} : IDictionary
     {
-        throw new NotImplementedException();
+        public object this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public bool IsFixedSize => throw new NotImplementedException();
+
+        public bool IsReadOnly => throw new NotImplementedException();
+
+        public ICollection Keys => throw new NotImplementedException();
+
+        public ICollection Values => throw new NotImplementedException();
+
+        public int Count => throw new NotImplementedException();
+
+        public bool IsSynchronized => throw new NotImplementedException();
+
+        public object SyncRoot => throw new NotImplementedException();
+
+        public void Add(object key, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(object key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDictionaryEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Remove(object key)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public void Clear()
+    public class {|#1:Second
+    """ + typeNameSuffix + """
+    |} : IDictionary<int, string>
     {
-        throw new NotImplementedException();
+        public string this[int key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public ICollection<int> Keys => throw new NotImplementedException();
+
+        public ICollection<string> Values => throw new NotImplementedException();
+
+        public int Count => throw new NotImplementedException();
+
+        public bool IsReadOnly => throw new NotImplementedException();
+
+        public void Add(int key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Add(KeyValuePair<int, string> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(KeyValuePair<int, string> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ContainsKey(int key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(KeyValuePair<int, string>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(int key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(KeyValuePair<int, string> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetValue(int key, out string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public bool Contains(object key)
+    public class {|#2:Third
+    """ + typeNameSuffix + """
+    |} : IReadOnlyDictionary<int, string>
     {
-        throw new NotImplementedException();
+        public string this[int key] => throw new NotImplementedException();
+
+        public IEnumerable<int> Keys => throw new NotImplementedException();
+
+        public IEnumerable<string> Values => throw new NotImplementedException();
+
+        public int Count => throw new NotImplementedException();
+
+        public bool ContainsKey(int key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetValue(int key, out string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
-
-    public void CopyTo(Array array, int index)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IDictionaryEnumerator GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Remove(object key)
-    {
-        throw new NotImplementedException();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class {|#1:Second" + typeNameSuffix + @"|} : IDictionary<int, string>
-{
-    public string this[int key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-    public ICollection<int> Keys => throw new NotImplementedException();
-
-    public ICollection<string> Values => throw new NotImplementedException();
-
-    public int Count => throw new NotImplementedException();
-
-    public bool IsReadOnly => throw new NotImplementedException();
-
-    public void Add(int key, string value)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Add(KeyValuePair<int, string> item)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Clear()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Contains(KeyValuePair<int, string> item)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool ContainsKey(int key)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void CopyTo(KeyValuePair<int, string>[] array, int arrayIndex)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Remove(int key)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Remove(KeyValuePair<int, string> item)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool TryGetValue(int key, out string value)
-    {
-        throw new NotImplementedException();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class {|#2:Third" + typeNameSuffix + @"|} : IReadOnlyDictionary<int, string>
-{
-    public string this[int key] => throw new NotImplementedException();
-
-    public IEnumerable<int> Keys => throw new NotImplementedException();
-
-    public IEnumerable<string> Values => throw new NotImplementedException();
-
-    public int Count => throw new NotImplementedException();
-
-    public bool ContainsKey(int key)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool TryGetValue(int key, out string value)
-    {
-        throw new NotImplementedException();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
-}",
+    """,
             };
 
             if (typeNameSuffix.Length == 0)
@@ -2442,29 +2525,34 @@ public class {|#2:Third" + typeNameSuffix + @"|} : IReadOnlyDictionary<int, stri
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Queue")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Queue")]
+        [DataRow("Collection")]
         public async Task CA1710_Queue_Queue1(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-public class {|#0:First" + typeNameSuffix + @"|} : Queue
-{
-}
+                    public class {|#0:First
+                    """ + typeNameSuffix + """
+    |} : Queue
+    {
+    }
 
-public class {|#1:Second" + typeNameSuffix + @"|} : Queue<int>
-{
-}",
+    public class {|#1:Second
+    """ + typeNameSuffix + """
+    |} : Queue<int>
+    {
+    }
+    """,
             };
 
             if (typeNameSuffix.Length == 0)
@@ -2480,29 +2568,34 @@ public class {|#1:Second" + typeNameSuffix + @"|} : Queue<int>
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Stack")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Stack")]
+        [DataRow("Collection")]
         public async Task CA1710_Stack_Stack1(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-public class {|#0:First" + typeNameSuffix + @"|} : Stack
-{
-}
+                    public class {|#0:First
+                    """ + typeNameSuffix + """
+    |} : Stack
+    {
+    }
 
-public class {|#1:Second" + typeNameSuffix + @"|} : Stack<int>
-{
-}",
+    public class {|#1:Second
+    """ + typeNameSuffix + """
+    |} : Stack<int>
+    {
+    }
+    """,
             };
 
             if (typeNameSuffix.Length == 0)
@@ -2518,7 +2611,7 @@ public class {|#1:Second" + typeNameSuffix + @"|} : Stack<int>
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, params string[] additionalSuffixes)

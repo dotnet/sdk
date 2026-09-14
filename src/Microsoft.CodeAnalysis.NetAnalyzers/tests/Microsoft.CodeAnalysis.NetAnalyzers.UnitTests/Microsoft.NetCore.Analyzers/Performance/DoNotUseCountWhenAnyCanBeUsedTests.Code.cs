@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -55,40 +56,40 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 => code;
 
             internal string GetFixedExpressionCode(bool withPredicate, bool negate)
-                => $@"{GetLogicalNotText(negate)}{GetTargetExpressionCode(withPredicate, "Any" + this.MethodSuffix)}";
+                => $""""{GetLogicalNotText(negate)}{GetTargetExpressionCode(withPredicate, "Any" + this.MethodSuffix)}"""";
 
             internal string GetFixedIsEmptyPropertyCode(bool negate)
-                => $@"{GetLogicalNotText(negate)}{GetTargetPropertyCode("IsEmpty")}";
+                => $""""{GetLogicalNotText(negate)}{GetTargetPropertyCode("IsEmpty")}"""";
 
             internal string GetTargetExpressionBinaryExpressionCode(int value, BinaryOperatorKind @operator, bool withPredicate, string methodName)
-                => $@"{value} {GetOperatorCode(@operator)} {GetTargetExpressionCode(withPredicate, methodName)}";
+                => $"""{value} {GetOperatorCode(@operator)} {GetTargetExpressionCode(withPredicate, methodName)}""";
 
             internal string GetTargetExpressionBinaryExpressionCode(BinaryOperatorKind @operator, int value, bool withPredicate, string methodName)
-                => $@"{GetTargetExpressionCode(withPredicate, methodName)} {GetOperatorCode(@operator)} {value}";
+                => $"""{GetTargetExpressionCode(withPredicate, methodName)} {GetOperatorCode(@operator)} {value}""";
 
             public string GetTargetExpressionEqualsInvocationCode(int value, bool withPredicate, string methodName)
-                => $@"{(IsAsync ? "(" : string.Empty)}{GetTargetExpressionCode(withPredicate, methodName)}{(IsAsync ? ")" : string.Empty)}.Equals({value})";
+                => $""""{(IsAsync ? "(" : string.Empty)}{GetTargetExpressionCode(withPredicate, methodName)}{(IsAsync ? ")" : string.Empty)}.Equals({value})"""";
 
             internal string GetEqualsTargetExpressionInvocationCode(int value, bool withPredicate, string methodName)
-                => $@"{value}.Equals({GetTargetExpressionCode(withPredicate, methodName)})";
+                => $"""{value}.Equals({GetTargetExpressionCode(withPredicate, methodName)})""";
 
             public string GetTargetExpressionCode(bool withPredicate, string methodName)
-                => $@"{GetTargetCode(methodName)}({(withPredicate ? GetPredicateCode() : string.Empty)})";
+                => $"""{GetTargetCode(methodName)}({(withPredicate ? GetPredicateCode() : string.Empty)})""";
 
             internal string GetTargetPropertyBinaryExpressionCode(int value, BinaryOperatorKind @operator, string propertyName)
-                => $@"{value} {GetOperatorCode(@operator)} {GetTargetPropertyCode(propertyName)}";
+                => $"""{value} {GetOperatorCode(@operator)} {GetTargetPropertyCode(propertyName)}""";
 
             internal string GetTargetPropertyBinaryExpressionCode(BinaryOperatorKind @operator, int value, string propertyName)
-                => $@"{GetTargetPropertyCode(propertyName)} {GetOperatorCode(@operator)} {value}";
+                => $"""{GetTargetPropertyCode(propertyName)} {GetOperatorCode(@operator)} {value}""";
 
             public string GetTargetPropertyEqualsInvocationCode(int value, string propertyName)
-                => $@"{GetTargetPropertyCode(propertyName)}.Equals({value})";
+                => $"""{GetTargetPropertyCode(propertyName)}.Equals({value})""";
 
             internal string GetEqualsTargetPropertyInvocationCode(int value, string propertyName)
-                => $@"{value}.Equals({GetTargetPropertyCode(propertyName)})";
+                => $"""{value}.Equals({GetTargetPropertyCode(propertyName)})""";
 
             public string GetTargetPropertyCode(string propertyName)
-                => $@"{GetTargetCode(propertyName)}";
+                => $"""{GetTargetCode(propertyName)}""";
 
             public abstract string GetSymbolInvocationCode(string methodName, params string[] arguments);
             public abstract string GetPredicateCode();
@@ -132,16 +133,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
 
                 builder
-                    .Append(@"namespace ")
+                    .Append("namespace ")
                     .Append(TestNamespace)
-                    .Append(@"
-{
-    class C
-    {
-        ")
+                    .Append("""
+
+                        {
+                            class C
+                            {
+                                
+                        """)
                     .Append(TargetType)
-                    .Append(@" GetData() => default;
-        ");
+                    .Append("""
+                         GetData() => default;
+                                
+                        """);
 
                 if (IsAsync)
                 {
@@ -151,14 +156,18 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
 
                 return builder
-                    .Append(@"void M()
-        {
-            var b = ")
+                    .Append("""
+                        void M()
+                                {
+                                    var b = 
+                        """)
                     .Append(expression)
-                    .AppendLine(@";
-        }
-    }
-}")
+                    .AppendLine("""
+                        ;
+                                }
+                            }
+                        }
+                        """)
                     .ToString();
             }
 
@@ -193,18 +202,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     intReturnValue = "default";
                 }
 
-                return $@"namespace {namespaceName}
-{{
-    public static class {className}
-    {{
-        public static {boolReturnType} Any{this.MethodSuffix}(this {targetType} q) => {boolReturnValue};
-        public static {boolReturnType} Any{this.MethodSuffix}<TSource>(this {targetTypeOfSource} q, {predicate} predicate) => {boolReturnValue};
-        public static {intReturnType} {this.MemberName}(this {targetType} q) => {intReturnValue};
-        public static {intReturnType} {this.MemberName}<TSource>(this {targetTypeOfSource} q, {predicate} predicate) => {intReturnValue};
-        public static {intReturnType} Sum{this.MethodSuffix}(this {targetType} q) => {intReturnValue};
-    }}
-}}
-";
+                return $$"""
+                    namespace {{namespaceName}}
+                    {
+                        public static class {{className}}
+                        {
+                            public static {{boolReturnType}} Any{{this.MethodSuffix}}(this {{targetType}} q) => {{boolReturnValue}};
+                            public static {{boolReturnType}} Any{{this.MethodSuffix}}<TSource>(this {{targetTypeOfSource}} q, {{predicate}} predicate) => {{boolReturnValue}};
+                            public static {{intReturnType}} {{this.MemberName}}(this {{targetType}} q) => {{intReturnValue}};
+                            public static {{intReturnType}} {{this.MemberName}}<TSource>(this {{targetTypeOfSource}} q, {{predicate}} predicate) => {{intReturnValue}};
+                            public static {{intReturnType}} Sum{{this.MethodSuffix}}(this {{targetType}} q) => {{intReturnValue}};
+                        }
+                    }
+
+                    """;
             }
 
             public override string GetOperatorCode(BinaryOperatorKind binaryOperatorKind)
@@ -266,16 +277,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
 
                 builder
-                    .Append(@"Namespace Global.")
+                    .Append("Namespace Global.")
                     .Append(TestNamespace)
-                    .Append(@"
-    Class C
-        Function GetData() As ")
+                    .Append("""
+
+                            Class C
+                                Function GetData() As 
+                        """)
                     .Append(TargetType)
-                    .Append(@"
-            Return Nothing
-        End Function
-        ");
+                    .Append("""
+
+                                    Return Nothing
+                                End Function
+                                
+                        """);
 
                 if (IsAsync)
                 {
@@ -285,13 +300,17 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
 
                 return builder
-                    .Append(@"Sub M()
-            Dim b = ")
+                    .Append("""
+                        Sub M()
+                                    Dim b = 
+                        """)
                     .Append(expression)
-                    .AppendLine(@"
-        End Sub
-    End Class
-End Namespace")
+                    .AppendLine("""
+
+                                End Sub
+                            End Class
+                        End Namespace
+                        """)
                     .ToString();
             }
 
@@ -326,32 +345,34 @@ End Namespace")
                     intReturnValue = "Nothing";
                 }
 
-                return $@"Namespace Global.{namespaceName}
-    <System.Runtime.CompilerServices.Extension>
-    Public Module {className}
-        <System.Runtime.CompilerServices.Extension>
-        Public Function Any{this.MethodSuffix}(q As {targetType}) As {boolReturnType}
-            Return {boolReturnValue}
-        End Function
-        <System.Runtime.CompilerServices.Extension>
-        Public Function Any{this.MethodSuffix}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {boolReturnType}
-            Return {boolReturnValue}
-        End Function
-        <System.Runtime.CompilerServices.Extension>
-        Public Function {this.MemberName}(q As {targetType}) As {intReturnType}
-            Return {intReturnValue}
-        End Function
-        <System.Runtime.CompilerServices.Extension>
-        Public Function {this.MemberName}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {intReturnType}
-            Return {intReturnValue}
-        End Function
-        <System.Runtime.CompilerServices.Extension>
-        Public Function Sum{this.MethodSuffix}(q As {targetType}) As {intReturnType}
-            Return {intReturnValue}
-        End Function
-    End Module
-End Namespace
-";
+                return $"""
+                    Namespace Global.{namespaceName}
+                        <System.Runtime.CompilerServices.Extension>
+                        Public Module {className}
+                            <System.Runtime.CompilerServices.Extension>
+                            Public Function Any{this.MethodSuffix}(q As {targetType}) As {boolReturnType}
+                                Return {boolReturnValue}
+                            End Function
+                            <System.Runtime.CompilerServices.Extension>
+                            Public Function Any{this.MethodSuffix}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {boolReturnType}
+                                Return {boolReturnValue}
+                            End Function
+                            <System.Runtime.CompilerServices.Extension>
+                            Public Function {this.MemberName}(q As {targetType}) As {intReturnType}
+                                Return {intReturnValue}
+                            End Function
+                            <System.Runtime.CompilerServices.Extension>
+                            Public Function {this.MemberName}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {intReturnType}
+                                Return {intReturnValue}
+                            End Function
+                            <System.Runtime.CompilerServices.Extension>
+                            Public Function Sum{this.MethodSuffix}(q As {targetType}) As {intReturnType}
+                                Return {intReturnValue}
+                            End Function
+                        End Module
+                    End Namespace
+
+                    """;
             }
 
             public override string GetOperatorCode(BinaryOperatorKind binaryOperatorKind)
@@ -423,7 +444,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(CancellationToken.None);
             }
 
             internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
@@ -453,7 +474,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(CancellationToken.None);
             }
         }
 
@@ -479,7 +500,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(CancellationToken.None);
             }
 
             internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
@@ -509,7 +530,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(CancellationToken.None);
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
@@ -29,11 +30,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             if (formatOptions.SaveFormattedFiles)
             {
-                return await GetFormattedDocument(document, optionSet, cancellationToken).ConfigureAwait(false);
+                return await GetFormattedDocument(document, optionSet, cancellationToken);
             }
             else
             {
-                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken).ConfigureAwait(false);
+                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken);
             }
         }
 
@@ -42,8 +43,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private static async Task<SourceText> GetFormattedDocument(Document document, OptionSet optionSet, CancellationToken cancellationToken)
         {
-            var formattedDocument = await Formatter.FormatAsync(document, optionSet, cancellationToken).ConfigureAwait(false);
-            return await formattedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
+            var formattedDocument = await Formatter.FormatAsync(document, optionSet, cancellationToken);
+            return await formattedDocument.GetTextAsync(cancellationToken);
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet optionSet, CancellationToken cancellationToken)
         {
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var root = await document.GetSyntaxRootAsync(cancellationToken);
             // Since we've already checked that formatable documents support syntax tree, we know the `root` is not null.
             var formattingTextChanges = Formatter.GetFormattedTextChanges(root!, document.Project.Solution.Workspace, optionSet, cancellationToken);
 

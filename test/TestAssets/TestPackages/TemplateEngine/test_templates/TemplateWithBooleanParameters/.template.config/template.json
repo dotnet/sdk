@@ -1,0 +1,86 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithBooleanParameters",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithBooleanParameters",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithBooleanParameters",
+  "shortName": "TestAssets.TemplateWithBooleanParameters",
+  "tags": {"type": "project"},
+  "symbols": {
+    "A": {
+      "type": "parameter",
+      "dataType": "bool",
+      "replaces": "VAL_A"
+    },
+    "B": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "false",
+      "replaces": "VAL_B"
+    },
+    "C": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "true",
+      "replaces": "VAL_C"
+    },
+    "D": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "true",
+      "defaultIfOptionWithoutValue": "false",
+      "replaces": "VAL_D"
+    },
+    "A-computed-1": {
+      "type": "computed",
+      "value": "A"
+    },
+    "B-computed-1": {
+      "type": "computed",
+      "value": "B"
+    },
+    "C-computed-1": {
+      "type": "computed",
+      "value": "C"
+    },
+    "D-computed-1": {
+      "type": "computed",
+      "value": "D"
+    },
+    "A-computed-2": {
+      "type": "computed",
+      "value": "A == true"
+    },
+    "B-computed-2": {
+      "type": "computed",
+      "value": "B == true"
+    },
+    "C-computed-2": {
+      "type": "computed",
+      "value": "C == true"
+    },
+    "D-computed-2": {
+      "type": "computed",
+      "value": "D == true"
+    },
+    "A-computed-3": {
+      "type": "computed",
+      "value": "A == \"true\""
+    },
+    "B-computed-3": {
+      "type": "computed",
+      "value": "B == \"true\""
+    },
+    "C-computed-3": {
+      "type": "computed",
+      "value": "C == \"true\""
+    },
+    "D-computed-3": {
+      "type": "computed",
+      "value": "D == \"true\""
+    }
+
+  }
+}

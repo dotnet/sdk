@@ -40,8 +40,12 @@ internal sealed class LocalToolListJsonContract : ToolListJsonContract
 
 internal static class JsonHelper
 {
-    public static readonly JsonSerializerOptions NoEscapeSerializerOptions = new()
+    public static readonly ToolListJsonSerializerContext JsonContext = new(new JsonSerializerOptions()
     {
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
+    });
 }
+
+[JsonSerializable(typeof(VersionedDataContract<ToolListJsonContract[]>))]
+[JsonSerializable(typeof(VersionedDataContract<LocalToolListJsonContract[]>))]
+internal partial class ToolListJsonSerializerContext : JsonSerializerContext;

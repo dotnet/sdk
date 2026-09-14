@@ -21,10 +21,10 @@ public class VSTestForwardingApp : ForwardingApp
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
 
-        VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{argsToForward?.Aggregate((a, b) => $"{a} | {b}")}\"");
+        VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{string.Join(" | ", argsToForward ?? [])}\"");
     }
 
-    private static string GetVSTestExePath()
+    internal static string GetVSTestExePath()
     {
         // Provide custom path to vstest.console.dll or exe to be able to test it against any version of 
         // vstest.console. This is useful especially for our integration tests.
@@ -35,7 +35,7 @@ public class VSTestForwardingApp : ForwardingApp
             return vsTestConsolePath;
         }
 
-        return Path.Combine(AppContext.BaseDirectory, VstestAppName);
+        return Path.Combine(SdkPaths.SdkDirectory, VstestAppName);
     }
 
     internal static Dictionary<string, string> GetVSTestRootVariables()

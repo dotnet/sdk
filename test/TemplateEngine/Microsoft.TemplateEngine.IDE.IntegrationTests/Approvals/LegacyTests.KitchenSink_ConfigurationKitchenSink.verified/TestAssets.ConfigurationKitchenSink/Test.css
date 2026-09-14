@@ -1,0 +1,13 @@
+﻿/*Stuff*/
+a {
+  DefaultTrueIncluded: 0;
+  DefaultFalseIncluded: 0;
+  /*#if (DEBUG1) */
+  InsideUnknownDirectiveNoEmit: 0;
+  /*#endif*/
+/*-:cnd*/
+  /*#if (DEBUG2) */
+  InsideUnknownDirectiveEmit: 0;
+  /*#endif*/
+/*+:cnd*/
+}

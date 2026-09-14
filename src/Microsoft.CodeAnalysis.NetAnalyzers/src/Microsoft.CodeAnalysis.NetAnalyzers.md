@@ -948,6 +948,18 @@ This rule detects usage of platform-specific intrinsics that can be replaced wit
 |CodeFix|True|
 ---
 
+## [CA1517](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1517): Use 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>'
+
+Using 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
@@ -1358,7 +1370,7 @@ Enumerable.Count() potentially enumerates the sequence while a Length/Count prop
 
 ## [CA1830](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830): Prefer strongly-typed Append and Insert method overloads on StringBuilder
 
-StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.
+StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).
 
 |Item|Value|
 |-|-|
@@ -1908,6 +1920,42 @@ In many situations, logging is disabled or set to a log level that results in an
 |CodeFix|True|
 ---
 
+## [CA1876](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1876): Do not use 'AsParallel' in 'foreach'
+
+Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA1877](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1877): Collapse consecutive Path.Combine or Path.Join operations
+
+When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1878](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1878): Prefer ReadOnlySpan\<T> properties over readonly array fields
+
+If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan\<T> property.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -2154,6 +2202,42 @@ Unawaited tasks that use 'IDisposable' instances may use those instances long af
 |CodeFix|False|
 ---
 
+## [CA2026](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026): Prefer JsonElement.Parse over JsonDocument.Parse().RootElement
+
+JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA2027](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027): Cancel Task.Delay after Task.WhenAny completes
+
+When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA2028](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028): Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'
+
+When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
@@ -2295,7 +2379,7 @@ A type that implements System.IDisposable inherits from a type that also impleme
 |Category|Usage|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|True|
+|CodeFix|False|
 ---
 
 ## [CA2216](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2216): Disposable types should declare finalizer
@@ -2745,6 +2829,18 @@ Comparing a span to 'null' or 'default' might not do what you intended. 'default
 ## [CA2266](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266): File-based program entry point should start with '#!'
 
 When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267): Quote whitespace in file-based program directive values
+
+Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.
 
 |Item|Value|
 |-|-|

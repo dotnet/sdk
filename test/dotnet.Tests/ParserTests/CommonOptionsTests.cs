@@ -3,12 +3,89 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ParserTests;
 
+[TestClass]
+[DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
 public class CommonOptionsTests
 {
-    [Fact]
+    [TestMethod]
+    public void ConfigurationDefaultsToEnvironmentVariable()
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            var command = new RootCommand();
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
+
+            var result = command.Parse([]);
+
+            result.GetValue(option).Should().Be("EnvironmentConfiguration");
+            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
+                .Which.Should().Be("--property:Configuration=EnvironmentConfiguration");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
+    [TestMethod]
+    public void ExplicitConfigurationOverridesEnvironmentVariable()
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            var command = new RootCommand();
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
+
+            var result = command.Parse(["--configuration", "ExplicitConfiguration"]);
+
+            result.GetValue(option).Should().Be("ExplicitConfiguration");
+            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
+                .Which.Should().Be("--property:Configuration=ExplicitConfiguration");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("\t")]
+    public void EmptyOrWhitespaceConfigurationEnvironmentVariableIsIgnored(string configuration)
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", configuration);
+            var command = new RootCommand();
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
+
+            var result = command.Parse([]);
+
+            result.GetValue(option).Should().BeNull();
+            result.OptionValuesToBeForwarded(command).Should().BeEmpty();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
+    [TestMethod]
     public void Duplicates()
     {
         var command = new RootCommand();
@@ -25,7 +102,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Duplicates_CasingDifference()
     {
         var command = new RootCommand();
@@ -53,7 +130,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiplePerToken()
     {
         var command = new RootCommand();
@@ -74,7 +151,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void NoValue()
     {
         var command = new RootCommand();
@@ -90,7 +167,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhitespaceTrimming()
     {
         var command = new RootCommand();
@@ -106,11 +183,11 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("=")]
-    [InlineData("= X")]
-    [InlineData("  \u2002 = X")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("=")]
+    [DataRow("= X")]
+    [DataRow("  \u2002 = X")]
     public void Errors(string token)
     {
         var command = new RootCommand();

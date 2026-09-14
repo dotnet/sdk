@@ -1,0 +1,38 @@
+﻿<!-- MSBuild processing -->
+<!-- Values -->
+<ValueA>True</ValueA>
+<ValueB>True</ValueB>
+<ValueC>True</ValueC>
+<ValueD>False</ValueD>
+
+<!--'$(A)' in condition -->
+<TargetFramework>A-true</TargetFramework>
+<TargetFramework>B-true</TargetFramework>
+<TargetFramework>C-true</TargetFramework>
+<!--'$(A)' == true in condition -->
+<TargetFramework>A-true</TargetFramework>
+<TargetFramework>B-true</TargetFramework>
+<TargetFramework>C-true</TargetFramework>
+<!--'$(A)' == 'true' in condition -->
+<TargetFramework>A-true</TargetFramework>
+<TargetFramework>B-true</TargetFramework>
+<TargetFramework>C-true</TargetFramework>
+
+<!-- if (A) syntax-->
+  <TargetFramework>A-true</TargetFramework>
+<TargetFramework>B-true</TargetFramework>
+<TargetFramework>C-true</TargetFramework>
+<TargetFramework>D-false</TargetFramework>
+
+<!-- if (A == true) syntax-->
+<TargetFramework>A-true</TargetFramework>
+<TargetFramework>B-true</TargetFramework>
+<TargetFramework>C-true</TargetFramework>
+<TargetFramework>D-false</TargetFramework>
+
+
+<!-- if (A == "true") syntax-->
+<TargetFramework>A-false</TargetFramework>
+<TargetFramework>B-false</TargetFramework>
+<TargetFramework>C-false</TargetFramework>
+<TargetFramework>D-false</TargetFramework>

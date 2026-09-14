@@ -3,13 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRunFromMSBuildTarget : SdkTest
     {
-        public GivenThatWeWantToRunFromMSBuildTarget(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_runs_successfully()
         {
             TestProject testProject = new()
@@ -19,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand

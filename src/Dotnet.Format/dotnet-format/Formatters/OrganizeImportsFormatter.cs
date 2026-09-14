@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
@@ -39,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
 
-                var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken).ConfigureAwait(false);
+                var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken);
                 if (isSameVersion)
                 {
                     return sourceText;
@@ -47,8 +48,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
                 // See https://github.com/dotnet/roslyn/issues/44136
-                var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
-                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
+                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
             }
             catch (InsufficientExecutionStackException)
             {

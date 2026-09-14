@@ -19,7 +19,7 @@ internal class WorkloadInstallerFactory
         IWorkloadResolver workloadResolver,
         VerbosityOptions verbosity,
         string userProfileDir,
-        bool verifySignatures,
+        bool verifyMsiSignature,
         INuGetPackageDownloader nugetPackageDownloader = null,
         string dotnetDir = null,
         string tempDirPath = null,
@@ -33,13 +33,26 @@ internal class WorkloadInstallerFactory
 
         if (installType == InstallType.Msi)
         {
+#if !TARGET_WINDOWS
+            throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
+#else
             if (!OperatingSystem.IsWindows())
             {
                 throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
             }
+
             // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
-            return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
-                nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath, shouldLog: shouldLog);
+            return NetSdkMsiInstallerClient.Create(
+                verifyMsiSignature,
+                sdkFeatureBand,
+                workloadResolver,
+                nugetPackageDownloader,
+                verbosity,
+                packageSourceLocation,
+                reporter,
+                tempDirPath,
+                shouldLog: shouldLog);
+#endif
         }
 
         if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))

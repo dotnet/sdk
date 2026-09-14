@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "template.json configuration file",
+  "description": ".NET 模板的 template.json 配置文件的模板。有关完整的配置说明，请参阅 https://aka.ms/template-json-reference。",
+  "symbols/CreateTemplateConfigFolder/description": "如果应在 .template.config 文件夹中创建 template.json，则为 true。",
+  "symbols/CreateTemplateConfigFolder/displayName": "创建 .template.config 文件夹",
+  "symbols/TemplateName/description": "模板名称。",
+  "symbols/TemplateName/displayName": "模板名称",
+  "symbols/TemplateShortName/description": "模板短名称。",
+  "symbols/TemplateShortName/displayName": "模板短名称",
+  "symbols/TemplateIdentity/description": "模板标识(应是唯一的)。",
+  "symbols/TemplateIdentity/displayName": "模板标识",
+  "postActions/instructions/description": "需要手动操作",
+  "postActions/instructions/manualInstructions/default/text": "在编辑器中打开 template.json 并完成配置。"
+}

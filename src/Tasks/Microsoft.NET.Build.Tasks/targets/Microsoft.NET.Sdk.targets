@@ -74,11 +74,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectConfigurationDescription Include="TargetFramework=$(TargetFramework)" />
   </ItemGroup>
 
+  <!-- Compatibility: if GenerateRuntimeConfigDevFile was set to true prior to adding GenerateProbingPathsToRuntimeConfigDevFile switch, the additional probing paths were generated -->
+  <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == 'true'">
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == ''">true</GenerateProbingPathsToRuntimeConfigDevFile>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == ''">
-    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
     <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
-    <GenerateRuntimeConfigDevFile Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">false</GenerateRuntimeConfigDevFile>
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '6.0')))">true</GenerateProbingPathsToRuntimeConfigDevFile>
+    <EnableHotReloadInRuntimeConfigDevFile Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == '' and '$(Configuration)' == 'Debug'">true</EnableHotReloadInRuntimeConfigDevFile>
+
+    <GenerateRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == 'true' or '$(EnableHotReloadInRuntimeConfigDevFile)' == 'true'">true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -86,7 +93,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectDepsFilePath Condition="'$(ProjectDepsFilePath)' == ''">$(TargetDir)$(ProjectDepsFileName)</ProjectDepsFilePath>
     <ProjectRuntimeConfigFileName Condition="'$(ProjectRuntimeConfigFileName)' == ''">$(AssemblyName).runtimeconfig.json</ProjectRuntimeConfigFileName>
     <ProjectRuntimeConfigFilePath Condition="'$(ProjectRuntimeConfigFilePath)' == ''">$(TargetDir)$(ProjectRuntimeConfigFileName)</ProjectRuntimeConfigFilePath>
-    <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and $(GenerateRuntimeConfigDevFile) == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
+    <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and '$(GenerateRuntimeConfigDevFile)' == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
     <TrimDepsJsonLibrariesWithoutAssets Condition=" '$(TrimDepsJsonLibrariesWithoutAssets)' == '' ">true</TrimDepsJsonLibrariesWithoutAssets>
   </PropertyGroup>
@@ -300,9 +307,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0
         and '@(_KnownRuntimeIdentifierPlatformsForTargetFramework)' != ''">
       <!-- Known RID platforms for all target frameworks comes from BundledVersions -->
-      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentiferPlatforms)" />
+      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatforms)" />
       <!-- Known RID platforms for current target framework comes from ProcessFrameworkReferences output -->
-      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatformsForTargetFramework)" Exclude="@(_ExcludedKnownRuntimeIdentiferPlatforms)"/>
+      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatformsForTargetFramework)" Exclude="@(_ExcludedKnownRuntimeIdentifierPlatforms)"/>
     </ItemGroup>
 
     <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
@@ -354,6 +361,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(SelfContained)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(TargetFramework)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(UserRuntimeConfig)"/>
+      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(GenerateProbingPathsToRuntimeConfigDevFile)"/>
+      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(EnableHotReloadInRuntimeConfigDevFile)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(_WriteIncludedFrameworks)"/>
     </ItemGroup>
 
@@ -415,7 +424,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        AdditionalProbingPaths="@(AdditionalProbingPath)"
                                        IsSelfContained="$(SelfContained)"
                                        WriteIncludedFrameworks="$(_WriteIncludedFrameworks)"
-                                       GenerateRuntimeConfigDevFile="$(GenerateRuntimeConfigDevFile)"
+                                       GenerateProbingPathsToRuntimeConfigDevFile="$(GenerateProbingPathsToRuntimeConfigDevFile)"
+                                       GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile="$(EnableHotReloadInRuntimeConfigDevFile)"
                                        AlwaysIncludeCoreFramework="$(AlwaysIncludeCoreFrameworkInRuntimeConfig)">
 
     </GenerateRuntimeConfigurationFiles>
@@ -1370,6 +1380,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Remove="ReferenceManagerAssemblies" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <CrossGenTargetsPath Condition="'$(CrossGenTargetsPath)' == ''">$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets</CrossGenTargetsPath>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
@@ -1377,7 +1391,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateGlobalUsings.targets" Condition="'$(Language)' == 'C#'"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets" />
+  <Import Project="$(CrossGenTargetsPath)" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackStubs.targets" Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')"/>
@@ -1437,10 +1451,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
         <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
       </PropertyGroup>
-      <PropertyGroup Condition="$([MSBuild]::IsOSUnixLike())">
-        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
-      </PropertyGroup>
     </When>
   </Choose>
 
@@ -1457,6 +1467,17 @@ Copyright (c) .NET Foundation. All rights reserved.
        This allows tools to run validation or logic required to compute any required data,
        which cannot be done during evaluation.  -->
   <Target Name="ComputeRunArguments" />
+
+  <!-- Errors out for unsupported run scenarios (e.g. .NET Framework on non-Windows). -->
+  <Target Name="_CheckRunCommandSupported"
+          AfterTargets="ComputeRunArguments">
+    <NETSdkError Condition="'$(_IsExecutable)' == 'true'
+                            and '$(TargetFrameworkIdentifier)' == '.NETFramework'
+                            and '$(RunCommand)' == ''
+                            and !$([MSBuild]::IsOSPlatform('Windows'))"
+                 ResourceName="RunCommandRequiresWindowsForNetFramework"
+                 FormatArguments="$(MSBuildProjectName);$(NETCoreAppMaximumVersion)" />
+  </Target>
 
 
   <!-- Override MSBuild Run Target -->

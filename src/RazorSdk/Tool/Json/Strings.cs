@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
@@ -20,19 +20,19 @@ internal static class Strings
     public const string File_0_Line_1 = " File='{0}', Line={1}";
     public const string This_program_location_is_thought_to_be_unreachable = "This program location is thought to be unreachable.";
 
-    public static string FormatCould_not_read_value_JSON_token_was_0(JsonToken token)
+    public static string FormatCould_not_read_value_JSON_token_was_0(JsonTokenType token)
         => string.Format(Could_not_read_value_JSON_token_was_0, token);
 
     public static string FormatEncountered_unexpected_JSON_property_0(string propertyName)
         => string.Format(Encountered_unexpected_JSON_property_0, propertyName);
 
-    public static string FormatEncountered_unexpected_JSON_token_0(JsonToken token)
+    public static string FormatEncountered_unexpected_JSON_token_0(JsonTokenType token)
         => string.Format(Encountered_unexpected_JSON_token_0, token);
 
     public static string FormatExpected_JSON_property_0_but_it_was_1(string expectedPropertyName, string? actualPropertyName)
         => string.Format(Expected_JSON_property_0_but_it_was_1, expectedPropertyName, actualPropertyName);
 
-    public static string FormatExpected_JSON_token_0_but_it_was_1(JsonToken expectedToken, JsonToken actualToken)
+    public static string FormatExpected_JSON_token_0_but_it_was_1(JsonTokenType expectedToken, JsonTokenType actualToken)
         => string.Format(Expected_JSON_token_0_but_it_was_1, expectedToken, actualToken);
 
     public static string FormatExpected_0_to_be_non_null(string? name)

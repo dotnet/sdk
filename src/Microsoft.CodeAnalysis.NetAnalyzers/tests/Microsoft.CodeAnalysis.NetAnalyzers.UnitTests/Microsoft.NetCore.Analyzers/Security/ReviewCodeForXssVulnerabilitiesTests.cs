@@ -1,19 +1,20 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForXssVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXssVulnerabilities, ReviewCodeForXssVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXssVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -23,27 +24,29 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        Response.Write(""<HTML>"" + input + ""</HTML>"");
-    }
-}",
+                            using System;
+
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    Response.Write("<HTML>" + input + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 9, 8, 24, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -53,25 +56,26 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
 
-        // Example usage of System.Web.HttpServerUtility.HtmlEncode().
-        Response.Write(""<HTML>"" + Server.HtmlEncode(input) + ""</HTML>"");
-    }
-}",
+                                    // Example usage of System.Web.HttpServerUtility.HtmlEncode().
+                                    Response.Write("<HTML>" + Server.HtmlEncode(input) + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -81,28 +85,30 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-Partial Public Class WebForm
-    Inherits System.Web.UI.Page
+                            Imports System
 
-    Protected Sub Page_Load(sender As Object, e As EventArgs)
-        Dim input As String = Me.Request.Form(""in"")
-        Me.Response.Write(""<HTML>"" + input + ""</HTML>"")
-    End Sub
-End Class
-",
+                            Partial Public Class WebForm
+                                Inherits System.Web.UI.Page
+
+                                Protected Sub Page_Load(sender As Object, e As EventArgs)
+                                    Dim input As String = Me.Request.Form("in")
+                                    Me.Response.Write("<HTML>" + input + "</HTML>")
+                                End Sub
+                            End Class
+
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
                         GetBasicResultAt(9, 9, 8, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -112,26 +118,26 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
+                            Imports System
 
-Partial Public Class WebForm
-    Inherits System.Web.UI.Page
+                            Partial Public Class WebForm
+                                Inherits System.Web.UI.Page
 
-    Protected Sub Page_Load(sender As Object, e As EventArgs)
-        Dim input As String = Me.Request.Form(""in"")
+                                Protected Sub Page_Load(sender As Object, e As EventArgs)
+                                    Dim input As String = Me.Request.Form("in")
 
-        ' Example usage of System.Web.HttpServerUtility.HtmlEncode().
-        Me.Response.Write(""<HTML>"" + Me.Server.HtmlEncode(input) + ""</HTML>"")
-    End Sub
-End Class
-",
+                                    ' Example usage of System.Web.HttpServerUtility.HtmlEncode().
+                                    Me.Response.Write("<HTML>" + Me.Server.HtmlEncode(input) + "</HTML>")
+                                End Sub
+                            End Class
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Simple_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -141,24 +147,25 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        Response.Write(""<HTML><TITLE>test</TITLE><BODY>Hello world!</BODY></HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    Response.Write("<HTML><TITLE>test</TITLE><BODY>Hello world!</BODY></HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Int32_Parse_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -168,25 +175,26 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        string integer = Int32.Parse(input).ToString();
-        Response.Write(""<HTML>"" + integer + ""</HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    string integer = Int32.Parse(input).ToString();
+                                    Response.Write("<HTML>" + integer + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpServerUtility_HtmlEncode_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -196,25 +204,26 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        string encoded = Server.HtmlEncode(input);
-        Response.Write(""<HTML>"" + encoded + ""</HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    string encoded = Server.HtmlEncode(input);
+                                    Response.Write("<HTML>" + encoded + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -227,7 +236,7 @@ public partial class WebForm : System.Web.UI.Page
                         SharedCode.WrongSanitizer,
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

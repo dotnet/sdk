@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 11",
+  "identity": "MyProject.11.Sample.CSharp",         
+  "groupIdentity":"MyProject.11.Sample",
+  "shortName": "sample11",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true,
+  "symbols":{
+    "ownername":{
+      "type": "parameter",
+      "datatype":"text",
+      "replaces": "John Smith (a)",
+      "defaultValue": "John Doe"
+    },
+
+    "nameUpper":{
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source":"ownername",
+        "toLower": false
+      },
+      "replaces":"John Smith (U)"
+    },
+
+    "nameLower":{
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source":"ownername",
+        "toLower": true
+      },
+      "replaces":"John Smith (l)"
+    }
+  }
+}

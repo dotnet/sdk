@@ -5,12 +5,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class FilesCopiedToPublishDirTests : SdkTest
     {
-        public FilesCopiedToPublishDirTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
         private static readonly List<string> FrameworkAssemblies = new()
         {
             "api-ms-win-core-console-l1-1-0.dll",
@@ -18,10 +15,10 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Theory]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
+        [DataRow(false, false)]
         public void RunFilesCopiedToPublishDirTest(bool specifyRid, bool singleFile)
         {
             var testProject = new TestProject()
@@ -43,7 +40,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishSingleFile"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand

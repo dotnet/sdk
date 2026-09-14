@@ -99,10 +99,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         _fromRollbackDefinition = parseResult.GetValue(Definition.FromRollbackFileOption);
         _workloadSetVersionFromCommandLine = parseResult.GetValue(Definition.WorkloadSetVersionOption);
 
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
-        var sourceOption = parseResult.GetValue(Definition.SourceOption);
-        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+        _packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
@@ -161,6 +158,21 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
+        if (SpecifiedWorkloadSetVersionOnCommandLine)
+        {
+            foreach (var version in _workloadSetVersionFromCommandLine!)
+            {
+                if (!version.Contains('@') && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion))
+                {
+                    throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion, string.Empty), isUserError: true);
+                }
+            }
+        }
+        else if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, string.Format(CliCommandStrings.WorkloadSetVersionSpecifiedInGlobalJson, _globalJsonPath)), isUserError: true);
+        }
+
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
 
@@ -215,12 +227,18 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
                     _sdkFeatureBand,
+#if !TARGET_WINDOWS
+                    _workloadInstaller,
+#else
                     _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+#endif
                     _sdkFeatureBand.IsPrerelease,
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
                     _workloadResolver,
-                    numberOfWorkloadSetsToTake: 1);
+                    numberOfWorkloadSetsToTake: 1,
+                    _packageSourceLocation,
+                    RestoreActionConfiguration);
 
                 if (versions is null)
                 {
@@ -450,7 +468,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
 
     protected IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> workloadsWithExistingInstallRecords)
     {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             return VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, workloadsWithExistingInstallRecords, Reporter);

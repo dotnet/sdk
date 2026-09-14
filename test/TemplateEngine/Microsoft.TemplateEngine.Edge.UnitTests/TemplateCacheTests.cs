@@ -1,0 +1,531 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using FakeItEasy;
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
+
+namespace Microsoft.TemplateEngine.Edge.UnitTests
+{
+    [TestClass]
+    public class TemplateCacheTests
+    {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
+        [DataRow("en-US", "en")]
+        [DataRow("zh-CN", "zh-Hans")]
+        [DataRow("zh-SG", "zh-Hans")]
+        [DataRow("zh-TW", "zh-Hant")]
+        [DataRow("zh-HK", "zh-Hant")]
+        [DataRow("zh-MO", "zh-Hant")]
+        [DataRow("pt-BR", "pt-BR")]
+        [DataRow("pt", null)]
+        [DataRow("uk-UA", null)]
+        [DataRow("invariant", null)]
+        public void PicksCorrectLocator(string currentCulture, string? expectedLocator)
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            CultureInfo persistedCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                if (currentCulture != "invariant")
+                {
+                    CultureInfo.CurrentUICulture = new CultureInfo(currentCulture);
+                }
+                else
+                {
+                    currentCulture = string.Empty;
+                    CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+                }
+                string[] availableLocales = new[] { "cs", "de", "en", "es", "fr", "it", "ja", "ko", "pl", "pt-BR", "ru", "tr", "zh-Hans", "zh-Hant" };
+
+                IScanTemplateInfo template = A.Fake<IScanTemplateInfo>();
+                A.CallTo(() => template.Identity).Returns("testIdentity");
+                List<ILocalizationLocator> locators = new List<ILocalizationLocator>();
+                foreach (string locale in availableLocales)
+                {
+                    ILocalizationLocator locator = A.Fake<ILocalizationLocator>();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    A.CallTo(() => locator.Identity).Returns("testIdentity");
+#pragma warning restore CS0618 // Type or member is obsolete
+                    A.CallTo(() => locator.Locale).Returns(locale);
+                    A.CallTo(() => locator.Name).Returns(locale + " name");
+                    locators.Add(locator);
+                }
+                A.CallTo(() => template.Localizations).Returns(locators.ToDictionary(l => l.Locale, l => l));
+                IMountPoint mountPoint = A.Fake<IMountPoint>();
+                A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+                ScanResult result = new ScanResult(mountPoint, new[] { template }, locators, []);
+
+                TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+                Assert.AreEqual(currentCulture, templateCache.Locale);
+                Assert.AreEqual("testIdentity", templateCache.TemplateInfo.Single().Identity);
+                Assert.AreEqual(string.IsNullOrEmpty(expectedLocator) ? string.Empty : expectedLocator + " name", templateCache.TemplateInfo.Single().Name);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = persistedCulture;
+            }
+        }
+
+        [TestMethod]
+        public void ReadHandlesCompatibleJsonSyntax()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            const string json = """
+                                {
+                                    // Exact-cased property names win; otherwise the last case-insensitive match wins.
+                                    "Version": "1.0.0\u002E7",
+                                    "VERSION": "ignoredVersion",
+                                    "locale": "ignoredLocale",
+                                    "LOCALE": "en-US",
+                                    "templateinfo": [
+                                        {
+                                            "Identity": "testIdentity",
+                                            "IDENTITY": "ignoredIdentity",
+                                            "name": "ignoredName",
+                                            "NAME": "testName",
+                                            "shortnamelist": "testShort",
+                                            "mountpointuri": "testMount",
+                                            "configplace": ".template.config/template.json",
+                                            "generatorid": "00000000-0000-0000-0000-000000000000",
+                                            "parameters": [
+                                                {
+                                                    "name": "optionalParameter",
+                                                    "precedence": null,
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    "mountpointsinfo": {
+                                        "testMount": "2026-09-09T12:34:56.789Z",
+                                    },
+                                }
+                                """;
+
+            using (Stream stream = environmentSettings.Host.FileSystem.CreateFile(paths.TemplateCacheFile))
+            using (StreamWriter writer = new(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            {
+                writer.Write(json);
+            }
+
+            TemplateCache cache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.AreEqual("1.0.0.7", cache.Version);
+            Assert.AreEqual("en-US", cache.Locale);
+            Assert.ContainsSingle(cache.TemplateInfo);
+            Assert.AreEqual("testIdentity", cache.TemplateInfo[0].Identity);
+            Assert.AreEqual("testName", cache.TemplateInfo[0].Name);
+            Assert.AreSequenceEqual(new[] { "testShort" }, cache.TemplateInfo[0].ShortNameList);
+            Assert.AreEqual(
+                PrecedenceDefinition.Optional,
+                cache.TemplateInfo[0].ParameterDefinitions["optionalParameter"].Precedence.PrecedenceDefinition);
+            Assert.ContainsSingle(cache.MountPointsInfo);
+            Assert.AreEqual(
+                new DateTime(2026, 9, 9, 12, 34, 56, 789, DateTimeKind.Utc),
+                cache.MountPointsInfo["testMount"]);
+        }
+
+        [TestMethod]
+        [DataRow(nameof(TemplateInfo.Identity))]
+        [DataRow(nameof(TemplateInfo.Name))]
+        [DataRow(nameof(TemplateInfo.MountPointUri))]
+        [DataRow(nameof(TemplateInfo.ConfigPlace))]
+        [DataRow(nameof(TemplateInfo.GeneratorId))]
+        public void ReadRejectsTemplateMissingRequiredProperty(string propertyName)
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            JsonObject template = new()
+            {
+                [nameof(TemplateInfo.Identity)] = "testIdentity",
+                [nameof(TemplateInfo.Name)] = "testName",
+                [nameof(TemplateInfo.ShortNameList)] = new JsonArray("testShort"),
+                [nameof(TemplateInfo.MountPointUri)] = "testMount",
+                [nameof(TemplateInfo.ConfigPlace)] = ".template.config/template.json",
+                [nameof(TemplateInfo.GeneratorId)] = Guid.Empty.ToString()
+            };
+            Assert.IsTrue(template.Remove(propertyName));
+
+            JsonObject cache = new()
+            {
+                [nameof(TemplateCache.Version)] = "1.0.0.7",
+                [nameof(TemplateCache.Locale)] = "en-US",
+                [nameof(TemplateCache.TemplateInfo)] = new JsonArray(template),
+                [nameof(TemplateCache.MountPointsInfo)] = new JsonObject()
+            };
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, cache);
+
+            ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(
+                () => TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            Assert.Contains(propertyName, exception.Message);
+        }
+
+        [TestMethod]
+        public void CanHandlePostActions()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            Guid postAction1 = Guid.NewGuid();
+            Guid postAction2 = Guid.NewGuid();
+
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.PostActions).Returns(new[] { postAction1, postAction2 });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.ContainsSingle(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.AreSequenceEqual(new[] { postAction1, postAction2 }, readTemplate.PostActions);
+        }
+
+        [TestMethod]
+        public void CanHandleConstraints()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            TemplateConstraintInfo constraintInfo1 = new TemplateConstraintInfo("t1", null);
+            TemplateConstraintInfo constraintInfo2 = new TemplateConstraintInfo("t1", "{[ \"one\", \"two\"]}");
+
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.Constraints).Returns(new[] { constraintInfo1, constraintInfo2 });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.ContainsSingle(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.HasCount(2, readTemplate.Constraints);
+            Assert.AreEqual("t1", readTemplate.Constraints[0].Type);
+            Assert.AreEqual("t1", readTemplate.Constraints[1].Type);
+            Assert.IsNull(readTemplate.Constraints[0].Args);
+            Assert.AreEqual(constraintInfo2.Args, readTemplate.Constraints[1].Args);
+        }
+
+        [TestMethod]
+        public void CanHandleParameters()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            ITemplateParameter param1 = new TemplateParameter("param1", "parameter", "string");
+            ITemplateParameter param2 = new TemplateParameter("param2", "parameter", "string", new TemplateParameterPrecedence(PrecedenceDefinition.ConditionalyRequired, isRequiredCondition: "param1 == \"foo\""));
+            ITemplateParameter param3 = new TemplateParameter(
+                "param3",
+                "parameter",
+                "choice",
+                new TemplateParameterPrecedence(PrecedenceDefinition.Required),
+                defaultValue: "def",
+                defaultIfOptionWithoutValue: "def-no-value",
+                description: "desc",
+                displayName: "displ",
+                allowMultipleValues: true,
+                choices: new Dictionary<string, ParameterChoice>()
+                {
+                    { "ch1", new ParameterChoice("ch1-displ", "ch1-desc") },
+                    { "ch2", new ParameterChoice("ch2-displ", "ch2-desc") },
+                });
+
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.ParameterDefinitions).Returns(new ParameterDefinitionSet(new[] { param1, param2, param3 }));
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.ContainsSingle(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.HasCount(3, readTemplate.ParameterDefinitions);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param1"));
+            Assert.AreEqual(PrecedenceDefinition.Optional, readTemplate.ParameterDefinitions["param1"].Precedence.PrecedenceDefinition);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param2"));
+            Assert.AreEqual("string", readTemplate.ParameterDefinitions["param2"].DataType);
+            Assert.AreEqual("param1 == \"foo\"", readTemplate.ParameterDefinitions["param2"].Precedence.IsRequiredCondition);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param3"));
+            Assert.AreEqual("choice", readTemplate.ParameterDefinitions["param3"].DataType);
+            Assert.AreEqual(PrecedenceDefinition.Required, readTemplate.ParameterDefinitions["param3"].Precedence.PrecedenceDefinition);
+            Assert.AreEqual("def", readTemplate.ParameterDefinitions["param3"].DefaultValue);
+            Assert.AreEqual("def-no-value", readTemplate.ParameterDefinitions["param3"].DefaultIfOptionWithoutValue);
+            Assert.AreEqual("desc", readTemplate.ParameterDefinitions["param3"].Description);
+            Assert.AreEqual("displ", readTemplate.ParameterDefinitions["param3"].DisplayName);
+            Assert.IsTrue(readTemplate.ParameterDefinitions["param3"].AllowMultipleValues);
+            Assert.HasCount(2, readTemplate.ParameterDefinitions["param3"].Choices!);
+        }
+
+        [TestMethod]
+        public void CanHandleMetadata()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.Classifications).Returns(["library", "console"]);
+            A.CallTo(() => template.TagsCollection).Returns(new Dictionary<string, string>
+            {
+                ["language"] = "C#",
+                ["type"] = "project"
+            });
+            A.CallTo(() => template.BaselineInfo).Returns(new Dictionary<string, IBaselineInfo>
+            {
+                ["standard"] = new BaselineInfo(
+                    new Dictionary<string, string> { ["framework"] = "net11.0" },
+                    "Standard baseline")
+            });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            TemplateCache templateCache = new(
+                [],
+                [new ScanResult(mountPoint, [template], [], [])],
+                new Dictionary<string, DateTime>(),
+                environmentSettings);
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+
+            TemplateInfo readTemplate = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile).TemplateInfo.Single();
+
+            Assert.AreSequenceEqual(new[] { "library", "console" }, readTemplate.Classifications);
+            Assert.AreEqual("C#", readTemplate.TagsCollection["language"]);
+            Assert.AreEqual("project", readTemplate.TagsCollection["type"]);
+            Assert.AreEqual("Standard baseline", readTemplate.BaselineInfo["standard"].Description);
+            Assert.AreEqual("net11.0", readTemplate.BaselineInfo["standard"].DefaultOverrides["framework"]);
+        }
+
+        [TestMethod]
+        [DataRow(true, "defaultName")]
+        [DataRow(true, null)]
+        [DataRow(false, "anotherDefault")]
+        public void CanHandleDefaultName(bool preferDefaultName, string? defaultName)
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.PreferDefaultName).Returns(preferDefaultName);
+            A.CallTo(() => template.DefaultName).Returns(defaultName);
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.ContainsSingle(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.AreEqual(preferDefaultName, readTemplate.PreferDefaultName);
+            Assert.AreEqual(defaultName, readTemplate.DefaultName);
+        }
+
+        [TestMethod]
+        public void ProducesCorrectWarningOnOverlappingIdentity_ManagedCandidatesOnly()
+        {
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedManagedTemplatePackage("testMountB", "PackageB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedManagedTemplatePackage("testMountC", "PackageC");
+
+            var expectedOutput = "The following templates use the same identity 'testIdentity':" +
+                $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
+                $"{Environment.NewLine}  • 'TemplateB' from 'PackageB'" +
+                $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
+                $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.ContainsSingle(warningMessages);
+            Assert.Contains(expectedOutput, warningMessages.Single().Item2);
+        }
+
+        [TestMethod]
+        public void ProducesCorrectOutputOnOverlappingIdentity_ManagedAndUnmanagedCandidates()
+        {
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedTemplatePackage("testMountB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedManagedTemplatePackage("testMountC", "PackageC");
+
+            var expectedOutput = "The following templates use the same identity 'testIdentity':" +
+                $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
+                $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
+                $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.ContainsSingle(warningMessages);
+            Assert.Contains(expectedOutput, warningMessages.Single().Item2);
+        }
+
+        [TestMethod]
+        public void NoOutputOnOverlappingIdentity_UnmanagedCandidateWins()
+        {
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedManagedTemplatePackage("testMountB", "PackageB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedTemplatePackage("testMountC");
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.IsEmpty(warningMessages);
+        }
+
+        [TestMethod]
+        public void CanHandleHostData()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            string hostfile = /*lang=json,strict*/ """
+                   {
+                      "$schema": "http://json.schemastore.org/dotnetcli.host",
+                      "symbolInfo": {
+                        "useArtifacts": {
+                          "longName": "use-artifacts",
+                          "shortName": ""
+                        },
+                        "inherit": {
+                          "shortName": ""
+                        }
+                      }
+                    }
+                """;
+
+            string hostFileFormatted = JsonNode.Parse(hostfile)!.ToJsonString();
+            const string hostFileLocation = ".template.config/dotnetcli.host.json";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { hostFileLocation, hostfile }
+            };
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+            TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, templateSourceFiles);
+
+            var template = GetFakedTemplate("testIdentity", sourceBasePath, "testName");
+            A.CallTo(() => template.HostConfigFiles).Returns(new Dictionary<string, string>() { { "dotnetcli", hostFileLocation } });
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
+            A.CallTo(() => template.GeneratorId).Returns(new("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3")); // runnable projects generator ID
+
+            ScanResult result = new ScanResult(sourceMountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+
+            Assert.AreEqual(hostFileLocation, templateCache.TemplateInfo[0].HostConfigPlace);
+            Assert.AreEqual(hostFileFormatted, templateCache.TemplateInfo[0].HostData);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.ContainsSingle(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.AreEqual(hostFileLocation, readTemplate.HostConfigPlace);
+            Assert.AreEqual(hostFileFormatted, readTemplate.HostData);
+        }
+
+        private IScanTemplateInfo GetFakedTemplate(string identity, string mountPointUri, string name)
+        {
+            IScanTemplateInfo template = A.Fake<IScanTemplateInfo>();
+            A.CallTo(() => template.Identity).Returns(identity);
+            A.CallTo(() => template.MountPointUri).Returns(mountPointUri);
+            A.CallTo(() => template.Name).Returns(name);
+            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+
+            return template;
+        }
+
+        private IManagedTemplatePackage GetFakedManagedTemplatePackage(string mountPointUri, string displayName)
+        {
+            var managedTemplatePackage = A.Fake<IManagedTemplatePackage>();
+            A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
+            A.CallTo(() => managedTemplatePackage.DisplayName).Returns(displayName);
+
+            return managedTemplatePackage;
+        }
+
+        private ITemplatePackage GetFakedTemplatePackage(string mountPointUri)
+        {
+            var managedTemplatePackage = A.Fake<ITemplatePackage>();
+            A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
+
+            return managedTemplatePackage;
+        }
+
+        private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
+        {
+            using var fileStream = fileSystem.CreateFile(path);
+            JsonSerializer.Serialize(fileStream, obj);
+        }
+    }
+}

@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Fichier de configuration template.json",
+  "description": "Un modèle pour le fichier de configuration template.json pour le modèle .NET. Consultez https://aka.ms/template-json-reference pour une description complète de la configuration.",
+  "symbols/CreateTemplateConfigFolder/description": "La valeur est true quand template.json doit être créé dans le dossier .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Créer un dossier .template.config",
+  "symbols/TemplateName/description": "Nom du modèle.",
+  "symbols/TemplateName/displayName": "Nom du modèle",
+  "symbols/TemplateShortName/description": "Nom court du modèle.",
+  "symbols/TemplateShortName/displayName": "Nom court du modèle",
+  "symbols/TemplateIdentity/description": "Identité du modèle (doit être unique).",
+  "symbols/TemplateIdentity/displayName": "Identité du modèle",
+  "postActions/instructions/description": "Actions annuelles requises",
+  "postActions/instructions/manualInstructions/default/text": "Ouvrez template.json dans l’éditeur et terminez la configuration."
+}

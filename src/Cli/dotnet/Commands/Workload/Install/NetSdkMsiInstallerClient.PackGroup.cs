@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
@@ -16,7 +17,11 @@ internal partial class NetSdkMsiInstallerClient
         public string GroupPackageId { get; set; }
         public string GroupPackageVersion { get; set; }
 
-        public List<WorkloadPackJson> Packs { get; set; } = [];
+        public List<WorkloadPackJson> Packs
+        {
+            get;
+            set => field = value ?? [];
+        } = [];
     }
 
     private class WorkloadPackJson
@@ -42,7 +47,7 @@ internal partial class NetSdkMsiInstallerClient
             var packGroupFile = Path.Combine(manifest.ManifestDirectory, "WorkloadPackGroups.json");
             if (File.Exists(packGroupFile))
             {
-                var packGroups = JsonSerializer.Deserialize<IList<WorkloadPackGroupJson>>(File.ReadAllText(packGroupFile));
+                var packGroups = JsonSerializer.Deserialize(File.ReadAllText(packGroupFile), WorkloadPackGroupJsonSerializerContext.Default.IListWorkloadPackGroupJson);
                 foreach (var packGroup in packGroups)
                 {
                     foreach (var packJson in packGroup.Packs)
@@ -110,4 +115,7 @@ internal partial class NetSdkMsiInstallerClient
     {
         return new WorkloadDownload(packInfo.ResolvedPackageId, GetMsiPackageId(packInfo), packInfo.Version);
     }
+
+    [JsonSerializable(typeof(IList<WorkloadPackGroupJson>))]
+    private partial class WorkloadPackGroupJsonSerializerContext : JsonSerializerContext;
 }

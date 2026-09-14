@@ -157,6 +157,21 @@
         <target state="translated">정리할 대상 런타임입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">예상된 테스트 호스트 종료와 예기치 않은 테스트 호스트 종료 시 크래시 덤프 수집을 사용하도록 설정합니다.</target>
@@ -244,6 +259,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사용됩니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfig">
         <source>CONFIG_FILE</source>
         <target state="translated">CONFIG_FILE</target>
@@ -301,6 +331,11 @@ If not specified the file will be generated inside the default 'TestResults' dir
         <target state="translated">여러 프로젝트를 병렬로 복원하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDurationName">
+        <source>DURATION</source>
+        <target state="new">DURATION</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -309,7 +344,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">환경 변수의 값을 설정합니다. 
@@ -319,7 +354,7 @@ Examples:
 예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -377,8 +412,8 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -419,14 +454,24 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsDescription">
+        <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
+        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="translated">실행될 것으로 예상되는 최소 테스트 수를 지정합니다.</target>
+        <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="needs-review-translation">실행될 것으로 예상되는 최소 테스트 수를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
         <target state="translated">ANSI 출력을 비활성화합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -442,6 +487,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       <trans-unit id="CmdNoCacheOptionDescription">
         <source>Do not cache packages and http requests.</source>
         <target state="translated">패키지 및 http 요청을 캐시하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
@@ -540,8 +590,8 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -559,6 +609,20 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
 The specified directory will be created if it does not exist.</source>
         <target state="translated">테스트 결과를 배치할 디렉터리입니다.
 지정한 디렉터리가 존재하지 않는 경우 생성됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -652,7 +716,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">환경 변수의 값을 설정합니다. 
@@ -663,9 +727,14 @@ Examples:
 예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestInvalidTimeout">
+        <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
+        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
@@ -681,6 +750,16 @@ Examples:
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">테스트 출력의 세부 정보 표시입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestPositiveIntegerRequired">
+        <source>The value must be a positive integer.</source>
+        <target state="new">The value must be a positive integer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutDescription">
+        <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -748,6 +827,11 @@ Examples:
         <target state="translated">애플리케이션 실행에 사용할 디바이스 식별자입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">디바이스</target>
@@ -776,6 +860,11 @@ Examples:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">애플리케이션을 실행할 수 있는 디바이스를 나열합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -1276,6 +1365,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">지정된 원본에서 템플릿 패키지를 다른 원본에서 재정의하더라도 템플릿 패키지를 설치할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

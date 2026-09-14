@@ -5,9 +5,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public partial class DotnetNewUpdateTests
     {
-        [Fact]
+        [TestMethod]
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowError_WhenGlobalSettingsFileIsCorrupted()
         {
             string homeDirectory = CreateTemporaryFolder();

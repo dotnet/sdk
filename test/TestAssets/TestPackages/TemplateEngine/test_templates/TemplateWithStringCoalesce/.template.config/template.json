@@ -1,0 +1,35 @@
+﻿{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithStringCoalesce",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithStringCoalesce",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithStringCoalesce",
+  "shortName": "TestAssets.TemplateWithStringCoalesce",
+  "symbols": {
+    "userVal": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultIfOptionWithoutValue": "A"
+    },
+    "generatedVal": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "fallback"
+      }
+    },
+    "port1": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "userVal",
+        "fallbackVariableName": "generatedVal"
+      },
+      "replaces": "%VAL%"
+    }
+  }
+}

@@ -24,7 +24,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         AbstractBrowserRefreshServer? server,
         CancellationToken cancellationToken)
     {
-        if (!CanLaunchBrowser(projectOptions, out var launchProfile))
+        if (!CanLaunchBrowser(projectNode, projectOptions, out var launchProfile))
         {
             if (environmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
             {
@@ -104,7 +104,10 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         }
     }
 
-    private bool CanLaunchBrowser(ProjectOptions projectOptions, [NotNullWhen(true)] out LaunchSettingsProfile? launchProfile)
+    private bool CanLaunchBrowser(
+        ProjectGraphNode projectNode,
+        ProjectOptions projectOptions,
+        [NotNullWhen(true)] out LaunchSettingsProfile? launchProfile)
     {
         launchProfile = null;
 
@@ -119,7 +122,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             return false;
         }
 
-        launchProfile = GetLaunchProfile(projectOptions);
+        launchProfile = GetLaunchProfile(projectNode, projectOptions);
         if (launchProfile is not { LaunchBrowser: true })
         {
             logger.LogDebug("launchSettings does not allow launching browsers.");
@@ -130,10 +133,14 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         return true;
     }
 
-    private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
+    private LaunchSettingsProfile GetLaunchProfile(ProjectGraphNode projectNode, ProjectOptions projectOptions)
     {
         var profile = projectOptions.LaunchProfileName.HasValue
-            ? LaunchSettingsProfile.ReadLaunchProfile(projectOptions.Representation, projectOptions.LaunchProfileName.Value, logger)
+            ? LaunchSettingsProfile.ReadLaunchProfile(
+                projectOptions.Representation,
+                projectOptions.LaunchProfileName.Value,
+                logger,
+                projectNode.ProjectInstance.ExpandString)
             : null;
 
         return profile ?? new();

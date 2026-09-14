@@ -8,22 +8,24 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
+    [TestClass]
     public class WorkloadGarbageCollectionTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
         private string _testDirectory;
         private string _dotnetRoot;
 
-        public WorkloadGarbageCollectionTests(ITestOutputHelper log) : base(log)
+        public WorkloadGarbageCollectionTests()
         {
             _reporter = new BufferedReporter();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManagedInstallItCanGarbageCollect()
         {
             CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
@@ -74,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManagedInstallItCanGarbageCollectPacksMissingFromManifest()
         {
             CreateMockManifest("testmanifest", "1.0.0");
@@ -108,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GarbageCollectManifests()
         {
             //  ARRANGE
@@ -178,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GarbageCollectManifestsWithInstallState()
         {
             //  ARRANGE
@@ -323,7 +325,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             //  Write pack installation record
             var packRecordPath = PackRecord(pack, sdkFeatureBand);
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath.FullName));
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+            var packRecordContents = JsonSerializer.Serialize(pack, PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(packRecordPath.FullName, packRecordContents);
 
             //  Create fake pack install
@@ -352,7 +354,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             if (_dotnetRoot == null)
             {
-                _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
+                _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
                 _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             }
         }
@@ -370,7 +372,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             Directory.CreateDirectory(manifestDirectory);
 
-            string manifestSourcePath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
+            string manifestSourcePath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
 
             File.Copy(manifestSourcePath, Path.Combine(manifestDirectory, "WorkloadManifest.json"));
         }
@@ -397,7 +399,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetRoot, sdkVersion, userProfileDir: null, globalJsonPath: null);
 
             var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, _dotnetRoot);
-            
+
 
             IWorkloadResolver GetResolver(string workloadSetVersion)
             {

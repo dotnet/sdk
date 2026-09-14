@@ -1,20 +1,21 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseCreateEncryptorWithNonDefaultIV,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseCreateEncryptorWithNonDefaultIVTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -24,28 +25,30 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        aesCng.IV = rgbIV;
-        aesCng.CreateEncryptor();
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.IV = rgbIV;
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(10, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DefinitelyNotNull_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -55,19 +58,21 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        byte[] rgbIV = new byte[] { 1, 2, 3};
-        var aesCng  = new AesCng();
-        aesCng.IV = rgbIV;
-        aesCng.CreateEncryptor();
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod()
+                                {
+                                    byte[] rgbIV = new byte[] { 1, 2, 3};
+                                    var aesCng  = new AesCng();
+                                    aesCng.IV = rgbIV;
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
 
                     },
                     ExpectedDiagnostics =
@@ -75,10 +80,10 @@ class TestClass
                         GetCSharpResultAt(11, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_MaybeNonDefaultIV_MaybeDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -88,25 +93,27 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        Random r = new Random();
+                            using System;
+                            using System.Security.Cryptography;
 
-        if (r.Next(6) == 4)
-        {
-            aesCng.IV = rgbIV;
-        }
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    Random r = new Random();
 
-        aesCng.CreateEncryptor();
-    }
-}",
+                                    if (r.Next(6) == 4)
+                                    {
+                                        aesCng.IV = rgbIV;
+                                    }
+
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
 
                     },
                     ExpectedDiagnostics =
@@ -114,10 +121,10 @@ class TestClass
                         GetCSharpResultAt(17, 9, DoNotUseCreateEncryptorWithNonDefaultIV.MaybeUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithByteArrayAndByteArrayParameters_DefinitelyDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -127,26 +134,28 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
 
-class TestClass
-{
-    public void TestMethod(byte[] rgbKey, byte[] rgbIV)
-    {
-        var aesCng  = new AesCng();
-        aesCng.CreateEncryptor(rgbKey, rgbIV);
-    }
-}",
+                            using System.Security.Cryptography;
+
+                            class TestClass
+                            {
+                                public void TestMethod(byte[] rgbKey, byte[] rgbIV)
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.CreateEncryptor(rgbKey, rgbIV);
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_DefaultIV_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -156,20 +165,21 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System.Security.Cryptography;
+                        """
+                            using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var aesCng  = new AesCng();
-        aesCng.CreateEncryptor();
-    }
-}",
+                            class TestClass
+                            {
+                                public void TestMethod()
+                                {
+                                    var aesCng  = new AesCng();
+                                    aesCng.CreateEncryptor();
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

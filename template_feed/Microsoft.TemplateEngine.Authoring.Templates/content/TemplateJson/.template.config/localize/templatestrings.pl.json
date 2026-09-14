@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "plik konfiguracji template.json",
+  "description": "Szablon pliku konfiguracji template.json dla szablonu platformy .NET. Aby uzyskać pełny opis konfiguracji, zobacz https://aka.ms/template-json-reference.",
+  "symbols/CreateTemplateConfigFolder/description": "Wartość True podczas tworzenia pliku template.json w folderze .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Utwórz folder .template.config",
+  "symbols/TemplateName/description": "Nazwa szablonu.",
+  "symbols/TemplateName/displayName": "Nazwa szablonu",
+  "symbols/TemplateShortName/description": "Krótka nazwa szablonu.",
+  "symbols/TemplateShortName/displayName": "Krótka nazwa szablonu",
+  "symbols/TemplateIdentity/description": "Tożsamość szablonu (powinna być unikatowa).",
+  "symbols/TemplateIdentity/displayName": "Tożsamość szablonu",
+  "postActions/instructions/description": "Wymagane akcje ręczne",
+  "postActions/instructions/manualInstructions/default/text": "Otwórz plik template.json w edytorze i ukończ konfigurację."
+}

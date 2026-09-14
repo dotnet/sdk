@@ -1,0 +1,153 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
+using Microsoft.DotNet.ApiCompatibility.Rules;
+using Moq;
+
+namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
+{
+    [TestClass]
+    public class AssemblySetMapperTests
+    {
+        [TestMethod]
+        public void AssemblySetMapper_Ctor_PropertiesSet()
+        {
+            IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
+            IMapperSettings mapperSettings = Mock.Of<IMapperSettings>();
+            int rightSetSize = 5;
+
+            AssemblySetMapper assemblySetMapper = new(ruleRunner, mapperSettings, rightSetSize);
+
+            Assert.IsNull(assemblySetMapper.Left);
+            Assert.AreEqual(mapperSettings, assemblySetMapper.Settings);
+            Assert.HasCount(rightSetSize, assemblySetMapper.Right);
+            Assert.AreEqual(0, assemblySetMapper.AssemblyCount);
+        }
+
+        [TestMethod]
+        public void AssemblySetMapper_GetAssembliesWithoutLeftAndRight_EmptyResult()
+        {
+            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), Mock.Of<IMapperSettings>(), rightSetSize: 1);
+            Assert.IsEmpty(assemblySetMapper.GetAssemblies());
+            Assert.AreEqual(0, assemblySetMapper.AssemblyCount);
+        }
+
+        [TestMethod]
+        public void AssemblySetMapper_GetAssemblies_ReturnsExpected()
+        {
+            string[] leftSyntaxes = new[]
+            {
+                @"
+namespace NamespaceInAssemblyA
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyB
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyC
+{
+  public class First { }
+}
+"
+            };
+            string[] rightSyntaxes1 = new[]
+{
+                @"
+namespace NamespaceInAssemblyA
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyB
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyC
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyD
+{
+  public class First { }
+}
+"
+            };
+            string[] rightSyntaxes2 = new[]
+{
+                @"
+namespace NamespaceInAssemblyA
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyB
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyC
+{
+  public class First { }
+}
+",
+                @"
+namespace NamespaceInAssemblyD
+{
+  public class First { }
+}
+"
+            };
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> left = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(leftSyntaxes);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right1 = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes1);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right2 = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes2);
+            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), new ApiComparerSettings(), rightSetSize: 2);
+            assemblySetMapper.AddElement(left, ElementSide.Left);
+            assemblySetMapper.AddElement(right1, ElementSide.Right);
+            assemblySetMapper.AddElement(right2, ElementSide.Right, 1);
+
+            Assert.AreEqual(0, assemblySetMapper.AssemblyCount);
+            IEnumerable<IAssemblyMapper> assemblyMappers = assemblySetMapper.GetAssemblies();
+            Assert.AreEqual(4, assemblySetMapper.AssemblyCount);
+
+            Assert.HasCount(4, assemblyMappers);
+            Assert.AreSequenceEqual(new string[] {
+                    nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-0",
+                    nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-1",
+                    nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-2",
+                    null
+                },
+                assemblyMappers.Select(asm => asm.Left?.Element.Name));
+
+
+
+            // Verify names
+            int counter = 0;
+            foreach (IAssemblyMapper assemblyMapper in assemblyMappers)
+            {
+                string expectedAssemblyName = nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + $"-{counter}";
+
+                Assert.HasCount(2, assemblyMapper.Right);
+                Assert.IsTrue(assemblyMapper.Right.All(r => r?.Element.Name == expectedAssemblyName));
+
+                counter++;
+            }
+        }
+    }
+}

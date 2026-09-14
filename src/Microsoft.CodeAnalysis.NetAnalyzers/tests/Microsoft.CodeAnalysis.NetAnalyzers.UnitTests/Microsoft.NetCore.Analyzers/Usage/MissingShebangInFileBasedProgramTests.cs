@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
@@ -9,13 +10,14 @@ using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
+    [TestClass]
     public class MissingShebangInFileBasedProgramTests
     {
         private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = Test0.cs";
 
-        [Theory]
-        [InlineData("include")]
-        [InlineData("ref")]
+        [TestMethod]
+        [DataRow("include")]
+        [DataRow("ref")]
         public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync(string directiveName)
         {
             // Entry point file without shebang and a #:include file - warning expected.
@@ -38,10 +40,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExtraCompileFileNotFromIncludeDirective_NoDiagnosticAsync()
         {
             // A second Compile item from other MSBuild code does not require a shebang.
@@ -56,10 +58,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoEntryPointFilePath_NoDiagnosticAsync()
         {
             // No EntryPointFilePath - not a file-based program, no diagnostic.
@@ -74,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SingleFile_NoDiagnosticAsync()
         {
             // Single file - no need to distinguish entry point, no diagnostic.
@@ -85,12 +87,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources = { ("Test0.cs", """class Program { static void Main() { } }""") },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("include")]
-        [InlineData("ref")]
+        [TestMethod]
+        [DataRow("include")]
+        [DataRow("ref")]
         public async Task EntryPointWithoutShebang_CodeFixAddsShebangAsync(string directiveName)
         {
             // Verify that the code fix prepends a shebang line.
@@ -126,12 +128,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 },
                 CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("package")]
-        [InlineData("project")]
+        [TestMethod]
+        [DataRow("package")]
+        [DataRow("project")]
         public async Task EntryPointWithoutShebang_MultipleFiles_NoDiagnosticAsync(string directiveName)
         {
             // Entry point already has shebang, multiple files - no diagnostic.
@@ -150,13 +152,13 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("include")]
-        [InlineData("project")]
-        [InlineData("ref")]
+        [TestMethod]
+        [DataRow("include")]
+        [DataRow("project")]
+        [DataRow("ref")]
         public async Task EntryPointWithShebang_MultipleFiles_NoDiagnosticAsync(string directiveName)
         {
             // Entry point already has shebang, multiple files - no diagnostic.
@@ -176,10 +178,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyEntryPointFilePath_NoDiagnosticAsync()
         {
             // Empty EntryPointFilePath - not a file-based program, no diagnostic.
@@ -194,10 +196,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", "is_global = true\r\nbuild_property.EntryPointFilePath = ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GeneratedCodeFile_NoDiagnosticAsync()
         {
             // Entry point file without shebang, but no #:include directive - no diagnostic.
@@ -212,10 +214,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AutoGeneratedComment_NoDiagnosticAsync()
         {
             // Entry point file without shebang, but no #:include directive - no diagnostic.
@@ -234,10 +236,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GeneratedCodePlusRealFile_WarningAsync()
         {
             // Entry point file without shebang and a #:include directive - warning expected.
@@ -261,10 +263,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ShebangNotAtPositionZero_WarningAsync()
         {
             // A class declaration before #! prevents the parser from treating it as ShebangDirectiveTrivia,
@@ -292,7 +294,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static Solution EnableFileBasedProgramFeature(Solution solution, ProjectId projectId)

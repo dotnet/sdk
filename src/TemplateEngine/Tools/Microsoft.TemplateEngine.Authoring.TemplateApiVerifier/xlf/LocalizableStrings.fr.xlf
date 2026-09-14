@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CreateSuccessful">
+        <source>The template "{0}" was created successfully.</source>
+        <target state="translated">Le modèle « {0} » a bien été créé.</target>
+        <note>{0} holds template name</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigDoesntExist">
+        <source>Template config: {0} doesn't exist. When using 'WithInstantiationThroughTemplateCreatorApi' the 'TemplatePath' parameter must specify path to the template.json or to the root of template (containing {1}).</source>
+        <target state="translated">Configuration du modèle : {0} n’existe pas. Quand vous utilisez 'WithInstantiationThroughTemplateCreatorApi', le paramètre 'TemplatePath' doit spécifier le chemin d’accès à template.json ou à la racine du modèle (contenant {1}).</target>
+        <note>Do not translate 'TemplatePath' and 'WithInstantiationThroughTemplateCreatorApi'
+
+{0} and {1} contain paths</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigRetrieval">
+        <source>Template configuration file could not be retrieved from configured mount point.</source>
+        <target state="translated">Impossible d’extraire le fichier de configuration de modèle à partir du point de montage configuré.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_DotnetPath">
+        <source>'DotnetExecutablePath' parameter must not be specified when using 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">Le paramètre 'DotnetExecutablePath' ne doit pas être spécifié lors de l’utilisation de 'WithInstantiationThroughTemplateCreatorApi'.</target>
+        <note>Do not translate 'DotnetExecutablePath' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+      <trans-unit id="Error_InstallFail">
+        <source>Failed to install template: {0}, details: {1}.</source>
+        <target state="translated">Échec de l’installation du modèle : {0}, détails : {1}.</target>
+        <note>{0} is tamplate name, {1} is error message</note>
+      </trans-unit>
+      <trans-unit id="Error_NoPackages">
+        <source>No packages fetched after installation.</source>
+        <target state="translated">Aucun package récupéré après l’installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_TemplateArgsDisalowed">
+        <source>'TemplateSpecificArgs' parameter must not be specified when using WithInstantiationThroughTemplateCreatorApi. Parameters should be passed via the argument of 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">Le paramètre 'TemplateSpecificArgs' ne doit pas être spécifié lors de l’utilisation de WithInstantiationThroughTemplateCreatorApi. Les paramètres doivent être passés via l’argument 'WithInstantiationThroughTemplateCreatorApi'.</target>
+        <note>Do not translate 'TemplateSpecificArgs' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

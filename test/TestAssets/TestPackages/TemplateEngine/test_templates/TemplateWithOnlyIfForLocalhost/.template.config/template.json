@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "name": "TestAssets.TemplateWithOnlyIfForLocalhost",
+  "tags": { "type": "project" },
+  "classifications": [ "Test Asset" ],
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TTestAssets.TemplateWithOnlyIfForLocalhost",
+  "precedence": "100",
+  "identity": "TestAsset.TemplateWithOnlyIfForLocalhost",
+  "shortName": "TestAsset.TemplateWithOnlyIfForLocalhost",
+  "symbols": {
+    "default-port": {
+      "type": "parameter",
+      "datatype": "int",
+      "description": "The default port number. If not provided, a new random port will be found.",
+      "defaultValue": "0"
+    },
+    "GeneratedPort": {
+      "type": "generated",
+      "generator": "port",
+      "datatype": "int",
+      "defaultValue": "100"
+    },
+    "OverrideDefaultPort": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "default-port",
+        "fallbackVariableName": "GeneratedPort"
+      },
+      "replaces": "12345",
+      "onlyIf": [
+        {
+          "after": "localhost:"
+        }
+      ]
+    }
+  }
+}

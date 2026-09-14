@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumStorageShouldBeInt32Fixer>;
@@ -13,177 +13,192 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumStorageShouldBeInt32Tests
     {
         #region CSharpUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-namespace Test
-{
-    public enum TestEnum1 //no violation - because underlying type is Int32
-    {
-        Value1 = 1,
-        Value2 = 2
-    }
-    public static class OuterClass
-    {
-        [Flags]
-        public enum TestEnum2 : long //no violation - because underlying type is Int64 and has Flag attributes
-        {
-            Value1 = 1,
-            Value2 = 2,
-            Value3 = Value1 | Value2
-        }
-        private enum TestEnum3 : byte //no violation - because accessibility is private 
-        {
-            Value1 = 1,
-            Value2 = 2
-        }
-        internal class innerClass
-        {
-            public enum TestEnum4 : long //no violation - because resultant accessibility is private 
-            {
-                Value1 = 1,
-                Value2 = 2
-            }
-        }
-    }
-}
- ");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                namespace Test
+                {
+                    public enum TestEnum1 //no violation - because underlying type is Int32
+                    {
+                        Value1 = 1,
+                        Value2 = 2
+                    }
+                    public static class OuterClass
+                    {
+                        [Flags]
+                        public enum TestEnum2 : long //no violation - because underlying type is Int64 and has Flag attributes
+                        {
+                            Value1 = 1,
+                            Value2 = 2,
+                            Value3 = Value1 | Value2
+                        }
+                        private enum TestEnum3 : byte //no violation - because accessibility is private
+                        {
+                            Value1 = 1,
+                            Value2 = 2
+                        }
+                        internal class innerClass
+                        {
+                            public enum TestEnum4 : long //no violation - because resultant accessibility is private
+                            {
+                                Value1 = 1,
+                                Value2 = 2
+                            }
+                        }
+                    }
+                }
+
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-namespace Test
-{
-    public enum TestEnum1 : long // violation - because underlying type is Int64 and has no Flags attribute
-    {
-        Value1 = 1,
-        Value2 = 2
-    }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                using System;
+                namespace Test
+                {
+                    public enum TestEnum1 : long // violation - because underlying type is Int64 and has no Flags attribute
+                    {
+                        Value1 = 1,
+                        Value2 = 2
+                    }
+                }
+
+                """,
             GetCSharpResultAt(5, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum1", "long"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForSByteAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-namespace Test
-{
-    public enum TestEnum2 : sbyte // violation - because underlying type is not Int32
-    {
-        Value1 = 1,
-        Value2 = 2
-    }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                using System;
+                namespace Test
+                {
+                    public enum TestEnum2 : sbyte // violation - because underlying type is not Int32
+                    {
+                        Value1 = 1,
+                        Value2 = 2
+                    }
+                }
+
+                """,
             GetCSharpResultAt(5, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum2", "sbyte"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForUShortAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-namespace Test
-{
-    public enum TestEnum3 : ushort // violation - because underlying type is not Int32
-    {
-        Value1 = 1,
-        Value2 = 2
-    }
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                using System;
+                namespace Test
+                {
+                    public enum TestEnum3 : ushort // violation - because underlying type is not Int32
+                    {
+                        Value1 = 1,
+                        Value2 = 2
+                    }
+                }
+
+                """,
             GetCSharpResultAt(5, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum3", "ushort"));
         }
         #endregion
 
         #region BasicUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Public Module Module1
-    Public Enum TestEnum1 'no violation - because underlying type is Int32
-        Value1 = 1
-        Value2 = 2
-    End Enum
-    Public Class OuterClass
-        <Flags()>
-        Public Enum TestEnum2 As Long 'no violation - because underlying type is Int64 and has Flag attributes
-            Value1 = 1
-            Value2 = 2
-            Value3 = Value1 Or Value2
-        End Enum
-        Private Enum TestEnum3 As Byte 'no violation - because accessibility Is private 
-            Value1 = 1
-            Value2 = 2
-        End Enum
-        Private Class innerClass
-            Public Enum TestEnum4 As Long 'no violation - because resultant accessibility Is private 
-                Value1 = 1
-                Value2 = 2
-            End Enum
-        End Class
-    End Class
-End Module
- ");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Public Module Module1
+                    Public Enum TestEnum1 'no violation - because underlying type is Int32
+                        Value1 = 1
+                        Value2 = 2
+                    End Enum
+                    Public Class OuterClass
+                        <Flags()>
+                        Public Enum TestEnum2 As Long 'no violation - because underlying type is Int64 and has Flag attributes
+                            Value1 = 1
+                            Value2 = 2
+                            Value3 = Value1 Or Value2
+                        End Enum
+                        Private Enum TestEnum3 As Byte 'no violation - because accessibility Is private
+                            Value1 = 1
+                            Value2 = 2
+                        End Enum
+                        Private Class innerClass
+                            Public Enum TestEnum4 As Long 'no violation - because resultant accessibility Is private
+                                Value1 = 1
+                                Value2 = 2
+                            End Enum
+                        End Class
+                    End Class
+                End Module
+
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Public Module Module1
-    Public Enum TestEnum1 As Long 'violation - because underlying type is Int64 and has no Flags attribute
-        Value1 = 1
-        Value2 = 2
-    End Enum
-End Module
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Imports System
+                Public Module Module1
+                    Public Enum TestEnum1 As Long 'violation - because underlying type is Int64 and has no Flags attribute
+                        Value1 = 1
+                        Value2 = 2
+                    End Enum
+                End Module
+
+                """,
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum1", "Long"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForByteAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Public Module Module1
-    Public Enum TestEnum2 As Byte 'violation - because underlying type is not Int32
-        Value1 = 1
-        Value2 = 2
-    End Enum
-End Module
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Imports System
+                Public Module Module1
+                    Public Enum TestEnum2 As Byte 'violation - because underlying type is not Int32
+                        Value1 = 1
+                        Value2 = 2
+                    End Enum
+                End Module
+
+                """,
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum2", "Byte"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForUShortAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Public Module Module1
-    Public Enum TestEnum3 As UShort 'violation - because underlying type is not Int32
-        Value1 = 1
-        Value2 = 2
-    End Enum
-End Module
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Imports System
+                Public Module Module1
+                    Public Enum TestEnum3 As UShort 'violation - because underlying type is not Int32
+                        Value1 = 1
+                        Value2 = 2
+                    End Enum
+                End Module
+
+                """,
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum3", "UShort"));
         }
         #endregion

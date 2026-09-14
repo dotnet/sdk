@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsAnalyzer,
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsFixer>;
@@ -13,423 +13,452 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class AvoidUnusedPrivateFieldsTests
     {
-        private const string CSharpMEFAttributesDefinition = @"
-namespace System.ComponentModel.Composition
-{
-    public class ExportAttribute: System.Attribute
-    {
-    }
-}
+        private const string CSharpMEFAttributesDefinition = """
 
-namespace System.Composition
-{
-    public class ExportAttribute: System.Attribute
-    {
-    }
-}
-";
-        private const string BasicMEFAttributesDefinition = @"
-Namespace System.ComponentModel.Composition
-    Public Class ExportAttribute
-        Inherits System.Attribute
-    End Class
-End Namespace
+            namespace System.ComponentModel.Composition
+            {
+                public class ExportAttribute: System.Attribute
+                {
+                }
+            }
 
-Namespace System.Composition
-    Public Class ExportAttribute
-        Inherits System.Attribute
-    End Class
-End Namespace
-";
+            namespace System.Composition
+            {
+                public class ExportAttribute: System.Attribute
+                {
+                }
+            }
 
-        [Fact]
+            """;
+        private const string BasicMEFAttributesDefinition = """
+
+            Namespace System.ComponentModel.Composition
+                Public Class ExportAttribute
+                    Inherits System.Attribute
+                End Class
+            End Namespace
+
+            Namespace System.Composition
+                Public Class ExportAttribute
+                    Inherits System.Attribute
+                End Class
+            End Namespace
+
+            """;
+
+        [TestMethod]
         public async Task CA1823_CSharp_AttributeUsage_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Obsolete(Message)]
-public class Class
-{
-    private const string Message = ""Test"";
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                [System.Obsolete(Message)]
+                public class Class
+                {
+                    private const string Message = "Test";
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_InterpolatedStringUsage_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Class
-{
-    private const string Message = ""Test"";
-    public string PublicMessage = $""Test: {Message}"";
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class Class
+                {
+                    private const string Message = "Test";
+                    public string PublicMessage = $"Test: {Message}";
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_CollectionInitializerUsage_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Collections.Generic;
 
-public class Class
-{
-    private const string Message = ""Test"";
-    public List<string> PublicMessage = new List<string> { Message };
-}
-");
+                public class Class
+                {
+                    private const string Message = "Test";
+                    public List<string> PublicMessage = new List<string> { Message };
+                }
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_FieldOffsetAttribute_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
-public class Class
-{
-    [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
-    private int fieldWithFieldOffsetAttribute;
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
+                public class Class
+                {
+                    [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
+                    private int fieldWithFieldOffsetAttribute;
+                }
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
-public class Class
-{
-    [{|CS7036:System.Runtime.InteropServices.FieldOffsetAttribute|}]
-    private int {|CS0625:fieldWithFieldOffsetAttribute|};
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
+                public class Class
+                {
+                    [{|CS7036:System.Runtime.InteropServices.FieldOffsetAttribute|}]
+                    private int {|CS0625:fieldWithFieldOffsetAttribute|};
+                }
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-class Class1
-{
-    private int field;
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+                class Class1
+                {
+                    private int field;
+                }
 
-// System.Runtime.InteropServices.LayoutKind.Sequential has value 0
-[System.Runtime.InteropServices.StructLayout((short)0)]
-class Class2
-{
-    private int field;
-}
-");
+                // System.Runtime.InteropServices.LayoutKind.Sequential has value 0
+                [System.Runtime.InteropServices.StructLayout((short)0)]
+                class Class2
+                {
+                    private int field;
+                }
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)]
-class Class
-{
-    private int field;
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)]
+                class Class
+                {
+                    private int field;
+                }
+
+                """,
                 GetCA1823CSharpResultAt(5, 17, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
-class Class
-{
-    private int {|CS0625:field|};
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
+                class Class
+                {
+                    private int {|CS0625:field|};
+                }
+
+                """,
                 GetCA1823CSharpResultAt(5, 17, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_CSharp_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-[{|CS1729:System.Runtime.InteropServices.StructLayout|}]
-class Class1
-{
-    private int field;
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-[System.Runtime.InteropServices.StructLayout(1000)]
-class Class2
-{
-    private int field;
-}
-",
+                [{|CS1729:System.Runtime.InteropServices.StructLayout|}]
+                class Class1
+                {
+                    private int field;
+                }
+
+                [System.Runtime.InteropServices.StructLayout(1000)]
+                class Class2
+                {
+                    private int field;
+                }
+
+                """,
                 GetCA1823CSharpResultAt(5, 17, "field"),
                 GetCA1823CSharpResultAt(11, 17, "field"));
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributes_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
-public class Class
-{
-    [System.Composition.ExportAttribute]
-    private int fieldWithMefV1ExportAttribute;
+            await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + """
+                public class Class
+                {
+                    [System.Composition.ExportAttribute]
+                    private int fieldWithMefV1ExportAttribute;
 
-    [System.ComponentModel.Composition.ExportAttribute]
-    private int fieldWithMefV2ExportAttribute;
-}
-");
+                    [System.ComponentModel.Composition.ExportAttribute]
+                    private int fieldWithMefV2ExportAttribute;
+                }
+                """);
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributesError_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + @"
-public class Class
-{
-    [{|CS1729:System.Composition.ExportAttribute(0)|}]
-    private int fieldWithMefV1ExportAttribute;
+            await VerifyCS.VerifyAnalyzerAsync(CSharpMEFAttributesDefinition + """
+                public class Class
+                {
+                    [{|CS1729:System.Composition.ExportAttribute(0)|}]
+                    private int fieldWithMefV1ExportAttribute;
 
-    [{|CS1729:System.ComponentModel.Composition.ExportAttribute(0)|}]
-    private int fieldWithMefV2ExportAttribute;
-}
-");
+                    [{|CS1729:System.ComponentModel.Composition.ExportAttribute(0)|}]
+                    private int fieldWithMefV2ExportAttribute;
+                }
+                """);
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_CSharp_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Default,
-                TestCode = @"
-public class Class
-{
-    [System.{|CS0234:Composition|}.ExportAttribute]
-    private int fieldWithMefV1ExportAttribute;
+                TestCode = """
 
-    [System.ComponentModel.{|CS0234:Composition|}.ExportAttribute]
-    private int fieldWithMefV2ExportAttribute;
-}
-",
+                    public class Class
+                    {
+                        [System.{|CS0234:Composition|}.ExportAttribute]
+                        private int fieldWithMefV1ExportAttribute;
+
+                        [System.ComponentModel.{|CS0234:Composition|}.ExportAttribute]
+                        private int fieldWithMefV2ExportAttribute;
+                    }
+
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCA1823CSharpResultAt(5, 17, "fieldWithMefV1ExportAttribute"),
                     GetCA1823CSharpResultAt(8, 17, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_CSharp_SimpleUsages_DiagnosticCasesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Class
-{
-    private string fileName = ""data.txt"";
-    private int Used1 = 10;
-    private int Used2;
-    private int Unused1 = 20;
-    private int Unused2;
-    public int Unused3;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public string FileName()
-    {
-        return fileName;
-    }
+                public class Class
+                {
+                    private string fileName = "data.txt";
+                    private int Used1 = 10;
+                    private int Used2;
+                    private int Unused1 = 20;
+                    private int Unused2;
+                    public int Unused3;
 
-    private int Value => Used1 + Used2;
-}
-",
+                    public string FileName()
+                    {
+                        return fileName;
+                    }
+
+                    private int Value => Used1 + Used2;
+                }
+
+                """,
                 GetCA1823CSharpResultAt(7, 17, "Unused1"),
                 GetCA1823CSharpResultAt(8, 17, "Unused2"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6789, "https://github.com/dotnet/roslyn-analyzers/issues/6789")]
         public async Task CA1823_CSharp_InlineArrayAttributeAsync()
         {
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
-                TestCode = @"
-using System.Runtime.CompilerServices;
+                TestCode = """
+                    using System.Runtime.CompilerServices;
 
-[InlineArray(3)]
-public struct InlineArrayType
-{
-    private object _item0;
-}
-",
-            }.RunAsync();
+                    [InlineArray(3)]
+                    public struct InlineArrayType
+                    {
+                        private object _item0;
+                    }
+                    """,
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823_VisualBasic_DiagnosticCasesAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class Class1
-    Private fileName As String
-    Private Used1 As Integer = 10
-    Private Used2 As Integer
-    Private Unused1 As Integer = 20
-    Private Unused2 As Integer
-    Public Unused3 As Integer
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-    Public Function MyFileName() As String
-        Return filename
-    End Function
+                Public Class Class1
+                    Private fileName As String
+                    Private Used1 As Integer = 10
+                    Private Used2 As Integer
+                    Private Unused1 As Integer = 20
+                    Private Unused2 As Integer
+                    Public Unused3 As Integer
 
-    Public ReadOnly Property MyValue As Integer
-        Get
-            Return Used1 + Used2
-        End Get
-    End Property
-End Class
-",
+                    Public Function MyFileName() As String
+                        Return filename
+                    End Function
+
+                    Public ReadOnly Property MyValue As Integer
+                        Get
+                            Return Used1 + Used2
+                        End Get
+                    End Property
+                End Class
+
+                """,
                 GetCA1823BasicResultAt(6, 13, "Unused1"),
                 GetCA1823BasicResultAt(7, 13, "Unused2"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_FieldOffsetAttribute_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
-Public Class [Class]
-    <System.Runtime.InteropServices.FieldOffsetAttribute(8)> _
-    Private fieldWithFieldOffsetAttribute As Integer
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
+                Public Class [Class]
+                    <System.Runtime.InteropServices.FieldOffsetAttribute(8)> _
+                    Private fieldWithFieldOffsetAttribute As Integer
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_FieldOffsetAttributeError_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)>
-Public Class [Class]
-    <System.Runtime.InteropServices.{|BC30455:FieldOffsetAttribute|}>
-    Private fieldWithFieldOffsetAttribute As Integer
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)>
+                Public Class [Class]
+                    <System.Runtime.InteropServices.{|BC30455:FieldOffsetAttribute|}>
+                    Private fieldWithFieldOffsetAttribute As Integer
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindSequential_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)> _
-Public Class Class1
-    Private field As Integer
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)> _
+                Public Class Class1
+                    Private field As Integer
+                End Class
 
-' System.Runtime.InteropServices.LayoutKind.Sequential has value 0
-<System.Runtime.InteropServices.StructLayout(0)> _
-Public Class Class2
-    Private field As Integer
-End Class
-");
+                ' System.Runtime.InteropServices.LayoutKind.Sequential has value 0
+                <System.Runtime.InteropServices.StructLayout(0)> _
+                Public Class Class2
+                    Private field As Integer
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindAuto_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)> _
-Public Class [Class]
-    Private field As Integer
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)> _
+                Public Class [Class]
+                    Private field As Integer
+                End Class
+
+                """,
                 GetCA1823BasicResultAt(4, 13, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttribute_LayoutKindExplicit_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
-Public Class [Class]
-    Private field As Integer
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                <System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)> _
+                Public Class [Class]
+                    Private field As Integer
+                End Class
+
+                """,
                 GetCA1823BasicResultAt(4, 13, "field"));
         }
 
-        [Fact, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
+        [TestMethod, WorkItem(1219, "https://github.com/dotnet/roslyn-analyzers/issues/1219")]
         public async Task CA1823_VisualBasic_StructLayoutAttributeError_NoLayoutKind_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-<System.Runtime.InteropServices.{|BC30516:StructLayout|}> _
-Public Class Class1
-    Private field As Integer
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-<System.Runtime.InteropServices.{|BC30519:StructLayout|}(1000)> _
-Public Class Class2
-    Private field As Integer
-End Class
-",
+                <System.Runtime.InteropServices.{|BC30516:StructLayout|}> _
+                Public Class Class1
+                    Private field As Integer
+                End Class
+
+                <System.Runtime.InteropServices.{|BC30519:StructLayout|}(1000)> _
+                Public Class Class2
+                    Private field As Integer
+                End Class
+
+                """,
                 GetCA1823BasicResultAt(4, 13, "field"),
                 GetCA1823BasicResultAt(9, 13, "field"));
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributes_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
-Public Class [Class]
-    <System.Composition.ExportAttribute> _
-    Private fieldWithMefV1ExportAttribute As Integer
+            await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + """
 
-    <System.ComponentModel.Composition.ExportAttribute> _
-    Private fieldWithMefV2ExportAttribute As Integer
-End Class
-");
+                Public Class [Class]
+                    <System.Composition.ExportAttribute> _
+                    Private fieldWithMefV1ExportAttribute As Integer
+
+                    <System.ComponentModel.Composition.ExportAttribute> _
+                    Private fieldWithMefV2ExportAttribute As Integer
+                End Class
+
+                """);
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributesError_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + @"
-Public Class [Class]
-    <System.Composition.ExportAttribute({|BC30057:0|})> _
-    Private fieldWithMefV1ExportAttribute As Integer
+            await VerifyVB.VerifyAnalyzerAsync(BasicMEFAttributesDefinition + """
 
-    <System.ComponentModel.Composition.ExportAttribute({|BC30057:0|})> _
-    Private fieldWithMefV2ExportAttribute As Integer
-End Class
-");
+                Public Class [Class]
+                    <System.Composition.ExportAttribute({|BC30057:0|})> _
+                    Private fieldWithMefV1ExportAttribute As Integer
+
+                    <System.ComponentModel.Composition.ExportAttribute({|BC30057:0|})> _
+                    Private fieldWithMefV2ExportAttribute As Integer
+                End Class
+
+                """);
         }
 
-        [Fact, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
+        [TestMethod, WorkItem(1217, "https://github.com/dotnet/roslyn-analyzers/issues/1217")]
         public async Task CA1823_VisualBasic_MEFAttributesUndefined_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Default,
-                TestCode = @"
-Public Class [Class]
-    <{|BC30002:System.Composition.ExportAttribute|}> _
-    Private fieldWithMefV1ExportAttribute As Integer
+                TestCode = """
 
-    <{|BC30002:System.ComponentModel.Composition.ExportAttribute|}> _
-    Private fieldWithMefV2ExportAttribute As Integer
-End Class
-",
+                    Public Class [Class]
+                        <{|BC30002:System.Composition.ExportAttribute|}> _
+                        Private fieldWithMefV1ExportAttribute As Integer
+
+                        <{|BC30002:System.ComponentModel.Composition.ExportAttribute|}> _
+                        Private fieldWithMefV2ExportAttribute As Integer
+                    End Class
+
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCA1823BasicResultAt(4, 13, "fieldWithMefV1ExportAttribute"),
                     GetCA1823BasicResultAt(7, 13, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1823CSharpResultAt(int line, int column, string fieldName)

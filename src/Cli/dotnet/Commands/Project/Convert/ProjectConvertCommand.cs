@@ -4,17 +4,18 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandDefinition>
 {
     private readonly string _file;
@@ -35,7 +36,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _interactive = parseResult.GetValue(Definition.InteractiveOption);
     }
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync().AsTask().GetAwaiter().GetResult();
+
+    public async ValueTask<int> ExecuteAsync()
     {
         // Check the entry point file path.
         string file = Path.GetFullPath(_file);
@@ -47,17 +50,17 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         string targetDirectory = DetermineOutputDirectory(file);
 
         // Create a project instance for evaluation.
-        var projectCollection = new ProjectCollection();
+        var projectCollection = new ProjectCollection().Wrap();
 
-        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(BuildService.Instance, file, VirtualProjectBuildingCommand.TargetFramework);
 
-        builder.CreateProjectInstance(
+        var result = await builder.CreateProjectInstanceAsync(
             projectCollection,
             VirtualProjectBuildingCommand.ThrowingReporter,
-            out var projectInstance,
-            projectRootElement: out _,
-            out var evaluatedDirectives,
             validateAllDirectives: !_force);
+
+        var projectInstance = result.Project;
+        var evaluatedDirectives = result.EvaluatedDirectives;
 
         // When the entry point has #:ref directives, place all converted projects in subfolders.
         bool hasRefs = evaluatedDirectives.Any(static d => d is CSharpDirective.Ref);
@@ -68,16 +71,16 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         if (hasRefs)
         {
             var usedFolderNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { entryPointName };
-            ValidateRefTargetDirectories(evaluatedDirectives, Path.GetDirectoryName(file)!,
+            await ValidateRefTargetDirectoriesAsync(evaluatedDirectives, Path.GetDirectoryName(file)!,
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase), usedFolderNames);
         }
 
-        var convertedEntryPoint = ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
+        var convertedEntryPoint = await ConvertFileAsync(file, entryPointOutputDir, isEntryPointFile: true);
 
         // Convert referenced files (#:ref directives) into library projects.
         var convertedRefFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var refIncludeItems = new List<IncludedItem>();
-        ConvertReferencedFiles(evaluatedDirectives, Path.GetDirectoryName(file)!);
+        await ConvertReferencedFilesAsync(evaluatedDirectives, Path.GetDirectoryName(file)!);
 
         // Handle deletion of source files if requested.
         bool shouldDelete = _deleteSource || TryAskForDeleteSource();
@@ -106,12 +109,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         return 0;
 
-        ConvertedFile ConvertFile(string sourceFile, string outputDirectory, bool isEntryPointFile)
+        async ValueTask<ConvertedFile> ConvertFileAsync(string sourceFile, string outputDirectory, bool isEntryPointFile)
         {
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
 
             VirtualProjectBuilder fileBuilder;
-            ProjectInstance fileProjectInstance;
+            IProjectInstance fileProjectInstance;
             ImmutableArray<CSharpDirective> fileDirectives;
 
             if (isEntryPointFile)
@@ -122,19 +125,19 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
-                fileBuilder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework);
+                fileBuilder = new VirtualProjectBuilder(BuildService.Instance, sourceFile, VirtualProjectBuildingCommand.TargetFramework);
 
-                fileBuilder.CreateProjectInstance(
+                var result = await fileBuilder.CreateProjectInstanceAsync(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
-                    out fileProjectInstance,
-                    projectRootElement: out _,
-                    out fileDirectives,
                     validateAllDirectives: !_force);
+
+                fileProjectInstance = result.Project;
+                fileDirectives = result.EvaluatedDirectives;
             }
 
             // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
-            var includeItems = FindIncludedItems(fileBuilder, fileProjectInstance, sourceFile).ToImmutableArray();
+            var includeItems = (await FindIncludedItemsAsync(fileBuilder, fileProjectInstance, sourceFile).ToArrayAsync()).ToImmutableArray();
 
             CreateDirectory(outputDirectory);
 
@@ -183,12 +186,13 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             {
                 using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
+                var unwrapped = fileProjectInstance.Unwrap();
                 VirtualProjectBuilder.WriteProjectFile(
                     writer,
                     projectDirectives,
-                    GetDefaultProperties(fileProjectInstance),
+                    GetDefaultProperties(unwrapped),
                     isVirtualProject: false,
-                    userSecretsId: isEntryPointFile ? DetermineUserSecretsId(fileProjectInstance) : null,
+                    userSecretsId: isEntryPointFile ? DetermineUserSecretsId(unwrapped) : null,
                     explicitProjectItems: explicitProjectItems);
             }
         }
@@ -268,7 +272,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        void ConvertReferencedFiles(ImmutableArray<CSharpDirective> directives, string sourceDirectory)
+        async ValueTask ConvertReferencedFilesAsync(ImmutableArray<CSharpDirective> directives, string sourceDirectory)
         {
             foreach (var directive in directives)
             {
@@ -288,16 +292,16 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 var refDir = Path.GetDirectoryName(refPath)!;
                 var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
-                var convertedReference = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
+                var convertedReference = await ConvertFileAsync(refPath, refTargetDirectory, isEntryPointFile: false);
 
                 refIncludeItems.AddRange(convertedReference.IncludeItems);
 
                 // Recursively convert referenced files in the referenced file.
-                ConvertReferencedFiles(convertedReference.EvaluatedDirectives, refDir);
+                await ConvertReferencedFilesAsync(convertedReference.EvaluatedDirectives, refDir);
             }
         }
 
-        void ValidateRefTargetDirectories(ImmutableArray<CSharpDirective> directives, string sourceDirectory, HashSet<string> visited, HashSet<string> usedFolderNames)
+        async ValueTask ValidateRefTargetDirectoriesAsync(ImmutableArray<CSharpDirective> directives, string sourceDirectory, HashSet<string> visited, HashSet<string> usedFolderNames)
         {
             foreach (var directive in directives)
             {
@@ -328,27 +332,25 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 // Recursively validate transitive refs.
-                var refBuilder = new VirtualProjectBuilder(refPath, VirtualProjectBuildingCommand.TargetFramework);
-                refBuilder.CreateProjectInstance(
+                var refBuilder = new VirtualProjectBuilder(BuildService.Instance, refPath, VirtualProjectBuildingCommand.TargetFramework);
+                var result = await refBuilder.CreateProjectInstanceAsync(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
-                    project: out _,
-                    projectRootElement: out _,
-                    out var refDirectives,
                     validateAllDirectives: !_force);
-                ValidateRefTargetDirectories(refDirectives, refDir, visited, usedFolderNames);
+                var refDirectives = result.EvaluatedDirectives;
+                await ValidateRefTargetDirectoriesAsync(refDirectives, refDir, visited, usedFolderNames);
             }
         }
 
-        IEnumerable<IncludedItem> FindIncludedItems(
-            VirtualProjectBuilder fileBuilder, ProjectInstance fileProjectInstance, string sourceFile)
+        async IAsyncEnumerable<IncludedItem> FindIncludedItemsAsync(
+            VirtualProjectBuilder fileBuilder, IProjectInstance fileProjectInstance, string sourceFile)
         {
             string sourceFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(sourceFile)!);
 
             // Include only items we know are files.
-            var mapping = fileBuilder.GetItemMapping(fileProjectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
+            var mapping = await fileBuilder.GetItemMappingAsync(fileProjectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
 
-            var items = mapping.SelectMany(e => fileProjectInstance.GetItems(e.ItemType));
+            var items = mapping.SelectMany(e => fileProjectInstance.Unwrap().GetItems(e.ItemType));
 
             var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -537,6 +539,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     result.Add(new CSharpDirective.Project(refDirective.Info, relativePath)
                     {
                         OriginalName = refDirective.OriginalName,
+                        Metadata = refDirective.Metadata,
                     });
                     continue;
                 }

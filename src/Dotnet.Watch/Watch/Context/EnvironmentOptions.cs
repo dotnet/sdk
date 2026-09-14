@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +38,7 @@ internal sealed record EnvironmentOptions(
     bool SuppressBrowserRefresh = false,
     bool SuppressEmojis = false,
     bool RestartOnRudeEdit = false,
-    LogLevel? CliLogLevel = null,
+    bool CliContextVerbose = false,
     string? BrowserPath = null,
     WebSocketConfig BrowserWebSocketConfig = default,
     WebSocketConfig AgentWebSocketConfig = default,
@@ -57,10 +58,18 @@ internal sealed record EnvironmentOptions(
         SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
         SuppressEmojis: EnvironmentVariables.SuppressEmojis,
         RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
-        CliLogLevel: EnvironmentVariables.CliLogLevel,
+        CliContextVerbose: EnvironmentVariables.CliContextVerbose,
         BrowserPath: EnvironmentVariables.BrowserPath,
-        BrowserWebSocketConfig: new(EnvironmentVariables.BrowserWebSocketPort, EnvironmentVariables.BrowserWebSocketSecurePort, EnvironmentVariables.BrowserWebSocketHostName),
-        AgentWebSocketConfig: new(EnvironmentVariables.AgentWebSocketPort, EnvironmentVariables.AgentWebSocketSecurePort, hostName: null),
+        BrowserWebSocketConfig: new(
+            port: EnvironmentVariables.BrowserWebSocketPort,
+            securePort: EnvironmentVariables.BrowserWebSocketSecurePort,
+            hostName: EnvironmentVariables.BrowserWebSocketHostName,
+            additionalAllowedOrigins: EnvironmentVariables.DotNetWatchWebSocketAllowedOrigins),
+        AgentWebSocketConfig: new(
+            port: EnvironmentVariables.AgentWebSocketPort,
+            securePort: EnvironmentVariables.AgentWebSocketSecurePort,
+            hostName: null,
+            additionalAllowedOrigins: []),
         TestFlags: EnvironmentVariables.TestFlags,
         TestOutput: EnvironmentVariables.TestOutputDir
     );
@@ -79,6 +88,12 @@ internal sealed record EnvironmentOptions(
     private int _uniqueLogId;
 
     public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
+
+    private static string ValidateMuxerPath(string path)
+    {
+        Debug.Assert(Path.GetFileName(path) == $"dotnet{PathUtilities.ExecutableExtension}");
+        return path;
+    }
 
     public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)
         => options.BinaryLogPath != null

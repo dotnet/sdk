@@ -16,6 +16,7 @@ namespace Microsoft.NET.Build.Tasks
     /// Both Items and Packages are expected to have 'NuGetPackageId' and 'NuGetPackageVersion'
     /// metadata properties to use for the matching.
     /// </remarks>
+    [MSBuildMultiThreadableTask]
     public sealed class FindItemsFromPackages : TaskBase
     {
         [Required]

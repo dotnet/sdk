@@ -13,6 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     //  Otherwise, if UseWindowsSDKPreview is set, then construct the package version from the TargetPlatformVersion (dropping the 4th component of the component and appending "-preview")
     //  Otherwise, create KnownFrameworkReference items based on WindowsSdkSupportedTargetPlatformVersion items, using WindowsSdkPackageVersion and MinimumNETVersion metadata
 
+    [MSBuildMultiThreadableTask]
     public class CreateWindowsSdkKnownFrameworkReferences : TaskBase
     {
         public bool UseWindowsSDKPreview { get; set; }

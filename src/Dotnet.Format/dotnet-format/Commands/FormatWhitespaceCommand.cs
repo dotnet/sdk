@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -21,6 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             command.AddCommonOptions();
             command.Validators.Add(EnsureFolderNotSpecifiedWithNoRestore);
             command.Validators.Add(EnsureFolderNotSpecifiedWhenLoggingBinlog);
+            command.Validators.Add(EnsureFolderNotSpecifiedWithFramework);
             command.Action = s_formattingHandler;
             return command;
         }
@@ -45,6 +47,16 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             }
         }
 
+        internal static void EnsureFolderNotSpecifiedWithFramework(CommandResult symbolResult)
+        {
+            var folder = symbolResult.GetValue(FolderOption);
+            var framework = symbolResult.GetResult(FrameworkOption);
+            if (folder && framework is not null && !framework.Implicit)
+            {
+                symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_framework);
+            }
+        }
+
         private class FormatWhitespaceHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
@@ -56,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace };
 
-                return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                return await FormatAsync(formatOptions, logger, cancellationToken);
             }
         }
     }

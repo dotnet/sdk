@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "模板包",
+  "description": "包含 .NET 模板的模板包的项目。",
+  "postActions/instructions/description": "需要手动操作",
+  "postActions/instructions/manualInstructions/default/text": "在编辑器中打开 *.csproj 并完成包元数据配置。将模板复制到 \"content\" 文件夹。填写 README.md。"
+}

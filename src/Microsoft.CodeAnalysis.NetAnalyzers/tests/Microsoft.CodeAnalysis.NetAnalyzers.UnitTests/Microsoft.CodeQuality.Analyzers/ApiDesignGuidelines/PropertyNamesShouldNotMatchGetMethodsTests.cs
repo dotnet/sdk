@@ -1,109 +1,119 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertyNamesShouldNotMatchGetMethodsAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpPropertyNamesShouldNotMatchGetMethodsFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertyNamesShouldNotMatchGetMethodsAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicPropertyNamesShouldNotMatchGetMethodsFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class PropertyNamesShouldNotMatchGetMethodsTests
     {
-        private const string CSharpTestTemplate = @"
-using System;
+        private static string FormatCSharpTestTemplate(string propertyAccessibility, string methodAccessibility) => $$"""
 
-public class Test
-{{
-    {0} DateTime Date {{ get; }}
-    {1} string GetDate()
-    {{
-        return DateTime.Today.ToString();
-    }}
-}}";
+            using System;
 
-        private const string CSharpNotExternallyVisibleTestTemplate = @"
-using System;
+            public class Test
+            {
+                {{propertyAccessibility}} DateTime Date { get; }
+                {{methodAccessibility}} string GetDate()
+                {
+                    return DateTime.Today.ToString();
+                }
+            }
+            """;
 
-internal class OuterClass
-{{
-    public class Test
-    {{
-        {0} DateTime Date {{ get; }}
-        {1} string GetDate()
-        {{
-            return DateTime.Today.ToString();
-        }}
-    }}
-}}";
+        private static string FormatCSharpNotExternallyVisibleTestTemplate(string propertyAccessibility, string methodAccessibility) => $$"""
 
-        private const string BasicTestTemplate = @"
-Imports System
+            using System;
 
-Public Class Test
-    {0} ReadOnly Property [Date]() As DateTime
-        Get
-            Return DateTime.Today
-        End Get
-    End Property
-    {1} Function GetDate() As String
-        Return Me.Date.ToString()
-    End Function 
-End Class";
+            internal class OuterClass
+            {
+                public class Test
+                {
+                    {{propertyAccessibility}} DateTime Date { get; }
+                    {{methodAccessibility}} string GetDate()
+                    {
+                        return DateTime.Today.ToString();
+                    }
+                }
+            }
+            """;
 
-        private const string BasicNotExternallyVisibleTestTemplate = @"
-Imports System
+        private static string FormatBasicTestTemplate(string propertyAccessibility, string methodAccessibility) => $"""
 
-Friend Class OuterClass
-    Public Class Test
-        {0} ReadOnly Property [Date]() As DateTime
-            Get
-                Return DateTime.Today
-            End Get
-        End Property
-        {1} Function GetDate() As String
-            Return Me.Date.ToString()
-        End Function 
-    End Class
-End Class
-";
+            Imports System
 
-        [Fact]
+            Public Class Test
+                {propertyAccessibility} ReadOnly Property [Date]() As DateTime
+                    Get
+                        Return DateTime.Today
+                    End Get
+                End Property
+                {methodAccessibility} Function GetDate() As String
+                    Return Me.Date.ToString()
+                End Function 
+            End Class
+            """;
+
+        private static string FormatBasicNotExternallyVisibleTestTemplate(string propertyAccessibility, string methodAccessibility) => $"""
+
+            Imports System
+
+            Friend Class OuterClass
+                Public Class Test
+                    {propertyAccessibility} ReadOnly Property [Date]() As DateTime
+                        Get
+                            Return DateTime.Today
+                        End Get
+                    End Property
+                    {methodAccessibility} Function GetDate() As String
+                        Return Me.Date.ToString()
+                    End Function 
+                End Class
+            End Class
+
+            """;
+
+        [TestMethod]
         public async Task CSharp_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class Test
-{
-    public DateTime Date { get; }
-    public string GetTime()
-    {
-        return DateTime.Today.ToString();
-    }
-}");
+                public class Test
+                {
+                    public DateTime Date { get; }
+                    public string GetTime()
+                    {
+                        return DateTime.Today.ToString();
+                    }
+                }
+                """);
         }
 
-        [Theory]
-        [InlineData("public", "public")]
-        [InlineData("public", "protected")]
-        [InlineData("public", "protected internal")]
-        [InlineData("protected", "public")]
-        [InlineData("protected", "protected")]
-        [InlineData("protected", "protected internal")]
-        [InlineData("protected internal", "public")]
-        [InlineData("protected internal", "protected")]
-        [InlineData("protected internal", "protected internal")]
+        [TestMethod]
+        [DataRow("public", "public")]
+        [DataRow("public", "protected")]
+        [DataRow("public", "protected internal")]
+        [DataRow("protected", "public")]
+        [DataRow("protected", "protected")]
+        [DataRow("protected", "protected internal")]
+        [DataRow("protected internal", "public")]
+        [DataRow("protected internal", "protected")]
+        [DataRow("protected internal", "protected internal")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(
-                string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility),
+                FormatCSharpTestTemplate(propertyAccessibility, methodAccessibility),
                 GetCA1721CSharpResultAt(
                     line: 6,
                     column: $"    {propertyAccessibility} DateTime ".Length + 1,
@@ -111,124 +121,129 @@ public class Test
                     otherIdentifierName: "GetDate"));
 
             await VerifyCS.VerifyAnalyzerAsync(
-                string.Format(CultureInfo.InvariantCulture, CSharpNotExternallyVisibleTestTemplate, propertyAccessibility, methodAccessibility));
+                FormatCSharpNotExternallyVisibleTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("private", "private")]
-        [InlineData("private", "internal")]
-        [InlineData("internal", "private")]
-        [InlineData("internal", "internal")]
-        [InlineData("", "")]
+        [TestMethod]
+        [DataRow("private", "private")]
+        [DataRow("private", "internal")]
+        [DataRow("internal", "private")]
+        [DataRow("internal", "internal")]
+        [DataRow("", "")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
-            await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
+            await VerifyCS.VerifyAnalyzerAsync(FormatCSharpTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [InlineData("public", "private")]
-        [InlineData("protected", "private")]
-        [InlineData("protected internal", "private")]
-        [InlineData("public", "internal")]
-        [InlineData("protected", "internal")]
-        [InlineData("protected internal", "internal")]
-        [InlineData("public", "")]
-        [InlineData("protected", "")]
-        [InlineData("protected internal", "")]
-        [InlineData("private", "public")]
-        [InlineData("private", "protected")]
-        [InlineData("private", "protected internal")]
-        [InlineData("internal", "public")]
-        [InlineData("internal", "protected")]
-        [InlineData("internal", "protected internal")]
-        [InlineData("", "public")]
-        [InlineData("", "protected")]
-        [InlineData("", "protected internal")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DataRow("public", "private")]
+        [DataRow("protected", "private")]
+        [DataRow("protected internal", "private")]
+        [DataRow("public", "internal")]
+        [DataRow("protected", "internal")]
+        [DataRow("protected internal", "internal")]
+        [DataRow("public", "")]
+        [DataRow("protected", "")]
+        [DataRow("protected internal", "")]
+        [DataRow("private", "public")]
+        [DataRow("private", "protected")]
+        [DataRow("private", "protected internal")]
+        [DataRow("internal", "public")]
+        [DataRow("internal", "protected")]
+        [DataRow("internal", "protected internal")]
+        [DataRow("", "public")]
+        [DataRow("", "protected")]
+        [DataRow("", "protected internal")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
-            await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
+            await VerifyCS.VerifyAnalyzerAsync(FormatCSharpTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class SomeClass
-{
-    public string GetDate()
-    {
-        return DateTime.Today.ToString();
-    }
-}
+                using System;
 
-public class SometOtherClass : SomeClass
-{
-    public DateTime Date
-    {
-        get { return DateTime.Today; }
-    }         
-}",
+                public class SomeClass
+                {
+                    public string GetDate()
+                    {
+                        return DateTime.Today.ToString();
+                    }
+                }
+
+                public class SometOtherClass : SomeClass
+                {
+                    public DateTime Date
+                    {
+                        get { return DateTime.Today; }
+                    }
+                }
+                """,
             GetCA1721CSharpResultAt(line: 14, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class SomeClass
-{
-    public DateTime Date
-    {
-        get { return DateTime.Today; }
-    }         
-}
+                using System;
 
-public class SometOtherClass : SomeClass
-{
-    public string GetDate()
-    {
-        return DateTime.Today.ToString();
-    }
-}",
+                public class SomeClass
+                {
+                    public DateTime Date
+                    {
+                        get { return DateTime.Today; }
+                    }
+                }
+
+                public class SometOtherClass : SomeClass
+                {
+                    public string GetDate()
+                    {
+                        return DateTime.Today.ToString();
+                    }
+                }
+                """,
             GetCA1721CSharpResultAt(line: 14, column: 19, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class Test
-    Public ReadOnly Property [Date]() As DateTime
-        Get
-            Return DateTime.Today
-        End Get
-    End Property
-    Public Function GetTime() As String
-        Return Me.Date.ToString()
-    End Function 
-End Class");
+                Public Class Test
+                    Public ReadOnly Property [Date]() As DateTime
+                        Get
+                            Return DateTime.Today
+                        End Get
+                    End Property
+                    Public Function GetTime() As String
+                        Return Me.Date.ToString()
+                    End Function
+                End Class
+                """);
         }
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [InlineData("Public", "Public")]
-        [InlineData("Public", "Protected")]
-        [InlineData("Public", "Protected Friend")]
-        [InlineData("Protected", "Public")]
-        [InlineData("Protected", "Protected")]
-        [InlineData("Protected", "Protected Friend")]
-        [InlineData("Protected Friend", "Public")]
-        [InlineData("Protected Friend", "Protected")]
-        [InlineData("Protected Friend", "Protected Friend")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DataRow("Public", "Public")]
+        [DataRow("Public", "Protected")]
+        [DataRow("Public", "Protected Friend")]
+        [DataRow("Protected", "Public")]
+        [DataRow("Protected", "Protected")]
+        [DataRow("Protected", "Protected Friend")]
+        [DataRow("Protected Friend", "Public")]
+        [DataRow("Protected Friend", "Protected")]
+        [DataRow("Protected Friend", "Protected Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(
-                string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility),
+                FormatBasicTestTemplate(propertyAccessibility, methodAccessibility),
                 GetCA1721BasicResultAt(
                     line: 5,
                     column: $"    {propertyAccessibility} ReadOnly Property ".Length + 1,
@@ -236,526 +251,553 @@ End Class");
                     otherIdentifierName: "GetDate"));
 
             await VerifyVB.VerifyAnalyzerAsync(
-                string.Format(CultureInfo.InvariantCulture, BasicNotExternallyVisibleTestTemplate, propertyAccessibility, methodAccessibility));
+                FormatBasicNotExternallyVisibleTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("Private", "Private")]
-        [InlineData("Private", "Friend")]
-        [InlineData("Friend", "Private")]
-        [InlineData("Friend", "Friend")]
+        [TestMethod]
+        [DataRow("Private", "Private")]
+        [DataRow("Private", "Friend")]
+        [DataRow("Friend", "Private")]
+        [DataRow("Friend", "Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
-            await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
+            await VerifyVB.VerifyAnalyzerAsync(FormatBasicTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("Public", "Private")]
-        [InlineData("Protected", "Private")]
-        [InlineData("Protected Friend", "Private")]
-        [InlineData("Public", "Friend")]
-        [InlineData("Protected", "Friend")]
-        [InlineData("Protected Friend", "Friend")]
-        [InlineData("Private", "Public")]
-        [InlineData("Private", "Protected")]
-        [InlineData("Private", "Protected Friend")]
-        [InlineData("Friend", "Public")]
-        [InlineData("Friend", "Protected")]
-        [InlineData("Friend", "Protected Friend")]
+        [TestMethod]
+        [DataRow("Public", "Private")]
+        [DataRow("Protected", "Private")]
+        [DataRow("Protected Friend", "Private")]
+        [DataRow("Public", "Friend")]
+        [DataRow("Protected", "Friend")]
+        [DataRow("Protected Friend", "Friend")]
+        [DataRow("Private", "Public")]
+        [DataRow("Private", "Protected")]
+        [DataRow("Private", "Protected Friend")]
+        [DataRow("Friend", "Public")]
+        [DataRow("Friend", "Protected")]
+        [DataRow("Friend", "Protected Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
-            await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
+            await VerifyVB.VerifyAnalyzerAsync(FormatBasicTestTemplate(propertyAccessibility, methodAccessibility));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class SomeClass
-    Public Function GetDate() As String
-        Return DateTime.Today.ToString()
-    End Function
-End Class
+                Imports System
 
-Public Class SometOtherClass 
-    Inherits SomeClass
-    Public ReadOnly Property [Date]() As DateTime
-        Get
-            Return DateTime.Today
-        End Get
-    End Property
-End Class",
+                Public Class SomeClass
+                    Public Function GetDate() As String
+                        Return DateTime.Today.ToString()
+                    End Function
+                End Class
+
+                Public Class SometOtherClass
+                    Inherits SomeClass
+                    Public ReadOnly Property [Date]() As DateTime
+                        Get
+                            Return DateTime.Today
+                        End Get
+                    End Property
+                End Class
+                """,
             GetCA1721BasicResultAt(line: 12, column: 30, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class SomeClass
-    Public ReadOnly Property [Date]() As DateTime
-        Get
-            Return DateTime.Today
-        End Get
-    End Property
-End Class
-Public Class SometOtherClass 
-    Inherits SomeClass
-    Public Function GetDate() As String
-        Return DateTime.Today.ToString()
-    End Function
-End Class",
+                Imports System
+
+                Public Class SomeClass
+                    Public ReadOnly Property [Date]() As DateTime
+                        Get
+                            Return DateTime.Today
+                        End Get
+                    End Property
+                End Class
+                Public Class SometOtherClass
+                    Inherits SomeClass
+                    Public Function GetDate() As String
+                        Return DateTime.Today.ToString()
+                    End Function
+                End Class
+                """,
             GetCA1721BasicResultAt(line: 13, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact, WorkItem(1374, "https://github.com/dotnet/roslyn-analyzers/issues/1374")]
+        [TestMethod, WorkItem(1374, "https://github.com/dotnet/roslyn-analyzers/issues/1374")]
         public async Task CA1721_TypePropertyNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class T { }
-class C
-{
-    public T Type { get; }
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class T { }
+                class C
+                {
+                    public T Type { get; }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class T
-End Class
-Class C
-    Public Property Type As T
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class T
+                End Class
+                Class C
+                    Public Property Type As T
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(2085, "https://github.com/dotnet/roslyn-analyzers/issues/2085")]
+        [TestMethod, WorkItem(2085, "https://github.com/dotnet/roslyn-analyzers/issues/2085")]
         public async Task CA1721_StaticAndInstanceMismatchNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C1
-{
-    public int Value { get; }
-    public static int GetValue(int i) => i;
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C1
+                {
+                    public int Value { get; }
+                    public static int GetValue(int i) => i;
+                }
 
-public class C2
-{
-    public static int Value { get; }
-    public int GetValue(int i) => i;
-}
-");
+                public class C2
+                {
+                    public static int Value { get; }
+                    public int GetValue(int i) => i;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C1
-    Public ReadOnly Property Value As Integer
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C1
+                    Public ReadOnly Property Value As Integer
 
-    Public Shared Function GetValue(i As Integer) As Integer
-        Return i
-    End Function
-End Class
+                    Public Shared Function GetValue(i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
 
-Public Class C2
-    Public Shared ReadOnly Property Value As Integer
+                Public Class C2
+                    Public Shared ReadOnly Property Value As Integer
 
-    Public Function GetValue(i As Integer) As Integer
-        Return i
-    End Function
-End Class");
+                    Public Function GetValue(i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideNoDiagnosticButVirtualDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class BaseClass
-{
-    public virtual int Value { get; }
-    public virtual int GetValue(int i) => i;
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C1 : BaseClass
-{
-    public override int Value => 42;
-}
+                public class BaseClass
+                {
+                    public virtual int Value { get; }
+                    public virtual int GetValue(int i) => i;
+                }
 
-public class C2 : BaseClass
-{
-    public override int GetValue(int i) => i * 2;
-}
+                public class C1 : BaseClass
+                {
+                    public override int Value => 42;
+                }
 
-public class C3 : BaseClass
-{
-    public override int Value => 42;
-    public override int GetValue(int i) => i * 2;
-}
-",
+                public class C2 : BaseClass
+                {
+                    public override int GetValue(int i) => i * 2;
+                }
+
+                public class C3 : BaseClass
+                {
+                    public override int Value => 42;
+                    public override int GetValue(int i) => i * 2;
+                }
+
+                """,
             GetCA1721CSharpResultAt(line: 4, column: 24, identifierName: "Value", otherIdentifierName: "GetValue"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class BaseClass
-    Public Overridable ReadOnly Property Value As Integer
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-    Public Overridable Function GetValue(ByVal i As Integer) As Integer
-        Return i
-    End Function
-End Class
+                Public Class BaseClass
+                    Public Overridable ReadOnly Property Value As Integer
 
-Public Class C1
-    Inherits BaseClass
+                    Public Overridable Function GetValue(ByVal i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
 
-    Public Overrides ReadOnly Property Value As Integer
-        Get
-            Return 42
-        End Get
-    End Property
-End Class
+                Public Class C1
+                    Inherits BaseClass
 
-Public Class C2
-    Inherits BaseClass
+                    Public Overrides ReadOnly Property Value As Integer
+                        Get
+                            Return 42
+                        End Get
+                    End Property
+                End Class
 
-    Public Overrides Function GetValue(ByVal i As Integer) As Integer
-        Return i * 2
-    End Function
-End Class
+                Public Class C2
+                    Inherits BaseClass
 
-Public Class C3
-    Inherits BaseClass
+                    Public Overrides Function GetValue(ByVal i As Integer) As Integer
+                        Return i * 2
+                    End Function
+                End Class
 
-    Public Overrides ReadOnly Property Value As Integer
-        Get
-            Return 42
-        End Get
-    End Property
+                Public Class C3
+                    Inherits BaseClass
 
-    Public Overrides Function GetValue(ByVal i As Integer) As Integer
-        Return i * 2
-    End Function
-End Class
-",
+                    Public Overrides ReadOnly Property Value As Integer
+                        Get
+                            Return 42
+                        End Get
+                    End Property
+
+                    Public Overrides Function GetValue(ByVal i As Integer) As Integer
+                        Return i * 2
+                    End Function
+                End Class
+
+                """,
         GetCA1721BasicResultAt(line: 3, column: 42, identifierName: "Value", otherIdentifierName: "GetValue"));
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideWithLocalMemberDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class BaseClass1
-{
-    public virtual int Value { get; }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C1 : BaseClass1
-{
-    public override int Value => 42;
-    public int GetValue(int i) => i;
-}
+                public class BaseClass1
+                {
+                    public virtual int Value { get; }
+                }
 
-public class BaseClass2
-{
-    public virtual int GetValue(int i) => i;
-}
+                public class C1 : BaseClass1
+                {
+                    public override int Value => 42;
+                    public int GetValue(int i) => i;
+                }
 
-public class C2 : BaseClass2
-{
-    public int Value => 42;
-    public override int GetValue(int i) => i * 2;
-}
-",
+                public class BaseClass2
+                {
+                    public virtual int GetValue(int i) => i;
+                }
+
+                public class C2 : BaseClass2
+                {
+                    public int Value => 42;
+                    public override int GetValue(int i) => i * 2;
+                }
+
+                """,
             GetCA1721CSharpResultAt(line: 10, column: 16, identifierName: "Value", otherIdentifierName: "GetValue"),
             GetCA1721CSharpResultAt(line: 20, column: 16, identifierName: "Value", otherIdentifierName: "GetValue"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class BaseClass1
-    Public Overridable ReadOnly Property Value As Integer
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class C1
-    Inherits BaseClass1
+                Public Class BaseClass1
+                    Public Overridable ReadOnly Property Value As Integer
+                End Class
 
-    Public Overrides ReadOnly Property Value As Integer
-        Get
-            Return 42
-        End Get
-    End Property
+                Public Class C1
+                    Inherits BaseClass1
 
-    Public Function GetValue(ByVal i As Integer) As Integer
-        Return i
-    End Function
-End Class
+                    Public Overrides ReadOnly Property Value As Integer
+                        Get
+                            Return 42
+                        End Get
+                    End Property
 
-Public Class BaseClass2
-    Public Overridable Function GetValue(ByVal i As Integer) As Integer
-        Return i
-    End Function
-End Class
+                    Public Function GetValue(ByVal i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
 
-Public Class C2
-    Inherits BaseClass2
+                Public Class BaseClass2
+                    Public Overridable Function GetValue(ByVal i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
 
-    Public ReadOnly Property Value As Integer
-        Get
-            Return 42
-        End Get
-    End Property
+                Public Class C2
+                    Inherits BaseClass2
 
-    Public Overrides Function GetValue(ByVal i As Integer) As Integer
-        Return i * 2
-    End Function
-End Class
+                    Public ReadOnly Property Value As Integer
+                        Get
+                            Return 42
+                        End Get
+                    End Property
 
-",
+                    Public Overrides Function GetValue(ByVal i As Integer) As Integer
+                        Return i * 2
+                    End Function
+                End Class
+
+
+                """,
             GetCA1721BasicResultAt(line: 15, column: 21, identifierName: "Value", otherIdentifierName: "GetValue"),
             GetCA1721BasicResultAt(line: 29, column: 30, identifierName: "Value", otherIdentifierName: "GetValue"));
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideMultiLevelDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class MyBaseClass
-{
-    public virtual int GetValue(int i) => i;
-    public virtual int Something { get; }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class MyClass : MyBaseClass
-{
-    public virtual int Value { get; }
-    public virtual int GetSomething(int i) => i;
-}
+                public class MyBaseClass
+                {
+                    public virtual int GetValue(int i) => i;
+                    public virtual int Something { get; }
+                }
 
-public class MySubClass : MyClass
-{
-    public override int GetValue(int i) => 2;
-    public override int Value => 2;
-    public override int GetSomething(int i) => 2;
-    public override int Something => 2;
-}
-",
+                public class MyClass : MyBaseClass
+                {
+                    public virtual int Value { get; }
+                    public virtual int GetSomething(int i) => i;
+                }
+
+                public class MySubClass : MyClass
+                {
+                    public override int GetValue(int i) => 2;
+                    public override int Value => 2;
+                    public override int GetSomething(int i) => 2;
+                    public override int Something => 2;
+                }
+
+                """,
             GetCA1721CSharpResultAt(line: 10, column: 24, identifierName: "Value", otherIdentifierName: "GetValue"),
             GetCA1721CSharpResultAt(line: 11, column: 24, identifierName: "Something", otherIdentifierName: "GetSomething"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class MyBaseClass
-    Public Overridable Function GetValue(ByVal i As Integer) As Integer
-        Return i
-    End Function
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-    Public Overridable ReadOnly Property Something As Integer
-End Class
+                Public Class MyBaseClass
+                    Public Overridable Function GetValue(ByVal i As Integer) As Integer
+                        Return i
+                    End Function
 
-Public Class [MyClass]
-    Inherits MyBaseClass
+                    Public Overridable ReadOnly Property Something As Integer
+                End Class
 
-    Public Overridable ReadOnly Property Value As Integer
+                Public Class [MyClass]
+                    Inherits MyBaseClass
 
-    Public Overridable Function GetSomething(ByVal i As Integer) As Integer
-        Return i
-    End Function
-End Class
+                    Public Overridable ReadOnly Property Value As Integer
 
-Public Class MySubClass
-    Inherits [MyClass]
+                    Public Overridable Function GetSomething(ByVal i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
 
-    Public Overrides Function GetValue(ByVal i As Integer) As Integer
-        Return 2
-    End Function
+                Public Class MySubClass
+                    Inherits [MyClass]
 
-    Public Overrides ReadOnly Property Value As Integer
-        Get
-            Return 2
-        End Get
-    End Property
+                    Public Overrides Function GetValue(ByVal i As Integer) As Integer
+                        Return 2
+                    End Function
 
-    Public Overrides Function GetSomething(ByVal i As Integer) As Integer
-        Return 2
-    End Function
+                    Public Overrides ReadOnly Property Value As Integer
+                        Get
+                            Return 2
+                        End Get
+                    End Property
 
-    Public Overrides ReadOnly Property Something As Integer
-        Get
-            Return 2
-        End Get
-    End Property
-End Class
-",
+                    Public Overrides Function GetSomething(ByVal i As Integer) As Integer
+                        Return 2
+                    End Function
+
+                    Public Overrides ReadOnly Property Something As Integer
+                        Get
+                            Return 2
+                        End Get
+                    End Property
+                End Class
+
+                """,
             GetCA1721BasicResultAt(line: 13, column: 42, identifierName: "Value", otherIdentifierName: "GetValue"),
             GetCA1721BasicResultAt(line: 15, column: 33, identifierName: "Something", otherIdentifierName: "GetSomething"));
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_Obsolete_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C1
-{
-    [Obsolete(""Use the method."")]
-    public int PropertyValue => 1;
+                public class C1
+                {
+                    [Obsolete("Use the method.")]
+                    public int PropertyValue => 1;
 
-    public int GetPropertyValue()
-    {
-        return 1;
-    }
-}
+                    public int GetPropertyValue()
+                    {
+                        return 1;
+                    }
+                }
 
-public class C2
-{
-    public int PropertyValue => 1;
+                public class C2
+                {
+                    public int PropertyValue => 1;
 
-    [Obsolete(""Use the property."")]
-    public int GetPropertyValue()
-    {
-        return 1;
-    }
-}
+                    [Obsolete("Use the property.")]
+                    public int GetPropertyValue()
+                    {
+                        return 1;
+                    }
+                }
 
-public class C3
-{
-    [Obsolete(""Deprecated"")]
-    public int PropertyValue => 1;
+                public class C3
+                {
+                    [Obsolete("Deprecated")]
+                    public int PropertyValue => 1;
 
-    [Obsolete(""Deprecated"")]
-    public int GetPropertyValue()
-    {
-        return 1;
-    }
-}");
+                    [Obsolete("Deprecated")]
+                    public int GetPropertyValue()
+                    {
+                        return 1;
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class C1
-    <Obsolete(""Use the method."")>
-    Public ReadOnly Property PropertyValue As Integer
-        Get
-            Return 1
-        End Get
-    End Property
+                Public Class C1
+                    <Obsolete("Use the method.")>
+                    Public ReadOnly Property PropertyValue As Integer
+                        Get
+                            Return 1
+                        End Get
+                    End Property
 
-    Public Function GetPropertyValue() As Integer
-        Return 1
-    End Function
-End Class
+                    Public Function GetPropertyValue() As Integer
+                        Return 1
+                    End Function
+                End Class
 
-Public Class C2
-    Public ReadOnly Property PropertyValue As Integer
-        Get
-            Return 1
-        End Get
-    End Property
+                Public Class C2
+                    Public ReadOnly Property PropertyValue As Integer
+                        Get
+                            Return 1
+                        End Get
+                    End Property
 
-    <Obsolete(""Use the property."")>
-    Public Function GetPropertyValue() As Integer
-        Return 1
-    End Function
-End Class
+                    <Obsolete("Use the property.")>
+                    Public Function GetPropertyValue() As Integer
+                        Return 1
+                    End Function
+                End Class
 
-Public Class C3
-    <Obsolete(""Deprecated"")>
-    Public ReadOnly Property PropertyValue As Integer
-        Get
-            Return 1
-        End Get
-    End Property
+                Public Class C3
+                    <Obsolete("Deprecated")>
+                    Public ReadOnly Property PropertyValue As Integer
+                        Get
+                            Return 1
+                        End Get
+                    End Property
 
-    <Obsolete(""Deprecated"")>
-    Public Function GetPropertyValue() As Integer
-        Return 1
-    End Function
-End Class");
+                    <Obsolete("Deprecated")>
+                    Public Function GetPropertyValue() As Integer
+                        Return 1
+                    End Function
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_OnlyOneOverloadObsolete_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C
-{
-    public int PropertyValue => 1;
+                using System;
 
-    [Obsolete(""Use the property."")]
-    public int GetPropertyValue()
-    {
-        return 1;
-    }
+                public class C
+                {
+                    public int PropertyValue => 1;
 
-    public int GetPropertyValue(int i)
-    {
-        return i;
-    }
-}",
+                    [Obsolete("Use the property.")]
+                    public int GetPropertyValue()
+                    {
+                        return 1;
+                    }
+
+                    public int GetPropertyValue(int i)
+                    {
+                        return i;
+                    }
+                }
+                """,
                 GetCA1721CSharpResultAt(6, 16, "PropertyValue", "GetPropertyValue"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class C
-    Public ReadOnly Property PropertyValue As Integer
-        Get
-            Return 1
-        End Get
-    End Property
+                Imports System
 
-    <Obsolete(""Use the property."")>
-    Public Function GetPropertyValue() As Integer
-        Return 1
-    End Function
+                Public Class C
+                    Public ReadOnly Property PropertyValue As Integer
+                        Get
+                            Return 1
+                        End Get
+                    End Property
 
-    Public Function GetPropertyValue(i As Integer) As Integer
-        Return i
-    End Function
-End Class",
+                    <Obsolete("Use the property.")>
+                    Public Function GetPropertyValue() As Integer
+                        Return 1
+                    End Function
+
+                    Public Function GetPropertyValue(i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
+                """,
                 GetCA1721BasicResultAt(5, 30, "PropertyValue", "GetPropertyValue"));
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_AllOverloadsObsolete_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C
-{
-    public int PropertyValue => 1;
+                public class C
+                {
+                    public int PropertyValue => 1;
 
-    [Obsolete(""Use the property."")]
-    public int GetPropertyValue()
-    {
-        return 1;
-    }
+                    [Obsolete("Use the property.")]
+                    public int GetPropertyValue()
+                    {
+                        return 1;
+                    }
 
-    [Obsolete(""Use the property."")]
-    public int GetPropertyValue(int i)
-    {
-        return i;
-    }
-}");
+                    [Obsolete("Use the property.")]
+                    public int GetPropertyValue(int i)
+                    {
+                        return i;
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class C
-    Public ReadOnly Property PropertyValue As Integer
-        Get
-            Return 1
-        End Get
-    End Property
+                Public Class C
+                    Public ReadOnly Property PropertyValue As Integer
+                        Get
+                            Return 1
+                        End Get
+                    End Property
 
-    <Obsolete(""Use the property."")>
-    Public Function GetPropertyValue() As Integer
-        Return 1
-    End Function
+                    <Obsolete("Use the property.")>
+                    Public Function GetPropertyValue() As Integer
+                        Return 1
+                    End Function
 
-    <Obsolete(""Use the property."")>
-    Public Function GetPropertyValue(i As Integer) As Integer
-        Return i
-    End Function
-End Class");
+                    <Obsolete("Use the property.")>
+                    Public Function GetPropertyValue(i As Integer) As Integer
+                        Return i
+                    End Function
+                End Class
+                """);
         }
 
         #region Helpers

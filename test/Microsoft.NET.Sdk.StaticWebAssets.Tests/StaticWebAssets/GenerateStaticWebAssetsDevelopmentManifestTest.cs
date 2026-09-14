@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -10,9 +15,10 @@ using static Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsD
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [TestClass]
     public class GenerateStaticWebAssetsDevelopmentManifestTest
     {
-        [Fact]
+        [TestMethod]
         public void SkipsManifestGenerationWhen_ThereAreNoAssetsNorDiscoveryPatterns()
         {
             // Arrange
@@ -21,11 +27,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
                 .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
 
+            var manifestDirectory = Path.Combine(AppContext.BaseDirectory, nameof(SkipsManifestGenerationWhen_ThereAreNoAssetsNorDiscoveryPatterns), Guid.NewGuid().ToString("N"));
             var task = new GenerateStaticWebAssetsDevelopmentManifest()
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
-                DiscoveryPatterns = Array.Empty<ITaskItem>()
+                DiscoveryPatterns = Array.Empty<ITaskItem>(),
+                ManifestPath = Path.Combine(manifestDirectory, "staticwebassets.development.json"),
+                CacheFilePath = Path.Combine(manifestDirectory, "staticwebassets.build.cache.json")
             };
 
             // Act
@@ -36,7 +45,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             messages.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_IncludesBuildAssets()
         {
             // Arrange
@@ -65,10 +74,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Theory]
-        [InlineData("#[.{fingerprint}]?", "index.html", "optional.html")]
-        [InlineData("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
-        [InlineData("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
+        [TestMethod]
+        [DataRow("#[.{fingerprint}]?", "index.html", "optional.html")]
+        [DataRow("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
+        [DataRow("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
         public void ComputeDevelopmentManifest_ReplacesAssetTokens(string fingerprintExpression, string path, string fileName)
         {
             // Arrange
@@ -97,10 +106,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Theory]
-        [InlineData("#[.{fingerprint}]?", "index.html", "optional.html")]
-        [InlineData("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
-        [InlineData("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
+        [TestMethod]
+        [DataRow("#[.{fingerprint}]?", "index.html", "optional.html")]
+        [DataRow("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
+        [DataRow("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
         public void ComputeDevelopmentManifest_ReplacesAssetTokens_FileExists(string fingerprintExpression, string path, string subPath)
         {
             // Arrange
@@ -141,7 +150,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_UsesIdentitySubpath_WhenFileExists_AndContentRoot_IsPrefix()
         {
             // Arrange
@@ -188,7 +197,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_UsesRelativePath_ReplacesAssetTokens_WhenFileDoesNotExist_AtIdentity()
         {
             // Arrange
@@ -224,7 +233,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_IncludesAllAssets()
         {
             // Arrange
@@ -253,7 +262,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_ExcludesPublishAssets()
         {
             // Arrange
@@ -280,7 +289,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_ExcludesReferenceAssets()
         {
             // Arrange
@@ -308,7 +317,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_PrefersBuildAssetsOverAllAssets()
         {
             // Arrange
@@ -353,7 +362,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_UsesIdentityWhenContentRootStartsByIdentity()
         {
             // Arrange
@@ -399,7 +408,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_UsesRelativePathContentRootDoesNotStartByIdentity()
         {
             // Arrange
@@ -431,7 +440,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_MapsPatternsFromCurrentProject()
         {
             // Arrange
@@ -461,7 +470,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_MapsPatternsFromOtherProjects()
         {
             // Arrange
@@ -492,7 +501,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_CanMapMultiplePatternsOnSameNode()
         {
             // Arrange
@@ -529,7 +538,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_CanMapMultiplePatternsOnSameNodeWithDifferentContentRoots()
         {
             // Arrange
@@ -567,7 +576,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_MultipleAssetsSameContentRoot()
         {
             // Arrange
@@ -603,7 +612,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_DifferentCasingEndUpInDifferentNodes()
         {
             // Arrange
@@ -639,7 +648,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ComputeDevelopmentManifest_UsesBasePathForAssetsFromDifferentProjects()
         {
             // Arrange

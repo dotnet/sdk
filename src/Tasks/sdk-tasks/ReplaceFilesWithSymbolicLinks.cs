@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
-    /// Replaces files that have the same content with hard links.
+    /// Replaces files that have the same content with symbolic links.
     /// </summary>
     public sealed class ReplaceFilesWithSymbolicLinks  : Task
     {

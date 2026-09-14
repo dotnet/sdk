@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -83,7 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static SyntaxNode GetExplicitlyAssignedField(IFieldSymbol originalField, SyntaxNode declaration, SyntaxGenerator generator)
         {
-            SyntaxNode originalInitializer = generator.GetExpression(declaration);
+            SyntaxNode? originalInitializer = generator.GetExpression(declaration);
             if (originalInitializer != null || !originalField.HasConstantValue)
             {
                 return declaration;
@@ -94,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static async Task<Document> GetUpdatedDocumentForRuleNameRenameAsync(Document document, IFieldSymbol field, CancellationToken cancellationToken)
         {
-            Solution newSolution = await CodeAnalysis.Rename.Renamer.RenameSymbolAsync(document.Project.Solution, field, "None", document.Project.Solution.Options, cancellationToken).ConfigureAwait(false);
+            Solution newSolution = await CodeAnalysis.Rename.Renamer.RenameSymbolAsync(document.Project.Solution, field, new CodeAnalysis.Rename.SymbolRenameOptions(), "None", cancellationToken).ConfigureAwait(false);
             return newSolution.GetDocument(document.Id)!;
         }
 

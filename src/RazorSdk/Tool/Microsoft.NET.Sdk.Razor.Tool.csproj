@@ -28,7 +28,6 @@
     `Roslyn/bincore` for our consolidate loading logic. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Css.Parser" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"/>

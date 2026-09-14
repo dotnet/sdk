@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 internal sealed record SuccessfulTestResultMessage(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, string? StandardOutput, string? ErrorOutput, string? SessionUid);
 
-internal sealed record FailedTestResultMessage(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, ExceptionMessage[]? Exceptions, string? StandardOutput, string? ErrorOutput, string? SessionUid);
+internal sealed record FailedTestResultMessage(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, ExceptionMessage[]? Exceptions, string? StandardOutput, string? ErrorOutput, string? SessionUid, string? Expected, string? Actual);
 
 internal sealed record ExceptionMessage(string? ErrorMessage, string? ErrorType, string? StackTrace);
 

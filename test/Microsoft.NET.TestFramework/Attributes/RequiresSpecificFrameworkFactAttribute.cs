@@ -3,13 +3,14 @@
 
 #if NETCOREAPP
 
-using Xunit;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.TestFramework
 {
     public class RequiresSpecificFrameworkFactAttribute : FactAttribute
     {
-        public RequiresSpecificFrameworkFactAttribute(string framework)
+        public RequiresSpecificFrameworkFactAttribute(string framework, [CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(framework))
             {

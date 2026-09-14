@@ -8,24 +8,38 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public class GivenAProjectDependencyCommandResolver : SdkTest
     {
         private string _configuration;
+        private string _originalMSBuildExePath;
 
-        public GivenAProjectDependencyCommandResolver(ITestOutputHelper log) : base(log)
+        public GivenAProjectDependencyCommandResolver()
         {
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
-
             _configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
         }
 
-        [Fact]
+        [TestInitialize]
+        public void SetMSBuildExePath()
+        {
+            _originalMSBuildExePath = Environment.GetEnvironmentVariable(Constants.MSBUILD_EXE_PATH);
+            Environment.SetEnvironmentVariable(
+                Constants.MSBUILD_EXE_PATH,
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
+        }
+
+        [TestCleanup]
+        public void RestoreMSBuildExePath()
+        {
+            Environment.SetEnvironmentVariable(Constants.MSBUILD_EXE_PATH, _originalMSBuildExePath);
+        }
+
+        [TestMethod]
         public void ItReturnsACommandSpecWhenToolIsInAProjectRef()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -56,11 +70,11 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain(commandResolverArguments.CommandName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPassesDepsfileArgToHostWhenReturningACommandSpecForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -87,11 +101,11 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain("--depsfile");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectDependenciesForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -116,11 +130,11 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsDepsfileToOutputInCommandspecForMSBuild()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
@@ -161,10 +175,6 @@ namespace Microsoft.DotNet.Tests
             IEnvironmentProvider environment = null,
             IPackagedCommandSpecFactory packagedCommandSpecFactory = null)
         {
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
-
             environment = environment ?? new EnvironmentProvider();
 
             packagedCommandSpecFactory = packagedCommandSpecFactory ?? new PackagedCommandSpecFactory();

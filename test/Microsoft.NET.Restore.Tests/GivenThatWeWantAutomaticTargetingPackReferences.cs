@@ -10,17 +10,14 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantAutomaticTargetingPackReferences : SdkTest
     {
-        public GivenThatWeWantAutomaticTargetingPackReferences(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData("4.7.1")]
-        [InlineData("4.7.2")]
-        [InlineData("4.6.2")]
-        [InlineData("4.8")]
+        [TestMethod]
+        [DataRow("4.7.1")]
+        [DataRow("4.7.2")]
+        [DataRow("4.6.2")]
+        [DataRow("4.8")]
         public void It_restores_net_framework_project_successfully(string version)
         {
             var targetFrameworkVersion = (TargetDotNetFrameworkVersion)Enum.Parse(typeof(TargetDotNetFrameworkVersion), "Version" + string.Join("", version.Split('.')));
@@ -31,7 +28,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: version);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: version);
 
             string projectAssetsJsonPath = Path.Combine(
                 testAsset.Path,
@@ -57,9 +54,9 @@ namespace Microsoft.NET.Restore.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_restores_multitargeted_net_framework_project_successfully(bool includeExplicitReference)
         {
             var testProject = new TestProject()
@@ -72,7 +69,7 @@ namespace Microsoft.NET.Restore.Tests
             if (includeExplicitReference)
             {
                 // Add explicit reference to assembly packs
-                testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: includeExplicitReference.ToString()).WithProjectChanges(project =>
+                testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: includeExplicitReference.ToString()).WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
@@ -83,7 +80,7 @@ namespace Microsoft.NET.Restore.Tests
             }
             else
             {
-                testAsset = _testAssetsManager.CreateTestProject(testProject);
+                testAsset = TestAssetsManager.CreateTestProject(testProject);
             }
 
             string projectAssetsJsonPath = Path.Combine(
@@ -127,7 +124,7 @@ namespace Microsoft.NET.Restore.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_restores_net_framework_project_with_existing_references()
         {
             var targetFramework = "net471";
@@ -138,7 +135,7 @@ namespace Microsoft.NET.Restore.Tests
             };
 
             // Add explicit reference to assembly packs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges(project =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProject).WithProjectChanges(project =>
             {
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
@@ -175,7 +172,7 @@ namespace Microsoft.NET.Restore.Tests
             netFrameworkLibrary.Version.ToFullString().Should().Be("1.0.0");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_without_assembly_pack_reference()
         {
             var targetFramework = "net472";
@@ -186,7 +183,7 @@ namespace Microsoft.NET.Restore.Tests
             };
             testProject.AdditionalProperties["AutomaticallyUseReferenceAssemblyPackages"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version472) != null)

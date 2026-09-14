@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         protected string WorkloadSetPreviousBandVersion => _testWorkloadSetVersions.Value.GetValueOrDefault("previousbandversion", "8.0.204");
 
         protected override bool NeedsIncludePreviews => bool.Parse(_testWorkloadSetVersions.Value.GetValueOrDefault("needsIncludePreviews", "false"));
-        public WorkloadSetTestsBase(ITestOutputHelper log) : base(log)
+        public WorkloadSetTestsBase()
         {
             _testWorkloadSetVersions = new Lazy<Dictionary<string, string>>(() =>
             {

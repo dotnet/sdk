@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class ProjectUpdateInProcTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -52,7 +53,7 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         await hasUpdatedOutput.Task;
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange_AddProjectReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -83,11 +84,17 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
+        var hasResolvedDependency = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("<Lib>"))
             {
                 hasUpdatedOutput.TrySetResult();
+            }
+
+            if (line.Content.Contains("Resolving 'Dependency, Version=1.0.0.0'"))
+            {
+                hasResolvedDependency.TrySetResult();
             }
         };
 
@@ -114,15 +121,21 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         Log("Waiting for output '<Lib>'...");
         await hasUpdatedOutput.Task;
 
-        AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
+        Log("Waiting for dependency resolution...");
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
-        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
-        Assert.Equal(1, projectsRebuilt.CurrentCount);
-        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
+        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
+        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
+        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
+        Assert.AreEqual(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.AreEqual(1, projectsRebuilt.CurrentCount);
+        Assert.AreEqual(1, projectDependenciesDeployed.CurrentCount);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange_AddPackageReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -143,11 +156,17 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
+        var hasResolvedDependency = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("Newtonsoft.Json.Linq.JToken"))
             {
                 hasUpdatedOutput.TrySetResult();
+            }
+
+            if (line.Content.Contains("Resolving 'Newtonsoft.Json, Version=13.0.0.0'"))
+            {
+                hasResolvedDependency.TrySetResult();
             }
         };
 
@@ -172,11 +191,17 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         Log("Waiting for output 'Newtonsoft.Json.Linq.JToken'...");
         await hasUpdatedOutput.Task;
 
-        AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
+        Log("Waiting for dependency resolution...");
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
-        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
-        Assert.Equal(0, projectsRebuilt.CurrentCount);
-        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
+        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
+        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
+        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
+        Assert.AreEqual(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.AreEqual(0, projectsRebuilt.CurrentCount);
+        Assert.AreEqual(1, projectDependenciesDeployed.CurrentCount);
     }
 }

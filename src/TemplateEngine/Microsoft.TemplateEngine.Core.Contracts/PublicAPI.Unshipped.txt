@@ -1,0 +1,15 @@
+﻿Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Variables.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection!
+Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.RootVariableCollection.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection!
+Microsoft.TemplateEngine.Core.Contracts.IMonitoredVariableCollection
+Microsoft.TemplateEngine.Core.Contracts.IMonitoredVariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander!
+Microsoft.TemplateEngine.Core.Contracts.IMonitoredVariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander!
+Microsoft.TemplateEngine.Core.Contracts.IOperation.Id.get -> string?
+Microsoft.TemplateEngine.Core.Contracts.IOperation.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken?>!
+Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.Id.get -> string?
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekSourceForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken = false) -> void
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekSourceForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekTargetBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, bool consumeToken = false) -> void
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekTargetBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.WriteToTarget(byte[]! buffer, int offset, int count) -> void
+Microsoft.TemplateEngine.Core.Contracts.IRunSpec.TryGetTargetRelPath(string! sourceRelPath, out string? targetRelPath) -> bool
+Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken? token, int index) -> void

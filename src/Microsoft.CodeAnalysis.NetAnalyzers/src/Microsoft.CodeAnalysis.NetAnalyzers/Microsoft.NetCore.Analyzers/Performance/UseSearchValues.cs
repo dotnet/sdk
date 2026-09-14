@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -191,12 +191,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return length >= MinLengthWorthReplacing;
                 }
             }
-            else if (argument.Kind == OperationKindEx.Utf8String)
+            else if (argument is IUtf8StringOperation utf8String)
             {
                 // text.IndexOfAny("abc"u8)
-                return
-                    IUtf8StringOperationWrapper.IsInstance(argument) &&
-                    IUtf8StringOperationWrapper.FromOperation(argument).Value.Length >= MinLengthWorthReplacing;
+                return utf8String.Value.Length >= MinLengthWorthReplacing;
             }
             else if (argument is IPropertyReferenceOperation propertyReference)
             {
@@ -320,9 +318,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         internal static bool IsConstantByteOrCharCollectionExpression(IOperation operation, List<char>? values, out int length)
         {
-            if (operation.Kind == OperationKindEx.CollectionExpression &&
-                ICollectionExpressionOperationWrapper.IsInstance(operation) &&
-                ICollectionExpressionOperationWrapper.FromOperation(operation) is { } collection &&
+            if (operation is ICollectionExpressionOperation collection &&
                 AllElementsAreConstantByteOrCharLiterals(collection.Elements, values))
             {
                 length = collection.Elements.Length;

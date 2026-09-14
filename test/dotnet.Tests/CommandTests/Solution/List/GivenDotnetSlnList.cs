@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Sln.List.Tests
 {
+    [TestClass]
     public class GivenDotnetSlnList : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -22,15 +23,15 @@ Options:
   -?, -h, --help      Show command line help.";
 
 
-        public GivenDotnetSlnList(ITestOutputHelper log) : base(log)
+        public GivenDotnetSlnList()
         {
         }
 
-        [Theory]
-        [InlineData("sln", "--help")]
-        [InlineData("sln", "-h")]
-        [InlineData("solution", "--help")]
-        [InlineData("solution", "-h")]
+        [TestMethod]
+        [DataRow("sln", "--help")]
+        [DataRow("sln", "-h")]
+        [DataRow("solution", "--help")]
+        [DataRow("solution", "-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string solutionCommand, string helpArg)
         {
             var cmd = new DotnetCommand(Log)
@@ -39,11 +40,11 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Theory]
-        [InlineData("sln", "")]
-        [InlineData("sln", "unknownCommandName")]
-        [InlineData("solution", "")]
-        [InlineData("solution", "unknownCommandName")]
+        [TestMethod]
+        [DataRow("sln", "")]
+        [DataRow("sln", "unknownCommandName")]
+        [DataRow("solution", "")]
+        [DataRow("solution", "unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string solutionCommand, string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -52,9 +53,9 @@ Options:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenTooManyArgumentsArePassedItPrintsError(string solutionCommand)
         {
             var cmd = new DotnetCommand(Log)
@@ -64,17 +65,17 @@ Options:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.sln")}");
         }
 
-        [Theory]
-        [InlineData("sln", "idontexist.sln")]
-        [InlineData("sln", "ihave?invalidcharacters.sln")]
-        [InlineData("sln", "ihaveinv@lidcharacters.sln")]
-        [InlineData("sln", "ihaveinvalid/characters")]
-        [InlineData("sln", "ihaveinvalidchar\\acters")]
-        [InlineData("solution", "idontexist.sln")]
-        [InlineData("solution", "ihave?invalidcharacters.sln")]
-        [InlineData("solution", "ihaveinv@lidcharacters.sln")]
-        [InlineData("solution", "ihaveinvalid/characters")]
-        [InlineData("solution", "ihaveinvalidchar\\acters")]
+        [TestMethod]
+        [DataRow("sln", "idontexist.sln")]
+        [DataRow("sln", "ihave?invalidcharacters.sln")]
+        [DataRow("sln", "ihaveinv@lidcharacters.sln")]
+        [DataRow("sln", "ihaveinvalid/characters")]
+        [DataRow("sln", "ihaveinvalidchar\\acters")]
+        [DataRow("solution", "idontexist.sln")]
+        [DataRow("solution", "ihave?invalidcharacters.sln")]
+        [DataRow("solution", "ihaveinv@lidcharacters.sln")]
+        [DataRow("solution", "ihaveinvalid/characters")]
+        [DataRow("solution", "ihaveinvalidchar\\acters")]
         public void WhenNonExistingSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionName)
         {
             var cmd = new DotnetCommand(Log)
@@ -84,12 +85,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnList-InvalidSolutionPassed-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -103,14 +104,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenInvalidSolutionIsFoundListPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectRootDirectory = _testAssetsManager
+            var projectRootDirectory = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnList-InvalidSolutionFound-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -129,12 +130,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenNoSolutionExistsInTheDirectoryListPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -148,12 +149,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -166,14 +167,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenNoProjectsArePresentInTheSolutionItPrintsANoProjectMessage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithEmptySln", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -185,11 +186,11 @@ Options:
             cmd.StdOut.Should().Be(CliStrings.NoProjectsFound);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenProjectsPresentInTheSolutionItListsThem(string solutionCommand, string solutionExtension)
         {
             var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
@@ -197,7 +198,7 @@ Options:
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -209,11 +210,11 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenProjectsPresentInTheReadonlySolutionItListsThem(string solutionCommand, string solutionExtension)
         {
             var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
@@ -221,7 +222,7 @@ Options:
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-Readonly-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -237,18 +238,18 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPaths(string solutionCommand, string solutionExtension)
         {
             string[] expectedOutput = { $"{CliCommandStrings.SolutionFolderHeader}",
 $"{new string('-', CliCommandStrings.SolutionFolderHeader.Length)}",
 $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -260,15 +261,15 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             cmd.StdOut.Should().ContainAll(expectedOutput);
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenSolutionFilterIsPassedItListsProjectsMatching(string solutionCommand)
         {
             string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
                 $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnxAndSolutionFilters", identifier: "GivenDotnetSlnList-Filter")
                 .WithSource()
                 .Path;
@@ -280,15 +281,15 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             cmd.StdOut.Should().ContainAll(expectedOutput);
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
         {
             string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
                 $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
                 .WithSource()
                 .Path;
@@ -297,6 +298,47 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 .Execute(solutionCommand, "App.slnf", "list");
 
             cmd.Should().Pass();
+        }
+
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
+        public void WhenSolutionFilterWithTrailingCommaIsPassedItListsProjects(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("App", "App.csproj")}",
+                $"{Path.Combine("Lib", "Lib.csproj")}" };
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-TrailingComma")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "AppWithTrailingComma.slnf", "list");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
+
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
+        public void WhenSolutionFilterWithCommentsIsPassedItListsProjects(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("App", "App.csproj")}" };
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-Comments")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "AppWithComments.slnf", "list");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().ContainAll(expectedOutput);
         }
     }
 }

@@ -35,10 +35,11 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string? overrideTfm = null,
-            string? identifier = null)
+            string? identifier = null,
+            [CallerFilePath] string? callerFilePath = null)
         {
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -61,7 +62,7 @@ namespace Microsoft.NET.TestFramework
                     }
                 });
 
-            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
+            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(TestAssetsManager.TestAssetsRoot, "WasmOverride")))
                 File.Copy(assetPath, Path.Combine(projectDirectory.Path, Path.GetFileName(assetPath)));
 
             return projectDirectory;
@@ -72,10 +73,11 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string? overrideTfm = null,
-            string? identifier = null)
+            string? identifier = null,
+            [CallerFilePath] string? callerFilePath = null)
         {
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {

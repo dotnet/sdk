@@ -1,0 +1,122 @@
+<Project>
+
+  <PropertyGroup>
+    <SDKCustomTestPublishTargetFramework Condition="'$(SDKCustomTestPublishTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomTestPublishTargetFramework>
+    <SDKCustomTestRuntimeTargetFramework Condition="'$(SDKCustomTestRuntimeTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomTestRuntimeTargetFramework>
+
+    <SDKCustomTestRunnerVersion Condition="'$(SDKCustomTestRunnerVersion)' == ''">$(XUnitV3Version)</SDKCustomTestRunnerVersion>
+
+    <_SDKCustomTestPublishTargetsPath>$(MSBuildThisFileDirectory)TestPublish.targets</_SDKCustomTestPublishTargetsPath>
+
+    <SDKCustomTestArguments Condition="'$(SDKCustomTestArguments)' == ''">-nocolor</SDKCustomTestArguments>
+
+    <!-- Tests run out-of-process via a native AppHost.  When cross-compiling
+         (e.g. building on arm64 for x64 Helix queues), set RuntimeIdentifier so the
+         AppHost matches the target architecture.  SelfContained=false keeps the publish
+         framework-dependent.  ErrorOnDuplicatePublishOutputFiles=false suppresses
+         NETSDK1152 from Exe project-references (e.g. dotnet.csproj) whose outputs appear
+         in both the plain-TFM and RID-qualified directories. -->
+    <_TestPublishRidProperties Condition="'$(TargetRid)' != ''">RuntimeIdentifier=$(TargetRid);SelfContained=false;ErrorOnDuplicatePublishOutputFiles=false</_TestPublishRidProperties>
+
+    <!-- Keep TFM in sync with HelixTasks.csproj -->
+    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
+  </PropertyGroup>
+
+  <UsingTask TaskName="CreateHelixTestWorkItems" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+
+  <Choose>
+    <When Condition="$(HelixTargetQueue.ToLowerInvariant().Contains('windows'))">
+      <PropertyGroup>
+        <IsPosixShell>false</IsPosixShell>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <IsPosixShell>true</IsPosixShell>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <Target Name="RestoreSDKCustomTestProjects"
+          Condition="'@(SDKCustomTestProject)' != ''"
+          BeforeTargets="Restore"
+          Outputs="%(SDKCustomTestProject.Identity)%(SDKCustomTestProject.TargetFramework)%(SDKCustomTestProject.RuntimeTargetFramework)%(SDKCustomTestProject.AdditionalProperties)">
+    <MSBuild Projects="%(SDKCustomTestProject.Identity)"
+             Targets="Restore"
+             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);RuntimeIdentifiers=$(TargetRid);%(SDKCustomTestProject.AdditionalProperties)">
+    </MSBuild>
+  </Target>
+
+  <Target Name="BuildSDKCustomTestProjects"
+          Condition="'@(SDKCustomTestProject)' != ''"
+          BeforeTargets="CoreBuild"
+          Outputs="%(SDKCustomTestProject.Identity)%(SDKCustomTestProject.TargetFramework)%(SDKCustomTestProject.RuntimeTargetFramework)%(SDKCustomTestProject.AdditionalProperties)">
+    <PropertyGroup>
+      <_CurrentSDKCustomTestProject>%(SDKCustomTestProject.Identity)</_CurrentSDKCustomTestProject>
+      <_CurrentPublishTargetFramework>%(SDKCustomTestProject.TargetFramework)</_CurrentPublishTargetFramework>
+      <_CurrentPublishTargetFramework Condition="'$(_CurrentPublishTargetFramework)' == ''">$(SDKCustomTestPublishTargetFramework)</_CurrentPublishTargetFramework>
+      <_CurrentRuntimeTargetFramework>%(SDKCustomTestProject.RuntimeTargetFramework)</_CurrentRuntimeTargetFramework>
+      <_CurrentRuntimeTargetFramework Condition="'$(_CurrentRuntimeTargetFramework)' == ''">$(SDKCustomTestRuntimeTargetFramework)</_CurrentRuntimeTargetFramework>
+      <_CurrentAdditionalProperties>%(SDKCustomTestProject.AdditionalProperties)</_CurrentAdditionalProperties>
+    </PropertyGroup>
+    <!-- In CI, Arcade's centralized NuGet restore runs via NuGet.targets and does not
+         include RuntimeIdentifier, so the assets file lacks the RID-specific target.
+         Restore here with RuntimeIdentifiers (plural) to add the RID target without
+         clobbering multi-TFM transitive dependencies (e.g. BrowserRefresh targets net6.0). -->
+    <MSBuild Condition="'$(TargetRid)' != ''"
+             Projects="$(_CurrentSDKCustomTestProject)"
+             Targets="Restore"
+             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);RuntimeIdentifiers=$(TargetRid);$(_CurrentAdditionalProperties)" />
+
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
+      <Output TaskParameter="TargetOutputs" PropertyName="_PublishOutputDir" />
+    </MSBuild>
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+      <Output TaskParameter="TargetOutputs" PropertyName="_TargetPath" />
+    </MSBuild>
+
+    <!-- Detect whether the project is a Microsoft.Testing.Platform (MTP) project so the
+         Helix work item command can be tailored. MSTest.Sdk-based projects in this repo
+         set UsingMSTestSdk=true and ship as MTP self-contained executables (no testhost.dll),
+         so the standard 'dotnet test <dll>' VSTest invocation does not work for them. -->
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetIsMTPProject" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+      <Output TaskParameter="TargetOutputs" PropertyName="_UsingMSTestSdk" />
+    </MSBuild>
+
+    <!-- Detect whether the project has the Microsoft.Testing.Extensions.TrxReport extension
+         loaded. MSTest.Sdk enables it by default; MTP hosts without the extension reject the
+         report-trx switch with an 'unknown argument' error. -->
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTrxReportEnabled" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+      <Output TaskParameter="TargetOutputs" PropertyName="_EnableTrxReport" />
+    </MSBuild>
+
+    <ItemGroup>
+      <SDKCustomTestProject Condition="'%(Identity)' == '$(_CurrentSDKCustomTestProject)'">
+        <PublishDirectory>$(_PublishOutputDir)</PublishDirectory>
+        <TargetPath>$(_TargetPath)</TargetPath>
+        <PublishTargetFramework>$(_CurrentPublishTargetFramework)</PublishTargetFramework>
+        <RuntimeTargetFramework>$(_CurrentRuntimeTargetFramework)</RuntimeTargetFramework>
+        <IsMTPProject>$(_UsingMSTestSdk)</IsMTPProject>
+        <EnableTrxReport>$(_EnableTrxReport)</EnableTrxReport>
+      </SDKCustomTestProject>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CreateSDKCustomTestWorkItems"
+          Condition="'@(SDKCustomTestProject)' != ''"
+          BeforeTargets="CoreTest">
+
+    <CreateHelixTestWorkItems
+        TestProjects="@(SDKCustomTestProject)"
+        IsPosixShell="$(IsPosixShell)"
+        TargetRid="$(TargetRid)"
+        BaseMethodLimit="$(BaseMethodLimit)"
+        TestArguments="$(SDKCustomTestArgument)"
+        TestWorkItemTimeout="$(TestWorkItemTimeout)">
+      <Output TaskParameter="TestWorkItems" ItemName="HelixWorkItem"/>
+    </CreateHelixTestWorkItems>
+  </Target>
+
+</Project>

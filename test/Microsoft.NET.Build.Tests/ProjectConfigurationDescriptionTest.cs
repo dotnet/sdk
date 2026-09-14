@@ -1,15 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class ProjectConfigurationDescription : SdkTest
     {
-        public ProjectConfigurationDescription(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.2.1.25201")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.2.1.25201")]
         public void ProjectConfigurationDescription_DefaultTest()
         {
             const string errorTargetFramework = "net48";
@@ -22,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProj);
+            var testAsset = TestAssetsManager.CreateTestProject(testProj);
             File.WriteAllText(Path.Combine(testAsset.Path, testProj.Name, $"{testProj.Name}.cs"), @"
             using System;
             class Program

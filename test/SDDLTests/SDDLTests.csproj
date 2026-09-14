@@ -1,17 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
-    <OutputType>Exe</OutputType>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType Condition="'$(TargetOS)' == 'windows'">Exe</OutputType>
+    <OutputType Condition="'$(TargetOS)' != 'windows'">Library</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <!-- Suppress auto-generated global usings on non-Windows (project is empty) -->
+    <ImplicitUsings Condition="'$(TargetOS)' != 'windows'">disable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- This project is entirely Windows-only (MSI/SDDL/Installer) -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
   </ItemGroup>

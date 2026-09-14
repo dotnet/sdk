@@ -1,491 +1,535 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInSerializableTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInSerializableTypeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Field_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 24, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_Field_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [DataContract]
-    public class BlahClass
-    {
-        [DataMember]
-        public DataSet DS;
-    }
-}",
+                using System.Data;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    [DataContract]
+                    public class BlahClass
+                    {
+                        [DataMember]
+                        public DataSet DS;
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(11, 24, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreDataMemberOnDataTable_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.Data;
+                using System.Runtime.Serialization;
 
-namespace Blah
-{
-    public class BlahClass
-    {
-        [IgnoreDataMember]
-        public DataTable DT;
+                namespace Blah
+                {
+                    public class BlahClass
+                    {
+                        [IgnoreDataMember]
+                        public DataTable DT;
 
-        public int I;
-    }
-}");
+                        public int I;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreDataMemberOnNotDataTable_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class BlahClass
-    {
-        public DataTable DT;
+                using System.Data;
+                using System.Runtime.Serialization;
 
-        [IgnoreDataMember]
-        public int I;
-    }
-}",
+                namespace Blah
+                {
+                    public class BlahClass
+                    {
+                        public DataTable DT;
+
+                        [IgnoreDataMember]
+                        public int I;
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(9, 26, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_PrivateProperty_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [DataContract]
-    public class BlahClass
-    {
-        [DataMember]
-        private DataSet DS { get; set; }
-    }
-}",
+                using System.Data;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    [DataContract]
+                    public class BlahClass
+                    {
+                        [DataMember]
+                        private DataSet DS { get; set; }
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_KnownType_DataTable_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [DataContract]
-    [KnownType(typeof(DataTable))]
-    public class BlahClass
-    {
-        [DataMember]
-        public object DT;
-    }
-}",
+                using System.Data;
+                using System.Runtime.Serialization;
+
+                namespace Blah
+                {
+                    [DataContract]
+                    [KnownType(typeof(DataTable))]
+                    public class BlahClass
+                    {
+                        [DataMember]
+                        public object DT;
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(8, 6, "DataTable", "typeof(System.Data.DataTable)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_InheritedKnownType_DataTable_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [KnownType(typeof(DataTable))]
-    public class BlahBase
-    {
-        public object DT;
-    }
+                using System.Data;
+                using System.Runtime.Serialization;
 
-    [DataContract]
-    public class BlahClass : BlahBase
-    {
-    }
-}",
+                namespace Blah
+                {
+                    [KnownType(typeof(DataTable))]
+                    public class BlahBase
+                    {
+                        public object DT;
+                    }
+
+                    [DataContract]
+                    public class BlahClass : BlahBase
+                    {
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(7, 6, "DataTable", "typeof(System.Data.DataTable)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_FieldDerivedClass_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class MyDataSet : DataSet
-    {
-    }
+                using System;
+                using System.Data;
 
-    [Serializable]
-    public class BlahClass
-    {
-        public MyDataSet DS;
-    }
-}",
+                namespace Blah
+                {
+                    public class MyDataSet : DataSet
+                    {
+                    }
+
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public MyDataSet DS;
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(14, 26, "DataSet", "MyDataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PrivateField_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        private DataSet DS;
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        private DataSet DS;
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 25, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Property_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS { get; set; }
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyDerived_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class MyDataSet : DataSet
-    {
-    }
+                using System;
+                using System.Data;
 
-    [Serializable]
-    public class BlahClass
-    {
-        public MyDataSet DS { get; set; }
-    }
-}",
+                namespace Blah
+                {
+                    public class MyDataSet : DataSet
+                    {
+                    }
+
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public MyDataSet DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(14, 9, "DataSet", "MyDataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyList_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public List<DataSet> DS { get; set; }
-    }
-}",
+                using System;
+                using System.Collections.Generic;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public List<DataSet> DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(11, 9, "DataSet", "List<DataSet> BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyListListList_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public List<List<List<DataSet>>> DS { get; set; }
-    }
-}",
+                using System;
+                using System.Collections.Generic;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public List<List<List<DataSet>>> DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(11, 9, "DataSet", "List<List<List<DataSet>>> BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyArray_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet[] DS { get; set; }
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet[] DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Property2DArray_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet[,] DS { get; set; }
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet[,] DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[,] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyArrayArray_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet[][] DS { get; set; }
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet[][] DS { get; set; }
+                    }
+                }
+                """,
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[][] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyNoExplicitSetter_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS { get; }
-    }
-}",
+                using System;
+                using System.Data;
+
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS { get; }
+                    }
+                }
+                """,
             GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlElement_Property_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Xml.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class BlahClass
-    {
-        [XmlElement]
-        public DataSet DS { get; set; }
-    }
-}",
+                using System.Data;
+                using System.Xml.Serialization;
+
+                namespace Blah
+                {
+                    public class BlahClass
+                    {
+                        [XmlElement]
+                        public DataSet DS { get; set; }
+                    }
+                }
+                """,
             GetNonIFormatterCSharpResultAt(9, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlIgnore_Property_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Xml.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.Data;
+                using System.Xml.Serialization;
 
-namespace Blah
-{
-    [XmlRoot]
-    public class BlahClass
-    {
-        [XmlIgnore]
-        public DataSet DS { get; set; }
-    }
-}");
+                namespace Blah
+                {
+                    [XmlRoot]
+                    public class BlahClass
+                    {
+                        [XmlIgnore]
+                        public DataSet DS { get; set; }
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GeneratedCode_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Xml.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [global::System.CodeDom.Compiler.GeneratedCode(""System.Data.Design.TypedDataSetGenerator"", ""2.0.0.0"")]
-    [global::System.Serializable()]
-    [global::System.ComponentModel.DesignerCategoryAttribute(""code"")]
-    [global::System.ComponentModel.ToolboxItem(true)]
-    [global::System.Xml.Serialization.XmlSchemaProviderAttribute(""GetTypedDataSetSchema"")]
-    [global::System.Xml.Serialization.XmlRootAttribute(""Package"")]
-    [global::System.ComponentModel.Design.HelpKeywordAttribute(""vs.data.DataSet"")]
-    public class BlahClass : global::System.Data.DataSet {
-        private DataTable table;
-    }
-}",
+                using System.Data;
+                using System.Xml.Serialization;
+
+                namespace Blah
+                {
+                    [global::System.CodeDom.Compiler.GeneratedCode("System.Data.Design.TypedDataSetGenerator", "2.0.0.0")]
+                    [global::System.Serializable()]
+                    [global::System.ComponentModel.DesignerCategoryAttribute("code")]
+                    [global::System.ComponentModel.ToolboxItem(true)]
+                    [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedDataSetSchema")]
+                    [global::System.Xml.Serialization.XmlRootAttribute("Package")]
+                    [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
+                    public class BlahClass : global::System.Data.DataSet {
+                        private DataTable table;
+                    }
+                }
+                """,
                 GetAutogeneratedIFormatterCSharpResultAt(7, 5, "DataSet", "BlahClass"),
                 GetAutogeneratedIFormatterCSharpResultAt(15, 27, "DataTable", "DataTable BlahClass.table"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherGeneratedCode_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.Data;
-using System.Xml.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    //[global::System.Serializable()]
-    [global::System.ComponentModel.DesignerCategoryAttribute(""code"")]
-    [global::System.ComponentModel.ToolboxItem(true)]
-    [global::System.Xml.Serialization.XmlSchemaProviderAttribute(""GetTypedDataSetSchema"")]
-    [global::System.Xml.Serialization.XmlRootAttribute(""Package"")]
-    [global::System.ComponentModel.Design.HelpKeywordAttribute(""vs.data.DataSet"")]
-    public class BlahClass : global::System.Data.DataSet {
-        private DataTable table;
-    }
-}",
+                using System.Data;
+                using System.Xml.Serialization;
+
+                namespace Blah
+                {
+                    //[global::System.Serializable()]
+                    [global::System.ComponentModel.DesignerCategoryAttribute("code")]
+                    [global::System.ComponentModel.ToolboxItem(true)]
+                    [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedDataSetSchema")]
+                    [global::System.Xml.Serialization.XmlRootAttribute("Package")]
+                    [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
+                    public class BlahClass : global::System.Data.DataSet {
+                        private DataTable table;
+                    }
+                }
+                """,
                 GetNonIFormatterCSharpResultAt(8, 5, "DataSet", "BlahClass"));
         }
 
 #if !NETCOREAPP
-        [Fact]
+        [TestMethod]
         public async Task MessageContract_Diagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
-                @"
-namespace Blah
-{
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute(""System.ServiceModel"", ""4.0.0.0"")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName = ""GetSomethingResponse"", WrapperNamespace = ""http://tempuri.org/"", IsWrapped = true)]
-    public partial class GetSomethingResponse
-    {
+                """
+                    namespace Blah
+                    {
+                        [System.Diagnostics.DebuggerStepThroughAttribute()]
+                        [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+                        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+                        [System.ServiceModel.MessageContractAttribute(WrapperName = "GetSomethingResponse", WrapperNamespace = "http://tempuri.org/", IsWrapped = true)]
+                        public partial class GetSomethingResponse
+                        {
 
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace = ""http://tempuri.org/"", Order = 0)]
-        [System.Xml.Serialization.XmlElementAttribute(IsNullable = true)]
-        public System.Data.DataSet GetSomethingResult;
+                            [System.ServiceModel.MessageBodyMemberAttribute(Namespace = "http://tempuri.org/", Order = 0)]
+                            [System.Xml.Serialization.XmlElementAttribute(IsNullable = true)]
+                            public System.Data.DataSet GetSomethingResult;
 
-        public GetSomethingResponse()
-        {
-        }
+                            public GetSomethingResponse()
+                            {
+                            }
 
-        public GetSomethingResponse(System.Data.DataSet GetSomethingResult)
-        {
-            this.GetSomethingResult = GetSomethingResult;
-        }
-    }
-}",
+                            public GetSomethingResponse(System.Data.DataSet GetSomethingResult)
+                            {
+                                this.GetSomethingResult = GetSomethingResult;
+                            }
+                        }
+                    }
+                    """,
                 GetNonIFormatterCSharpResultAt(13, 36, "DataSet", "DataSet GetSomethingResponse.GetSomethingResult"));
         }
 #endif
 
-        [Fact]
+        [TestMethod]
         public async Task TypedTableBase_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-namespace Blah
-{
-    /// <summary>
-    ///Represents the strongly named DataTable class.
-    ///</summary>
-    [global::System.Serializable()]
-    [global::System.Xml.Serialization.XmlSchemaProviderAttribute(""GetTypedTableSchema"")]
-    public partial class SomethingDataTable : global::System.Data.TypedTableBase<SomethingRow>
-    {
-        private global::System.Data.DataColumn columnId;
-    }
+            await VerifyCSharpAnalyzerAsync("""
 
-    /// <summary>
-    ///Represents strongly named DataRow class.
-    ///</summary>
-    public partial class SomethingRow : global::System.Data.DataRow {
+                namespace Blah
+                {
+                    /// <summary>
+                    ///Represents the strongly named DataTable class.
+                    ///</summary>
+                    [global::System.Serializable()]
+                    [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
+                    public partial class SomethingDataTable : global::System.Data.TypedTableBase<SomethingRow>
+                    {
+                        private global::System.Data.DataColumn columnId;
+                    }
 
-        private SomethingDataTable tableSomething;
+                    /// <summary>
+                    ///Represents strongly named DataRow class.
+                    ///</summary>
+                    public partial class SomethingRow : global::System.Data.DataRow {
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Data.Design.TypedDataSetGenerator"", ""4.0.0.0"")]
-        internal SomethingRow(global::System.Data.DataRowBuilder rb) :
-            base(rb)
-        {
-        }
-    }
-}",
+                        private SomethingDataTable tableSomething;
+
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+                        internal SomethingRow(global::System.Data.DataRowBuilder rb) :
+                            base(rb)
+                        {
+                        }
+                    }
+                }
+                """,
                 GetAutogeneratedIFormatterCSharpResultAt(7, 5, "DataTable", "SomethingDataTable"));
         }
 
@@ -505,7 +549,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetNonIFormatterCSharpResultAt(int line, int column, params string[] arguments)

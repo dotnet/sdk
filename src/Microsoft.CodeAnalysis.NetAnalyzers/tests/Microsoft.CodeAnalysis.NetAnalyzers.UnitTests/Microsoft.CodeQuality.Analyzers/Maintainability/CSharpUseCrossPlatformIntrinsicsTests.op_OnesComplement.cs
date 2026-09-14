@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -13,17 +13,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "AdvSimd.Not")]
-        [InlineData("sbyte", "AdvSimd.Not")]
-        [InlineData("short", "AdvSimd.Not")]
-        [InlineData("ushort", "AdvSimd.Not")]
-        [InlineData("int", "AdvSimd.Not")]
-        [InlineData("uint", "AdvSimd.Not")]
-        [InlineData("long", "AdvSimd.Not")]
-        [InlineData("ulong", "AdvSimd.Not")]
-        [InlineData("float", "AdvSimd.Not")]
-        [InlineData("double", "AdvSimd.Not")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Not")]
+        [DataRow("sbyte", "AdvSimd.Not")]
+        [DataRow("short", "AdvSimd.Not")]
+        [DataRow("ushort", "AdvSimd.Not")]
+        [DataRow("int", "AdvSimd.Not")]
+        [DataRow("uint", "AdvSimd.Not")]
+        [DataRow("long", "AdvSimd.Not")]
+        [DataRow("ulong", "AdvSimd.Not")]
+        [DataRow("float", "AdvSimd.Not")]
+        [DataRow("double", "AdvSimd.Not")]
         public async Task Fixer_opOnesComplementArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -58,20 +58,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "AdvSimd.Not")]
-        [InlineData("sbyte", "AdvSimd.Not")]
-        [InlineData("short", "AdvSimd.Not")]
-        [InlineData("ushort", "AdvSimd.Not")]
-        [InlineData("int", "AdvSimd.Not")]
-        [InlineData("uint", "AdvSimd.Not")]
-        [InlineData("long", "AdvSimd.Not")]
-        [InlineData("ulong", "AdvSimd.Not")]
-        [InlineData("float", "AdvSimd.Not")]
-        [InlineData("double", "AdvSimd.Not")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Not")]
+        [DataRow("sbyte", "AdvSimd.Not")]
+        [DataRow("short", "AdvSimd.Not")]
+        [DataRow("ushort", "AdvSimd.Not")]
+        [DataRow("int", "AdvSimd.Not")]
+        [DataRow("uint", "AdvSimd.Not")]
+        [DataRow("long", "AdvSimd.Not")]
+        [DataRow("ulong", "AdvSimd.Not")]
+        [DataRow("float", "AdvSimd.Not")]
+        [DataRow("double", "AdvSimd.Not")]
         public async Task Fixer_opOnesComplementArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -106,20 +106,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "PackedSimd.Not")]
-        [InlineData("sbyte", "PackedSimd.Not")]
-        [InlineData("short", "PackedSimd.Not")]
-        [InlineData("ushort", "PackedSimd.Not")]
-        [InlineData("int", "PackedSimd.Not")]
-        [InlineData("uint", "PackedSimd.Not")]
-        [InlineData("long", "PackedSimd.Not")]
-        [InlineData("ulong", "PackedSimd.Not")]
-        [InlineData("float", "PackedSimd.Not")]
-        [InlineData("double", "PackedSimd.Not")]
+        [TestMethod]
+        [DataRow("byte", "PackedSimd.Not")]
+        [DataRow("sbyte", "PackedSimd.Not")]
+        [DataRow("short", "PackedSimd.Not")]
+        [DataRow("ushort", "PackedSimd.Not")]
+        [DataRow("int", "PackedSimd.Not")]
+        [DataRow("uint", "PackedSimd.Not")]
+        [DataRow("long", "PackedSimd.Not")]
+        [DataRow("ulong", "PackedSimd.Not")]
+        [DataRow("float", "PackedSimd.Not")]
+        [DataRow("double", "PackedSimd.Not")]
         public async Task Fixer_opOnesComplementWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -154,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

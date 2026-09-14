@@ -1,0 +1,89 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Json.Schema;
+using Microsoft.TemplateEngine.Tests;
+
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.SchemaTests
+{
+    [TestClass]
+    public class JSONSchemaTests : TestBase
+    {
+        [TestMethod]
+        [DataRow(@"SchemaTests/BasicTest.json")]
+        [DataRow(@"SchemaTests/GeneratorTest.json")]
+        [DataRow(@"SchemaTests/StarterWebTest.json")]
+        [DataRow(@"SchemaTests/PostActionTest.json")]
+        [DataRow(@"SchemaTests/SymbolsTest.json")]
+        [DataRow(@"SchemaTests/MultiValueChoiceTest.json")]
+        [DataRow(@"SchemaTests/ConstraintsTest.json")]
+        [DataRow(@"SchemaTests/ConditionalParametersTest.json")]
+        public void IsJSONSchemaValid(string testFile)
+        {
+            string schemaContent = File.ReadAllText(@"SchemaTests/template.json");
+            var schema = JsonSchema.FromText(schemaContent);
+
+            string jsonContent = File.ReadAllText(testFile);
+            var jsonNode = JsonNode.Parse(jsonContent, null, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            var result = schema.Evaluate(jsonNode, new EvaluationOptions { OutputFormat = OutputFormat.List });
+
+            var errors = result.Details?
+                .Where(d => !d.IsValid && d.Errors != null)
+                .SelectMany(d => d.Errors!.Values)
+                .ToList() ?? new List<string>();
+
+            Assert.IsTrue(
+                result.IsValid,
+                "The JSON file is not valid against the schema" +
+                Environment.NewLine +
+                string.Join(Environment.NewLine, errors));
+        }
+
+        private static readonly string JsonLocation = Path.Combine(".template.config", "template.json");
+
+        public static IEnumerable<object?[]> GetAllTemplates()
+        {
+            //those templates are intentionally wrong
+            string[] exceptions = new[] { "MissingIdentity", "MissingMandatoryConfig" };
+
+            return Directory.EnumerateFiles(TestTemplatesLocation, "template.json", SearchOption.AllDirectories)
+                .Where(s => s.Contains(".template.config"))
+                .Where(s => !exceptions.Any(e => s.Contains(e)))
+                .Select(s => s.Remove(s.Length - JsonLocation.Length).Remove(0, TestTemplatesLocation.Length).Trim(Path.DirectorySeparatorChar))
+                .Select(s => new object?[] { s });
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetAllTemplates))]
+        public void TestAllTestTemplatesHaveValidJson(string testTemplateName)
+        {
+            string testFile = Path.Combine(TestTemplatesLocation, testTemplateName, JsonLocation);
+
+            IsJSONSchemaValid(testFile);
+        }
+
+        public static IEnumerable<object?[]> GetAllTemplateSamples()
+        {
+            //those templates are intentionally wrong
+            //string[] exceptions = new[] { "MissingIdentity", "MissingMandatoryConfig" };
+
+            return Directory.EnumerateFiles(SampleTemplatesLocation, "template.json", SearchOption.AllDirectories)
+                .Where(s => s.Contains(".template.config"))
+                //.Where(s => !exceptions.Any(e => s.Contains(e)))
+                .Select(s => s.Remove(s.Length - JsonLocation.Length).Remove(0, SampleTemplatesLocation.Length).Trim(Path.DirectorySeparatorChar))
+                .Select(s => new object?[] { s });
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetAllTemplateSamples))]
+        public void TestAllSampleTemplatesHaveValidJson(string testTemplateName)
+        {
+            string testFile = Path.Combine(SampleTemplatesLocation, testTemplateName, JsonLocation);
+            IsJSONSchemaValid(testFile);
+        }
+    }
+}
+

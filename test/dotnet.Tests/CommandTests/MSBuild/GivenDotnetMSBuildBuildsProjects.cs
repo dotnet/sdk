@@ -1,24 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-
-// There are tests which modify static Telemetry.CurrentSessionId and they cannot run in parallel
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [TestClass]
     public class GivenDotnetMSBuildBuildsProjects : SdkTest
     {
 
-        public GivenDotnetMSBuildBuildsProjects(ITestOutputHelper output) : base(output)
+        public GivenDotnetMSBuildBuildsProjects()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsSpecifiedTargetsWithPropertiesCorrectly()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
                                         .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -46,17 +42,18 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .HaveStdOutContaining("You want me to say 'GreatScott'");
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46822")]
-        [InlineData("build")]
-        [InlineData("clean")]
-        [InlineData("pack")]
-        [InlineData("publish")]
-        [InlineData("restore")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/46822")]
+        [DataRow("build")]
+        [DataRow("clean")]
+        [DataRow("pack")]
+        [DataRow("publish")]
+        [DataRow("restore")]
         public void When_help_is_invoked_Then_MSBuild_extra_options_text_is_included_in_output(string commandName)
         {
             const string MSBuildHelpText = " Any extra options that should be passed to MSBuild. See 'dotnet msbuild -h' for available options.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory(identifier: commandName);
+            var projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: commandName);
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute(commandName, "--help");
@@ -65,20 +62,16 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.StdOut.Should().Contain(MSBuildHelpText);
         }
 
-        [Theory]
-        [InlineData("/p")]
-        [InlineData("/property")]
-        [InlineData("-p")]
-        [InlineData("-property")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow("/p")]
+        [DataRow("/property")]
+        [DataRow("-p")]
+        [DataRow("-property")]
         public void WhenRestoreSourcesStartsWithUnixPathThenHttpsSourceIsParsedCorrectly(string propertyFormat)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
+            var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
                                         .WithSource();
 
             var root = testInstance.Path;
@@ -93,12 +86,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.StdOut.Should().ContainVisuallySameFragment("NU1101");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDotnetRunHelpIsInvokedAppArgumentsTextIsIncludedInOutput()
         {
             string AppArgumentsText = "Arguments passed to the application that is being run.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
+            var projectDirectory = TestAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute("run", "--help");
@@ -106,11 +99,5 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.ExitCode.Should().Be(0);
             result.StdOut.Should().Contain(AppArgumentsText);
         }
-
-
-
-
     }
-
-
 }

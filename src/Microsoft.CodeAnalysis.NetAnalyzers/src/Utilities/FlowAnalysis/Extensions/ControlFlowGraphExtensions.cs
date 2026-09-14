@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeAnalysis.FlowAnalysis
@@ -39,10 +39,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis
         {
             // Skip flow analysis for following root operation blocks:
             // 1. Null root operation (error case)
-            // 2. OperationKindEx.Attribute or OperationKind.None (used for attributes before IAttributeOperation support).
+            // 2. OperationKind.Attribute or OperationKind.None (used for attributes before IAttributeOperation support).
             // 3. OperationKind.ParameterInitialzer (default parameter values).
             if (cfg.OriginalOperation == null ||
-                cfg.OriginalOperation.Kind is OperationKindEx.Attribute or OperationKind.None or OperationKind.ParameterInitializer)
+                cfg.OriginalOperation.Kind is OperationKind.Attribute or OperationKind.None or OperationKind.ParameterInitializer)
             {
                 return false;
             }

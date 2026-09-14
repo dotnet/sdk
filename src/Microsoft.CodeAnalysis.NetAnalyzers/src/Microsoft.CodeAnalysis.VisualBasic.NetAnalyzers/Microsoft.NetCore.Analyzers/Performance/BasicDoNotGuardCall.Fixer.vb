@@ -23,9 +23,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             End If
 
             If TypeOf conditionalSyntax Is MultiLineIfBlockSyntax Then
-                Dim guardedCallInElse = TypeOf childStatementSyntax.Parent Is ElseBlockSyntax
-
-                If guardedCallInElse Then
+                If IsInElseBranch(childStatementSyntax) Then
                     Return CType(conditionalSyntax, MultiLineIfBlockSyntax).ElseBlock.Statements.Count() = 1
                 Else
                     Return CType(conditionalSyntax, MultiLineIfBlockSyntax).Statements.Count() = 1
@@ -35,40 +33,63 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Return TypeOf conditionalSyntax Is SingleLineIfStatementSyntax
         End Function
 
-        Protected Overrides Function ReplaceConditionWithChild(document As Document, root As SyntaxNode, conditionalOperationNode As SyntaxNode, childOperationNode As SyntaxNode) As Document
-            Dim newConditionNode As SyntaxNode = childOperationNode
+        Protected Overrides Function IsInElseBranch(childStatementSyntax As SyntaxNode) As Boolean
+            Return TypeOf childStatementSyntax.Parent Is ElseBlockSyntax OrElse TypeOf childStatementSyntax.Parent Is SingleLineElseClauseSyntax
+        End Function
 
-            ' If there's an else block, negate the condition and replace the single true statement with it
-            Dim multiLineIfBlockSyntax = TryCast(conditionalOperationNode, MultiLineIfBlockSyntax)
-            If multiLineIfBlockSyntax?.ElseBlock?.ChildNodes().Any() Then
-                Dim generator = SyntaxGenerator.GetGenerator(document)
-                Dim negatedExpression = generator.LogicalNotExpression(CType(childOperationNode, ExpressionStatementSyntax).Expression.WithoutTrivia())
-                Dim guardedCallInElse = TypeOf childOperationNode.Parent Is ElseBlockSyntax
+        Protected Overrides Function ReplaceConditionWithChild(currentConditional As SyntaxNode, guardedCallInElse As Boolean, generator As SyntaxGenerator) As SyntaxNode
+            Dim multiLineIfBlockSyntax = TryCast(currentConditional, MultiLineIfBlockSyntax)
+            If multiLineIfBlockSyntax IsNot Nothing Then
+                Dim hasElse = multiLineIfBlockSyntax.ElseBlock IsNot Nothing AndAlso multiLineIfBlockSyntax.ElseBlock.ChildNodes().Any()
+                Dim guardedStatement = GetGuardedStatement(If(guardedCallInElse, multiLineIfBlockSyntax.ElseBlock?.Statements, multiLineIfBlockSyntax.Statements))
 
-                newConditionNode = multiLineIfBlockSyntax.WithIfStatement(multiLineIfBlockSyntax.IfStatement.WithCondition(CType(negatedExpression, ExpressionSyntax))) _
+                If guardedStatement Is Nothing Then
+                    Return currentConditional
+                End If
+
+                If Not hasElse Then
+                    Return guardedStatement.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(currentConditional)
+                End If
+
+                ' Negate the condition and keep the branch the guarded call is not in.
+                Dim negatedExpression = generator.LogicalNotExpression(guardedStatement.Expression.WithoutTrivia())
+
+                Return multiLineIfBlockSyntax.WithIfStatement(multiLineIfBlockSyntax.IfStatement.WithCondition(CType(negatedExpression, ExpressionSyntax))) _
                     .WithStatements(If(guardedCallInElse, multiLineIfBlockSyntax.Statements, multiLineIfBlockSyntax.ElseBlock.Statements)) _
                     .WithElseBlock(Nothing) _
-                    .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
-            Else
-                ' if there's an else statement, negate the condition and replace the single true statement with it
-                Dim singleLineIfBlockSyntax = TryCast(conditionalOperationNode, SingleLineIfStatementSyntax)
-                If singleLineIfBlockSyntax?.ElseClause?.ChildNodes().Any() Then
-                    Dim generator = SyntaxGenerator.GetGenerator(document)
-                    Dim negatedExpression = generator.LogicalNotExpression(CType(childOperationNode, ExpressionStatementSyntax).Expression.WithoutTrivia())
-                    Dim guardedCallInElse = TypeOf childOperationNode.Parent Is SingleLineElseClauseSyntax
-
-                    newConditionNode = singleLineIfBlockSyntax.WithCondition(CType(negatedExpression, ExpressionSyntax)) _
-                        .WithStatements(If(guardedCallInElse, singleLineIfBlockSyntax.Statements, singleLineIfBlockSyntax.ElseClause.Statements)) _
-                        .WithElseClause(Nothing) _
-                        .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
-                Else
-                    newConditionNode = newConditionNode.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
-                End If
+                    .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(currentConditional)
             End If
 
-            Dim newRoot = root.ReplaceNode(conditionalOperationNode, newConditionNode)
+            Dim singleLineIfStatementSyntax = TryCast(currentConditional, SingleLineIfStatementSyntax)
+            If singleLineIfStatementSyntax Is Nothing Then
+                Return currentConditional
+            End If
 
-            Return document.WithSyntaxRoot(newRoot)
+            Dim singleLineHasElse = singleLineIfStatementSyntax.ElseClause IsNot Nothing AndAlso singleLineIfStatementSyntax.ElseClause.ChildNodes().Any()
+            Dim singleLineGuardedStatement = GetGuardedStatement(If(guardedCallInElse, singleLineIfStatementSyntax.ElseClause?.Statements, singleLineIfStatementSyntax.Statements))
+
+            If singleLineGuardedStatement Is Nothing Then
+                Return currentConditional
+            End If
+
+            If Not singleLineHasElse Then
+                Return singleLineGuardedStatement.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(currentConditional)
+            End If
+
+            Dim singleLineNegatedExpression = generator.LogicalNotExpression(singleLineGuardedStatement.Expression.WithoutTrivia())
+
+            Return singleLineIfStatementSyntax.WithCondition(CType(singleLineNegatedExpression, ExpressionSyntax)) _
+                .WithStatements(If(guardedCallInElse, singleLineIfStatementSyntax.Statements, singleLineIfStatementSyntax.ElseClause.Statements)) _
+                .WithElseClause(Nothing) _
+                .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(currentConditional)
+        End Function
+
+        Private Shared Function GetGuardedStatement(statements As SyntaxList(Of StatementSyntax)?) As ExpressionStatementSyntax
+            If Not statements.HasValue Then
+                Return Nothing
+            End If
+
+            Return TryCast(statements.Value.FirstOrDefault(), ExpressionStatementSyntax)
         End Function
     End Class
 End Namespace

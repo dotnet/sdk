@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -13,12 +12,9 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatAPublishedDepsJsonShouldContainVersionInformation : SdkTest
     {
-        public GivenThatAPublishedDepsJsonShouldContainVersionInformation(ITestOutputHelper log) : base(log)
-        {
-        }
-
         private TestProject GetTestProject()
         {
             var testProject = new TestProject()
@@ -33,12 +29,12 @@ namespace Microsoft.NET.Publish.Tests
             return testProject;
         }
 
-        [Fact]
+        [TestMethod]
         public void Versions_are_included_in_deps_json()
         {
             var testProject = GetTestProject();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -55,7 +51,8 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void Inbox_version_of_assembly_is_loaded_over_applocal_version()
         {
             var (coreDir, publishDir, immutableDir) = TestConflictResult();
@@ -64,7 +61,8 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
         {
             static void testProjectChanges(TestProject testProject)
@@ -78,7 +76,8 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/8.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
         {
             static void publishFolderChanges(string publishFolder)
@@ -120,7 +119,7 @@ static class Program
             }
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -141,7 +140,18 @@ static class Program
 
             var exePath = Path.Combine(publishDirectory.FullName, testProject.Name + ".dll");
 
-            string rollForwardVersion = "8.0.0";
+            //  Find the actual installed 8.0.x runtime version.  With dotnetup, only the latest patch
+            //  (e.g. 8.0.22) may be installed rather than 8.0.0, so we need to discover it dynamically.
+            string dotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string sharedFxDir = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
+            string rollForwardVersion = Directory.Exists(sharedFxDir)
+                ? Directory.GetDirectories(sharedFxDir, "8.0.*")
+                    .Select(Path.GetFileName)
+                    .Where(v => !string.IsNullOrEmpty(v) && Version.TryParse(v, out _))
+                    .OrderByDescending(v => Version.Parse(v))
+                    .FirstOrDefault()
+                : null
+                ?? "8.0.0";
 
             var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
 
@@ -188,13 +198,13 @@ static class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Versions_are_included_for_self_contained_apps()
         {
             Versions_are_included(build: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void Versions_are_included_for_build()
         {
             Versions_are_included(build: true);
@@ -210,7 +220,7 @@ static class Program
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod);
 
             MSBuildCommand command;
             if (build)

@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Resources.CSharpMarkAssembliesWithNeutralResourcesLanguageAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,103 +12,110 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Resources.UnitTests
 {
+    [TestClass]
     public class MarkAssembliesWithNeutralResourcesLanguageTests
     {
-        private const string CSharpDesignerFile = @"
-namespace DesignerFile {
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")]
-    internal class Resource1 { }
+        private const string CSharpDesignerFile = """
+            namespace DesignerFile {
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+                internal class Resource1 { }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")]
-    internal class Resource2 { }
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+                internal class Resource2 { }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")]
-    internal class Resource3 { }
-}";
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+                internal class Resource3 { }
+            }
+            """;
 
-        private const string BasicDesignerFile = @"
-Namespace My.Resources
-    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")> _
-    Friend Class Resource1
-    End Class
+        private const string BasicDesignerFile = """
+            Namespace My.Resources
+                <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")> _
+                Friend Class Resource1
+                End Class
 
-    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")> _
-    Friend Class Resource2
-    End Class
+                <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")> _
+                Friend Class Resource2
+                End Class
 
-    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute(""System.Resources.Tools.StronglyTypedResourceBuilder"", ""4.0.0.0"")> _
-    Friend Class Resource3
-    End Class
-End Namespace";
+                <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")> _
+                Friend Class Resource3
+                End Class
+            End Namespace
+            """;
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpNoResourceFileAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"class C {}");
+            await VerifyCS.VerifyAnalyzerAsync("class C {}");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicNoResourceFileAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"Class C
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpResourceFileAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"class C {}", VerifyCS.Diagnostic());
+            await VerifyCSharpWithDependenciesAsync("class C {}", VerifyCS.Diagnostic());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicResourceFileAsync()
         {
-            await VerifyBasicWithDependenciesAsync(@"Class C
-End Class", VerifyVB.Diagnostic());
+            await VerifyBasicWithDependenciesAsync("""
+                Class C
+                End Class
+                """, VerifyVB.Diagnostic());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpInvalidAttribute1Async()
         {
 #pragma warning disable RS0030 // Do not use banned APIs
-            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", VerifyCS.Diagnostic().WithLocation(1, 12));
+            await VerifyCSharpWithDependenciesAsync("""""[assembly: System.Resources.NeutralResourcesLanguage("")]""""", VerifyCS.Diagnostic().WithLocation(1, 12));
 #pragma warning restore RS0030 // Do not use banned APIs
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpInvalidAttribute2Async()
         {
 #pragma warning disable RS0030 // Do not use banned APIs
-            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
+            await VerifyCSharpWithDependenciesAsync("[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
 #pragma warning restore RS0030 // Do not use banned APIs
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicInvalidAttribute1Async()
         {
 #pragma warning disable RS0030 // Do not use banned APIs
-            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", VerifyVB.Diagnostic().WithLocation(1, 2));
+            await VerifyBasicWithDependenciesAsync("""""<Assembly: System.Resources.NeutralResourcesLanguage("")>""""", VerifyVB.Diagnostic().WithLocation(1, 2));
 #pragma warning restore RS0030 // Do not use banned APIs
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicInvalidAttribute2Async()
         {
 #pragma warning disable RS0030 // Do not use banned APIs
-            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
+            await VerifyBasicWithDependenciesAsync("<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
 #pragma warning restore RS0030 // Do not use banned APIs
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpvalidAttributeAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(""en"")]");
+            await VerifyCSharpWithDependenciesAsync(""""[assembly: System.Resources.NeutralResourcesLanguage("en")]"""");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicvalidAttributeAsync()
         {
-            await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(""en"")>");
+            await VerifyBasicWithDependenciesAsync(""""<Assembly: System.Resources.NeutralResourcesLanguage("en")>"""");
         }
 
         private async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -127,7 +134,7 @@ End Class", VerifyVB.Diagnostic());
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -146,7 +153,7 @@ End Class", VerifyVB.Diagnostic());
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
     }
 }

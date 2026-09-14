@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
@@ -11,7 +11,8 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests;
 
-public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class RoslynBuildTaskTests : SdkTest
 {
     private const string CoreTargetFrameworkName = ".NETCoreApp";
     private const string FxTargetFrameworkName = ".NETFramework";
@@ -27,7 +28,12 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
 
     private static string AppHostCompilerFileName(Language language) => CompilerFileNameWithoutExtension(language) + FileNameSuffixes.CurrentPlatform.Exe;
 
-    [FullMSBuildOnlyTheory, CombinatorialData]
+    [TestMethod]
+    [FullMSBuildOnly]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_SdkStyle(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
@@ -35,7 +41,12 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, AppHostCompilerFileName(language), CoreTargetFrameworkName, useSharedCompilation);
     }
 
-    [FullMSBuildOnlyTheory, CombinatorialData]
+    [TestMethod]
+    [FullMSBuildOnly]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_SdkStyle_OptOut(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language).WithProjectChanges(static doc =>
@@ -46,7 +57,12 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, AppHostCompilerFileName(language), FxTargetFrameworkName, useSharedCompilation);
     }
 
-    [FullMSBuildOnlyTheory, CombinatorialData]
+    [TestMethod]
+    [FullMSBuildOnly]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_NonSdkStyle(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, static project =>
@@ -58,7 +74,16 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, AppHostCompilerFileName(language), FxTargetFrameworkName, useSharedCompilation);
     }
 
-    [FullMSBuildOnlyTheory, CombinatorialData]
+    [TestMethod]
+    [FullMSBuildOnly]
+    [DataRow(false, Language.CSharp, false)]
+    [DataRow(false, Language.CSharp, true)]
+    [DataRow(false, Language.VisualBasic, false)]
+    [DataRow(false, Language.VisualBasic, true)]
+    [DataRow(true, Language.CSharp, false)]
+    [DataRow(true, Language.CSharp, true)]
+    [DataRow(true, Language.VisualBasic, false)]
+    [DataRow(true, Language.VisualBasic, true)]
     public void FullMSBuild_SdkStyle_ToolsetPackage(bool useSharedCompilation, Language language, bool useFrameworkCompiler)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
@@ -70,7 +95,11 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             useSharedCompilation, toolsetPackage: true);
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void DotNet(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
@@ -79,7 +108,12 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     //  https://github.com/dotnet/sdk/issues/49665
-    [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX), CombinatorialData]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void DotNet_ToolsetPackage(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
@@ -90,10 +124,11 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// SDK side test for <see href="https://github.com/dotnet/roslyn/pull/80993"/>.
     /// </summary>
-    [FullMSBuildOnlyFact]
+    [TestMethod]
+    [FullMSBuildOnly]
     public void UsingCscManually()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Test.csproj"), $"""
             <Project Sdk="Microsoft.NET.Sdk">
@@ -158,13 +193,13 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
+        return TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
     }
 
     private static void AddCompilersToolsetPackage(TestProject project)
     {
         string roslynVersion = typeof(Compilation).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
-        Assert.False(string.IsNullOrEmpty(roslynVersion));
+        Assert.IsFalse(string.IsNullOrEmpty(roslynVersion));
         project.PackageReferences.Add(new TestPackageReference("Microsoft.Net.Compilers.Toolset", roslynVersion));
     }
 
@@ -202,7 +237,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         using (var reader = BinaryLogReader.Create(binaryLogPath))
         {
             var call = reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
-            Path.GetFileName(call.CompilerFilePath).Should().Be(compilerFileName);
+            Path.GetFileNameWithoutExtension(call.CompilerFilePath).Should().Be(Path.GetFileNameWithoutExtension(compilerFileName));
 
             const string toolsetPackageName = "microsoft.net.compilers.toolset";
             if (toolsetPackage)
@@ -240,7 +275,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
         else
         {
-            Assert.Equal(".dll", ext);
+            Assert.AreEqual(".dll", ext);
         }
 
         var tpa = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))?.Split(Path.PathSeparator) ?? [];

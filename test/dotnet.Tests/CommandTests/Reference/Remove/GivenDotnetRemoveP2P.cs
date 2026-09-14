@@ -9,6 +9,7 @@ using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
 {
+    [TestClass]
     public class GivenDotnetRemoveReference : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -47,21 +48,21 @@ Options:
         const string ConditionCurrentFramework = $"== '{ToolsetInfo.CurrentTargetFramework}'";
         static readonly string[] DefaultFrameworks = new string[] { ToolsetInfo.CurrentTargetFramework, "net451" };
 
-        public GivenDotnetRemoveReference(ITestOutputHelper log) : base(log)
+        public GivenDotnetRemoveReference()
         {
         }
 
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
-                _testAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod + nameof(GivenDotnetRemoveReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
+                TestAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod + nameof(GivenDotnetRemoveReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
                     .WithSource()
                     .Path);
         }
 
         private ProjDir NewDir([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
         {
-            return new ProjDir(_testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
+            return new ProjDir(TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
         }
 
         private ProjDir NewLib(string dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
@@ -150,9 +151,9 @@ Options:
             return projectFile;
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new RemoveReferenceCommand(Log).Execute(helpArg);
@@ -160,10 +161,10 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRejectsProjectPathPassedToFileOption_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var projectFile = CreateMinimalProject(testInstance.Path, "App");
 
             new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", projectFile)
@@ -173,10 +174,10 @@ Options:
                 .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRejectsProjectAndFileOptions_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 Console.WriteLine();
                 """);
@@ -189,9 +190,9 @@ Options:
                 .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("unknownCommandName")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
             List<string> args = new();
@@ -207,7 +208,7 @@ Options:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference", "proj.csproj")
@@ -217,9 +218,9 @@ Options:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
-        [Theory]
-        [InlineData("idontexist.csproj")]
-        [InlineData("ihave?inv@lid/char\\acters")]
+        [TestMethod]
+        [DataRow("idontexist.csproj")]
+        [DataRow("ihave?inv@lid/char\\acters")]
         public void WhenNonExistingProjectIsPassedItPrintsError(string projName)
         {
             var setup = Setup(identifier: projName.GetHashCode().ToString());
@@ -233,7 +234,7 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenBrokenProjectIsPassedItPrintsError()
         {
             string projName = "Broken/Broken.csproj";
@@ -262,7 +263,7 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenMoreThanOneProjectExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -276,7 +277,7 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectsExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -289,7 +290,7 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesRefWithoutCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -308,10 +309,10 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesRefWithoutCondAndPrintsStatus_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Lib/Lib.csproj
                 #:project Other/Other.csproj
@@ -334,10 +335,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPreservesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
                 #:project Other/Other.csproj
@@ -360,10 +361,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
                 #:project Other/Other.csproj
@@ -388,10 +389,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesFileBasedAppReferenceDirective_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, $$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
                 #:ref Util.cs
@@ -419,10 +420,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesMSBuildPropertyRefDirectiveWhenRemovingReference_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, $$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
                 #:ref $(MSBuildThisFileDirectory)Util.cs
@@ -453,7 +454,7 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRemovesRefWithCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -472,7 +473,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(libref.Name, ConditionFrameworkNet451).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTwoDifferentRefsArePresentItDoesNotRemoveBoth()
         {
             var setup = Setup();
@@ -492,7 +493,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithoutCondIsNotThereItPrintsMessage()
         {
             var setup = Setup();
@@ -509,10 +510,10 @@ Options:
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithoutCondIsNotThereItPrintsMessage_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Other/Other.csproj
 
@@ -530,12 +531,12 @@ Options:
             File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
-        [Theory]
-        [InlineData("Missing")]
-        [InlineData("missing")]
+        [TestMethod]
+        [DataRow("Missing")]
+        [DataRow("missing")]
         public void ItRemovesProjectReferenceDirectiveWhenReferencedProjectDoesNotExist_FileBasedApp(string referenceArgument)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Missing
 
@@ -553,10 +554,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPreservesFileBasedAppReferenceDirectiveWhenRemovingMissingProjectReference_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, $$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
                 #:project Missing
@@ -579,10 +580,10 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenFileBasedAppReferenceWithoutExistingFileIsNotThereItPrintsMessage_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, $$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
 
@@ -599,12 +600,12 @@ Options:
             File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
-        [Theory]
-        [InlineData("Missing")]
-        [InlineData("missing")]
+        [TestMethod]
+        [DataRow("Missing")]
+        [DataRow("missing")]
         public void ItRemovesFileBasedAppReferenceDirectiveWhenReferencedFileDoesNotExist_FileBasedApp(string referenceArgument)
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, $$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
                 #:ref Missing
@@ -625,7 +626,7 @@ Options:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithCondIsNotThereItPrintsMessage()
         {
             var setup = Setup();
@@ -642,7 +643,7 @@ Options:
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithAndWithoutCondArePresentAndRemovingNoCondItDoesNotRemoveOther()
         {
             var setup = Setup();
@@ -667,7 +668,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCond.Name, ConditionFrameworkNet451).Should().Be(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithAndWithoutCondArePresentAndRemovingCondItDoesNotRemoveOther()
         {
             var setup = Setup();
@@ -692,7 +693,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCond.Name, ConditionFrameworkNet451).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRefWithDifferentCondIsPresentItDoesNotRemoveIt()
         {
             var setup = Setup();
@@ -717,7 +718,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCondNetCoreApp10.Name, ConditionCurrentFramework).Should().Be(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll()
         {
             var setup = Setup();
@@ -740,10 +741,10 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Lib/Lib.csproj
                 #:project Lib/Lib.csproj
@@ -764,7 +765,7 @@ Options:
             File.ReadAllText(appFile).Should().Contain("Console.WriteLine();");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingRefWithRelPathItRemovesRefWithAbsolutePath()
         {
             var setup = Setup();
@@ -783,7 +784,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingRefWithRelPathToProjectItRemovesRefWithPathRelToProject()
         {
             var setup = Setup();
@@ -802,7 +803,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingRefWithAbsolutePathItRemovesRefWithRelPath()
         {
             var setup = Setup();
@@ -821,7 +822,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingMultipleReferencesItRemovesThemAll()
         {
             var setup = Setup();
@@ -845,10 +846,10 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(validref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingMultipleReferencesItRemovesThemAll_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Lib/Lib.csproj
                 #:project ValidRef/ValidRef.csproj
@@ -870,7 +871,7 @@ Options:
             File.ReadAllText(appFile).Should().Contain("Console.WriteLine();");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingMultipleReferencesAndOneOfThemDoesNotExistItRemovesOne()
         {
             var setup = Setup();
@@ -893,7 +894,7 @@ Options:
             csproj.NumberOfProjectReferencesWithIncludeContaining(validref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDirectoryContainingProjectIsGivenReferenceIsRemoved()
         {
             var setup = Setup();
@@ -910,7 +911,7 @@ Options:
             result.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation()
         {
             var setup = Setup();
@@ -927,7 +928,7 @@ Options:
             result.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation()
         {
             var setup = Setup();
@@ -944,7 +945,7 @@ Options:
             result.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectIsSpecifiedItUsesCurrentDirectory()
         {
             var setup = Setup();

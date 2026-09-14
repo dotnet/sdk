@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.JsonNetTypeNameHandling,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,206 +15,223 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class JsonNetTypeNameHandlingTests
     {
         private static readonly DiagnosticDescriptor Rule = JsonNetTypeNameHandling.Rule;
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
 
-public class ExampleClass
-{
-    public JsonSerializerSettings Settings { get; }
+                using Newtonsoft.Json;
 
-    public ExampleClass()
-    {
-        Settings = new JsonSerializerSettings();
-        Settings.TypeNameHandling = TypeNameHandling.All;    // CA2326 violation.
-    }
-}",
+                public class ExampleClass
+                {
+                    public JsonSerializerSettings Settings { get; }
+
+                    public ExampleClass()
+                    {
+                        Settings = new JsonSerializerSettings();
+                        Settings.TypeNameHandling = TypeNameHandling.All;    // CA2326 violation.
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 37, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyBasicWithJsonNetAsync(version, @"
-Imports Newtonsoft.Json
+            await VerifyBasicWithJsonNetAsync(version, """
 
-Public Class ExampleClass
-    Public ReadOnly Property Settings() As JsonSerializerSettings
+                Imports Newtonsoft.Json
 
-    Public Sub New()
-        Settings = New JsonSerializerSettings()
-        Settings.TypeNameHandling = TypeNameHandling.All    ' CA2326 violation.
-    End Sub
-End Class",
+                Public Class ExampleClass
+                    Public ReadOnly Property Settings() As JsonSerializerSettings
+
+                    Public Sub New()
+                        Settings = New JsonSerializerSettings()
+                        Settings.TypeNameHandling = TypeNameHandling.All    ' CA2326 violation.
+                    End Sub
+                End Class
+                """,
                 GetBasicResultAt(9, 37, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using Newtonsoft.Json;
 
-public class ExampleClass
-{
-    public JsonSerializerSettings Settings { get; }
+                public class ExampleClass
+                {
+                    public JsonSerializerSettings Settings { get; }
 
-    public ExampleClass()
-    {
-        Settings = new JsonSerializerSettings();
-        
-        // The default value of Settings.TypeNameHandling is TypeNameHandling.None.
-    }
-}");
+                    public ExampleClass()
+                    {
+                        Settings = new JsonSerializerSettings();
+
+                        // The default value of Settings.TypeNameHandling is TypeNameHandling.None.
+                    }
+                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyBasicWithJsonNetAsync(version, @"
-Imports Newtonsoft.Json
+            await VerifyBasicWithJsonNetAsync(version, """
+                Imports Newtonsoft.Json
 
-Public Class ExampleClass
-    Public ReadOnly Property Settings() As JsonSerializerSettings
+                Public Class ExampleClass
+                    Public ReadOnly Property Settings() As JsonSerializerSettings
 
-    Public Sub New()
-        Settings = New JsonSerializerSettings()
+                    Public Sub New()
+                        Settings = New JsonSerializerSettings()
 
-        ' The default value of Settings.TypeNameHandling is TypeNameHandling.None.
-    End Sub
-End Class");
+                        ' The default value of Settings.TypeNameHandling is TypeNameHandling.None.
+                    End Sub
+                End Class
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using System;
+                using Newtonsoft.Json;
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        Console.WriteLine(TypeNameHandling.None);
-    }
-}");
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        Console.WriteLine(TypeNameHandling.None);
+                    }
+                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_TypeNameHandling_All_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        Console.WriteLine(TypeNameHandling.All);
-    }
-}",
+                using System;
+                using Newtonsoft.Json;
+
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        Console.WriteLine(TypeNameHandling.All);
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 27, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_AttributeTargets_All_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using System;
+                using Newtonsoft.Json;
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        Console.WriteLine(AttributeTargets.All);
-    }
-}");
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        Console.WriteLine(AttributeTargets.All);
+                    }
+                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_Objects_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        TypeNameHandling tnh = TypeNameHandling.Objects;
-    }
-}",
+                using System;
+                using Newtonsoft.Json;
+
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        TypeNameHandling tnh = TypeNameHandling.Objects;
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 32, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_1_Or_Arrays_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        TypeNameHandling tnh = (TypeNameHandling) 1 | TypeNameHandling.Arrays;
-    }
-}",
+                using System;
+                using Newtonsoft.Json;
+
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        TypeNameHandling tnh = (TypeNameHandling) 1 | TypeNameHandling.Arrays;
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 55, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_0_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using System;
+                using Newtonsoft.Json;
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        TypeNameHandling tnh = (TypeNameHandling) 0;
-    }
-}");
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        TypeNameHandling tnh = (TypeNameHandling) 0;
+                    }
+                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(version, @"
-using System;
-using Newtonsoft.Json;
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using System;
+                using Newtonsoft.Json;
 
-class Blah
-{
-    public static void Main(string[] args)
-    {
-        TypeNameHandling tnh = TypeNameHandling.None;
-    }
-}");
+                class Blah
+                {
+                    public static void Main(string[] args)
+                    {
+                        TypeNameHandling tnh = TypeNameHandling.None;
+                    }
+                }
+                """);
         }
 
         private async Task VerifyCSharpWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -235,7 +252,7 @@ class Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -256,7 +273,7 @@ class Blah
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

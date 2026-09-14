@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <!-- Test classes either use immutable inputs or isolated TestAssetsManager directories. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
 
     <!-- By default test projects don't append TargetFramework to output path, but for multi-targeted tests
          we need to -->
@@ -13,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

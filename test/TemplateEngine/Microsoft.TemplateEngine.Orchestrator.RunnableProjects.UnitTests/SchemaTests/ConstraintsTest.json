@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test",
+  "classifications": [ "Web", "MVC" ],
+  "name": "Test",
+  "defaultName": "WebApplication1",
+  "identity": "Test",
+  "groupIdentity": "Test",
+  "shortName": "test",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "test.Basic",
+  "preferNameDirectory": true,
+  "primaryOutputs": [ { "path": "test.Basic.csproj" } ],
+  "sources": [
+    {
+
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "displayName": "Target framework",
+      "choices": [
+        {
+          "choice": "netcoreapp1.1",
+          "description": "Target netcoreapp1.1",
+          "displayName": ".NET Core 1.1"
+        }
+      ],
+      "defaultValue": "netcoreapp1.1"
+    }
+  },
+  "constraints": {
+    "one": {
+      "type": "t1",
+      "args": "string"
+    },
+    "two": {
+      "type": "t2",
+      "args": [
+        "one",
+        "two"
+      ]
+    },
+    "three": {
+      "type": "t3",
+      "args": {
+        "a1": "val1",
+        "a2": {
+          "a3": "val2"
+        }
+      }
+    },
+    "four": {
+      "type": "t4"
+    },
+    "only-win": {
+      "type": "os",
+      "args": "Windows"
+    },
+    "unix-and-osx": {
+      "type": "os",
+      "args": [ "OSX", "Windows" ]
+    },
+    "VS": {
+      "type": "host",
+      "args": [
+        {
+          "hostname": "vs"
+        }
+      ]
+    },
+    "dotnet": {
+      "type": "host",
+      "args": [
+        {
+          "hostname": "dotnetcli",
+          "version": "6.0.*"
+        }
+      ]
+    }
+  }
+}

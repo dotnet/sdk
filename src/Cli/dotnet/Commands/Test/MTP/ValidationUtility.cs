@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -16,7 +17,7 @@ internal static class ValidationUtility
         ValidatePathOptions(pathOptions);
         ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        void ValidatePathOptions(PathOptions pathOptions)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
             if (pathOptions.TestModules is not null)
@@ -45,7 +46,8 @@ internal static class ValidationUtility
                 parseResult.HasOption(definition.ConfigurationOption) ||
                 parseResult.HasOption(definition.FrameworkOption) ||
                 parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
-                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption) ||
+                parseResult.HasOption(definition.UseCurrentRuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
@@ -129,7 +131,9 @@ internal static class ValidationUtility
         isSolution = CliConstants.SolutionExtensions.Contains(extension);
         projectOrSolutionFile = projectOrSolutionFileOrDirectory;
         // If it's not a directory, validate as a file path
-        if (!isSolution && !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        if (!isSolution &&
+            !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase) &&
+            !VirtualProjectBuilder.IsValidEntryPointPath(projectOrSolutionFileOrDirectory, requireFileToExist: false))
         {
             projectOrSolutionFile = null;
             isSolution = false;

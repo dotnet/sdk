@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Error_Evaluation_Expression">
+        <source>Encountered following error when parsing and evaluating expression:</source>
+        <target state="translated">При синтаксическом анализе и вычислении выражения произошла следующая ошибка:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_Evaluation_Expression_Substring">
+        <source>Unexpected substring after parsed expression:</source>
+        <target state="translated">Непредвиденная подстрока после синтаксического анализа выражения:</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

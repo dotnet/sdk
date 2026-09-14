@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotCallOverridableMethodsInConstructorsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,217 +13,234 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotCallOverridableMethodsInConstructorsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    C()
-    {
-        SomeMethod();
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    protected virtual void SomeMethod() { }
-}
-",
+                class C
+                {
+                    C()
+                    {
+                        SomeMethod();
+                    }
+
+                    protected virtual void SomeMethod() { }
+                }
+
+                """,
             GetCA2214CSharpResultAt(6, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodCSharpWithScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    C()
-    {
-        [|SomeMethod()|];
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class C
+                {
+                    C()
+                    {
+                        [|SomeMethod()|];
+                    }
 
-    protected virtual void SomeMethod() { }
-}
-");
+                    protected virtual void SomeMethod() { }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Public Sub New()
-        SomeMethod()
-    End Sub
-    Overridable Sub SomeMethod()
-    End Sub
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Class C
+                    Public Sub New()
+                        SomeMethod()
+                    End Sub
+                    Overridable Sub SomeMethod()
+                    End Sub
+                End Class
+
+                """,
             GetCA2214BasicResultAt(4, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodBasicwithScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Public Sub New()
-        [|SomeMethod()|]
-    End Sub
-    Overridable Sub SomeMethod()
-    End Sub
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Public Sub New()
+                        [|SomeMethod()|]
+                    End Sub
+                    Overridable Sub SomeMethod()
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214AbstractMethodCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-abstract class C
-{
-    C()
-    {
-        SomeMethod();
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    protected abstract void SomeMethod();
-}
-",
+                abstract class C
+                {
+                    C()
+                    {
+                        SomeMethod();
+                    }
+
+                    protected abstract void SomeMethod();
+                }
+
+                """,
             GetCA2214CSharpResultAt(6, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214AbstractMethodBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-MustInherit Class C
-    Public Sub New()
-        SomeMethod()
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                MustInherit Class C
+                    Public Sub New()
+                        SomeMethod()
+                    End Sub
+                    MustOverride Sub SomeMethod()
+                End Class
+
+                """,
             GetCA2214BasicResultAt(4, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214MultipleInstancesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-abstract class C
-{
-    C()
-    {
-        SomeMethod();
-        SomeOtherMethod();
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    protected abstract void SomeMethod();
-    protected virtual void SomeOtherMethod() { }
-}
-",
+                abstract class C
+                {
+                    C()
+                    {
+                        SomeMethod();
+                        SomeOtherMethod();
+                    }
+
+                    protected abstract void SomeMethod();
+                    protected virtual void SomeOtherMethod() { }
+                }
+
+                """,
             GetCA2214CSharpResultAt(6, 9),
             GetCA2214CSharpResultAt(7, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214MultipleInstancesBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-MustInherit Class C
-    Public Sub New()
-        SomeMethod()
-        SomeOtherMethod()
-    End Sub
-    MustOverride Sub SomeMethod()
-    Overridable Sub SomeOtherMethod()
-    End Sub
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                MustInherit Class C
+                    Public Sub New()
+                        SomeMethod()
+                        SomeOtherMethod()
+                    End Sub
+                    MustOverride Sub SomeMethod()
+                    Overridable Sub SomeOtherMethod()
+                    End Sub
+                End Class
+
+                """,
            GetCA2214BasicResultAt(4, 9),
            GetCA2214BasicResultAt(5, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NotTopLevelCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-abstract class C
-{
-    C()
-    {
-        if (true)
-        {
-            SomeMethod();
-        }
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-        if (false)
-        {
-            SomeMethod(); // also check unreachable code
-        }
-    }
+                abstract class C
+                {
+                    C()
+                    {
+                        if (true)
+                        {
+                            SomeMethod();
+                        }
 
-    protected abstract void SomeMethod();
-}
-",
+                        if (false)
+                        {
+                            SomeMethod(); // also check unreachable code
+                        }
+                    }
+
+                    protected abstract void SomeMethod();
+                }
+
+                """,
             GetCA2214CSharpResultAt(8, 13),
             GetCA2214CSharpResultAt(13, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NotTopLevelBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-MustInherit Class C
-    Public Sub New()
-        If True Then
-            SomeMethod()
-        End If
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-        If False Then
-            SomeMethod() ' also check unreachable code
-        End If
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
-",
+                MustInherit Class C
+                    Public Sub New()
+                        If True Then
+                            SomeMethod()
+                        End If
+
+                        If False Then
+                            SomeMethod() ' also check unreachable code
+                        End If
+                    End Sub
+                    MustOverride Sub SomeMethod()
+                End Class
+
+                """,
             GetCA2214BasicResultAt(5, 13),
             GetCA2214BasicResultAt(9, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NoDiagnosticsOutsideConstructorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-abstract class C
-{
-    protected abstract void SomeMethod();
+            await VerifyCS.VerifyAnalyzerAsync("""
+                abstract class C
+                {
+                    protected abstract void SomeMethod();
 
-    void Method()
-    {
-        SomeMethod();
-    }
-}
-");
+                    void Method()
+                    {
+                        SomeMethod();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NoDiagnosticsOutsideConstructorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-MustInherit Class C
-    MustOverride Sub SomeMethod()
+            await VerifyVB.VerifyAnalyzerAsync("""
+                MustInherit Class C
+                    MustOverride Sub SomeMethod()
 
-    Sub Method()
-        SomeMethod()
-    End Sub
-End Class
-");
+                    Sub Method()
+                        SomeMethod()
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceCSharp_WebAsync()
         {
             await new VerifyCS.Test
@@ -233,36 +250,36 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-abstract class C : System.Web.UI.Control
-{
-    C()
-    {
-        // no diagnostics because we inherit from System.Web.UI.Control
-        SomeMethod();
-        OnLoad(null);
-    }
+                        """
+                            abstract class C : System.Web.UI.Control
+                            {
+                                C()
+                                {
+                                    // no diagnostics because we inherit from System.Web.UI.Control
+                                    SomeMethod();
+                                    OnLoad(null);
+                                }
 
-    protected abstract void SomeMethod();
-}
+                                protected abstract void SomeMethod();
+                            }
 
-abstract class F : System.ComponentModel.Component
-{
-    F()
-    {
-        // no diagnostics because we inherit from System.ComponentModel.Component
-        SomeMethod();
-    }
+                            abstract class F : System.ComponentModel.Component
+                            {
+                                F()
+                                {
+                                    // no diagnostics because we inherit from System.ComponentModel.Component
+                                    SomeMethod();
+                                }
 
-    protected abstract void SomeMethod();
-}
-"
+                                protected abstract void SomeMethod();
+                            }
+                            """
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceCSharp_WinFormsAsync()
         {
             await new VerifyCS.Test
@@ -272,48 +289,48 @@ abstract class F : System.ComponentModel.Component
                 {
                     Sources =
                     {
-                        @"
-abstract class D : System.Windows.Forms.Control
-{
-    D()
-    {
-        // no diagnostics because we inherit from System.Windows.Forms.Control
-        SomeMethod();
-        OnPaint(null);
-    }
+                        """
+                            abstract class D : System.Windows.Forms.Control
+                            {
+                                D()
+                                {
+                                    // no diagnostics because we inherit from System.Windows.Forms.Control
+                                    SomeMethod();
+                                    OnPaint(null);
+                                }
 
-    protected abstract void SomeMethod();
-}
+                                protected abstract void SomeMethod();
+                            }
 
-class ControlBase : System.Windows.Forms.Control
-{
-}
+                            class ControlBase : System.Windows.Forms.Control
+                            {
+                            }
 
-class E : ControlBase
-{
-    E()
-    {
-        OnGotFocus(null); // no diagnostics when we're not an immediate descendant of a special class
-    }
-}
+                            class E : ControlBase
+                            {
+                                E()
+                                {
+                                    OnGotFocus(null); // no diagnostics when we're not an immediate descendant of a special class
+                                }
+                            }
 
-abstract class F : System.ComponentModel.Component
-{
-    F()
-    {
-        // no diagnostics because we inherit from System.ComponentModel.Component
-        SomeMethod();
-    }
+                            abstract class F : System.ComponentModel.Component
+                            {
+                                F()
+                                {
+                                    // no diagnostics because we inherit from System.ComponentModel.Component
+                                    SomeMethod();
+                                }
 
-    protected abstract void SomeMethod();
-}
-"
+                                protected abstract void SomeMethod();
+                            }
+                            """
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceBasic_WinFormsAsync()
         {
             await new VerifyVB.Test
@@ -323,43 +340,43 @@ abstract class F : System.ComponentModel.Component
                 {
                     Sources =
                     {
-                        @"
-MustInherit Class D
-    Inherits System.Windows.Forms.Control
-    Public Sub New()
-        ' no diagnostics because we inherit from System.Windows.Forms.Control
-        SomeMethod()
-        OnPaint(Nothing)
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
+                        """
+                            MustInherit Class D
+                                Inherits System.Windows.Forms.Control
+                                Public Sub New()
+                                    ' no diagnostics because we inherit from System.Windows.Forms.Control
+                                    SomeMethod()
+                                    OnPaint(Nothing)
+                                End Sub
+                                MustOverride Sub SomeMethod()
+                            End Class
 
-Class ControlBase
-    Inherits System.Windows.Forms.Control
-End Class
+                            Class ControlBase
+                                Inherits System.Windows.Forms.Control
+                            End Class
 
-Class E
-    Inherits ControlBase
-    Public Sub New()
-        OnGotFocus(Nothing) ' no diagnostics when we're not an immediate descendant of a special class
-    End Sub
-End Class
+                            Class E
+                                Inherits ControlBase
+                                Public Sub New()
+                                    OnGotFocus(Nothing) ' no diagnostics when we're not an immediate descendant of a special class
+                                End Sub
+                            End Class
 
-MustInherit Class F
-    Inherits System.ComponentModel.Component
-    Public Sub New()
-        ' no diagnostics because we inherit from System.ComponentModel.Component
-        SomeMethod()
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
-"
+                            MustInherit Class F
+                                Inherits System.ComponentModel.Component
+                                Public Sub New()
+                                    ' no diagnostics because we inherit from System.ComponentModel.Component
+                                    SomeMethod()
+                                End Sub
+                                MustOverride Sub SomeMethod()
+                            End Class
+                            """
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceBasic_WebAsync()
         {
             await new VerifyVB.Test
@@ -369,165 +386,166 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-MustInherit Class C
-    Inherits System.Web.UI.Control
-    Public Sub New()
-        ' no diagnostics because we inherit from System.Web.UI.Control
-        SomeMethod()
-        OnLoad(Nothing)
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
+                        """
+                            MustInherit Class C
+                                Inherits System.Web.UI.Control
+                                Public Sub New()
+                                    ' no diagnostics because we inherit from System.Web.UI.Control
+                                    SomeMethod()
+                                    OnLoad(Nothing)
+                                End Sub
+                                MustOverride Sub SomeMethod()
+                            End Class
 
-MustInherit Class F
-    Inherits System.ComponentModel.Component
-    Public Sub New()
-        ' no diagnostics because we inherit from System.ComponentModel.Component
-        SomeMethod()
-    End Sub
-    MustOverride Sub SomeMethod()
-End Class
-"
+                            MustInherit Class F
+                                Inherits System.ComponentModel.Component
+                                Public Sub New()
+                                    ' no diagnostics because we inherit from System.ComponentModel.Component
+                                    SomeMethod()
+                                End Sub
+                                MustOverride Sub SomeMethod()
+                            End Class
+                            """
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualOnOtherClassesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class D
-{
-    public virtual void SomeMethod() {}
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class D
+                {
+                    public virtual void SomeMethod() {}
+                }
 
-class C
-{
-    public C(object obj, D d)
-    {
-        if (obj.Equals(d))
-        {
-            d.SomeMethod();
-        }
-    }
-}
-");
+                class C
+                {
+                    public C(object obj, D d)
+                    {
+                        if (obj.Equals(d))
+                        {
+                            d.SomeMethod();
+                        }
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualOnOtherClassesBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class D
-    Public Overridable Sub SomeMethod()
-    End Sub
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class D
+                    Public Overridable Sub SomeMethod()
+                    End Sub
+                End Class
 
-Class C
-    Public Sub New(obj As Object, d As D)
-        If obj.Equals(d) Then
-            d.SomeMethod()
-        End If
-    End Sub
-End Class
-");
+                Class C
+                    Public Sub New(obj As Object, d As D)
+                        If obj.Equals(d) Then
+                            d.SomeMethod()
+                        End If
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
+        [TestMethod, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
         public async Task CA2214VirtualInvocationsInLambdaCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-internal abstract class A
-{
-    private readonly Lazy<int> _lazyField;
-    protected A()
-    {
-        _lazyField = new Lazy<int>(() => M());
-    }
+                internal abstract class A
+                {
+                    private readonly Lazy<int> _lazyField;
+                    protected A()
+                    {
+                        _lazyField = new Lazy<int>(() => M());
+                    }
 
-    protected abstract int M();
-}
-");
+                    protected abstract int M();
+                }
+                """);
         }
 
-        [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
+        [TestMethod, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
         public async Task CA2214VirtualInvocationsInLambdaBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Friend MustInherit Class A
-    Private ReadOnly _lazyField As Lazy(Of Integer)
+                Friend MustInherit Class A
+                    Private ReadOnly _lazyField As Lazy(Of Integer)
 
-    Protected Sub New()
-        _lazyField = New Lazy(Of Integer)(Function() M())
-    End Sub
+                    Protected Sub New()
+                        _lazyField = New Lazy(Of Integer)(Function() M())
+                    End Sub
 
-    Protected MustOverride Function M() As Integer
-End Class
-");
+                    Protected MustOverride Function M() As Integer
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
+        [TestMethod, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
         public async Task CA2214_VirtualInvocationsInLambdaAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    private readonly Lazy<Task> _initialization;
+                public class C
+                {
+                    private readonly Lazy<Task> _initialization;
 
-    protected C()
-    {
-        Task RunInit() => this.InitializeAsync(this.DisposeCts.Token);
-        this._initialization = new Lazy<Task>(() => Task.Run(RunInit, this.DisposeCts.Token), isThreadSafe: true);
-    }
+                    protected C()
+                    {
+                        Task RunInit() => this.InitializeAsync(this.DisposeCts.Token);
+                        this._initialization = new Lazy<Task>(() => Task.Run(RunInit, this.DisposeCts.Token), isThreadSafe: true);
+                    }
 
-    protected CancellationTokenSource DisposeCts { get; } = new CancellationTokenSource();
+                    protected CancellationTokenSource DisposeCts { get; } = new CancellationTokenSource();
 
-    protected Task Initialization => this._initialization.Value;
+                    protected Task Initialization => this._initialization.Value;
 
-    protected virtual async Task InitializeAsync(CancellationToken cancellationToken)
-    {
-        // Content doesn't matter
-    }
-}");
+                    protected virtual async Task InitializeAsync(CancellationToken cancellationToken)
+                    {
+                        // Content doesn't matter
+                    }
+                }
+                """);
         }
 
-        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        [TestMethod, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
         public async Task CA2214VirtualOnOtherSameClassesCSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    public C(C d)
-    {
-        d.SomeMethod();
-    }
-    public virtual void SomeMethod() {}
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class C
+                {
+                    public C(C d)
+                    {
+                        d.SomeMethod();
+                    }
+                    public virtual void SomeMethod() {}
+                }
+                """);
         }
 
-        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        [TestMethod, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
         public async Task CA2214VirtualOnOtherSameClassesBasic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Public Sub New(d As C)
-        d.SomeMethod()
-    End Sub
-    Public Overridable Sub SomeMethod()
-    End Sub
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Public Sub New(d As C)
+                        d.SomeMethod()
+                    End Sub
+                    Public Overridable Sub SomeMethod()
+                    End Sub
+                End Class
+                """);
         }
 
         private static DiagnosticResult GetCA2214CSharpResultAt(int line, int column)

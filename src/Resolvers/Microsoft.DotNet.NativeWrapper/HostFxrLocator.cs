@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP
+#if NET
 using Microsoft.DotNet.HostFxr;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
     /// <summary>
     ///  NativeWrapper-facing entry point for locating the native <c>hostfxr</c> library.
-    ///  The actual path-resolution logic lives in <see cref="HostFxrPathResolver"/>
-    ///  under <c>src/Common</c>.
+    ///  The actual path-resolution logic lives in the source-shared
+    ///  <see cref="HostFxrPathResolver"/> (under <c>src/Common</c>) so this resolver and the
+    ///  Native AOT <c>dn</c> host stay in lockstep.
     /// </summary>
     internal static class HostFxrLocator
     {

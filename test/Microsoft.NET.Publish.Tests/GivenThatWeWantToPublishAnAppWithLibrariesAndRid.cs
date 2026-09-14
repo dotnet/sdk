@@ -1,22 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAnAppWithLibrariesAndRid : SdkTest
     {
-        public GivenThatWeWantToPublishAnAppWithLibrariesAndRid(ITestOutputHelper log) : base(log)
-        {
-        }
-
         // Libuv version used by LibraryWithRid/LibraryWithRids
         private const string LibuvVersion = "1.10.0";
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Unhandled exception. System.DllNotFoundException: Unable to load shared library 'libuv' or one of its dependencies.
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_publishes_a_self_contained_runnable_output()
         {
             PublishAppWithLibraryAndRid(true,
@@ -55,7 +53,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_publishes_a_framework_dependent_RID_specific_runnable_output()
         {
             PublishAppWithLibraryAndRid(false,
@@ -87,7 +86,7 @@ namespace Microsoft.NET.Publish.Tests
         private void PublishAppWithLibraryAndRid(bool selfContained, out DirectoryInfo publishDirectory, out string runtimeIdentifier)
         {
             runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryAndRid", $"PublishAppWithLibraryAndRid{selfContained}")
                 .WithSource();
 

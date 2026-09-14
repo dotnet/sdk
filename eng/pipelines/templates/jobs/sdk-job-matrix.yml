@@ -2,52 +2,75 @@ parameters:
   oneESCompat:
     templateFolderName: templates
   locBranch: ''
+  runTests: true
+  additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:
-  - categoryName: TestBuild
-    publishRetryConfig: true
+  - publishRetryConfig: true
+    runNativeAotCliTests: true
+  - categoryName: AOT
+    runAoTTests: true
   - categoryName: FullFramework
     testFullMSBuild: true
-  - categoryName: TestAsTools
-    runTestsAsTool: true
-    # This job uses the build step for testing, so the extra test step is not necessary.
+  # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
+  # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
+  # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
+  # its mstat/dgml size-analysis artifacts (that step is gated on the AOT category). It is build-only
+  # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
+  # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
+  # The VS 2026 build image is required for the arm64 linker used by this cross-build.
+  - categoryName: AOT
+    targetArchitecture: arm64
+    runtimeIdentifier: win-arm64
+    osProperties: /p:CrossBuild=true
     runTests: false
-  - categoryName: TemplateEngine
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
-  - categoryName: AoT
-    runAoTTests: true
   ### LINUX ###
   linuxJobParameterSets:
-  - categoryName: TestBuild
+  - osProperties: $(linuxOsglibcProperties)
+    runNativeAotCliTests: true
+  # The x64 AOT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
+  # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
+  # run the *.AoT.Tests.csproj test projects.
+  - categoryName: AOT
+    runAoTTests: true
     osProperties: $(linuxOsglibcProperties)
-  - categoryName: TestBuild
-    targetArchitecture: arm64
+  - categoryName: ContainerBased
+    container: azureLinux30Amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
+    # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+    disableJob: true
+  - targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
-  - categoryName: ContainerBased
-    container: azureLinux30Amd64
-    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true
-    # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
-    disableJob: true
-  - categoryName: TemplateEngine
-    osProperties: $(linuxOsglibcProperties)
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
+  # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
+  # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
+  # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
+  # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent with
+  # the other linux-arm64 legs, this only performs the build (the x64 AOT leg provides the running
+  # test coverage).
+  - categoryName: AOT
+    container: azureLinuxCrossArm64
+    targetArchitecture: arm64
+    runtimeIdentifier: linux-arm64
+    osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
+    runTests: false
   ### MACOS ###
   macOSJobParameterSets:
-  - categoryName: TestBuild
-    runtimeIdentifier: osx-x64
-  - categoryName: TemplateEngine
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
-    runtimeIdentifier: osx-x64
-  - categoryName: AoT
+  - targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
+    runNativeAotCliTests: true
+  # dotnet-aot is built with NativeAOT, which can cross-compile osx-x64 -> osx-arm64 (clang/link on
+  # macOS are multi-target and need no extra sysroot). This leg BUILDS on the x64 macOS pool with
+  # /p:CrossBuild=true; because AOT tests are dispatched to Helix, the *.AoT.Tests still run on the
+  # osx.15.arm64 Helix queue, so there is no macOS AOT test-coverage loss.
+  - categoryName: AOT
     runAoTTests: true
-    runtimeIdentifier: osx-x64
+    targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
+    osProperties: /p:CrossBuild=true
 
 jobs:
 ### ONELOCBUILD ###
@@ -61,25 +84,44 @@ jobs:
       MirrorRepo: sdk
 ### BUILD JOBS ###
 # Each job parameter set creates a new job and the parameter set is unwrapped into the parameters for that job.
-# The parameters sent to this template are also passed to the job, which does include the os-specific jobParameterSets array, but that array itself isn't used in the job.
+# jobParameters takes priority: iterate top-level parameters and skip any key that jobParameters already
+# defines, then insert jobParameters. This avoids duplicate-key conflicts for any override (e.g. runTests).
 - ${{ if eq(parameters.pool.os, 'windows') }}:
   - ${{ each jobParameters in parameters.windowsJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Windows
+  - ${{ each jobParameters in parameters.additionalWindowsJobParameterSets }}:
+    - ${{ if not(jobParameters.disableJob) }}:
+      - template: /eng/pipelines/templates/jobs/sdk-build.yml
+        parameters:
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
+          ${{ insert }}: ${{ jobParameters }}
+          platformName: Windows
 - ${{ if eq(parameters.pool.os, 'linux') }}:
   - ${{ each jobParameters in parameters.linuxJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Linux
 - ${{ if eq(parameters.pool.os, 'macOS') }}:
   - ${{ each jobParameters in parameters.macOSJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
-          ${{ insert }}: ${{ parameters }}
+          ${{ each param in parameters }}:
+            ${{ if eq(jobParameters[param.key], '') }}:
+              ${{ param.key }}: ${{ param.value }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Mac

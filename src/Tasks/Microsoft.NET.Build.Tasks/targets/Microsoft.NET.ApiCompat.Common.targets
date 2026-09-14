@@ -12,8 +12,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project>
 
   <!-- Expose the tasks for SDK consumption and for external use cases. -->
-  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
-  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidatePackageTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
+  <!-- Architecture="*" so MSBuild can launch the .NET task host in any available architecture
+       (the .NET SDK only ships x64/arm64 task hosts; without "*", an x86 desktop MSBuild process
+       defaults to looking for an x86 task host that doesn't exist and fails with MSB4216).
+       TODO: Remove Architecture="*" once https://github.com/dotnet/msbuild/issues/13739 is fixed
+       and a new MSBuild with that fix is consumed. -->
+  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" Runtime="NET" Architecture="*" />
+  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidatePackageTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" Runtime="NET" Architecture="*" />
 
   <Target Name="CollectApiCompatInputs">
     <PropertyGroup Condition="'$(RoslynAssembliesPath)' == ''">

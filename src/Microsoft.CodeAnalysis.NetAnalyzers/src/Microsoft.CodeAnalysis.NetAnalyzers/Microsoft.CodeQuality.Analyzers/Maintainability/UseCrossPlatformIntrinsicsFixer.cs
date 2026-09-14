@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Immutable;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.NetAnalyzers;
 
@@ -14,15 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     using static MicrosoftCodeQualityAnalyzersResources;
     using RuleKind = UseCrossPlatformIntrinsicsAnalyzer.RuleKind;
 
-    public abstract class UseCrossPlatformIntrinsicsFixer : OrderedCodeFixProvider
+    public abstract class UseCrossPlatformIntrinsicsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCrossPlatformIntrinsicsAnalyzer.RuleId);
 
-        protected sealed override string CodeActionTitle => UseCrossPlatformIntrinsicsTitle;
+        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        {
+            RegisterCodeFix(context, UseCrossPlatformIntrinsicsTitle, nameof(UseCrossPlatformIntrinsicsFixer));
+            return Task.CompletedTask;
+        }
 
-        protected sealed override string CodeActionEquivalenceKey => nameof(UseCrossPlatformIntrinsicsFixer);
-
-        protected sealed override Task FixAllCoreAsync(SyntaxEditor editor, SyntaxGenerator generator, Diagnostic diagnostic, CancellationToken cancellationToken)
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 

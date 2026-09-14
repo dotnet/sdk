@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesFixer>;
@@ -12,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class InterfaceMethodsShouldBeCallableByChildTypesTests
     {
         #region Verifiers
@@ -34,108 +35,110 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         #region CSharp
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public interface IGeneral
-{
-    object DoSomething();
-    void DoNothing();
-    void JustThrow();
+                using System;
 
-    int this[int item] { get; }
-    string Name { get; }
-}
+                public interface IGeneral
+                {
+                    object DoSomething();
+                    void DoNothing();
+                    void JustThrow();
 
-public class ImplementsGeneral  : IGeneral
-{
-    // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-    object IGeneral.DoSomething() { return null; }
+                    int this[int item] { get; }
+                    string Name { get; }
+                }
 
-    void IGeneral.DoNothing() { }
-    void IGeneral.JustThrow() { throw new Exception(); }
+                public class ImplementsGeneral  : IGeneral
+                {
+                    // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                    object IGeneral.DoSomething() { return null; }
 
-    int IGeneral.this[int item]
-    {
-        // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        get
-        {
-            Console.WriteLine(this);
-            return item;
-        }
-    }
+                    void IGeneral.DoNothing() { }
+                    void IGeneral.JustThrow() { throw new Exception(); }
 
-    string IGeneral.Name
-    {
-        // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        get
-        {
-            Console.WriteLine(this);
-            return ""name"";
-        }
-    }
-}
+                    int IGeneral.this[int item]
+                    {
+                        // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return item;
+                        }
+                    }
 
-public class ImplementsGeneralThree : IGeneral
-{
-    public ImplementsGeneralThree()
-    {
-        DoSomething();
-        int i = this[0];
-        i = i + 1;
-        string name = Name;
-        Console.WriteLine(name);
-    }
+                    string IGeneral.Name
+                    {
+                        // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return "name";
+                        }
+                    }
+                }
 
-    // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-    object IGeneral.DoSomething() { return null; }
+                public class ImplementsGeneralThree : IGeneral
+                {
+                    public ImplementsGeneralThree()
+                    {
+                        DoSomething();
+                        int i = this[0];
+                        i = i + 1;
+                        string name = Name;
+                        Console.WriteLine(name);
+                    }
 
-    void IGeneral.DoNothing() { }
-    void IGeneral.JustThrow() { throw new Exception(); }
+                    // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                    object IGeneral.DoSomething() { return null; }
 
-    int IGeneral.this[int item]
-    {
-        // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        get
-        {
-            Console.WriteLine(this);
-            return item;
-        }
-    }
+                    void IGeneral.DoNothing() { }
+                    void IGeneral.JustThrow() { throw new Exception(); }
 
-    string IGeneral.Name
-    {
-        // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        get
-        {
-            Console.WriteLine(this);
-            return ""name"";
-        }
-    }
+                    int IGeneral.this[int item]
+                    {
+                        // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return item;
+                        }
+                    }
 
-    // private, this is no good
-    int DoSomething() { Console.WriteLine(this); return 0; }
-    internal string Name
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return ""name"";
-        }
-    }
-    int this[int item]
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return item;
-        }
-    }
-}
-",
+                    string IGeneral.Name
+                    {
+                        // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return "name";
+                        }
+                    }
+
+                    // private, this is no good
+                    int DoSomething() { Console.WriteLine(this); return 0; }
+                    internal string Name
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return "name";
+                        }
+                    }
+                    int this[int item]
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return item;
+                        }
+                    }
+                }
+
+                """,
             CSharpResult(17, 21, "ImplementsGeneral", "IGeneral.DoSomething"),
             CSharpResult(25, 9, "ImplementsGeneral", "IGeneral.get_Item"),
             CSharpResult(35, 9, "ImplementsGeneral", "IGeneral.get_Name"),
@@ -144,64 +147,66 @@ public class ImplementsGeneralThree : IGeneral
             CSharpResult(73, 9, "ImplementsGeneralThree", "IGeneral.get_Name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NestedDiagnosticCasesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class NestedExplicitInterfaceImplementation
-{
-    public interface INestedGeneral
-    {
-        object DoSomething();
-        void DoNothing();
-        void JustThrow();
-        int this[int item] { get; }
-        string Name { get; }
-        event EventHandler TheEvent;
-    }
+                using System;
 
-    public class ImplementsNestedGeneral : INestedGeneral
-    {
-        // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        object INestedGeneral.DoSomething() { return null; }
+                public class NestedExplicitInterfaceImplementation
+                {
+                    public interface INestedGeneral
+                    {
+                        object DoSomething();
+                        void DoNothing();
+                        void JustThrow();
+                        int this[int item] { get; }
+                        string Name { get; }
+                        event EventHandler TheEvent;
+                    }
 
-        void INestedGeneral.DoNothing() { }
-        void INestedGeneral.JustThrow() { throw new Exception(); }
+                    public class ImplementsNestedGeneral : INestedGeneral
+                    {
+                        // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        object INestedGeneral.DoSomething() { return null; }
 
-        int INestedGeneral.this[int item]
-        {
-            // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            get
-            {
-                Console.WriteLine(this);
-                return item;
-            }
-        }
+                        void INestedGeneral.DoNothing() { }
+                        void INestedGeneral.JustThrow() { throw new Exception(); }
 
-        string INestedGeneral.Name
-        {
-            // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            get
-            {
-                Console.WriteLine(this);
-                return ""name"";
-            }
-        }
+                        int INestedGeneral.this[int item]
+                        {
+                            // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            get
+                            {
+                                Console.WriteLine(this);
+                                return item;
+                            }
+                        }
 
-        event EventHandler INestedGeneral.TheEvent
-        {
-            // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            add
-            { Console.WriteLine(this); }
-            // [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            remove
-            { Console.WriteLine(this); }
-        }
-    }
-}
-",
+                        string INestedGeneral.Name
+                        {
+                            // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            get
+                            {
+                                Console.WriteLine(this);
+                                return "name";
+                            }
+                        }
+
+                        event EventHandler INestedGeneral.TheEvent
+                        {
+                            // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            add
+                            { Console.WriteLine(this); }
+                            // [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            remove
+                            { Console.WriteLine(this); }
+                        }
+                    }
+                }
+
+                """,
             CSharpResult(19, 31, "ImplementsNestedGeneral", "NestedExplicitInterfaceImplementation.INestedGeneral.DoSomething"),
             CSharpResult(27, 13, "ImplementsNestedGeneral", "NestedExplicitInterfaceImplementation.INestedGeneral.get_Item"),
             CSharpResult(37, 13, "ImplementsNestedGeneral", "NestedExplicitInterfaceImplementation.INestedGeneral.get_Name"),
@@ -209,291 +214,378 @@ public class NestedExplicitInterfaceImplementation
             CSharpResult(50, 13, "ImplementsNestedGeneral", "NestedExplicitInterfaceImplementation.INestedGeneral.remove_TheEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NoDiagnosticCasesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public interface IGeneral
-{
-    object DoSomething();
-    void DoNothing();
-    void JustThrow();
+                public interface IGeneral
+                {
+                    object DoSomething();
+                    void DoNothing();
+                    void JustThrow();
 
-    int this[int item] { get; }
-    string Name { get; }
-}
+                    int this[int item] { get; }
+                    string Name { get; }
+                }
 
-public class ImplementsGeneral : IGeneral
-{
-    object IGeneral.DoSomething()
-    {
-        DoSomething(true);
-        return null;
-    }
-    public object DoSomething(bool x) { return x; }
+                public class ImplementsGeneral : IGeneral
+                {
+                    object IGeneral.DoSomething()
+                    {
+                        DoSomething(true);
+                        return null;
+                    }
+                    public object DoSomething(bool x) { return x; }
 
-    void IGeneral.DoNothing() { }
-    void IGeneral.JustThrow() { throw new Exception(); }
+                    void IGeneral.DoNothing() { }
+                    void IGeneral.JustThrow() { throw new Exception(); }
 
-    int IGeneral.this[int item]
-    {
-        get
-        {
-            throw new Exception();
+                    int IGeneral.this[int item]
+                    {
+                        get
+                        {
+                            throw new Exception();
+                        }
+                    }
+
+                    string IGeneral.Name
+                    {
+                        get => throw new Exception();
+                    }
+                }
+
+                public class ImplementsGeneralThree : IGeneral
+                {
+                    public ImplementsGeneralThree()
+                    {
+                        DoSomething(true);
+                        int i = this[0];
+                        i = i + 1;
+                        string name = Name;
+                        Console.WriteLine(name);
+                    }
+
+                    object IGeneral.DoSomething()
+                    {
+                        DoSomething(true);
+                        return null;
+                    }
+                    public object DoSomething(bool x) { return x; }
+
+                    void IGeneral.DoNothing() { }
+                    void IGeneral.JustThrow() { throw new Exception(); }
+
+                    int IGeneral.this[int item]
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return item;
+                        }
+                    }
+
+                    string IGeneral.Name
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return "name";
+                        }
+                    }
+
+                    public string Name
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return "name";
+                        }
+                    }
+                    public int this[int item]
+                    {
+                        get
+                        {
+                            Console.WriteLine(this);
+                            return item;
+                        }
+                    }
+                }
+
+                public class NestedExplicitInterfaceImplementation
+                {
+                    public interface INestedGeneral
+                    {
+                        object DoSomething();
+                        void DoNothing();
+                        void JustThrow();
+                        int this[int item] { get; }
+                        string Name { get; }
+                        event EventHandler TheEvent;
+                    }
+
+                    public class ImplementsNestedGeneral : INestedGeneral
+                    {
+                        object INestedGeneral.DoSomething()
+                        {
+                            DoSomething(true);
+                            return null;
+                        }
+                        public object DoSomething(bool x) { return x; }
+
+                        void INestedGeneral.DoNothing() { }
+                        void INestedGeneral.JustThrow() { throw new Exception(); }
+
+                        int INestedGeneral.this[int item]
+                        {
+                            get
+                            {
+                                throw new Exception();
+                            }
+                        }
+
+                        string INestedGeneral.Name
+                        {
+                            get => throw new Exception();
+                        }
+
+                        event EventHandler INestedGeneral.TheEvent
+                        {
+                            add
+                            { }
+                            remove
+                            { }
+                        }
+                    }
+                }
+                """);
         }
-    }
 
-    string IGeneral.Name
-    {
-        get => throw new Exception();
-    }
-}
-
-public class ImplementsGeneralThree : IGeneral
-{
-    public ImplementsGeneralThree()
-    {
-        DoSomething(true);
-        int i = this[0];
-        i = i + 1;
-        string name = Name;
-        Console.WriteLine(name);
-    }
-
-    object IGeneral.DoSomething()
-    {
-        DoSomething(true);
-        return null;
-    }
-    public object DoSomething(bool x) { return x; }
-
-    void IGeneral.DoNothing() { }
-    void IGeneral.JustThrow() { throw new Exception(); }
-
-    int IGeneral.this[int item]
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return item;
-        }
-    }
-
-    string IGeneral.Name
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return ""name"";
-        }
-    }
-
-    public string Name
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return ""name"";
-        }
-    }
-    public int this[int item]
-    {
-        get
-        {
-            Console.WriteLine(this);
-            return item;
-        }
-    }
-}
-
-public class NestedExplicitInterfaceImplementation
-{
-    public interface INestedGeneral
-    {
-        object DoSomething();
-        void DoNothing();
-        void JustThrow();
-        int this[int item] { get; }
-        string Name { get; }
-        event EventHandler TheEvent;
-    }
-
-    public class ImplementsNestedGeneral : INestedGeneral
-    {
-        object INestedGeneral.DoSomething()
-        {
-            DoSomething(true);
-            return null;
-        }
-        public object DoSomething(bool x) { return x; }
-
-        void INestedGeneral.DoNothing() { }
-        void INestedGeneral.JustThrow() { throw new Exception(); }
-
-        int INestedGeneral.this[int item]
-        {
-            get
-            {
-                throw new Exception();
-            }
-        }
-
-        string INestedGeneral.Name
-        {
-            get => throw new Exception();
-        }
-
-        event EventHandler INestedGeneral.TheEvent
-        {
-            add
-            { }
-            remove
-            { }
-        }
-    }
-}
-");
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task CA1033ExpressionBodiedMemberCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public interface IGeneral
-{
-    object DoSomething();
-}
+                using System;
 
-public class ImplementsGeneral  : IGeneral
-{
-    object IGeneral.DoSomething() => null;
-}
+                public interface IGeneral
+                {
+                    object DoSomething();
+                }
 
-public class ImplementsGeneralThree : IGeneral
-{
-    public ImplementsGeneralThree()
-    {
-        DoSomething();
-    }
+                public class ImplementsGeneral  : IGeneral
+                {
+                    object IGeneral.DoSomething() => null;
+                }
 
-    object IGeneral.DoSomething() => null;
-    private int DoSomething() => 0;
-}
-",
+                public class ImplementsGeneralThree : IGeneral
+                {
+                    public ImplementsGeneralThree()
+                    {
+                        DoSomething();
+                    }
+
+                    object IGeneral.DoSomething() => null;
+                    private int DoSomething() => 0;
+                }
+
+                """,
             CSharpResult(11, 21, "ImplementsGeneral", "IGeneral.DoSomething"),
             CSharpResult(21, 21, "ImplementsGeneralThree", "IGeneral.DoSomething"));
+        }
+
+        [TestMethod]
+        public async Task CA1033InterfaceWithDefaultImplementationsCSharpAsync()
+        {
+            await VerifyCS.Test.Create("""
+                using System;
+
+                public interface IGeneral
+                {
+                    int this[int item] { get; }
+                    string Name { get; }
+                    event EventHandler TheEvent;
+                    object DoSomething();
+                }
+
+                public interface IExtendsGeneral : IGeneral
+                {
+                    int this[int item]
+                    {
+                        get { return item; }
+                    }
+
+                    string Name
+                    {
+                        get { return "name"; }
+                    }
+
+                    event EventHandler TheEvent
+                    {
+                        add { DoSomething(); }
+                        remove { DoSomething(); }
+                    }
+
+                    object IGeneral.DoSomething() { return null; }
+                }
+                """,
+                LanguageVersion.CSharp8).RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1033InterfaceWithExpressionBodiedDefaultImplementationsCSharpAsync()
+        {
+            await VerifyCS.Test.Create("""
+                using System;
+
+                public interface IGeneral
+                {
+                    int this[int item] { get; }
+                    string Name { get; }
+                    event EventHandler TheEvent;
+                    object DoSomething();
+                }
+
+                public interface IExtendsGeneral : IGeneral
+                {
+                    int this[int item]
+                    {
+                        get => item;
+                    }
+
+                    string Name
+                    {
+                        get => "name";
+                    }
+
+                    event EventHandler TheEvent
+                    {
+                        add => DoSomething();
+                        remove => DoSomething();
+                    }
+
+                    object IGeneral.DoSomething() => null;
+                }
+
+                public interface IAlsoExtendsGeneral : IGeneral
+                {
+                    int this[int item] => item;
+
+                    string Name => "name";
+                }
+                """,
+                LanguageVersion.CSharp8).RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region VisualBasic
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Interface IGeneral
-    Function DoSomething() As Object
-    Sub DoNothing()
-    Sub JustThrow()
+                Imports System
 
-    Default ReadOnly Property Item(item__1 As Integer) As Integer
-    ReadOnly Property Name() As String
-End Interface
+                Public Interface IGeneral
+                    Function DoSomething() As Object
+                    Sub DoNothing()
+                    Sub JustThrow()
 
-Public Class ImplementsGeneral
-    Implements IGeneral
+                    Default ReadOnly Property Item(item__1 As Integer) As Integer
+                    ReadOnly Property Name() As String
+                End Interface
 
-    ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
-        Return Nothing
-    End Function
+                Public Class ImplementsGeneral
+                    Implements IGeneral
 
-    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
-    End Sub
+                    ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
+                        Return Nothing
+                    End Function
 
-    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
-        Throw New Exception()
-    End Sub
+                    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
+                    End Sub
 
-    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
-        ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        Get
-            Console.WriteLine(Me)
-            Return item
-        End Get
-    End Property
+                    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
+                        Throw New Exception()
+                    End Sub
 
-    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
-        ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        Get
-            Console.WriteLine(Me)
-            Return ""name""
-        End Get
-    End Property
-End Class
+                    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
+                        ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        Get
+                            Console.WriteLine(Me)
+                            Return item
+                        End Get
+                    End Property
 
-Public Class ImplementsGeneralThree
-    Implements IGeneral
+                    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
+                        ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        Get
+                            Console.WriteLine(Me)
+                            Return "name"
+                        End Get
+                    End Property
+                End Class
+
+                Public Class ImplementsGeneralThree
+                    Implements IGeneral
 
 
-    Public Sub New()
-        DoSomething()
-    End Sub
+                    Public Sub New()
+                        DoSomething()
+                    End Sub
 
-    ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
-        Return Nothing
-    End Function
+                    ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
+                        Return Nothing
+                    End Function
 
-    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
-    End Sub
-    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
-        Throw New Exception()
-    End Sub
+                    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
+                    End Sub
+                    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
+                        Throw New Exception()
+                    End Sub
 
-    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
-        ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        Get
-            Console.WriteLine(Me)
-            Return item
-        End Get
-    End Property
+                    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
+                        ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        Get
+                            Console.WriteLine(Me)
+                            Return item
+                        End Get
+                    End Property
 
-    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
-        ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        Get
-            Console.WriteLine(Me)
-            Return ""name""
-        End Get
-    End Property
+                    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
+                        ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        Get
+                            Console.WriteLine(Me)
+                            Return "name"
+                        End Get
+                    End Property
 
-    ' private, this is no good
-    Private Function DoSomething() As Integer
-        Console.WriteLine(Me)
-        Return 0
-    End Function
-    Friend ReadOnly Property Name() As String
-        Get
-            Console.WriteLine(Me)
-            Return ""name""
-        End Get
-    End Property
+                    ' private, this is no good
+                    Private Function DoSomething() As Integer
+                        Console.WriteLine(Me)
+                        Return 0
+                    End Function
+                    Friend ReadOnly Property Name() As String
+                        Get
+                            Console.WriteLine(Me)
+                            Return "name"
+                        End Get
+                    End Property
 
-    Private ReadOnly Property Item(item__1 As Integer) As Integer
-        Get
-            Console.WriteLine(Me)
-            Return item__1
-        End Get
-    End Property
-End Class
-",
+                    Private ReadOnly Property Item(item__1 As Integer) As Integer
+                        Get
+                            Console.WriteLine(Me)
+                            Return item__1
+                        End Get
+                    End Property
+                End Class
+
+                """,
             BasicResult(17, 22, "ImplementsGeneral", "IGeneral_DoSomething"),
             BasicResult(30, 9, "ImplementsGeneral", "get_IGeneral_Item"),
             BasicResult(38, 9, "ImplementsGeneral", "get_IGeneral_Name"),
@@ -502,68 +594,70 @@ End Class
             BasicResult(74, 9, "ImplementsGeneralThree", "get_IGeneral_Name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NestedDiagnosticCasesBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class NestedExplicitInterfaceImplementation
-    Public Interface INestedGeneral
-        Function DoSomething() As Object
-        Sub DoNothing()
-        Sub JustThrow()
-        Default ReadOnly Property Item(item__1 As Integer) As Integer
-        ReadOnly Property Name() As String
-        Event TheEvent As EventHandler
-    End Interface
+                Imports System
 
-    Public Class ImplementsNestedGeneral
-        Implements INestedGeneral
-        ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-        Private Function INestedGeneral_DoSomething() As Object Implements INestedGeneral.DoSomething
-            Return Nothing
-        End Function
+                Public Class NestedExplicitInterfaceImplementation
+                    Public Interface INestedGeneral
+                        Function DoSomething() As Object
+                        Sub DoNothing()
+                        Sub JustThrow()
+                        Default ReadOnly Property Item(item__1 As Integer) As Integer
+                        ReadOnly Property Name() As String
+                        Event TheEvent As EventHandler
+                    End Interface
 
-        Private Sub INestedGeneral_DoNothing() Implements INestedGeneral.DoNothing
-        End Sub
-        Private Sub INestedGeneral_JustThrow() Implements INestedGeneral.JustThrow
-            Throw New Exception()
-        End Sub
+                    Public Class ImplementsNestedGeneral
+                        Implements INestedGeneral
+                        ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                        Private Function INestedGeneral_DoSomething() As Object Implements INestedGeneral.DoSomething
+                            Return Nothing
+                        End Function
 
-        Private ReadOnly Property INestedGeneral_Item(item As Integer) As Integer Implements INestedGeneral.Item
-            ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            Get
-                Console.WriteLine(Me)
-                Return item
-            End Get
-        End Property
+                        Private Sub INestedGeneral_DoNothing() Implements INestedGeneral.DoNothing
+                        End Sub
+                        Private Sub INestedGeneral_JustThrow() Implements INestedGeneral.JustThrow
+                            Throw New Exception()
+                        End Sub
 
-        Private ReadOnly Property INestedGeneral_Name() As String Implements INestedGeneral.Name
-            ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            Get
-                Console.WriteLine(Me)
-                Return ""name""
-            End Get
-        End Property
+                        Private ReadOnly Property INestedGeneral_Item(item As Integer) As Integer Implements INestedGeneral.Item
+                            ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            Get
+                                Console.WriteLine(Me)
+                                Return item
+                            End Get
+                        End Property
 
-        Private Custom Event TheEvent As EventHandler Implements INestedGeneral.TheEvent
-            ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            AddHandler(ByVal value As EventHandler)
-                Console.WriteLine(Me)
-            End AddHandler
+                        Private ReadOnly Property INestedGeneral_Name() As String Implements INestedGeneral.Name
+                            ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            Get
+                                Console.WriteLine(Me)
+                                Return "name"
+                            End Get
+                        End Property
 
-            ' [ExpectedWarning(""InterfaceMethodsShouldBeCallableByChildTypes"", ""DesignRules"")]
-            RemoveHandler(ByVal value As EventHandler)
-                Console.WriteLine(Me)
-            End RemoveHandler
+                        Private Custom Event TheEvent As EventHandler Implements INestedGeneral.TheEvent
+                            ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            AddHandler(ByVal value As EventHandler)
+                                Console.WriteLine(Me)
+                            End AddHandler
 
-            RaiseEvent()
-            End RaiseEvent
-        End Event
-    End Class
-End Class
-",
+                            ' [ExpectedWarning("InterfaceMethodsShouldBeCallableByChildTypes", "DesignRules")]
+                            RemoveHandler(ByVal value As EventHandler)
+                                Console.WriteLine(Me)
+                            End RemoveHandler
+
+                            RaiseEvent()
+                            End RaiseEvent
+                        End Event
+                    End Class
+                End Class
+
+                """,
             BasicResult(17, 26, "ImplementsNestedGeneral", "INestedGeneral_DoSomething"),
             BasicResult(29, 13, "ImplementsNestedGeneral", "get_INestedGeneral_Item"),
             BasicResult(37, 13, "ImplementsNestedGeneral", "get_INestedGeneral_Name"),
@@ -571,154 +665,154 @@ End Class
             BasicResult(50, 13, "ImplementsNestedGeneral", "remove_TheEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NoUnderlyingImplementationsDiagnosticsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Interface IGeneral
-    Function DoSomething() As Object
-    Sub DoNothing()
-    Sub JustThrow()
+                Public Interface IGeneral
+                    Function DoSomething() As Object
+                    Sub DoNothing()
+                    Sub JustThrow()
 
-    Default ReadOnly Property Item(item__1 As Integer) As Integer
-    ReadOnly Property Name() As String
-End Interface
+                    Default ReadOnly Property Item(item__1 As Integer) As Integer
+                    ReadOnly Property Name() As String
+                End Interface
 
-Public Class ImplementsGeneral
-    Implements IGeneral
+                Public Class ImplementsGeneral
+                    Implements IGeneral
 
-    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
-        Return Nothing
-    End Function
+                    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
+                        Return Nothing
+                    End Function
 
-    Public Function DoSomething() As Integer
-        Console.WriteLine(Me)
-        Return 0
-    End Function
+                    Public Function DoSomething() As Integer
+                        Console.WriteLine(Me)
+                        Return 0
+                    End Function
 
-    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
-    End Sub
+                    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
+                    End Sub
 
-    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
-        Throw New Exception()
-    End Sub
+                    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
+                        Throw New Exception()
+                    End Sub
 
-    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
-        Get
-            Throw New Exception()
-        End Get
-    End Property
+                    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
+                        Get
+                            Throw New Exception()
+                        End Get
+                    End Property
 
-    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
-        Get
-        End Get
-    End Property
-End Class
+                    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
+                        Get
+                        End Get
+                    End Property
+                End Class
 
-Public Class ImplementsGeneralThree
-    Implements IGeneral
+                Public Class ImplementsGeneralThree
+                    Implements IGeneral
 
 
-    Public Sub New()
-        DoSomething()
-    End Sub
+                    Public Sub New()
+                        DoSomething()
+                    End Sub
 
-    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
-        Return Nothing
-    End Function
+                    Private Function IGeneral_DoSomething() As Object Implements IGeneral.DoSomething
+                        Return Nothing
+                    End Function
 
-    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
-    End Sub
-    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
-        Throw New Exception()
-    End Sub
+                    Private Sub IGeneral_DoNothing() Implements IGeneral.DoNothing
+                    End Sub
+                    Private Sub IGeneral_JustThrow() Implements IGeneral.JustThrow
+                        Throw New Exception()
+                    End Sub
 
-    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
-        Get
-        End Get
-    End Property
+                    Private ReadOnly Property IGeneral_Item(item As Integer) As Integer Implements IGeneral.Item
+                        Get
+                        End Get
+                    End Property
 
-    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
-        Get
-            Console.WriteLine(Me)
-            Return ""name""
-        End Get
-    End Property
+                    Private ReadOnly Property IGeneral_Name() As String Implements IGeneral.Name
+                        Get
+                            Console.WriteLine(Me)
+                            Return "name"
+                        End Get
+                    End Property
 
-    Public Function DoSomething() As Integer
-        Console.WriteLine(Me)
-        Return 0
-    End Function
+                    Public Function DoSomething() As Integer
+                        Console.WriteLine(Me)
+                        Return 0
+                    End Function
 
-    Public ReadOnly Property Name() As String
-        Get
-            Console.WriteLine(Me)
-            Return ""name""
-        End Get
-    End Property
+                    Public ReadOnly Property Name() As String
+                        Get
+                            Console.WriteLine(Me)
+                            Return "name"
+                        End Get
+                    End Property
 
-    Public ReadOnly Property Item(item__1 As Integer) As Integer
-        Get
-            Console.WriteLine(Me)
-            Return item__1
-        End Get
-    End Property
-End Class
+                    Public ReadOnly Property Item(item__1 As Integer) As Integer
+                        Get
+                            Console.WriteLine(Me)
+                            Return item__1
+                        End Get
+                    End Property
+                End Class
 
-Public Class NestedExplicitInterfaceImplementation
-    Public Interface INestedGeneral
-        Function DoSomething() As Object
-        Sub DoNothing()
-        Sub JustThrow()
-        Default ReadOnly Property Item(item__1 As Integer) As Integer
-        ReadOnly Property Name() As String
-        Event TheEvent As EventHandler
-    End Interface
+                Public Class NestedExplicitInterfaceImplementation
+                    Public Interface INestedGeneral
+                        Function DoSomething() As Object
+                        Sub DoNothing()
+                        Sub JustThrow()
+                        Default ReadOnly Property Item(item__1 As Integer) As Integer
+                        ReadOnly Property Name() As String
+                        Event TheEvent As EventHandler
+                    End Interface
 
-    Public Class ImplementsNestedGeneral
-        Implements INestedGeneral
+                    Public Class ImplementsNestedGeneral
+                        Implements INestedGeneral
 
-        Private Function INestedGeneral_DoSomething() As Object Implements INestedGeneral.DoSomething
-            Return Nothing
-        End Function
+                        Private Function INestedGeneral_DoSomething() As Object Implements INestedGeneral.DoSomething
+                            Return Nothing
+                        End Function
 
-        Public Function DoSomething() As Integer
-            Console.WriteLine(Me)
-            Return 0
-        End Function
+                        Public Function DoSomething() As Integer
+                            Console.WriteLine(Me)
+                            Return 0
+                        End Function
 
-        Private Sub INestedGeneral_DoNothing() Implements INestedGeneral.DoNothing
-        End Sub
-        Private Sub INestedGeneral_JustThrow() Implements INestedGeneral.JustThrow
-            Throw New Exception()
-        End Sub
+                        Private Sub INestedGeneral_DoNothing() Implements INestedGeneral.DoNothing
+                        End Sub
+                        Private Sub INestedGeneral_JustThrow() Implements INestedGeneral.JustThrow
+                            Throw New Exception()
+                        End Sub
 
-        Private ReadOnly Property INestedGeneral_Item(item As Integer) As Integer Implements INestedGeneral.Item
-            Get
-                Throw New Exception()
-            End Get
-        End Property
+                        Private ReadOnly Property INestedGeneral_Item(item As Integer) As Integer Implements INestedGeneral.Item
+                            Get
+                                Throw New Exception()
+                            End Get
+                        End Property
 
-        Private ReadOnly Property INestedGeneral_Name() As String Implements INestedGeneral.Name
-            Get
-            End Get
-        End Property
+                        Private ReadOnly Property INestedGeneral_Name() As String Implements INestedGeneral.Name
+                            Get
+                            End Get
+                        End Property
 
-        Private Custom Event TheEvent As EventHandler Implements INestedGeneral.TheEvent
-            AddHandler(ByVal value As EventHandler)
-            End AddHandler
+                        Private Custom Event TheEvent As EventHandler Implements INestedGeneral.TheEvent
+                            AddHandler(ByVal value As EventHandler)
+                            End AddHandler
 
-            RemoveHandler(ByVal value As EventHandler)
-            End RemoveHandler
+                            RemoveHandler(ByVal value As EventHandler)
+                            End RemoveHandler
 
-            RaiseEvent()
-            End RaiseEvent
-        End Event
-    End Class
-End Class
-");
+                            RaiseEvent()
+                            End RaiseEvent
+                        End Event
+                    End Class
+                End Class
+                """);
         }
 
         #endregion

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
@@ -11,9 +12,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class RuleRunner(IRuleFactory ruleFactory, IRuleContext context) : IRuleRunner
     {
+        private IRuleSettings _settings = null!;
+
         /// <inheritdoc />
         public void InitializeRules(IRuleSettings settings)
         {
+            _settings = settings;
+
             // Instantiate the rules but don't invoke anything on them as they register themselves on "events" inside their constructor.
             _ = ruleFactory.CreateRules(settings, context);
         }
@@ -26,6 +31,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             int rightLength = mapper.Right.Length;
             for (int rightIndex = 0; rightIndex < rightLength; rightIndex++)
             {
+                int initialDifferenceCount = differences.Count;
+                ISymbol? leftSymbol = null;
+                ISymbol? rightSymbol = null;
+
                 if (mapper is AssemblyMapper am)
                 {
                     // Ignore assembly mappings which are null on both sides, i.e. when different assembly identities are marked as compatible.
@@ -37,8 +46,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                        the assembly mapper is directly visited. */
                     bool containsSingleAssembly = am.ContainingAssemblySet == null || am.ContainingAssemblySet.AssemblyCount < 2;
 
-                    context.RunOnAssemblySymbolActions(am.Left?.Element,
-                        am.Right[rightIndex]?.Element,
+                    leftSymbol = am.Left?.Element;
+                    rightSymbol = am.Right[rightIndex]?.Element;
+
+                    context.RunOnAssemblySymbolActions(leftSymbol as IAssemblySymbol,
+                        rightSymbol as IAssemblySymbol,
                         am.Left?.MetadataInformation ?? MetadataInformation.DefaultLeft,
                         am.Right[rightIndex]?.MetadataInformation ?? MetadataInformation.DefaultRight,
                         containsSingleAssembly,
@@ -48,6 +60,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 {
                     if (tm.ShouldDiffElement(rightIndex))
                     {
+                        leftSymbol = tm.Left;
+                        rightSymbol = tm.Right[rightIndex];
                         context.RunOnTypeSymbolActions(tm.Left,
                             tm.Right[rightIndex],
                             tm.ContainingNamespace.ContainingAssembly.Left?.MetadataInformation ?? MetadataInformation.DefaultLeft,
@@ -63,6 +77,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         Debug.Assert(mm.ContainingType.Left != null);
                         Debug.Assert(mm.ContainingType.Right[rightIndex] != null);
 
+                        leftSymbol = mm.Left;
+                        rightSymbol = mm.Right[rightIndex];
+
                         context.RunOnMemberSymbolActions(
                             mm.Left,
                             mm.Right[rightIndex],
@@ -76,6 +93,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 else
                 {
                     throw new ArgumentOutOfRangeException(nameof(mapper));
+                }
+
+                if (initialDifferenceCount < differences.Count)
+                {
+                    ApiStability? leftStability = leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol, _settings.AttributeDataSymbolFilter);
+                    ApiStability? rightStability = rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol, _settings.AttributeDataSymbolFilter);
+
+                    for (int differenceIndex = initialDifferenceCount; differenceIndex < differences.Count; differenceIndex++)
+                    {
+                        differences[differenceIndex] = differences[differenceIndex].WithStabilities(leftStability, rightStability);
+                    }
                 }
             }
 
