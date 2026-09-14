@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)\dotnet-MsiInstallation.Tests.runsettings</RunSettingsFilePath>
+    <!-- OSCondition cannot express the version-qualified platform implied by the Windows TFM. -->
+    <NoWarn>$(NoWarn);MSTEST0084</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

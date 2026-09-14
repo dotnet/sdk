@@ -10,6 +10,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 [SupportedOSPlatform("windows")]
 public class GivenAWindowsMsiManifestInstaller : SdkTest
 {

@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
+#pragma warning disable MSTEST0084 // OSCondition cannot express the minimum Windows version.
     [SupportedOSPlatform("windows5.1.2600")]
     [TestClass]
     public class WindowsInstallerTests
@@ -457,6 +458,7 @@ namespace Microsoft.DotNet.Tests
             }
         }
     }
+#pragma warning restore MSTEST0084
 
     [SupportedOSPlatform("windows")]
     internal class ServerDispatcher
