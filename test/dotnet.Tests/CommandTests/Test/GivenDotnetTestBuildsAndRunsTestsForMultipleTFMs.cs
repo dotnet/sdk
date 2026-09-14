@@ -138,6 +138,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunProjectWithMultipleTFMsUsingRelativePath_ShouldSucceed(bool useProjectOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            string projectPath = Path.Combine("TestProject", "TestProject.csproj");
+            string[] projectArguments = useProjectOption ? ["--project", projectPath] : [projectPath];
+
+            new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute([.. projectArguments, "--property", "TestTfmsInParallel=false"])
+                .Should()
+                .Pass();
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
