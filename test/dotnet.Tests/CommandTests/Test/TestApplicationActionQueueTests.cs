@@ -18,4 +18,38 @@ public class TestApplicationActionQueueTests
 
         result.Should().Be(TestExitCode.GenericFailure);
     }
+
+    [TestMethod]
+    public void ShouldFailOnAllSkippedTests_UsesStrictPoliciesThatDoNotIgnoreZeroTests()
+    {
+        TestApplicationActionQueue.ShouldFailOnAllSkippedTests(
+        [
+            new(FailOnAllSkippedTests: false, IgnoredExitCodes: null),
+            new(FailOnAllSkippedTests: true, IgnoredExitCodes: "8"),
+        ]).Should().BeFalse();
+
+        TestApplicationActionQueue.ShouldFailOnAllSkippedTests(
+        [
+            new(FailOnAllSkippedTests: false, IgnoredExitCodes: null),
+            new(FailOnAllSkippedTests: true, IgnoredExitCodes: null),
+        ]).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ApplyExitCodeIgnorePolicy_RequiresEveryModuleToIgnoreTheExitCode()
+    {
+        TestApplicationActionQueue.ApplyExitCodeIgnorePolicy(
+            TestExitCode.MinimumExpectedTestsPolicyViolation,
+            [
+                new(FailOnAllSkippedTests: false, IgnoredExitCodes: "9"),
+                new(FailOnAllSkippedTests: false, IgnoredExitCodes: "8;9"),
+            ]).Should().Be(TestExitCode.Success);
+
+        TestApplicationActionQueue.ApplyExitCodeIgnorePolicy(
+            TestExitCode.MinimumExpectedTestsPolicyViolation,
+            [
+                new(FailOnAllSkippedTests: false, IgnoredExitCodes: "9"),
+                new(FailOnAllSkippedTests: false, IgnoredExitCodes: null),
+            ]).Should().Be(TestExitCode.MinimumExpectedTestsPolicyViolation);
+    }
 }
