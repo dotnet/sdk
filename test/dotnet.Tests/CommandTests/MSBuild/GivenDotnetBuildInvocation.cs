@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 var commandArgs = command.GetArgumentTokensToMSBuild();
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 command.GetArgumentTokensToMSBuild().Should().NotContain("-restore");
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 List<string> expectedItems = [.. ExpectedPrefix, NugetInteractiveProperty, .. expectedAdditionalArgsForRestore, .. RestoreExpectedPrefixForSeparateRestore];
                 expectedItems.Should().BeSubsetOf(command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild());
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             llmEnvironmentDetector.GetLLMEnvironment().Should().Be(expectedLLMName);
 
             var services = new CommandServices(llmEnvironmentDetector);
-            var command = (RestoringCommand)BuildCommand.FromArgs([], services: services);
+            var command = (RestoringCommand)BuildCommand.FromArgs([], msbuildPath: null, services: services);
 
             if (!string.IsNullOrEmpty(expectedLLMName))
             {

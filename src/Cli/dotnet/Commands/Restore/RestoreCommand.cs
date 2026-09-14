@@ -11,13 +11,19 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public static class RestoreCommand
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+        => FromArgs(args, msbuildPath, services: null);
+
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices? services)
     {
         var result = Parser.Parse(["dotnet", "restore", .. args]);
         return FromParseResult(result, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null, CommandServices? services = null)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
+        => FromParseResult(result, msbuildPath, services: null);
+
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath, CommandServices? services)
     {
         var definition = (RestoreCommandDefinition)result.CommandResult.Command;
 
@@ -56,7 +62,10 @@ public static class RestoreCommand
         );
     }
 
-    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null, CommandServices? services = null)
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
+        => CreateForwarding(msbuildArgs, msbuildPath, services: null);
+
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices? services)
     {
         var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, services);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);

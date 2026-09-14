@@ -19,17 +19,23 @@ public class PublishCommand : RestoringCommand
         bool noRestore,
         string? msbuildPath = null,
         CommandServices? services = null)
-        : base(msbuildArgs, noRestore, msbuildPath, services: services)
+        : base(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
     {
     }
 
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+        => FromArgs(args, msbuildPath, services: null);
+
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices? services)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
         return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null, CommandServices? services = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+        => FromParseResult(parseResult, msbuildPath, services: null);
+
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices? services)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 

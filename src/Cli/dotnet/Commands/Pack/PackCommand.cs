@@ -20,17 +20,28 @@ namespace Microsoft.DotNet.Cli.Commands.Pack;
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
-    string? msbuildPath = null,
-    CommandServices? services = null
-    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath, services: services)
+    string? msbuildPath,
+    CommandServices? services
+    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
+    public PackCommand(MSBuildArgs msbuildArgs, bool noRestore, string? msbuildPath = null)
+        : this(msbuildArgs, noRestore, msbuildPath, services: null)
+    {
+    }
+
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+        => FromArgs(args, msbuildPath, services: null);
+
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices? services)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
         return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null, CommandServices? services = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+        => FromParseResult(parseResult, msbuildPath, services: null);
+
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices? services)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 

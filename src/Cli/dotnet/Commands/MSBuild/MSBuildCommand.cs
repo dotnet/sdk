@@ -10,8 +10,8 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public class MSBuildCommand(
     IEnumerable<string> msbuildArgs,
-    string? msbuildPath = null,
-    CommandServices? services = null
+    string? msbuildPath,
+    CommandServices? services
 ) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
         [.. msbuildArgs],
         CommonOptions.CreatePropertyOption(),
@@ -24,13 +24,23 @@ public class MSBuildCommand(
         CommonOptions.CreateNoLogoOption(false)
     ), msbuildPath, services)
 {
-    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null, CommandServices? services = null)
+    public MSBuildCommand(IEnumerable<string> msbuildArgs, string? msbuildPath = null) : this(msbuildArgs, msbuildPath, services: null)
+    {
+    }
+
+    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
+        => FromArgs(args, msbuildPath, services: null);
+
+    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath, CommandServices? services)
     {
         var result = Parser.Parse(["dotnet", "msbuild", .. args]);
         return FromParseResult(result, msbuildPath, services);
     }
 
-    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null, CommandServices? services = null)
+    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+        => FromParseResult(parseResult, msbuildPath, services: null);
+
+    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices? services)
     {
         var definition = (MSBuildCommandDefinition)parseResult.CommandResult.Command;
 

@@ -28,10 +28,14 @@
 .PARAMETER ResultsDirectory
     Directory for the TRX report when -Trx is specified.
 
+.PARAMETER Filter
+    Optional test filter expression, for example FullyQualifiedName~CommandServicesTests.
+
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
     ./run-aot-tests.ps1 -RuntimeIdentifier linux-x64
+    ./run-aot-tests.ps1 -Filter "FullyQualifiedName~CommandServicesTests" -Trx
 #>
 
 param(
@@ -39,7 +43,8 @@ param(
     [string]$RuntimeIdentifier,
     [switch]$NoBuild,
     [switch]$Trx,
-    [string]$ResultsDirectory
+    [string]$ResultsDirectory,
+    [string]$Filter
 )
 
 $ErrorActionPreference = "Stop"
@@ -187,6 +192,9 @@ foreach ($entry in $environment.GetEnumerator()) {
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 $runArgs = @()
+if ($Filter) {
+    $runArgs += @("--filter", $Filter)
+}
 if ($Trx) {
     if (-not $ResultsDirectory) {
         $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)

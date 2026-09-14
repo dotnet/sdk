@@ -16,7 +16,7 @@ public class CommandServicesTests
     public void ForwardingUsesCommandServices(bool isLLMEnvironment)
     {
         var services = new CommandServices(new LLMEnvironmentDetector(isLLMEnvironment));
-        var command = new MSBuildForwardingApp(MSBuildArgs.FromOtherArgs(), services: services);
+        var command = new MSBuildForwardingApp(MSBuildArgs.FromOtherArgs(), msbuildPath: null, services: services);
 
         Assert.AreSame(services, command.Services);
         Assert.AreEqual(isLLMEnvironment, command.MSBuildArguments.Contains(Constants.TerminalLogger_DisableNodeDisplay));
