@@ -90,7 +90,7 @@ are relative to `src/Platform/Microsoft.Testing.Platform.Browser/`.
 | --- | --- |
 | Optional package, private Playwright dependency, five Node payloads, and launcher runtime configuration | `microsoft/testfx` commit `086b0636d9fa0fe400351a54dc4c1cbb6bd4196d`: `Microsoft.Testing.Platform.Browser.csproj` |
 | Private Playwright transport and diagnostic redaction | `microsoft/testfx` commit `066ab8d55f34537834719b5cb846e1ddc173a21f`: `ChromiumBrowser.cs`, `DiagnosticBuffer.cs` |
-| Default page/supervisor opt-out | `microsoft/testfx` commit `083be6dab`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.props`, `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `PACKAGE.md` |
+| Default page/supervisor opt-out | `microsoft/testfx` commit `083be6dabd3f098de1242a9b8e3da57636875d7b`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.props`, `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `PACKAGE.md` |
 | Evaluated host wrapping, page API v1, and readiness fallback | `microsoft/testfx` commit `ab878a385322d6ec82846055d9c7baa6fb4bf1d1`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `BrowserLauncherOptions.cs`, `ChromiumBrowser.cs`, `HostProcess.cs`, `PACKAGE.md` |
 | Package-owned browser assets | Same TestFX snapshot: `buildMultiTargeting/assets/index.html`, `buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js` |
 | Package consumption and framework-owned Blazor page | `dotnet/sdk` commits `054ab8eeb93626cd0a2d214ea4032acfe3f934b9` and `bbde2cfa89b2248709352efc09e71c8be406a154`: `test/TestAssets/TestProjects/BlazorWasmTestApp/BlazorWasmTestApp.csproj`, `wwwroot/index.html`, `BrowserTestRunner.cs` |
@@ -119,7 +119,7 @@ make the implementation reviewable, not to reserve them permanently.
 
 ## Scope
 
-The package is framework-neutral. Its preview targets use a `browser-*`
+The package is framework-neutral. Its prototype targets use a `browser-*`
 condition, but the supported scenario proposed here is exactly `browser-wasm`;
 that condition is not evidence for other browser RIDs.
 
@@ -240,7 +240,7 @@ Explicit package properties may override the captured host command,
 arguments, or working directory for hosts that do not participate in the
 normal run protocol.
 
-In the preview, an empty override means "use the computed value"; computed
+In the prototype, an empty override means "use the computed value"; computed
 empty and quoted arguments are preserved.
 
 This is intentionally host-agnostic. The launcher does not special-case
@@ -574,9 +574,11 @@ has force-kill paths and the launcher has startup/completion deadlines and
 disposal paths, but their presence does not prove end-to-end cancellation.
 In the inspected TestFX `Program.cs` at `ab878a385`, the running-test wait
 uses a separate cancellation source not linked to the Ctrl+C source used for
-startup. Cancellation must reach every phase before preview release.
-Force-killing the launcher also cannot be assumed to execute its `finally`
-blocks. Neither approach can ask browser MTP to flush a graceful final summary.
+startup. Outer cancellation or forced termination must reach every launcher
+phase before preview release; this is separate from cooperative MTP
+cancellation, which may remain out of the preview contract. Force-killing the
+launcher also cannot be assumed to execute its `finally` blocks. Neither
+approach can ask browser MTP to flush a graceful final summary.
 
 A future design may use SDK-to-launcher local control followed by Playwright
 evaluation of a versioned page/MTP cancellation hook. It does not require a
@@ -641,7 +643,7 @@ Required before a preview:
 - complete security review of bootstrap, Playwright transport, redaction,
   origin validation, and cleanup;
 - run end-to-end `dotnet test`, discovery, filtering, failure, timeout,
-  cancellation at every phase, and framework-owned-page tests;
+  cancellation at every launcher phase, and framework-owned-page tests;
 - document and explicitly reject/gate unsupported preview options, including
   artifact and host-path options if they remain deferred;
 - verify ordinary non-test launch behavior and isolate concurrent launcher
@@ -667,10 +669,10 @@ The TestFX snapshot in [Primary-source snapshots](#primary-source-snapshots)
 contains `BrowserPackageExecutionTests.cs` under
 `test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/`
 and `BrowserLauncherOptionsTests.cs` under
-`test/UnitTests/Microsoft.Testing.Extensions.UnitTests/`. The browser integration
-tests report inconclusive when Node or a browser is missing; that outcome is
-not execution evidence. The Blazor filtering result is the separately reported
-consumer run, not a package-wide compatibility claim.
+`test/UnitTests/Microsoft.Testing.Extensions.UnitTests/`. The browser
+integration tests report inconclusive when Node or a browser is missing; that
+outcome is not execution evidence. The Blazor filtering result is the
+separately reported consumer run, not a package-wide compatibility claim.
 
 - `dotnet test` runs a test inside `browser-wasm` through the SDK HTTP gateway.
 - `--list-tests` discovers browser tests.
