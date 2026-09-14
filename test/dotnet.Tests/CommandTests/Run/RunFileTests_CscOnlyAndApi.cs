@@ -606,7 +606,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     public void UpToDate_RefDirectives()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """
@@ -1359,7 +1358,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     public void CscOnly_AfterMSBuild_RefDirectives()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
         var libCode = """
@@ -2514,7 +2512,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
             // as soon as any SDK .targets/.props file is loaded during evaluation.
             .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
-            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
