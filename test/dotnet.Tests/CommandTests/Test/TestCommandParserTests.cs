@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
@@ -68,6 +69,65 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Theory]
+        [InlineData("--no-logo")]
+        [InlineData("--nologo")]
+        [InlineData("-nologo")]
+        [InlineData("/nologo")]
+        public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [Theory]
+        [InlineData("--no-banner")]
+        [InlineData("--no-banner=true")]
+        [InlineData("--no-banner=false")]
+        public void MTPCommandDoesNotDuplicateNoBannerOption(string noBannerOption)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--nologo", noBannerOption]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.TestApplicationArguments
+                .Where(arg => arg.StartsWith("--no-banner", StringComparison.Ordinal))
+                .Should().ContainSingle().Which.Should().Be(noBannerOption);
+        }
+
+        [Fact]
+        public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
+        {
+            string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "true");
+                var enabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var enabledBuildOptions = MSBuildUtility.GetBuildOptions(enabledCommand.Parse([]));
+
+                enabledBuildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "false");
+                var disabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var disabledBuildOptions = MSBuildUtility.GetBuildOptions(disabledCommand.Parse([]));
+
+                disabledBuildOptions.TestApplicationArguments.Should().NotContain("--no-banner");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousValue);
+            }
+        }
+
+        [Theory]
         [InlineData(null, nameof(ResultsDirectoryLayout.Flat))]
         [InlineData("flat", nameof(ResultsDirectoryLayout.Flat))]
         [InlineData("per-module", nameof(ResultsDirectoryLayout.PerModule))]
@@ -87,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
             var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
-
+            parseResult.Errors.Should().NotBeEmpty();
             parseResult.Errors.Should().NotBeEmpty();
         }
 

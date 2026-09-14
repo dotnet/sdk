@@ -94,6 +94,11 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
 
+        public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
+            defaultValue: false,
+            forwardAs: null,
+            description: CommandDefinitionStrings.TestCmdNoLogo);
+
         public readonly Option<bool> NoAnsiOption = new("--no-ansi")
         {
             Description = CommandDefinitionStrings.CmdNoAnsiDescription,
@@ -160,6 +165,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            Options.Add(NoLogoOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
