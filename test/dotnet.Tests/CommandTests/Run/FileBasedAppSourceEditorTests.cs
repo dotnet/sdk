@@ -1,25 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-[TestClass]
-public sealed class FileBasedAppSourceEditorTests : SdkTest
+public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTest(log)
 {
     private static FileBasedAppSourceEditor CreateEditor(string source)
     {
         return FileBasedAppSourceEditor.Load(new SourceFile("/app/Program.cs", SourceText.From(source, Encoding.UTF8)));
     }
 
-    [TestMethod]
-    [DataRow("#:package MyPackage@1.0.1")]
-    [DataRow("#:package   MyPackage @ abc")]
-    [DataRow("#:package MYPACKAGE")]
+    [Theory]
+    [InlineData("#:package MyPackage@1.0.1")]
+    [InlineData("#:package   MyPackage @ abc")]
+    [InlineData("#:package MYPACKAGE")]
     public void ReplaceExisting(string inputLine)
     {
         Verify(
@@ -34,7 +32,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void OnlyStatement()
     {
         Verify(
@@ -53,9 +51,9 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
-    [DataRow("// only comment")]
-    [DataRow("/* only comment */")]
+    [Theory]
+    [InlineData("// only comment")]
+    [InlineData("/* only comment */")]
     public void OnlyComment(string comment)
     {
         Verify(
@@ -75,7 +73,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Empty()
     {
         Verify(
@@ -89,7 +87,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             ""));
     }
 
-    [TestMethod]
+    [Fact]
     public void PreExistingWhiteSpace()
     {
         Verify(
@@ -111,7 +109,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeadingWhiteSpace()
     {
         Verify(
@@ -137,7 +135,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void WhiteSpaceOutsideLines()
     {
         Verify(
@@ -156,7 +154,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Comments()
     {
         Verify(
@@ -195,7 +193,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void CommentsWithWhiteSpaceAfter()
     {
         Verify(
@@ -223,7 +221,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Comment_Documentation()
     {
         Verify(
@@ -247,7 +245,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Comment_MultiLine()
     {
         Verify(
@@ -271,7 +269,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Comment_MultiLine_NoNewLine()
     {
         Verify(
@@ -290,7 +288,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void Comment_MultiLine_NoNewLine_Multiple()
     {
         Verify(
@@ -314,107 +312,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
-    public void AddWithMetadataAndQuoting()
-    {
-        Verify(
-            """
-            Console.WriteLine();
-            """,
-            (static editor => editor.Add(new CSharpDirective.Package(default)
-            {
-                Name = "MyPackage",
-                Version = "1.0.0",
-                Metadata = ImmutableArray.Create(("ExcludeAssets", "runtime"), ("Note", "with spaces")),
-            }),
-            """
-            #:package MyPackage@1.0.0 ExcludeAssets=runtime Note="with spaces"
-
-            Console.WriteLine();
-            """));
-    }
-
-    [TestMethod]
-    public void AddWithSpecialCharactersEscapes()
-    {
-        // Values containing a double quote are emitted as an escaped C# string literal; a bare backslash
-        // (no whitespace or quote) needs no quoting and round-trips as-is.
-        Verify(
-            """
-            Console.WriteLine();
-            """,
-            (static editor => editor.Add(new CSharpDirective.Package(default)
-            {
-                Name = "MyPackage",
-                Version = "1.0.0",
-                Metadata = ImmutableArray.Create(("Quote", "a\"b"), ("Path", "a\\b"), ("Spaced", "a\"b c")),
-            }),
-            """
-            #:package MyPackage@1.0.0 Quote="a\"b" Path=a\b Spaced="a\"b c"
-
-            Console.WriteLine();
-            """));
-    }
-
-    [TestMethod]
-    public void AddWithVersionNeedingQuotes()
-    {
-        Verify(
-            """
-            Console.WriteLine();
-            """,
-            (static editor => editor.Add(new CSharpDirective.Package(default)
-            {
-                Name = "MyPackage",
-                Version = "1.0 beta",
-            }),
-            """
-            #:package MyPackage@"1.0 beta"
-
-            Console.WriteLine();
-            """));
-    }
-
-    [TestMethod]
-    public void RefWithMetadataRoundTrips()
-    {
-        // A #:ref directive with trailing metadata is parsed and preserved verbatim when other edits happen.
-        Verify(
-            """
-            #:ref lib.cs Aliases=lib Note="with spaces"
-            Console.WriteLine();
-            """,
-            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
-            """
-            #:package MyPackage@1.0.0
-            #:ref lib.cs Aliases=lib Note="with spaces"
-            Console.WriteLine();
-            """));
-    }
-
-    [TestMethod]
-    public void LegacyWhitespacePreservedVerbatim()
-    {
-        // Directives using the deprecated unquoted-whitespace form are still parsed and are
-        // preserved verbatim when unrelated edits happen (no breaking change).
-        Verify(
-            """
-            #:package Existing@1.0
-            #:property Description=Hello World
-            #:project ../My Library
-            Console.WriteLine();
-            """,
-            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
-            """
-            #:package Existing@1.0
-            #:package MyPackage@1.0.0
-            #:property Description=Hello World
-            #:project ../My Library
-            Console.WriteLine();
-            """));
-    }
-
-    [TestMethod]
+    [Fact]
     public void Group()
     {
         Verify(
@@ -447,7 +345,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void GroupEnd()
     {
         Verify(
@@ -474,7 +372,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void GroupWithoutSpace()
     {
         Verify(
@@ -498,7 +396,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     /// <summary>
     /// New package directive should be sorted into the correct location in the package group.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void Sort()
     {
         Verify(
@@ -534,7 +432,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void OtherDirectives()
     {
         Verify(
@@ -561,7 +459,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     /// <summary>
     /// Shebang directive should always stay first.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void Shebang()
     {
         Verify(
@@ -585,7 +483,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void AfterTokens()
     {
         Verify(
@@ -616,7 +514,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void SkippedTokensTrivia()
     {
         Verify(
@@ -641,7 +539,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             """));
     }
 
-    [TestMethod]
+    [Fact]
     public void RemoveMultiple()
     {
         Verify(
@@ -669,10 +567,10 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     /// This is critical for shebang (#!) scripts on Unix-like systems.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void PreservesNoBomEncoding()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file without BOM
@@ -687,23 +585,23 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
 
         // Verify no BOM was added
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.IsTrue(bytes is not [0xEF, 0xBB, 0xBF, ..],
+        Assert.True(bytes is not [0xEF, 0xBB, 0xBF, ..],
             "File should not have UTF-8 BOM");
 
         // Verify the complete file content is correct
         var savedContent = File.ReadAllText(tempFile);
         var expectedContent = "#!/usr/bin/env dotnet run\n\n#:package MyPackage@1.0.0\n\nConsole.WriteLine();";
-        Assert.AreEqual(expectedContent, savedContent);
+        Assert.Equal(expectedContent, savedContent);
     }
 
     /// <summary>
     /// Verifies that files with UTF-8 BOM preserve it when saved.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void PreservesBomEncoding()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with BOM
@@ -718,7 +616,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
 
         // Verify BOM is still present
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.IsTrue(bytes is [0xEF, 0xBB, 0xBF, ..],
+        Assert.True(bytes is [0xEF, 0xBB, 0xBF, ..],
             "File should have UTF-8 BOM");
     }
 
@@ -726,10 +624,10 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     /// Verifies that files with non-UTF-8 encodings (like UTF-16) preserve their encoding when saved.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void PreservesNonUtf8Encoding()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with UTF-16 encoding (includes BOM by default)
@@ -744,7 +642,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
 
         // Verify UTF-16 BOM is still present (0xFF 0xFE for UTF-16 LE)
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.IsTrue(bytes is [0xFF, 0xFE, ..],
+        Assert.True(bytes is [0xFF, 0xFE, ..],
             "File should have UTF-16 LE BOM");
 
         // Verify content is still readable as UTF-16

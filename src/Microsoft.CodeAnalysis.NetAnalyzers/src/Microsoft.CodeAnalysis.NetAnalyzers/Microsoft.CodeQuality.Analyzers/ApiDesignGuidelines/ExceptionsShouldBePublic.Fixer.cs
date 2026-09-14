@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -8,7 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
+using Microsoft.CodeAnalysis.CodeActions;
+using Analyzer.Utilities;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -16,21 +16,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA1064: Exceptions should be public
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class ExceptionsShouldBePublicFixer : SyntaxEditorBasedCodeFixProvider
+    public sealed class ExceptionsShouldBePublicFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ExceptionsShouldBePublicAnalyzer.RuleId);
 
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            RegisterCodeFix(context, MicrosoftCodeQualityAnalyzersResources.MakeExceptionPublic, nameof(ExceptionsShouldBePublicFixer));
-            return Task.CompletedTask;
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
-        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode classDecl = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode node = root.FindNode(context.Span);
+
+            // create one equivalence key value for all actions produced by this fixer 
+            // i.e. Fix All fixes every occurrence of this diagnostic
+            string equivalenceKey = nameof(ExceptionsShouldBePublicFixer);
+
+            CodeAction action = CodeAction.Create(
+                MicrosoftCodeQualityAnalyzersResources.MakeExceptionPublic,
+                c => MakePublicAsync(context.Document, node, context.CancellationToken),
+                equivalenceKey);
+
+            context.RegisterCodeFix(action, context.Diagnostics);
+        }
+
+        private static async Task<Document> MakePublicAsync(Document document, SyntaxNode classDecl, CancellationToken cancellationToken)
+        {
+            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+
             editor.SetAccessibility(classDecl, Accessibility.Public);
-            return Task.CompletedTask;
+
+            return editor.GetChangedDocument();
         }
     }
 }

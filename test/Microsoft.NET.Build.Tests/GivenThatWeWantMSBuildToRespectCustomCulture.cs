@@ -1,17 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantMSBuildToRespectCustomCulture : SdkTest
     {
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public GivenThatWeWantMSBuildToRespectCustomCulture(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void SupportRespectAlreadyAssignedItemCulture_ByDefault_ForDotnet9(string targetFramework)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -24,12 +27,12 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(outputDirectory, "test-2", "MSBuildCultureResourceGeneration.resources.dll")).Should().Exist();
         }
 
-        [TestMethod]
-        [DataRow("net7.0")]
-        [DataRow("net6.0")]
+        [Theory]
+        [InlineData("net7.0")]
+        [InlineData("net6.0")]
         public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 #nullable disable warnings
 
@@ -16,9 +15,9 @@ namespace Analyzer.Utilities.Extensions
     internal static class INamedTypeSymbolExtensions
     {
 
-        private static readonly Func<INamedTypeSymbol, bool> s_isExtension = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, bool>(typeof(INamedTypeSymbol), nameof(IsExtension), fallbackResult: false);
+        private static readonly Func<INamedTypeSymbol, bool> s_isFileLocal = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, bool>(typeof(INamedTypeSymbol), nameof(IsFileLocal), fallbackResult: false);
 
-        public static bool IsExtension(this INamedTypeSymbol symbol) => s_isExtension(symbol);
+        public static bool IsFileLocal(this INamedTypeSymbol symbol) => s_isFileLocal(symbol);
 
         public static IEnumerable<INamedTypeSymbol> GetBaseTypesAndThis(this INamedTypeSymbol type)
         {

@@ -7,11 +7,13 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToResolveRuntimePackAssets : SdkTest
     {
+        public GivenThatWeWantToResolveRuntimePackAssets(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_if_the_runtime_list_is_missing()
         {
             var testProject = new TestProject()
@@ -20,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     project.Root.Add(CreateTestTarget());
@@ -44,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
                         Path.Combine(projectDirectory, "data", "RuntimeList.xml")));
         }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_if_the_runtime_list_has_duplicates()
         {
             var testProject = new TestProject()
@@ -53,7 +55,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     project.Root.Add(CreateTestTarget());

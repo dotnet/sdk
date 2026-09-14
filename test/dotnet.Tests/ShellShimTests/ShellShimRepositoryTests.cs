@@ -18,14 +18,13 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
-    [TestClass]
     public class ShellShimRepositoryTests : SdkTest
     {
-        public ShellShimRepositoryTests()
+        public ShellShimRepositoryTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenAnExecutablePathItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
@@ -43,7 +42,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         // Reproduce https://github.com/dotnet/cli/issues/9319
-        [TestMethod]
+        [Fact]
         public void GivenAnExecutableAndRelativePathToShimPathItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
@@ -71,7 +70,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             return new ShellShimRepository(new DirectoryPath(pathToShim), stage2AppHostTemplateDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenAnExecutablePathItCanGenerateShimFileInTransaction()
         {
             var outputDll = MakeHelloWorldExecutableDll();
@@ -94,11 +93,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
             stdOut.Should().Contain("Hello World");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenAnExecutablePathDirectoryThatDoesNotExistItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
-            var testFolder = TestAssetsManager.CreateTestDirectory().Path;
+            var testFolder = _testAssetsManager.CreateTestDirectory().Path;
             var extraNonExistDirectory = Path.GetRandomFileName();
             var shellShimRepository = new ShellShimRepository(new DirectoryPath(Path.Combine(testFolder, extraNonExistDirectory)), GetAppHostTemplateFromStage2());
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -109,10 +108,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             a.Should().NotThrow<DirectoryNotFoundException>();
         }
 
-        [TestMethod]
-        [DataRow("arg1 arg2", new[] { "arg1", "arg2" })]
-        [DataRow(" \"arg1 with space\" arg2", new[] { "arg1 with space", "arg2" })]
-        [DataRow(" \"arg with ' quote\" ", new[] { "arg with ' quote" })]
+        [Theory]
+        [InlineData("arg1 arg2", new[] { "arg1", "arg2" })]
+        [InlineData(" \"arg1 with space\" arg2", new[] { "arg1 with space", "arg2" })]
+        [InlineData(" \"arg with ' quote\" ", new[] { "arg with ' quote" })]
         public void GivenAShimItPassesThroughArguments(string arguments, string[] expectedPassThru)
         {
             var outputDll = MakeHelloWorldExecutableDll(identifier: arguments);
@@ -131,9 +130,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             }
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAShimConflictItWillRollback(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -176,9 +175,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .HaveCount(1, "should only be the original conflicting command");
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnExceptionItWillRollback(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -219,9 +218,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenANonexistentShimRemoveDoesNotThrow(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -246,9 +245,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledShimRemoveDeletesTheShimFiles(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -277,9 +276,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledShimRemoveRollsbackIfTransactionIsAborted(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -315,9 +314,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledShimRemoveCommitsIfTransactionIsCompleted(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -355,7 +354,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenPackagedShimProvidedItCopies()
         {
             const string tokenToIdentifyCopiedShim = "packagedShim";
@@ -384,7 +383,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             File.ReadAllText(createdShim).Should().Contain(tokenToIdentifyCopiedShim);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenMultipleSameNamePackagedShimProvidedItThrows()
         {
             const string tokenToIdentifyCopiedShim = "packagedShim";
@@ -418,13 +417,12 @@ namespace Microsoft.DotNet.ShellShim.Tests
                            string.Join(';', filePaths)));
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("net5.0")]
-        [DataRow("netcoreapp3.1")]
+        [WindowsOnlyTheory]
+        [InlineData("net5.0")]
+        [InlineData("netcoreapp3.1")]
         public void WhenRidNotSupportedOnWindowsItIsImplicit(string tfm)
         {
-            var tempDir = TestAssetsManager.CreateTestDirectory(identifier: tfm).Path;
+            var tempDir = _testAssetsManager.CreateTestDirectory(identifier: tfm).Path;
             var templateFinder = new ShellShimTemplateFinder(new MockNuGetPackageDownloader(), new DirectoryPath(tempDir), null);
             var path = templateFinder.ResolveAppHostSourceDirectoryAsync(null, NuGetFramework.Parse(tfm), Architecture.Arm64).Result;
             path.Should().Contain(tfm.Equals("net5.0") ? "AppHostTemplate" : "win-x64");
@@ -499,7 +497,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         {
             const string testAppName = "TestAppSimple";
 
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -516,7 +514,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         private string GetNewCleanFolderUnderTempRoot([CallerMemberName] string callingMethod = null, string identifier = "")
         {
-            return TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
+            return _testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
         }
 
         private ShellShimRepository GetShellShimRepositoryWithMockMaker(string pathToShim)

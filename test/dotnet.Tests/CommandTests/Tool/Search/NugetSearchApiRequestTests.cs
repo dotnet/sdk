@@ -5,12 +5,11 @@ using Microsoft.DotNet.Cli.NugetSearch;
 
 namespace dotnet.Tests.ToolSearchTests
 {
-    [TestClass]
     public class NugetSearchApiRequestTests
     {
         private readonly Uri _domainAndPathOverride = new("https://azuresearch-usnc.nuget.org/query");
 
-        [TestMethod]
+        [Fact]
         public async Task WhenPassedInRequestParametersItCanConstructTheUrl()
         {
             (await NugetToolSearchApiRequest.ConstructUrl("mytool", 3, 4, true, _domainAndPathOverride))
@@ -19,7 +18,7 @@ namespace dotnet.Tests.ToolSearchTests
                     "https://azuresearch-usnc.nuget.org/query?q=mytool&packageType=dotnettool&semVerLevel=2.0.0&skip=3&take=4&prerelease=true");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenPassedWithoutParameterItCanConstructTheUrl()
         {
             (await NugetToolSearchApiRequest.ConstructUrl(domainAndPathOverride: _domainAndPathOverride))

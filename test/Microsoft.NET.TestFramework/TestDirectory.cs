@@ -5,7 +5,7 @@ namespace Microsoft.NET.TestFramework
 {
     public class TestDirectory
     {
-        internal TestDirectory(string path)
+        internal TestDirectory(string path, string? sdkVersion)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -14,17 +14,17 @@ namespace Microsoft.NET.TestFramework
 
             Path = path;
 
-            EnsureExistsAndEmpty(Path);
+            EnsureExistsAndEmpty(Path, sdkVersion);
         }
 
         public static TestDirectory Create(string path)
         {
-            return new TestDirectory(path);
+            return new TestDirectory(path, SdkTestContext.Current.SdkVersion);
         }
 
         public string Path { get; private set; }
 
-        private static void EnsureExistsAndEmpty(string path)
+        private static void EnsureExistsAndEmpty(string path, string? sdkVersion)
         {
             if (Directory.Exists(path))
             {
@@ -49,6 +49,8 @@ namespace Microsoft.NET.TestFramework
             }
 
             Directory.CreateDirectory(path);
+
+            SdkTestContext.WriteGlobalJson(path, sdkVersion);
         }
     }
 }

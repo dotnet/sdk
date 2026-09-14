@@ -1,42 +1,60 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Composition;
-using Analyzer.Utilities.Extensions;
+using Microsoft.NetCore.Analyzers.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.NetCore.Analyzers.Runtime;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.NetCore.Analyzers;
+using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
+    [ExportCodeFixProvider(LanguageNames.CSharp)]
     public sealed class CSharpPreferDictionaryContainsMethodsFixer : PreferDictionaryContainsMethodsFixer
     {
-        protected override string? GetPropertyName(SyntaxNode invocation)
-            => GetKeysOrValuesMemberAccess(invocation)?.Name.Identifier.ValueText;
-
-        protected override SyntaxNode? Rewrite(SyntaxNode invocation, string methodName, SyntaxGenerator generator)
+        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            if (GetKeysOrValuesMemberAccess(invocation) is not MemberAccessExpressionSyntax keysOrValuesMemberAccess)
+            Document doc = context.Document;
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            if (root.FindNode(context.Span) is not InvocationExpressionSyntax invocation)
+                return;
+            if (invocation.Expression is not MemberAccessExpressionSyntax containsMemberAccess)
+                return;
+            if (containsMemberAccess.Expression.WalkDownParentheses() is not MemberAccessExpressionSyntax keysOrValuesMemberAccess)
+                return;
+
+            if (keysOrValuesMemberAccess.Name.Identifier.ValueText == PreferDictionaryContainsMethods.KeysPropertyName)
             {
-                return null;
+                string codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyCodeFixTitle;
+                var action = CodeAction.Create(codeFixTitle, ct => ReplaceMethodNameAsync(PreferDictionaryContainsMethods.ContainsKeyMethodName, ct), codeFixTitle);
+                context.RegisterCodeFix(action, context.Diagnostics);
+            }
+            else if (keysOrValuesMemberAccess.Name.Identifier.ValueText == PreferDictionaryContainsMethods.ValuesPropertyName)
+            {
+                string codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueCodeFixTitle;
+                var action = CodeAction.Create(codeFixTitle, ct => ReplaceMethodNameAsync(PreferDictionaryContainsMethods.ContainsValueMethodName, ct), codeFixTitle);
+                context.RegisterCodeFix(action, context.Diagnostics);
             }
 
-            var containsMemberAccess = generator.MemberAccessExpression(keysOrValuesMemberAccess.Expression, methodName);
-            return generator.InvocationExpression(containsMemberAccess, ((InvocationExpressionSyntax)invocation).ArgumentList.Arguments);
-        }
+            return;
 
-        private static MemberAccessExpressionSyntax? GetKeysOrValuesMemberAccess(SyntaxNode node)
-        {
-            if (node is not InvocationExpressionSyntax invocation ||
-                invocation.Expression is not MemberAccessExpressionSyntax containsMemberAccess)
+            //  Local functions.
+
+            async Task<Document> ReplaceMethodNameAsync(string methodName, CancellationToken ct)
             {
-                return null;
-            }
+                var editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
+                var containsMemberAccess = editor.Generator.MemberAccessExpression(keysOrValuesMemberAccess.Expression, methodName);
+                var newInvocation = editor.Generator.InvocationExpression(containsMemberAccess, invocation.ArgumentList.Arguments);
+                editor.ReplaceNode(invocation, newInvocation);
 
-            return containsMemberAccess.Expression.WalkDownParentheses() as MemberAccessExpressionSyntax;
+                return editor.GetChangedDocument();
+            }
         }
     }
 }

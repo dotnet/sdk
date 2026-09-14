@@ -19,8 +19,8 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
     private bool _done;
     private bool _shutdownRequested;
 
-    public NetSdkMsiInstallerServer(InstallElevationContextBase elevationContext, PipeStreamSetupLogger logger, bool verifyMsiSignature)
-        : base(elevationContext, logger, verifyMsiSignature)
+    public NetSdkMsiInstallerServer(InstallElevationContextBase elevationContext, PipeStreamSetupLogger logger, bool verifySignatures)
+        : base(elevationContext, logger, verifySignatures)
     {
         // Establish a connection with the install client and logger. We're relying on tasks to handle
         // this, otherwise, the ordering needs to be lined up with how the client configures
@@ -160,7 +160,7 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
     /// Creates a new <see cref="NetSdkMsiInstallerServer"/> instance.
     /// </summary>
     /// <returns>A new install server.</returns>
-    public static NetSdkMsiInstallerServer Create(bool verifyMsiSignature)
+    public static NetSdkMsiInstallerServer Create(bool verifySignatures)
     {
         if (!WindowsUtils.IsAdministrator())
         {
@@ -194,6 +194,6 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
         PipeStreamSetupLogger logger = new(logPipe, logPipeName);
         InstallServerElevationContext elevationContext = new(serverPipe);
 
-        return new NetSdkMsiInstallerServer(elevationContext, logger, verifyMsiSignature);
+        return new NetSdkMsiInstallerServer(elevationContext, logger, verifySignatures);
     }
 }

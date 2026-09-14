@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
+using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.AvoidPotentiallyExpensiveCallWhenLoggingAnalyzer,
@@ -16,7 +15,6 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class AvoidPotentiallyExpensiveCallWhenLoggingTests
     {
         public static readonly TheoryData<string> LogLevels = new()
@@ -29,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             "Critical"
         };
 
-        [TestMethod]
+        [Fact]
         public async Task LiteralInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -53,8 +51,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task LiteralInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -76,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LiteralInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -102,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LocalInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -128,8 +126,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task LocalInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -153,7 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LocalInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -181,7 +179,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FieldInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -207,8 +205,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task FieldInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -232,7 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FieldInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -260,7 +258,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PropertyInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -286,8 +284,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task PropertyInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -311,7 +309,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PropertyInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -339,7 +337,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IndexerInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -366,8 +364,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task IndexerInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -392,7 +390,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IndexerInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -421,7 +419,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayIndexerInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -447,8 +445,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task ArrayIndexerInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -472,7 +470,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayIndexerInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -500,7 +498,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ConditionalAccessInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -526,8 +524,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task ConditionalAccessInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -551,7 +549,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ConditionalAccessInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -579,7 +577,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -598,8 +596,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task BinaryOperationInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -621,7 +619,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -647,7 +645,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CoalesceOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -673,8 +671,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CoalesceOperationInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -698,7 +696,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CoalesceOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -726,7 +724,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefaultValueOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -745,8 +743,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task DefaultValueOperationInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -768,7 +766,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefaultValueOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -794,7 +792,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IncrementOrDecrementOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -813,7 +811,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IncrementOrDecrementOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -839,7 +837,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsPatternOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -860,7 +858,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsPatternOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -888,7 +886,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsTypeOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -907,7 +905,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsTypeOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -933,7 +931,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NameOfOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -957,8 +955,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NameOfOperationInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -980,7 +978,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NameOfOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1006,7 +1004,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationValueTypeInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1025,7 +1023,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationValueTypeInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1051,7 +1049,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SizeOfOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1070,7 +1068,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SizeOfOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1096,7 +1094,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeOfOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1115,7 +1113,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeOfOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1141,7 +1139,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnaryOperationInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1160,7 +1158,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnaryOperationInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1186,7 +1184,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationLiteralInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1210,8 +1208,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationLiteralInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -1233,7 +1231,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationLiteralInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1259,7 +1257,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationConstantInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1285,8 +1283,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationConstantInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -1310,7 +1308,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationConstantInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1338,7 +1336,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationNameOfInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1362,8 +1360,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationNameOfInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -1385,7 +1383,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationNameOfInLoggerMessage_NoDiagnostic_CS()
         {
             string source = """
@@ -1411,7 +1409,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task OtherILoggerMethodCalled_NoDiagnostic_CS()
         {
             string source = """
@@ -1438,7 +1436,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for operations that get flagged.
 
-        [TestMethod]
+        [Fact]
         public async Task AnonymousObjectCreationOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1457,7 +1455,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayCreationOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1476,7 +1474,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AwaitOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1496,7 +1494,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CollectionExpressionOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1515,7 +1513,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1534,7 +1532,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InvocationOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1553,7 +1551,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationReferenceType_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1572,7 +1570,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WithOperation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1595,7 +1593,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for work done in other operations.
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInIndexerInstance_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1620,7 +1618,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInIndexerArgument_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1647,7 +1645,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInConditionalAccess_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1668,7 +1666,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInFieldInstance_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1694,7 +1692,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInPropertyInstance_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1718,7 +1716,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInArrayReference_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1742,7 +1740,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInUnaryOperand_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1766,7 +1764,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInBinaryOperand_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1790,7 +1788,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInCoalesceOperationValue_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1816,7 +1814,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInCoalesceOperationWhenNull_ReportsDiagnostic_CS()
         {
             string source = """
@@ -1839,7 +1837,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests when log call is guarded.
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -1876,7 +1874,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLogConditionalAccess_NoDiagnostic_CS()
         {
             string source = """
@@ -1898,7 +1896,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_CS()
         {
             string source = """
@@ -1935,8 +1933,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -1970,8 +1968,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkInLoggerMessage_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2009,8 +2007,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkInLog_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2044,7 +2042,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NestedGuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_CS()
         {
             string source = """
@@ -2078,8 +2076,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2117,8 +2115,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkInLoggerMessage_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2164,8 +2162,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLog_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2196,7 +2194,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkWithReturnInLogWithDynamicLogLevel_NoDiagnostic_CS()
         {
             string source = """
@@ -2227,8 +2225,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2258,8 +2256,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLoggerMessage_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2293,8 +2291,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLog_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2328,7 +2326,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NestedGuardedWorkWithReturnInLogWithDynamicLogLevel_NoDiagnostic_CS()
         {
             string source = """
@@ -2362,8 +2360,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2396,8 +2394,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLoggerMessage_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2436,7 +2434,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CustomLoggerGuardedWorkInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -2480,7 +2478,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CustomLoggerGuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_CS()
         {
             string source = """
@@ -2524,8 +2522,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CustomLoggerGuardedWorkInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2566,8 +2564,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CustomLoggerGuardedWorkInLoggerMessage_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -2612,7 +2610,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLog_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2649,7 +2647,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLogNamed_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2683,7 +2681,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2721,7 +2719,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLog_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2758,7 +2756,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLogNamed_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2792,7 +2790,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2830,7 +2828,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLog_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2869,7 +2867,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLogNamed_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2905,7 +2903,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2940,7 +2938,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardAfterLogInvocation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2971,7 +2969,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Boxing tests
 
-        [TestMethod]
+        [Fact]
         public async Task ArgumentIsBoxed_ReportsDiagnostic_CS()
         {
             string source = $$"""
@@ -2990,7 +2988,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArgumentIsUnboxed_NoDiagnostic_CS()
         {
             string source = $$"""
@@ -3009,7 +3007,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SimpleValueTypeCast_NoDiagnostic_CS()
         {
             string source = """
@@ -3028,7 +3026,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReferenceTypeCast_NoDiagnostic_CS()
         {
             string source = """
@@ -3047,7 +3045,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReferenceTypeDowncast_NoDiagnostic_CS()
         {
             string source = """
@@ -3066,7 +3064,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationWithBoxing_ReportsDiagnostic_CS()
         {
             string source = """
@@ -3085,7 +3083,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImplicitBoxingParamsArrayCreation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -3106,7 +3104,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // VB tests
 
-        [TestMethod]
+        [Fact]
         public async Task LiteralInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3128,8 +3126,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task LiteralInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3149,7 +3147,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LiteralInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3178,7 +3176,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LocalInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3203,8 +3201,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task LocalInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3226,7 +3224,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LocalInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3257,7 +3255,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FieldInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3282,8 +3280,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task FieldInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3305,7 +3303,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FieldInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3336,7 +3334,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PropertyInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3360,8 +3358,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task PropertyInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3383,7 +3381,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PropertyInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3414,7 +3412,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IndexerInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3439,8 +3437,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task IndexerInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3463,7 +3461,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IndexerInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3495,7 +3493,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayIndexerInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3520,8 +3518,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task ArrayIndexerInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3543,7 +3541,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayIndexerInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3574,7 +3572,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ConditionalAccessInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3596,8 +3594,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task ConditionalAccessInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3617,7 +3615,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ConditionalAccessInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3646,7 +3644,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3663,8 +3661,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task BinaryOperationInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3684,7 +3682,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3713,7 +3711,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CoalesceOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3735,8 +3733,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CoalesceOperationInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3756,7 +3754,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CoalesceOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3785,7 +3783,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsTypeOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3802,7 +3800,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IsTypeOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3831,7 +3829,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NameOfOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3853,8 +3851,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NameOfOperationInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -3874,7 +3872,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NameOfOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3903,7 +3901,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationValueTypeInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3920,7 +3918,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationValueTypeInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3949,7 +3947,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeOfOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -3966,7 +3964,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeOfOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -3995,7 +3993,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnaryOperationInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -4012,7 +4010,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnaryOperationInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -4041,7 +4039,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationLiteralInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4063,8 +4061,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationLiteralInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4084,7 +4082,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationLiteralInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -4113,7 +4111,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationConstantInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4137,8 +4135,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationConstantInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4160,7 +4158,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationConstantInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -4191,7 +4189,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationNameOfInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4213,8 +4211,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task InterpolatedStringOperationNameOfInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4234,7 +4232,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperationNameOfInLoggerMessage_NoDiagnostic_VB()
         {
             string source = """
@@ -4263,7 +4261,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task OtherILoggerMethodCalled_NoDiagnostic_VB()
         {
             string source = """
@@ -4287,7 +4285,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for operations that get flagged.
 
-        [TestMethod]
+        [Fact]
         public async Task AnonymousObjectCreationOperation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4304,7 +4302,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArrayCreationOperation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4321,7 +4319,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AwaitOperation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4339,7 +4337,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InterpolatedStringOperation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4356,7 +4354,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InvocationOperation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4373,7 +4371,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ObjectCreationOperationReferenceType_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4392,7 +4390,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for work done in other operations.
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInIndexerInstance_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4414,7 +4412,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInIndexerArgument_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4438,7 +4436,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInConditionalAccess_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4455,7 +4453,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInFieldInstance_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4478,7 +4476,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInPropertyInstance_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4499,7 +4497,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInArrayReference_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4522,7 +4520,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInUnaryOperand_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4543,7 +4541,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInBinaryOperand_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4564,7 +4562,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInCoalesceOperationValue_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4585,7 +4583,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WorkInCoalesceOperationWhenNull_ReportsDiagnostic_VB()
         {
             string source = """
@@ -4604,7 +4602,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests when log call is guarded.
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -4629,7 +4627,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLogConditionalAccess_NoDiagnostic_VB()
         {
             string source = """
@@ -4652,7 +4650,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_VB()
         {
             string source = """
@@ -4677,8 +4675,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4702,8 +4700,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkInLoggerMessage_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4736,7 +4734,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NestedGuardedWorkInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -4765,7 +4763,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NestedGuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_VB()
         {
             string source = """
@@ -4794,8 +4792,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4838,8 +4836,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkInLoggerMessage_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4883,8 +4881,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLog_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4911,7 +4909,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardedWorkWithReturnInLogWithDynamicLogLevel_NoDiagnostic_VB()
         {
             string source = """
@@ -4938,8 +4936,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -4965,8 +4963,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GuardedWorkWithReturnInLoggerMessage_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5001,8 +4999,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLog_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5031,7 +5029,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NestedGuardedWorkWithReturnInLogWithDynamicLogLevel_NoDiagnostic_VB()
         {
             string source = """
@@ -5060,8 +5058,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5089,8 +5087,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task NestedGuardedWorkWithReturnInLoggerMessage_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5129,7 +5127,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CustomLoggerGuardedWorkInLog_NoDiagnostic_VB()
         {
             string source = """
@@ -5170,7 +5168,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CustomLoggerGuardedWorkInLogWithDynamicLogLevel_NoDiagnostic_VB()
         {
             string source = """
@@ -5211,8 +5209,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CustomLoggerGuardedWorkInLogNamed_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5252,8 +5250,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task CustomLoggerGuardedWorkInLoggerMessage_NoDiagnostic_VB(string logLevel)
         {
             string source = $$"""
@@ -5302,7 +5300,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5327,7 +5325,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLogNamed_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5352,7 +5350,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongLogLevelGuardedWorkInLoggerMessage_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5385,7 +5383,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5410,7 +5408,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLogNamed_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5435,7 +5433,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongDynamicLogLevelGuardedWorkInLoggerMessage_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5468,7 +5466,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLog_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5495,7 +5493,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLogNamed_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5522,7 +5520,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongInstanceGuardedWorkInLoggerMessage_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5557,7 +5555,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GuardAfterLogInvocation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5582,7 +5580,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Boxing tests
 
-        [TestMethod]
+        [Fact]
         public async Task ArgumentIsBoxed_ReportsDiagnostic_VB()
         {
             string source = $$"""
@@ -5599,7 +5597,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ArgumentIsUnboxed_NoDiagnostic_VB()
         {
             string source = $$"""
@@ -5616,7 +5614,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SimpleValueTypeCast_NoDiagnostic_VB()
         {
             string source = """
@@ -5633,7 +5631,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReferenceTypeCast_NoDiagnostic_VB()
         {
             string source = """
@@ -5650,7 +5648,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReferenceTypeDowncast_NoDiagnostic_VB()
         {
             string source = """
@@ -5667,7 +5665,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BinaryOperationWithBoxing_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5684,7 +5682,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImplicitBoxingParamsArrayCreation_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5703,7 +5701,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for trivial operations that should not be flagged
 
-        [TestMethod]
+        [Fact]
         public async Task GetTypeInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -5722,7 +5720,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetTypeNameInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -5741,7 +5739,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetTypeFullNameInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -5760,8 +5758,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(LogLevels))]
+        [Theory]
+        [MemberData(nameof(LogLevels))]
         public async Task GetTypeInLogNamed_NoDiagnostic_CS(string logLevel)
         {
             string source = $$"""
@@ -5781,7 +5779,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetHashCodeOnReferenceTypeInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -5800,7 +5798,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetHashCodeOnValueTypeInLog_ReportsDiagnostic_CS()
         {
             string source = """
@@ -5819,7 +5817,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StopwatchGetTimestampInLog_NoDiagnostic_CS()
         {
             string source = """
@@ -5841,7 +5839,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         // Tests for LogLevel configuration
 
-        [TestMethod]
+        [Fact]
         public async Task InformationLevelWithDefaultConfig_ReportsDiagnostic_CS()
         {
             string source = """
@@ -5860,7 +5858,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WarningLevelWithDefaultConfig_NoDiagnostic_CS()
         {
             string source = """
@@ -5879,7 +5877,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WarningLevelWithConfiguredMaxWarning_ReportsDiagnostic_CS()
         {
             string source = """
@@ -5904,7 +5902,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ErrorLevelWithConfiguredMaxWarning_NoDiagnostic_CS()
         {
             string source = """
@@ -5929,7 +5927,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TraceLevelWithConfiguredMaxTrace_ReportsDiagnostic_CS()
         {
             string source = """
@@ -5954,7 +5952,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CriticalLevelWithConfiguredMaxCritical_ReportsDiagnostic_CS()
         {
             string source = """
@@ -5979,7 +5977,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoggerMessageInformationLevelWithDefaultConfig_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6001,7 +5999,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoggerMessageWarningLevelWithDefaultConfig_NoDiagnostic_CS()
         {
             string source = """
@@ -6023,7 +6021,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoggerMessageWarningLevelWithConfiguredMaxWarning_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6051,7 +6049,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoggerMessageErrorLevelWithConfiguredMaxWarning_NoDiagnostic_CS()
         {
             string source = """
@@ -6079,7 +6077,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source, editorConfigText: editorconfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoggerMessageDynamicLevelWithDefaultConfig_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6101,7 +6099,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethodLogInformationWithDefaultConfig_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6120,7 +6118,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethodLogWarningWithDefaultConfig_NoDiagnostic_CS()
         {
             string source = """
@@ -6139,7 +6137,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpDiagnosticAsync(source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethodLogWarningWithConfiguredMaxWarning_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6181,7 +6179,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add((editorConfigText.Value.Item1, editorConfigText.Value.Item2));
             }
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         private static async Task VerifyBasicDiagnosticAsync(string source, CodeAnalysis.VisualBasic.LanguageVersion? languageVersion = null, (string, string)? editorConfigText = null)
@@ -6199,7 +6197,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add((editorConfigText.Value.Item1, editorConfigText.Value.Item2));
             }
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         private static readonly ReferenceAssemblies Net60WithMELogging =

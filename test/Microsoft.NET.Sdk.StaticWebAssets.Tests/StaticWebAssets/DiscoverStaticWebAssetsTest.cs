@@ -1,13 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -15,13 +10,12 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
     public class DiscoverStaticWebAssetsTest
     {
         private readonly Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> _testResolveFileDetails =
             (string identity, string originalItemSpec) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero));
 
-        [TestMethod]
+        [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
         {
             var errorMessages = new List<string>();
@@ -68,9 +62,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
-        [TestMethod]
-        [DataRow("index.js", "index#[.{fingerprint}]?.js", "")]
-        [DataRow("css/site.css", "css/site#[.{fingerprint}]!.css", "#[.{fingerprint}]!")]
+        [Theory]
+        [InlineData("index.js", "index#[.{fingerprint}]?.js", "")]
+        [InlineData("css/site.css", "css/site#[.{fingerprint}]!.css", "#[.{fingerprint}]!")]
         public void FingerprintsContentWhenEnabled(string file, string expectedRelativePath, string expression)
         {
             var errorMessages = new List<string>();
@@ -122,9 +116,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", file));
         }
 
-        [TestMethod]
-        [DataRow("index.js")]
-        [DataRow("css/site.js")]
+        [Theory]
+        [InlineData("index.js")]
+        [InlineData("css/site.js")]
         public void DoesNotFingerprintsContentWhenNotEnabled(string candidate)
         {
             var errorMessages = new List<string>();
@@ -172,9 +166,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", Path.Combine(candidate.Split('/'))));
         }
 
-        [TestMethod]
-        [DataRow("candidate.lib.module.js", "candidate#[.{fingerprint}]?.lib.module.js", "")]
-        [DataRow("library.candidate.lib.module.js", "library.candidate#[.{fingerprint}]!.lib.module.js", "#[.{fingerprint}]!")]
+        [Theory]
+        [InlineData("candidate.lib.module.js", "candidate#[.{fingerprint}]?.lib.module.js", "")]
+        [InlineData("library.candidate.lib.module.js", "library.candidate#[.{fingerprint}]!.lib.module.js", "#[.{fingerprint}]!")]
         public void FingerprintsContentUsingPatternsWhenMoreThanOneExtension(string fileName, string expectedRelativePath, string expression)
         {
             var errorMessages = new List<string>();
@@ -223,8 +217,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", fileName));
         }
 
-    [TestMethod]
-    [TestCategory("FingerprintIdentity")]
+    [Fact]
+    [Trait("Category", "FingerprintIdentity")]
     public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
         {
             // Arrange: simulate a packaged asset (outside content root) with a RelativePath inside the app
@@ -286,7 +280,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.ItemSpec.Should().Be(expectedIdentity);
         }
 
-        [TestMethod]
+        [Fact]
         public void RespectsItemRelativePathWhenExplicitlySpecified()
         {
             var errorMessages = new List<string>();
@@ -333,7 +327,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
-        [TestMethod]
+        [Fact]
         public void UsesTargetPathWhenFound()
         {
             var errorMessages = new List<string>();
@@ -380,7 +374,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
-        [TestMethod]
+        [Fact]
         public void UsesLinkPathWhenFound()
         {
             var errorMessages = new List<string>();
@@ -427,7 +421,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
         }
 
-        [TestMethod]
+        [Fact]
         public void AutomaticallyDetectsAssetKindWhenMultipleAssetsTargetTheSameRelativePath()
         {
             var errorMessages = new List<string>();
@@ -470,12 +464,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             publishAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
         }
 
-        [TestMethod]
-        [DataRow("Never", "Never", "Build", "Never", "Never", "Build")]
-        [DataRow("PreserveNewest", "PreserveNewest", "All", "PreserveNewest", "PreserveNewest", "All")]
-        [DataRow("Always", "Always", "All", "Always", "Always", "All")]
-        [DataRow("Never", "Always", "All", "Never", "Always", "All")]
-        [DataRow("Always", "Never", "Build", "Always", "Never", "Build")]
+        [Theory]
+        [InlineData("Never", "Never", "Build", "Never", "Never", "Build")]
+        [InlineData("PreserveNewest", "PreserveNewest", "All", "PreserveNewest", "PreserveNewest", "All")]
+        [InlineData("Always", "Always", "All", "Always", "Always", "All")]
+        [InlineData("Never", "Always", "All", "Never", "Always", "All")]
+        [InlineData("Always", "Never", "Build", "Always", "Never", "Build")]
         public void FailsDiscoveringAssetsWhenThereIsAConflict(
             string copyToOutputDirectoryFirst,
             string copyToPublishDirectoryFirst,
@@ -525,18 +519,18 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 for path 'candidate.js'");
         }
 
-        [TestMethod]
-        [DataRow("\\_content\\Path\\", "_content/Path")]
-        [DataRow("\\_content\\Path", "_content/Path")]
-        [DataRow("_content\\Path", "_content/Path")]
-        [DataRow("/_content/Path/", "_content/Path")]
-        [DataRow("/_content/Path", "_content/Path")]
-        [DataRow("_content/Path", "_content/Path")]
-        [DataRow("\\_content/Path\\", "_content/Path")]
-        [DataRow("/_content\\Path/", "_content/Path")]
-        [DataRow("", "/")]
-        [DataRow("/", "/")]
-        [DataRow("\\", "/")]
+        [Theory]
+        [InlineData("\\_content\\Path\\", "_content/Path")]
+        [InlineData("\\_content\\Path", "_content/Path")]
+        [InlineData("_content\\Path", "_content/Path")]
+        [InlineData("/_content/Path/", "_content/Path")]
+        [InlineData("/_content/Path", "_content/Path")]
+        [InlineData("_content/Path", "_content/Path")]
+        [InlineData("\\_content/Path\\", "_content/Path")]
+        [InlineData("/_content\\Path/", "_content/Path")]
+        [InlineData("", "/")]
+        [InlineData("/", "/")]
+        [InlineData("\\", "/")]
         public void NormalizesBasePath(string givenPath, string expectedPath)
         {
             var errorMessages = new List<string>();
@@ -589,8 +583,8 @@ for path 'candidate.js'");
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(NormalizesContentRootData))]
+        [Theory]
+        [MemberData(nameof(NormalizesContentRootData))]
         public void NormalizesContentRoot(string contentRoot, string expected)
         {
             var errorMessages = new List<string>();
@@ -624,7 +618,7 @@ for path 'candidate.js'");
             asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(expected);
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineStaticWebAssetsCache_UpToDate()
         {
             // Arrange
@@ -633,10 +627,10 @@ for path 'candidate.js'");
             cache.Update([], [], [], inputHashes);
 
             // Assert
-            Assert.IsTrue(cache.IsUpToDate());
+            Assert.True(cache.IsUpToDate());
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineStaticWebAssetsCache_UpToDate_WithAssets()
         {
             // Arrange
@@ -646,13 +640,13 @@ for path 'candidate.js'");
             cache.Update([], [], [], inputHashes);
 
             // Assert
-            Assert.IsTrue(cache.IsUpToDate());
+            Assert.True(cache.IsUpToDate());
         }
 
-        [TestMethod]
-        [DataRow(UpdatedHash.GlobalProperties)]
-        [DataRow(UpdatedHash.FingerprintPatterns)]
-        [DataRow(UpdatedHash.Overrides)]
+        [Theory]
+        [InlineData(UpdatedHash.GlobalProperties)]
+        [InlineData(UpdatedHash.FingerprintPatterns)]
+        [InlineData(UpdatedHash.Overrides)]
         public void DefineStaticWebAssetsCache_Recomputes_All_WhenPropertiesChange(UpdatedHash updated)
         {
             // Arrange
@@ -672,13 +666,13 @@ for path 'candidate.js'");
                     break;
             }
 
-            Assert.IsFalse(cache.IsUpToDate());
-            Assert.AreSame(inputHashes, cache.OutOfDateInputs());
-            Assert.IsEmpty(cache.CachedAssets);
-            Assert.IsEmpty(cache.CachedCopyCandidates);
+            Assert.False(cache.IsUpToDate());
+            Assert.Same(inputHashes, cache.OutOfDateInputs());
+            Assert.Empty(cache.CachedAssets);
+            Assert.Empty(cache.CachedCopyCandidates);
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineStaticWebAssetsCache_PartialUpdate_WhenOnlySome_InputsChange()
         {
             // Arrange
@@ -689,14 +683,14 @@ for path 'candidate.js'");
             cache.Update([], [], [], inputHashes);
 
             // Assert
-            Assert.IsFalse(cache.IsUpToDate());
-            Assert.AreNotSame(inputHashes, cache.OutOfDateInputs());
-            var input1 = Assert.ContainsSingle(cache.OutOfDateInputs());
+            Assert.False(cache.IsUpToDate());
+            Assert.NotSame(inputHashes, cache.OutOfDateInputs());
+            var input1 = Assert.Single(cache.OutOfDateInputs());
             var ouput = cache.GetComputedOutputs();
-            var input2 = Assert.ContainsSingle(ouput.Assets);
+            var input2 = Assert.Single(ouput.Assets);
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineStaticWebAssetsCache_PartialUpdate_NewAssetsCanBeAddedToTheCache()
         {
             // Arrange
@@ -709,18 +703,18 @@ for path 'candidate.js'");
             cache.AppendAsset("input1", newAsset, newAssetItem);
 
             // Assert
-            Assert.IsFalse(cache.IsUpToDate());
-            Assert.AreNotSame(inputHashes, cache.OutOfDateInputs());
-            var input1 = Assert.ContainsSingle(cache.OutOfDateInputs());
+            Assert.False(cache.IsUpToDate());
+            Assert.NotSame(inputHashes, cache.OutOfDateInputs());
+            var input1 = Assert.Single(cache.OutOfDateInputs());
             Assert.Contains("input1", cache.CachedAssets.Keys);
 
             var ouput = cache.GetComputedOutputs();
-            Assert.HasCount(2, ouput.Assets);
-            Assert.AreEqual("input2", ouput.Assets[0].ItemSpec);
-            Assert.AreEqual("input1", ouput.Assets[1].ItemSpec);
+            Assert.Equal(2, ouput.Assets.Count);
+            Assert.Equal("input2", ouput.Assets[0].ItemSpec);
+            Assert.Equal("input1", ouput.Assets[1].ItemSpec);
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineStaticWebAssetsCache_CanRoundtripManifest()
         {
             var manifestPath = Path.Combine(Environment.CurrentDirectory, "CanRoundtripManifest.json");
@@ -745,12 +739,12 @@ for path 'candidate.js'");
                 cache.WriteCacheManifest();
 
                 var otherManifest = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(CreateLogger(), manifestPath);
-                otherManifest.InputHashes.Should().BeEquivalentTo(cache.InputHashes);
-                Assert.HasCount(cache.CachedAssets.Count, otherManifest.CachedAssets);
-                Assert.AreEqual(cache.CachedAssets["input2"].Identity, otherManifest.CachedAssets["input2"].Identity);
-                Assert.AreEqual(cache.CachedAssets["input2"].RelativePath, otherManifest.CachedAssets["input2"].RelativePath);
-                Assert.AreEqual(cache.CachedAssets["input1"].Identity, otherManifest.CachedAssets["input1"].Identity);
-                Assert.AreEqual(cache.CachedAssets["input1"].RelativePath, otherManifest.CachedAssets["input1"].RelativePath);
+                Assert.Equal(cache.InputHashes, otherManifest.InputHashes);
+                Assert.Equal(cache.CachedAssets.Count, otherManifest.CachedAssets.Count);
+                Assert.Equal(cache.CachedAssets["input2"].Identity, otherManifest.CachedAssets["input2"].Identity);
+                Assert.Equal(cache.CachedAssets["input2"].RelativePath, otherManifest.CachedAssets["input2"].RelativePath);
+                Assert.Equal(cache.CachedAssets["input1"].Identity, otherManifest.CachedAssets["input1"].Identity);
+                Assert.Equal(cache.CachedAssets["input1"].RelativePath, otherManifest.CachedAssets["input1"].RelativePath);
             }
             finally
             {
@@ -758,7 +752,7 @@ for path 'candidate.js'");
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ComputesRelativePath_ForDiscoveredAssetsWithFullPath()
         {
             var errorMessages = new List<string>();
@@ -798,7 +792,7 @@ for path 'candidate.js'");
             task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
         }
 
-        [TestMethod]
+        [Fact]
         public void ComputesRelativePath_WorksForItemsWithRelativePaths()
         {
             var errorMessages = new List<string>();
@@ -838,8 +832,7 @@ for path 'candidate.js'");
             task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
+        [LinuxOnlyFact]
         public void ComputesRelativePath_ForAssets_ExplicitPaths()
         {
             var errorMessages = new List<string>();

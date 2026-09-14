@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -11,7 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -37,49 +36,52 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             foreach (var diagnostic in context.Diagnostics)
             {
-                string fixTitle = GetTitle(diagnostic);
+                string fixTitle = diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags ?
+                                                        MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsCodeFix :
+                                                        MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsCodeFix;
                 context.RegisterCodeFix(CodeAction.Create(fixTitle,
-                                             ct => SyntaxEditorFixAllProvider.ApplyFixesAsync(context.Document, ImmutableArray.Create(diagnostic), ApplyFixAsync, ct),
+                                             async ct => await AddOrRemoveFlagsAttributeAsync(context.Document, context.Span, diagnostic.Id, flagsAttributeType, ct).ConfigureAwait(false),
                                              equivalenceKey: fixTitle),
                                         diagnostic);
             }
         }
 
-        // The two rules produce opposite fixes, and DocumentBasedFixAllProvider does not filter by
-        // CodeActionEquivalenceKey, so a fix-all invoked from one title must skip the other's diagnostics.
-        public override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<string?>(
-                fixAllContext => fixAllContext.CodeActionEquivalenceKey,
-                (document, diagnostic, editor, equivalenceKey, cancellationToken) => equivalenceKey is null || GetTitle(diagnostic) == equivalenceKey
-                    ? ApplyFixAsync(document, diagnostic, editor, cancellationToken)
-                    : Task.CompletedTask);
-
-        private static string GetTitle(Diagnostic diagnostic)
-            => diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags
-                ? MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsCodeFix
-                : MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsCodeFix;
-
-        private static async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        private static async Task<Document> AddOrRemoveFlagsAttributeAsync(Document document, TextSpan span, string diagnosticId, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
         {
+            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode node = root.FindNode(span);
+
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode newEnumBlockSyntax = diagnosticId == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags ?
+                AddFlagsAttribute(editor.Generator, node, flagsAttributeType) :
+                RemoveFlagsAttribute(editor.Generator, model, node, flagsAttributeType, cancellationToken);
 
-            INamedTypeSymbol? flagsAttributeType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFlagsAttribute);
-            if (flagsAttributeType == null)
+            editor.ReplaceNode(node, newEnumBlockSyntax);
+            return editor.GetChangedDocument();
+        }
+
+        private static SyntaxNode AddFlagsAttribute(SyntaxGenerator generator, SyntaxNode enumTypeSyntax, INamedTypeSymbol flagsAttributeType)
+        {
+            return generator.AddAttributes(enumTypeSyntax, generator.Attribute(generator.TypeExpression(flagsAttributeType)));
+        }
+
+        private static SyntaxNode RemoveFlagsAttribute(SyntaxGenerator generator, SemanticModel model, SyntaxNode enumTypeSyntax, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
+        {
+            if (model.GetDeclaredSymbol(enumTypeSyntax, cancellationToken) is not INamedTypeSymbol enumType)
             {
-                return;
+                return enumTypeSyntax;
             }
 
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            if (diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags)
-            {
-                SyntaxNode attribute = editor.Generator.Attribute(editor.Generator.TypeExpression(flagsAttributeType));
-                editor.ReplaceNode(node, (currentNode, generator) => generator.AddAttributes(currentNode, attribute));
-            }
-            else if (model.GetDeclaredSymbol(node, cancellationToken) is INamedTypeSymbol enumType)
-            {
-                SyntaxNode attributeNode = enumType.GetAttribute(flagsAttributeType)!.ApplicationSyntaxReference!.GetSyntax(cancellationToken);
-                editor.RemoveNode(attributeNode);
-            }
+            AttributeData flagsAttribute = enumType.GetAttribute(flagsAttributeType)!;
+            SyntaxNode attributeNode = flagsAttribute.ApplicationSyntaxReference!.GetSyntax(cancellationToken);
+
+            return generator.RemoveNode(enumTypeSyntax, attributeNode);
+        }
+
+        public override FixAllProvider GetFixAllProvider()
+        {
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

@@ -18,9 +18,5 @@ internal abstract class LaunchProfile
     public string? CommandLineArgs { get; init; }
 
     [JsonPropertyName("environmentVariables")]
-    public ImmutableDictionary<string, string> EnvironmentVariables
-    {
-        get;
-        init => field = value ?? [];
-    } = [];
+    public ImmutableDictionary<string, string> EnvironmentVariables { get; init; } = [];
 }

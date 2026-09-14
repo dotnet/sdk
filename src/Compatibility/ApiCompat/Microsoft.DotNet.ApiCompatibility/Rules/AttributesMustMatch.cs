@@ -66,10 +66,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             differences.Add(difference);
         }
 
-        // Attribute diagnostics retain the left containing symbol for compatibility with existing behavior.
-        // The right containing symbol is only used when handing an experimental API stability transition to CP0022 or CP0023.
-        private void ReportAttributeDifferences(ISymbol leftContaining,
-            ISymbol rightContaining,
+        private void ReportAttributeDifferences(ISymbol containing,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
             string itemRef,
@@ -122,7 +119,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // Attribute arguments exist on left but not right.
                             // Issue "changed" diagnostic.
-                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, leftContaining, itemRef, leftAttribute);
+                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
                         }
                     }
 
@@ -139,7 +136,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                             //   [Foo("b")]
                             //   void F()
                             // Issue "changed" diagnostic when in strict mode.
-                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, leftContaining, itemRef, rightGroup.Attributes[i]);
+                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, rightGroup.Attributes[i]);
                         }
                     }
                 }
@@ -149,19 +146,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     // Loop over left and issue "removed" diagnostic for each one.
                     foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
-                        if (ApiStabilityClassifier.IsExperimentalAttribute(leftAttribute))
-                        {
-                            ExperimentalApiBecomesStable.AddDifference(
-                                leftContaining,
-                                rightContaining,
-                                leftMetadata,
-                                rightMetadata,
-                                _settings.AttributeDataSymbolFilter,
-                                differences);
-                            continue;
-                        }
-
-                        AddDifference(differences, DifferenceType.Removed, leftMetadata, rightMetadata, leftContaining, itemRef, leftAttribute);
+                        AddDifference(differences, DifferenceType.Removed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
                     }
                 }
             }
@@ -177,19 +162,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // Loop over right and issue "added" diagnostic for each one.
                 foreach (AttributeData rightAttribute in rightGroup.Attributes)
                 {
-                    if (ApiStabilityClassifier.IsExperimentalAttribute(rightAttribute))
-                    {
-                        ExperimentalApiBecomesStable.AddDifference(
-                            leftContaining,
-                            rightContaining,
-                            leftMetadata,
-                            rightMetadata,
-                            _settings.AttributeDataSymbolFilter,
-                            differences);
-                        continue;
-                    }
-
-                    AddDifference(differences, DifferenceType.Added, leftMetadata, rightMetadata, leftContaining, itemRef, rightAttribute);
+                    AddDifference(differences, DifferenceType.Added, leftMetadata, rightMetadata, containing, itemRef, rightAttribute);
                 }
             }
         }
@@ -213,7 +186,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
                     {
                         ReportAttributeDifferences(left,
-                            right,
                             leftMetadata,
                             rightMetadata,
                             left.GetDocumentationCommentId() + $"<{i}>",
@@ -225,7 +197,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
 
             ReportAttributeDifferences(left,
-                right,
                 leftMetadata,
                 rightMetadata,
                 left.GetDocumentationCommentId() ?? "",
@@ -252,7 +223,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // If member is a method,
                 // compare return type attributes,
                 ReportAttributeDifferences(left,
-                    right,
                     leftMetadata,
                     rightMetadata,
                     left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType,
@@ -266,7 +236,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     for (int i = 0; i < leftMethod.Parameters.Length; i++)
                     {
                         ReportAttributeDifferences(left,
-                            right,
                             leftMetadata,
                             rightMetadata,
                             left.GetDocumentationCommentId() + $"${i}",
@@ -282,7 +251,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     for (int i = 0; i < leftMethod.TypeParameters.Length; i++)
                     {
                         ReportAttributeDifferences(left,
-                            right,
                             leftMetadata,
                             rightMetadata,
                             left.GetDocumentationCommentId() + $"<{i}>",
@@ -294,7 +262,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
 
             ReportAttributeDifferences(left,
-                right,
                 leftMetadata,
                 rightMetadata,
                 left.GetDocumentationCommentId() ?? "",

@@ -1,27 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-extern alias MSTestFramework;
-
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class ProjectGraphFactoryTests
+public class ProjectGraphFactoryTests(ITestOutputHelper output)
 {
-    public TestContext TestContext { get; set; } = null!;
-    private DualOutputHelper? _output;
-    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
-    private TestAssetsManager? _testAssetManager;
-    private TestAssetsManager TestAssetManager => _testAssetManager ??= new(Output);
+    private readonly TestAssetsManager _testAssetManager = new(output);
     private readonly TestLogger _testLogger = new();
 
-    [TestMethod]
+    [Fact]
     public void RegularProject()
     {
-        var testAsset = TestAssetManager.CopyTestAsset("WatchNoDepsApp")
+        var testAsset = _testAssetManager.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
         var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
@@ -30,16 +23,16 @@ public class ProjectGraphFactoryTests
         var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions(asset: testAsset));
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
-        Assert.IsNotNull(graph);
+        Assert.NotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
-        Assert.AreEqual(projectPath, root.ProjectInstance.FullPath);
+        Assert.Equal(projectPath, root.ProjectInstance.FullPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void VirtualProject()
     {
-        var dir = TestAssetManager.CreateTestDirectory().Path;
+        var dir = _testAssetManager.CreateTestDirectory().Path;
 
         var entryPointFilePath = Path.Combine(dir, "App.cs");
         File.WriteAllText(entryPointFilePath, """
@@ -50,16 +43,16 @@ public class ProjectGraphFactoryTests
         var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions());
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
-        Assert.IsNotNull(graph);
+        Assert.NotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
-        Assert.AreEqual(VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath), root.ProjectInstance.FullPath);
+        Assert.Equal(VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath), root.ProjectInstance.FullPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void VirtualProject_Error()
     {
-        var dir = TestAssetManager.CreateTestDirectory().Path;
+        var dir = _testAssetManager.CreateTestDirectory().Path;
 
         var entryPointFilePath = Path.Combine(dir, "App.cs");
         File.WriteAllText(entryPointFilePath, """
@@ -70,7 +63,7 @@ public class ProjectGraphFactoryTests
         var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions());
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
-        Assert.IsNull(graph);
+        Assert.Null(graph);
 
         var message = string.Format(FileBasedProgramsResources.InvalidProjectDirective,
             string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Combine(dir, "NonExistent.csproj")));
@@ -82,10 +75,10 @@ public class ProjectGraphFactoryTests
         ], _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void VirtualProject_ProjectDirective()
     {
-        var testAsset = TestAssetManager.CopyTestAsset("WatchNoDepsApp")
+        var testAsset = _testAssetManager.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
         var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
@@ -102,7 +95,7 @@ public class ProjectGraphFactoryTests
         var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions(asset: testAsset));
 
         var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
-        Assert.IsNotNull(graph);
+        Assert.NotNull(graph);
 
         AssertEx.SequenceEqual(
             [projectPath, VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath)],

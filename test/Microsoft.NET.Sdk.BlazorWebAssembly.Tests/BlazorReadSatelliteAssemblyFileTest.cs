@@ -4,14 +4,12 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    [TestClass]
     public class BlazorReadSatelliteAssemblyFileTest
     {
-        [TestMethod]
+        [Fact]
         public void WritesAndReadsRoundTrip()
         {
             // Arrange/Act

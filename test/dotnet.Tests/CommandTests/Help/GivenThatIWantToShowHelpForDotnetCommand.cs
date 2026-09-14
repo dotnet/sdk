@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.Help;
 
 namespace Microsoft.DotNet.Help.Tests
 {
-    [TestClass]
     public class GivenThatIWantToShowHelpForDotnetCommand : SdkTest
     {
         private const string HelpText =
@@ -54,15 +53,15 @@ Additional commands from bundled tools:
 
 Run 'dotnet [command] --help' for more information on a command.";
 
-        public GivenThatIWantToShowHelpForDotnetCommand()
+        public GivenThatIWantToShowHelpForDotnetCommand(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [DataRow("--help")]
-        [DataRow("-h")]
-        [DataRow("-?")]
-        [DataRow("/?")]
+        [Theory]
+        [InlineData("--help")]
+        [InlineData("-h")]
+        [InlineData("-?")]
+        [InlineData("/?")]
         public void WhenHelpOptionIsPassedToDotnetItPrintsUsage(string helpArg)
         {
             var cmd = new DotnetCommand(Log)
@@ -71,7 +70,7 @@ Run 'dotnet [command] --help' for more information on a command.";
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenHelpCommandIsPassedToDotnetItPrintsUsage()
         {
             var cmd = new DotnetCommand(Log, "help")
@@ -80,7 +79,7 @@ Run 'dotnet [command] --help' for more information on a command.";
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenInvalidCommandIsPassedToDotnetHelpItPrintsError()
         {
             var cmd = new DotnetCommand(Log)
@@ -91,9 +90,9 @@ Run 'dotnet [command] --help' for more information on a command.";
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
-        [TestMethod]
-        [DataRow("complete")]
-        [DataRow("parse")]
+        [Theory]
+        [InlineData("complete")]
+        [InlineData("parse")]
         public void WhenCommandWithoutDocLinkIsPassedToDotnetHelpItPrintsError(string command)
         {
             var cmd = new DotnetCommand(Log)
@@ -104,31 +103,28 @@ Run 'dotnet [command] --help' for more information on a command.";
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void WhenRunOnWindowsDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
             Assert.EndsWith("cmd.exe", proc.StartInfo.FileName);
-            Assert.AreEqual("/c start https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            Assert.Equal("/c start https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
+        [LinuxOnlyFact]
         public void WhenRunOnLinuxDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
             Assert.Contains("xdg-open", proc.StartInfo.FileName);
-            Assert.AreEqual("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
 
         }
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOsOnlyFact]
         public void WhenRunOnMacOsDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
             Assert.EndsWith("open", proc.StartInfo.FileName);
-            Assert.AreEqual("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
+            Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
     }
 }

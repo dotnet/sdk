@@ -5,14 +5,17 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class PublishDepsFilePathTests : SdkTest
     {
-        [TestMethod]
+        public PublishDepsFilePathTests(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void PublishDepsFilePathIsSetAsExpectedForNormalApps()
         {
             var testProject = SetupProject(singleFile: false);
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var projectPath = Path.Combine(testAsset.Path, testProject.Name);
             var targetFramework = testProject.TargetFrameworks;
@@ -25,11 +28,11 @@ namespace Microsoft.NET.Publish.Tests
             publishDepsFilePath.Should().Be(expectedDepsFilePath);
         }
 
-        [TestMethod]
+        [Fact]
         public void PublishDepsFilePathIsEmptyForSingleFileApps()
         {
             var testProject = SetupProject(singleFile: true);
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
                 .Execute()

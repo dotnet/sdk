@@ -1,20 +1,21 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class DotnetNewUpdateTests : BaseIntegrationTest
     {
-        private ITestOutputHelper _log => Log;
+        private readonly ITestOutputHelper _log;
 
-        public DotnetNewUpdateTests()
+        public DotnetNewUpdateTests(ITestOutputHelper log) : base(log)
         {
+            _log = log;
         }
 
-        [TestMethod]
-        [DataRow("--update-check")]
-        [DataRow("update --check-only")]
-        [DataRow("update --dry-run")]
+        [Theory]
+        [InlineData("--update-check")]
+        [InlineData("update --check-only")]
+        [InlineData("update --dry-run")]
         public void CanCheckForUpdate(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -46,7 +47,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("   dotnet new install Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+");
         }
 
-        [TestMethod]
+        [Fact]
         public void ReportsErrorOnUpdateCheckOfLocalPackage()
         {
             string nugetName = "TestNupkgInstallTemplate";
@@ -74,10 +75,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 For details on the exit code, refer to https://aka.ms/templating-exit-codes#106");
         }
 
-        [TestMethod]
-        [DataRow("--update-check")]
-        [DataRow("update --check-only")]
-        [DataRow("update --dry-run")]
+        [Theory]
+        [InlineData("--update-check")]
+        [InlineData("update --check-only")]
+        [InlineData("update --dry-run")]
         public void DoesNotShowUpdatesWhenAllTemplatesAreUpToDate(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -106,7 +107,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                 .And.HaveStdOutContaining("All template packages are up-to-date.");
         }
 
-        [TestMethod]
+        [Fact]
         public void PrintInfoOnUpdateOnCreation()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -136,7 +137,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotPrintUpdateInfoOnCreation_WhenNoUpdateCheckOption()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -179,7 +180,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And.HaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotPrintUpdateInfoOnCreation_WhenLatestVersionIsInstalled()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -209,7 +210,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
                   .And.NotHaveStdOutMatching("   dotnet new install Microsoft.DotNet.Common.ProjectTemplates.5.0@([\\d\\.a-z-])+");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowDeprecationMessage_WhenLegacyCommandIsUsed_Check()
         {
             const string deprecationMessage =
@@ -229,7 +230,7 @@ For more information, run:
             Assert.StartsWith(deprecationMessage, commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoNotShowDeprecationMessage_WhenNewCommandIsUsed_Check()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -244,9 +245,9 @@ For more information, run:
                 .And.NotHaveStdOutContaining("deprecated");
         }
 
-        [TestMethod]
-        [DataRow("--update-apply")]
-        [DataRow("update")]
+        [Theory]
+        [InlineData("--update-apply")]
+        [InlineData("update")]
         public void CanApplyUpdates(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -293,9 +294,9 @@ For more information, run:
                 .And.HaveStdOutContaining("Console App");
         }
 
-        [TestMethod]
-        [DataRow("--update-apply")]
-        [DataRow("update")]
+        [Theory]
+        [InlineData("--update-apply")]
+        [InlineData("update")]
         public void DoesNotApplyUpdatesWhenAllTemplatesAreUpToDate(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -324,7 +325,7 @@ For more information, run:
                 .And.HaveStdOutContaining("All template packages are up-to-date.");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowDeprecationMessage_WhenLegacyCommandIsUsed()
         {
             const string deprecationMessage =
@@ -344,7 +345,7 @@ For more information, run:
             Assert.StartsWith(deprecationMessage, commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");

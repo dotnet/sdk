@@ -1,13 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -15,8 +10,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestCategory("BaselineTest")]
-    [TestProperty("AspNetCore", "BaselineTest")]
+    [Trait("AspNetCore", "BaselineTest")]
     public class AspNetSdkBaselineTest : AspNetSdkTest
     {
         private static readonly JsonSerializerOptions BaselineSerializationOptions = new() { WriteIndented = true };
@@ -33,9 +27,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         private bool _generateBaselines = GenerateBaselines;
 
-        public AspNetSdkBaselineTest()
+        public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
-            TestAssembly = GetType().Assembly;
+            TestAssembly = Assembly.GetCallingAssembly();
             var testAssemblyMetadata = TestAssembly.GetCustomAttributes<AssemblyMetadataAttribute>();
             RuntimeVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "NetCoreAppRuntimePackageVersion").Value;
             DefaultPackageVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "DefaultTestBaselinePackageVersion").Value;
@@ -50,6 +44,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var packDirectDependency = CreatePackCommand(ProjectDirectory, "RazorPackageLibraryDirectDependency");
             ExecuteCommand(packDirectDependency).Should().Pass();
+        }
+
+        public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log)
+        {
+            _generateBaselines = generateBaselines;
+            _comparer = CreateBaselineComparer();
         }
 
         public TestAsset ProjectDirectory { get; set; }

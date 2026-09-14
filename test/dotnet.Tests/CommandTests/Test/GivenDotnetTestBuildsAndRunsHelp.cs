@@ -8,19 +8,18 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    [TestClass]
     public class GivenDotnetTestBuildsAndRunsHelp : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsHelp()
+        public GivenDotnetTestBuildsAndRunsHelp(ITestOutputHelper log) : base(log)
         {
         }
 
-        [DataRow(TestingConstants.Debug)]
-        [DataRow(TestingConstants.Release)]
-        [TestMethod]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunHelpOnTestProject_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -28,19 +27,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(@"Extension Options:\s+--[\s\S]*", result.StdOut);
-                Assert.MatchesRegex(@"Options:\s+--[\s\S]*", result.StdOut);
+                Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
+                Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [DataRow(TestingConstants.Debug)]
-        [DataRow(TestingConstants.Release)]
-        [TestMethod]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  Error output: Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunHelpOnMultipleTestProjects_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
@@ -50,24 +51,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(@"Extension Options:\s+--[\s\S]*", result.StdOut);
-                Assert.MatchesRegex(@"Options:\s+--[\s\S]*", result.StdOut);
+                Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
+                Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
 
                 string directorySeparator = PathUtility.GetDirectorySeparatorChar();
                 string otherTestProjectPattern = @$"Unavailable extension options:\s+.*{directorySeparator}{ToolsetInfo.CurrentTargetFramework}{directorySeparator}OtherTestProject\.dll.*\s+(--report-trx\s+--report-trx-filename|--report-trx-filename\s+--report-trx)";
 
-                Assert.MatchesRegex(otherTestProjectPattern, result.StdOut);
+                Assert.Matches(otherTestProjectPattern, result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [DataRow(TestingConstants.Debug)]
-        [DataRow(TestingConstants.Release)]
-        [TestMethod]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunHelpCommand_ShouldNotShowDuplicateOptions(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)

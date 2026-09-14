@@ -1,8 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -11,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -22,79 +20,80 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.RuleId);
 
-        // The analyzer reports a missing Equals override and missing equality operators separately, both on
-        // the type, so one declaration can carry two diagnostics. The fix adds everything the type is
-        // missing, so it has to run once per declaration rather than once per diagnostic.
         public sealed override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<HashSet<SyntaxNode>>(
-                static _ => new HashSet<SyntaxNode>(),
-                ImplementMissingMembersAsync);
-
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            Document document = context.Document;
-            ImmutableArray<Diagnostic> diagnostics = context.Diagnostics;
-            string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesTitle;
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
+        }
 
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        {
+            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            SyntaxNode enclosingNode = root.FindNode(context.Span);
+            SyntaxNode declaration = generator.GetDeclaration(enclosingNode);
+            if (declaration == null)
+            {
+                return;
+            }
+
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            if (model.GetDeclaredSymbol(declaration, context.CancellationToken) is not INamedTypeSymbol typeSymbol)
+            {
+                return;
+            }
+
+            Diagnostic diagnostic = context.Diagnostics.First();
+            string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesTitle;
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title,
-                    cancellationToken =>
-                    {
-                        HashSet<SyntaxNode> fixedDeclarations = new();
-                        return SyntaxEditorFixAllProvider.ApplyFixesAsync(
-                            document,
-                            diagnostics,
-                            (doc, diagnostic, editor, token) => ImplementMissingMembersAsync(doc, diagnostic, editor, fixedDeclarations, token),
-                            cancellationToken);
-                    },
-                    title),
-                diagnostics);
-
-            return Task.CompletedTask;
+                    async ct => await ImplementMissingMembersAsync(declaration, typeSymbol, context.Document, context.CancellationToken).ConfigureAwait(false),
+                    equivalenceKey: title),
+                diagnostic);
         }
 
-        private static async Task ImplementMissingMembersAsync(
+        private static async Task<Document> ImplementMissingMembersAsync(
+            SyntaxNode declaration,
+            INamedTypeSymbol typeSymbol,
             Document document,
-            Diagnostic diagnostic,
-            SyntaxEditor editor,
-            HashSet<SyntaxNode> fixedDeclarations,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
-            SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode? declaration = editor.Generator.GetDeclaration(enclosingNode);
-            if (declaration is null || !fixedDeclarations.Add(declaration))
-            {
-                return;
-            }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol typeSymbol)
-            {
-                return;
-            }
-
-            SyntaxGenerator generator = editor.Generator;
+            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            var generator = editor.Generator;
 
             if (!typeSymbol.OverridesEquals())
             {
-                editor.AddMember(declaration, generator.DefaultEqualsOverrideDeclaration(model.Compilation, typeSymbol));
+                var equalsMethod = generator.DefaultEqualsOverrideDeclaration(
+                    editor.SemanticModel.Compilation, typeSymbol);
+
+                editor.AddMember(declaration, equalsMethod);
             }
 
             if (!typeSymbol.OverridesGetHashCode())
             {
-                editor.AddMember(declaration, generator.DefaultGetHashCodeOverrideDeclaration(model.Compilation));
+                var getHashCodeMethod = generator.DefaultGetHashCodeOverrideDeclaration(
+                    editor.SemanticModel.Compilation);
+
+                editor.AddMember(declaration, getHashCodeMethod);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.EqualityOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorEqualityDeclaration(typeSymbol));
+                var equalityOperator = generator.DefaultOperatorEqualityDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, equalityOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.InequalityOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorInequalityDeclaration(typeSymbol));
+                var inequalityOperator = generator.DefaultOperatorInequalityDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, inequalityOperator);
             }
+
+            return editor.GetChangedDocument();
         }
     }
 }

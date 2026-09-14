@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -8,16 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseSearchValuesAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseSearchValuesFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class UseSearchValuesTests
     {
-        [TestMethod]
+        [Fact]
         public async Task TestIndexOfAnyAnalyzer()
         {
             string source =
@@ -213,7 +212,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyAnalyzerAsync(LanguageVersion.CSharp11, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUtf8StringLiteralsAnalyzer()
         {
             await VerifyAnalyzerAsync(LanguageVersion.CSharp11,
@@ -237,7 +236,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCollectionExpressionAnalyzer()
         {
             await VerifyAnalyzerAsync(LanguageVersion.CSharp12,
@@ -288,8 +287,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 select new object[] { method, bytes, readOnlySpan };
         }
 
-        [TestMethod]
-        [DynamicData(nameof(TestAllIndexOfAnyAndContainsAnySpanOverloads_MemberData))]
+        [Theory]
+        [MemberData(nameof(TestAllIndexOfAnyAndContainsAnySpanOverloads_MemberData))]
         public async Task TestAllIndexOfAnyAndContainsAnySpanOverloads(string method, bool bytes, bool readOnlySpan)
         {
             string type = bytes ? "byte" : "char";
@@ -330,9 +329,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp11, source, expected);
         }
 
-        [TestMethod]
-        [DataRow("IndexOfAny")]
-        [DataRow("LastIndexOfAny")]
+        [Theory]
+        [InlineData("IndexOfAny")]
+        [InlineData("LastIndexOfAny")]
         public async Task TestAllIndexOfAnyStringOverloads(string method)
         {
             string source =
@@ -368,42 +367,42 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
-        [DataRow("const string", "= \"aeiouA\";", true)]
-        [DataRow("static readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
-        [DataRow("static readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
-        [DataRow("readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
-        [DataRow("readonly char[]", "= ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
-        [DataRow("readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
-        [DataRow("readonly byte[]", "= [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
-        [DataRow("readonly char[]", "= new char[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
-        [DataRow("readonly char[]", "= new char[]  { 'a', 'e', 'i', 'o', 'u',  'A' };", false)]
-        [DataRow("ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
-        [DataRow("ReadOnlySpan<char>", "=> ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
-        [DataRow("ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
-        [DataRow("ReadOnlySpan<byte>", "=> [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
-        [DataRow("ReadOnlySpan<byte>", "=> \"aeiouA\"u8;", false)]
-        [DataRow("static ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", true)]
-        [DataRow("static ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", true)]
-        [DataRow("static ReadOnlySpan<byte>", "=> \"aeiouA\"u8;", true)]
-        [DataRow("ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", false)]
-        [DataRow("ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", false)]
-        [DataRow("ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", false)]
-        [DataRow("ReadOnlySpan<char>", "{ get => ['a', 'e', 'i', 'o', 'u', 'A']; }", false)]
-        [DataRow("ReadOnlySpan<byte>", "{ get { return new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }; } }", false)]
-        [DataRow("ReadOnlySpan<byte>", "{ get { return [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']; } }", false)]
-        [DataRow("static ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", true)]
-        [DataRow("static ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", true)]
-        [DataRow("static ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", true)]
-        [DataRow("static ReadOnlySpan<byte>", "{ get { return new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }; } }", true)]
-        [DataRow("readonly char[]", "= \"aeiouA\".ToCharArray();", false)]
-        [DataRow("static readonly char[]", "= \"aeiouA\".ToCharArray();", false)]
-        [DataRow("ReadOnlySpan<char>", "=> \"aeiouA\".ToCharArray();", false)]
-        [DataRow("static ReadOnlySpan<char>", "=> \"aeiouA\".ToCharArray();", true)]
-        [DataRow("readonly char[]", "= ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
-        [DataRow("static readonly char[]", "= ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
-        [DataRow("ReadOnlySpan<char>", "=> ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
-        [DataRow("static ReadOnlySpan<char>", "=> ConstStringTypeMember.ToCharArray();", true)]
+        [Theory]
+        [InlineData("const string", "= \"aeiouA\";", true)]
+        [InlineData("static readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("static readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
+        [InlineData("readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("readonly char[]", "= ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
+        [InlineData("readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
+        [InlineData("readonly byte[]", "= [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
+        [InlineData("readonly char[]", "= new char[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("readonly char[]", "= new char[]  { 'a', 'e', 'i', 'o', 'u',  'A' };", false)]
+        [InlineData("ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("ReadOnlySpan<char>", "=> ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
+        [InlineData("ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
+        [InlineData("ReadOnlySpan<byte>", "=> [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
+        [InlineData("ReadOnlySpan<byte>", "=> \"aeiouA\"u8;", false)]
+        [InlineData("static ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", true)]
+        [InlineData("static ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", true)]
+        [InlineData("static ReadOnlySpan<byte>", "=> \"aeiouA\"u8;", true)]
+        [InlineData("ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", false)]
+        [InlineData("ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", false)]
+        [InlineData("ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", false)]
+        [InlineData("ReadOnlySpan<char>", "{ get => ['a', 'e', 'i', 'o', 'u', 'A']; }", false)]
+        [InlineData("ReadOnlySpan<byte>", "{ get { return new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }; } }", false)]
+        [InlineData("ReadOnlySpan<byte>", "{ get { return [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']; } }", false)]
+        [InlineData("static ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", true)]
+        [InlineData("static ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", true)]
+        [InlineData("static ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", true)]
+        [InlineData("static ReadOnlySpan<byte>", "{ get { return new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }; } }", true)]
+        [InlineData("readonly char[]", "= \"aeiouA\".ToCharArray();", false)]
+        [InlineData("static readonly char[]", "= \"aeiouA\".ToCharArray();", false)]
+        [InlineData("ReadOnlySpan<char>", "=> \"aeiouA\".ToCharArray();", false)]
+        [InlineData("static ReadOnlySpan<char>", "=> \"aeiouA\".ToCharArray();", true)]
+        [InlineData("readonly char[]", "= ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
+        [InlineData("static readonly char[]", "= ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
+        [InlineData("ReadOnlySpan<char>", "=> ConstStringTypeMember.ToCharArray();", false, "ConstStringTypeMember")]
+        [InlineData("static ReadOnlySpan<char>", "=> ConstStringTypeMember.ToCharArray();", true)]
         public async Task TestCodeFixerNamedArguments(string modifiersAndType, string initializer, bool createWillUseMemberReference, string createExpression = null)
         {
             const string OriginalValuesName = "MyValuesTypeMember";
@@ -417,7 +416,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             if (createWillUseMemberReference)
             {
-                Assert.IsNull(createExpression);
+                Assert.Null(createExpression);
                 createExpression = OriginalValuesName;
             }
             else
@@ -503,11 +502,11 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
         }
 
-        [TestMethod]
-        [DataRow("static readonly char[]", "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
-        [DataRow("readonly char[]", "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
-        [DataRow("readonly char[]", "new char[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
-        [DataRow("readonly char[]", "new char[]  { 'a', 'e', 'i', 'o', 'u',  'A' }")]
+        [Theory]
+        [InlineData("static readonly char[]", "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
+        [InlineData("readonly char[]", "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
+        [InlineData("readonly char[]", "new char[] { 'a', 'e', 'i', 'o', 'u', 'A' }")]
+        [InlineData("readonly char[]", "new char[]  { 'a', 'e', 'i', 'o', 'u',  'A' }")]
         public async Task TestCodeFixerNamedArgumentsStringIndexOfAny(string modifiersAndType, string initializer)
         {
             const string OriginalValuesName = "MyValuesTypeMember";
@@ -550,7 +549,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerConstStringMemberToCharArray()
         {
             string source =
@@ -589,7 +588,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerLocalStringConst()
         {
             string source =
@@ -627,9 +626,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public async Task TestCodeFixerLocalStringConstToCharArray(bool spanInput)
         {
             string argumentType = spanInput ? "ReadOnlySpan<char>" : "string";
@@ -669,17 +668,17 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
-        [DataRow(LanguageVersion.CSharp7_3, "\"aeiouA\"", "\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp7_3, "@\"aeiouA\"", "@\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp11, "\"aeiouA\"u8", "\"aeiouA\"u8")]
-        [DataRow(LanguageVersion.CSharp12, "['a', 'e', 'i', 'o', 'u', 'A']", "\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp12, "[(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']", "\"aeiouA\"u8")]
-        [DataRow(LanguageVersion.CSharp7_3, "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp7_3, "new char[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp7_3, "new char[]  { 'a', 'e', 'i', 'o',  'u', 'A' }", "\"aeiouA\"")]
-        [DataRow(LanguageVersion.CSharp7_3, "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }", "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }")]
-        [DataRow(LanguageVersion.CSharp11, "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }", "\"aeiouA\"u8")]
+        [Theory]
+        [InlineData(LanguageVersion.CSharp7_3, "\"aeiouA\"", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp7_3, "@\"aeiouA\"", "@\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp11, "\"aeiouA\"u8", "\"aeiouA\"u8")]
+        [InlineData(LanguageVersion.CSharp12, "['a', 'e', 'i', 'o', 'u', 'A']", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp12, "[(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']", "\"aeiouA\"u8")]
+        [InlineData(LanguageVersion.CSharp7_3, "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp7_3, "new char[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp7_3, "new char[]  { 'a', 'e', 'i', 'o',  'u', 'A' }", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp7_3, "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }", "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }")]
+        [InlineData(LanguageVersion.CSharp11, "new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }", "\"aeiouA\"u8")]
         public async Task TestCodeFixerInlineArguments(LanguageVersion languageVersion, string values, string expectedCreateArgument)
         {
             string byteOrChar = values.Contains("byte", StringComparison.Ordinal) || values.Contains("u8", StringComparison.Ordinal) ? "byte" : "char";
@@ -718,7 +717,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(languageVersion, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerInlineStringLiteralToCharArray()
         {
             string source =
@@ -754,7 +753,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerDoesNotRemoveCommentsInArrayInitializer()
         {
             string source =
@@ -830,7 +829,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerDoesNotUseUtf8StringLiteralsForNonAsciiChars()
         {
             string source =
@@ -866,8 +865,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp11, source, expected);
         }
 
-        [TestMethod]
-        public async Task TestCodeFixerDoesNotRemoveTheOriginalMemberIfPublic()
+        [Fact]
+        public static async Task TestCodeFixerDoesNotRemoveTheOriginalMemberIfPublic()
         {
             string source =
                 """
@@ -902,7 +901,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerAddsSystemUsingIfNeeded()
         {
             string source =
@@ -937,15 +936,15 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
-        [DataRow("MyValues", "s_myValues")]
-        [DataRow("myValues", "s_myValues")]
-        [DataRow("_myValues", "s_myValues")]
-        [DataRow("_MyValues", "s_MyValues")]
-        [DataRow("s_myValues", "s_myValues", false)]
-        [DataRow("s_MyValues", "s_MyValues", false)]
-        [DataRow("s_myValues", "s_myValuesSearchValues", true)]
-        [DataRow("s_MyValues", "s_MyValuesSearchValues", true)]
+        [Theory]
+        [InlineData("MyValues", "s_myValues")]
+        [InlineData("myValues", "s_myValues")]
+        [InlineData("_myValues", "s_myValues")]
+        [InlineData("_MyValues", "s_MyValues")]
+        [InlineData("s_myValues", "s_myValues", false)]
+        [InlineData("s_MyValues", "s_MyValues", false)]
+        [InlineData("s_myValues", "s_myValuesSearchValues", true)]
+        [InlineData("s_MyValues", "s_MyValuesSearchValues", true)]
         public async Task TestCodeFixerPicksFriendlyFieldNames(string memberName, string expectedFieldName, bool memberHasOtherUses = false)
         {
             string memberDefinition = $"private readonly char[] {memberName} = \"aeiouA\".ToCharArray();";
@@ -988,9 +987,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public async Task TestCodeFixerAccountsForUsingStatements(bool hasSystemBuffersUsing)
         {
             string usingLine = hasSystemBuffersUsing ? "using System.Buffers;" : "";
@@ -1029,7 +1028,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerAvoidsMemberNameConflicts()
         {
             string source =
@@ -1075,7 +1074,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCodeFixerWorksInTopLevelStatementsDocument()
         {
             string source =
@@ -1132,44 +1131,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp9, source, expected, topLevelStatements: true);
         }
 
-        [TestMethod]
-        public async Task TwoViolationsInOneType_FixAllCreatesDistinctFieldsAndOneImport_CSharpAsync()
-        {
-            string source =
-                """
-                using System.Buffers;
-
-                internal sealed class Test
-                {
-                    private void TestMethod(string text)
-                    {
-                        _ = text.IndexOfAny([|"aeiouA".ToCharArray()|]);
-                        _ = text.IndexOfAny([|"xyzwvu".ToCharArray()|]);
-                    }
-                }
-                """;
-
-            string expected =
-                """
-                using System.Buffers;
-                using System;
-
-                internal sealed class Test
-                {
-                    private static readonly SearchValues<char> s_myChars1 = SearchValues.Create("xyzwvu");
-                    private static readonly SearchValues<char> s_myChars = SearchValues.Create("aeiouA");
-
-                    private void TestMethod(string text)
-                    {
-                        _ = text.AsSpan().IndexOfAny(s_myChars);
-                        _ = text.AsSpan().IndexOfAny(s_myChars1);
-                    }
-                }
-                """;
-
-            await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
-        }
-
         private static async Task VerifyAnalyzerAsync(LanguageVersion languageVersion, string source) =>
             await VerifyCodeFixAsync(languageVersion, source, expected: null);
 
@@ -1182,7 +1143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = expected,
                 TestState = { OutputKind = topLevelStatements ? OutputKind.ConsoleApplication : null },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
     }
 }

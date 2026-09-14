@@ -3,21 +3,20 @@
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    [TestClass]
     public class TestCommandValidationTests : SdkTest
     {
-        public TestCommandValidationTests()
+        public TestCommandValidationTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [DataRow("MySolution.sln", "Specifying a solution for 'dotnet test' should be via '--solution'.")]
-        [DataRow("MyProject.csproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
-        [DataRow("MyProject.vbproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
-        [DataRow("MyProject.fsproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [Theory]
+        [InlineData("MySolution.sln", "Specifying a solution for 'dotnet test' should be via '--solution'.")]
+        [InlineData("MyProject.csproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [InlineData("MyProject.vbproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [InlineData("MyProject.fsproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
         public void TestCommandShouldValidateFileArgumentsAndProvideHelpfulMessages(string filename, string expectedErrorStart)
         {
-            var testDir = TestAssetsManager.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
             // Create the test file
             var testFilePath = Path.Combine(testDir.Path, filename);
@@ -42,10 +41,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCommandShouldValidateDirectoryArgumentAndProvideHelpfulMessage()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
             var subDir = Path.Combine(testDir.Path, "test_directory");
             Directory.CreateDirectory(subDir);
             File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
@@ -68,10 +67,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCommandShouldValidateDllArgumentAndProvideHelpfulMessage()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
             // Create a dummy dll file
             var dllPath = Path.Combine(testDir.Path, "test.dll");
@@ -93,33 +92,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain("Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.");
-            }
-        }
-
-        [TestMethod]
-        [DataRow("--use-current-runtime")]
-        [DataRow("--ucr")]
-        public void TestCommandShouldRejectUseCurrentRuntimeWhenCombinedWithTestModules(string useCurrentRuntimeAlias)
-        {
-            var testDir = TestAssetsManager.CreateTestDirectory();
-            File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
-                """
-                {
-                    "test": {
-                        "runner": "Microsoft.Testing.Platform"
-                    }
-                }
-                """);
-
-            var result = new DotnetTestCommand(Log, disableNewOutput: false)
-                .WithWorkingDirectory(testDir.Path)
-                .Execute("--test-modules", "**/*.dll", useCurrentRuntimeAlias);
-
-            result.ExitCode.Should().NotBe(0);
-            if (!SdkTestContext.IsLocalized())
-            {
-                result.StdErr.Should().Contain("use current runtime")
-                    .And.Contain("--test-modules");
             }
         }
     }

@@ -1,15 +1,16 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeHaveAPpContentFile : SdkTest
     {
+        public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
+        { }
 
-        [TestMethod]
+        [Fact]
         public void It_copies_to_output_successfully()
         {
             var packageReference = GetPackageReference();
@@ -25,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var packageAsset = TestAssetsManager.CreateTestProject(referencedPackage);
+            var packageAsset = _testAssetsManager.CreateTestProject(referencedPackage);
             WriteFile(Path.Combine(packageAsset.TestRoot, referencedPackage.Name, "Nontransformed.ps1"), "Content file");
             WriteFile(Path.Combine(packageAsset.TestRoot, referencedPackage.Name, "Test.ps1.pp"), "Content file");
             packageAsset = packageAsset

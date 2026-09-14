@@ -3,14 +3,13 @@
 
 namespace Microsoft.DotNet.Cli.Fsi.Tests
 {
-    [TestClass]
     public class GivenDotnetFsiExecutesAndGeneratesHelpText : SdkTest
     {
-        public GivenDotnetFsiExecutesAndGeneratesHelpText()
+        public GivenDotnetFsiExecutesAndGeneratesHelpText(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRuns()
         {
             new DotnetCommand(Log, "fsi")

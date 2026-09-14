@@ -7,9 +7,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class PublishItemsOutputGroupTests : SdkTest
     {
+        public PublishItemsOutputGroupTests(ITestOutputHelper log) : base(log)
+        {
+        }
+
         private static readonly List<string> FrameworkAssemblies = new()
         {
             "api-ms-win-core-console-l1-1-0.dll",
@@ -17,14 +20,14 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [TestMethod]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
-        [DataRow(false, false)]
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void RunPublishItemsOutputGroupTest(bool specifyRid, bool singleFile)
         {
             var testProject = SetupProject(specifyRid, singleFile);
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
@@ -85,11 +88,11 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void GroupBuildsWithoutPublish()
         {
             var testProject = SetupProject();
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand

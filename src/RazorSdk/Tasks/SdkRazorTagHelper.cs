@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string ProjectRoot { get; set; }
 
-        public bool UseSourceGenerator { get; set; }
-
         internal override string Command => "discover";
 
         protected override bool SkipTaskExecution()
@@ -114,11 +112,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 builder.AppendLine("-e");
                 builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
-            }
-
-            if (UseSourceGenerator)
-            {
-                builder.AppendLine("--use-source-generator");
             }
 
             return builder.ToString();

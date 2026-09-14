@@ -5,19 +5,17 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    [TestClass]
     public class BuildWithComponentsIntegrationTest : AspNetSdkTest
     {
-        [TestMethod]
-        [CoreMSBuildOnly]
+        public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) { }
+
+        [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.10.0.8101")]
-        [Ignore("https://github.com/dotnet/sdk/issues/49925")]
+        [RequiresMSBuildVersionFact("17.10.0.8101", Skip = "https://github.com/dotnet/sdk/issues/49925")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
-        [TestMethod]
+        [Fact]
         public void Building_NetstandardComponentLibrary()
         {
             var testAsset = "RazorComponentLibrary";
@@ -60,7 +58,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("AspNetCoreGeneratedDocument.Views_Home_Index");
         }
 
-        [TestMethod]
+        [Fact]
         public void Build_ComponentApp_IncludesEmbeddedValidatableTypeAttributeForNet100()
         {
             var testAsset = "RazorComponentApp";

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading;
@@ -7,103 +6,49 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    public abstract class UseOrdinalStringComparisonFixerBase : SyntaxEditorBasedCodeFixProvider
+    public abstract class UseOrdinalStringComparisonFixerBase : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseOrdinalStringComparisonAnalyzer.RuleId);
 
-        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            SyntaxGenerator syntaxGenerator = SyntaxGenerator.GetGenerator(context.Document);
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
-            if (!await CanFixAsync(context.Document, root.FindNode(context.Span), context.CancellationToken).ConfigureAwait(false))
-            {
-                return;
-            }
+            SyntaxNode node = root.FindNode(context.Span);
 
             string title = MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonTitle;
-            RegisterCodeFix(context, title, title);
-        }
-
-        /// <summary>
-        /// Reports whether the fix rewrites <paramref name="node"/>. The analyzer reports every unacceptable
-        /// overload, including the ones no added argument can turn into an acceptable one, so registering
-        /// without this would offer an action that leaves the document unchanged.
-        /// </summary>
-        private async Task<bool> CanFixAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
-        {
-            if (IsInArgumentContext(node))
-            {
-                return true;
-            }
-
-            if (!IsInIdentifierNameContext(node))
-            {
-                return false;
-            }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-
-            return model.GetSymbolInfo(node, cancellationToken).Symbol is IMethodSymbol methodSymbol &&
-                CanAddStringComparison(methodSymbol, model);
-        }
-
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
 
             if (IsInArgumentContext(node))
             {
                 // StringComparison.CurrentCulture => StringComparison.Ordinal
                 // StringComparison.CurrentCultureIgnoreCase => StringComparison.OrdinalIgnoreCase
-                FixArgument(node, editor);
-                return;
+                context.RegisterCodeFix(CodeAction.Create(title,
+                                                         async ct => await FixArgumentAsync(context.Document, syntaxGenerator, root, node).ConfigureAwait(false),
+                                                         equivalenceKey: title),
+                                        context.Diagnostics);
             }
-
-            // string.Equals(a, b) => string.Equals(a, b, StringComparison.Ordinal)
-            // string.Compare(a, b) => string.Compare(a, b, StringComparison.Ordinal)
-            if (!IsInIdentifierNameContext(node) || GetInvocation(node) is not SyntaxNode invocation)
+            else if (IsInIdentifierNameContext(node))
             {
-                return;
+                // string.Equals(a, b) => string.Equals(a, b, StringComparison.Ordinal)
+                // string.Compare(a, b) => string.Compare(a, b, StringComparison.Ordinal)
+                context.RegisterCodeFix(CodeAction.Create(title,
+                                                         async ct => await FixIdentifierNameAsync(context.Document, syntaxGenerator, root, node, context.CancellationToken).ConfigureAwait(false),
+                                                         equivalenceKey: title),
+                                        context.Diagnostics);
             }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-
-            if (model.GetSymbolInfo(node, cancellationToken).Symbol is not IMethodSymbol methodSymbol ||
-                !CanAddStringComparison(methodSymbol, model))
-            {
-                return;
-            }
-
-            // The new invocation carries over the original's arguments, so it has to be built from the
-            // invocation as the fixes before this one left it rather than off the original tree.
-            editor.ReplaceNode(
-                invocation,
-                (currentInvocation, generator) => AddArgument(
-                    currentInvocation,
-                    generator.Argument(CreateOrdinalMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)));
         }
 
         protected abstract bool IsInArgumentContext(SyntaxNode node);
-        protected abstract void FixArgument(SyntaxNode argument, SyntaxEditor editor);
+        protected abstract Task<Document> FixArgumentAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode argument);
 
         protected abstract bool IsInIdentifierNameContext(SyntaxNode node);
-
-        /// <summary>
-        /// Returns the invocation <paramref name="identifier"/> names, or <see langword="null"/> when there is none.
-        /// </summary>
-        protected abstract SyntaxNode? GetInvocation(SyntaxNode identifier);
-
-        /// <summary>
-        /// Appends <paramref name="argument"/> to <paramref name="invocation"/>'s argument list.
-        /// </summary>
-        protected abstract SyntaxNode AddArgument(SyntaxNode invocation, SyntaxNode argument);
+        protected abstract Task<Document> FixIdentifierNameAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode identifier, CancellationToken cancellationToken);
 
         internal static SyntaxNode CreateOrdinalMemberAccess(SyntaxGenerator generator, SemanticModel model)
         {
@@ -154,6 +99,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             return false;
+        }
+
+        public sealed override FixAllProvider GetFixAllProvider()
+        {
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

@@ -22,6 +22,7 @@ internal static class CommandDirectoryContextExtensions
             }
 
             CommandDirectoryContext.CurrentBaseDirectory_TestOnly = basePath;
+            Telemetry.Telemetry.CurrentSessionId = null;
             try
             {
                 action();

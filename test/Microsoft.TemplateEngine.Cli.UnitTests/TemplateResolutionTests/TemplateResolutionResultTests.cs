@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FakeItEasy;
@@ -7,10 +7,9 @@ using Microsoft.TemplateEngine.Cli.TemplateResolution;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
 {
-    [TestClass]
     public class TemplateResolutionResultTests
     {
-        [TestMethod]
+        [Fact]
         public void GetAllMatchedParametersList_Basic()
         {
             var templateMatchInfo = A.Fake<ITemplateMatchInfo>();
@@ -23,11 +22,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo });
 
-            Assert.HasCount(1, parameters);
-            Assert.AreEqual("paramValue", parameters["--param"]);
+            Assert.Single(parameters);
+            Assert.Equal("paramValue", parameters["--param"]);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetAllMatchedParametersList_FallbackToName()
         {
             var templateMatchInfo = A.Fake<ITemplateMatchInfo>();
@@ -40,11 +39,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo });
 
-            Assert.HasCount(1, parameters);
-            Assert.AreEqual("paramValue", parameters["param"]);
+            Assert.Single(parameters);
+            Assert.Equal("paramValue", parameters["param"]);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetAllMatchedParametersList_PreservesValueIfGiven()
         {
             var templateMatchInfo = A.Fake<ITemplateMatchInfo>();
@@ -64,15 +63,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
                 });
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo, templateMatchInfo2 });
-            Assert.HasCount(1, parameters);
-            Assert.AreEqual("paramValue", parameters["--param"]);
+            Assert.Single(parameters);
+            Assert.Equal("paramValue", parameters["--param"]);
 
             parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo2, templateMatchInfo });
-            Assert.HasCount(1, parameters);
-            Assert.AreEqual("paramValue", parameters["--param"]);
+            Assert.Single(parameters);
+            Assert.Equal("paramValue", parameters["--param"]);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetAllMatchedParametersList_IgnoresNonParameterMatches()
         {
             var templateMatchInfo = A.Fake<ITemplateMatchInfo>();
@@ -85,11 +84,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
                 });
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo });
-            Assert.HasCount(1, parameters);
-            Assert.AreEqual("paramValue", parameters["--param"]);
+            Assert.Single(parameters);
+            Assert.Equal("paramValue", parameters["--param"]);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetAllMatchedParametersList_DoesNotDependOnMatchKind()
         {
             var templateMatchInfo = A.Fake<ITemplateMatchInfo>();
@@ -103,10 +102,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
                 });
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo });
-            Assert.HasCount(3, parameters);
-            Assert.AreEqual("paramValue", parameters["--param"]);
-            Assert.AreEqual("paramValue2", parameters["--param2"]);
-            Assert.AreEqual("paramValue3", parameters["--param3"]);
+            Assert.Equal(3, parameters.Count);
+            Assert.Equal("paramValue", parameters["--param"]);
+            Assert.Equal("paramValue2", parameters["--param2"]);
+            Assert.Equal("paramValue3", parameters["--param3"]);
         }
     }
 }

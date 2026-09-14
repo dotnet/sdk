@@ -7,14 +7,17 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishAToolProjectWithPackagedShim : SdkTest
     {
         private const string _customToolCommandName = "customToolCommandName";
 
+        public GivenThatWeWantToPublishAToolProjectWithPackagedShim(ITestOutputHelper log) : base(log)
+        {
+        }
+
         private TestAsset SetupTestAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset helloWorldAsset = TestAssetsManager
+            TestAsset helloWorldAsset = _testAssetsManager
                 .CopyTestAsset("PortableTool", callingMethod)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -28,7 +31,7 @@ namespace Microsoft.NET.Publish.Tests
             return helloWorldAsset;
         }
 
-        [TestMethod]
+        [Fact]
         public void It_contains_dependencies_shims()
         {
             var testAsset = SetupTestAsset();
@@ -42,7 +45,7 @@ namespace Microsoft.NET.Publish.Tests
                 .EnumerateFiles().Should().Contain(f => f.Name == _customToolCommandName + ".exe");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_contains_dependencies_shims_with_no_build()
         {
             var testAsset = SetupTestAsset();

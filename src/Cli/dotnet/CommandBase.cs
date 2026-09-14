@@ -15,11 +15,15 @@ public abstract class CommandBase
     protected CommandBase(ParseResult parseResult)
     {
         _parseResult = parseResult;
-        parseResult.ShowHelpOrErrorIfAppropriate();
+        ShowHelpOrErrorIfAppropriate(parseResult);
     }
 
     protected CommandBase() { }
 
+    protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
+    {
+        parseResult.ShowHelpOrErrorIfAppropriate();
+    }
 
     public abstract int Execute();
 }

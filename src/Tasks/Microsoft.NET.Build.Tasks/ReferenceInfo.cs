@@ -14,7 +14,6 @@ namespace Microsoft.NET.Build.Tasks
         public string Version { get; }
         public string FullPath { get; }
         public string FileName => Path.GetFileName(FullPath);
-        public string DestinationSubPath { get; }
 
         public string PackageName { get; }
         public string PackageVersion { get; }
@@ -27,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private ReferenceInfo(string name, string version, string fullPath,
-            string packageName, string packageVersion, string pathInPackage, string destinationSubPath = null)
+            string packageName, string packageVersion, string pathInPackage)
         {
             Name = name;
             Version = version;
@@ -35,7 +34,6 @@ namespace Microsoft.NET.Build.Tasks
             PackageName = packageName;
             PackageVersion = packageVersion;
             PathInPackage = pathInPackage;
-            DestinationSubPath = destinationSubPath;
 
             _resourceAssemblies = new List<ResourceAssemblyInfo>();
         }
@@ -165,11 +163,8 @@ namespace Microsoft.NET.Build.Tasks
 
             var pathInPackage = referencePath.GetMetadata(MetadataKeys.PathInPackage);
 
-            var destinationSubDirectory = referencePath.GetMetadata(MetadataKeys.DestinationSubDirectory);
-            string destinationSubPath = string.IsNullOrEmpty(destinationSubDirectory) ? null : Path.Combine(destinationSubDirectory, Path.GetFileName(fullPath));
-
             return new ReferenceInfo(name, version, fullPath,
-                packageName, packageVersion, pathInPackage, destinationSubPath);
+                packageName, packageVersion, pathInPackage);
         }
 
         private static string GetVersion(ITaskItem referencePath)

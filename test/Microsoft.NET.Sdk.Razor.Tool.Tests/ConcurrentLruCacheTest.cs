@@ -3,10 +3,9 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
-    [TestClass]
     public class ConcurrentLruCacheTest
     {
-        [TestMethod]
+        [Fact]
         public void ConcurrentLruCache_HoldsCapacity()
         {
             // Arrange
@@ -17,10 +16,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var cache = new ConcurrentLruCache<int, int>(input);
 
             // Assert
-            Assert.AreSequenceEqual(expected, cache.TestingEnumerable);
+            Assert.Equal(expected, cache.TestingEnumerable);
         }
 
-        [TestMethod]
+        [Fact]
         public void Add_ThrowsIfKeyExists()
         {
             // Arrange
@@ -28,11 +27,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var cache = new ConcurrentLruCache<int, int>(input);
 
             // Act & Assert
-            var exception = Assert.ThrowsExactly<ArgumentException>(() => cache.Add(1, 1));
+            var exception = Assert.Throws<ArgumentException>(() => cache.Add(1, 1));
             Assert.StartsWith("Key already exists", exception.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetOrAdd_AddsIfKeyDoesNotExist()
         {
             // Arrange
@@ -44,10 +43,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             cache.GetOrAdd(4, 4);
 
             // Assert
-            Assert.AreSequenceEqual(expected, cache.TestingEnumerable);
+            Assert.Equal(expected, cache.TestingEnumerable);
         }
 
-        [TestMethod]
+        [Fact]
         public void Remove_RemovesEntry()
         {
             // Arrange
@@ -59,11 +58,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = cache.Remove(3);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreSequenceEqual(expected, cache.TestingEnumerable);
+            Assert.True(result);
+            Assert.Equal(expected, cache.TestingEnumerable);
         }
 
-        [TestMethod]
+        [Fact]
         public void Remove_KeyNotFound_ReturnsFalse()
         {
             // Arrange
@@ -74,10 +73,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = cache.Remove(4);
 
             // Assert
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
 
-        [TestMethod]
+        [Fact]
         public void Add_NoRead_EvictsLastNode()
         {
             // Arrange
@@ -89,10 +88,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             cache.Add(4, 4);
 
             // Assert
-            Assert.AreSequenceEqual(expected, cache.TestingEnumerable);
+            Assert.Equal(expected, cache.TestingEnumerable);
         }
 
-        [TestMethod]
+        [Fact]
         public void Add_ReadLastNode_EvictsSecondOldestNode()
         {
             // Arrange
@@ -105,7 +104,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             cache.Add(4, 4); // Add a new node
 
             // Assert
-            Assert.AreSequenceEqual(expected, cache.TestingEnumerable);
+            Assert.Equal(expected, cache.TestingEnumerable);
         }
 
         private KeyValuePair<int, int>[] GetKeyValueArray(IEnumerable<int> inputArray)

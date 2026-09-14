@@ -6,12 +6,15 @@ using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPackAToolProjectWithP2PReference : SdkTest
     {
+        public GivenThatWeWantToPackAToolProjectWithP2PReference(ITestOutputHelper log) : base(log)
+        {
+        }
+
         private string SetupNuGetPackage([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = TestAssetsManager
+            TestAsset testAsset = _testAssetsManager
                 .CopyTestAsset("PortableToolWithP2P", callingMethod)
                 .WithSource();
 
@@ -22,7 +25,7 @@ namespace Microsoft.NET.ToolPack.Tests
             return packCommand.GetNuGetPackage();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_packs_successfully()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -34,7 +37,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_contains_dependencies_dll()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -51,7 +54,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_add_p2p_references_as_package_references_to_nuspec()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -63,7 +66,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_contains_folder_structure_tfm_any()
         {
             var nugetPackage = SetupNuGetPackage();

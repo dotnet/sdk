@@ -1,5 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -9,8 +8,6 @@ using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Usage
 {
@@ -20,93 +17,58 @@ namespace Microsoft.NetCore.Analyzers.Usage
         protected const string HasValue = nameof(Nullable<int>.HasValue);
         protected const string ArgumentNullException = nameof(System.ArgumentNullException);
 
-        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
-            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId,
-            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NullableStructRuleId
-        );
-
-        // One title per rule, so a fix-all pass has to apply only the one the user invoked it from.
-        public override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<string?>(
-                static fixAllContext => fixAllContext.CodeActionEquivalenceKey,
-                (document, diagnostic, editor, equivalenceKey, cancellationToken) =>
-                {
-                    ApplyFix(diagnostic, editor, equivalenceKey);
-                    return Task.CompletedTask;
-                });
-
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
-            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: not null })
+            foreach (var diagnostic in context.Diagnostics)
             {
-                return;
-            }
-
-            Document document = context.Document;
-
-            foreach (Diagnostic diagnostic in context.Diagnostics)
-            {
-                if (GetTitle(diagnostic.Id) is not string title)
+                var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+                if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not TInvocationExpression invocation)
                 {
                     continue;
                 }
 
-                ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(diagnostic);
-
-                context.RegisterCodeFix(
-                    CodeAction.Create(
-                        title,
-                        cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
-                            document,
-                            diagnostics,
-                            (_, diagnostic, editor, _) =>
+                if (diagnostic.Id == DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId && invocation.Parent is not null)
+                {
+                    var codeAction = CodeAction.Create(
+                        MicrosoftNetCoreAnalyzersResources.DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle,
+                        _ =>
+                        {
+                            var newRoot = root.RemoveNode(invocation.Parent, SyntaxRemoveOptions.KeepNoTrivia);
+                            if (newRoot is null)
                             {
-                                ApplyFix(diagnostic, editor, title);
-                                return Task.CompletedTask;
-                            },
-                            cancellationToken),
-                        equivalenceKey: title),
-                    diagnostic);
+                                return Task.FromResult(context.Document);
+                            }
+
+                            return Task.FromResult(context.Document.WithSyntaxRoot(newRoot));
+                        }, MicrosoftNetCoreAnalyzersResources.DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle);
+                    context.RegisterCodeFix(codeAction, diagnostic);
+                }
+                else if (diagnostic.Id == DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NullableStructRuleId)
+                {
+                    var codeAction = CodeAction.Create(
+                        MicrosoftNetCoreAnalyzersResources.DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle,
+                        async ct =>
+                        {
+                            var newRoot = await GetNewRootForNullableStructAsync(context.Document, invocation, ct).ConfigureAwait(false);
+                            if (newRoot is null)
+                            {
+                                return context.Document;
+                            }
+
+                            return context.Document.WithSyntaxRoot(newRoot);
+                        }, MicrosoftNetCoreAnalyzersResources.DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle);
+                    context.RegisterCodeFix(codeAction, diagnostic);
+                }
             }
         }
 
-        private void ApplyFix(Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey)
-        {
-            if (equivalenceKey is not null && equivalenceKey != GetTitle(diagnostic.Id))
-            {
-                return;
-            }
+        protected abstract Task<SyntaxNode> GetNewRootForNullableStructAsync(Document document, TInvocationExpression invocation, CancellationToken cancellationToken);
 
-            // Both fixes target the statement the call sits in, and a `ThrowIfNull` call returns void, so no
-            // two of this rule's diagnostics can nest and the statement needs no re-reading.
-            if (editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: SyntaxNode statement } invocation)
-            {
-                return;
-            }
+        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
-            if (diagnostic.Id == DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId)
-            {
-                editor.RemoveNode(statement, SyntaxRemoveOptions.KeepNoTrivia);
-            }
-            else
-            {
-                ReplaceWithNullableStructCheck(invocation, statement, editor);
-            }
-        }
-
-        private static string? GetTitle(string ruleId) => ruleId switch
-        {
-            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId => MicrosoftNetCoreAnalyzersResources.DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle,
-            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NullableStructRuleId => MicrosoftNetCoreAnalyzersResources.DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle,
-            _ => null,
-        };
-
-        /// <summary>
-        /// Replaces <paramref name="statement"/> — the statement <paramref name="invocation"/> sits in — with an
-        /// explicit <c>HasValue</c> check that throws.
-        /// </summary>
-        protected abstract void ReplaceWithNullableStructCheck(TInvocationExpression invocation, SyntaxNode statement, SyntaxEditor editor);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
+            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId,
+            DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NullableStructRuleId
+        );
     }
 }

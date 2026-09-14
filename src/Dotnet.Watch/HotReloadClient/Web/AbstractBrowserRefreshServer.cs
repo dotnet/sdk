@@ -265,7 +265,7 @@ internal abstract class AbstractBrowserRefreshServer(
         await SendAndReceiveAsync<ReadOnlyMemory<byte>, None>(request: _ => messageBytes, response: null, cancellationToken);
     }
 
-    internal virtual async ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
+    public async ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
         Func<string?, TRequest>? request,
         ResponseFunc<TResult>? response,
         CancellationToken cancellationToken)

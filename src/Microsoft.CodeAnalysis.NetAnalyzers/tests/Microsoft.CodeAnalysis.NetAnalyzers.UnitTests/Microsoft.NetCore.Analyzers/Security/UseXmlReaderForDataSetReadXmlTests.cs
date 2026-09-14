@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForDataSetReadXml,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,380 +12,351 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class UseXmlReaderForDataSetReadXmlTests
     {
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithStreamParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
 
-                using System;
-                using System.Data;
-                using System.IO;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new FileStream("xmlFilename", FileMode.Open));
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new FileStream(""xmlFilename"", FileMode.Open));
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Data
+Imports System.IO
 
-                Imports System
-                Imports System.Data
-                Imports System.IO
-
-                Class TestClass
-                    Public Sub TestMethod()
-                        Dim dataSet As new DataSet
-                        dataSet.ReadXml(new FileStream("xmlFilename", FileMode.Open))
-                    End Sub
-                End Class
-                """,
+Class TestClass
+    Public Sub TestMethod()
+        Dim dataSet As new DataSet
+        dataSet.ReadXml(new FileStream(""xmlFilename"", FileMode.Open))
+    End Sub
+End Class",
             GetBasicResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithStreamAndXmlReadModeParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Data;
 
-                using System;
-                using System.IO;
-                using System.Data;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new FileStream("xmlFilename", FileMode.Open), XmlReadMode.Auto);
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new FileStream(""xmlFilename"", FileMode.Open), XmlReadMode.Auto);
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithStringParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
 
-                using System;
-                using System.Data;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml("Filename");
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(""Filename"");
+    }
+}",
             GetCSharpResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithStringXmlReadModeParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
 
-                using System;
-                using System.Data;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml("Filename", XmlReadMode.Auto);
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(""Filename"", XmlReadMode.Auto);
+    }
+}",
             GetCSharpResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithTextReaderParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
 
-                using System;
-                using System.Data;
-                using System.IO;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new StreamReader("TestFile.txt"));
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new StreamReader(""TestFile.txt""));
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithTextReaderAndXmlReadModeParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
 
-                using System;
-                using System.Data;
-                using System.IO;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new StreamReader("TestFile.txt"), XmlReadMode.Auto);
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new StreamReader(""TestFile.txt""), XmlReadMode.Auto);
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlSchemaWithStreamParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
 
-                using System;
-                using System.Data;
-                using System.IO;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXmlSchema(new FileStream("xmlFilename", FileMode.Open));
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXmlSchema(new FileStream(""xmlFilename"", FileMode.Open));
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlSchemaWithStringParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
 
-                using System;
-                using System.Data;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXmlSchema("Filename");
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXmlSchema(""Filename"");
+    }
+}",
             GetCSharpResultAt(9, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlSchemaWithTextReaderParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
 
-                using System;
-                using System.Data;
-                using System.IO;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXmlSchema(new StreamReader("TestFile.txt"));
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXmlSchema(new StreamReader(""TestFile.txt""));
+    }
+}",
             GetCSharpResultAt(10, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlWithXmlReaderAndXmlReadModeParametersNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXml(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)), XmlReadMode.Auto);
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXml(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)), XmlReadMode.Auto);
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlSchemaWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new DataSet().ReadXmlSchema(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        new DataSet().ReadXmlSchema(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestReadXmlSerializableWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass : DataSet
-                {
-                    protected override void ReadXmlSerializable(XmlReader xmlReader)
-                    {
-                    }
+class TestClass : DataSet
+{
+    protected override void ReadXmlSerializable(XmlReader xmlReader)
+    {
+    }
 
-                    public void TestMethod()
-                    {
-                        ReadXmlSerializable(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        ReadXmlSerializable(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.Data
-                Imports System.IO
-                Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Data
+Imports System.IO
+Imports System.Xml
 
-                Class TestClass
-                    Inherits DataSet
-                    Protected Overrides Sub ReadXmlSerializable(xmlReader As XmlReader)
-                    End Sub
-
-                    Public Sub TestMethod()
-                        ReadXmlSerializable(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)))
-                    End Sub
-                End Class
-                """);
+Class TestClass
+    Inherits DataSet
+    Protected Overrides Sub ReadXmlSerializable(xmlReader As XmlReader)
+    End Sub
+        
+    Public Sub TestMethod()
+        ReadXmlSerializable(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)))
+    End Sub
+End Class");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass
-                {
-                    protected virtual void ReadXmlSerializable(XmlReader xmlReader)
-                    {
-                    }
-                }
+class TestClass
+{
+    protected virtual void ReadXmlSerializable(XmlReader xmlReader)
+    {
+    }
+}
 
-                class SubTestClass : TestClass
-                {
-                    protected override void ReadXmlSerializable(XmlReader xmlReader)
-                    {
-                    }
+class SubTestClass : TestClass
+{
+    protected override void ReadXmlSerializable(XmlReader xmlReader)
+    {
+    }
 
-                    public void TestMethod()
-                    {
-                        ReadXmlSerializable(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        ReadXmlSerializable(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestTwoLevelsOfInheritanceAndOverridesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass : DataSet
-                {
-                    protected override void ReadXmlSerializable(XmlReader xmlReader)
-                    {
-                    }
-                }
+class TestClass : DataSet
+{
+    protected override void ReadXmlSerializable(XmlReader xmlReader)
+    {
+    }
+}
 
-                class SubTestClass : TestClass
-                {
-                    protected override void ReadXmlSerializable(XmlReader xmlReader)
-                    {
-                    }
+class SubTestClass : TestClass
+{
+    protected override void ReadXmlSerializable(XmlReader xmlReader)
+    {
+    }
 
-                    public void TestMethod()
-                    {
-                        ReadXmlSerializable(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        ReadXmlSerializable(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Data;
-                using System.IO;
-                using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Data;
+using System.IO;
+using System.Xml;
 
-                class TestClass
-                {
-                    public void ReadXml (XmlReader reader)
-                    {
-                    }
+class TestClass
+{
+    public void ReadXml (XmlReader reader)
+    {
+    }
 
-                    public void TestMethod()
-                    {
-                        var testClass = new TestClass();
-                        testClass.ReadXml(new XmlTextReader(new FileStream("xmlFilename", FileMode.Open)));
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        var testClass = new TestClass();
+        testClass.ReadXml(new XmlTextReader(new FileStream(""xmlFilename"", FileMode.Open)));
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

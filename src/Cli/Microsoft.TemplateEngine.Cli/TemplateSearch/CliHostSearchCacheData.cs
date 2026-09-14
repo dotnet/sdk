@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
-using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 {
@@ -13,35 +13,29 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
         public static Func<object, object> Reader => (obj) =>
         {
-            JsonObject? cacheObject = obj as JsonObject;
+            JObject? cacheObject = obj as JObject;
             if (cacheObject == null)
             {
                 return HostSpecificTemplateData.Default;
             }
             try
             {
-                if (cacheObject.Count == 0)
-                {
-                    return HostSpecificTemplateData.Default;
-                }
-
-                var keys = new HashSet<string>(cacheObject.Select(p => p.Key), StringComparer.OrdinalIgnoreCase);
-                if (_hostDataPropertyNames.Any(keys.Contains))
+                if (_hostDataPropertyNames.Contains(cacheObject.Properties().First().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return new HostSpecificTemplateData(cacheObject);
                 }
 
                 //fallback to old behavior
                 Dictionary<string, HostSpecificTemplateData> cliData = new();
-                foreach (KeyValuePair<string, JsonNode?> data in cacheObject)
+                foreach (JProperty data in cacheObject.Properties())
                 {
                     try
                     {
-                        cliData[data.Key] = new HostSpecificTemplateData(data.Value as JsonObject);
+                        cliData[data.Name] = new HostSpecificTemplateData(data.Value as JObject);
                     }
                     catch (Exception ex)
                     {
-                        Reporter.Verbose.WriteLine($"Error deserializing the cli host specific template data for template {data.Key}, details:{ex}");
+                        Reporter.Verbose.WriteLine($"Error deserializing the cli host specific template data for template {data.Name}, details:{ex}");
                     }
                 }
                 return cliData;

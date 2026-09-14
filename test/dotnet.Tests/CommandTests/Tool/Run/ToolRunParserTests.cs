@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
@@ -7,22 +7,27 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    [TestClass]
     public class ToolRunParserTests
     {
+        private readonly ITestOutputHelper output;
 
-        [TestMethod]
+        public ToolRunParserTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
+        [Fact]
         public void ListToolParserCanGetToolCommandNameArgument()
         {
             var result = Parser.Parse("dotnet tool run dotnetsay");
 
-            var definition = Assert.IsExactInstanceOfType<ToolRunCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsType<ToolRunCommandDefinition>(result.CommandResult.Command);
             var packageId = result.GetValue(definition.CommandNameArgument);
 
             packageId.Should().Be("dotnetsay");
         }
 
-        [TestMethod]
+        [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnmatchedTokens()
         {
             var result = Parser.Parse("dotnet tool run dotnetsay hi");
@@ -30,7 +35,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.ShowHelpOrErrorIfAppropriate(); // Should not throw error
         }
 
-        [TestMethod]
+        [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnparsedTokens()
         {
             var result = Parser.Parse("dotnet tool run dotnetsay -- hi");
@@ -38,7 +43,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnparsedTokens2()
         {
             var result = Parser.Parse("dotnet tool run dotnetsay hi1 -- hi2");
@@ -46,7 +51,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.ShowHelpOrErrorIfAppropriate(); // Should not throw error
         }
 
-        [TestMethod]
+        [Fact]
         public void RootSubCommandIsToolCommand()
         {
             var result = Parser.Parse("dotnetsay run -v arg");

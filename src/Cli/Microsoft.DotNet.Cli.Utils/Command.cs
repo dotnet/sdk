@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -19,7 +21,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private bool _running = false;
 
-    private readonly bool _trimTrailingNewlines = trimTrailingNewlines;
+    private bool _trimTrailingNewlines = trimTrailingNewlines;
 
     public CommandResult Execute()
     {
@@ -46,7 +48,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             Reporter.Verbose.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
         }
 
-        using (var reaper = ProcessReaper.Create(_process))
+        using (var reaper = new ProcessReaper(_process))
         {
             _process.Start();
             processStarted?.Invoke(_process);
@@ -209,7 +211,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             return info.FileName;
         }
 
-        return $"{info.FileName} {info.Arguments}";
+        return info.FileName + " " + info.Arguments;
     }
 
     private void EnsureStdOut()

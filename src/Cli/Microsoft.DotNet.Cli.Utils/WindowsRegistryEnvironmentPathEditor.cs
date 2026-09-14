@@ -2,19 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32;
-using Windows.Win32;
-using Windows.Win32.Foundation;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
 #pragma warning disable CA1416
 internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor
 {
-    private const string Path = "PATH";
-
-    public string? Get(SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget)
+    private static string Path = "PATH";
+    public string? Get(SdkEnvironmentVariableTarget currentUserBeforeEvaluation)
     {
-        using (RegistryKey? environmentKey = OpenEnvironmentKeyIfExists(writable: false, sdkEnvironmentVariableTarget: sdkEnvironmentVariableTarget))
+        using (RegistryKey? environmentKey = OpenEnvironmentKeyIfExists(writable: false, sdkEnvironmentVariableTarget: currentUserBeforeEvaluation))
         {
             return environmentKey?.GetValue(Path, "", RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
         }
@@ -34,14 +31,7 @@ internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmen
                 // send a WM_SETTINGCHANGE message to all windows
                 fixed (char* lParam = "Environment")
                 {
-                    LRESULT r = PInvoke.SendMessageTimeout(
-                        HWND.HWND_BROADCAST,
-                        PInvoke.WM_SETTINGCHANGE,
-                        default,
-                        (LPARAM)(nint)lParam,
-                        0,
-                        1000,
-                        out nuint _);
+                    IntPtr r = SendMessageTimeout(new IntPtr(HWND_BROADCAST), WM_SETTINGCHANGE, IntPtr.Zero, (IntPtr)lParam, 0, 1000, out IntPtr _);
                 }
             }
         });
@@ -64,10 +54,16 @@ internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmen
         }
         else
         {
-            throw new ArgumentException($"{nameof(sdkEnvironmentVariableTarget)} cannot be matched, the value is: {sdkEnvironmentVariableTarget}");
+            throw new ArgumentException(nameof(sdkEnvironmentVariableTarget) + " cannot be matched, the value is: " + sdkEnvironmentVariableTarget.ToString());
         }
 
         return baseKey.OpenSubKey(keyName, writable: writable);
     }
+
+    [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW")]
+    private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, int flags, int timeout, out IntPtr pdwResult);
+
+    private const int HWND_BROADCAST = 0xffff;
+    private const int WM_SETTINGCHANGE = 0x001A;
 }
 #pragma warning restore CA1416

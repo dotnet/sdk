@@ -1,14 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public class VersionTests : SdkTest
+    public class VersionTests(ITestOutputHelper log) : SdkTest(log)
     {
-        [TestMethod]
+        [Fact]
         public void DotnetVersionReturnsCorrectVersion()
         {
             var result = new DotnetCommand(Log).Execute("--version");

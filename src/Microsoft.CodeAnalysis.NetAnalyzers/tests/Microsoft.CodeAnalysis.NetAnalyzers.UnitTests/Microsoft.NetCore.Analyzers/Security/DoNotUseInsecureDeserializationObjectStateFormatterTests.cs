@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerObjectStateFormatter,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,160 +13,147 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotUseInsecureDeserializerObjectStateFormatterTests
     {
-        [TestMethod]
+        [Fact]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                using System.IO;
-                using System.Web.UI;
-
-                public class ExampleClass
-                {
-                    public object MyDeserialize(byte[] bytes)
-                    {
-                        ObjectStateFormatter formatter = new ObjectStateFormatter();
-                        return formatter.Deserialize(new MemoryStream(bytes));
-                    }
-                }
-                """,
+public class ExampleClass
+{
+    public object MyDeserialize(byte[] bytes)
+    {
+        ObjectStateFormatter formatter = new ObjectStateFormatter();
+        return formatter.Deserialize(new MemoryStream(bytes));
+    }
+}",
                 GetCSharpResultAt(10, 16, "object ObjectStateFormatter.Deserialize(Stream inputStream)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
-            await VerifyBasicAnalyzerAsync("""
+            await VerifyBasicAnalyzerAsync(@"
+Imports System.IO
+Imports System.Web.UI
 
-                Imports System.IO
-                Imports System.Web.UI
-
-                Public Class ExampleClass
-                    Public Function MyDeserialize(bytes As Byte()) As Object
-                        Dim formatter As ObjectStateFormatter = New ObjectStateFormatter()
-                        Return formatter.Deserialize(New MemoryStream(bytes))
-                    End Function
-                End Class
-                """,
+Public Class ExampleClass
+    Public Function MyDeserialize(bytes As Byte()) As Object
+        Dim formatter As ObjectStateFormatter = New ObjectStateFormatter()
+        Return formatter.Deserialize(New MemoryStream(bytes))
+    End Function
+End Class",
                 GetBasicResultAt(8, 16, "Function ObjectStateFormatter.Deserialize(inputStream As Stream) As Object"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DeserializeStream_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                using System.IO;
-                using System.Web.UI;
-
-                namespace Blah
-                {
-                    public class Program
-                    {
-                        public object Deserialize(byte[] bytes)
-                        {
-                            ObjectStateFormatter formatter = new ObjectStateFormatter();
-                            return formatter.Deserialize(new MemoryStream(bytes));
-                        }
-                    }
-                }
-                """,
+namespace Blah
+{
+    public class Program
+    {
+        public object Deserialize(byte[] bytes)
+        {
+            ObjectStateFormatter formatter = new ObjectStateFormatter();
+            return formatter.Deserialize(new MemoryStream(bytes));
+        }
+    }
+}",
             GetCSharpResultAt(12, 20, "object ObjectStateFormatter.Deserialize(Stream inputStream)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DeserializeString_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                using System.IO;
-                using System.Web.UI;
-
-                namespace Blah
-                {
-                    public class Program
-                    {
-                        public object Deserialize(string input)
-                        {
-                            ObjectStateFormatter formatter = new ObjectStateFormatter();
-                            return formatter.Deserialize(input);
-                        }
-                    }
-                }
-                """,
+namespace Blah
+{
+    public class Program
+    {
+        public object Deserialize(string input)
+        {
+            ObjectStateFormatter formatter = new ObjectStateFormatter();
+            return formatter.Deserialize(input);
+        }
+    }
+}",
             GetCSharpResultAt(12, 20, "object ObjectStateFormatter.Deserialize(string inputString)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Deserialize_Reference_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                using System.IO;
-                using System.Web.UI;
-
-                namespace Blah
-                {
-                    public class Program
-                    {
-                        public delegate object Des(string s);
-                        public Des GetDeserializer()
-                        {
-                            ObjectStateFormatter formatter = new ObjectStateFormatter();
-                            return formatter.Deserialize;
-                        }
-                    }
-                }
-                """,
+namespace Blah
+{
+    public class Program
+    {
+        public delegate object Des(string s);
+        public Des GetDeserializer()
+        {
+            ObjectStateFormatter formatter = new ObjectStateFormatter();
+            return formatter.Deserialize;
+        }
+    }
+}",
                 GetCSharpResultAt(13, 20, "object ObjectStateFormatter.Deserialize(string inputString)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Serialize_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System.IO;
-                using System.Web.UI;
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                namespace Blah
-                {
-                    public class Program
-                    {
-                        public byte[] Serialize(object o)
-                        {
-                            ObjectStateFormatter formatter = new ObjectStateFormatter();
-                            MemoryStream stream = new MemoryStream();
-                            formatter.Serialize(stream, o);
-                            return stream.ToArray();
-                        }
-                    }
-                }
-                """);
+namespace Blah
+{
+    public class Program
+    {
+        public byte[] Serialize(object o)
+        {
+            ObjectStateFormatter formatter = new ObjectStateFormatter();
+            MemoryStream stream = new MemoryStream();
+            formatter.Serialize(stream, o);
+            return stream.ToArray();
+        }
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Serialize_Reference_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System.IO;
-                using System.Web.UI;
+            await VerifyCSharpAnalyzerAsync(@"
+using System.IO;
+using System.Web.UI;
 
-                namespace Blah
-                {
-                    public class Program
-                    {
-                        public delegate void Ser(Stream s, object o);
-                        public Ser GetSerializer()
-                        {
-                            ObjectStateFormatter formatter = new ObjectStateFormatter();
-                            return formatter.Serialize;
-                        }
-                    }
-                }
-                """);
+namespace Blah
+{
+    public class Program
+    {
+        public delegate void Ser(Stream s, object o);
+        public Ser GetSerializer()
+        {
+            ObjectStateFormatter formatter = new ObjectStateFormatter();
+            return formatter.Serialize;
+        }
+    }
+}");
         }
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -182,7 +169,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
         private static async Task VerifyBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -198,7 +185,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

@@ -4,25 +4,24 @@
 #nullable disable
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.NugetSearch.NugetSearchApiSerializable;
 using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
-[JsonSourceGenerationOptions(
-    AllowTrailingCommas = true,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    Converters = [typeof(AuthorsConverter)])]
-[JsonSerializable(typeof(NugetSearchApiContainerSerializable))]
-internal partial class NugetSearchApiJsonSerializerContext : JsonSerializerContext;
-
 internal static class NugetSearchApiResultDeserializer
 {
     public static IReadOnlyCollection<SearchResultPackage> Deserialize(string json)
     {
-        var deserialized = JsonSerializer.Deserialize(json, NugetSearchApiJsonSerializerContext.Default.NugetSearchApiContainerSerializable);
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new AuthorsConverter() },
+            AllowTrailingCommas = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var deserialized = JsonSerializer.Deserialize<NugetSearchApiContainerSerializable>(json, options);
         var resultPackages = new List<SearchResultPackage>();
         foreach (var deserializedPackage in deserialized.Data)
         {

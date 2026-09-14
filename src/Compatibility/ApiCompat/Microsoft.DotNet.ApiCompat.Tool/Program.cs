@@ -198,25 +198,24 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
                 int exitCode = ValidateAssemblies.Run(logFactory,
-                    new ValidateAssembliesOptions(leftAssemblies, rightAssemblies)
-                    {
-                        GenerateSuppressionFile = generateSuppressionFile,
-                        PreserveUnnecessarySuppressions = preserveUnnecessarySuppressions,
-                        PermitUnnecessarySuppressions = permitUnnecessarySuppressions,
-                        SuppressionFiles = suppressionFiles,
-                        SuppressionOutputFile = suppressionOutputFile,
-                        NoWarn = noWarn,
-                        RespectInternals = respectInternals,
-                        EnableRuleAttributesMustMatch = enableRuleAttributesMustMatch,
-                        ExcludeAttributesFiles = excludeAttributesFiles,
-                        EnableRuleCannotChangeParameterName = enableRuleCannotChangeParameterName,
-                        EnableStrictMode = strictMode,
-                        LeftAssembliesReferences = leftAssembliesReferences,
-                        RightAssembliesReferences = rightAssembliesReferences,
-                        CreateWorkItemPerAssembly = createWorkItemPerAssembly,
-                        LeftAssembliesTransformationPatterns = leftAssembliesTransformationPattern,
-                        RightAssembliesTransformationPatterns = rightAssembliesTransformationPattern,
-                    });
+                    generateSuppressionFile,
+                    preserveUnnecessarySuppressions,
+                    permitUnnecessarySuppressions,
+                    suppressionFiles,
+                    suppressionOutputFile,
+                    noWarn,
+                    respectInternals,
+                    enableRuleAttributesMustMatch,
+                    excludeAttributesFiles,
+                    enableRuleCannotChangeParameterName,
+                    leftAssemblies,
+                    rightAssemblies,
+                    strictMode,
+                    leftAssembliesReferences,
+                    rightAssembliesReferences,
+                    createWorkItemPerAssembly,
+                    leftAssembliesTransformationPattern,
+                    rightAssembliesTransformationPattern);
 
                 roslynResolver.Unregister();
 
@@ -311,8 +310,6 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableRuleCannotChangeParameterName = parseResult.GetValue(enableRuleCannotChangeParameterNameOption);
 
                 string? package = parseResult.GetValue(packageArgument);
-                if (package is null) throw new ArgumentNullException(nameof(package));
-
                 bool runApiCompat = parseResult.GetValue(runApiCompatOption);
                 bool enableStrictModeForCompatibleTfms = parseResult.GetValue(enableStrictModeForCompatibleTfmsOption);
                 bool enableStrictModeForCompatibleFrameworksInPackage = parseResult.GetValue(enableStrictModeForCompatibleFrameworksInPackageOption);
@@ -325,28 +322,26 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
                 int exitCode = ValidatePackage.Run(logFactory,
-                    new ValidatePackageOptions(package)
-                    {
-                        GenerateSuppressionFile = generateSuppressionFile,
-                        PreserveUnnecessarySuppressions = preserveUnnecessarySuppressions,
-                        PermitUnnecessarySuppressions = permitUnnecessarySuppressions,
-                        SuppressionFiles = suppressionFiles,
-                        SuppressionOutputFile = suppressionOutputFile,
-                        NoWarn = noWarn,
-                        RespectInternals = respectInternals,
-                        EnableRuleAttributesMustMatch = enableRuleAttributesMustMatch,
-                        ExcludeAttributesFiles = excludeAttributesFiles,
-                        EnableRuleCannotChangeParameterName = enableRuleCannotChangeParameterName,
-                        RunApiCompat = runApiCompat,
-                        EnableStrictModeForCompatibleTfms = enableStrictModeForCompatibleTfms,
-                        EnableStrictModeForCompatibleFrameworksInPackage = enableStrictModeForCompatibleFrameworksInPackage,
-                        EnableStrictModeForBaselineValidation = enableStrictModeForBaselineValidation,
-                        BaselinePackagePath = baselinePackage,
-                        RuntimeGraph = runtimeGraph,
-                        PackageAssemblyReferences = packageAssemblyReferences,
-                        BaselinePackageAssemblyReferences = baselinePackageAssemblyReferences,
-                        BaselinePackageFrameworksToIgnore = baselinePackageFrameworksToIgnore,
-                    });
+                    generateSuppressionFile,
+                    preserveUnnecessarySuppressions,
+                    permitUnnecessarySuppressions,
+                    suppressionFiles,
+                    suppressionOutputFile,
+                    noWarn,
+                    respectInternals,
+                    enableRuleAttributesMustMatch,
+                    excludeAttributesFiles,
+                    enableRuleCannotChangeParameterName,
+                    package,
+                    runApiCompat,
+                    enableStrictModeForCompatibleTfms,
+                    enableStrictModeForCompatibleFrameworksInPackage,
+                    enableStrictModeForBaselineValidation,
+                    baselinePackage,
+                    runtimeGraph,
+                    packageAssemblyReferences,
+                    baselinePackageAssemblyReferences,
+                    baselinePackageFrameworksToIgnore);
 
                 roslynResolver.Unregister();
 
@@ -381,7 +376,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
         private static (string CaptureGroupPattern, string ReplacementString)[]? ParseTransformationPattern(ArgumentResult argumentResult)
         {
-            var patterns = new (string CaptureGroupPattern, string ReplacementString)[argumentResult.Tokens.Count];
+            var patterns = new(string CaptureGroupPattern, string ReplacementPattern)[argumentResult.Tokens.Count];
             for (int i = 0; i < argumentResult.Tokens.Count; i++)
             {
                 string[] parts = argumentResult.Tokens[i].Value.Split(';');

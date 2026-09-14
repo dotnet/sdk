@@ -6,22 +6,15 @@
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
-    public class StaticWebAssetsCrossTargetingTests : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
+    public class StaticWebAssetsCrossTargetingTests(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsCrossTargetingTests))
     {
-        protected override string RestoreNugetPackagePath => nameof(StaticWebAssetsCrossTargetingTests);
         // Build Standalone project
-        [TestMethod]
-    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -66,7 +59,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(finalPath).Should().Exist();
         }
 
-        [TestMethod]
+        [Fact]
         public void Publish_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var testAsset = "RazorComponentAppMultitarget";
@@ -96,7 +89,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ExecuteCommand(restore).Should().Pass();
 
             var publish = CreatePublishCommand(ProjectDirectory);
-            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net11.0").Should().Pass();
+            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net10.0").Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();

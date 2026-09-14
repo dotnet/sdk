@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,15 +8,14 @@ using NuGet.Versioning;
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public partial class GivenUsingDefaultRuntimeFrameworkVersions : SdkTest
+    public partial class GivenUsingDefaultRuntimeFrameworkVersions(ITestOutputHelper log) : SdkTest(log)
     {
         private static readonly IEnumerable<string> frameworks = new string[] {"Microsoft.NETCore.App", "Microsoft.WindowsDesktop.App",
             "Microsoft.WindowsDesktop.App.WPF", "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.AspNetCore.App" };
 
         private static readonly IEnumerable<string> versions = SupportedNetCoreAppVersions.Versions.Where(version => NuGetVersion.Parse(version).Major >= 3);
 
-        [TestMethod]
+        [Fact]
         public void DefaultRuntimeVersionsAreUpToDate()
         {
             var outputFile = "resolvedVersions.txt";
@@ -25,7 +24,7 @@ namespace EndToEnd.Tests
                 PackageName = "DefaultRuntimeVersionsAreUpToDate",
                 MinorVersion = "3.0"
             };
-            var testProject = testProjectCreator.Create(TestAssetsManager);
+            var testProject = testProjectCreator.Create(_testAssetsManager);
 
             var projectFile = new DirectoryInfo(testProject.TestRoot).GetFiles("*.csproj").First().FullName;
             var project = XDocument.Load(projectFile);

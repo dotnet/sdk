@@ -63,31 +63,42 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    /// <summary>
-    /// Splits tokens the SDK parser didn't model into those that configure MSBuild itself and those that
-    /// belong to whatever the verb ultimately launches (a test application for <c>dotnet test</c>, the
-    /// built app for <c>dotnet run</c>). Besides logger switches this also covers build-engine switches
-    /// such as <c>-mt</c>, which are meaningless to a launched process.
-    /// </summary>
-    internal static void SeparateMSBuildArguments(IEnumerable<string>? args, out ImmutableArray<string> msbuildArgs, out ImmutableArray<string> otherArgs)
+    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
     {
-        var msbuildArgsBuilder = ImmutableArray.CreateBuilder<string>();
-        var otherArgsBuilder = ImmutableArray.CreateBuilder<string>();
-
+        binLogArgs = new List<string>();
+        nonBinLogArgs = new List<string>();
         foreach (var arg in args ?? [])
         {
-            if (TryGetMSBuildArgument(arg, out string? msbuildArg))
+            if (IsBinLogArgument(arg))
             {
-                msbuildArgsBuilder.Add(msbuildArg);
+                binLogArgs.Add(arg);
             }
             else
             {
-                otherArgsBuilder.Add(arg);
+                nonBinLogArgs.Add(arg);
+            }
+        }
+    }
+
+    internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
+    {
+        var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var nonLoggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+
+        foreach (var arg in args ?? [])
+        {
+            if (TryGetLoggerArgument(arg, out string? loggerArg))
+            {
+                loggerArgsBuilder.Add(loggerArg);
+            }
+            else
+            {
+                nonLoggerArgsBuilder.Add(arg);
             }
         }
 
-        msbuildArgs = msbuildArgsBuilder.ToImmutable();
-        otherArgs = otherArgsBuilder.ToImmutable();
+        loggerArgs = loggerArgsBuilder.ToImmutable();
+        nonLoggerArgs = nonLoggerArgsBuilder.ToImmutable();
     }
 
     internal static bool IsBinLogArgument(string arg)
@@ -101,7 +112,7 @@ internal static class LoggerUtility
     internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
         args?.Any(IsNoConsoleLoggerArgument) == true;
 
-    private static bool IsNoConsoleLoggerArgument(string arg)
+    internal static bool IsNoConsoleLoggerArgument(string arg)
     {
         return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
             prefix is "-" or "/" &&
@@ -109,28 +120,26 @@ internal static class LoggerUtility
             switchName.Equals("noConsoleLogger", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryGetMSBuildArgument(string arg, [NotNullWhen(true)] out string? msbuildArg)
+    private static bool TryGetLoggerArgument(string arg, [NotNullWhen(true)] out string? loggerArg)
     {
-        msbuildArg = arg;
-        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg) ||
-            MSBuildArgumentParser.IsMultiThreadedSwitch(arg))
+        loggerArg = arg;
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg))
         {
             return true;
         }
 
         if (!TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue))
         {
-            msbuildArg = null;
+            loggerArg = null;
             return false;
         }
 
         const StringComparison comp = StringComparison.OrdinalIgnoreCase;
-        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp) ||
-            switchName.Equals("ll", comp) || switchName.Equals("livelogger", comp))
+        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp))
         {
             if (!hasValue)
             {
-                msbuildArg = $"{prefix}{switchName}:auto";
+                loggerArg = $"{prefix}{switchName}:auto";
                 return true;
             }
 
@@ -141,7 +150,7 @@ internal static class LoggerUtility
                   switchValue.Equals("false", comp) ||
                   switchValue.Equals("auto", comp)))
             {
-                msbuildArg = null;
+                loggerArg = null;
                 return false;
             }
 
@@ -157,7 +166,7 @@ internal static class LoggerUtility
             }
         }
 
-        msbuildArg = null;
+        loggerArg = null;
         return false;
     }
 

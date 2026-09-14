@@ -7,8 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
-    public class GenerateToolsSettingsFile : TaskBase, IMultiThreadableTask
+    public class GenerateToolsSettingsFile : TaskBase
     {
         [Required]
         public string EntryPointRelativePath { get; set; }
@@ -29,13 +28,10 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ToolsSettingsFilePath { get; set; }
 
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         protected override void ExecuteCore()
         {
-            AbsolutePath settingsPath = TaskEnvironment.GetAbsolutePath(ToolsSettingsFilePath);
             GenerateDocument(EntryPointRelativePath, CommandName, CommandRunner, RuntimeIdentifier, ToolPackageId, ToolPackageVersion, ToolPackageRuntimeIdentifiers)
-                .Save(settingsPath);
+                .Save(ToolsSettingsFilePath);
         }
 
         internal static XDocument GenerateDocument(string entryPointRelativePath, string commandName, string commandRunner, string runtimeIdentifier,

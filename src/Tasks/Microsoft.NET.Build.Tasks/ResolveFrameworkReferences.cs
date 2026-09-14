@@ -8,7 +8,6 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public class ResolveFrameworkReferences : TaskBase
     {
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
@@ -48,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks
                 resolvedFrameworkReference.SetMetadata("TargetingPackPath", targetingPack.GetMetadata(MetadataKeys.Path));
                 resolvedFrameworkReference.SetMetadata("TargetingPackName", targetingPack.GetMetadata(MetadataKeys.NuGetPackageId));
                 resolvedFrameworkReference.SetMetadata("TargetingPackVersion", targetingPack.GetMetadata(MetadataKeys.NuGetPackageVersion));
-                resolvedFrameworkReference.SetMetadata(MetadataKeys.Profile, targetingPack.GetMetadata(MetadataKeys.Profile));
+                resolvedFrameworkReference.SetMetadata("Profile", targetingPack.GetMetadata("Profile"));
 
                 ITaskItem runtimePack;
                 if (resolvedRuntimePacks.TryGetValue(frameworkReference.ItemSpec, out runtimePack))

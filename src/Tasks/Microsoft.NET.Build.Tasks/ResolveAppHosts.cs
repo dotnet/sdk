@@ -9,11 +9,8 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
-    public class ResolveAppHosts : TaskBase, IMultiThreadableTask
+    public class ResolveAppHosts : TaskBase
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         public string TargetFrameworkIdentifier { get; set; }
 
         public string TargetFrameworkVersion { get; set; }
@@ -290,16 +287,12 @@ namespace Microsoft.NET.Build.Tasks
                     hostNameWithoutExtension + (isExecutable ? ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier) : ".dll"));
 
                 TaskItem appHostItem = new(itemName);
-
                 string appHostPackPath = null;
-                string appHostPackPathAbsolute = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
                     appHostPackPath = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
-                    appHostPackPathAbsolute = TaskEnvironment.GetAbsolutePath(appHostPackPath).Value;
                 }
-
-                if (appHostPackPathAbsolute != null && Directory.Exists(appHostPackPathAbsolute))
+                if (appHostPackPath != null && Directory.Exists(appHostPackPath))
                 {
                     //  Use AppHost from packs folder
                     appHostItem.SetMetadata(MetadataKeys.PackageDirectory, appHostPackPath);

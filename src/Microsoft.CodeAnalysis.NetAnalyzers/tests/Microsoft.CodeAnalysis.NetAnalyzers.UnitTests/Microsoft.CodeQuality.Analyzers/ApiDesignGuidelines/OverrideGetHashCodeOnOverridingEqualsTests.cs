@@ -1,137 +1,124 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer,
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideGetHashCodeOnOverridingEqualsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class OverrideGetHashCodeOnOverridingEqualsTests
     {
-        [TestMethod]
+        [Fact]
         public async Task Good_Class_EqualsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Class C
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 0
-                    End Function
-                End Class
-                """);
+    Public Overrides Function GetHashCode() As Integer
+        Return 0
+    End Function
+End Class");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Good_Class_NoEqualsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Class C
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class C
+End Class");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Good_Structure_EqualsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Structure C
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Structure C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 0
-                    End Function
-                End Structure
-                """);
+    Public Overrides Function GetHashCode() As Integer
+        Return 0
+    End Function
+End Structure");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Good_Structure_NoEqualsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Structure C
-                End Structure
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Structure C
+End Structure");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Bad_ClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Class C
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+End Class",
             // Test0.vb(2,7): warning CA2224: Override GetHashCode on overriding Equals
             GetBasicResultAt(2, 7));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Bad_StructureAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Structure C
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
-                End Structure
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Structure C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+End Structure",
             // Test0.vb(2,11): warning CA2224: Override GetHashCode on overriding Equals
             GetBasicResultAt(2, 11));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Bad_NotOverrideAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
 
-                Class C
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
-
-                    Public Shadows Function GetHashCode() As Integer
-                        Return 0
-                    End Function
-                End Class
-                """,
+    Public Shadows Function GetHashCode() As Integer
+        Return 0
+    End Function
+End Class",
             // Test0.vb(2,7): warning CA2224: Override GetHashCode on overriding Equals
             GetBasicResultAt(2, 7));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Bad_FalseOverrideAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class Base
+    Public Overridable Shadows Function GetHashCode() As Integer
+        Return 0
+    End Function
+End Class
 
-                Class Base
-                    Public Overridable Shadows Function GetHashCode() As Integer
-                        Return 0
-                    End Function
-                End Class
+Class Derived : Inherits Base
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
 
-                Class Derived : Inherits Base
-                    Public Overrides Function Equals(o As Object) As Boolean
-                        Return True
-                    End Function
-
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 0
-                    End Function
-                End Class
-                """,
+    Public Overrides Function GetHashCode() As Integer
+        Return 0
+    End Function
+End Class",
             // Test0.vb(8,7): warning CA2224: Override GetHashCode on overriding Equals
             GetBasicResultAt(8, 7));
         }

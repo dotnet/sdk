@@ -7,45 +7,44 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
 
-[TestClass]
-public class FishShellProviderTests : VerifyMSTest.VerifyBase
+public class FishShellProviderTests(ITestOutputHelper log)
 {
     private IShellProvider provider = new FishShellProvider();
 
-    [TestMethod]
+    [Fact]
     public async Task GenericCompletions()
     {
-        await provider.Verify(new("mycommand"), TestContext);
+        await provider.Verify(new("mycommand"), log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SimpleOptionCompletion()
     {
         await provider.Verify(new("mycommand") {
             new Option<string>("--name")
-        }, TestContext);
+        }, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SubcommandAndOptionInTopLevelList()
     {
         await provider.Verify(new("mycommand") {
                 new Option<string>("--name"),
                 new Command("subcommand")
-            }, TestContext);
+            }, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task NestedSubcommandCompletion()
     {
         await provider.Verify(new("mycommand") {
             new Command("subcommand") {
                 new Command("nested")
             }
-        }, TestContext);
+        }, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task DynamicCompletionsGeneration()
     {
         var dynamicOption = new Option<int>("--dynamic")
@@ -61,10 +60,10 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
             dynamicOption,
             dynamicArg
         };
-        await provider.Verify(command, TestContext);
+        await provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task StaticOptionValues()
     {
         var staticOption = new Option<int>("--verbosity");
@@ -73,10 +72,10 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
         {
             staticOption
         };
-        await provider.Verify(command, TestContext);
+        await provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task BoundedMultiValueOption()
     {
         var multiOption = new Option<string[]>("--sources")
@@ -89,10 +88,10 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
             multiOption,
             new Command("subcommand")
         };
-        await provider.Verify(command, TestContext);
+        await provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task UnboundedMultiValueOption()
     {
         var unboundedOption = new Option<string[]>("--items")
@@ -106,10 +105,10 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
             new Option<string>("--name"),
             new Command("subcommand")
         };
-        await provider.Verify(command, TestContext);
+        await provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task MixedArityOptions()
     {
         var singleOption = new Option<string>("--config");
@@ -133,6 +132,6 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
             unboundedOption,
             new Command("build")
         };
-        await provider.Verify(command, TestContext);
+        await provider.Verify(command, log);
     }
 }

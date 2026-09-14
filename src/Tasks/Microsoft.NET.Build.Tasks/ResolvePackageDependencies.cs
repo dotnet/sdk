@@ -16,10 +16,9 @@ namespace Microsoft.NET.Build.Tasks
     /// assets specified in the lock file.
     /// </summary>
     /// <remarks>
-    /// Only called for backwards compatibility, when <c>ResolvePackageDependencies</c> is true.
+    /// Only called for backwards compatability, when <c>ResolvePackageDependencies</c> is true.
     /// </remarks>
-    [MSBuildMultiThreadableTask]
-    public sealed class ResolvePackageDependencies : TaskBase, IMultiThreadableTask
+    public sealed class ResolvePackageDependencies : TaskBase
     {
         private readonly Dictionary<string, string> _fileTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -115,8 +114,6 @@ namespace Microsoft.NET.Build.Tasks
 
         #endregion
 
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         public ResolvePackageDependencies()
         {
         }
@@ -134,7 +131,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IPackageResolver PackageResolver => _packageResolver ??= NuGetPackageResolver.CreateResolver(LockFile);
 
-        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(TaskEnvironment.GetAbsolutePath(ProjectAssetsFile));
+        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(ProjectAssetsFile);
 
         private Dictionary<string, string> _targetNameToAliasMap;
 
@@ -467,13 +464,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GetAbsolutePathFromProjectRelativePath(string path)
         {
-            string projectDirectory = Path.GetDirectoryName(ProjectPath);
-            AbsolutePath absProjectDir = string.IsNullOrEmpty(projectDirectory)
-                ? TaskEnvironment.ProjectDirectory
-                : TaskEnvironment.GetAbsolutePath(projectDirectory);
-            // Path.GetFullPath resolves ".." segments so output matches the old behavior.
-            // Cannot use AbsolutePath.GetCanonicalForm() as it only exists in the NETFRAMEWORK polyfill.
-            return Path.GetFullPath(new AbsolutePath(path, absProjectDir));
+            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ProjectPath), path));
         }
     }
 }

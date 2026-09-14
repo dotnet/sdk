@@ -170,12 +170,6 @@ namespace Microsoft.NET.Build.Tasks
                 (!version5 || _targetRuntimeIdentifier == _hostRuntimeIdentifier) &&
                 GetCrossgen2ComponentsPaths(version5);
 
-            // WebAssembly ReadyToRun is only supported with the .NET 11+ crossgen2 pack, which ships the wasm cross-JIT.
-            if ((_targetPlatform == "browser" || _targetPlatform == "wasi") && crossgen2PackVersion.Major < 11)
-            {
-                isSupportedTarget = false;
-            }
-
             if (!isSupportedTarget)
             {
                 Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
@@ -216,27 +210,16 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi"],
+                    new[] { "linux", "osx", "win", "freebsd", "illumos" },
                     out _);
 
             targetOS = portablePlatform switch
             {
                 "linux" => "linux",
-                "android" => "android",
                 "osx" => "osx",
                 "win" => "windows",
-                "ios" => "ios",
-                "iossimulator" => "iossimulator",
-                "tvos" => "tvos",
-                "tvossimulator" => "tvossimulator",
-                "maccatalyst" => "maccatalyst",
                 "freebsd" => "freebsd",
-                "openbsd" => "openbsd",
                 "illumos" => "illumos",
-                "solaris" => "solaris",
-                "haiku" => "haiku",
-                "browser" => "browser",
-                "wasi" => "wasi",
                 _ => null
             };
 
@@ -296,11 +279,6 @@ namespace Microsoft.NET.Build.Tasks
                 case "x86":
                     architecture = Architecture.X86;
                     break;
-#if !NETFRAMEWORK
-                case "wasm":
-                    architecture = Architecture.Wasm;
-                    break;
-#endif
                 default:
                     return false;
             }
@@ -465,7 +443,6 @@ namespace Microsoft.NET.Build.Tasks
 #if !NETFRAMEWORK
                 Architecture.RiscV64 => "riscv64",
                 Architecture.LoongArch64 => "loongarch64",
-                Architecture.Wasm => "wasm",
 #endif
                 _ => null
             };

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
     public partial class InstantiateTests
     {
-        [TestMethod]
+        [Fact]
         public void Create_CanParseTemplateWithOptions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -22,15 +22,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse("new create console --framework net5.0");
             InstantiateCommandArgs args = new((InstantiateCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.AreEqual("console", args.ShortName);
-            Assert.HasCount(2, args.RemainingArguments);
+            Assert.Equal("console", args.ShortName);
+            Assert.Equal(2, args.RemainingArguments.Length);
             Assert.Contains("--framework", args.RemainingArguments);
             Assert.Contains("net5.0", args.RemainingArguments);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CanEvaluateTemplateToRunData))]
-        public void Create_CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
+        [Theory]
+        [MemberData(nameof(CanEvaluateTemplateToRunData))]
+        internal void Create_CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                 CliTemplateInfo.FromTemplateInfo(_testSets[templateSet], A.Fake<IHostSpecificDataLoader>()))
@@ -52,17 +52,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var instantiateCommand = (InstantiateCommand)parseResult.CommandResult.Command;
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
             HashSet<TemplateCommand> templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);
-            Assert.HasCount(expectedIdentities.Length, templateCommands);
-            Assert.AreSequenceEqual(expectedIdentities.OrderBy(s => s), templateCommands.Select(templateCommand => templateCommand.Template.Identity).OrderBy(s => s));
+            Assert.Equal(expectedIdentities.Length, templateCommands.Count);
+            Assert.Equal(expectedIdentities.OrderBy(s => s), templateCommands.Select(templateCommand => templateCommand.Template.Identity).OrderBy(s => s));
         }
 
-        [TestMethod]
-        [DataRow("new create foo --name name", "name")]
-        [DataRow("new create foo -n name", "name")]
-        [DataRow("new create foo", null)]
-        [DataRow("new create --name name foo ", "name")]
-        [DataRow("new create -n name foo", "name")]
-        public void Create_CanParseNameOption(string command, string? expectedValue)
+        [Theory]
+        [InlineData("new create foo --name name", "name")]
+        [InlineData("new create foo -n name", "name")]
+        [InlineData("new create foo", null)]
+        [InlineData("new create --name name foo ", "name")]
+        [InlineData("new create -n name foo", "name")]
+        internal void Create_CanParseNameOption(string command, string? expectedValue)
         {
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
 
@@ -87,18 +87,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult templateParseResult = parser.Parse(args.TokensToInvoke ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             var templateArgs = new TemplateCommandArgs(templateCommand, instantiateCommand, templateParseResult);
 
-            Assert.AreEqual(expectedValue, templateArgs.Name);
+            Assert.Equal(expectedValue, templateArgs.Name);
         }
 
-        [TestMethod]
-        [DataRow("new --name name create foo", "Unrecognized command or argument(s): '--name','name'.")]
-        [DataRow("--name name new create foo", "Unrecognized command or argument '--name'.|Unrecognized command or argument 'name'.")]
-        [DataRow("new --output name create foo", "Unrecognized command or argument(s): '--output','name'.")]
-        [DataRow("new --project name create foo", "Unrecognized command or argument(s): '--project','name'.")]
-        [DataRow("new --force create foo", "Unrecognized command or argument(s): '--force'.")]
-        [DataRow("new --dry-run create foo", "Unrecognized command or argument(s): '--dry-run'.")]
-        [DataRow("new --no-update-check create foo", "Unrecognized command or argument(s): '--no-update-check'.")]
-        public void Create_CanValidateOptionUsage_InNewCommand(string command, string? expectedErrors)
+        [Theory]
+        [InlineData("new --name name create foo", "Unrecognized command or argument(s): '--name','name'.")]
+        [InlineData("--name name new create foo", "Unrecognized command or argument '--name'.|Unrecognized command or argument 'name'.")]
+        [InlineData("new --output name create foo", "Unrecognized command or argument(s): '--output','name'.")]
+        [InlineData("new --project name create foo", "Unrecognized command or argument(s): '--project','name'.")]
+        [InlineData("new --force create foo", "Unrecognized command or argument(s): '--force'.")]
+        [InlineData("new --dry-run create foo", "Unrecognized command or argument(s): '--dry-run'.")]
+        [InlineData("new --no-update-check create foo", "Unrecognized command or argument(s): '--no-update-check'.")]
+        internal void Create_CanValidateOptionUsage_InNewCommand(string command, string? expectedErrors)
         {
             string[] expectedErrorsParsed = expectedErrors?.Split("|") ?? Array.Empty<string>();
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
@@ -120,9 +120,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             parseResult.Errors.Select(e => e.Message).Should().BeEquivalentTo(expectedErrorsParsed);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CanParseTemplateOptionsData))]
-        public void Create_CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
+        [Theory]
+        [MemberData(nameof(CanParseTemplateOptionsData))]
+        internal void Create_CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
         {
             //unique case for dotnet new create
             if (command == "foo -in 30")
@@ -152,18 +152,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             if (string.IsNullOrWhiteSpace(expectedValue))
             {
-                Assert.IsFalse(templateArgs.TemplateParameters.ContainsKey(parameterName));
+                Assert.False(templateArgs.TemplateParameters.ContainsKey(parameterName));
             }
             else
             {
-                Assert.IsTrue(templateArgs.TemplateParameters.ContainsKey(parameterName));
-                Assert.AreEqual(expectedValue, templateArgs.TemplateParameters[parameterName]);
+                Assert.True(templateArgs.TemplateParameters.ContainsKey(parameterName));
+                Assert.Equal(expectedValue, templateArgs.TemplateParameters[parameterName]);
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CanParseChoiceTemplateOptionsData))]
-        public void Create_CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
+        [Theory]
+        [MemberData(nameof(CanParseChoiceTemplateOptionsData))]
+        internal void Create_CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithChoiceParameter(parameterName, parameterValues.Split("|"), defaultIfNoOptionValue: defaultIfNoOptionValue);
@@ -187,18 +187,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             if (string.IsNullOrWhiteSpace(expectedValue))
             {
-                Assert.IsFalse(templateArgs.TemplateParameters.ContainsKey(parameterName));
+                Assert.False(templateArgs.TemplateParameters.ContainsKey(parameterName));
             }
             else
             {
-                Assert.IsTrue(templateArgs.TemplateParameters.ContainsKey(parameterName));
-                Assert.AreEqual(expectedValue, templateArgs.TemplateParameters[parameterName]);
+                Assert.True(templateArgs.TemplateParameters.ContainsKey(parameterName));
+                Assert.Equal(expectedValue, templateArgs.TemplateParameters[parameterName]);
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CanDetectParseErrorsTemplateOptionsData))]
-        public void Create_CanDetectParseErrorsTemplateOptions(
+        [Theory]
+        [MemberData(nameof(CanDetectParseErrorsTemplateOptionsData))]
+        internal void Create_CanDetectParseErrorsTemplateOptions(
             string command,
             string parameterName,
             string parameterType,
@@ -226,13 +226,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command parser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
-            Assert.IsNotEmpty(templateParseResult.Errors);
-            Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
+            Assert.True(templateParseResult.Errors.Any());
+            Assert.Equal(expectedError, templateParseResult.Errors.Single().Message);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CanDetectParseErrorsChoiceTemplateOptionsData))]
-        public void Create_CanDetectParseErrorsChoiceTemplateOptions(
+        [Theory]
+        [MemberData(nameof(CanDetectParseErrorsChoiceTemplateOptionsData))]
+        internal void Create_CanDetectParseErrorsChoiceTemplateOptions(
               string command,
               string parameterName,
               string parameterValues,
@@ -260,14 +260,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command parser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
-            Assert.IsNotEmpty(templateParseResult.Errors);
-            Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
+            Assert.True(templateParseResult.Errors.Any());
+            Assert.Equal(expectedError, templateParseResult.Errors.Single().Message);
         }
 
-        [TestMethod]
-        [DataRow("create", "createTemplate")]
-        [DataRow("list", "listTemplate")]
-        public void Create_CanEvaluateTemplateWithSubcommandShortName(string command, string? expectedIdentitiesStr)
+        [Theory]
+        [InlineData("create", "createTemplate")]
+        [InlineData("list", "listTemplate")]
+        internal void Create_CanEvaluateTemplateWithSubcommandShortName(string command, string? expectedIdentitiesStr)
         {
             MockTemplateInfo template = new(command, identity: $"{command}Template");
 
@@ -284,8 +284,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var instantiateCommand = (InstantiateCommand)parseResult.CommandResult.Command;
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
             HashSet<TemplateCommand> templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);
-            Assert.HasCount(expectedIdentities.Length, templateCommands);
-            Assert.AreSequenceEqual(expectedIdentities.OrderBy(s => s), templateCommands.Select(templateCommand => templateCommand.Template.Identity).OrderBy(s => s));
+            Assert.Equal(expectedIdentities.Length, templateCommands.Count);
+            Assert.Equal(expectedIdentities.OrderBy(s => s), templateCommands.Select(templateCommand => templateCommand.Template.Identity).OrderBy(s => s));
         }
     }
 }

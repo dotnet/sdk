@@ -3,23 +3,14 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-using Microsoft.NET.TestFramework;
-
-using Microsoft.NET.TestFramework.Commands;
-
-using Microsoft.NET.TestFramework.Assertions;
-
-using Microsoft.NET.TestFramework.Utilities;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+[assembly:CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
-    public class LegacyStaticWebAssetsV1IntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
+    public class LegacyStaticWebAssetsV1IntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(LegacyStaticWebAssetsV1IntegrationTest))
     {
-        protected override string RestoreNugetPackagePath => nameof(LegacyStaticWebAssetsV1IntegrationTest);
-        [TestMethod]
+        [Fact]
         public void PublishProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -82,7 +73,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

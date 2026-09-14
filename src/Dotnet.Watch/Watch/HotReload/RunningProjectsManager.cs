@@ -70,13 +70,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
         // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
         // and then start the process (named pipe client). Otherwise, the connection would fail.
-        //
-        // Send project defined environment variables through RPC to avoid leaking potentially sensitive data.
-        // On Linux the command line of a process can be read by other users via `/proc/<pid>/cmdline`.
-        // Only environment variables that are necessary to establish communication with the agent are passed through command line (`-e` switch).
-        // The agent variables can't be set directly on `dotnet run` process as Hot Reload should not be enabled for that process. 
-        // Other variables are not set directly either to avoid leakage to `dotnet build` or other processes that `dotnet run` might execute.
-        clients.InitiateConnection(projectOptions.LaunchEnvironmentVariables, processCommunicationCancellationToken);
+        clients.InitiateConnection(processCommunicationCancellationToken);
 
         RunningProject? publishedRunningProject = null;
 
@@ -155,7 +149,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                 if (updatesToApply.Any() && clients.IsManagedAgentSupported)
                 {
                     await await clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(clients, updatesToApply),
+                        ToManagedCodeUpdates(updatesToApply),
                         applyOperationCancellationToken: processExitedSource.Token,
                         cancellationToken: processCommunicationCancellationToken);
                 }
@@ -310,7 +304,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
                     // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
                     var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(runningProject.Clients, builder.ManagedCodeUpdates),
+                        ToManagedCodeUpdates(builder.ManagedCodeUpdates),
                         applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                         cancellationToken);
 
@@ -480,11 +474,6 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         return relaunchOperations;
     }
 
-    private static ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> ToManagedCodeUpdates(HotReloadClients clients, IEnumerable<HotReloadService.Update> updates)
-    {
-        var updatesForClient = updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities));
-
-        // The updates are the same for all clients since the debugger isn't attached:
-        return [.. Enumerable.Repeat(updatesForClient.ToImmutableArray(), clients.Clients.Length)];
-    }
+    private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(IEnumerable<HotReloadService.Update> updates)
+        => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
 }

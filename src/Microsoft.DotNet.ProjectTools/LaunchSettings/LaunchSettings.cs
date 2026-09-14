@@ -71,10 +71,7 @@ public static class LaunchSettings
         return null;
     }
 
-    internal static LaunchProfileParseResult ReadProfileSettingsFromFile(
-        string launchSettingsPath,
-        string? profileName,
-        LaunchProfileParserOptions parserOptions)
+    internal static LaunchProfileParseResult ReadProfileSettingsFromFile(string launchSettingsPath, string? profileName = null)
     {
         try
         {
@@ -163,19 +160,7 @@ public static class LaunchSettings
                     return LaunchProfileParseResult.Failure(string.Format(Resources.LaunchProfileHandlerCannotBeLocated, commandName));
                 }
 
-                Func<string, string>? evaluateExpression = provider switch
-                {
-                    ProjectLaunchProfileParser when parserOptions.ExpandProjectProfile => parserOptions.EvaluateExpression,
-                    ExecutableLaunchProfileParser when parserOptions.ExpandExecutableProfile => parserOptions.EvaluateExpression,
-                    _ => null,
-                };
-
-                return provider.ParseProfile(
-                    launchSettingsPath,
-                    selectedProfileName,
-                    profileObject.GetRawText(),
-                    evaluateExpression,
-                    parserOptions.ExpandCommandLineArgs);
+                return provider.ParseProfile(launchSettingsPath, selectedProfileName, profileObject.GetRawText());
             }
         }
         catch (Exception ex) when (ex is JsonException or IOException)

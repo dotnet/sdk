@@ -4,19 +4,17 @@
 #nullable disable
 
 using System.Text.Json.Nodes;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.NET.Sdk.Web.Tests
 {
-    [TestClass]
     public class PublishTests : SdkTest
     {
-        [TestMethod]
-        [DynamicData(nameof(SupportedTfms))]
+        public PublishTests(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Trimmed_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -28,7 +26,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             testProject.SelfContained = "true";
             testProject.PropertiesToRecord.Add("TrimMode");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
@@ -52,8 +50,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
         {
             var projectName = "HelloWorld";
@@ -66,7 +63,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             testProject.SelfContained = "true";
             testProject.PropertiesToRecord.Add("TrimMode");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute().Should().Pass();
@@ -75,8 +72,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
             buildProperties["TrimMode"].Should().Be("partial");
         }
 
-        [TestMethod]
-        [DynamicData(nameof(SupportedTfms))]
+        [Theory]
+        [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -84,18 +81,13 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
-            // AOT publish runs Compile instead of full Build, so the AfterBuild target (the default
-            // anchor for recording properties) never runs. Record before PrepareForPublish, which
-            // runs after Compile but before publish-time trimming (PrepareForILLink) defaults
-            // TrimMode to "full" - matching the pre-trimming values the original AfterBuild anchor saw.
-            testProject.RecordPropertiesBeforeTarget("PrepareForPublish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.PropertiesToRecord.Add("PublishTrimmed");
             testProject.PropertiesToRecord.Add("TrimMode");
             testProject.PropertiesToRecord.Add("PublishIISAssets");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute("/p:SelfContained=true").Should().Pass();
 
@@ -119,7 +111,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
-#if NET11_0
+#if NET10_0
             new object[] { ToolsetInfo.CurrentTargetFramework }
 #else
 #error If building for a newer TFM, please update the values above

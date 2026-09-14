@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -9,16 +9,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class DotnetNewUninstallTests : BaseIntegrationTest
     {
-        private ITestOutputHelper _log => Log;
+        private readonly ITestOutputHelper _log;
 
-        public DotnetNewUninstallTests()
+        public DotnetNewUninstallTests(ITestOutputHelper log) : base(log)
         {
+            _log = log;
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("--uninstall")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("--uninstall")]
+        [InlineData("uninstall")]
         public void CanListInstalledSources_Folder(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -37,10 +38,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"         dotnet new uninstall {testTemplate}");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("--uninstall")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("--uninstall")]
+        [InlineData("uninstall")]
         public void CanListInstalledSources_NuGet(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -71,9 +72,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("         dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.5.0");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
         public void CanListInstalledSources_WhenNothingIsInstalled(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -88,10 +89,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"Currently installed items:{Environment.NewLine}(No Items)");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
-        [DataRow("--uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
+        [InlineData("--uninstall")]
         public void CanUninstall_Folder(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -129,13 +130,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining($"Currently installed items:{Environment.NewLine}(No Items)");
 
-            Assert.IsTrue(Directory.Exists(templateLocation));
+            Assert.True(Directory.Exists(templateLocation));
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
-        [DataRow("--uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
+        [InlineData("--uninstall")]
         public void CanUninstall_NuGet(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -164,7 +165,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Author: Microsoft")
                 .And.HaveStdOutContaining("dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.5.0");
 
-            Assert.IsTrue(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.True(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
 
             // This tests proper uninstallation of package even if there is a clash with existing folder name
             //  (this used to fail - see #4613)
@@ -192,10 +193,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining($"Currently installed items:{Environment.NewLine}(No Items)");
 
-            Assert.IsFalse(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.False(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
         }
 
-        [TestMethod]
+        [Fact]
         public void CanUninstallSeveralSources_LegacySyntax()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -241,7 +242,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining(basicFSharp);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanUninstallSeveralSources()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -287,9 +288,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining(basicFSharp);
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
         public void CannotUninstallUnknownPackage(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -315,9 +316,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("   dotnet new uninstall");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
         public void CannotUninstallByTemplateName(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -343,9 +344,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("   dotnet new uninstall Microsoft.DotNet.Common.ProjectTemplates.5.0");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
         public void CannotUninstallByTemplateName_ShowsAllPackages(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -380,9 +381,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("   dotnet new uninstall Microsoft.DotNet.Common.ProjectTemplates.");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("uninstall")]
         public void CanExpandWhenUninstall(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -431,7 +432,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("(No Items)");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanResolveRelativePathOnUninstall()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -473,7 +474,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("(No Items)");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanListTemplateInstalledFromFolderWithSpace()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -505,9 +506,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"         dotnet new uninstall {testFolderWithoutSpace}");
         }
 
-        [TestMethod]
-        [DataRow("-u")]
-        [DataRow("--uninstall")]
+        [Theory]
+        [InlineData("-u")]
+        [InlineData("--uninstall")]
         public void CanShowDeprecationMessage_WhenLegacyCommandIsUsed(string commandName)
         {
             const string deprecationMessage =
@@ -527,7 +528,7 @@ For more information, run:
             Assert.StartsWith(deprecationMessage, commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");

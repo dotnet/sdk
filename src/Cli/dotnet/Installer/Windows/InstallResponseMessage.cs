@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using System.Text.Json;
+using Newtonsoft.Json;
 using static Microsoft.Win32.Msi.Error;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -60,8 +60,7 @@ internal class InstallResponseMessage : InstallMessageBase
     {
         string json = Encoding.UTF8.GetString(bytes);
 
-        return JsonSerializer.Deserialize(json, InstallerJsonSerializerContext.Default.InstallResponseMessage)
-            ?? throw new JsonException("The install response message payload deserialized to null.");
+        return JsonConvert.DeserializeObject<InstallResponseMessage>(json, DefaultSerializerSettings);
     }
 
     public static InstallResponseMessage Create(Exception e)

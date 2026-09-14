@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -82,7 +81,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         _shouldShutdownInstaller = _workloadInstallerFromConstructor != null;
 
         _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
-            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
+            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
     }
 
     private IReadOnlyCollection<string> GetValidWorkloadIds()
@@ -127,10 +126,14 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
         if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                VerifySignatures,
-                restoreActionConfig: RestoreActionConfiguration);
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
+                new NullLogger(),
+                NullReporter.Instance,
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures);
 
             ValidateWorkloadIdsInput(filteredWorkloadIds);
 
@@ -142,7 +145,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
             var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
 
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
         }
         else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {
@@ -352,7 +355,3 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }.Run(context => a(context));
     }
 }
-
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(IEnumerable<string>))]
-internal partial class WorkloadInstallJsonSerializerContext : JsonSerializerContext;

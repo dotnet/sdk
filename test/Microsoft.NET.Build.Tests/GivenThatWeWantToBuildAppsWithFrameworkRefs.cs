@@ -3,25 +3,25 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAppsWithFrameworkRefs : SdkTest
     {
+        public GivenThatWeWantToBuildAppsWithFrameworkRefs(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_builds_the_projects_successfully()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences")
                 .WithSource();
             VerifyProjectsBuild(testAsset);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_builds_with_disable_implicit_frameworkRefs()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences")
                 .WithSource();
             VerifyProjectsBuild(testAsset, "/p:DisableImplicitFrameworkReferences=true");
@@ -64,11 +64,10 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().HaveFiles(expectedFiles);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences", "CleanTargetRemovesAll")
                 .WithSource();
             VerifyClean(testAsset, "StopwatchLib", "net45", "",

@@ -5,10 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [UsesVerify]
-    public abstract partial class BaseIntegrationTest : SdkTest
+    public abstract class BaseIntegrationTest : SdkTest
     {
-        public BaseIntegrationTest()
+        public BaseIntegrationTest(ITestOutputHelper log) : base(log)
         {
         }
 
@@ -33,14 +32,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static string DotnetNewTestTemplatePackageProjectPath { get; } = VerifyFileExists(Path.Combine(DotnetNewTestAssets, "Microsoft.TemplateEngine.TestTemplates.csproj"));
 
         /// <summary>
-        /// Gets a path to the template packages maintained in the repo (/template_feed).
+        /// Gets a path to the repo root folder.
         /// </summary>
-        public static string RepoTemplatePackages { get; } = SdkTestContext.Current.RepoTemplatePackages;
+        public static string CodeBaseRoot { get; } = GetAndVerifyRepoRoot();
 
         /// <summary>
-        /// Gets the path to the Approvals snapshot directory, resolved relative to the test output directory.
+        /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string ApprovalsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Approvals");
+        public static string RepoTemplatePackages { get; } = VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
 
 #if DEBUG
         /// <summary>
@@ -141,7 +140,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         internal string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
         {
-            var testAsset = TestAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
+            var testAsset = _testAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
             string testProject = Path.GetFileName(DotnetNewTestTemplatePackageProjectPath);
             string testPath = testAsset.Path;
 
@@ -177,5 +176,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return file;
         }
 
+        private static string GetAndVerifyRepoRoot()
+        {
+            string repoRoot = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "..", ".."));
+            if (!Directory.Exists(repoRoot))
+            {
+                Assert.Fail($"The repo root cannot be evaluated.");
+            }
+            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
+            {
+                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
+            }
+            return repoRoot;
+        }
     }
 }

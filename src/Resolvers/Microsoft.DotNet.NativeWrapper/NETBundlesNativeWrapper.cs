@@ -7,11 +7,11 @@ namespace Microsoft.DotNet.NativeWrapper
     {
         public NetEnvironmentInfo GetDotnetEnvironmentInfo(string dotnetExeDirectory)
         {
-            NetEnvironmentInfo info = new();
+            var info = new NetEnvironmentInfo();
             IntPtr reserved = IntPtr.Zero;
             IntPtr resultContext = IntPtr.Zero;
 
-            StatusCode errorCode = Interop.hostfxr_get_dotnet_environment_info(dotnetExeDirectory, default, info.Initialize, default);
+            int errorCode = Interop.hostfxr_get_dotnet_environment_info(dotnetExeDirectory, reserved, info.Initialize, resultContext);
 
             return info;
         }

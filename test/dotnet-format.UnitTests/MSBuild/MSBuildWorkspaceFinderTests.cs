@@ -1,116 +1,101 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
-    [TestClass]
     public class MSBuildWorkspaceFinderTests : SdkTest
     {
 
-        public MSBuildWorkspaceFinderTests()
+        public MSBuildWorkspaceFinderTests(ITestOutputHelper log) : base(log)
         {
         }
-
+        
         private string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
 
-        [TestMethod]
+        [Fact]
         public void ThrowsException_CannotFindMSBuildProjectFile()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/no_project_or_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
                 Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument,
                 testInstance.Path).Replace('/', Path.DirectorySeparatorChar);
-            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
+            var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
             Assert.StartsWith(exceptionMessageStart, exception.Message);
         }
 
-        [TestMethod]
-        public void ThrowsException_CannotFindFileBasedApp()
-        {
-            var testInstance = TestAssetsManager
-                .CopyTestAsset(testProjectName: "for_workspace_finder/no_project_or_solution", testAssetSubdirectory: "dotnet-format")
-                .WithSource();
-            var filePath = Path.Combine(testInstance.Path, "nonexistent.cs");
-            var exceptionMessageStart = string.Format(
-                Resources.The_project_file_0_does_not_exist,
-                filePath).Replace('/', Path.DirectorySeparatorChar);
-            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(filePath, filePath));
-            Assert.StartsWith(exceptionMessageStart, exception.Message);
-        }
-
-        [TestMethod]
+        [Fact]
         public void ThrowsException_MultipleMSBuildProjectFiles()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
                 Resources.Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 testInstance.Path).Replace('/', Path.DirectorySeparatorChar);
-            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
-            Assert.AreEqual(exceptionMessageStart, exception.Message);
+            var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
+            Assert.Equal(exceptionMessageStart, exception.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThrowsException_MultipleMSBuildSolutionFiles()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
                 Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 testInstance.Path).Replace('/', Path.DirectorySeparatorChar);
-            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
-            Assert.AreEqual(exceptionMessageStart, exception.Message);
+            var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
+            Assert.Equal(exceptionMessageStart, exception.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThrowsException_SolutionAndProjectAmbiguity()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/project_and_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
                 Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 testInstance.Path).Replace('/', Path.DirectorySeparatorChar);
-            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
-            Assert.AreEqual(exceptionMessageStart, exception.Message);
+            var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path));
+            Assert.Equal(exceptionMessageStart, exception.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsSolutionByFolder()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path);
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("single_solution.sln", solutionFileName);
-            Assert.IsTrue(isSolution);
+            Assert.Equal("single_solution.sln", solutionFileName);
+            Assert.True(isSolution);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsSolutionByFilePath()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path, "solution_b.sln");
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("solution_b.sln", solutionFileName);
-            Assert.IsTrue(isSolution);
+            Assert.Equal("solution_b.sln", solutionFileName);
+            Assert.True(isSolution);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsSlnxByFolder()
         {
             const string Path = "for_workspace_finder/single_slnx/";
@@ -118,11 +103,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(ProjectsPath, Path);
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("single_slnx.slnx", solutionFileName);
-            Assert.IsTrue(isSolution);
+            Assert.Equal("single_slnx.slnx", solutionFileName);
+            Assert.True(isSolution);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsSlnxByFilePath()
         {
             const string Path = "for_workspace_finder/multiple_solutions/solution_c.slnx";
@@ -130,36 +115,36 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(ProjectsPath, Path);
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("solution_c.slnx", solutionFileName);
-            Assert.IsTrue(isSolution);
+            Assert.Equal("solution_c.slnx", solutionFileName);
+            Assert.True(isSolution);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsProjectByFolder()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_project", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path);
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("single_project.csproj", solutionFileName);
-            Assert.IsFalse(isSolution);
+            Assert.Equal("single_project.csproj", solutionFileName);
+            Assert.False(isSolution);
         }
 
-        [TestMethod]
+        [Fact]
         public void FindsProjectByFilePath()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
             var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(testInstance.Path, "project_b.csproj");
 
             var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.AreEqual("project_b.csproj", solutionFileName);
-            Assert.IsFalse(isSolution);
+            Assert.Equal("project_b.csproj", solutionFileName);
+            Assert.False(isSolution);
         }
     }
 }

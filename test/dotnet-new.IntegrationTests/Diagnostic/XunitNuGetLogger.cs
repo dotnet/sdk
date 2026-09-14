@@ -1,22 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using NuGet.Common;
+using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     internal class XunitNuGetLogger : ILogger
     {
-        private readonly ITestOutputHelper _log;
+        private readonly IMessageSink _messageSink;
 
-        public XunitNuGetLogger(ITestOutputHelper log)
+        public XunitNuGetLogger(IMessageSink sink)
         {
-            _log = log;
+            _messageSink = sink;
         }
 
         public void WriteLine(string message)
         {
-            _log.WriteLine(message);
+            _messageSink.OnMessage(new DiagnosticMessage(message));
         }
 
         public void Log(LogLevel level, string data) => WriteLine($"[{level}]: {data}");

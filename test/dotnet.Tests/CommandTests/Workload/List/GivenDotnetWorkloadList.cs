@@ -11,7 +11,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
-    [TestClass]
     public class GivenDotnetWorkloadList : SdkTest
     {
         private readonly ParseResult _machineReadableParseResult;
@@ -19,15 +18,15 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         private readonly BufferedReporter _reporter;
         private readonly string _manifestPath;
 
-        public GivenDotnetWorkloadList()
+        public GivenDotnetWorkloadList(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
             _machineReadableParseResult = Parser.Parse("dotnet workload list --machine-readable");
             _parseResult = Parser.Parse("dotnet workload list");
-            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSample.json");
+            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSample.json");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoWorkloadsAreInstalledListIsEmpty()
         {
             _reporter.Clear();
@@ -41,8 +40,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Count.Should().Be(8);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void GivenAvailableWorkloadsItCanComputeVisualStudioIds()
         {
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
@@ -54,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
 #pragma warning restore CA1416 // Validate platform compatibility
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoWorkloadsAreInstalledMachineReadableListIsEmpty()
         {
             _reporter.Clear();
@@ -66,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Should().Contain(l => l.Contains(@"""installed"":[]"));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenWorkloadsAreInstalledListIsNotEmpty()
         {
             _reporter.Clear();
@@ -82,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenWorkloadsAreInstalledMachineReadableListIsNotEmpty()
         {
             _reporter.Clear();
@@ -94,11 +92,11 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Should().Contain(l => l.Contains("{\"installed\":[\"mock-workload-1\",\"mock-workload-2\",\"mock-workload-3\"]"));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenWorkloadsAreOutOfDateUpdatesAreAdvertised()
         {
             _reporter.Clear();
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var expectedWorkloads = new List<WorkloadId>() { new WorkloadId("mock-workload-1"), new WorkloadId("mock-workload-2"), new WorkloadId("mock-workload-3") };
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), testDirectory);
@@ -107,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var manifestPath = Path.Combine(userProfileDir, "sdk-advertising", "6.0.100", "SampleManifest", "WorkloadManifest.json");
             Directory.CreateDirectory(Path.GetDirectoryName(manifestPath));
-            File.Copy(Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSampleUpdated.json"), manifestPath);
+            File.Copy(Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSampleUpdated.json"), manifestPath);
 
             var command = new WorkloadListCommand(_parseResult, _reporter, workloadInstaller, "6.0.100", workloadResolver: workloadResolver, userProfileDir: userProfileDir);
             command.Execute();

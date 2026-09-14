@@ -1,16 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.Tools.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
-    [TestClass]
     public class OrganizeImportsFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new OrganizeImportsFormatter();
 
-        [TestMethod]
+        public OrganizeImportsFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
+
+        [Fact]
         public async Task WhenOptionsDisabled_AndImportsNotSorted_ImportsSorted()
         {
             var testCode = @"
@@ -41,7 +44,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenSystemDirectivesFirst_AndImportsNotSorted_ImportsSorted()
         {
             var testCode = @"
@@ -72,7 +75,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenImportGroupsSeparated_AndImportsNotSeparated_ImportsSeparated()
         {
             var testCode = @"
@@ -104,7 +107,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenBothOptionsEnabled_AndImportsNotSortedOrSeparated_ImportsSortedAndSeparated()
         {
             var testCode = @"
@@ -136,7 +139,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenNeitherOptionIsConfigured_AndImportsNotSortedOrSeparated_NoChange()
         {
             var code = @"

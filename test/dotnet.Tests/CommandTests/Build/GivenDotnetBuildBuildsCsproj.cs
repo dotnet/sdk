@@ -2,24 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
-    [TestClass]
     public class GivenDotnetBuildBuildsCsproj : SdkTest
     {
-        public GivenDotnetBuildBuildsCsproj()
+        public GivenDotnetBuildBuildsCsproj(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItBuildsARunnableOutput()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var buildCommand = new DotnetBuildCommand(Log, testInstance.Path);
@@ -41,11 +39,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItBuildsOnlyTheSpecifiedTarget()
         {
             var testAppName = "NonDefaultTarget";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
@@ -56,11 +54,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItImplicitlyRestoresAProjectWhenBuilding()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
@@ -68,10 +66,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanBuildAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset(
+            var testInstance = _testAssetsManager.CopyTestAsset(
                     "NETFrameworkReferenceNETStandard20",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -83,11 +81,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotImplicitlyRestoreAProjectWhenBuildingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log)
@@ -97,11 +95,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotImplicitlyRestoreFromResponseFileWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             string responseFilePath = Path.Combine(testInstance.Path, "Directory.Build.rsp");
@@ -115,10 +113,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRunsWhenRestoringToSpecificPackageDir()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
             var rootPath = testInstance.Path;
 
@@ -150,11 +148,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItPrintsBuildSummary()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .Restore(Log);
 
@@ -169,10 +167,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(expectedBuildSummary);
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetBuildDoesNotPrintCopyrightInfo()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .Restore(Log);
 
@@ -188,10 +186,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_no_longer_warns_on_rid_without_self_contained_options()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
@@ -205,7 +203,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdOutContaining("NETSDK1179");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_warn_on_rid_with_self_contained_set_in_project()
         {
             var testProject = new TestProject()
@@ -215,7 +213,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 SelfContained = "true"
             };
 
-            var testInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testInstance = _testAssetsManager.CreateTestProject(testProject);
 
             new DotnetBuildCommand(Log)
                .WithWorkingDirectory(Path.Combine(testInstance.Path, testProject.Name ?? string.Empty))
@@ -226,13 +224,12 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdOutContaining("NETSDK1179");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("build")]
-        [DataRow("run")]
+        [WindowsOnlyTheory]
+        [InlineData("build")]
+        [InlineData("run")]
         public void It_does_not_warn_on_rid_with_self_contained_options(string commandName)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
@@ -246,10 +243,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdOutContaining("NETSDK1179");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_warn_on_rid_with_self_contained_options_prior_to_net6()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netcoreapp3.1")
                 .Restore(Log);
@@ -263,8 +260,8 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdOutContaining("NETSDK1179");
         }
 
-        [TestMethod]
-        [DataRow("--self-contained")]
+        [Theory]
+        [InlineData("--self-contained")]
         public void It_builds_with_implicit_rid_with_SelfContained(string executeOptions)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -275,7 +272,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             };
 
             testProject.RecordProperties("RuntimeIdentifier");
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
 
             new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name ?? string.Empty))
@@ -288,11 +285,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdErrContaining("NETSDK1190"); // Check that publish properties don't interfere with build either
 
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
-            Assert.AreNotEqual("", properties["RuntimeIdentifier"]);
+            Assert.NotEqual("", properties["RuntimeIdentifier"]);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.4.0.41702")]
+        [RequiresMSBuildVersionFact("17.4.0.41702")]
         public void It_builds_referenced_exe_with_self_contained_specified_via_command_line_argument()
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -308,7 +304,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             };
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new DotnetCommand(Log)
                .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name ?? string.Empty))
@@ -319,23 +315,18 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .NotHaveStdOutContaining("NETSDK1179");
         }
 
-        [TestMethod]
-        [DataRow("roslyn3.9", false)]
-        [DataRow("roslyn3.9", true)]
-        [DataRow("roslyn4.0", false)]
-        [DataRow("roslyn4.0", true)]
-        public void It_resolves_analyzers_targeting_multiple_roslyn_versions(
-            string compilerApiVersion,
-            bool restoreEnableAnalyzerAssets)
+        [Theory]
+        [InlineData("roslyn3.9")]
+        [InlineData("roslyn4.0")]
+        public void It_resolves_analyzers_targeting_mulitple_roslyn_versions(string compilerApiVersion)
         {
             var testProject = new TestProject()
             {
                 TargetFrameworks = "netstandard2.0"
             };
 
-            // Disable analyzers built in to the SDK so we can more easily test the ones coming from NuGet packages.
+            //  Disable analyzers built in to the SDK so we can more easily test the ones coming from NuGet packages
             testProject.AdditionalProperties["EnableNETAnalyzers"] = "false";
-            testProject.AdditionalProperties["RestoreEnableAnalyzerAssets"] = restoreEnableAnalyzerAssets.ToString();
 
             testProject.ProjectChanges.Add(project =>
             {
@@ -348,14 +339,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 project.Root?.Add(itemGroup);
             });
 
-            var testAsset = TestAssetsManager.CreateTestProject(
-                testProject,
-                identifier: $"{compilerApiVersion}-{restoreEnableAnalyzerAssets}");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
-            var command = new GetValuesCommand(
-                testAsset,
+            var command = new GetValuesCommand(testAsset,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -363,69 +351,29 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             // the CodeAnalysis targets.
             command.Properties.Add("CompilerApiVersion", compilerApiVersion);
 
-            if (restoreEnableAnalyzerAssets &&
-                SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
-            {
-                // Full MSBuild may use an in-box NuGet that does not produce analyzer assets yet.
-                // Restore with the SDK's NuGet, then verify Full MSBuild consumes that assets file.
-                new DotnetRestoreCommand(Log, command.FullPathProjectFile)
-                    .Execute()
-                    .Should()
-                    .Pass();
-
-                command.ShouldRestore = false;
-            }
-
             command.Execute().Should().Pass();
 
             var analyzers = command.GetValues();
 
-            if (restoreEnableAnalyzerAssets)
+            switch (compilerApiVersion)
             {
-                AssertAnalyzerAssetsWereRestored(testAsset.Path);
+                case "roslyn3.9":
+                    analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(
+                        "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn3.9/cs/Library.ContainsAnalyzer.dll",
+                        "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.8/cs/Library.ContainsAnalyzer2.dll"
+                        );
+                    break;
+
+                case "roslyn4.0":
+                    analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(
+                        "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn4.0/cs/Library.ContainsAnalyzer.dll",
+                        "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.10/cs/Library.ContainsAnalyzer2.dll"
+                        );
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(compilerApiVersion));
             }
-
-            string[] expectedAnalyzers = compilerApiVersion switch
-            {
-                "roslyn3.9" => new[]
-                {
-                    "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn3.9/cs/Library.ContainsAnalyzer.dll",
-                    "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.8/cs/Library.ContainsAnalyzer2.dll",
-                },
-                "roslyn4.0" => new[]
-                {
-                    "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn4.0/cs/Library.ContainsAnalyzer.dll",
-                    "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.10/cs/Library.ContainsAnalyzer2.dll",
-                },
-                _ => throw new ArgumentOutOfRangeException(nameof(compilerApiVersion))
-            };
-
-            analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(expectedAnalyzers);
-        }
-
-        private static void AssertAnalyzerAssetsWereRestored(string testAssetPath)
-        {
-            string projectFile = Directory.GetFiles(testAssetPath, "*.*proj", SearchOption.AllDirectories).Single();
-            string projectDirectory = Path.GetDirectoryName(projectFile)
-                ?? throw new InvalidOperationException($"Could not determine the project directory for '{projectFile}'.");
-            using JsonDocument assetsFile = JsonDocument.Parse(
-                File.ReadAllText(Path.Combine(projectDirectory, "obj", "project.assets.json")));
-
-            assetsFile.RootElement
-                .GetProperty("project")
-                .GetProperty("restore")
-                .GetProperty("restoreEnableAnalyzerAssets")
-                .GetBoolean()
-                .Should()
-                .BeTrue();
-
-            bool hasAnalyzerGroup = assetsFile.RootElement
-                .GetProperty("targets")
-                .EnumerateObject()
-                .SelectMany(target => target.Value.EnumerateObject())
-                .Any(library => library.Value.TryGetProperty("analyzers", out _));
-
-            hasAnalyzerGroup.Should().BeTrue();
         }
 
         static readonly List<string?> nugetRoots = new()
@@ -438,7 +386,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             foreach (var nugetRoot in nugetRoots)
             {
-                if (nugetRoot is not null && absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
+                if (nugetRoot is not null &&  absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
                 {
                     return absoluteNuGetPath.Substring(nugetRoot.Length + 1)
                                 .Replace(Path.DirectorySeparatorChar, '/');
@@ -447,9 +395,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             throw new InvalidDataException("Expected path to be under a NuGet root: " + absoluteNuGetPath);
         }
 
-        [TestMethod]
-        [DataRow("build")]
-        [DataRow("run")]
+        [Theory]
+        [InlineData("build")]
+        [InlineData("run")]
         public void It_uses_correct_runtime_help_description(string command)
         {
             var output = new StringWriter();

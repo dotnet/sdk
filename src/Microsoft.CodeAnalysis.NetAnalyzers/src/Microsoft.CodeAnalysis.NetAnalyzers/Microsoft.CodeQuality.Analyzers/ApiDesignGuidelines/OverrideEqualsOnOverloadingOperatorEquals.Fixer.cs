@@ -1,46 +1,65 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
     /// CA2224: Override Equals on overloading operator equals
     /// </summary>
-    public abstract class OverrideEqualsOnOverloadingOperatorEqualsFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class OverrideEqualsOnOverloadingOperatorEqualsFixer : CodeFixProvider
     {
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsOnOverloadingOperatorEqualsCodeActionTitle;
-            RegisterCodeFix(context, title, title);
-            return Task.CompletedTask;
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode? typeDeclaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
-            if (typeDeclaration is null)
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            SyntaxNode typeDeclaration = root.FindNode(context.Span);
+            typeDeclaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(typeDeclaration);
+            if (typeDeclaration == null)
             {
                 return;
             }
 
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(typeDeclaration, cancellationToken) is not INamedTypeSymbol typeSymbol ||
-                typeSymbol.TypeKind is not TypeKind.Class and not TypeKind.Struct)
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var typeSymbol = model.GetDeclaredSymbol(typeDeclaration, context.CancellationToken) as INamedTypeSymbol;
+            if (typeSymbol?.TypeKind is not TypeKind.Class and
+                not TypeKind.Struct)
             {
                 return;
             }
 
             // CONSIDER: Do we need to confirm that System.Object.Equals isn't shadowed in a base type?
 
-            editor.AddMember(typeDeclaration, editor.Generator.DefaultEqualsOverrideDeclaration(model.Compilation, typeSymbol));
+            string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsOnOverloadingOperatorEqualsCodeActionTitle;
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    title,
+                    cancellationToken => OverrideObjectEqualsAsync(context.Document, typeDeclaration, typeSymbol, cancellationToken),
+                    equivalenceKey: title),
+                context.Diagnostics);
+        }
+
+        private static async Task<Document> OverrideObjectEqualsAsync(Document document, SyntaxNode typeDeclaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var generator = editor.Generator;
+
+            var methodDeclaration = generator.DefaultEqualsOverrideDeclaration(editor.SemanticModel.Compilation, typeSymbol);
+
+            editor.AddMember(typeDeclaration, methodDeclaration);
+            return editor.GetChangedDocument();
         }
     }
 }

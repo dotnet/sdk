@@ -6,10 +6,9 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
     public partial class DotnetNewInstantiateTests
     {
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateUnknownTemplate()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "unknownapp")
@@ -25,7 +24,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplateWithUnknownLanguage()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "console", "--language", "D#")
@@ -41,7 +40,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplateWithUnknownType()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "console", "--type", "item")
@@ -57,7 +56,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenAmbiguousLanguageChoice()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -78,7 +77,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenAmbiguousShortNameChoice()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -110,7 +109,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenFullNameIsUsed()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -127,7 +126,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenNoDefaultNameSpecified()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -147,7 +146,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenParameterIsInvalid()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -165,7 +164,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenChoiceParameterValueIsInvalid()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -183,7 +182,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenChoiceParameterValueIsNotComplete()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -201,7 +200,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_OnMultipleParameterErrors()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -219,7 +218,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplate_WhenPrecedenceIsSame()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -253,7 +252,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CanInstantiateTemplate_MultiValueChoiceParameterConditions()
         {
             // We cannot use Data-driven unit test (InlineData) as it's not supported by verifier framework (unless separate file per parameters is supplied)
@@ -284,7 +283,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstantiateTemplate_MultiValueChoiceParameterExplicitlyUnset()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -307,7 +306,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(resultFileContent);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstantiateTemplate_WithConditionalParameters_DisabledBehaveLikeNotSpecified()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -340,7 +339,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(resultFileContent);
         }
 
-        [TestMethod]
+        [Fact]
         public void CannotInstantiateTemplate_MultiValueChoiceParameterWithExplicitUnsetAndOtherChoice()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -358,7 +357,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("is not a valid value for --Platform.");
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstantiateTemplate_ConditionalProcessing()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -384,7 +383,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     ));
         }
 
-        [TestMethod]
+        [Fact]
         public Task DryRunRespectsTargetPathAndOutputDir()
         {
             const string _OUT_FOLDER = "folderF";
@@ -418,7 +417,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotOverwriteFilesWithoutForce()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -462,7 +461,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowWarning_WhenHostDataIsIncorrect()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -489,7 +488,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowWarningIfPackageIsAvailableFromBuiltInSources()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -518,7 +517,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowError_OnTemplatesWithSameShortName()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -546,7 +545,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task Constraints_Error_IfTemplateIsRestricted()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -568,7 +567,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task Constraints_CanIgnoreConstraints_WhenForceIsSpecified()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -589,7 +588,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstantiateTemplateWhenFolderIsRemoved()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -624,7 +623,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanSuggestTypoCorrection_Template()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "cnsle")
@@ -640,7 +639,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanSuggestTypoCorrection_Command()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "uninstal")
@@ -656,7 +655,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -676,9 +675,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [TestMethod]
-        [DataRow("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB", "AB")]
-        [DataRow("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--paramC|valC|--enableC|true", "ABC")]
+        [Theory]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB", "AB")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--paramC|valC|--enableC|true", "ABC")]
         public Task CanInstantiateTemplate_WithRequiredParams(string parameters, string setName)
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -699,12 +698,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .UseParameters(setName);
         }
 
-        [TestMethod]
-        [DataRow("TestAssets.TemplateWithConditionalParameters|--paramA|true|--A_enabled", "A_Aenabled")]
-        [DataRow("TestAssets.TemplateWithConditionalParameters|--paramA|true", "A")]
-        [DataRow("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true", "AB")]
-        [DataRow("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled", "AB_Aenabled")]
-        [DataRow("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled|--B_enabled", "AB_ABenabled")]
+        [Theory]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--A_enabled", "A_Aenabled")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true", "A")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true", "AB")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled", "AB_Aenabled")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled|--B_enabled", "AB_ABenabled")]
         public Task CanInstantiateTemplate_WithConditionallyEnabledParams(string parameters, string setName)
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -725,11 +724,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .UseParameters(setName);
         }
 
-        [TestMethod]
-        [DataRow("TestAssets.TemplateWithRequiredParameters", "no-params")]
-        [DataRow("TestAssets.TemplateWithRequiredParameters|--paramA|valA", "onlyA")]
-        [DataRow("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--enableC|true", "onlyAB")]
-        [DataRow("TestAssets.TemplateWithRequiredParameters|--enableC|true", "no-params-C-enabled")]
+        [Theory]
+        [InlineData("TestAssets.TemplateWithRequiredParameters", "no-params")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA", "onlyA")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--enableC|true", "onlyAB")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--enableC|true", "no-params-C-enabled")]
         public Task CannotInstantiateTemplate_WithoutRequiredParams(string parameters, string setName)
         {
             string workingDirectory = CreateTemporaryFolder();

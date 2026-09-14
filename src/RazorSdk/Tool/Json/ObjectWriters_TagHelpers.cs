@@ -10,6 +10,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
 internal static partial class ObjectWriters
 {
+    public static void Write(JsonDataWriter writer, TagHelperDescriptor? value)
+        => writer.WriteObject(value, WriteProperties);
+
     public static void WriteProperties(JsonDataWriter writer, TagHelperDescriptor value)
     {
         writer.Write(nameof(value.Flags), (byte)value.Flags);
@@ -200,10 +203,6 @@ internal static partial class ObjectWriters
                         WriteViewComponentMetadata(writer, (ViewComponentMetadata)value);
                         break;
 
-                    case MetadataKind.AssetPath:
-                        WriteAssetPathMetadata(writer, (AssetPathMetadata)value);
-                        break;
-
                     default:
                         Debug.Fail($"Unsupported metadata kind '{value.Kind}'.");
                         break;
@@ -226,7 +225,6 @@ internal static partial class ObjectWriters
                 writer.WriteIfNotFalse(nameof(metadata.IsDelegateWithAwaitableResult), metadata.IsDelegateWithAwaitableResult);
                 writer.WriteIfNotFalse(nameof(metadata.IsGenericTyped), metadata.IsGenericTyped);
                 writer.WriteIfNotFalse(nameof(metadata.IsInitOnlyProperty), metadata.IsInitOnlyProperty);
-                writer.WriteIfNotFalse(nameof(metadata.AcceptsAssetPath), metadata.AcceptsAssetPath);
             }
 
             static void WriteBindMetadata(JsonDataWriter writer, BindMetadata metadata)
@@ -238,12 +236,6 @@ internal static partial class ObjectWriters
                 writer.WriteIfNotNull(nameof(metadata.TypeAttribute), metadata.TypeAttribute);
                 writer.WriteIfNotFalse(nameof(metadata.IsInvariantCulture), metadata.IsInvariantCulture);
                 writer.WriteIfNotNull(nameof(metadata.Format), metadata.Format);
-            }
-
-            static void WriteAssetPathMetadata(JsonDataWriter writer, AssetPathMetadata metadata)
-            {
-                writer.Write(nameof(metadata.Element), metadata.Element);
-                writer.Write(nameof(metadata.Attribute), metadata.Attribute);
             }
 
             static void WriteComponentMetadata(JsonDataWriter writer, ComponentMetadata metadata)

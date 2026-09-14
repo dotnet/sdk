@@ -1,20 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #nullable disable
 
-using System.Runtime.CompilerServices;
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public class ProjectBuildTests : SdkTest
+    public class ProjectBuildTests(ITestOutputHelper log) : SdkTest(log)
     {
-        [TestMethod]
+        [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: nameof(ProjectBuildTests));
+            var directory = _testAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -53,10 +51,10 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: nameof(ProjectBuildTests));
+            var directory = _testAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -83,12 +81,12 @@ namespace EndToEnd.Tests
                 .Execute().Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [TestMethod]
-        [DataRow("current", true)]
-        [DataRow("current", false)]
+        [Theory]
+        [InlineData("current", true)]
+        [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
         {
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: $"{targetFramework}-{selfContained}");
+            var directory = _testAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -122,13 +120,12 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{new DirectoryInfo(directory.Path).Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("current", true)]
-        [DataRow("current", false)]
+        [WindowsOnlyTheory]
+        [InlineData("current", true)]
+        [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string targetFramework, bool selfContained)
         {
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: $"{targetFramework}-{selfContained}");
+            var directory = _testAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -162,26 +159,26 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{new DirectoryInfo(directory.Path).Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-        [TestMethod]
+        [Theory]
         // microsoft.dotnet.common.projectemplates templates
-        [DataRow("console")]
-        [DataRow("console", "C#")]
-        [DataRow("console", "VB")]
-        [DataRow("console", "F#")]
-        [DataRow("classlib")]
-        [DataRow("classlib", "C#")]
-        [DataRow("classlib", "VB")]
-        [DataRow("classlib", "F#")]
-        [DataRow("mstest")]
-        [DataRow("nunit")]
-        [DataRow("web")]
-        [DataRow("mvc")]
+        [InlineData("console")]
+        [InlineData("console", "C#")]
+        [InlineData("console", "VB")]
+        [InlineData("console", "F#")]
+        [InlineData("classlib")]
+        [InlineData("classlib", "C#")]
+        [InlineData("classlib", "VB")]
+        [InlineData("classlib", "F#")]
+        [InlineData("mstest")]
+        [InlineData("nunit")]
+        [InlineData("web")]
+        [InlineData("mvc")]
         public void ItCanBuildTemplates(string templateName, string language = "") => TestTemplateCreateAndBuild(templateName, language: language);
 
         /// <summary>
         /// The test checks if dotnet new shows curated list correctly after the SDK installation and template insertion.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DotnetNewShowsCuratedListCorrectly()
         {
             string locale = Thread.CurrentThread.CurrentUICulture.Name;
@@ -215,17 +212,17 @@ namespace EndToEnd.Tests
                 .And.HaveStdOutMatching(expectedOutput);
         }
 
-        [TestMethod]
+        [Theory]
         // microsoft.dotnet.common.itemtemplates templates
-        [DataRow("globaljson")]
-        [DataRow("nugetconfig")]
-        [DataRow("webconfig")]
-        [DataRow("gitignore")]
-        [DataRow("tool-manifest")]
-        [DataRow("sln")]
+        [InlineData("globaljson")]
+        [InlineData("nugetconfig")]
+        [InlineData("webconfig")]
+        [InlineData("gitignore")]
+        [InlineData("tool-manifest")]
+        [InlineData("sln")]
         public void ItCanCreateItemTemplate(string templateName)
         {
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: templateName);
+            var directory = _testAssetsManager.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.Path;
 
             string newArgs = $"{templateName}";
@@ -237,8 +234,8 @@ namespace EndToEnd.Tests
 
             //check if the template created files
             var directoryInfo = new DirectoryInfo(directory.Path);
-            Assert.IsTrue(directoryInfo.Exists);
-            Assert.IsNotEmpty(directoryInfo.EnumerateFileSystemInfos());
+            Assert.True(directoryInfo.Exists);
+            Assert.True(directoryInfo.EnumerateFileSystemInfos().Any());
 
             // delete test directory for some tests so we aren't leaving behind non-compliant nuget files
             if (templateName.Equals("nugetconfig"))
@@ -247,18 +244,18 @@ namespace EndToEnd.Tests
             }
         }
 
-        [TestMethod]
+        [Theory]
         // microsoft.dotnet.common.itemtemplates templates
-        [DataRow("class")]
-        [DataRow("struct")]
-        [DataRow("enum")]
-        [DataRow("record")]
-        [DataRow("interface")]
-        [DataRow("class", "C#")]
-        [DataRow("class", "VB")]
-        [DataRow("struct", "VB")]
-        [DataRow("enum", "VB")]
-        [DataRow("interface", "VB")]
+        [InlineData("class")]
+        [InlineData("struct")]
+        [InlineData("enum")]
+        [InlineData("record")]
+        [InlineData("interface")]
+        [InlineData("class", "C#")]
+        [InlineData("class", "VB")]
+        [InlineData("struct", "VB")]
+        [InlineData("enum", "VB")]
+        [InlineData("interface", "VB")]
         public void ItCanCreateItemTemplateWithProjectRestriction(string templateName, string language = "")
         {
             var languageExtensionMap = new Dictionary<string, string>()
@@ -285,66 +282,65 @@ namespace EndToEnd.Tests
 
             //check if the template created files
             var directoryInfo = new DirectoryInfo(directory.Path);
-            Assert.IsTrue(directoryInfo.Exists);
-            Assert.IsNotEmpty(directoryInfo.EnumerateFileSystemInfos());
-            Assert.IsNotNull(directoryInfo.File($"{expectedItemName}.{languageExtensionMap[language]}"));
+            Assert.True(directoryInfo.Exists);
+            Assert.True(directoryInfo.EnumerateFileSystemInfos().Any());
+            Assert.True(directoryInfo.File($"{expectedItemName}.{languageExtensionMap[language]}") != null);
         }
 
-        [TestMethod]
-        [DataRow("wpf")]
-        [DataRow("winforms")]
+        [Theory]
+        [InlineData("wpf")]
+        [InlineData("winforms")]
         public void ItCanBuildDesktopTemplates(string templateName) => TestTemplateCreateAndBuild(templateName);
 
-        [TestMethod]
-        [DataRow("wpf")]
+        [Theory]
+        [InlineData("wpf")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
-        [TestMethod]
-        [DataRow("web")]
-        [DataRow("console")]
+        [Theory]
+        [InlineData("web")]
+        [InlineData("console")]
         public void ItCanBuildTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0
         /// </summary>
-        [TestMethod]
-        [DataRow("console")]
-        [DataRow("console", "C#")]
-        [DataRow("console", "VB")]
-        [DataRow("console", "F#")]
-        [DataRow("classlib")]
-        [DataRow("classlib", "C#")]
-        [DataRow("classlib", "VB")]
-        [DataRow("classlib", "F#")]
-        [DataRow("worker")]
-        [DataRow("worker", "C#")]
-        [DataRow("worker", "F#")]
-        [DataRow("mstest")]
-        [DataRow("mstest", "C#")]
-        [DataRow("mstest", "VB")]
-        [DataRow("mstest", "F#")]
-        [DataRow("nunit")]
-        [DataRow("nunit", "C#")]
-        [DataRow("nunit", "VB")]
-        [DataRow("nunit", "F#")]
-        [DataRow("xunit")]
-        [DataRow("xunit", "C#")]
-        [DataRow("xunit", "VB")]
-        [DataRow("xunit", "F#")]
-        // Skip = "https://github.com/dotnet/sdk/issues/53791"
-        //[DataRow("blazorwasm")]
-        [DataRow("web")]
-        [DataRow("web", "C#")]
-        [DataRow("web", "F#")]
-        [DataRow("mvc")]
-        [DataRow("mvc", "C#")]
-        [DataRow("mvc", "F#")]
-        [DataRow("webapi")]
-        [DataRow("webapi", "C#")]
-        [DataRow("webapi", "F#")]
-        [DataRow("webapp")]
-        [DataRow("razorclasslib")]
+        [Theory]
+        [InlineData("console")]
+        [InlineData("console", "C#")]
+        [InlineData("console", "VB")]
+        [InlineData("console", "F#")]
+        [InlineData("classlib")]
+        [InlineData("classlib", "C#")]
+        [InlineData("classlib", "VB")]
+        [InlineData("classlib", "F#")]
+        [InlineData("worker")]
+        [InlineData("worker", "C#")]
+        [InlineData("worker", "F#")]
+        [InlineData("mstest")]
+        [InlineData("mstest", "C#")]
+        [InlineData("mstest", "VB")]
+        [InlineData("mstest", "F#")]
+        [InlineData("nunit")]
+        [InlineData("nunit", "C#")]
+        [InlineData("nunit", "VB")]
+        [InlineData("nunit", "F#")]
+        [InlineData("xunit")]
+        [InlineData("xunit", "C#")]
+        [InlineData("xunit", "VB")]
+        [InlineData("xunit", "F#")]
+        [InlineData("blazorwasm")]
+        [InlineData("web")]
+        [InlineData("web", "C#")]
+        [InlineData("web", "F#")]
+        [InlineData("mvc")]
+        [InlineData("mvc", "C#")]
+        [InlineData("mvc", "F#")]
+        [InlineData("webapi")]
+        [InlineData("webapi", "C#")]
+        [InlineData("webapi", "F#")]
+        [InlineData("webapp")]
+        [InlineData("razorclasslib")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
             string framework = DetectExpectedDefaultFramework(templateName);
@@ -355,28 +351,28 @@ namespace EndToEnd.Tests
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
-        [TestMethod]
-        [DataRow("wpf")]
-        [DataRow("wpf", "C#")]
-        [DataRow("wpf", "VB")]
-        [DataRow("wpflib")]
-        [DataRow("wpflib", "C#")]
-        [DataRow("wpflib", "VB")]
-        [DataRow("wpfcustomcontrollib")]
-        [DataRow("wpfcustomcontrollib", "C#")]
-        [DataRow("wpfcustomcontrollib", "VB")]
-        [DataRow("wpfusercontrollib")]
-        [DataRow("wpfusercontrollib", "C#")]
-        [DataRow("wpfusercontrollib", "VB")]
-        [DataRow("winforms")]
-        [DataRow("winforms", "C#")]
-        [DataRow("winforms", "VB")]
-        [DataRow("winformslib")]
-        [DataRow("winformslib", "C#")]
-        [DataRow("winformslib", "VB")]
-        [DataRow("winformscontrollib")]
-        [DataRow("winformscontrollib", "C#")]
-        [DataRow("winformscontrollib", "VB")]
+        [Theory]
+        [InlineData("wpf")]
+        [InlineData("wpf", "C#")]
+        [InlineData("wpf", "VB")]
+        [InlineData("wpflib")]
+        [InlineData("wpflib", "C#")]
+        [InlineData("wpflib", "VB")]
+        [InlineData("wpfcustomcontrollib")]
+        [InlineData("wpfcustomcontrollib", "C#")]
+        [InlineData("wpfcustomcontrollib", "VB")]
+        [InlineData("wpfusercontrollib")]
+        [InlineData("wpfusercontrollib", "C#")]
+        [InlineData("wpfusercontrollib", "VB")]
+        [InlineData("winforms")]
+        [InlineData("winforms", "C#")]
+        [InlineData("winforms", "VB")]
+        [InlineData("winformslib")]
+        [InlineData("winformslib", "C#")]
+        [InlineData("winformslib", "VB")]
+        [InlineData("winformscontrollib")]
+        [InlineData("winformscontrollib", "C#")]
+        [InlineData("winformscontrollib", "VB")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
         {
             string framework = DetectExpectedDefaultFramework(templateName);
@@ -388,8 +384,8 @@ namespace EndToEnd.Tests
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
-        [TestMethod]
-        [DataRow("grpc")]
+        [Theory]
+        [InlineData("grpc")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_DisableBuildOnLinuxMusl(string templateName)
         {
             string framework = DetectExpectedDefaultFramework(templateName);
@@ -409,7 +405,7 @@ namespace EndToEnd.Tests
             string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 11)
+            if (latestMajorVersion == 10)
             {
                 return $"net{latestMajorVersion}.0";
             }
@@ -417,16 +413,9 @@ namespace EndToEnd.Tests
             throw new Exception("Unsupported version of SDK");
         }
 
-        private void TestTemplateCreateAndBuild(
-            string templateName,
-            bool build = true,
-            bool selfContained = false,
-            string language = "",
-            string framework = "",
-            bool deleteTestDirectory = false,
-            [CallerMemberName] string testName = "")
+        private void TestTemplateCreateAndBuild(string templateName, bool build = true, bool selfContained = false, string language = "", string framework = "", bool deleteTestDirectory = false)
         {
-            var directory = InstantiateProjectTemplate(templateName, language, testName: testName);
+            var directory = InstantiateProjectTemplate(templateName, language);
             string projectDirectory = directory.Path;
 
             XDocument GetProjectXml()
@@ -448,7 +437,7 @@ namespace EndToEnd.Tests
                 //check if MSBuild TargetFramework property for *proj is set to expected framework
                 var projectXml = GetProjectXml();
                 XNamespace ns = projectXml.Root.Name.Namespace;
-                Assert.AreEqual(framework, projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value);
+                Assert.Equal(framework, projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value);
             }
 
             bool needsEnableWindowsTargeting = false;
@@ -493,12 +482,7 @@ namespace EndToEnd.Tests
             }
         }
 
-        private TestDirectory InstantiateProjectTemplate(
-            string templateName,
-            string language = "",
-            bool withNoRestore = true,
-            string itemName = "",
-            [CallerMemberName] string testName = "")
+        private TestDirectory InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true, string itemName = "")
         {
             var identifier = templateName;
             if (!string.IsNullOrWhiteSpace(language))
@@ -509,7 +493,7 @@ namespace EndToEnd.Tests
             {
                 identifier += $"({itemName})";
             }
-            var directory = TestAssetsManager.CreateTestDirectory(testName, identifier);
+            var directory = _testAssetsManager.CreateTestDirectory(identifier: identifier);
             string projectDirectory = directory.Path;
 
             string[] newArgs = [

@@ -6,7 +6,6 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -64,7 +63,7 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
 
 
         _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
-            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic(), sdkFeatureBand: _sdkFeatureBand);
+            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
         _recorder = recorder;
         if (_recorder is null)
         {
@@ -91,13 +90,17 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         }
         else if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                VerifySignatures,
-                restoreActionConfig: RestoreActionConfiguration);
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
+                new NullLogger(),
+                NullReporter.Instance,
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures);
 
             var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
         }
         else if (_adManifestOnlyOption)
         {

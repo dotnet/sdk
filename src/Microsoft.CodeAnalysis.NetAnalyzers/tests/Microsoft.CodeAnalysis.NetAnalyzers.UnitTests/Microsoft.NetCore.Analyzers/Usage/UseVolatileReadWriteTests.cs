@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyDiagnosticAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpUseVolatileReadWriteFixer>;
@@ -15,7 +14,6 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
-    [TestClass]
     public sealed class UseVolatileReadWriteTests
     {
         private const string CsharpSystemThreadingThread = """
@@ -227,9 +225,9 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             "UShort"
         };
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileRead(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileRead(string type)
         {
             var code = $$"""
                          using System;
@@ -258,12 +256,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileRead_WithNamedArguments(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileRead_WithNamedArguments(string type)
         {
             var code = $$"""
                          using System;
@@ -292,12 +290,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileRead_WithTrivia(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileRead_WithTrivia(string type)
         {
             var code = $$"""
                          using System;
@@ -330,11 +328,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        public async Task CS_UseVolatileRead_Nullable()
+        [Fact]
+        public Task CS_UseVolatileRead_Nullable()
         {
             const string code = """
                                 using System;
@@ -363,11 +361,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                      }
                                      """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        public async Task CS_UseVolatileRead_NonNullable()
+        [Fact]
+        public Task CS_UseVolatileRead_NonNullable()
         {
             const string code = """
                                 using System;
@@ -394,12 +392,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                      }
                                      """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileWrite(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileWrite(string type)
         {
             var code = $$"""
                          using System;
@@ -428,12 +426,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileWrite_WithNamedArguments(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileWrite_WithNamedArguments(string type)
         {
             var code = $$"""
                          using System;
@@ -462,12 +460,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileWrite_WithReversedArguments(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileWrite_WithReversedArguments(string type)
         {
             var code = $$"""
                          using System;
@@ -496,12 +494,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileWrite_WithSingleNamedArgument(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileWrite_WithSingleNamedArgument(string type)
         {
             var code = $$"""
                          using System;
@@ -530,12 +528,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CSharpTypes))]
-        public async Task CS_UseVolatileWrite_WithTrivia(string type)
+        [Theory]
+        [MemberData(nameof(CSharpTypes))]
+        public Task CS_UseVolatileWrite_WithTrivia(string type)
         {
             var code = $$"""
                          using System;
@@ -568,11 +566,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                               }
                               """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        public async Task CS_UseVolatileWrite_Nullable()
+        [Fact]
+        public Task CS_UseVolatileWrite_Nullable()
         {
             const string code = """
                                 using System;
@@ -601,11 +599,11 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                      }
                                      """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        public async Task CS_UseVolatileWrite_NonNullable()
+        [Fact]
+        public Task CS_UseVolatileWrite_NonNullable()
         {
             const string code = """
                                 using System;
@@ -632,12 +630,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                      }
                                      """;
 
-            await VerifyCsharpAsync(code, fixedCode);
+            return VerifyCsharpAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileRead(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileRead(string type)
         {
             var code = $$"""
                          Imports System
@@ -660,12 +658,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileRead_WithNamedArguments(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileRead_WithNamedArguments(string type)
         {
             var code = $$"""
                          Imports System
@@ -688,12 +686,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileRead_WithTrivia(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileRead_WithTrivia(string type)
         {
             var code = $$"""
                          Imports System
@@ -720,12 +718,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileWrite(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileWrite(string type)
         {
             var code = $$"""
                          Imports System
@@ -748,12 +746,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileWrite_WithNamedArguments(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileWrite_WithNamedArguments(string type)
         {
             var code = $$"""
                          Imports System
@@ -776,12 +774,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileWrite_WithReversedArguments(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileWrite_WithReversedArguments(string type)
         {
             var code = $$"""
                          Imports System
@@ -804,12 +802,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileWrite_WithSingleNamedArgument(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileWrite_WithSingleNamedArgument(string type)
         {
             var code = $$"""
                          Imports System
@@ -832,12 +830,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(VisualBasicTypes))]
-        public async Task VB_UseVolatileWrite_WithTrivia(string type)
+        [Theory]
+        [MemberData(nameof(VisualBasicTypes))]
+        public Task VB_UseVolatileWrite_WithTrivia(string type)
         {
             var code = $$"""
                          Imports System
@@ -864,103 +862,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                              End Class
                              """;
 
-            await VerifyVisualBasicAsync(code, fixedCode);
+            return VerifyVisualBasicAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        public async Task CS_NestedCalls_FixAllRewritesBoth()
+        private static Task VerifyCsharpAsync(string code, string fixedCode)
         {
-            const string code = """
-                                using System;
-                                using System.Threading;
-
-                                class Test
-                                {
-                                    void M(ref int arg, ref int value)
-                                    {
-                                        {|#0:Thread.VolatileWrite(ref arg, {|#1:Thread.VolatileRead(ref value)|})|};
-                                    }
-                                }
-                                """;
-            const string fixedCode = """
-                                     using System;
-                                     using System.Threading;
-
-                                     class Test
-                                     {
-                                         void M(ref int arg, ref int value)
-                                         {
-                                             Volatile.Write(ref arg, Volatile.Read(ref value));
-                                         }
-                                     }
-                                     """;
-
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources = { code, CsharpSystemThreadingThread }
-                },
-                FixedState =
-                {
-                    Sources = { fixedCode, CsharpSystemThreadingThread }
-                },
-                ExpectedDiagnostics =
-                {
-                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0),
-                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(1)
-                },
-                LanguageVersion = LanguageVersion.CSharp8,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod]
-        public async Task VB_NestedCalls_FixAllRewritesBoth()
-        {
-            const string code = """
-                                Imports System
-                                Imports System.Threading
-
-                                Class Test
-                                    Sub M(arg As Integer, value As Integer)
-                                        {|#0:Thread.VolatileWrite(arg, {|#1:Thread.VolatileRead(value)|})|}
-                                    End Sub
-                                End Class
-                                """;
-            const string fixedCode = """
-                                     Imports System
-                                     Imports System.Threading
-
-                                     Class Test
-                                         Sub M(arg As Integer, value As Integer)
-                                             Volatile.Write(arg, Volatile.Read(value))
-                                         End Sub
-                                     End Class
-                                     """;
-
-            await new VerifyVB.Test
-            {
-                TestState =
-                {
-                    Sources = { code, VisualBasicSystemThreadingThread }
-                },
-                FixedState =
-                {
-                    Sources = { fixedCode, VisualBasicSystemThreadingThread }
-                },
-                ExpectedDiagnostics =
-                {
-                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0),
-                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(1)
-                },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(CancellationToken.None);
-        }
-
-        private static async Task VerifyCsharpAsync(string code, string fixedCode)
-        {
-            await new VerifyCS.Test
+            return new VerifyCS.Test
             {
                 TestState =
                 {
@@ -976,12 +883,12 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 },
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        private static async Task VerifyVisualBasicAsync(string code, string fixedCode)
+        private static Task VerifyVisualBasicAsync(string code, string fixedCode)
         {
-            await new VerifyVB.Test
+            return new VerifyVB.Test
             {
                 TestState =
                 {
@@ -996,7 +903,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0)
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
     }
 }

@@ -1,32 +1,29 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableRequestValidation,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotDisableRequestValidationTests
     {
         private async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            string validateInputAttributeCSharpSourceCode = """
-
-                namespace System.Web.Mvc
-                {
-                    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
-                    public class ValidateInputAttribute : System.Attribute
-                    {
-                        public ValidateInputAttribute (bool enableValidation)
-                        {
-                        }
-                    }
-                }
-                """;
+            string validateInputAttributeCSharpSourceCode = @"
+namespace System.Web.Mvc
+{
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public class ValidateInputAttribute : System.Attribute
+    {
+        public ValidateInputAttribute (bool enableValidation)
+        {
+        }
+    }
+}";
             var csharpTest = new VerifyCS.Test
             {
                 TestState =
@@ -37,164 +34,151 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestLiteralAtActionLevelDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                using System.Web.Mvc;
-
-                class TestControllerClass
-                {
-                    [ValidateInput(false)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """,
+class TestControllerClass
+{
+    [ValidateInput(false)]
+    public void TestActionMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 17, "TestActionMethod"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConstAtActionLevelDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                using System.Web.Mvc;
+class TestControllerClass
+{
+    private const bool flag = false;
 
-                class TestControllerClass
-                {
-                    private const bool flag = false;
-
-                    [ValidateInput(flag)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """,
+    [ValidateInput(flag)]
+    public void TestActionMethod()
+    {
+    }
+}",
             GetCSharpResultAt(9, 17, "TestActionMethod"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestLiteralAtControllerLevelDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                using System.Web.Mvc;
-
-                [ValidateInput(false)]
-                class TestControllerClass
-                {
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """,
+[ValidateInput(false)]
+class TestControllerClass
+{
+    public void TestActionMethod()
+    {
+    }
+}",
             GetCSharpResultAt(5, 7, "TestControllerClass"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSetBothControllerLevelAndActionLevelDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                using System.Web.Mvc;
-
-                [ValidateInput(true)]
-                class TestControllerClass
-                {
-                    [ValidateInput(false)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """,
+[ValidateInput(true)]
+class TestControllerClass
+{
+    [ValidateInput(false)]
+    public void TestActionMethod()
+    {
+    }
+}",
             GetCSharpResultAt(8, 17, "TestActionMethod"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestLiteralAtActionLevelNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web.Mvc;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                class TestControllerClass
-                {
-                    [ValidateInput(true)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """);
+class TestControllerClass
+{
+    [ValidateInput(true)]
+    public void TestActionMethod()
+    {
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConstAtActionLevelNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web.Mvc;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                class TestControllerClass
-                {
-                    private const bool flag = true;
+class TestControllerClass
+{
+    private const bool flag = true;
 
-                    [ValidateInput(flag)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """);
+    [ValidateInput(flag)]
+    public void TestActionMethod()
+    {
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestLiteralAtControllerLevelNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web.Mvc;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                [ValidateInput(true)]
-                class TestControllerClass
-                {
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """);
+[ValidateInput(true)]
+class TestControllerClass
+{
+    public void TestActionMethod()
+    {
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSetBothControllerLevelAndActionLevelNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web.Mvc;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                [ValidateInput(false)]
-                class TestControllerClass
-                {
-                    [ValidateInput(true)]
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """);
+[ValidateInput(false)]
+class TestControllerClass
+{
+    [ValidateInput(true)]
+    public void TestActionMethod()
+    {
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestWithoutValidateInputAttributeNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web.Mvc;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web.Mvc;
 
-                class TestControllerClass
-                {
-                    public void TestActionMethod()
-                    {
-                    }
-                }
-                """);
+class TestControllerClass
+{
+    public void TestActionMethod()
+    {
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

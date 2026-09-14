@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,9 +9,11 @@ namespace Microsoft.NET.Build.Tests
 {
 #pragma warning disable xUnit1004 // Test methods should not be skipped
 
-    [TestClass]
     public class GivenThatWeWantToTargetNet471 : SdkTest
     {
+        public GivenThatWeWantToTargetNet471(ITestOutputHelper log) : base(log)
+        {
+        }
 
         string[] net471Shims =
         {
@@ -29,8 +31,7 @@ namespace Microsoft.NET.Build.Tests
             "System.Xml.XPath.XDocument.dll"
         };
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_builds_a_net471_app()
         {
             var testProject = new TestProject()
@@ -40,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -61,8 +62,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_builds_a_net471_app_referencing_netstandard20()
         {
             var testProject = new TestProject()
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_ns20");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_ns20");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -103,8 +103,7 @@ namespace Microsoft.NET.Build.Tests
             }.Concat(net471Shims));
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_does_not_include_facades_from_nuget_packages()
         {
             var testProject = new TestProject()
@@ -116,7 +115,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -144,8 +143,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_includes_shims_when_net471_app_references_netstandard16()
         {
             var testProject = new TestProject()
@@ -163,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_ns16");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_ns16");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -187,8 +185,7 @@ namespace Microsoft.NET.Build.Tests
             }.Concat(net471Shims));
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_does_not_include_shims_when_app_references_471_library_and_461_library()
         {
             var testProject = new TestProject()
@@ -213,7 +210,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.ReferencedProjects.Add(net471library);
             testProject.ReferencedProjects.Add(net462library);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_net471_net462");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_net471_net462");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -238,8 +235,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_contains_shims_if_override_property_is_set()
         {
             var testProject = new TestProject()
@@ -251,7 +247,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("DependsOnNETStandard", "true");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_with_override_property");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_with_override_property");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -273,8 +269,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void Aliases_are_preserved_for_replaced_references()
         {
             var testProject = new TestProject()
@@ -306,7 +301,7 @@ public static class Program
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)
@@ -329,16 +324,14 @@ public static class Program
                 .Pass();
         }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void ZipFileCanBeSharedWithNetStandard16()
         {
             TestZipFileSharing(false);
         }
 
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ZipFileCanBeSharedWithNetStandard16_sdk()
         {
             TestZipFileSharing(true);
@@ -441,7 +434,7 @@ public static class NS16LibClass
     }}
 }}
 ";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod, identifier: useSdk ? "_sdk" : string.Empty)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod, identifier: useSdk ? "_sdk" : string.Empty)
                             .WithProjectChanges((projectPath, project) =>
                             {
                                 if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)
@@ -495,8 +488,7 @@ public static class NS16LibClass
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/2479
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void HttpClient_can_be_used_in_project_references()
         {
             var referencedProject = new TestProject()
@@ -554,7 +546,7 @@ public class Startup
 }
 ";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)

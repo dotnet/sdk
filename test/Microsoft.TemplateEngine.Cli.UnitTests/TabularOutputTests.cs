@@ -8,10 +8,9 @@ using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
-    [TestClass]
     public class TabularOutputTests
     {
-        [TestMethod]
+        [Fact]
         public void CanShrinkOneColumn()
         {
             TabularOutputSettings outputSettings = new(
@@ -35,10 +34,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2");
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShrinkMultipleColumnsAndBalanceShrinking()
         {
             TabularOutputSettings outputSettings = new(
@@ -62,10 +61,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", shrinkIfNeeded: true, minWidth: 2);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CannotShrinkOverMinimumWidth()
         {
             TabularOutputSettings outputSettings = new(
@@ -89,10 +88,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", shrinkIfNeeded: true, minWidth: 8);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowDefaultColumns()
         {
             TabularOutputSettings outputSettings = new(
@@ -117,10 +116,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowUserSelectedColumns()
         {
             TabularOutputSettings outputSettings = new(
@@ -146,10 +145,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowAllColumns()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 }, displayAllColumns: true);
@@ -170,10 +169,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanCenterAlign()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 });
@@ -193,10 +192,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", textAlign: TextAlign.Center);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanRightAlign()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 });
@@ -216,10 +215,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .DefineColumn(t => t.Item2, "Column 2", textAlign: TextAlign.Right);
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanCalculateWidthCorrectly()
         {
             TabularOutputSettings outputSettings = new(
@@ -254,10 +253,10 @@ Dotnet 本地工具清单文件  tool-manifest
                  .DefineColumn(t => t.Item2, "短名称");
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShrinkWideCharsCorrectly()
         {
             TabularOutputSettings outputSettings = new(
@@ -292,10 +291,10 @@ Dotnet 本地...  tool-manifest
                  .DefineColumn(t => t.Item2, "短名称");
 
             string result = formatter.Layout();
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanIndentAllRows()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 }, displayAllColumns: true);
@@ -316,10 +315,10 @@ Dotnet 本地...  tool-manifest
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout(1);
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void VerifyColumnsOptionHasAllColumnNamesDefined()
         {
             var columnOption = SharedOptionsFactory.CreateColumnsOption();
@@ -331,7 +330,7 @@ Dotnet 本地...  tool-manifest
             //Gets constants defined in TabularOutputSettings.ColumnNams
             var columnNamesConstants = typeof(TabularOutputSettingsColumnNames).GetFields().Select(fi => (string?)fi.GetValue(null)).Order();
 
-            Assert.AreSequenceEqual(suggestedValues, columnNamesConstants);
+            Assert.Equal(suggestedValues, columnNamesConstants);
         }
     }
 }

@@ -3,14 +3,17 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class EvaluatorFastPathTests : SdkTest
     {
+        public EvaluatorFastPathTests(ITestOutputHelper log) : base(log)
+        {
 
-        [TestMethod]
+        }
+
+        [Fact]
         public void FastPathDoesNotNeedReflection()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("MSBuildBareBonesProject")
                 .WithSource();
             var command = new MSBuildCommand(testAsset, string.Empty);
@@ -26,12 +29,12 @@ namespace Microsoft.NET.Build.Tests
             File.Exists(logPath).Should().BeFalse();
         }
 
-        [TestMethod]
-        [DataRow("console")]
-        [DataRow("webapp")]
+        [Theory]
+        [InlineData("console")]
+        [InlineData("webapp")]
         public void EnsureDotnetCommonProjectPropertyFunctionsOnFastPath(string alias)
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             new DotnetNewCommand(Log, alias)
                 .WithoutCustomHive()

@@ -25,12 +25,12 @@ namespace Microsoft.TemplateEngine.Cli
             IEngineEnvironmentSettings engineEnvironmentSettings,
             TemplatePackageManager templatePackageManager,
             IHostSpecificDataLoader hostSpecificDataLoader)
+
         {
             _engineEnvironmentSettings = engineEnvironmentSettings ?? throw new ArgumentNullException(nameof(engineEnvironmentSettings));
             _templatePackageManager = templatePackageManager ?? throw new ArgumentNullException(nameof(templatePackageManager));
             _hostSpecificDataLoader = hostSpecificDataLoader ?? throw new ArgumentNullException(nameof(hostSpecificDataLoader));
             _defaultLanguage = engineEnvironmentSettings.GetDefaultLanguage();
-            using var constraintManagerActivity = Activities.Source.StartActivity("create-constraints");
             _constraintManager = new TemplateConstraintManager(_engineEnvironmentSettings);
         }
 
@@ -49,6 +49,7 @@ namespace Microsoft.TemplateEngine.Cli
             ListTemplateResolver resolver = new(_constraintManager, _templatePackageManager, _hostSpecificDataLoader);
             TemplateResolutionResult resolutionResult = await resolver.ResolveTemplatesAsync(args, _defaultLanguage, cancellationToken).ConfigureAwait(false);
 
+            //IReadOnlyDictionary<string, string?>? appliedParameterMatches = resolutionResult.GetAllMatchedParametersList();
             if (resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters.Any())
             {
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatesFoundMatchingInputParameters, GetInputParametersString(args));
@@ -66,10 +67,10 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                // If there is no criteria and filters, it means that dotnet new list was run but there are no templates installed.
+                //if there is no criteria and filters it means that dotnet new list was run but there is no templates installed.
                 if (args.ListNameCriteria == null && !args.AppliedFilters.Any())
                 {
-                    // No templates installed.
+                    //No templates installed.
                     Reporter.Output.WriteLine(LocalizableStrings.NoTemplatesFound);
                     Reporter.Output.WriteLine();
                     // To search for the templates on NuGet.org, run:
@@ -83,7 +84,7 @@ namespace Microsoft.TemplateEngine.Cli
                     return NewCommandStatus.Success;
                 }
 
-                // At least one criteria was specified.
+                // at least one criteria was specified.
                 // No templates found matching the following input parameter(s): {0}.
                 Reporter.Error.WriteLine(
                     string.Format(
@@ -195,30 +196,33 @@ namespace Microsoft.TemplateEngine.Cli
             return NewCommandStatus.Success;
         }
 
-        private static string GetInputParametersString(ListCommandArgs args)
+        private static string GetInputParametersString(ListCommandArgs args/*, IReadOnlyDictionary<string, string?>? templateParameters = null*/)
         {
             string separator = ", ";
             IEnumerable<string> appliedFilters = args.AppliedFilters
                     .Select(filter => $"{args.GetFilterToken(filter)}='{args.GetFilterValue(filter)}'");
+
+            //IEnumerable<string> appliedTemplateParameters = templateParameters?
+            //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
 
             StringBuilder inputParameters = new();
             string? mainCriteria = args.ListNameCriteria;
             if (!string.IsNullOrWhiteSpace(mainCriteria))
             {
                 inputParameters.Append($"'{mainCriteria}'");
-                if (appliedFilters.Any())
+                if (appliedFilters.Any()/* || appliedTemplateParameters.Any()*/)
                 {
                     inputParameters.Append(separator);
                 }
             }
-            if (appliedFilters.Any())
+            if (appliedFilters/*.Concat(appliedTemplateParameters)*/.Any())
             {
-                inputParameters.Append(string.Join(separator, appliedFilters));
+                inputParameters.Append(string.Join(separator, appliedFilters/*.Concat(appliedTemplateParameters)*/));
             }
             return inputParameters.ToString();
         }
 
-        private static string GetPartialMatchReason(TemplateResolutionResult templateResolutionResult, ListCommandArgs args)
+        private static string GetPartialMatchReason(TemplateResolutionResult templateResolutionResult, ListCommandArgs args/*, IReadOnlyDictionary<string, string?>? templateParameters = null*/)
         {
             string separator = ", ";
 
@@ -227,10 +231,15 @@ namespace Microsoft.TemplateEngine.Cli
                     .Where(filter => filter.MismatchCriteria(templateResolutionResult))
                     .Select(filter => $"{args.GetFilterToken(filter)}='{args.GetFilterValue(filter)}'");
 
+            //IEnumerable<string> appliedTemplateParameters = templateParameters?
+            //       .Where(parameter =>
+            //            templateResolutionResult.IsParameterMismatchReason(parameter.Key))
+            //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
+
             StringBuilder inputParameters = new();
-            if (appliedFilters.Any())
+            if (appliedFilters/*.Concat(appliedTemplateParameters)*/.Any())
             {
-                inputParameters.Append(string.Join(separator, appliedFilters));
+                inputParameters.Append(string.Join(separator, appliedFilters/*.Concat(appliedTemplateParameters)*/));
             }
             return inputParameters.ToString();
         }

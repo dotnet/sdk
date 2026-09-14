@@ -3,13 +3,16 @@
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToTestPackAToolProject : SdkTest
     {
-        [TestMethod]
+        public GivenThatWeWantToTestPackAToolProject(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void When_app_project_reference_a_library_it_flows_to_test_project()
         {
-            TestAsset testAsset = TestAssetsManager
+            TestAsset testAsset = _testAssetsManager
                 .CopyTestAsset("PortableToolWithTestProject")
                 .WithSource();
 

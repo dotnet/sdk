@@ -1,52 +1,35 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-extern alias MSTestFramework;
-
 using System.Runtime.CompilerServices;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
 /// Base class for all tests that create dotnet watch process.
 /// </summary>
-public abstract partial class DotNetWatchTestBase
+public abstract partial class DotNetWatchTestBase : IAsyncLifetime
 {
-    /// <summary>Set by the MSTest runtime before each test runs.</summary>
-    public TestContext TestContext { get; set; } = null!;
+    internal TestAssetsManager TestAssets { get; }
+    internal WatchableApp App { get; }
 
-    private DualOutputHelper? _logger;
-    private WatchableApp? _app;
-    private TestAssetsManager? _testAssetsManager;
-
-    internal DualOutputHelper Logger
-        => _logger ??= new DualOutputHelper(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
-
-    internal WatchableApp App
-        => _app ??= WatchableApp.CreateDotnetWatchApp(Logger);
-
-    internal TestAssetsManager TestAssets
-        => _testAssetsManager ??= new TestAssetsManager(Logger);
-
-    [TestInitialize]
-    public void InitializeTest()
+    public DotNetWatchTestBase(ITestOutputHelper logger)
     {
-        // Reset lazy state so each test gets a fresh logger/app
-        _logger = null;
-        _app = null;
-        _testAssetsManager = null;
+        App = WatchableApp.CreateDotnetWatchApp(logger);
+        TestAssets = new TestAssetsManager(App.Logger);
     }
 
-    [TestCleanup]
-    public async Task CleanupTestAsync()
+    public Task InitializeAsync()
+        => Task.CompletedTask;
+
+    public async Task DisposeAsync()
     {
-        Logger.Log("Disposing test");
-        if (_app != null)
-        {
-            await _app.DisposeAsync();
-        }
+        Log("Disposing test");
+        await App.DisposeAsync();
     }
+
+    public DebugTestOutputLogger Logger
+        => App.Logger;
 
     internal TestAsset CopyTestAsset(
         string assetName,
@@ -56,7 +39,7 @@ public abstract partial class DotNetWatchTestBase
         => TestAssets.CopyTestAsset(assetName, callingMethod, callerFilePath, identifier: string.Join(";", testParameters ?? [])).WithSource();
 
     public void Log(string message, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
-        => Logger.Log(message, testPath, testLine);
+        => App.Logger.Log(message, testPath, testLine);
 
     public void UpdateSourceFile(string path, string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
@@ -69,13 +52,11 @@ public abstract partial class DotNetWatchTestBase
         => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)), testPath, testLine);
 
     /// <summary>
-    /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file.
-    /// Uses FileShare.Read so that dotnet-watch (via Roslyn workspace) can still read the file
-    /// while it's being written, avoiding IOException file-lock races.
+    /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file
     /// </summary>
     public static void WriteAllText(string path, string text)
     {
-        using var stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+        using var stream = File.Open(path, FileMode.OpenOrCreate);
 
         using (var writer = new StreamWriter(stream, Encoding.UTF8, leaveOpen: true))
         {
@@ -107,8 +88,8 @@ public abstract partial class DotNetWatchTestBase
            reporter,
            out var errorCode);
 
-        Assert.AreEqual(0, errorCode);
-        Assert.IsNotNull(program);
+        Assert.Equal(0, errorCode);
+        Assert.NotNull(program);
 
         var serviceHolder = new StrongBox<TestRuntimeProcessLauncher?>();
         var factory = new TestRuntimeProcessLauncher.Factory(s =>

@@ -7,7 +7,6 @@ using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
-    [TestClass]
     public class GenerateEnvTransformTests
     {
         private XDocument _environmentTransformWithLocationTemplate => XDocument.Parse(
@@ -32,9 +31,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         </system.webServer>
 </configuration>");
 
-        [TestMethod]
-        [DataRow(null, null)]
-        [DataRow("", null)]
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", null)]
         public void GetEnvironmentVariables_HandlesNullAndEmpty(string value, object expected)
         {
             // Arrange
@@ -44,10 +43,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             var envVariables = env.GetEnvironmentVariables(value);
 
             // Assert
-            Assert.IsNull(envVariables);
+            Assert.Equal(expected, envVariables);
         }
 
-        [TestMethod]
+        [Fact]
         public void GenerateEnvTransformDocument_HandlesNullAndEmpty()
         {
             // Arrange
@@ -57,12 +56,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             XDocument transformDoc = env.GenerateEnvTransformDocument(null, null);
 
             // Assert
-            Assert.IsNull(transformDoc);
+            Assert.Null(transformDoc);
         }
 
-        [TestMethod]
-        [DataRow(null, true)]
-        [DataRow("", true)]
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("", true)]
         public void Execute_DoesnotFail_IfEnvVarIsNullOrEmpty(string envVariable, bool expected)
         {
             // Arrange
@@ -75,20 +74,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool isSuccess = env.Execute();
 
             // Assert
-            Assert.AreEqual(expected, isSuccess);
+            Assert.Equal(expected, isSuccess);
 
         }
 
-        [TestMethod]
-        [DataRow("envname=envvalue", 1)]
-        [DataRow("envname=envvalue;envname2=envvalue2", 2)]
-        [DataRow("envname=", 1)]
-        [DataRow("=envname", 1)]
-        [DataRow("=envname=", 1)]
-        [DataRow("=envname=envvalue", 1)]
-        [DataRow("envnameWithoutEqual", 1)]
-        [DataRow("envname=envvalue;envname2", 2)]
-        [DataRow("envnamewithsemicolon=envvalue%3enVVal;", 1)]
+        [Theory]
+        [InlineData("envname=envvalue", 1)]
+        [InlineData("envname=envvalue;envname2=envvalue2", 2)]
+        [InlineData("envname=", 1)]
+        [InlineData("=envname", 1)]
+        [InlineData("=envname=", 1)]
+        [InlineData("=envname=envvalue", 1)]
+        [InlineData("envnameWithoutEqual", 1)]
+        [InlineData("envname=envvalue;envname2", 2)]
+        [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void GetEnvironmentVariables_Returns_CorrectValues(string value, int expectedCount)
         {
             // Arrange
@@ -98,20 +97,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             var envVariables = env.GetEnvironmentVariables(value);
 
             // Assert
-            Assert.HasCount(expectedCount, envVariables);
+            Assert.Equal(expectedCount, envVariables.Count);
         }
 
-        [TestMethod]
-        [DataRow("envname=envvalue", 1)]
-        [DataRow("envname=envvalue;envname2=envvalue2", 2)]
-        [DataRow("envname=", 1)]
-        [DataRow("=envname", 1)]
-        [DataRow("=envname=", 1)]
-        [DataRow("=envname=envvalue", 1)]
-        [DataRow("envnameWithoutEqual", 1)]
-        [DataRow("envname=envvalue;envname2", 2)]
-        [DataRow("envname=envvalue;envname2=val2;envName3=val3", 3)]
-        [DataRow("envnamewithsemicolon=envvalue%3enVVal;", 1)]
+        [Theory]
+        [InlineData("envname=envvalue", 1)]
+        [InlineData("envname=envvalue;envname2=envvalue2", 2)]
+        [InlineData("envname=", 1)]
+        [InlineData("=envname", 1)]
+        [InlineData("=envname=", 1)]
+        [InlineData("=envname=envvalue", 1)]
+        [InlineData("envnameWithoutEqual", 1)]
+        [InlineData("envname=envvalue;envname2", 2)]
+        [InlineData("envname=envvalue;envname2=val2;envName3=val3", 3)]
+        [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void GenerateEnvTransform_GeneretesTransforms_ForAllCases(string envVariables, int expected)
         {
             GenerateEnvTransform env = new();
@@ -123,22 +122,22 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 XDocument envDoc = env.GenerateEnvTransformDocument(template, envVariables);
 
                 // Assert
-                Assert.HasCount(expected, envDoc.Descendants("environmentVariable"));
+                Assert.Equal(expected, envDoc.Descendants("environmentVariable").Count());
             }
 
         }
 
-        [TestMethod]
-        [DataRow("envname=envvalue", 1)]
-        [DataRow("envname=envvalue;envname2=envvalue2", 2)]
-        [DataRow("envname=", 1)]
-        [DataRow("=envname", 1)]
-        [DataRow("=envname=", 1)]
-        [DataRow("=envname=envvalue", 1)]
-        [DataRow("envnameWithoutEqual", 1)]
-        [DataRow("envname=envvalue;envname2", 2)]
-        [DataRow("envname=envvalue;envname2=val2;envName3=val3", 3)]
-        [DataRow("envnamewithsemicolon=envvalue%3enVVal;", 1)]
+        [Theory]
+        [InlineData("envname=envvalue", 1)]
+        [InlineData("envname=envvalue;envname2=envvalue2", 2)]
+        [InlineData("envname=", 1)]
+        [InlineData("=envname", 1)]
+        [InlineData("=envname=", 1)]
+        [InlineData("=envname=envvalue", 1)]
+        [InlineData("envnameWithoutEqual", 1)]
+        [InlineData("envname=envvalue;envname2", 2)]
+        [InlineData("envname=envvalue;envname2=val2;envName3=val3", 3)]
+        [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void Execute_Updates_WebConfig_Correctly(string envVariables, int expected)
         {
             string envTemplatePath = Path.GetTempFileName();
@@ -165,10 +164,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
                     // Act
                     bool isSuccess = env.Execute();
-                    Assert.IsTrue(isSuccess);
+                    Assert.True(isSuccess);
                     foreach (var generatedPath in env.GeneratedTransformFullPaths)
                     {
-                        Assert.IsTrue(File.Exists(generatedPath));
+                        Assert.True(File.Exists(generatedPath));
 
                         TransformXml transformTask = new()
                         {
@@ -183,7 +182,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                         bool success = transformTask.RunXmlTransform(isLoggingEnabled: false);
 
                         // Assert
-                        Assert.HasCount(expected, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable"));
+                        Assert.Equal(expected, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable").Count());
                     }
                 }
             }
@@ -194,17 +193,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [TestMethod]
-        [DataRow("envname=envvalue", 1)]
-        [DataRow("envname=envvalue;envname2=envvalue2", 2)]
-        [DataRow("envname=", 1)]
-        [DataRow("=envname", 1)]
-        [DataRow("=envname=", 1)]
-        [DataRow("=envname=envvalue", 1)]
-        [DataRow("envnameWithoutEqual", 1)]
-        [DataRow("envname=envvalue;envname2", 2)]
-        [DataRow("envname=envvalue;envname2=val2;envName3=val3", 3)]
-        [DataRow("envnamewithsemicolon=envvalue%3enVVal;", 1)]
+        [Theory]
+        [InlineData("envname=envvalue", 1)]
+        [InlineData("envname=envvalue;envname2=envvalue2", 2)]
+        [InlineData("envname=", 1)]
+        [InlineData("=envname", 1)]
+        [InlineData("=envname=", 1)]
+        [InlineData("=envname=envvalue", 1)]
+        [InlineData("envnameWithoutEqual", 1)]
+        [InlineData("envname=envvalue;envname2", 2)]
+        [InlineData("envname=envvalue;envname2=val2;envName3=val3", 3)]
+        [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void EnvTransform_Updates_WebConfig_Correctly_EvenWithEnvVariable(string envVariables, int expected)
         {
             string envTemplatePath = Path.GetTempFileName();
@@ -226,10 +225,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
                 // Act
                 bool isSuccess = env.Execute();
-                Assert.IsTrue(isSuccess);
+                Assert.True(isSuccess);
                 foreach (var generatedPath in env.GeneratedTransformFullPaths)
                 {
-                    Assert.IsTrue(File.Exists(generatedPath));
+                    Assert.True(File.Exists(generatedPath));
 
                     TransformXml transformTask = new()
                     {
@@ -245,7 +244,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
                     // Assert
                     // Expected should be always one more since an env variable is already present in the web.config.
-                    Assert.HasCount(expected + 1, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable"));
+                    Assert.Equal(expected + 1, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable").Count());
                 }
             }
             finally
@@ -255,17 +254,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [TestMethod]
-        [DataRow("envname=envvalue", 1)]
-        [DataRow("envname=envvalue;envname2=envvalue2", 2)]
-        [DataRow("envname=", 1)]
-        [DataRow("=envname", 1)]
-        [DataRow("=envname=", 1)]
-        [DataRow("=envname=envvalue", 1)]
-        [DataRow("envnameWithoutEqual", 1)]
-        [DataRow("envname=envvalue;envname2", 2)]
-        [DataRow("envname=envvalue;envname2=val2;envName3=val3", 3)]
-        [DataRow("envnamewithsemicolon=envvalue%3enVVal;", 1)]
+        [Theory]
+        [InlineData("envname=envvalue", 1)]
+        [InlineData("envname=envvalue;envname2=envvalue2", 2)]
+        [InlineData("envname=", 1)]
+        [InlineData("=envname", 1)]
+        [InlineData("=envname=", 1)]
+        [InlineData("=envname=envvalue", 1)]
+        [InlineData("envnameWithoutEqual", 1)]
+        [InlineData("envname=envvalue;envname2", 2)]
+        [InlineData("envname=envvalue;envname2=val2;envName3=val3", 3)]
+        [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void Execute_Updates_WebConfig_Correctly_WithNoLocation(string envVariables, int expected)
         {
             string envTemplatePath = Path.GetTempFileName();
@@ -295,10 +294,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
                     // Act
                     bool isSuccess = env.Execute();
-                    Assert.IsTrue(isSuccess);
+                    Assert.True(isSuccess);
                     foreach (var generatedPath in env.GeneratedTransformFullPaths)
                     {
-                        Assert.IsTrue(File.Exists(generatedPath));
+                        Assert.True(File.Exists(generatedPath));
 
                         TransformXml transformTask = new()
                         {
@@ -313,7 +312,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                         bool success = transformTask.RunXmlTransform(isLoggingEnabled: false);
 
                         // Assert
-                        Assert.HasCount(expected, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable"));
+                        Assert.Equal(expected, XDocument.Parse(File.ReadAllText(webConfigPath)).Root.Descendants("environmentVariable").Count());
                     }
                 }
             }

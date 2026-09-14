@@ -3,24 +3,14 @@ name: Add Branch Lockdown Label to PRs
 on:
   pull_request_target:
   workflow_dispatch: # Allows manual triggering of the workflow
-    branches:
-      - 'release/8.*'
-      - 'release/9.*'
-      - 'release/10.*'
-      - 'main'
 
 permissions:
   actions: write # For managing the operation state cache
   issues: write
 
-env:
-  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
-
 jobs:
   add-label:
     runs-on: ubuntu-latest
-    # Only run on the main repository, not forks
-    if: github.repository == 'dotnet/sdk'
 
     permissions:
       contents: read
@@ -28,9 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v2
 
       - name: Install jq
         run: sudo apt-get install -y jq

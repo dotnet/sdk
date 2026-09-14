@@ -1,7 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesFixer>;
@@ -11,604 +11,471 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class OperatorOverloadsHaveNamedAlternatesFixerTests
     {
         #region C# tests
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateMethod_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static C operator +(C left, C right) { return new C(); }
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(4, 30, 4, 31).WithArguments("Add", "op_Addition"),
-"""
+@"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
 
-    public class C
+    public static C Add(C left, C right)
     {
-        public static C operator +(C left, C right) { return new C(); }
-
-        public static C Add(C left, C right)
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateOfMultiples_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static C operator %(C left, C right) { return new C(); }
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static C operator %(C left, C right) { return new C(); }
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 30, 4, 31).WithArguments("Mod", "Remainder", "op_Modulus"),
-"""
+@"
+public class C
+{
+    public static C operator %(C left, C right) { return new C(); }
 
-    public class C
+    public static C Mod(C left, C right)
     {
-        public static C operator %(C left, C right) { return new C(); }
-
-        public static C Mod(C left, C right)
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateProperty_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static bool operator true(C item) { return true; }
-                    public static bool operator false(C item) { return false; }
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static bool operator true(C item) { return true; }
+    public static bool operator false(C item) { return false; }
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.PropertyRule).WithSpan(4, 33, 4, 37).WithArguments("IsTrue", "op_True"),
-"""
+@"
+public class C
+{
+    public static bool operator true(C item) { return true; }
+    public static bool operator false(C item) { return false; }
 
-    public class C
+    public bool IsTrue
     {
-        public static bool operator true(C item) { return true; }
-        public static bool operator false(C item) { return false; }
-
-        public bool IsTrue
+        get
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            throw new System.NotImplementedException();
         }
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForConversion_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static implicit operator int(C item) { return 0; }
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static implicit operator int(C item) { return 0; }
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 40).WithArguments("ToInt32", "FromC", "op_Implicit"),
-"""
+@"
+public class C
+{
+    public static implicit operator int(C item) { return 0; }
 
-    public class C
+    public int ToInt32()
     {
-        public static implicit operator int(C item) { return 0; }
-
-        public int ToInt32()
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForCompare_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 33, 4, 34).WithArguments("CompareTo", "Compare", "op_LessThan"),
-"""
+@"
+public class C
+{
+    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
 
-    public class C
+    public int CompareTo(C other)
     {
-        public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
-
-        public int CompareTo(C other)
+        if (ReferenceEquals(other, null))
         {
-            if (ReferenceEquals(other, null))
-            {
-                return 1;
-            }
-
-            throw new System.NotImplementedException();
+            return 1;
         }
+
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForStructCompare_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public struct C
-                {
-                    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public struct C
+{
+    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 33, 4, 34).WithArguments("CompareTo", "Compare", "op_LessThan"),
-"""
+@"
+public struct C
+{
+    public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
 
-    public struct C
+    public int CompareTo(C other)
     {
-        public static bool operator {|CS0216:<|}(C left, C right) { return true; }   // error CS0216: The operator requires a matching operator '>' to also be defined
-
-        public int CompareTo(C other)
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForIncrement_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static C operator ++(C item) { return new C(); }
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static C operator ++(C item) { return new C(); }
+}
+",
                 VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(4, 30, 4, 32).WithArguments("Increment", "op_Increment"),
-"""
+@"
+public class C
+{
+    public static C operator ++(C item) { return new C(); }
 
-    public class C
+    public static C Increment(C item)
     {
-        public static C operator ++(C item) { return new C(); }
-
-        public static C Increment(C item)
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
-
-    """);
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixImproperMethodVisibility_CSharpAsync()
         {
             await new VerifyCS.Test
             {
-                TestCode = """
-                    public class C
-                    {
-                        public static C operator +(C left, C right) { return new C(); }
-                        protected static C {|#0:Add|}(C left, C right) { return new C(); }
-                    }
-                    """,
+                TestCode = @"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
+    protected static C {|#0:Add|}(C left, C right) { return new C(); }
+}
+",
                 ExpectedDiagnostics =
                 {
                     VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("Add", "op_Addition"),
                 },
-                FixedCode = """
-                    public class C
-                    {
-                        public static C operator +(C left, C right) { return new C(); }
-                        public static C Add(C left, C right) { return new C(); }
-                    }
-                    """,
-            }.RunAsync(CancellationToken.None);
+                FixedCode = @"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
+    public static C Add(C left, C right) { return new C(); }
+}
+",
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixImproperPropertyVisibility_CSharpAsync()
         {
             await new VerifyCS.Test
             {
-                TestCode = """
-                    public class C
-                    {
-                        public static bool operator true(C item) { return true; }
-                        public static bool operator false(C item) { return false; }
-                        bool {|#0:IsTrue|} => true;
-                    }
-                    """,
+                TestCode = @"
+public class C
+{
+    public static bool operator true(C item) { return true; }
+    public static bool operator false(C item) { return false; }
+    bool {|#0:IsTrue|} => true;
+}
+",
                 ExpectedDiagnostics =
                 {
                     VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("IsTrue", "op_True"),
                 },
-                FixedCode = """
-                    public class C
-                    {
-                        public static bool operator true(C item) { return true; }
-                        public static bool operator false(C item) { return false; }
-                        public bool IsTrue => true;
-                    }
-                    """,
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod]
-        public async Task BothOperatorsOnOneType_FixAllAddsEveryAlternate_CSharpAsync()
-        {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public class C
-                {
-                    public static C operator +(C left, C right) { return new C(); }
-                    public static C operator -(C left, C right) { return new C(); }
-                }
-
-                """,
-                new[]
-                {
-                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(4, 30, 4, 31).WithArguments("Add", "op_Addition"),
-                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(5, 30, 5, 31).WithArguments("Subtract", "op_Subtraction"),
-                },
-"""
-
-    public class C
-    {
-        public static C operator +(C left, C right) { return new C(); }
-        public static C operator -(C left, C right) { return new C(); }
-
-        public static C Add(C left, C right)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static C Subtract(C left, C right)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    """);
+                FixedCode = @"
+public class C
+{
+    public static bool operator true(C item) { return true; }
+    public static bool operator false(C item) { return false; }
+    public bool IsTrue => true;
+}
+",
+            }.RunAsync();
         }
 
         #endregion
 
         #region VB tests
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateMethod_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Operator +(left As C, right As C) As C
-                        Return New C()
-                    End Operator
-                End Class
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
+End Class
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(3, 28, 3, 29).WithArguments("Add", "op_Addition"),
-"""
+@"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
 
-    Public Class C
-        Public Shared Operator +(left As C, right As C) As C
-            Return New C()
-        End Operator
-
-        Public Shared Function Add(left As C, right As C) As C
-            Throw New System.NotImplementedException()
-        End Function
-    End Class
-
-    """);
+    Public Shared Function Add(left As C, right As C) As C
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateOfMultiples_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Operator Mod(left As C, right As C) As C
-                        Return New C()
-                    End Operator
-                End Class
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Operator Mod(left As C, right As C) As C
+        Return New C()
+    End Operator
+End Class
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(3, 28, 3, 31).WithArguments("Mod", "Remainder", "op_Modulus"),
-"""
+@"
+Public Class C
+    Public Shared Operator Mod(left As C, right As C) As C
+        Return New C()
+    End Operator
 
-    Public Class C
-        Public Shared Operator Mod(left As C, right As C) As C
-            Return New C()
-        End Operator
-
-        Public Shared Function [Mod](left As C, right As C) As C
-            Throw New System.NotImplementedException()
-        End Function
-    End Class
-
-    """);
+    Public Shared Function [Mod](left As C, right As C) As C
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateProperty_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Operator IsTrue(item As C) As Boolean
-                        Return True
-                    End Operator
-                    Public Shared Operator IsFalse(item As C) As Boolean
-                        Return False
-                    End Operator
-                End Class
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Operator IsTrue(item As C) As Boolean
+        Return True
+    End Operator
+    Public Shared Operator IsFalse(item As C) As Boolean
+        Return False
+    End Operator
+End Class
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.PropertyRule).WithSpan(3, 28, 3, 34).WithArguments("IsTrue", "op_True"),
-"""
+@"
+Public Class C
+    Public Shared Operator IsTrue(item As C) As Boolean
+        Return True
+    End Operator
+    Public Shared Operator IsFalse(item As C) As Boolean
+        Return False
+    End Operator
 
-    Public Class C
-        Public Shared Operator IsTrue(item As C) As Boolean
-            Return True
-        End Operator
-        Public Shared Operator IsFalse(item As C) As Boolean
-            Return False
-        End Operator
-
-        Public ReadOnly Property IsTrue As Boolean
-            Get
-                Throw New System.NotImplementedException()
-            End Get
-        End Property
-    End Class
-
-    """);
+    Public ReadOnly Property IsTrue As Boolean
+        Get
+            Throw New System.NotImplementedException()
+        End Get
+    End Property
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForConversion_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Widening Operator CType(ByVal item As C) As Integer
-                        Return 0
-                    End Operator
-                End Class
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Widening Operator CType(ByVal item As C) As Integer
+        Return 0
+    End Operator
+End Class
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(3, 37, 3, 42).WithArguments("ToInt32", "FromC", "op_Implicit"),
-"""
+@"
+Public Class C
+    Public Shared Widening Operator CType(ByVal item As C) As Integer
+        Return 0
+    End Operator
 
-    Public Class C
-        Public Shared Widening Operator CType(ByVal item As C) As Integer
-            Return 0
-        End Operator
-
-        Public Function ToInt32() As Integer
-            Throw New System.NotImplementedException()
-        End Function
-    End Class
-
-    """);
+    Public Function ToInt32() As Integer
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForCompare_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
-                        Return True
-                    End Operator
-                End Class
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
+        Return True
+    End Operator
+End Class
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(3, 28, 3, 29).WithArguments("CompareTo", "Compare", "op_LessThan"),
-"""
+@"
+Public Class C
+    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
+        Return True
+    End Operator
 
-    Public Class C
-        Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
-            Return True
-        End Operator
+    Public Function CompareTo(other As C) As Integer
+        If ReferenceEquals(other, Nothing) Then
+            Return 1
+        End If
 
-        Public Function CompareTo(other As C) As Integer
-            If ReferenceEquals(other, Nothing) Then
-                Return 1
-            End If
-
-            Throw New System.NotImplementedException()
-        End Function
-    End Class
-
-    """);
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddAlternateForStructCompare_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Structure C
-                    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
-                        Return True
-                    End Operator
-                End Structure
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Structure C
+    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
+        Return True
+    End Operator
+End Structure
+",
                 VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(3, 28, 3, 29).WithArguments("CompareTo", "Compare", "op_LessThan"),
-"""
+@"
+Public Structure C
+    Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
+        Return True
+    End Operator
 
-    Public Structure C
-        Public Shared Operator {|BC33033:<|}(left As C, right As C) As Boolean   ' error BC33033: Matching '>' operator is required
-            Return True
-        End Operator
-
-        Public Function CompareTo(other As C) As Integer
-            Throw New System.NotImplementedException()
-        End Function
-    End Structure
-
-    """);
+    Public Function CompareTo(other As C) As Integer
+        Throw New System.NotImplementedException()
+    End Function
+End Structure
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixImproperMethodVisibility_BasicAsync()
         {
             await new VerifyVB.Test
             {
-                TestCode = """
-                    Public Class C
-                        Public Shared Operator +(left As C, right As C) As C
-                            Return New C()
-                        End Operator
+                TestCode = @"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
 
-                        Protected Shared Function {|#0:Add|}(left As C, right As C) As C
-                            Return New C()
-                        End Function
-                    End Class
-                    """,
+    Protected Shared Function {|#0:Add|}(left As C, right As C) As C
+        Return New C()
+    End Function
+End Class
+",
                 ExpectedDiagnostics =
                 {
                     VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("Add", "op_Addition"),
                 },
-                FixedCode = """
-                    Public Class C
-                        Public Shared Operator +(left As C, right As C) As C
-                            Return New C()
-                        End Operator
+                FixedCode = @"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
 
-                        Public Shared Function Add(left As C, right As C) As C
-                            Return New C()
-                        End Function
-                    End Class
-                    """,
-            }.RunAsync(CancellationToken.None);
+    Public Shared Function Add(left As C, right As C) As C
+        Return New C()
+    End Function
+End Class
+",
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixImproperPropertyVisibility_BasicAsync()
         {
             await new VerifyVB.Test
             {
-                TestCode = """
-                    Public Class C
-                        Public Shared Operator IsTrue(item As C) As Boolean
-                            Return True
-                        End Operator
-                        Public Shared Operator IsFalse(item As C) As Boolean
-                            Return False
-                        End Operator
+                TestCode = @"
+Public Class C
+    Public Shared Operator IsTrue(item As C) As Boolean
+        Return True
+    End Operator
+    Public Shared Operator IsFalse(item As C) As Boolean
+        Return False
+    End Operator
 
-                        Private ReadOnly Property {|#0:IsTrue|} As Boolean
-                            Get
-                                Return True
-                            End Get
-                        End Property
-                    End Class
-                    """,
+    Private ReadOnly Property {|#0:IsTrue|} As Boolean
+        Get
+            Return True
+        End Get
+    End Property
+End Class
+",
                 ExpectedDiagnostics =
                 {
                     VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("IsTrue", "op_True"),
                 },
-                FixedCode = """
-                    Public Class C
-                        Public Shared Operator IsTrue(item As C) As Boolean
-                            Return True
-                        End Operator
-                        Public Shared Operator IsFalse(item As C) As Boolean
-                            Return False
-                        End Operator
+                FixedCode = @"
+Public Class C
+    Public Shared Operator IsTrue(item As C) As Boolean
+        Return True
+    End Operator
+    Public Shared Operator IsFalse(item As C) As Boolean
+        Return False
+    End Operator
 
-                        Public ReadOnly Property IsTrue As Boolean
-                            Get
-                                Return True
-                            End Get
-                        End Property
-                    End Class
-                    """,
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod]
-        public async Task BothOperatorsOnOneType_FixAllAddsEveryAlternate_BasicAsync()
-        {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Class C
-                    Public Shared Operator +(left As C, right As C) As C
-                        Return New C()
-                    End Operator
-                    Public Shared Operator -(left As C, right As C) As C
-                        Return New C()
-                    End Operator
-                End Class
-
-                """,
-                new[]
-                {
-                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(3, 28, 3, 29).WithArguments("Add", "op_Addition"),
-                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(6, 28, 6, 29).WithArguments("Subtract", "op_Subtraction"),
-                },
-"""
-
-    Public Class C
-        Public Shared Operator +(left As C, right As C) As C
-            Return New C()
-        End Operator
-        Public Shared Operator -(left As C, right As C) As C
-            Return New C()
-        End Operator
-
-        Public Shared Function Add(left As C, right As C) As C
-            Throw New System.NotImplementedException()
-        End Function
-
-        Public Shared Function Subtract(left As C, right As C) As C
-            Throw New System.NotImplementedException()
-        End Function
-    End Class
-
-    """);
+    Public ReadOnly Property IsTrue As Boolean
+        Get
+            Return True
+        End Get
+    End Property
+End Class
+",
+            }.RunAsync();
         }
 
         #endregion

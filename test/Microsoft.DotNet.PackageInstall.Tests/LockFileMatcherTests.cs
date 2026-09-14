@@ -6,17 +6,16 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [TestClass]
     public class LockFileMatcherTests
     {
-        [TestMethod]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "tool.dll", true)]
-        [DataRow($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "subDirectory/tool.dll", true)]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/win-x64/tool.dll", "tool.dll", true)]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "subDirectory/tool.dll", true)]
-        [DataRow($"libs/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "tool.dll", false)]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}1/any/subDirectory/tool.dll", "tool.dll", false)]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "subDirectory/subDirectory/subDirectory/subDirectory/subDirectory/tool.dll", false)]
+        [Theory]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "tool.dll", true)]
+        [InlineData($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "subDirectory/tool.dll", true)]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/win-x64/tool.dll", "tool.dll", true)]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "subDirectory/tool.dll", true)]
+        [InlineData($"libs/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "tool.dll", false)]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}1/any/subDirectory/tool.dll", "tool.dll", false)]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "subDirectory/subDirectory/subDirectory/subDirectory/subDirectory/tool.dll", false)]
         public void MatchesEntryPointTests(string pathInLockFileItem, string targetRelativeFilePath, bool shouldMatch)
         {
             LockFileMatcher.MatchesFile(new LockFileItem(pathInLockFileItem), targetRelativeFilePath)
@@ -24,11 +23,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        [TestMethod]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "", true)]
-        [DataRow($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "subDirectory", true)]
-        [DataRow($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "sub", false)]
-        [DataRow($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "any/subDirectory", false)]
+        [Theory]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/any/tool.dll", "", true)]
+        [InlineData($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "subDirectory", true)]
+        [InlineData($@"tools\{ToolsetInfo.CurrentTargetFramework}\any\subDirectory\tool.dll", "sub", false)]
+        [InlineData($"tools/{ToolsetInfo.CurrentTargetFramework}/any/subDirectory/tool.dll", "any/subDirectory", false)]
         public void MatchesDirectoryPathTests(
             string pathInLockFileItem,
             string targetRelativeFilePath,

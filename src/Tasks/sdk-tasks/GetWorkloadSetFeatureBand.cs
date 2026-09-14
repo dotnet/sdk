@@ -7,7 +7,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public class GetWorkloadSetFeatureBand : Task
     {
         [Required]

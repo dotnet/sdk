@@ -1,380 +1,353 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DataSetDataTableInSerializableObjectGraphTests
     {
-        [TestMethod]
+        [Fact]
         public async Task JavaScriptSerializer_Deserialize_Generic_DiagnosticAsync()
         {
-            await VerifyCSharpJssAsync("""
+            await VerifyCSharpJssAsync(@"
+using System;
+using System.Data;
+using System.Web.Script.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Web.Script.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(string input)
-                        {
-                            JavaScriptSerializer jss = new JavaScriptSerializer();
-                            return jss.Deserialize<BlahClass>(input);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(string input)
+        {
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            return jss.Deserialize<BlahClass>(input);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task JavaScriptSerializer_Deserialize_Generic_NoDiagnosticAsync()
         {
-            await VerifyCSharpJssAsync("""
-                using System;
-                using System.Web.Script.Serialization;
+            await VerifyCSharpJssAsync(@"
+using System;
+using System.Web.Script.Serialization;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public object NotADataTable;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public object NotADataTable;
 
-                        public BlahClass Method(string input)
-                        {
-                            JavaScriptSerializer jss = new JavaScriptSerializer();
-                            return jss.Deserialize<BlahClass>(input);
-                        }
-                    }
-                }
-                """);
+        public BlahClass Method(string input)
+        {
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            return jss.Deserialize<BlahClass>(input);
+        }
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task JavaScriptSerializer_Deserialize_NonGeneric_DiagnosticAsync()
         {
-            await VerifyCSharpJssAsync("""
+            await VerifyCSharpJssAsync(@"
+using System;
+using System.Data;
+using System.Web.Script.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Web.Script.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(string input)
-                        {
-                            JavaScriptSerializer jss = new JavaScriptSerializer();
-                            return (BlahClass) jss.Deserialize(input, typeof(BlahClass));
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(string input)
+        {
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            return (BlahClass) jss.Deserialize(input, typeof(BlahClass));
+        }
+    }
+}",
                 GetCSharpResultAt(15, 55, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task JavaScriptSerializer_Deserialize_NonGeneric_OutOfOrderArguments_DiagnosticAsync()
         {
-            await VerifyCSharpJssAsync("""
+            await VerifyCSharpJssAsync(@"
+using System;
+using System.Data;
+using System.Web.Script.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Web.Script.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(string input)
-                        {
-                            JavaScriptSerializer jss = new JavaScriptSerializer();
-                            return (BlahClass) jss.Deserialize(targetType: typeof(BlahClass), input: input);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(string input)
+        {
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            return (BlahClass) jss.Deserialize(targetType: typeof(BlahClass), input: input);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 60, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task JavaScriptSerializer_DeserializeObject_As_DiagnosticAsync()
         {
-            await VerifyCSharpJssAsync("""
+            await VerifyCSharpJssAsync(@"
+using System;
+using System.Data;
+using System.Web.Script.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Web.Script.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(string input)
-                        {
-                            JavaScriptSerializer jss = new JavaScriptSerializer();
-                            return jss.DeserializeObject(input) as BlahClass;
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(string input)
+        {
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            return jss.DeserializeObject(input) as BlahClass;
+        }
+    }
+}",
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DataContract_Type_DiagnosticAsync()
         {
-            await VerifyCSharpAsync("""
+            await VerifyCSharpAsync(@"
+using System;
+using System.Data;
+using System.Runtime.Serialization;
+using System.Xml;
 
-                using System;
-                using System.Data;
-                using System.Runtime.Serialization;
-                using System.Xml;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(XmlReader reader)
-                        {
-                            DataContractSerializer dcs = new DataContractSerializer(typeof(BlahClass));
-                            return (BlahClass) dcs.ReadObject(reader);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(XmlReader reader)
+        {
+            DataContractSerializer dcs = new DataContractSerializer(typeof(BlahClass));
+            return (BlahClass) dcs.ReadObject(reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 69, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DataContract_Type_Types_DiagnosticAsync()
         {
-            await VerifyCSharpAsync("""
+            await VerifyCSharpAsync(@"
+using System;
+using System.Data;
+using System.Runtime.Serialization;
+using System.Xml;
 
-                using System;
-                using System.Data;
-                using System.Runtime.Serialization;
-                using System.Xml;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(XmlReader reader)
-                        {
-                            DataContractSerializer dcs = new DataContractSerializer(typeof(BlahClass), new[] { typeof(BlahClass) });
-                            return (BlahClass) dcs.ReadObject(reader);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(XmlReader reader)
+        {
+            DataContractSerializer dcs = new DataContractSerializer(typeof(BlahClass), new[] { typeof(BlahClass) });
+            return (BlahClass) dcs.ReadObject(reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 69, "DataTable", "DataTable BlahClass.DT"),
                 GetCSharpResultAt(15, 96, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task XmlSerializer_Constructor_DiagnosticAsync()
         {
-            await VerifyCSharpAsync("""
+            await VerifyCSharpAsync(@"
+using System;
+using System.Data;
+using System.Xml;
+using System.Xml.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Xml;
-                using System.Xml.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(XmlReader reader)
-                        {
-                            XmlSerializer xs = new XmlSerializer(typeof(BlahClass));
-                            return (BlahClass) xs.Deserialize(reader);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(XmlReader reader)
+        {
+            XmlSerializer xs = new XmlSerializer(typeof(BlahClass));
+            return (BlahClass) xs.Deserialize(reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 50, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task XmlSerializer_FromType_DiagnosticAsync()
         {
-            await VerifyCSharpAsync("""
+            await VerifyCSharpAsync(@"
+using System;
+using System.Data;
+using System.Xml;
+using System.Xml.Serialization;
 
-                using System;
-                using System.Data;
-                using System.Xml;
-                using System.Xml.Serialization;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(XmlReader reader)
-                        {
-                            XmlSerializer[] xs = XmlSerializer.FromTypes(new[] { typeof(BlahClass) });
-                            return (BlahClass) xs[0].Deserialize(reader);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(XmlReader reader)
+        {
+            XmlSerializer[] xs = XmlSerializer.FromTypes(new[] { typeof(BlahClass) });
+            return (BlahClass) xs[0].Deserialize(reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 66, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_DiagnosticAsync()
         {
-            await VerifyCSharpNewtonsoftAsync("""
+            await VerifyCSharpNewtonsoftAsync(@"
+using System;
+using System.Data;
+using Newtonsoft.Json;
 
-                using System;
-                using System.Data;
-                using Newtonsoft.Json;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public BlahClass Method(JsonReader reader)
-                        {
-                            JsonSerializer js = new JsonSerializer();
-                            return (BlahClass) js.Deserialize(reader);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(JsonReader reader)
+        {
+            JsonSerializer js = new JsonSerializer();
+            return (BlahClass) js.Deserialize(reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_DiagnosticAsync()
         {
-            await VerifyCSharpNewtonsoftAsync("""
+            await VerifyCSharpNewtonsoftAsync(@"
+using System;
+using System.Data;
+using Newtonsoft.Json;
 
-                using System;
-                using System.Data;
-                using Newtonsoft.Json;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public object Method(JsonReader reader)
-                        {
-                            JsonSerializer js = new JsonSerializer();
-                            return js.Deserialize(reader, typeof(BlahClass));
-                        }
-                    }
-                }
-                """,
+        public object Method(JsonReader reader)
+        {
+            JsonSerializer js = new JsonSerializer();
+            return js.Deserialize(reader, typeof(BlahClass));
+        }
+    }
+}",
                 GetCSharpResultAt(15, 43, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_OutOfOrderArguments_DiagnosticAsync()
         {
-            await VerifyCSharpNewtonsoftAsync("""
+            await VerifyCSharpNewtonsoftAsync(@"
+using System;
+using System.Data;
+using Newtonsoft.Json;
 
-                using System;
-                using System.Data;
-                using Newtonsoft.Json;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT;
-
-                        public object Method(JsonReader reader)
-                        {
-                            JsonSerializer js = new JsonSerializer();
-                            return js.Deserialize(objectType: typeof(BlahClass), reader: reader);
-                        }
-                    }
-                }
-                """,
+        public object Method(JsonReader reader)
+        {
+            JsonSerializer js = new JsonSerializer();
+            return js.Deserialize(objectType: typeof(BlahClass), reader: reader);
+        }
+    }
+}",
                 GetCSharpResultAt(15, 47, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_JsonIgnore_NoDiagnosticAsync()
         {
-            await VerifyCSharpNewtonsoftAsync("""
-                using System;
-                using System.Data;
-                using Newtonsoft.Json;
+            await VerifyCSharpNewtonsoftAsync(@"
+using System;
+using System.Data;
+using Newtonsoft.Json;
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        [JsonIgnore]
-                        public DataTable DT;
+namespace Blah
+{
+    public class BlahClass
+    {
+        [JsonIgnore]
+        public DataTable DT;
 
-                        public BlahClass Method(JsonReader reader)
-                        {
-                            JsonSerializer js = new JsonSerializer();
-                            return (BlahClass) js.Deserialize(reader);
-                        }
-                    }
-                }
-                """);
+        public BlahClass Method(JsonReader reader)
+        {
+            JsonSerializer js = new JsonSerializer();
+            return (BlahClass) js.Deserialize(reader);
+        }
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Newtonsoft_JsonConvert_DeserializeObject_Generic_DiagnosticAsync()
         {
-            await VerifyCSharpNewtonsoftAsync("""
+            await VerifyCSharpNewtonsoftAsync(@"
+using System;
+using System.Data;
+using Newtonsoft.Json;
 
-                using System;
-                using System.Data;
-                using Newtonsoft.Json;
+namespace Blah
+{
+    public class BlahClass
+    {
+        public DataTable DT { get; set; }
 
-                namespace Blah
-                {
-                    public class BlahClass
-                    {
-                        public DataTable DT { get; set; }
-
-                        public BlahClass Method(string s)
-                        {
-                            return JsonConvert.DeserializeObject<BlahClass>(s);
-                        }
-                    }
-                }
-                """,
+        public BlahClass Method(string s)
+        {
+            return JsonConvert.DeserializeObject<BlahClass>(s);
+        }
+    }
+}",
                 GetCSharpResultAt(14, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
@@ -392,7 +365,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
         /// <summary>
@@ -416,7 +389,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
         /// <summary>
@@ -440,7 +413,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

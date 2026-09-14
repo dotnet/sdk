@@ -5,16 +5,15 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class SubcommandTests : DotNetWatchTestBase
+public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [TestMethod]
+    [Fact]
     public async Task TestCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("XunitCore")
             .WithSource();
 
-        App.Start(testAsset, ["test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
+        App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
@@ -33,25 +32,25 @@ public class SubcommandTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestCommand_MultiTargeting()
     {
         var testAsset = TestAssets.CopyTestAsset("XunitMulti")
             .WithSource();
 
-        App.Start(testAsset, ["test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
+        App.Start(testAsset, ["--verbose", "test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
         await App.AssertOutputLineEquals("The following Tests are available:");
         await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task BuildCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["--property", "TestProperty=123", "build", "/t:TestTarget"]);
+        App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("build"));
         await App.WaitUntilOutputContains("warning : The value of property is '123'");
@@ -62,13 +61,13 @@ public class SubcommandTests : DotNetWatchTestBase
         Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [TestMethod]
+    [Fact]
     public async Task MSBuildCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
+        App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("msbuild"));
         await App.WaitUntilOutputContains("warning : The value of property is '123'");
@@ -79,13 +78,13 @@ public class SubcommandTests : DotNetWatchTestBase
         Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [TestMethod]
+    [Fact]
     public async Task PackCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["pack", "-c", "Release"]);
+        App.Start(testAsset, ["--verbose", "pack", "-c", "Release"]);
 
         var packagePath = Path.Combine(testAsset.Path, "bin", "Release", "WatchNoDepsApp.1.0.0.nupkg");
 
@@ -98,13 +97,13 @@ public class SubcommandTests : DotNetWatchTestBase
         Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [TestMethod]
+    [Fact]
     public async Task PublishCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["publish", "-c", "Release"]);
+        App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
         
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("publish"));
         await App.WaitUntilOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
@@ -115,15 +114,14 @@ public class SubcommandTests : DotNetWatchTestBase
         Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [TestMethod]
+    [Fact]
     public async Task FormatCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.WatchArgs.Clear();
-
-        App.Start(testAsset, ["format", "--verbosity", "detailed"]);
+        App.SuppressVerboseLogging();
+        App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("format"));
         await App.WaitUntilOutputContains("format --verbosity detailed");

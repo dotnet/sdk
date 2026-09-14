@@ -6,19 +6,18 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests;
 
-[TestClass]
 public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
 {
-    public GivenDotnetTestsRunsWithDifferentCultures()
+    public GivenDotnetTestsRunsWithDifferentCultures(ITestOutputHelper log) : base(log)
     {
     }
 
-    [DataRow("en-US")]
-    [DataRow("de-DE")]
-    [TestMethod]
+    [InlineData("en-US")]
+    [InlineData("de-DE")]
+    [Theory]
     public void CanRunTestsAgainstProjectInLocale(string locale)
     {
-        TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+        TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                 .WithWorkingDirectory(testInstance.Path)

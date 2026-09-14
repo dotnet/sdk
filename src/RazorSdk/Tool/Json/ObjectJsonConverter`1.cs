@@ -1,8 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
@@ -12,26 +11,32 @@ internal abstract class ObjectJsonConverter<T> : JsonConverter<T>
     protected abstract T ReadFromProperties(JsonDataReader reader);
     protected abstract void WriteProperties(JsonDataWriter writer, T value);
 
-    public sealed override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public sealed override T? ReadJson(JsonReader reader, Type objectType, T? existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
-        if (reader.TokenType == JsonTokenType.Null)
+        if (reader.TokenType == JsonToken.Null)
         {
             return null;
         }
 
-        // Parse the current JSON value into a JsonDocument/JsonElement.
-        // This advances the reader past the entire value automatically.
-        using var doc = JsonDocument.ParseValue(ref reader);
+        reader.ReadToken(JsonToken.StartObject);
 
-        var dataReader = new JsonDataReader(doc.RootElement);
-        return ReadFromProperties(dataReader);
+        T result;
+
+        var dataReader = new JsonDataReader(reader);
+        result = ReadFromProperties(dataReader);
+
+        // JSON.NET serialization expects that we don't advance passed the end object token,
+        // but we should verify that it's there.
+        reader.CheckToken(JsonToken.EndObject);
+
+        return result;
     }
 
-    public sealed override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public sealed override void WriteJson(JsonWriter writer, T? value, JsonSerializer serializer)
     {
         if (value is null)
         {
-            writer.WriteNullValue();
+            writer.WriteNull();
             return;
         }
 

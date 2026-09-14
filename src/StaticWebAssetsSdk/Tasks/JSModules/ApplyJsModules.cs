@@ -9,7 +9,6 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
 public class ApplyJsModules : Task
 {
     [Required]

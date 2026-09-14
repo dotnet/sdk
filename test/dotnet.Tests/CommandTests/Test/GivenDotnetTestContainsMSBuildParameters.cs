@@ -8,22 +8,21 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    [TestClass]
     public class GivenDotnetTestContainsMSBuildParameters : SdkTest
     {
         private const string TestAppName = "VSTestMSBuildParameters";
         private const string MSBuildParameter = "/p:Version=1.2.3";
 
-        public GivenDotnetTestContainsMSBuildParameters()
+        public GivenDotnetTestContainsMSBuildParameters(ITestOutputHelper log) : base(log)
         {
         }
 
-        [DataRow($"{TestAppName}.csproj")]
-        [DataRow(null)]
-        [TestMethod]
+        [InlineData($"{TestAppName}.csproj")]
+        [InlineData(null)]
+        [Theory]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaCsproj(string projectName)
         {
-            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

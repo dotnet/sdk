@@ -7,12 +7,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadableTask
+public class ComputeEndpointsForReferenceStaticWebAssets : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -24,12 +20,9 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadabl
 
     public override bool Execute()
     {
-        var assets = StaticWebAsset.ToAssetDictionary(Assets, TaskEnvironment);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets);
 
         var result = CandidateEndpoints;
-
-        var routeSegments = new List<PathTokenizer.Segment>();
-        var basePathSegments = new List<PathTokenizer.Segment>();
 
         for (var i = 0; i < CandidateEndpoints.Length; i++)
         {
@@ -42,7 +35,7 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadabl
                 // destined to be used as a reference by other project are passed to this task.
 
                 var oldRoute = candidateEndpoint.Route;
-                if (StaticWebAssetEndpoint.RouteHasPathPrefix(oldRoute, asset.BasePath, routeSegments, basePathSegments))
+                if (oldRoute.StartsWith(asset.BasePath))
                 {
                     Log.LogMessage(MessageImportance.Low, "Skipping endpoint '{0}' because route '{1}' is already updated.", asset.Identity, oldRoute);
                 }

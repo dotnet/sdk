@@ -3,13 +3,11 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class RazorHotReloadTests : DotNetWatchTestBase
+public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
-    [DataRow("net6.0", "6.0.36")]
-    [DataRow(ToolsetInfo.CurrentTargetFramework, null)]
+    [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
+    [InlineData("net6.0", "6.0.36")]
+    [InlineData(ToolsetInfo.CurrentTargetFramework, null)]
     public async Task BlazorWasm(string tfm, string? wasmVersion)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: $"{tfm}_{wasmVersion}").WithSource(
@@ -63,8 +61,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
     }
 
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasm_MSBuildWarning()
     {
         var testAsset = TestAssets
@@ -86,8 +83,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasm_Restart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -110,8 +106,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
     }
 
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasmHosted()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
@@ -125,8 +120,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
     }
 
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
     public async Task Razor_Component_ScopedCssAndStaticAssets()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")

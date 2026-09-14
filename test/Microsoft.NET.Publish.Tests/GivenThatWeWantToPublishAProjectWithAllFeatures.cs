@@ -10,11 +10,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishAProjectWithAllFeatures : SdkTest
     {
-        [TestMethod]
-        [DynamicData(nameof(PublishData))]
+        public GivenThatWeWantToPublishAProjectWithAllFeatures(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [MemberData(nameof(PublishData))]
         public void It_publishes_the_project_correctly(string targetFramework, string[] expectedPublishFiles)
         {
             PublishCommand publishCommand = GetPublishCommand(targetFramework);
@@ -125,15 +128,15 @@ namespace Microsoft.NET.Publish.Tests
                 .BeEquivalentTo(baselineConfigJsonObject);
         }
 
-        [TestMethod]
+        [Fact]
         public void It_fails_when_nobuild_is_set_and_build_was_not_performed_previously()
         {
             var publishCommand = GetPublishCommand(ToolsetInfo.CurrentTargetFramework).Execute("/p:NoBuild=true");
             publishCommand.Should().Fail().And.HaveStdOutContaining("MSB3030"); // "Could not copy ___ because it was not found."
         }
 
-        [TestMethod]
-        [DynamicData(nameof(PublishData))]
+        [Theory]
+        [MemberData(nameof(PublishData))]
         public void It_does_not_build_when_nobuild_is_set(string targetFramework, string[] expectedPublishFiles)
         {
             var publishCommand = GetPublishCommand(targetFramework);
@@ -185,7 +188,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private PublishCommand GetPublishCommand(string targetFramework, [CallerMemberName] string callingMethod = null)
         {
-            TestAsset testAsset = TestAssetsManager
+            TestAsset testAsset = _testAssetsManager
                 .CopyTestAsset("KitchenSink", callingMethod, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges((path, project) =>

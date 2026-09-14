@@ -8,10 +8,9 @@ using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [TestClass]
     public class GivenDotnetOsArchOptions : SdkTest
     {
-        public GivenDotnetOsArchOptions()
+        public GivenDotnetOsArchOptions(ITestOutputHelper log) : base(log)
         {
         }
 
@@ -20,7 +19,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
 
         private static readonly string WorkingDirectory =
-            TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));        [TestMethod]
+            TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));        [Fact]
         public void OsOptionIsCorrectlyResolved()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -34,7 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ArchOptionIsCorrectlyResolved()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -56,7 +55,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             });
         }
-        [TestMethod]
+        [Fact]
         public void OSAndArchOptionsCanBeCombined()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -68,7 +67,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OptionsRespectUserSpecifiedSelfContained()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -87,37 +86,36 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OSOptionCannotBeCombinedWithRuntime()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(["--os", "os", "--runtime", "rid"], msbuildPath));
+                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--os", "os", "--runtime", "rid"], msbuildPath));
                 exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ArchOptionCannotBeCombinedWithRuntime()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(["--arch", "arch", "--runtime", "rid"], msbuildPath));
+                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--arch", "arch", "--runtime", "rid"], msbuildPath));
                 exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("build")]
-        [DataRow("publish")]
-        [DataRow("test")]
-        [DataRow("run")]
+        [WindowsOnlyTheory]
+        [InlineData("build")]
+        [InlineData("publish")]
+        [InlineData("test")]
+        [InlineData("run")]
         public void CommandsRunWithOSOption(string command)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -127,15 +125,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("build")]
-        [DataRow("publish")]
-        [DataRow("test")]
-        [DataRow("run")]
+        [WindowsOnlyTheory]
+        [InlineData("build")]
+        [InlineData("publish")]
+        [InlineData("test")]
+        [InlineData("run")]
         public void CommandsRunWithArchOption(string command)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -145,7 +142,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ArchOptionsAMD64toX64()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -157,7 +154,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ArchOptionIsResolvedFromRidUnderDifferentCulture()
         {
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;
@@ -176,7 +173,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
         }
 
-        [TestMethod]
+        [Fact]
         public void OsOptionIsResolvedFromRidUnderDifferentCulture()
         {
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;
@@ -204,4 +201,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

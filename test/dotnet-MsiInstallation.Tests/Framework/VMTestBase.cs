@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,14 +9,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
+    [Collection("VM Tests")]
     public class VMTestBase : SdkTest, IDisposable
     {
-        private VirtualMachine _vm;
+        internal VirtualMachine VM { get; }
 
-        internal VirtualMachine VM => _vm ??= new VirtualMachine(Log);
-
-        public VMTestBase()
+        public VMTestBase(ITestOutputHelper log) : base(log)
         {
+            VM = new VirtualMachine(Log);
             _sdkInstallerVersion = new Lazy<string>(() =>
             {
                 if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public virtual void Dispose()
         {
-            _vm?.Dispose();
+            VM.Dispose();
         }
 
         protected virtual bool NeedsIncludePreviews => false;

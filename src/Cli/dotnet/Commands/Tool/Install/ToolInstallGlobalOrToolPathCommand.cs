@@ -169,14 +169,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
     private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
     {
-        using var _activity = Activities.Source.StartActivity("install-tool");
-        _activity?.DisplayName = $"Install {packageId}";
-        _activity?.SetTag("tool.package.id", packageId);
-
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(string.Format(CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist, Path.GetFullPath(_configFilePath)));
-        }
+        ValidateArguments();
 
         DirectoryPath? toolPath = null;
         if (!string.IsNullOrEmpty(_toolPath))
@@ -197,9 +190,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         if (oldPackage != null)
         {
             NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
-            _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
-            _activity?.SetTag("tool.package.id", packageId);
-            _activity?.SetTag("tool.package.version", nugetVersion);
 
             if (ToolVersionAlreadyInstalled(oldPackage, nugetVersion))
             {
@@ -221,7 +211,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
             RunWithHandlingInstallError(() =>
             {
-                var toolPackageDownloaderActivity = Activities.Source.StartActivity("download-tool-package");
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
@@ -244,13 +233,13 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 }
                 else
                 {
-                    framework = string.IsNullOrEmpty(_framework) ? null : NuGetFramework.Parse(_framework);
+                    framework = string.IsNullOrEmpty(_framework) ?
+                        null :
+                        NuGetFramework.Parse(_framework);
                 }
-                var shimActivity = Activities.Source.StartActivity("create-shell-shim");
                 string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture).Result;
 
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
-                shimActivity?.Dispose();
 
                 foreach (string w in newInstalledPackage.Warnings)
                 {
@@ -264,7 +253,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 PrintSuccessMessage(oldPackage, newInstalledPackage);
             }, packageId);
         });
-
         return 0;
     }
 
@@ -279,7 +267,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         ).version;
     }
 
-    private static bool ToolVersionAlreadyInstalled(IToolPackage? oldPackageNullable, NuGetVersion nuGetVersion)
+    private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
     {
         return oldPackageNullable != null && oldPackageNullable.Version == nuGetVersion;
     }
@@ -322,7 +310,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             {
                 string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
-            message.AddRange(InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
+            message.AddRange(
+                InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
+
 
             throw new GracefulException(
                 messages: message,
@@ -344,7 +334,8 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             {
                 string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
-            message.AddRange(ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
+            message.AddRange(
+                ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
 
             throw new GracefulException(
                 messages: message,
@@ -372,10 +363,14 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         }
         catch (InvalidOperationException)
         {
-            throw new GracefulException(messages:
-            [
-                string.Format(CliCommandStrings.ToolUpdateToolHasMultipleVersionsInstalled, packageId)
-            ], isUserError: false);
+            throw new GracefulException(
+                messages:
+                [
+                    string.Format(
+                        CliCommandStrings.ToolUpdateToolHasMultipleVersionsInstalled,
+                        packageId),
+                ],
+                isUserError: false);
         }
     }
 

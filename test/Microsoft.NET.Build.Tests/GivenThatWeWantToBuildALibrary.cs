@@ -10,17 +10,19 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildALibrary : SdkTest
     {
+        public GivenThatWeWantToBuildALibrary(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [DataRow("netstandard2.0")]
-        [DataRow("netcoreapp2.1")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.1")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_the_library_successfully(string targetFramework)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework, "TestLibrary");
@@ -40,10 +42,10 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_the_library_twice_in_a_row()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -115,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
                 testAssetName += language.ToUpperInvariant();
             }
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName, callingMethod, identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -137,9 +139,9 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [TestMethod]
-        [DataRow("cs")]
-        [DataRow("vb")]
+        [Theory]
+        [InlineData("cs")]
+        [InlineData("vb")]
         public void It_creates_a_documentation_file(string language)
         {
             var testAsset = CreateDocumentationFileLibraryAsset(true, null, language);
@@ -169,11 +171,11 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [TestMethod]
-        [DataRow("cs", true)]
-        [DataRow("cs", false)]
-        [DataRow("vb", true)]
-        [DataRow("vb", false)]
+        [Theory]
+        [InlineData("cs", true)]
+        [InlineData("cs", false)]
+        [InlineData("vb", true)]
+        [InlineData("vb", false)]
         public void It_allows_us_to_override_the_documentation_file_name(string language, bool setGenerateDocumentationFileProperty)
         {
             var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language, "OverrideDocFileName");
@@ -213,11 +215,11 @@ namespace Microsoft.NET.Build.Tests
             new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(expectedProjectDirectoryFiles, SearchOption.TopDirectoryOnly);
         }
 
-        [TestMethod]
-        [DataRow("cs", true)]
-        [DataRow("cs", false)]
-        [DataRow("vb", true)]
-        [DataRow("vb", false)]
+        [Theory]
+        [InlineData("cs", true)]
+        [InlineData("cs", false)]
+        [InlineData("vb", true)]
+        [InlineData("vb", false)]
         public void It_does_not_create_a_documentation_file_if_GenerateDocumentationFile_property_is_false(string language, bool setDocumentationFileProperty)
         {
             var testAsset = CreateDocumentationFileLibraryAsset(false, setDocumentationFileProperty ? "TestLibDoc.xml" : null, language, "DoesntCreateDocFile");
@@ -247,10 +249,10 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [TestMethod]
+        [Fact]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -269,14 +271,14 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [DataRow("Debug", "DEBUG")]
-        [DataRow("Release", "RELEASE")]
-        [DataRow("CustomConfiguration", "CUSTOMCONFIGURATION")]
-        [DataRow("Debug-NetCore", "DEBUG_NETCORE")]
+        [Theory]
+        [InlineData("Debug", "DEBUG")]
+        [InlineData("Release", "RELEASE")]
+        [InlineData("CustomConfiguration", "CUSTOMCONFIGURATION")]
+        [InlineData("Debug-NetCore", "DEBUG_NETCORE")]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string expectedDefine)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitConfigurationConstants", configuration)
                 .WithSource();
 
@@ -299,35 +301,35 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" });
         }
 
-        [TestMethod]
-        [DataRow(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
-        [DataRow(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" }, true)]
-        [DataRow("netstandard2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
-        [DataRow("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
-        [DataRow("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" }, true)]
-        [DataRow("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
+        [Theory]
+        [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
+        [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" }, true)]
+        [InlineData("netstandard2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" }, true)]
+        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" })]
-        [DataRow("net48", new[] { "NETFRAMEWORK", "NET48", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
+        [InlineData("net48", new[] { "NETFRAMEWORK", "NET48", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER", "NET462_OR_GREATER", "NET47_OR_GREATER", "NET471_OR_GREATER", "NET472_OR_GREATER", "NET48_OR_GREATER" })]
-        [DataRow("net481", new[] { "NETFRAMEWORK", "NET481", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
+        [InlineData("net481", new[] { "NETFRAMEWORK", "NET481", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER", "NET462_OR_GREATER", "NET47_OR_GREATER", "NET471_OR_GREATER", "NET472_OR_GREATER", "NET48_OR_GREATER", "NET481_OR_GREATER" })]
-        [DataRow("netcoreapp1.0", new[] { "NETCOREAPP", "NETCOREAPP1_0", "NETCOREAPP1_0_OR_GREATER" })]
-        [DataRow("netcoreapp3.0", new[] { "NETCOREAPP", "NETCOREAPP3_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER",
+        [InlineData("netcoreapp1.0", new[] { "NETCOREAPP", "NETCOREAPP1_0", "NETCOREAPP1_0_OR_GREATER" })]
+        [InlineData("netcoreapp3.0", new[] { "NETCOREAPP", "NETCOREAPP3_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER",
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER" })]
-        [DataRow("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
             "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" })]
-        [DataRow("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
             "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" }, true)]
-        [DataRow("net10.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
+        [InlineData("net10.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
             "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET10_0",
             "NET5_0_OR_GREATER", "NET6_0_OR_GREATER", "NET7_0_OR_GREATER", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET10_0_OR_GREATER" })]
-        [DataRow(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { })]
-        [DataRow(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK", "NET40", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER" })]
-        [DataRow("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS", "XAMARINIOS1_0" })]
-        [DataRow("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK", "UNKNOWNFRAMEWORK3_14" })]
+        [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { })]
+        [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK", "NET40", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER" })]
+        [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS", "XAMARINIOS1_0" })]
+        [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK", "UNKNOWNFRAMEWORK3_14" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines, bool addDefineFromCli = false)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework, identifier: expectedDefines.GetHashCode().ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -382,10 +384,10 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(expectedConstants.ToArray());
         }
 
-        [TestMethod]
-        [DataRow(new string[] { }, "windows", "10.0.18362.0", new[] { "WINDOWS", "WINDOWS10_0_18362_0", "WINDOWS7_0_OR_GREATER", "WINDOWS8_0_OR_GREATER", "WINDOWS10_0_17763_0_OR_GREATER", "WINDOWS10_0_18362_0_OR_GREATER" })]
-        [DataRow(new[] { "1.0", "1.1" }, "ios", "1.1", new[] { "IOS", "IOS1_1", "IOS1_0_OR_GREATER", "IOS1_1_OR_GREATER" })]
-        [DataRow(new[] { "11.11", "12.12", "13.13" }, "android", "12.12", new[] { "ANDROID", "ANDROID12_12", "ANDROID11_11_OR_GREATER", "ANDROID12_12_OR_GREATER" })]
+        [Theory]
+        [InlineData(new string[] { }, "windows", "10.0.18362.0", new[] { "WINDOWS", "WINDOWS10_0_18362_0", "WINDOWS7_0_OR_GREATER", "WINDOWS8_0_OR_GREATER", "WINDOWS10_0_17763_0_OR_GREATER", "WINDOWS10_0_18362_0_OR_GREATER" })]
+        [InlineData(new[] { "1.0", "1.1" }, "ios", "1.1", new[] { "IOS", "IOS1_1", "IOS1_0_OR_GREATER", "IOS1_1_OR_GREATER" })]
+        [InlineData(new[] { "11.11", "12.12", "13.13" }, "android", "12.12", new[] { "ANDROID", "ANDROID12_12", "ANDROID11_11_OR_GREATER", "ANDROID12_12_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_platform(string[] sdkSupportedTargetPlatformVersion, string targetPlatformIdentifier, string targetPlatformVersion, string[] expectedDefines)
         {
             if (targetPlatformIdentifier.Equals("windows", StringComparison.OrdinalIgnoreCase))
@@ -399,7 +401,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var targetFramework = "net5.0";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework, identifier: expectedDefines.GetHashCode().ToString())
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -435,12 +437,11 @@ namespace Microsoft.NET.Build.Tests
                 .Concat(expectedDefines).ToArray());
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_does_not_generate_or_greater_symbols_on_disabled_implicit_framework_defines()
         {
             var targetFramework = "net5.0-windows10.0.19041.0";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -478,10 +479,9 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.12.0")]
-        [DataRow("net8.0", new[] { "NETCOREAPP", "NET", "NET8_0", "NET8_0_OR_GREATER" })]
-        [DataRow("net9.0", new[] { "NETCOREAPP", "NET", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET9_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("17.12.0")]
+        [InlineData("net8.0", new[] { "NETCOREAPP", "NET", "NET8_0", "NET8_0_OR_GREATER" })]
+        [InlineData("net9.0", new[] { "NETCOREAPP", "NET", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET9_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
         public void It_can_use_implicitly_defined_compilation_constants(string targetFramework, string[] expectedOutput, string targetPlatformIdentifier = null, string targetPlatformVersion = null)
         {
             var testProj = new TestProject()
@@ -540,7 +540,7 @@ class Program
         #endif
     }
 }";
-            var testAsset = TestAssetsManager.CreateTestProject(testProj, targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, targetFramework);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProj.Name));
             buildCommand
@@ -553,19 +553,19 @@ class Program
             stdOut.Should().BeEquivalentTo(expectedOutput);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_empty(bool useSolution)
         {
             string targetFramework = "";
             TestInvalidTargetFramework("EmptyTargetFramework", targetFramework, useSolution,
-                "The TargetFramework property is empty");
+                $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_invalid(bool useSolution)
         {
             string targetFramework = "notaframework";
@@ -573,9 +573,9 @@ class Program
                 $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_should_be_targetframeworks(bool useSolution)
         {
             string targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net462";
@@ -583,12 +583,11 @@ class Program
                 $"The TargetFramework value '{targetFramework}' is not valid. To multi-target, use the 'TargetFrameworks' property instead");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0-preview-20310-07")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "", false)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "UseWPF", true)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "UseWindowsForms", true)]
-        [DataRow("netcoreapp3.1", "", true)]
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "UseWPF", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "UseWindowsForms", true)]
+        [InlineData("netcoreapp3.1", "", true)]
         public void It_defines_target_platform_defaults_correctly(string targetFramework, string propertyName, bool defaultsDefined)
         {
             TestProject testProject = new()
@@ -601,7 +600,7 @@ class Program
             {
                 testProject.AdditionalProperties[propertyName] = "true";
             }
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "TargetPlatformIdentifier");
             getValuesCommand
@@ -620,9 +619,9 @@ class Program
             }
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
-        [DataRow("netcoreapp3.1")]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData("netcoreapp3.1")]
         public void It_defines_windows_version_default_correctly(string targetFramework)
         {
             TestProject testProject = new()
@@ -632,7 +631,7 @@ class Program
                 TargetFrameworks = targetFramework
             };
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "windows";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "TargetPlatformVersion");
             getValuesCommand
@@ -652,7 +651,7 @@ class Program
             };
 
             string identifier = ((useSolution ? "_Solution" : "") + targetFramework + expectedOutput).GetHashCode().ToString();
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             if (targetFramework.Contains(";"))
             {
@@ -716,9 +715,9 @@ class Program
                 .And.NotHaveStdOutContaining(">="); // old error about comparing empty string to version when TargetFramework was blank;
         }
 
-        [TestMethod]
-        [DataRow("netcoreapp11.1")]
-        [DataRow("netstandard2.2")]
+        [Theory]
+        [InlineData("netcoreapp10.1")]
+        [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {
             var testProject = new TestProject()
@@ -727,7 +726,7 @@ class Program
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, targetFramework);
 
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProject.Name);
 
@@ -746,7 +745,7 @@ class Program
                 .And.HaveStdOutContaining("The current .NET SDK does not support targeting");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_passes_ridless_target_to_compiler()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
@@ -758,7 +757,7 @@ class Program
                 RuntimeIdentifier = runtimeIdentifier,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     //  Set property to disable logic in Microsoft.NETCore.App package that will otherwise cause a failure
@@ -792,10 +791,10 @@ class Program
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_can_target_uwp_using_sdk_extras()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("UwpUsingSdkExtras")
                 .WithSource();
 
@@ -806,10 +805,10 @@ class Program
                 .Pass();
         }
 
-        [TestMethod]
-        [DataRow(null)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
         public void It_marks_package_references_as_externally_resolved(bool? markAsExternallyResolved)
         {
             var project = new TestProject
@@ -820,7 +819,7 @@ class Program
                 PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) }
             };
 
-            var asset = TestAssetsManager.CreateTestProject(
+            var asset = _testAssetsManager.CreateTestProject(
                 project,
                 "ExternallyResolvedPackages",
                 markAsExternallyResolved.ToString())
@@ -855,18 +854,17 @@ class Program
             }
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
-        [DataRow("net5.0", false, false, false, null)]   // Pre .NET 6.0 predefinedCulturesOnly is not supported.
-        [DataRow("net5.0", true, false, false, null)]    // Pre .NET 6.0 predefinedCulturesOnly is not supported.
-        [DataRow("net5.0", false, true, true, "True")]   // Pre .NET 6.0 predefinedCulturesOnly can end up in the runtime config file but with no effect at runtime.
-        [DataRow("net5.0", true, true, true, "True")]    // Pre .NET 6.0 predefinedCulturesOnly can end up in the runtime config file but with no effect at runtime.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, false, false, false, null)]   // predefinedCulturesOnly will not be included in the runtime config file if invariant is not defined.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, false, false, true, "False")] // predefinedCulturesOnly explicitly defined as false.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, false, true, true, "True")]   // predefinedCulturesOnly explicitly defined as true.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, true, false, false, "True")]  // predefinedCulturesOnly default value is true when Invariant is true.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, true, false, true, "False")]  // predefinedCulturesOnly explicitly defined as false.
-        [DataRow(ToolsetInfo.CurrentTargetFramework, true, true, true, "True")]    // predefinedCulturesOnly explicitly defined as true.
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("net5.0", false, false, false, null)]   // Pre .NET 6.0 predefinedCulturesOnly is not supported.
+        [InlineData("net5.0", true, false, false, null)]    // Pre .NET 6.0 predefinedCulturesOnly is not supported.
+        [InlineData("net5.0", false, true, true, "True")]   // Pre .NET 6.0 predefinedCulturesOnly can end up in the runtime config file but with no effect at runtime.
+        [InlineData("net5.0", true, true, true, "True")]    // Pre .NET 6.0 predefinedCulturesOnly can end up in the runtime config file but with no effect at runtime.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, false, false, false, null)]   // predefinedCulturesOnly will not be included in the runtime config file if invariant is not defined.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, false, false, true, "False")] // predefinedCulturesOnly explicitly defined as false.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, false, true, true, "True")]   // predefinedCulturesOnly explicitly defined as true.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, false, false, "True")]  // predefinedCulturesOnly default value is true when Invariant is true.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, false, true, "False")]  // predefinedCulturesOnly explicitly defined as false.
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, true, true, "True")]    // predefinedCulturesOnly explicitly defined as true.
         public void It_can_implicitly_define_predefined_Cultures_only(string targetFramework, bool invariantValue, bool predefinedCulturesOnlyValue, bool definePredefinedCulturesOnly, string expectedPredefinedValue)
         {
             var testProj = new TestProject()
@@ -883,7 +881,7 @@ class Program
                 testProj.AdditionalProperties["PredefinedCulturesOnly"] = predefinedCulturesOnlyValue ? "true" : "false";
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProj, identifier: $"{targetFramework}{invariantValue}{predefinedCulturesOnlyValue}{definePredefinedCulturesOnly}");
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: $"{targetFramework}{invariantValue}{predefinedCulturesOnlyValue}{definePredefinedCulturesOnly}");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
                 .Execute()
@@ -909,10 +907,10 @@ class Program
             }
         }
 
-        [TestMethod]
-        [DataRow("True")]
-        [DataRow("False")]
-        [DataRow(null)]
+        [Theory]
+        [InlineData("True")]
+        [InlineData("False")]
+        [InlineData(null)]
         public void It_can_evaluate_metrics_support(string value)
         {
             var testProj = new TestProject()
@@ -927,7 +925,7 @@ class Program
                 testProj.AdditionalProperties["MetricsSupport"] = value;
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProj, identifier: value);
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: value);
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
                 .Execute()
@@ -953,12 +951,12 @@ class Program
             }
         }
 
-        [TestMethod]
-        [DataRow("netcoreapp2.2", null, false, null, false)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, null, true, null, true)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, null, true)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, null, true, false, false)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, false, false)]
+        [Theory]
+        [InlineData("netcoreapp2.2", null, false, null, false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, false, false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, false, false)]
         public void It_can_build_with_dynamic_loading_enabled(string targetFramework, string rollForwardValue, bool shouldSetRollForward, bool? copyLocal, bool shouldCopyLocal)
         {
             var testProject = new TestProject()
@@ -980,7 +978,7 @@ class Program
             }
 
             var identifier = targetFramework + shouldSetRollForward + shouldCopyLocal + (rollForwardValue == null ? "Null" : rollForwardValue);
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -1019,9 +1017,9 @@ class Program
             }
         }
 
-        [TestMethod]
-        [DataRow("netcoreapp3.1")]
-        [DataRow("netcoreapp5.0")]
+        [Theory]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("netcoreapp5.0")]
         public void It_makes_RootNamespace_safe_when_project_name_has_spaces(string targetFramework)
         {
             var testProject = new TestProject()
@@ -1030,7 +1028,7 @@ class Program
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
             // We need a buildable project to extract the property to verify it
@@ -1076,9 +1074,7 @@ namespace ProjectNameWithSpaces
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
-        [TestMethod]
-        [Ignore("We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()
@@ -1117,7 +1113,7 @@ namespace ProjectNameWithSpaces
 }");
             testProjectA.ReferencedProjects.Add(testProjectB);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProjectA);
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectA);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -1128,12 +1124,12 @@ namespace ProjectNameWithSpaces
                 .HaveStdOutContaining("NETSDK1148");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_Has_Unescaped_PackageConflictPreferredPackages_Values()
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework, "TestLibrary");

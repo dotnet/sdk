@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,14 +7,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAWindowsDesktopProject : SdkTest
     {
+        public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
+        { }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0")]
-        [DataRow("UseWindowsForms")]
-        [DataRow("UseWPF")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
+        [InlineData("UseWindowsForms")]
+        [InlineData("UseWPF")]
         public void It_errors_when_missing_windows_target_platform(string propertyName)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "custom"; // Make sure we don't get windows implicitly set as the TPI
             testProject.AdditionalProperties["TargetPlatformSupported"] = "true";
             testProject.AdditionalProperties["TargetPlatformMoniker"] = "custom,Version="; //Make sure we avoid implicitly setting an invalid TPV
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: propertyName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: propertyName);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.ExecuteWithoutRestore()
@@ -37,10 +37,9 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1136");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0")]
-        [DataRow("UseWindowsForms")]
-        [DataRow("UseWPF")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
+        [InlineData("UseWindowsForms")]
+        [InlineData("UseWPF")]
         public void It_errors_when_missing_transitive_windows_target_platform(string propertyName)
         {
             TestProject testProjectA = new()
@@ -65,7 +64,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProjectC.ReferencedProjects.Add(testProjectB);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProjectC);
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectC);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -75,8 +74,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1136");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.8.0")]
+        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
         public void It_warns_when_specifying_windows_desktop_sdk()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -87,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework
             };
             testProject.AdditionalProperties["UseWPF"] = "true";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -97,8 +95,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1137");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_does_not_warn_when_multitargeting()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net472;netcoreapp3.1";
@@ -110,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["UseWPF"] = "true";
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -120,8 +117,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1137");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_imports_when_targeting_dotnet_3()
         {
             var targetFramework = "netcoreapp3.1";
@@ -132,7 +128,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["UseWPF"] = "true";
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -146,11 +142,10 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "true" });
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/29968")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/29968")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             new DotnetNewCommand(Log, "wpf", "--no-restore")
                 .WithVirtualHive()
                 .WithWorkingDirectory(testDirectory)
@@ -175,8 +170,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
@@ -184,7 +178,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "InvalidWindowsVersion",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows1.0"
             };
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -194,10 +188,9 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
         {
             if (!setInTargetframework)
@@ -220,7 +213,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
                 testProject.AdditionalProperties["TargetPlatformVersion"] = "10.0.18362";
             }
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, setInTargetframework.ToString());
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, setInTargetframework.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -234,7 +227,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "10.0.18362.0" });
         }
 
-        [TestMethod]
+        [Fact]
         public void It_fails_if_target_platform_identifier_and_version_are_invalid()
         {
             var testProject = new TestProject()
@@ -242,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "InvalidTargetPlatform",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-custom1.0"
             };
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -254,11 +247,10 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1140");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void UseWPFCanBeSetInDirectoryBuildTargets()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
@@ -295,8 +287,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void TargetPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -304,7 +295,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows"
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             string targetPlatformVersion = "10.0.18362.0";
 
@@ -328,8 +319,7 @@ namespace Microsoft.NET.Build.Tests
             GetPropertyValue(testAsset, "TargetPlatformMoniker").Should().Be($"Windows,Version={targetPlatformVersion}");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -337,7 +327,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             string supportedOSPlatformVersion = "10.0.18362.0";
 
@@ -362,19 +352,18 @@ namespace Microsoft.NET.Build.Tests
             GetPropertyValue(testAsset, "TargetPlatformMoniker").Should().Be("Windows,Version=10.0.19041.0");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true)]
-        [DataRow("netcoreapp3.1", false)]
-        [DataRow("net472", false)]
+        [WindowsOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true)]
+        [InlineData("netcoreapp3.1", false)]
+        [InlineData("net472", false)]
         public void WindowsWorkloadIsInstalledForNet5AndUp(string targetFramework, bool supportsWindowsTargetPlatformIdentifier)
         {
             var testProject = new TestProject()
             {
                 TargetFrameworks = targetFramework
             };
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var getValueCommand = new GetValuesCommand(testAsset, "SdkSupportedTargetPlatformIdentifier", GetValuesCommand.ValueType.Item);
             getValueCommand.Execute()
@@ -395,17 +384,16 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyTheory]
         //  Basic Windows TargetFramework
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", false, null, "10.0.19041.*")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", false, null, "10.0.19041.*")]
         //  Basic UseWindowsSdkPreview usage
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.99999.0", true, null, "10.0.99999-preview")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.99999.0", true, null, "10.0.99999-preview")]
         //  Basic WindowsSdkPackageVersion usage
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999-abc", "10.0.99999-abc")]
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999.0", "10.0.99999.0")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999-abc", "10.0.99999-abc")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999.0", "10.0.99999.0")]
         //  WindowsSdkPackageVersion should supercede UseWindowsSDKPreview property
-        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true, "10.0.99999-abc", "10.0.99999-abc")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true, "10.0.99999-abc", "10.0.99999-abc")]
         public void ItUsesCorrectWindowsSdkPackVersion(string targetFramework, bool? useWindowsSDKPreview, string windowsSdkPackageVersion, string expectedWindowsSdkPackageVersion)
         {
             var testProject = new TestProject()
@@ -421,7 +409,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["WindowsSdkPackageVersion"] = windowsSdkPackageVersion;
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework + useWindowsSDKPreview + windowsSdkPackageVersion);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + useWindowsSDKPreview + windowsSdkPackageVersion);
 
             string referencedWindowsSdkVersion = GetReferencedWindowsSdkVersion(testAsset);
 
@@ -435,11 +423,10 @@ namespace Microsoft.NET.Build.Tests
             referencedWindowsSdkVersion.Should().Be(expectedWindowsSdkPackageVersion);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("net5.0-windows10.0.22000.0", "10.0.22000.25")]
-        [DataRow("net6.0-windows10.0.22000.0", "10.0.22000.26")]
-        [DataRow("net6.0-windows10.0.19041.0", "10.0.19041.25")]
+        [WindowsOnlyTheory]
+        [InlineData("net5.0-windows10.0.22000.0", "10.0.22000.25")]
+        [InlineData("net6.0-windows10.0.22000.0", "10.0.22000.26")]
+        [InlineData("net6.0-windows10.0.19041.0", "10.0.19041.25")]
         public void ItUsesTheHighestMatchingWindowsSdkPackageVersion(string targetFramework, string expectedWindowsSdkPackageVersion)
         {
             var testProject = new TestProject()
@@ -447,7 +434,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project =>
                 {
                     //  Add items for available SDK versions for test
@@ -469,8 +456,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         // We used to emit NETSDK1219 while UWP support on .NET 9 was not GA yet, make sure it's gone now
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItDoesNotWarnAnymoreWhenBuildingAProjectWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -482,7 +468,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["UseUwp"] = "true";
             testProject.AdditionalProperties["UseUwpTools"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -492,8 +478,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1219");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItWarnsWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -505,7 +490,7 @@ namespace Microsoft.NET.Build.Tests
             // Disabling until CsWinRTGen is available.
             testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -515,8 +500,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1229");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItImplicitlyDefinesCSWINRT3_0WhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -536,7 +520,7 @@ namespace Microsoft.NET.Build.Tests
             // Disabling until CsWinRTGen is available.
             testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -544,8 +528,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItDoesNotImplicitlyDefineCSWINRT3_0WhenBuildingAProjectNotTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -563,7 +546,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -571,8 +554,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItNormalizesWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -593,7 +575,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -603,8 +585,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItHasExpectedWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT2_0()
         {
             TestProject testProject = new()
@@ -622,7 +603,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -630,8 +611,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -643,7 +623,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["UseUwp"] = "true";
             testProject.AdditionalProperties["UseUwpTools"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -653,8 +633,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1220");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
         {
             TestProject testProjectA = new()
@@ -674,7 +653,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProjectB.ReferencedProjects.Add(testProjectA);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProjectB);
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectB);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -684,8 +663,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1218");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItFailsToBuildWhenReferencingWindowsUIXamlTypesWithoutUseUwpProperty()
         {
             TestProject testProject = new()
@@ -709,7 +687,7 @@ namespace Microsoft.NET.Build.Tests
             // Temporary until new projections flow to tests
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -719,8 +697,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("CS0234");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItBuildsWhenReferencingWindowsUIXamlTypesWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -746,7 +723,7 @@ namespace Microsoft.NET.Build.Tests
             // Temporary until new projections flow to tests
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -754,8 +731,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItHandlesProfilesWithSelfContained()
         {
             TestProject testProject = new()
@@ -772,7 +748,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add reference to Windows Forms, which is a profile of Microsoft.WindowsDesktop.App
             testProject.AddItem("FrameworkReference", "Include", "Microsoft.WindowsDesktop.App.WindowsForms");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -782,8 +758,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.GetOutputDirectory().Should().HaveFile("PresentationFramework.dll");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItCanMultiTargetCSWinRT2And3()
         {
             TestProject testProject = new()
@@ -796,16 +771,15 @@ namespace Microsoft.NET.Build.Tests
             // Disabling until CsWinRTGen is available.
             testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("57", "10.0.19041.57")]
-        [DataRow("50", "10.0.19041.55")]
+        [WindowsOnlyTheory]
+        [InlineData("57", "10.0.19041.57")]
+        [InlineData("50", "10.0.19041.55")]
         public void MinimumWindowsSdkPackagRevisionCanBeSet(string minimumRevision, string expectedPackageVersion)
         {
             var testProject = new TestProject()
@@ -813,7 +787,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };
             testProject.AdditionalProperties["WindowsSdkPackageMinimumRevision"] = minimumRevision;
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), """
 <Project>
@@ -839,8 +813,7 @@ namespace Microsoft.NET.Build.Tests
             referencedWindowsSdkVersion.Should().Be(expectedPackageVersion);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void WindowsSdkPackageVersionAndMinimumRevisionCannotBothBeSpecified()
         {
             var testProject = new TestProject()
@@ -849,7 +822,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.55";
             testProject.AdditionalProperties["WindowsSdkPackageMinimumRevision"] = "57";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -890,84 +863,6 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             return getValueCommand.GetValues().Single();
-        }
-
-        // Regression test for https://github.com/dotnet/sdk/issues/53556
-        // When UseArtifactsOutput=true, IntermediateOutputPath is moved outside the project directory.
-        // The _FixGeneratedXbfFilesLink target should set Link metadata on _GeneratedXbfFiles items
-        // to preserve subdirectory paths in resources.pri (e.g., "Resources\Styles.xbf" not "Styles.xbf").
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        public void ItSetsCorrectLinkMetadataOnGeneratedXbfFilesWhenUsingArtifactsOutput()
-        {
-            const string targetFramework = "net10.0-windows10.0.26100.0";
-
-            var testProject = new TestProject()
-            {
-                Name = "UwpXbfLinkTest",
-                ProjectSdk = "Microsoft.NET.Sdk",
-                TargetFrameworks = targetFramework
-            };
-            testProject.AdditionalProperties["UseUwp"] = "true";
-            testProject.AdditionalProperties["UseUwpTools"] = "false";
-
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project =>
-                {
-                    // Inject a target that populates _GeneratedXbfFiles with simulated XBF files
-                    // in subdirectories of IntermediateOutputPath, as would happen with UseArtifactsOutput.
-                    // This simulates what the XAML compiler (MarkupCompilePass2) normally produces.
-                    var injectTarget = XElement.Parse("""
-                        <Target Name="_InjectFakeGeneratedXbfFiles"
-                                BeforeTargets="_FixGeneratedXbfFilesLink">
-                          <ItemGroup>
-                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)Resources\Styles.xbf" />
-                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)Views\Home.xbf" />
-                            <_GeneratedXbfFiles Include="$(IntermediateOutputPath)App.xbf" />
-                          </ItemGroup>
-                        </Target>
-                        """);
-                    project.Root.Add(injectTarget);
-                });
-
-            // Write a Directory.Build.props that enables artifacts output, which moves
-            // IntermediateOutputPath outside the project directory.
-            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
-                """
-                <Project>
-                  <PropertyGroup>
-                    <UseArtifactsOutput>true</UseArtifactsOutput>
-                  </PropertyGroup>
-                </Project>
-                """);
-
-            var getValuesCommand = new GetValuesCommand(
-                Log,
-                Path.Combine(testAsset.Path, testProject.Name),
-                targetFramework,
-                "_GeneratedXbfFiles",
-                GetValuesCommand.ValueType.Item)
-            {
-                ShouldRestore = false,
-                DependsOnTargets = "_FixGeneratedXbfFilesLink"
-            };
-            getValuesCommand.MetadataNames.Add("Link");
-
-            getValuesCommand.Execute().Should().Pass();
-
-            var items = getValuesCommand.GetValuesWithMetadata();
-
-            // Items in subdirectories should have Link metadata that preserves the subdirectory path.
-            // Without the fix, these would be empty or just the filename (e.g., "Styles.xbf").
-            var stylesItem = items.Single(i => Path.GetFileName(i.value).Equals("Styles.xbf", StringComparison.OrdinalIgnoreCase));
-            stylesItem.metadata["Link"].Should().Be(@"Resources\Styles.xbf");
-
-            var homeItem = items.Single(i => Path.GetFileName(i.value).Equals("Home.xbf", StringComparison.OrdinalIgnoreCase));
-            homeItem.metadata["Link"].Should().Be(@"Views\Home.xbf");
-
-            // Root-level XBF item should have Link metadata with just the filename.
-            var appItem = items.Single(i => Path.GetFileName(i.value).Equals("App.xbf", StringComparison.OrdinalIgnoreCase));
-            appItem.metadata["Link"].Should().Be("App.xbf");
         }
     }
 }

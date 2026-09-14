@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.AvoidSingleUseOfLocalJsonSerializerOptions,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,12 +15,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class AvoidSingleUseOfLocalJsonSerializerOptionsTests
     {
         #region Diagnostic Tests
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewOptionsAsArgument()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System;
@@ -36,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System;
@@ -55,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task VB_UseNewOptionsAsArgument()
             => VerifyVB.VerifyAnalyzerAsync("""
                 Imports System
@@ -69,7 +68,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 End Module
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task VB_UseNewLocalOptionsAsArgument()
             => VerifyVB.VerifyAnalyzerAsync("""
                 Imports System
@@ -86,13 +85,13 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 End Module
                 """);
 
-        [TestMethod]
-        [DataRow("{|CA1869:new JsonSerializerOptions()|}")]
-        [DataRow("{|CA1869:new JsonSerializerOptions{}|}")]
-        [DataRow("({|CA1869:new JsonSerializerOptions()|})")]
-        [DataRow("(({|CA1869:new JsonSerializerOptions()|}))")]
-        [DataRow("1 == 1 ? {|CA1869:new JsonSerializerOptions()|} : null")]
-        [DataRow("1 == 1 ? null : 2 == 2 ? null : {|CA1869:new JsonSerializerOptions()|}")]
+        [Theory]
+        [InlineData("{|CA1869:new JsonSerializerOptions()|}")]
+        [InlineData("{|CA1869:new JsonSerializerOptions{}|}")]
+        [InlineData("({|CA1869:new JsonSerializerOptions()|})")]
+        [InlineData("(({|CA1869:new JsonSerializerOptions()|}))")]
+        [InlineData("1 == 1 ? {|CA1869:new JsonSerializerOptions()|} : null")]
+        [InlineData("1 == 1 ? null : 2 == 2 ? null : {|CA1869:new JsonSerializerOptions()|}")]
         public Task CS_UseNewOptionsAsArgument_Variants(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -106,13 +105,13 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("{|CA1869:new JsonSerializerOptions()|}")]
-        [DataRow("{|CA1869:new JsonSerializerOptions{}|}")]
-        [DataRow("({|CA1869:new JsonSerializerOptions()|})")]
-        [DataRow("(({|CA1869:new JsonSerializerOptions()|}))")]
-        [DataRow("1 == 1 ? {|CA1869:new JsonSerializerOptions()|} : null")]
-        [DataRow("1 == 1 ? null : 2 == 2 ? null : {|CA1869:new JsonSerializerOptions()|}")]
+        [Theory]
+        [InlineData("{|CA1869:new JsonSerializerOptions()|}")]
+        [InlineData("{|CA1869:new JsonSerializerOptions{}|}")]
+        [InlineData("({|CA1869:new JsonSerializerOptions()|})")]
+        [InlineData("(({|CA1869:new JsonSerializerOptions()|}))")]
+        [InlineData("1 == 1 ? {|CA1869:new JsonSerializerOptions()|} : null")]
+        [InlineData("1 == 1 ? null : 2 == 2 ? null : {|CA1869:new JsonSerializerOptions()|}")]
         public Task CS_UseNewLocalOptionsAsArgument_Variants(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -127,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_Assignment()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -144,7 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_SecondLocalReference()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -161,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod] // this could be better handled with data flow analysis.
+        [Fact] // this could be better handled with data flow analysis.
         public Task CS_UseNewLocalOptionsAsArgument_OverwriteLocal()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -180,9 +179,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("opt1")]
-        [DataRow("opt2")]
+        [Theory]
+        [InlineData("opt1")]
+        [InlineData("opt2")]
         public Task CS_UseNewLocalOptionsAsArgument_MultiAssignment(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -199,7 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_Delegate()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System;
@@ -219,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_LocalFunction()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -239,22 +238,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("""
+        [Theory]
+        [InlineData("""
             for (int i = 0; i < values.Length; i++)
             {
                 JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
                 concatJson += JsonSerializer.Serialize(values[i], opt);
             }
             """)]
-        [DataRow("""
+        [InlineData("""
             foreach (T value in values)
             {
                 JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
                 concatJson += JsonSerializer.Serialize(value, opt);
             }
             """)]
-        [DataRow("""
+        [InlineData("""
             if (values.Length == 0) 
                 return concatJson;
 
@@ -266,7 +265,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
             while (i < values.Length);
             """)]
-        [DataRow("""
+        [InlineData("""
             int i = 0;
             while (i < values.Length)
             {
@@ -291,20 +290,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("""
+        [Theory]
+        [InlineData("""
             For i = 0 To values.Length
                 Dim opt = {|CA1869:New JsonSerializerOptions()|}
                 concatJson += JsonSerializer.Serialize(values(i), opt)
             Next
             """)]
-        [DataRow("""
+        [InlineData("""
             For Each value In values
                 Dim opt = {|CA1869:New JsonSerializerOptions()|}
                 concatJson += JsonSerializer.Serialize(value, opt)
             Next
             """)]
-        [DataRow("""
+        [InlineData("""
             Dim i = 0
             Do While i < values.Length
                 Dim opt = {|CA1869:New JsonSerializerOptions()|}
@@ -312,7 +311,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 i = i + 1
             Loop
             """)]
-        [DataRow("""
+        [InlineData("""
             Dim i = 0
             Do
                 Dim opt = {|CA1869:New JsonSerializerOptions()|}
@@ -337,7 +336,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         #endregion
 
         #region No Diagnostic Tests
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewOptionsAsArgument_NonSerializerMethod_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -354,7 +353,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_NonSerializerMethod_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -372,7 +371,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewOptionsAsArgument_InterlockedCompareExchange_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -391,7 +390,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -412,7 +411,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_VarDeclaration_ReturnsNonOptions_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -432,7 +431,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_ExprStatement_ReturnsNonOptions_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -453,7 +452,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_EscapeCurrentScope_NonSerializerMethod_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -473,8 +472,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DynamicData(nameof(CS_UseNewLocalOptionsAsArgument_FieldAssignment_NoWarn_TheoryData))]
+        [Theory]
+        [MemberData(nameof(CS_UseNewLocalOptionsAsArgument_FieldAssignment_NoWarn_TheoryData))]
         public Task CS_UseNewLocalOptionsAsArgument_FieldAssignment_NoWarn(string snippet)
         {
             var test = new VerifyCS.Test();
@@ -496,11 +495,11 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """;
 
-            return test.RunAsync(CancellationToken.None);
+            return test.RunAsync();
         }
 
-        [TestMethod]
-        [DynamicData(nameof(CS_UseNewLocalOptionsAsArgument_PropertyAssignment_NoWarn_TheoryData))]
+        [Theory]
+        [MemberData(nameof(CS_UseNewLocalOptionsAsArgument_PropertyAssignment_NoWarn_TheoryData))]
         public Task CS_UseNewLocalOptionsAsArgument_PropertyAssignment_NoWarn(string snippet)
         {
             var test = new VerifyCS.Test();
@@ -520,7 +519,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     }
                 }
                 """;
-            return test.RunAsync(CancellationToken.None);
+            return test.RunAsync();
         }
 
         public static IEnumerable<object[]> CS_UseNewLocalOptionsAsArgument_FieldAssignment_NoWarn_TheoryData()
@@ -582,7 +581,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             return l;
         }
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_NotSingleUse_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -601,10 +600,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("opt1", "opt2")]
-        [DataRow("opt1", "opt3")]
-        [DataRow("opt2", "opt3")]
+        [Theory]
+        [InlineData("opt1", "opt2")]
+        [InlineData("opt1", "opt3")]
+        [InlineData("opt2", "opt3")]
         public Task CS_UseNewLocalOptionsAsArgument_MultiAssignment_NotSingleUse_NoWarn(string expression1, string expression2)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -624,10 +623,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("opt1")]
-        [DataRow("opt2")]
-        [DataRow("opt3")]
+        [Theory]
+        [InlineData("opt1")]
+        [InlineData("opt2")]
+        [InlineData("opt3")]
         public Task CS_UseNewLocalOptionsAsArgument_MultiAssignment_EscapeCurrentScope_FieldAssignment_NoWarn(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -648,10 +647,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("opt1 = opt2 = s_options")]
-        [DataRow("opt1 = s_options = opt2")]
-        [DataRow("s_options = opt1 = opt2")]
+        [Theory]
+        [InlineData("opt1 = opt2 = s_options")]
+        [InlineData("opt1 = s_options = opt2")]
+        [InlineData("s_options = opt1 = opt2")]
         public Task CS_UseNewLocalOptionsAsArgument_MultiAssignment_EscapeCurrentScope_FieldInMultiAssignment_NoWarn(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -670,9 +669,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("s_options = opt1 = opt2")]
-        [DataRow("opt1 = s_options = opt2")]
+        [Theory]
+        [InlineData("s_options = opt1 = opt2")]
+        [InlineData("opt1 = s_options = opt2")]
         public Task CSharpUseNewOptionsAsLocalThenAsArgument_AssignmentOnNextStatement_Multiple_WithEscapeScopeOnAssignment_NoWarn(string expression)
             => VerifyCS.VerifyAnalyzerAsync($$"""
                 using System.Text.Json;
@@ -693,7 +692,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_EscapeCurrentScope_ClosureDelegate_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System;
@@ -713,7 +712,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_EscapeCurrentScope_ClosureLocalFunction_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -733,20 +732,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("""
+        [Theory]
+        [InlineData("""
             for (int i = 0; i < values.Length; i++)
             {
                 concatJson += JsonSerializer.Serialize(values[i], opt);
             }
             """)]
-        [DataRow("""
+        [InlineData("""
             foreach (T value in values)
             {
                 concatJson += JsonSerializer.Serialize(value, opt);
             }
             """)]
-        [DataRow("""
+        [InlineData("""
             if (values.Length == 0) 
                 return concatJson;
 
@@ -757,7 +756,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
             while (i < values.Length);
             """)]
-        [DataRow("""
+        [InlineData("""
             int i = 0;
             while (i < values.Length)
             {
@@ -782,25 +781,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
-        [TestMethod]
-        [DataRow("""
+        [Theory]
+        [InlineData("""
             For i = 0 To values.Length
                 concatJson += JsonSerializer.Serialize(values(i), opt)
             Next
             """)]
-        [DataRow("""
+        [InlineData("""
             For Each value In values
                 concatJson += JsonSerializer.Serialize(value, opt)
             Next
             """)]
-        [DataRow("""
+        [InlineData("""
             Dim i = 0
             Do While i < values.Length
                 concatJson += JsonSerializer.Serialize(values(i), opt)
                 i = i + 1
             Loop
             """)]
-        [DataRow("""
+        [InlineData("""
             Dim i = 0
             Do
                 concatJson += JsonSerializer.Serialize(values(i), opt)
@@ -823,7 +822,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 End Class
                 """);
 
-        [TestMethod]
+        [Fact]
         public Task CS_TopLevelStatements_UseNewOptionsAsArgument_NoWarn()
         {
             var test = new VerifyCS.Test
@@ -842,10 +841,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync(CancellationToken.None);
+            return test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public Task CS_TopLevelStatements_UseNewLocalOptionsAsArgument_NoWarn()
         {
             var test = new VerifyCS.Test
@@ -870,10 +869,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync(CancellationToken.None);
+            return test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public Task CS_TopLevelStatements_UseNewLocalOptionsAsArgument_Assignment_NoWarn()
         {
             var test = new VerifyCS.Test
@@ -895,7 +894,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync(CancellationToken.None);
+            return test.RunAsync();
         }
         #endregion
     }

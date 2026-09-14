@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
+using Xunit;
 
 namespace Test.Utilities.CodeMetrics
 {
@@ -74,11 +74,11 @@ namespace Test.Utilities.CodeMetrics
             var diagnostics = compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error);
             if (expectDiagnostics)
             {
-                Assert.IsTrue(diagnostics.Any());
+                Assert.True(diagnostics.Any());
             }
             else
             {
-                Assert.IsEmpty(diagnostics);
+                Assert.Collection(diagnostics, Array.Empty<Action<Diagnostic>>());
             }
 
             var actualMetricsText = GetMetricsDataString(compilation).Trim();
@@ -108,7 +108,7 @@ namespace Test.Utilities.CodeMetrics
             if (!success)
             {
                 // Dump the entire expected and actual lines for easy update to baseline.
-                Assert.Fail($"Expected:\r\n{expectedMetricsText}\r\n\r\nActual:\r\n{actualMetricsText}");
+                Assert.True(false, $"Expected:\r\n{expectedMetricsText}\r\n\r\nActual:\r\n{actualMetricsText}");
             }
         }
 

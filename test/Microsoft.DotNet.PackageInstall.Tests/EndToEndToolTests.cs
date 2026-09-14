@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -8,22 +8,23 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    // TestToolBuilder maintains a shared package cache and can mutate the NuGet global packages folder.
-    [TestClass]
-    [DoNotParallelize]
+    [Collection(nameof(TestToolBuilderCollection))]
     public class EndToEndToolTests : SdkTest
     {
-        private static readonly TestToolBuilder ToolBuilder = TestToolBuilder.SharedInstance.Value;
+        private readonly TestToolBuilder ToolBuilder;
 
-        public EndToEndToolTests() { }
+        public EndToEndToolTests(ITestOutputHelper log, TestToolBuilder toolBuilder) : base(log)
+        {
+            ToolBuilder = toolBuilder;
+        }
 
-        [TestMethod]
+        [Fact]
         public void InstallAndRunToolGlobal()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings();
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetToolCommand(Log, "install", "-g", toolSettings.ToolPackageId, "--add-source", toolPackagesPath)
@@ -46,8 +47,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void InstallAndRunNativeAotGlobalTool()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
 
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
@@ -78,17 +78,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [TestMethod]
+        [Fact]
         public void InstallAndRunToolLocal()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings();
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
 
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetNewCommand(Log, "tool-manifest")
-                .WithVirtualHive()
+            new DotnetCommand(Log, "new", "tool-manifest")
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -110,8 +109,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void InstallAndRunNativeAotLocalTool()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -120,11 +118,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
 
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetNewCommand(Log, "tool-manifest")
-                .WithVirtualHive()
+            new DotnetCommand(Log, "new", "tool-manifest")
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -145,7 +142,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void PackagesMultipleToolsWithASingleInvocation()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -175,7 +172,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
 
-        [TestMethod]
+        [Fact]
         public void PackagesMultipleTrimmedToolsWithASingleInvocation()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -205,7 +202,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
 
-        [TestMethod]
+        [Fact]
         public void PackagesFrameworkDependentRidSpecificPackagesCorrectly()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -234,7 +231,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
 
-        [TestMethod]
+        [Fact]
         public void PackageToolWithAnyRid()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -271,9 +268,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.Satisfy<string>(SupportAllOfTheseRuntimes([.. expectedRids, "any"]));
         }
 
-        [TestMethod]
-        [DataRow("exec")]
-        [DataRow("dnx")]
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
         public void InstallAndRunToolFromAnyRid(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -286,7 +283,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
                 $"{toolSettings.ToolPackageId}.any.{toolSettings.ToolPackageVersion}.nupkg"
                 ], "There should be two packages: one for the tool-wrapper and one for the 'any' RID");
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
@@ -302,9 +299,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [TestMethod]
-        [DataRow("exec")]
-        [DataRow("dnx")]
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
         public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -321,7 +318,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
                 .. expectedRids.Select(rid => $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}.nupkg"),
                 ], $"There should be { 1 + expectedRids.Count } packages: one for the tool-wrapper and one for each RID except the current RID");
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
@@ -337,9 +334,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [TestMethod]
-        [DataRow("exec")]
-        [DataRow("dnx")]
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
         public void ToolExecSucceedsWhenToolIsInLocalManifestButNotRestored(string command)
         {
             // Regression test: 'dotnet tool exec' and 'dnx' should succeed even when the tool is
@@ -349,7 +346,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 IncludeAnyRid = true // will make one package with the "any" RID (cross-platform)
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             // Create a dotnet-tools.json manifest that references the tool (simulating a repo that has the tool in its manifest)
@@ -386,7 +383,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [TestMethod]
+        [Fact]
         public void StripsPackageTypesFromInnerToolPackages()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -420,7 +417,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
 
-        [TestMethod]
+        [Fact]
         public void MixedPackageTypesBuildInASingleBatchSuccessfully()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -581,118 +578,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             return settingsEntries[0];
         }
 
-        [TestMethod]
-        public void InstallToolWithHigherFrameworkAsGlobalToolShowsAppropriateError()
-        {
-            var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
-            var homeFolder = Path.Combine(testDirectory.Path, "home");
-
-            var result = new DotnetToolCommand(Log, "install", "-g", "Net99Tool", "--add-source", toolPackagesPath)
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute();
-
-            result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
-                .And.HaveStdErrContaining(".NET 99");
-        }
-
-        [TestMethod]
-        public void InstallToolWithHigherFrameworkAsLocalToolShowsAppropriateError()
-        {
-            var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
-            var homeFolder = Path.Combine(testDirectory.Path, "home");
-
-            new DotnetNewCommand(Log, "tool-manifest")
-                .WithVirtualHive()
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute()
-                .Should().Pass();
-
-            var result = new DotnetToolCommand(Log, "install", "Net99Tool", "--add-source", toolPackagesPath)
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute();
-
-            result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
-                .And.HaveStdErrContaining(".NET 99");
-        }
-
-        [TestMethod]
-        public void RunToolWithHigherFrameworkUsingDnxShowsAppropriateError()
-        {
-            var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
-            var homeFolder = Path.Combine(testDirectory.Path, "home");
-
-            var result = new DotnetToolCommand(Log, "exec", "Net99Tool", "--yes", "--source", toolPackagesPath)
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute();
-
-            result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
-                .And.HaveStdErrContaining(".NET 99");
-        }
-
-        /// <summary>
-        /// Creates a tool package that targets net99.0 to simulate a tool requiring a higher .NET version
-        /// </summary>
-        private string CreateNet99ToolPackage()
-        {
-            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: "net99tool");
-            var projectDirectory = Path.Combine(testDirectory.Path, "toolproject");
-            Directory.CreateDirectory(projectDirectory);
-
-            // Create the directory structure for the tool files
-            var toolsDir = Path.Combine(projectDirectory, "tools", "net99.0", "any");
-            Directory.CreateDirectory(toolsDir);
-
-            // Create DotnetToolSettings.xml
-            File.WriteAllText(Path.Combine(toolsDir, "DotnetToolSettings.xml"), @"<?xml version=""1.0"" encoding=""utf-8""?>
-<DotNetCliTool Version=""1"">
-  <Commands>
-    <Command Name=""net99tool"" EntryPoint=""Net99Tool.dll"" Runner=""dotnet"" />
-  </Commands>
-</DotNetCliTool>");
-
-            // Create a minimal DLL file
-            File.WriteAllText(Path.Combine(toolsDir, "Net99Tool.dll"), "");
-
-            // Create a .nuspec file
-            var nuspecPath = Path.Combine(projectDirectory, "Net99Tool.nuspec");
-            File.WriteAllText(nuspecPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
-  <metadata>
-    <id>Net99Tool</id>
-    <version>1.0.0</version>
-    <authors>Test</authors>
-    <description>Test tool targeting net99.0</description>
-    <packageTypes>
-      <packageType name=""DotnetTool"" />
-    </packageTypes>
-  </metadata>
-  <files>
-    <file src=""tools\**"" target=""tools"" />
-  </files>
-</package>");
-
-            // Use NuGet pack to create the package
-            var packageOutputPath = Path.Combine(testDirectory.Path, "packages");
-            Directory.CreateDirectory(packageOutputPath);
-
-            new DotnetCommand(Log, "pack", nuspecPath, "-o", packageOutputPath)
-                .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
-
-            return packageOutputPath;
-        }
-
         /// <summary>
         /// Opens the nupkg and verifies that it does not contain a dependency on the given dll.
         /// </summary>
@@ -709,11 +594,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     {
         public static TestCommand WithEnvironmentVariables(this TestCommand command, string homeFolder)
         {
-            var nugetPackagesFolder = Path.Combine(homeFolder, ".nuget", "packages");
             return command.WithEnvironmentVariable("DOTNET_CLI_HOME", homeFolder)
                           .WithEnvironmentVariable("DOTNET_NOLOGO", "1")
-                          .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "0")
-                          .WithEnvironmentVariable("NUGET_PACKAGES", nugetPackagesFolder);
+                          .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "0");
         }
     }
 }

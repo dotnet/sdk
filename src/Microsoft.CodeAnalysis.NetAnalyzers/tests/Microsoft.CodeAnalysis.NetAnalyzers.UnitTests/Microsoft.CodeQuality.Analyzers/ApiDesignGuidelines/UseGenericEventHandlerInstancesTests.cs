@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,90 +13,83 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class UseGenericEventHandlerTests
     {
-        [TestMethod]
+        [Fact]
         public async Task TestAlreadyUsingGenericEventHandlerCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class C
-                {
-                    public event System.EventHandler<System.EventArgs> E1;
-                    public event System.EventHandler E2;
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public event System.EventHandler<System.EventArgs> E1;
+    public event System.EventHandler E2;
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestAlreadyUsingGenericEventHandlerBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class C
-                    Public Event E1 As System.EventHandler(Of System.EventArgs)
-                    Public Event E2 As System.EventHandler
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Event E1 As System.EventHandler(Of System.EventArgs)
+    Public Event E2 As System.EventHandler
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingStructAsEventArgsForOptimizationCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public struct SpecialCaseStructEventArgs
+{
+}
 
-                public struct SpecialCaseStructEventArgs
-                {
-                }
+public struct BadArgs
+{
+}
 
-                public struct BadArgs
-                {
-                }
-
-                public class C
-                {
-                    public event System.EventHandler<SpecialCaseStructEventArgs> E1;
-                    public event System.EventHandler<BadArgs> E2;
-                }
-
-                """,
+public class C
+{
+    public event System.EventHandler<SpecialCaseStructEventArgs> E1;
+    public event System.EventHandler<BadArgs> E2;
+}
+",
             // Test0.cs(13,47): warning CA1003: Change the event 'E2' to replace the type 'System.EventHandler<BadArgs>' with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetCSharpResultAt(13, 47, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E2", "System.EventHandler<BadArgs>"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingStructAsEventArgsForOptimizationBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Structure SpecialCaseStructEventArgs
+End Structure
 
-                Public Structure SpecialCaseStructEventArgs
-                End Structure
+Public Structure BadArgs
+End Structure
 
-                Public Structure BadArgs
-                End Structure
-
-                Public Class C
-                    Public Event E1 As System.EventHandler(Of SpecialCaseStructEventArgs)
-                    Public Event E2 As System.EventHandler(Of BadArgs)
-                End Class
-
-                """,
+Public Class C
+    Public Event E1 As System.EventHandler(Of SpecialCaseStructEventArgs)
+    Public Event E2 As System.EventHandler(Of BadArgs)
+End Class
+",
             // Test0.vb(10,18): warning CA1003: Change the event 'E2' to replace the type 'System.EventHandler(Of BadArgs)' with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetBasicResultAt(10, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E2", "System.EventHandler(Of BadArgs)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestGeneratedEventHandlersBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Public Event E1()
-                    Public Event E2(args As System.EventArgs)
-                    Public Event E3(sender As Object)
-                    Public Event E4(sender As Object, args As Integer)
-                End Class
-
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Event E1()
+    Public Event E2(args As System.EventArgs)
+    Public Event E3(sender As Object)
+    Public Event E4(sender As Object, args As Integer)
+End Class
+",
             // Test0.vb(3,18): warning CA1003: Change the event 'E1' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).
             GetBasicResultAt(3, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents2, "E1"),
             // Test0.vb(4,18): warning CA1003: Change the event 'E2' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).
@@ -107,146 +100,138 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetBasicResultAt(6, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents2, "E4"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestNonPublicEventAndNonPublicDelegateAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                internal delegate void BadEventHandler(object senderId, System.EventArgs e);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal delegate void BadEventHandler(object senderId, System.EventArgs e);
 
-                public class EventsClass
-                {
-                    internal event BadEventHandler E;
-                }
-                """);
+public class EventsClass
+{
+    internal event BadEventHandler E;
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestNonPublicEventButPublicDelegateAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public delegate void BadEventHandler(object senderId, System.EventArgs e);
 
-                public delegate void BadEventHandler(object senderId, System.EventArgs e);
-
-                public class EventsClass
-                {
-                    internal event BadEventHandler E;
-                }
-
-                """,
+public class EventsClass
+{
+    internal event BadEventHandler E;
+}
+",
             // Test0.cs(2,22): warning CA1003: Remove 'BadEventHandler' and replace its usage with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetCSharpResultAt(2, 22, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadEventHandler"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestNonPublicEventAndPublicInvalidDelegateAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public delegate void BadEventHandler(object senderId);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public delegate void BadEventHandler(object senderId);
 
-                public class EventsClass
-                {
-                    internal event BadEventHandler E;
-                }
-                """);
+public class EventsClass
+{
+    internal event BadEventHandler E;
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestIgnoreEventsThatAreInterfaceImplementationsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+public delegate void BadEventHandler(object senderId, EventArgs e);
 
-                public delegate void BadEventHandler(object senderId, EventArgs e);
+public interface ITest
+{
+    event BadEventHandler TestEvent;
+}
 
-                public interface ITest
-                {
-                    event BadEventHandler TestEvent;
-                }
+public class EventsClassImplicit : ITest
+{
+    public event BadEventHandler TestEvent;
+}
 
-                public class EventsClassImplicit : ITest
-                {
-                    public event BadEventHandler TestEvent;
-                }
-
-                public class EventsClassExplicit : ITest
-                {
-                    event BadEventHandler ITest.TestEvent
-                    {
-                        add
-                        {
-                        }
-                        remove
-                        {
-                        }
-                    }
-                }
-
-                """,
+public class EventsClassExplicit : ITest
+{
+    event BadEventHandler ITest.TestEvent
+    {
+        add
+        {
+        }
+        remove
+        {
+        }
+    }
+}
+",
             // Test0.cs(4,22): warning CA1003: Remove 'BadEventHandler' and replace its usage with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetCSharpResultAt(4, 22, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadEventHandler"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOverrideEventAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public delegate void BadHandler();
 
-                public delegate void BadHandler();
+public class C
+{
+    public virtual event BadHandler E;
+}
 
-                public class C
-                {
-                    public virtual event BadHandler E;
-                }
-
-                public class D : C
-                {
-                    public override event BadHandler E;
-                }
-
-                """,
+public class D : C
+{
+    public override event BadHandler E;
+}
+",
             // Test0.cs(6,37): warning CA1003: Change the event 'E' to replace the type 'BadHandler' with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetCSharpResultAt(6, 37, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E", "BadHandler"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestComSourceInterfaceEventAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public delegate void BadHandler();
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public delegate void BadHandler();
 
-                [System.Runtime.InteropServices.ComSourceInterfaces("C")]
-                public class C
-                {
-                    public event BadHandler E;
-                }
-                """);
+[System.Runtime.InteropServices.ComSourceInterfaces(""C"")]
+public class C
+{
+    public event BadHandler E;
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestViolatingEventsCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+public delegate void BadHandler1();
+public delegate int BadHandler2();
+public delegate void BadHandler3(object sender);
+public delegate void BadHandler4(EventArgs args);
+public delegate void BadHandler5(object sender, EventArgs args);
 
-                public delegate void BadHandler1();
-                public delegate int BadHandler2();
-                public delegate void BadHandler3(object sender);
-                public delegate void BadHandler4(EventArgs args);
-                public delegate void BadHandler5(object sender, EventArgs args);
-
-                public class C
-                {
-                    public event BadHandler1 E1;
-                    public event BadHandler2 E2;
-                    public event BadHandler3 E3;
-                    public event BadHandler4 E4;
-                    public event BadHandler5 E5;
-                    public event EventHandler<int> E6;
-                }
-
-                """,
+public class C
+{
+    public event BadHandler1 E1;
+    public event BadHandler2 E2;
+    public event BadHandler3 E3;
+    public event BadHandler4 E4;
+    public event BadHandler5 E5;
+    public event EventHandler<int> E6;
+}
+",
             // Test0.cs(8,22): warning CA1003: Remove 'BadHandler5' and replace its usage with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetCSharpResultAt(8, 22, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadHandler5"),
             // Test0.cs(12,30): warning CA1003: Change the event 'E1' to replace the type 'BadHandler1' with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
@@ -261,23 +246,21 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCSharpResultAt(17, 36, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E6", "System.EventHandler<int>"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestViolatingEventsBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Delegate Sub BadHandler(sender As Object, args As System.EventArgs)
 
-                Public Delegate Sub BadHandler(sender As Object, args As System.EventArgs)
+Public Class C
+    Public Event E1 As BadHandler
+    Public Event E2(sender As Object, e As System.EventArgs)
+    Public Event E3(sender As Object, e As MyEventArgs)
+End Class
 
-                Public Class C
-                    Public Event E1 As BadHandler
-                    Public Event E2(sender As Object, e As System.EventArgs)
-                    Public Event E3(sender As Object, e As MyEventArgs)
-                End Class
-
-                Public Structure MyEventArgs
-                End Structure
-
-                """,
+Public Structure MyEventArgs
+End Structure
+",
             // Test0.vb(2,21): warning CA1003: Remove 'BadHandler' and replace its usage with a generic EventHandler, for e.g. EventHandler<T>, where T is a valid EventArgs
             GetBasicResultAt(2, 21, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadHandler"),
             // Test0.vb(6,18): warning CA1003: Change the event 'E2' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).

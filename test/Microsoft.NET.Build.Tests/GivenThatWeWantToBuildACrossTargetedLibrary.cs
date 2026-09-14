@@ -5,15 +5,16 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildACrossTargetedLibrary : SdkTest
     {
+        public GivenThatWeWantToBuildACrossTargetedLibrary(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.1.0.60101")]
+        [RequiresMSBuildVersionFact("17.1.0.60101")]
         public void It_builds_nondesktop_library_successfully_on_all_platforms()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(Path.Combine("CrossTargeting", "NetStandardAndNetCoreApp"))
                 .WithSource();
 
@@ -28,7 +29,6 @@ namespace Microsoft.NET.Build.Tests
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.pdb",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.json",
-                $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.dev.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/Newtonsoft.Json.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
@@ -39,11 +39,10 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_builds_desktop_library_successfully_on_windows()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("CrossTargeting")
                 .WithSource();
 
@@ -70,8 +69,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [DataRow("1", "win7-x86", "win7-x86;win7-x64", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm", "win7-x86;linux;WIN7-X86;unix", "osx-10.12", "win8-arm;win8-arm-aot",
+        [Theory]
+        [InlineData("1", "win7-x86", "win7-x86;win7-x64", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm", "win7-x86;linux;WIN7-X86;unix", "osx-10.12", "win8-arm;win8-arm-aot",
             $"win7-x86;win7-x64;{ToolsetInfo.LatestWinRuntimeIdentifier}-arm;linux;unix;osx-10.12;win8-arm;win8-arm-aot")]
         public void It_combines_inner_rids_for_restore(
             string identifier,
@@ -83,7 +82,7 @@ namespace Microsoft.NET.Build.Tests
             string secondFrameworkRids,
             string expectedCombination)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(Path.Combine("CrossTargeting", "NetStandardAndNetCoreApp"), identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -114,7 +113,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().Should().BeEquivalentTo(expectedCombination.Split(';'));
         }
 
-        [TestMethod]
+        [Fact]
         public void OutputPathDoesNotHaveDuplicatedBackslashesInOuterBuild()
         {
             var testProject = new TestProject()
@@ -135,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
                 xml.Root.Add(XElement.Parse(target));
             });
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new MSBuildCommand(testAsset, "GetOutputPath")
                 .Execute()
@@ -146,8 +145,7 @@ namespace Microsoft.NET.Build.Tests
             outputPathValue.Trim().Should().NotContain("\\\\");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.9.0.61803")]
+        [RequiresMSBuildVersionFact("17.9.0.61803")]
         public void OuterBuildImportsUserFile()
         {
             var testProject = new TestProject()
@@ -177,7 +175,7 @@ namespace Microsoft.NET.Build.Tests
                 </Project>
                 """;
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()

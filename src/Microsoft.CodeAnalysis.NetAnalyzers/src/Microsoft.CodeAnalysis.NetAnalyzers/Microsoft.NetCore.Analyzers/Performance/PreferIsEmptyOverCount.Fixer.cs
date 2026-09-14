@@ -1,23 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
     /// <summary>
     /// CA1836: Prefer IsEmpty over Count when available.
     /// </summary>
-    public abstract class PreferIsEmptyOverCountFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class PreferIsEmptyOverCountFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCountProperlyAnalyzer.CA1836);
+
+        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -28,24 +28,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            if (context.Diagnostics[0].Properties is null)
+            ImmutableDictionary<string, string?> properties = context.Diagnostics[0].Properties;
+            if (properties == null)
             {
                 return;
-            }
-
-            RegisterCodeFix(context,
-                MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountTitle,
-                MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage);
-        }
-
-        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-
-            ImmutableDictionary<string, string?> properties = diagnostic.Properties;
-            if (properties is null)
-            {
-                return Task.CompletedTask;
             }
 
             // Indicates whether the Count method or property is on the Right or Left side of a binary expression 
@@ -55,28 +41,31 @@ namespace Microsoft.NetCore.Analyzers.Performance
             // Indicates if the replacing IsEmpty node should be negated. (!IsEmpty). 
             bool shouldNegate = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
 
-            // The object the Count belongs to is a descendant of the diagnosed node and can hold another
-            // diagnosed comparison, so it is re-read from the node as the editor has rewritten it rather
-            // than from the original tree.
-            editor.ReplaceNode(node, (currentNode, generator) =>
-            {
-                // The object that the Count property belongs to OR null if countAccessor is not a MemberAccessExpressionSyntax.
-                SyntaxNode? objectExpression = GetObjectExpressionFromOperation(currentNode, operationKey);
-
-                // The IsEmpty property meant to replace the binary expression.
-                SyntaxNode isEmptyNode = objectExpression is null ?
-                    generator.IdentifierName(UseCountProperlyAnalyzer.IsEmpty) :
-                    generator.MemberAccessExpression(objectExpression, UseCountProperlyAnalyzer.IsEmpty);
-
-                if (shouldNegate)
+            context.RegisterCodeFix(CodeAction.Create(
+                title: MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountTitle,
+                createChangedDocument: async cancellationToken =>
                 {
-                    isEmptyNode = generator.LogicalNotExpression(isEmptyNode);
-                }
+                    DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
+                    SyntaxGenerator generator = editor.Generator;
 
-                return isEmptyNode.WithTriviaFrom(currentNode);
-            });
+                    // The object that the Count property belongs to OR null if countAccessor is not a MemberAccessExpressionSyntax.
+                    SyntaxNode? objectExpression = GetObjectExpressionFromOperation(node, operationKey);
 
-            return Task.CompletedTask;
+                    // The IsEmpty property meant to replace the binary expression.
+                    SyntaxNode isEmptyNode = objectExpression is null ?
+                        generator.IdentifierName(UseCountProperlyAnalyzer.IsEmpty) :
+                        generator.MemberAccessExpression(objectExpression, UseCountProperlyAnalyzer.IsEmpty);
+
+                    if (shouldNegate)
+                    {
+                        isEmptyNode = generator.LogicalNotExpression(isEmptyNode);
+                    }
+
+                    editor.ReplaceNode(node, isEmptyNode.WithTriviaFrom(node));
+                    return editor.GetChangedDocument();
+                },
+                equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage),
+            context.Diagnostics);
         }
 
         /// <summary>

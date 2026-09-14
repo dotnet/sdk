@@ -17,12 +17,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 //   optionally a specific value.
 // - Headers: The endpoint must have all the headers specified in the list of headers with
 //   optionally a specific value.
-[MSBuildMultiThreadableTask]
-public class FilterStaticWebAssetEndpoints : Task, IMultiThreadableTask
+public class FilterStaticWebAssetEndpoints : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     public ITaskItem[] Endpoints { get; set; }
 
     public ITaskItem[] Assets { get; set; }
@@ -36,7 +32,7 @@ public class FilterStaticWebAssetEndpoints : Task, IMultiThreadableTask
     public override bool Execute()
     {
         var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
-        var assetFiles = Assets != null ? StaticWebAsset.ToAssetDictionary(Assets, TaskEnvironment) : [];
+        var assetFiles = Assets != null ? StaticWebAsset.ToAssetDictionary(Assets) : [];
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints ?? []);
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 

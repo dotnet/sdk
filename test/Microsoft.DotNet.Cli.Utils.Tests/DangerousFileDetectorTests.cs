@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,24 +9,21 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
-    [TestClass]
     public class DangerousFileDetectorTests : SdkTest
     {
         private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
 
-        public DangerousFileDetectorTests()
+        public DangerousFileDetectorTests(ITestOutputHelper log) : base(log)
         {
         }
 
 #if NETCOREAPP
         [SupportedOSPlatform("windows")]
 #endif
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [Ignore("https://github.com/dotnet/sdk/issues/54951")]
+        [WindowsOnlyFact]
         public void ItShouldDetectFileWithMarkOfTheWeb()
         {
-            var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
+            var testFile = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
 
             File.WriteAllText(testFile, string.Empty);
             AlternateStream.WriteAlternateStream(
@@ -45,19 +42,18 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenThereIsNoFileItReturnsFalse()
         {
-            var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
+            var testFile = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
 
             new DangerousFileDetector().IsDangerous(testFile).Should().BeFalse();
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void WhenRunOnNonWindowsReturnFalse()
         {
-            var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
+            var testFile = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
             File.WriteAllText(testFile, string.Empty);
 
             new DangerousFileDetector().IsDangerous(testFile).Should().BeFalse();
@@ -73,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 string CLSID_InternetSecurityManager = "7b8a2d94-0ac9-11d1-896c-00c04fb6bfc4";
 
                 Type iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
-                var internetSecurityManager = Activator.CreateInstance(iismType);
+                var internetSecurityManager = (IInternetSecurityManager)Activator.CreateInstance(iismType);
                 return true;
             }
             catch (COMException ex) when (ex.ErrorCode == REGDB_E_CLASSNOTREG)

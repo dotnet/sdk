@@ -9,16 +9,15 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    [TestClass]
     public class ToolInstallCommandTests : SdkTest
     {
         private const string PackageId = "global.tool.console.demo";
 
-        public ToolInstallCommandTests()
+        public ToolInstallCommandTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var parseResult = Parser.Parse($"dotnet tool install -g --tool-path /tmp/folder {PackageId}");
@@ -34,10 +33,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "--global --tool-path"));
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42346")]
-        // CurrentDirectory is process-wide and is read by code throughout this project that cannot participate in a resource lock.
-        [DoNotParallelize]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42346")]
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
@@ -64,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -81,7 +77,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "--local --tool-path"));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -96,7 +92,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
             var parseResult = Parser.Parse(
@@ -114,7 +110,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithLocalAndFrameworkShowErrorMessage()
         {
             var parseResult = Parser.Parse(

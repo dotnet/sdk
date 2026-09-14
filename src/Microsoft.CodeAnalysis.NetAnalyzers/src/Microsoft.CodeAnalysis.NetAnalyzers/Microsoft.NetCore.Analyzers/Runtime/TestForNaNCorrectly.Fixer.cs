@@ -1,80 +1,71 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using System.Threading;
 using Analyzer.Utilities;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
     /// CA2242: Test for NaN correctly
     /// </summary>
-    public abstract class TestForNaNCorrectlyFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class TestForNaNCorrectlyFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
+
+        public sealed override FixAllProvider GetFixAllProvider()
+        {
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
+        }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode node = root.FindNode(context.Span);
 
-            if (TryGetFixResolution(root.FindNode(context.Span), model, context.CancellationToken) is not null)
-            {
-                RegisterCodeFix(context, MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage, MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage);
-            }
-        }
+            SyntaxNode binaryExpressionSyntax = GetBinaryExpression(node);
 
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-
-            if (TryGetFixResolution(node, model, cancellationToken) is not FixResolution resolution)
+            if (!IsEqualsOperator(binaryExpressionSyntax) && !IsNotEqualsOperator(binaryExpressionSyntax))
             {
                 return;
             }
 
-            // The comparison operand is re-emitted, and `(a == float.NaN ? b : c) == float.NaN` diagnoses both
-            // comparisons, so it is read off the node as an inner fix has already rewritten it.
-            editor.ReplaceNode(resolution.BinaryExpressionSyntax, (currentNode, generator) =>
-            {
-                SyntaxNode comparisonOperand = resolution.NanIsLeftOperand ? GetRightOperand(currentNode) : GetLeftOperand(currentNode);
-                SyntaxNode typeNameSyntax = generator.TypeExpression(resolution.FloatingSystemType);
-                SyntaxNode nanMemberSyntax = generator.MemberAccessExpression(typeNameSyntax, "IsNaN");
-                SyntaxNode nanMemberInvocationSyntax = generator.InvocationExpression(nanMemberSyntax, comparisonOperand);
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
 
-                SyntaxNode replacementSyntax = resolution.UsesEqualsOperator ? nanMemberInvocationSyntax : generator.LogicalNotExpression(nanMemberInvocationSyntax);
-                return replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation);
-            });
+            if (resolution != null)
+            {
+                var action = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage,
+                    async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
+                    equivalenceKey: MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage);
+
+                context.RegisterCodeFix(action, context.Diagnostics);
+            }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode node, SemanticModel model, CancellationToken cancellationToken)
+        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
-            SyntaxNode binaryExpressionSyntax = GetBinaryExpression(node);
-
             bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
-            if (!isEqualsOperator && !IsNotEqualsOperator(binaryExpressionSyntax))
-            {
-                return null;
-            }
+            SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
+            SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(GetLeftOperand(binaryExpressionSyntax), model, cancellationToken);
+            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, cancellationToken);
             if (systemTypeLeft != null)
             {
-                return new FixResolution(binaryExpressionSyntax, systemTypeLeft, nanIsLeftOperand: true, isEqualsOperator);
+                return new FixResolution(binaryExpressionSyntax, systemTypeLeft, rightOperand, isEqualsOperator);
             }
 
-            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(GetRightOperand(binaryExpressionSyntax), model, cancellationToken);
+            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, cancellationToken);
             if (systemTypeRight != null)
             {
-                return new FixResolution(binaryExpressionSyntax, systemTypeRight, nanIsLeftOperand: false, isEqualsOperator);
+                return new FixResolution(binaryExpressionSyntax, systemTypeRight, leftOperand, isEqualsOperator);
             }
 
             return null;
@@ -91,6 +82,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
+        private static async Task<Document> ConvertToMethodInvocationAsync(CodeFixContext context, FixResolution fixResolution)
+        {
+            DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
+
+            SyntaxNode typeNameSyntax = editor.Generator.TypeExpression(fixResolution.FloatingSystemType);
+            SyntaxNode nanMemberSyntax = editor.Generator.MemberAccessExpression(typeNameSyntax, "IsNaN");
+            SyntaxNode nanMemberInvocationSyntax = editor.Generator.InvocationExpression(nanMemberSyntax, fixResolution.ComparisonOperand);
+
+            SyntaxNode replacementSyntax = fixResolution.UsesEqualsOperator ? nanMemberInvocationSyntax : editor.Generator.LogicalNotExpression(nanMemberInvocationSyntax);
+            SyntaxNode replacementAnnotatedSyntax = replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation);
+
+            editor.ReplaceNode(fixResolution.BinaryExpressionSyntax, replacementAnnotatedSyntax);
+
+            return editor.GetChangedDocument();
+        }
+
         protected abstract SyntaxNode GetBinaryExpression(SyntaxNode node);
         protected abstract bool IsEqualsOperator(SyntaxNode node);
         protected abstract bool IsNotEqualsOperator(SyntaxNode node);
@@ -101,14 +108,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             public SyntaxNode BinaryExpressionSyntax { get; }
             public ITypeSymbol FloatingSystemType { get; }
-            public bool NanIsLeftOperand { get; }
+            public SyntaxNode ComparisonOperand { get; }
             public bool UsesEqualsOperator { get; }
 
-            public FixResolution(SyntaxNode binaryExpressionSyntax, ITypeSymbol floatingSystemType, bool nanIsLeftOperand, bool usesEqualsOperator)
+            public FixResolution(SyntaxNode binaryExpressionSyntax, ITypeSymbol floatingSystemType, SyntaxNode comparisonOperand, bool usesEqualsOperator)
             {
                 BinaryExpressionSyntax = binaryExpressionSyntax;
                 FloatingSystemType = floatingSystemType;
-                NanIsLeftOperand = nanIsLeftOperand;
+                ComparisonOperand = comparisonOperand;
                 UsesEqualsOperator = usesEqualsOperator;
             }
         }

@@ -7,7 +7,6 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public class GenerateDefaultRuntimeFrameworkVersion : Task
     {
         [Required]

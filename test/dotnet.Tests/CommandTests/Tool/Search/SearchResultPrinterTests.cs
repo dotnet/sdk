@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace dotnet.Tests.ToolSearchTests
 {
-    [TestClass]
     public class SearchResultPrinterTests
     {
         private readonly BufferedReporter _reporter;
@@ -44,7 +43,7 @@ namespace dotnet.Tests.ToolSearchTests
                 new List<SearchResultPackageVersion> { new SearchResultPackageVersion("1.0.0", 10), new SearchResultPackageVersion("0.9.0", 1234) });
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenDetailedIsFalseResultHasNecessaryInfo()
         {
             var searchResultPackages =
@@ -69,7 +68,7 @@ namespace dotnet.Tests.ToolSearchTests
             _reporter.Lines.Should().NotContain(l => l.Contains(_filledSearchResultPackage.Tags.First()));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenDetailedIsTrueResultHasNecessaryInfo()
         {
             var searchResultPackages =
@@ -93,7 +92,7 @@ namespace dotnet.Tests.ToolSearchTests
                     $"Expect \"{expectedInformationToBePresent}\" to be present");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenInputIsEmptyDetailIsFalseItShouldPrintNoResultMessage()
         {
             var searchResultPackages =
@@ -103,7 +102,7 @@ namespace dotnet.Tests.ToolSearchTests
             _reporter.Lines.Should().Contain(CliCommandStrings.NoResult);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenInputIsEmptyDetailIsTrueItShouldPrintNoResultMessage()
         {
             var searchResultPackages =

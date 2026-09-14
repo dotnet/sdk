@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.Collections.Concurrent;
 using Microsoft.Build.Framework;
 using NuGet.RuntimeModel;
 
@@ -11,8 +10,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal class RuntimeGraphCache
     {
-        private static readonly ConcurrentDictionary<string, object> s_keyLocks = new();
-
         private IBuildEngine4 _buildEngine;
         private Logger _log;
 
@@ -35,24 +32,20 @@ namespace Microsoft.NET.Build.Tasks
 
             string key = GetTaskObjectKey(runtimeJsonPath);
 
-            object keyLock = s_keyLocks.GetOrAdd(key, static _ => new object());
-            lock (keyLock)
+            RuntimeGraph result;
+            object existingRuntimeGraphTaskObject = _buildEngine.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.AppDomain);
+            if (existingRuntimeGraphTaskObject == null)
             {
-                RuntimeGraph result;
-                object existingRuntimeGraphTaskObject = _buildEngine.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.AppDomain);
-                if (existingRuntimeGraphTaskObject == null)
-                {
-                    result = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
+                result = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
 
-                    _buildEngine.RegisterTaskObject(key, result, RegisteredTaskObjectLifetime.AppDomain, true);
-                }
-                else
-                {
-                    result = (RuntimeGraph)existingRuntimeGraphTaskObject;
-                }
-
-                return result;
+                _buildEngine.RegisterTaskObject(key, result, RegisteredTaskObjectLifetime.AppDomain, true);
             }
+            else
+            {
+                result = (RuntimeGraph)existingRuntimeGraphTaskObject;
+            }
+
+            return result;
         }
 
         private static string GetTaskObjectKey(string runtimeJsonPath)

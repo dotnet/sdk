@@ -6,10 +6,9 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [TestClass]
     public class ToolConfigurationDeserializerTests
     {
-        [TestMethod]
+        [Fact]
         public void GivenXmlPathItShouldGetToolConfiguration()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsGolden.xml");
@@ -18,7 +17,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             toolConfiguration.ToolAssemblyEntryPoint.Should().Be("console.dll");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMalformedPathItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMalformed.xml");
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Contain(string.Format(CliStrings.ToolSettingsInvalidXml, string.Empty));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMissingContentItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissing.xml");
@@ -36,7 +35,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Contain(CliStrings.ToolSettingsMissingCommandName);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMissingVersionItHasWarningReflectIt()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissingVersion.xml");
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             toolConfiguration.Warnings.First().Should().Be(CliStrings.FormatVersionIsMissing);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMajorHigherVersionItHasWarningReflectIt()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMajorHigherVersion.xml");
@@ -52,7 +51,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             toolConfiguration.Warnings.First().Should().Be(CliStrings.FormatVersionIsHigher);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMinorHigherVersionItHasNoWarning()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsGolden.xml");
@@ -60,7 +59,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             toolConfiguration.Warnings.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
@@ -74,7 +73,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         string.Join(", ", Path.GetInvalidFileNameChars().Select(c => $"'{c}'"))));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenALeadingDotAsFileNameItThrows()
         {
             var invalidCommandName = ".mytool";

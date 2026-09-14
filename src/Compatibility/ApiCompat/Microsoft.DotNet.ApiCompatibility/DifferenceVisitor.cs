@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
 
 namespace Microsoft.DotNet.ApiCompatibility
@@ -53,7 +52,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(IAssemblyMapper assembly)
         {
-            AddSymbolDifferences(assembly.GetDifferences());
+            AddDifferences(assembly);
 
             foreach (INamespaceMapper @namespace in assembly.GetNamespaces())
             {
@@ -73,7 +72,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(ITypeMapper type)
         {
-            AddSymbolDifferences(type);
+            AddDifferences(type);
 
             if (type.ShouldDiffMembers)
             {
@@ -92,39 +91,14 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(IMemberMapper member)
         {
-            AddSymbolDifferences(member);
+            AddDifferences(member);
         }
 
-        private void AddSymbolDifferences<T>(IElementMapper<T> mapper)
-            where T : ISymbol
-            => AddSymbolDifferences(mapper.GetDifferences());
-
-        private void AddSymbolDifferences(IEnumerable<CompatDifference> differences)
+        private void AddDifferences<T>(IElementMapper<T> mapper)
         {
-            foreach (CompatDifference item in differences)
+            foreach (CompatDifference item in mapper.GetDifferences())
             {
-                bool isExperimentalDifference =
-                    (item.LeftStability is null && item.RightStability == ApiStability.Experimental) ||
-                    (item.RightStability is null && item.LeftStability == ApiStability.Experimental) ||
-                    (item.LeftStability == ApiStability.Experimental && item.RightStability == ApiStability.Experimental);
-
-                CompatDifference difference = isExperimentalDifference
-                    ? item.WithSeverity(DifferenceSeverity.Informational)
-                    : item;
-
-                if (_compatDifferences.TryGetValue(difference, out CompatDifference existingDifference))
-                {
-                    if (existingDifference.Severity == DifferenceSeverity.Informational &&
-                        difference.Severity == DifferenceSeverity.Error)
-                    {
-                        _compatDifferences.Remove(existingDifference);
-                        _compatDifferences.Add(difference);
-                    }
-                }
-                else
-                {
-                    _compatDifferences.Add(difference);
-                }
+                _compatDifferences.Add(item);
             }
         }
     }

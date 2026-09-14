@@ -3,26 +3,25 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests.Build;
 
-[TestClass]
 public class BuildUtilitiesTests
 {
-    [TestMethod]
-    [DataRow("-p:P=V", "P", "V")]
-    [DataRow("-p:P==", "P", "=")]
-    [DataRow("-p:P=A=B", "P", "A=B")]
-    [DataRow("-p: P\t = V ", "P", " V ")]
-    [DataRow("-p:P=", "P", "")]
+    [Theory]
+    [InlineData("-p:P=V", "P", "V")]
+    [InlineData("-p:P==", "P", "=")]
+    [InlineData("-p:P=A=B", "P", "A=B")]
+    [InlineData("-p: P\t = V ", "P", " V ")]
+    [InlineData("-p:P=", "P", "")]
     public void BuildProperties_Valid(string argValue, string name, string value)
     {
         var properties = BuildUtilities.ParseBuildProperties([argValue]);
         AssertEx.SequenceEqual([(name, value)], properties);
     }
 
-    [TestMethod]
-    [DataRow("P")]
-    [DataRow("=P3")]
-    [DataRow("=")]
-    [DataRow("==")]
+    [Theory]
+    [InlineData("P")]
+    [InlineData("=P3")]
+    [InlineData("=")]
+    [InlineData("==")]
     public void BuildProperties_Invalid(string argValue)
     {
         var properties = BuildUtilities.ParseBuildProperties([argValue]);

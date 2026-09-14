@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
@@ -6,49 +6,40 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
-    // Concurrent builds from this class and CommonTemplatesTests can hang on two-core Helix agents.
-    // https://github.com/dotnet/sdk/issues/56019
-    [ResourceLock(nameof(DotnetBuildCommand))]
-    public class DotnetClassTemplateTests : BaseIntegrationTest
+    public class DotnetClassTemplateTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
     {
-        private ITestOutputHelper _log => Log;
-        private ILogger? _loggerInstance;
-        private ILogger _logger => _loggerInstance ??= new TestLoggerFactory(Log).CreateLogger(nameof(DotnetClassTemplateTests));
-        private static SharedHomeDirectory s_fixture = null!;
+        private readonly SharedHomeDirectory _fixture;
+        private readonly ITestOutputHelper _log;
+        private readonly ILogger _logger;
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext ctx)
+        public DotnetClassTemplateTests(SharedHomeDirectory fixture, ITestOutputHelper log) : base(log)
         {
-            s_fixture = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            _fixture = fixture;
+            _log = log;
+            _logger = new TestLoggerFactory(log).CreateLogger(nameof(DotnetClassTemplateTests));
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup() => s_fixture?.Dispose();
-
-        private SharedHomeDirectory _fixture => s_fixture;
-
-        [TestMethod]
-        [DataRow("class")]
-        [DataRow("class", "preview", "net7.0")]
-        [DataRow("class", "10.0", "net6.0")]
-        [DataRow("class", "9.0", "netstandard2.0")]
-        [DataRow("interface")]
-        [DataRow("interface", "10.0", "net6.0")]
-        [DataRow("interface", "9", "netstandard2.0")]
-        [DataRow("record")]
-        [DataRow("record", "10", "net6.0")]
-        [DataRow("record", "9.0")]
-        [DataRow("record", "8.0", "netstandard2.0")]
-        [DataRow("struct")]
-        [DataRow("struct", "10")]
-        [DataRow("struct", "10", "net6.0")]
-        [DataRow("struct", "9.0", "netstandard2.0")]
-        [DataRow("enum")]
-        [DataRow("enum", "10", "net6.0")]
-        [DataRow("enum", "", "net7.0")]
-        [DataRow("enum", "9.0", "netstandard2.0")]
-        [DataRow("enum", "", "netstandard2.0")]
+        [Theory]
+        [InlineData("class")]
+        [InlineData("class", "preview", "net7.0")]
+        [InlineData("class", "10.0", "net6.0")]
+        [InlineData("class", "9.0", "netstandard2.0")]
+        [InlineData("interface")]
+        [InlineData("interface", "10.0", "net6.0")]
+        [InlineData("interface", "9", "netstandard2.0")]
+        [InlineData("record")]
+        [InlineData("record", "10", "net6.0")]
+        [InlineData("record", "9.0")]
+        [InlineData("record", "8.0", "netstandard2.0")]
+        [InlineData("struct")]
+        [InlineData("struct", "10")]
+        [InlineData("struct", "10", "net6.0")]
+        [InlineData("struct", "9.0", "netstandard2.0")]
+        [InlineData("enum")]
+        [InlineData("enum", "10", "net6.0")]
+        [InlineData("enum", "", "net7.0")]
+        [InlineData("enum", "9.0", "netstandard2.0")]
+        [InlineData("enum", "", "netstandard2.0")]
         public async Task DotnetCSharpClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
@@ -64,7 +55,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                SnapshotsDirectory = ApprovalsDirectory,
+                SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
                 TemplateSpecificArgs = new[] { "--name", "TestItem1" },
                 VerificationExcludePatterns = new[]
@@ -86,7 +77,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
-               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                .AddScrubber((path, content) =>
                {
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
@@ -102,33 +92,33 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options, TestContext.CancellationToken);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }
 
-        [TestMethod]
-        [DataRow("class")]
-        [DataRow("class", "latest", "net7.0")]
-        [DataRow("class", "16", "net6.0")]
-        [DataRow("class", "15.3", "netstandard2.0")]
-        [DataRow("enum")]
-        [DataRow("enum", "16", "net6.0")]
-        [DataRow("enum", "latest", "net7.0")]
-        [DataRow("enum", "15.3", "netstandard2.0")]
-        [DataRow("structure")]
-        [DataRow("structure", "latest")]
-        [DataRow("struct", "16", "net6.0")]
-        [DataRow("structure", "15.3", "netstandard2.0", "CustomFileName")]
-        [DataRow("interface")]
-        [DataRow("interface", "16", "net7.0")]
-        [DataRow("interface", "latest", "net6.0")]
-        [DataRow("interface", "15.3", "netstandard2.0")]
-        [DataRow("module")]
-        [DataRow("module", "16", "net7.0")]
-        [DataRow("module", "latest", "net6.0")]
-        [DataRow("module", "15.3", "netstandard2.0")]
-        [DataRow("module", "15.5", "netstandard2.0", "CustomFileName")]
+        [Theory]
+        [InlineData("class")]
+        [InlineData("class", "latest", "net7.0")]
+        [InlineData("class", "16", "net6.0")]
+        [InlineData("class", "15.3", "netstandard2.0")]
+        [InlineData("enum")]
+        [InlineData("enum", "16", "net6.0")]
+        [InlineData("enum", "latest", "net7.0")]
+        [InlineData("enum", "15.3", "netstandard2.0")]
+        [InlineData("structure")]
+        [InlineData("structure", "latest")]
+        [InlineData("struct", "16", "net6.0")]
+        [InlineData("structure", "15.3", "netstandard2.0", "CustomFileName")]
+        [InlineData("interface")]
+        [InlineData("interface", "16", "net7.0")]
+        [InlineData("interface", "latest", "net6.0")]
+        [InlineData("interface", "15.3", "netstandard2.0")]
+        [InlineData("module")]
+        [InlineData("module", "16", "net7.0")]
+        [InlineData("module", "latest", "net6.0")]
+        [InlineData("module", "15.3", "netstandard2.0")]
+        [InlineData("module", "15.5", "netstandard2.0", "CustomFileName")]
         public async Task DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
@@ -145,7 +135,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                SnapshotsDirectory = ApprovalsDirectory,
+                SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
                 TemplateSpecificArgs = new[] { "--name", string.IsNullOrWhiteSpace(fileName) ? "TestItem1" : fileName, "--language", "VB" },
                 VerificationExcludePatterns = new[]
@@ -167,7 +157,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
-               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                .AddScrubber((path, content) =>
                {
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
@@ -183,7 +172,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options, TestContext.CancellationToken);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }

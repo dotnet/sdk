@@ -5,12 +5,15 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToFilterSatelliteAssemblies : SdkTest
     {
-        [TestMethod]
-        [DataRow("netcoreapp2.0")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public GivenThatWeWantToFilterSatelliteAssemblies(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
 
         public void It_only_publishes_selected_ResourceLanguages(string tfm)
         {
@@ -24,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
             testProject.AdditionalProperties.Add("SatelliteResourceLanguages", "en-US;it;fr");
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: tfm);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: tfm);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             var publishResult = publishCommand.Execute();
@@ -50,7 +53,7 @@ namespace Microsoft.NET.Publish.Tests
 
             publishDirectory.Should().OnlyHaveFiles(files);
         }
-        [TestMethod]
+        [Fact]
         public void It_publishes_all_satellites_when_not_filtered()
         {
             var testProject = new TestProject()
@@ -62,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             var publishResult = publishCommand.Execute();

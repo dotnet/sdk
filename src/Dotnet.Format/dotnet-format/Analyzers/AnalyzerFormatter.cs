@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -85,17 +84,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
-            var formattablePaths = await GetFormattablePathsAsync(solution, formattableDocuments, cancellationToken);
+            var formattablePaths = await GetFormattablePathsAsync(solution, formattableDocuments, cancellationToken).ConfigureAwait(false);
 
             logger.LogTrace(Resources.Determining_diagnostics);
 
             var severity = _informationProvider.GetSeverity(formatOptions);
 
             // Filter to analyzers that report diagnostics with equal or greater severity.
-            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, formatOptions.ExcludeDiagnostics, cancellationToken);
+            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, formatOptions.ExcludeDiagnostics, cancellationToken).ConfigureAwait(false);
 
             // Determine which diagnostics are being reported for each project.
-            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, formattedFiles, cancellationToken);
+            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
@@ -106,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 logger.LogTrace(Resources.Fixing_diagnostics);
 
                 // Run each analyzer individually and apply fixes if possible.
-                solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, cancellationToken);
+                solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
 
                 var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
@@ -125,7 +124,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     var document = solution.GetDocument(documentId);
                     if (document is null)
                     {
-                        document = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken);
+                        document = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken).ConfigureAwait(false);
 
                         if (document is null)
                         {
@@ -164,7 +163,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 }
 
                 // Run all the filtered analyzers to determine which are reporting diagnostic.
-                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken);
+                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
             }
 
             LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.SaveFormattedFiles, options.ChangesAreErrors, logger, options.LogLevel, formattedFiles);
@@ -243,7 +242,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                             analyzer is DiagnosticSuppressor suppressor &&
                             suppressor.SupportedSuppressions.Any(descriptor => descriptor.SuppressedDiagnosticId == diagnosticId))
                         .ToImmutableArray();
-                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken);
+                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
                 }
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
@@ -251,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     foreach (var codefix in codefixes)
                     {
-                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, diagnosticId, logger, cancellationToken);
+                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, diagnosticId, logger, cancellationToken).ConfigureAwait(false);
                         if (changedSolution.GetChanges(solution).Any())
                         {
                             solution = changedSolution;
@@ -348,7 +347,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         continue;
                     }
 
-                    var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken);
+                    var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken).ConfigureAwait(false);
                     if (severity >= minimumSeverity)
                     {
                         analyzers.Add(analyzer);

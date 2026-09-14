@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,42 +6,63 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.NetAnalyzers;
+using Microsoft.CodeAnalysis.CodeActions;
+using Analyzer.Utilities;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
     /// CA1028: Enum Storage should be Int32
     /// </summary>
-    public abstract class EnumStorageShouldBeInt32Fixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class EnumStorageShouldBeInt32Fixer : CodeFixProvider
     {
         protected abstract SyntaxNode? GetTargetNode(SyntaxNode node);
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(EnumStorageShouldBeInt32Analyzer.RuleId);
 
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            string title = MicrosoftCodeQualityAnalyzersResources.EnumStorageShouldBeInt32Title;
-            RegisterCodeFix(context, title, title);
-            return Task.CompletedTask;
+            // Fixes all occurrences within within Document, Project, or Solution
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
-        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            if (editor.Generator.GetDeclaration(node, DeclarationKind.Enum) is not SyntaxNode enumDeclarationNode)
+            var title = MicrosoftCodeQualityAnalyzersResources.EnumStorageShouldBeInt32Title;
+
+            // Get syntax root node
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            foreach (var diagnostic in context.Diagnostics)
             {
-                return Task.CompletedTask;
+                // Register fixer
+                context.RegisterCodeFix(CodeAction.Create(title,
+                         c => ChangeEnumTypeToInt32Async(context.Document, diagnostic, root, c),
+                         equivalenceKey: title), diagnostic);
             }
+        }
+
+        private async Task<Document> ChangeEnumTypeToInt32Async(Document document, Diagnostic diagnostic, SyntaxNode root, CancellationToken cancellationToken)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var generator = editor.Generator;
+
+            // Find syntax node that declares the enum
+            var diagnosticSpan = diagnostic.Location.SourceSpan;
+            var node = root.FindNode(diagnosticSpan);
+            var enumDeclarationNode = generator.GetDeclaration(node, DeclarationKind.Enum);
 
             // Find the target syntax node to replace. Was not able to find a language neutral way of doing this. So using the language specific methods
-            SyntaxNode? targetNode = GetTargetNode(enumDeclarationNode);
-            if (targetNode != null)
+            var targetNode = GetTargetNode(enumDeclarationNode);
+            if (targetNode == null)
             {
-                editor.RemoveNode(targetNode, SyntaxRemoveOptions.KeepLeadingTrivia | SyntaxRemoveOptions.KeepTrailingTrivia | SyntaxRemoveOptions.KeepExteriorTrivia | SyntaxRemoveOptions.KeepEndOfLine);
+                return document;
             }
 
-            return Task.CompletedTask;
+            // Remove target node 
+            editor.RemoveNode(targetNode, SyntaxRemoveOptions.KeepLeadingTrivia | SyntaxRemoveOptions.KeepTrailingTrivia | SyntaxRemoveOptions.KeepExteriorTrivia | SyntaxRemoveOptions.KeepEndOfLine);
+
+            return editor.GetChangedDocument();
         }
     }
 }

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -11,14 +11,13 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    [TestClass]
     public class WorkloadSetTests : WorkloadSetTestsBase
     {
-        public WorkloadSetTests()
+        public WorkloadSetTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotUseWorkloadSetsByDefault()
         {
             InstallSdk();
@@ -43,7 +42,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateWithWorkloadSets()
         {
             InstallSdk();
@@ -68,7 +67,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateInWorkloadSetModeWithNoAvailableWorkloadSet()
         {
             InstallSdk();
@@ -88,13 +87,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateToSpecificWorkloadSetVersion()
         {
             UpdateToWorkloadSetVersion(WorkloadSetVersion1);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateToPreviousBandWorkloadSetVersion()
         {
             UpdateToWorkloadSetVersion(WorkloadSetPreviousBandVersion);
@@ -135,7 +134,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateToUnavailableWorkloadSetVersion()
         {
             string unavailableWorkloadSetVersion = "8.0.300-preview.test.42";
@@ -161,7 +160,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void UpdateWorkloadSetWithoutAvailableManifests()
         {
             InstallSdk();
@@ -184,7 +183,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateToWorkloadSetVersionWithManifestsNotAvailable()
         {
             InstallSdk();
@@ -205,7 +204,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateShouldNotPinWorkloadSet()
         {
             InstallSdk();
@@ -230,16 +229,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/46905")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46905")]
         public void WorkloadSetInstallationRecordIsWrittenCorrectly()
         {
             //  Should the workload set version or the package version be used in the registry?
             throw new NotImplementedException();
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/46905")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46905")]
         public void TurnOffWorkloadSetUpdateMode()
         {
             //  If you have a workload set installed and then turn off workload set update mode, what should happen?
@@ -248,7 +245,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
-        [TestMethod]
+        [Fact]
         public void GarbageCollectWorkloadSets()
         {
             InstallSdk();
@@ -309,7 +306,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         //  Note: this may fail due to https://github.com/dotnet/sdk/issues/43876
-        [TestMethod]
+        [Fact]
         public void FinalizerUninstallsWorkloadSets()
         {
             UpdateWithWorkloadSets();
@@ -326,7 +323,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         //  Note: this may fail for rtm-branded non-stabilized SDKs: https://github.com/dotnet/sdk/issues/43890
-        [TestMethod]
+        [Fact]
         public void WorkloadSearchVersion()
         {
             InstallSdk();

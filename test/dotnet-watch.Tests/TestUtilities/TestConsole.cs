@@ -19,7 +19,7 @@ internal class TestConsole : IConsole
 
     public readonly List<ConsoleKeyInfo> QueuedKeyPresses = [];
 
-    public TestConsole(DualOutputHelper output)
+    public TestConsole(ITestOutputHelper output)
     {
         _testWriter = new TestOutputWriter(output);
         Error = _testWriter;
@@ -47,7 +47,7 @@ internal class TestConsole : IConsole
 
     public void PressKey(ConsoleKeyInfo key)
     {
-        Assert.IsNotNull(_keyPressed);
+        Assert.NotNull(_keyPressed);
         _keyPressed.Invoke(key);
     }
 
@@ -67,11 +67,11 @@ internal class TestConsole : IConsole
 
     private class TestOutputWriter : TextWriter
     {
-        private readonly DualOutputHelper _output;
+        private readonly ITestOutputHelper _output;
         private readonly StringBuilder _sb = new();
         private readonly StringBuilder _currentOutput = new();
 
-        public TestOutputWriter(DualOutputHelper output)
+        public TestOutputWriter(ITestOutputHelper output)
         {
             _output = output;
         }

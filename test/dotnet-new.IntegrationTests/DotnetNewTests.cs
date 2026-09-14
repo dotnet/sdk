@@ -1,28 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
-    public class DotnetNewTests : BaseIntegrationTest
+    public class DotnetNewTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
     {
-        private ITestOutputHelper _log => Log;
-        private static SharedHomeDirectory s_sharedHome = null!;
+        private readonly SharedHomeDirectory _sharedHome;
+        private readonly ITestOutputHelper _log;
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext ctx)
+        public DotnetNewTests(SharedHomeDirectory sharedHome, ITestOutputHelper log) : base(log)
         {
-            s_sharedHome = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            _log = log;
+            _sharedHome = sharedHome;
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup() => s_sharedHome?.Dispose();
-
-        private SharedHomeDirectory _sharedHome => s_sharedHome;
-
-        [TestMethod]
+        [Fact]
         public Task CanShowBasicInfo()
         {
             CommandResult commandResult = new DotnetNewCommand(_log)
@@ -35,11 +29,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut).UniqueForOSPlatform();
         }
 
-        [TestMethod]
-        [DataRow("-v", "q")]
-        [DataRow("-v", "quiet")]
-        [DataRow("--verbosity", "q")]
-        [DataRow("--verbosity", "quiet")]
+        [Theory]
+        [InlineData("-v", "q")]
+        [InlineData("-v", "quiet")]
+        [InlineData("--verbosity", "q")]
+        [InlineData("--verbosity", "quiet")]
         public void CanUseQuietMode(string optionName, string optionValue)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "template-does-not-exist", optionName, optionValue)
@@ -52,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOut();
         }
 
-        [TestMethod]
+        [Fact]
         public void CanUseQuietMode_ViaEnvVar()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "template-does-not-exist")
@@ -67,11 +61,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOut();
         }
 
-        [TestMethod]
-        [DataRow("-v", "m")]
-        [DataRow("-v", "minimal")]
-        [DataRow("--verbosity", "m")]
-        [DataRow("--verbosity", "minimal")]
+        [Theory]
+        [InlineData("-v", "m")]
+        [InlineData("-v", "minimal")]
+        [InlineData("--verbosity", "m")]
+        [InlineData("--verbosity", "minimal")]
         public Task CanUseMinimalMode(string optionName, string optionValue)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "template-does-not-exist", optionName, optionValue)
@@ -87,11 +81,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [TestMethod]
-        [DataRow("-v", "n")]
-        [DataRow("-v", "normal")]
-        [DataRow("--verbosity", "n")]
-        [DataRow("--verbosity", "normal")]
+        [Theory]
+        [InlineData("-v", "n")]
+        [InlineData("-v", "normal")]
+        [InlineData("--verbosity", "n")]
+        [InlineData("--verbosity", "normal")]
         public Task CanUseNormalMode(string optionName, string optionValue)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "template-does-not-exist", optionName, optionValue)
@@ -106,13 +100,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [TestMethod]
-        [DataRow("-v", "diag")]
-        [DataRow("-v", "diagnostic")]
-        [DataRow("--verbosity", "diag")]
-        [DataRow("--verbosity", "diagnostic")]
-        [DataRow("--diagnostics", null)]
-        [DataRow("-d", null)]
+        [Theory]
+        [InlineData("-v", "diag")]
+        [InlineData("-v", "diagnostic")]
+        [InlineData("--verbosity", "diag")]
+        [InlineData("--verbosity", "diagnostic")]
+        [InlineData("--diagnostics", null)]
+        [InlineData("-d", null)]
         public void CanUseDiagMode(string optionName, string? optionValue)
         {
             CommandResult commandResult = new DotnetNewCommand(
@@ -128,7 +122,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                  .And.HaveStdOutContaining("[Debug] [Template Engine] => [Execute]: Execute started");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanUseDebugPathWhenEnvVarIsSet_Instantiate()
         {
             string cliHomePath = CreateTemporaryFolder(folderName: "CLI_HOME_TEST_FOLDER");
@@ -149,7 +143,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void CanUseEnvVarPathWhenDebugPathIsNotSet_Instantiate()
         {
             string cliHomePath = CreateTemporaryFolder(folderName: "CLI_HOME_TEST_FOLDER");

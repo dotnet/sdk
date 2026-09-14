@@ -3,12 +3,13 @@
 
 #nullable disable
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
 
 /// <summary>
-/// Describes a single row from the MSI <see href="https://docs.microsoft.com/en-us/windows/win32/msi/upgrade-table">Upgrade</see>
+/// Describes a single row from the MSI <see href="https://docs.microsoft.com/en-us/windows/win32/msi/upgrade-table">Upgrade</see> 
 /// table.
 /// </summary>
 internal class RelatedProduct
@@ -25,7 +26,7 @@ internal class RelatedProduct
     }
 
     /// <summary>
-    /// A comma separated list of languages identifiers (LANGID) that can be detected. When empty, all languages can be
+    /// A comma separated list of languages identifiers (LANGID) that can be detected. When empty, all languages can be 
     /// detected. If msidbUpgradeAttributesLanguagesExclusive is set, the list becomes exclusive.
     /// </summary>
     public string Language
@@ -46,7 +47,7 @@ internal class RelatedProduct
     }
 
     /// <summary>
-    /// The upgrade code of the related product.
+    /// The upgrade code of the related product. 
     /// </summary>
     public string UpgradeCode
     {
@@ -57,6 +58,7 @@ internal class RelatedProduct
     /// <summary>
     /// Upper boundary of the range of product versions detected by the FindRelatedProducts action.
     /// </summary>
+    [JsonConverter(typeof(VersionConverter))]
     public Version VersionMax
     {
         get;
@@ -66,6 +68,7 @@ internal class RelatedProduct
     /// <summary>
     /// The lower boundary of the range of product versions detected by the FindRelatedProducts action.
     /// </summary>
+    [JsonConverter(typeof(VersionConverter))]
     public Version VersionMin
     {
         get;

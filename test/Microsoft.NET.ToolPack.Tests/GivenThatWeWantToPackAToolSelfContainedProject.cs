@@ -9,12 +9,17 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPackAToolSelfContainedProject : SdkTest
     {
-//  TODO: Add tests for Self-contained / AOT tools, which are now supported
 
-        //[TestMethod]
+        public GivenThatWeWantToPackAToolSelfContainedProject(ITestOutputHelper log) : base(log)
+        {
+
+        }
+
+        //  TODO: Add tests for Self-contained / AOT tools, which are now supported
+
+        //[Fact]
         //public void It_should_fail_with_error_message()
         //{
         //    TestAsset helloWorldAsset = CreateAsset();
@@ -27,7 +32,7 @@ namespace Microsoft.NET.ToolPack.Tests
         //}
 
         // Reproduce of https://github.com/dotnet/cli/issues/10607
-        [TestMethod]
+        [Fact]
         public void It_should_not_fail_on_build()
         {
             TestAsset helloWorldAsset = CreateAsset();
@@ -40,7 +45,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private TestAsset CreateAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset helloWorldAsset = TestAssetsManager
+            TestAsset helloWorldAsset = _testAssetsManager
                                                     .CopyTestAsset("PortableTool", callingMethod)
                                                     .WithSource()
                                                     .WithProjectChanges(project =>

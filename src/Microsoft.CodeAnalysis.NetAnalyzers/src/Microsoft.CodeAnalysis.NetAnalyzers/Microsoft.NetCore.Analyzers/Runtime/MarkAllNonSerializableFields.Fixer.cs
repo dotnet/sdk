@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -55,12 +54,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> AddNonSerializedAttributeAsync(Document document, SyntaxNode fieldNode, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            if (!editor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNonSerializedAttribute, out INamedTypeSymbol? nonSerializedAttributeType))
-            {
-                return document;
-            }
-
-            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(nonSerializedAttributeType));
+            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(
+                editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNonSerializedAttribute)));
             editor.AddAttribute(fieldNode, attr);
             return editor.GetChangedDocument();
         }
@@ -70,16 +65,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SymbolEditor editor = SymbolEditor.Create(document);
             await editor.EditOneDeclarationAsync(type, (docEditor, declaration) =>
             {
-                if (!docEditor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute, out INamedTypeSymbol? serializableAttributeType))
-                {
-                    return;
-                }
-
-                SyntaxNode serializableAttr = docEditor.Generator.Attribute(docEditor.Generator.TypeExpression(serializableAttributeType));
+                SyntaxNode serializableAttr = docEditor.Generator.Attribute(docEditor.Generator.TypeExpression(
+                    docEditor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
                 docEditor.AddAttribute(declaration, serializableAttr);
             }, cancellationToken).ConfigureAwait(false);
 
-            return editor.GetChangedDocuments().FirstOrDefault() ?? document;
+            return editor.GetChangedDocuments().First();
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ProvideObsoleteAttributeMessageAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,36 +13,33 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class ProvideObsoleteAttributeMessageTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CSharpSimpleCasesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
-
-                [Obsolete]
-                public class A
-                {
-                    [Obsolete]
-                    public A() { }
-                    [Obsolete("")]
-                    public int field;
-                    [Obsolete]
-                    public int Property { get; set; }
-                    [Obsolete]
-                    public void Method() {}
-                    [Obsolete]
-                    public event EventHandler<int> event1;
-                }
-                [Obsolete]
-                public interface I {}
-                [Obsolete]
-                public delegate void del(int x);
-
-                """,
+[Obsolete]
+public class A
+{
+    [Obsolete]
+    public A() { }
+    [Obsolete("""")]
+    public int field;
+    [Obsolete]
+    public int Property { get; set; }
+    [Obsolete]
+    public void Method() {}
+    [Obsolete]
+    public event EventHandler<int> event1;
+}
+[Obsolete]
+public interface I {}
+[Obsolete]
+public delegate void del(int x);
+",
             GetCSharpResultAt(4, 2, "A"),
             GetCSharpResultAt(7, 6, ".ctor"),
             GetCSharpResultAt(9, 6, "field"),
@@ -53,35 +50,33 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCSharpResultAt(20, 2, "del"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicSimpleCasesAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
-
-                <Obsolete>
-                Public Class A
-                    <Obsolete>
-                    Public Sub New()
-                    End Sub
-                    <Obsolete("")>
-                    Public field As Integer
-                    <Obsolete>
-                    Public Property prop As Integer
-                    <Obsolete>
-                    Public Sub Method()
-                    End Sub
-                    <Obsolete>
-                    Public Event event1 As EventHandler(Of Integer)
-                End Class
-                <Obsolete>
-                Public Interface I
-                End Interface
-                <Obsolete>
-                Public Delegate Sub del(x As Integer)
-
-                """,
+<Obsolete>
+Public Class A
+    <Obsolete>
+    Public Sub New()
+    End Sub
+    <Obsolete("""")>
+    Public field As Integer
+    <Obsolete>
+    Public Property prop As Integer
+    <Obsolete>
+    Public Sub Method()
+    End Sub
+    <Obsolete>
+    Public Event event1 As EventHandler(Of Integer)
+End Class
+<Obsolete>
+Public Interface I
+End Interface
+<Obsolete>
+Public Delegate Sub del(x As Integer)
+",
             GetBasicResultAt(4, 2, "A"),
             GetBasicResultAt(6, 6, ".ctor"),
             GetBasicResultAt(9, 6, "field"),
@@ -92,103 +87,103 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetBasicResultAt(22, 2, "del"));
         }
 
-        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharpNoDiagnosticsForInternalAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Obsolete]
-                class A
-                {
-                    [Obsolete]
-                    A() { }
-                    [Obsolete("")]
-                    int field;
-                    [Obsolete]
-                    int Property { get; set; }
-                    [Obsolete]
-                    void Method() {}
-                    [Obsolete]
-                    event EventHandler<int> event1;
-                }
-                [Obsolete]
-                interface I {}
-                [Obsolete]
-                delegate void del(int x);
-                """);
+[Obsolete]
+class A
+{
+    [Obsolete]
+    A() { }
+    [Obsolete("""")]
+    int field;
+    [Obsolete]
+    int Property { get; set; }
+    [Obsolete]
+    void Method() {}
+    [Obsolete]
+    event EventHandler<int> event1;
+}
+[Obsolete]
+interface I {}
+[Obsolete]
+delegate void del(int x);
+");
         }
 
-        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task BasicNoDiagnosticsForInternalAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                <Obsolete>
-                Class A
-                    <Obsolete>
-                    Sub New()
-                    End Sub
-                    <Obsolete("")>
-                    Dim field As Integer
-                    <Obsolete>
-                    Property prop As Integer
-                    <Obsolete>
-                    Sub Method()
-                    End Sub
-                    <Obsolete>
-                    Event event1 As EventHandler(Of Integer)
-                End Class
-                <Obsolete>
-                Interface I
-                End Interface
-                <Obsolete>
-                Delegate Sub del(x As Integer)
-                """);
+<Obsolete>
+Class A
+    <Obsolete>
+    Sub New()
+    End Sub
+    <Obsolete("""")>
+    Dim field As Integer
+    <Obsolete>
+    Property prop As Integer
+    <Obsolete>
+    Sub Method()
+    End Sub
+    <Obsolete>
+    Event event1 As EventHandler(Of Integer)
+End Class
+<Obsolete>
+Interface I
+End Interface
+<Obsolete>
+Delegate Sub del(x As Integer)
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Obsolete("message")]
-                class A
-                {
-                    [Obsolete("valid")]
-                    A() { }
-                    [Obsolete("valid")]
-                    int field;
-                    [Obsolete("valid", true)]
-                    int Property { get; set; }
-                    [Obsolete("valid", false)]
-                    void Method() {}
-                }
-                """);
+[Obsolete(""message"")]
+class A
+{
+    [Obsolete(""valid"")]
+    A() { }
+    [Obsolete(""valid"")]
+    int field;
+    [Obsolete(""valid"", true)]
+    int Property { get; set; }
+    [Obsolete(""valid"", false)]
+    void Method() {}
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                <Obsolete("valid")>
-                Class A
-                    <Obsolete("valid")>
-                    Sub New()
-                    End Sub
-                    <Obsolete("valid", True)>
-                    Dim field As Integer
-                    <Obsolete("valid", False)>
-                    Property prop As Integer
-                    <Obsolete("valid", False)>
-                    Sub Method()
-                    End Sub
-                End Class
-                """);
+<Obsolete(""valid"")>
+Class A
+    <Obsolete(""valid"")>
+    Sub New()
+    End Sub
+    <Obsolete(""valid"", True)>
+    Dim field As Integer
+    <Obsolete(""valid"", False)>
+    Property prop As Integer
+    <Obsolete(""valid"", False)>
+    Sub Method()
+    End Sub
+End Class
+");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)

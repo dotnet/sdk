@@ -12,7 +12,6 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Determines the assembly version to use for a given semantic version.
     /// </summary>
-    [MSBuildMultiThreadableTask]
     public class GetAssemblyVersion : TaskBase
     {
         /// <summary>

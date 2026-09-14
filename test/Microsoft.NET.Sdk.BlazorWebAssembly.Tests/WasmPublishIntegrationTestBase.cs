@@ -6,13 +6,10 @@
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-#pragma warning disable MSTEST0016
-    [TestClass]
-    public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
+    public abstract class WasmPublishIntegrationTestBase(ITestOutputHelper log) : AspNetSdkTest(log)
     {
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {
@@ -63,10 +60,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             static string ParseWebFormattedHash(string webFormattedHash)
             {
-                webFormattedHash.Should().StartWith("sha256-");
+                Assert.StartsWith("sha256-", webFormattedHash);
                 return webFormattedHash.Substring(7);
             }
         }
     }
-#pragma warning restore MSTEST0016
 }

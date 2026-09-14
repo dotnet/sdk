@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseDefaultDllImportSearchPathsAttribute,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -17,7 +17,6 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     // which will ignore all the configuration about the search algorithm.
     // Fow now, this rule didn't take Known Dlls into consideration.
     // If it is needed in the future, we can recover this rule.
-    [TestClass]
     public class UseDefaultDllImportSearchPathsAttributeWithLibraryImportTests
     {
         private async Task RunAnalyzerAsync(string source, string generatedSource, params DiagnosticResult[] diagnostics)
@@ -41,7 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add(editorConfig.Value);
             }
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         private const string LibraryImportAttribute = """
@@ -77,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             """;
 
         // It will try to retrieve the MessageBox from user32.dll, which will be searched in a default order.
-        [TestMethod]
+        [Fact]
         public async Task Test_LibraryImportAttribute_DiagnosticAsync()
         {
             string source = """
@@ -104,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(8, 31, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllInUpperCase_DiagnosticAsync()
         {
             var source = """
@@ -132,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_WithoutDllExtension_DiagnosticAsync()
         {
             var source = """
@@ -159,7 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(8, 31, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathAssemblyDirectory_DiagnosticAsync()
         {
             var source = """
@@ -187,7 +186,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_OneValueIsBad_DiagnosticAsync()
         {
             var source = """
@@ -212,7 +211,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await RunAnalyzerAsync(source, MessageBoxImplementation_NoDllImport, GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_BothIsBad_DiagnosticAsync()
         {
             var source = """
@@ -239,7 +238,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathLegacyBehavior_DiagnosticAsync()
         {
             var source = """
@@ -267,7 +266,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathUseDllDirectoryForDependencies_DiagnosticAsync()
         {
             var source = """
@@ -295,7 +294,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UseDllDirectoryForDependencies"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathAssemblyDirectory_Assembly_DiagnosticAsync()
         {
             var source = """
@@ -324,7 +323,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(10, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_AssemblyDirectory_ApplicationDirectory_DiagnosticAsync()
         {
             var source = """
@@ -354,7 +353,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 GetCSharpResultAt(11, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "ApplicationDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_ApplicationDirectory_AssemblyDirectory_DiagnosticAsync()
         {
             var source = """
@@ -383,10 +382,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                     "AssemblyDirectory"));
         }
 
-        [TestMethod]
-        [DataRow("")]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
+        [Theory]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_DefaultValue_DiagnosticAsync(
             string editorConfigText)
         {
@@ -408,21 +407,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $"""
-                root = true
+            var config = ("/.editorconfig", $@"root = true
 
-                [*]
-                {editorConfigText}
-
-                """);
+[*]
+{editorConfigText}
+");
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config,
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"));
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config,
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"));
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_DiagnosticAsync(
             string editorConfigText)
         {
@@ -444,21 +441,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $"""
-                root = true
+            var config = ("/.editorconfig", $@"root = true
 
-                [*]
-                {editorConfigText}
-
-                """);
+[*]
+{editorConfigText}
+");
             await RunAnalyzerWithConfigAsync(source + MessageBoxImplementation_DllImport, "", config, GetCSharpResultAt(9, 31,
                     UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "System32"));
             await RunAnalyzerWithConfigAsync(source + MessageBoxImplementation_NoDllImport, "", config, GetCSharpResultAt(9, 31,
                     UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "System32"));
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_DiagnosticAsync(
             string editorConfigText)
         {
@@ -480,13 +475,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $"""
-                root = true
+            var config = ("/.editorconfig", $@"root = true
 
-                [*]
-                {editorConfigText}
-
-                """);
+[*]
+{editorConfigText}
+");
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config,
                 GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UserDirectories"));
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config,
@@ -494,10 +487,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         // user32.dll will be searched in UserDirectories, which is specified by DllImportSearchPath and is good.
-        [TestMethod]
+        [Fact]
         public async Task Test_LibraryImportAndDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -518,14 +512,15 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await RunAnalyzerAsync(source, MessageBoxImplementation_NoDllImport);
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
-        [DataRow(
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
+        [InlineData(
             "dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_NoDiagnosticAsync(
             string editorConfigText)
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -542,22 +537,22 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $"""
-                root = true
+            var config = ("/.editorconfig", $@"root = true
 
-                [*]
-                {editorConfigText}
-                """);
+[*]
+{editorConfigText}
+");
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config);
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_NoDiagnosticAsync(
             string editorConfigText)
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -574,20 +569,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """ + LibraryImportAttribute;
 
-            var config = ("/.editorconfig", $"""
-                root = true
+            var config = ("/.editorconfig", $@"root = true
 
-                [*]
-                {editorConfigText}
-                """);
+[*]
+{editorConfigText}
+");
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_DllImport, config);
             await RunAnalyzerWithConfigAsync(source, MessageBoxImplementation_NoDllImport, config);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_NoAttribute_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -607,10 +602,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         // In this case, [DefaultDllImportSearchPaths] is applied to the assembly.
         // So, this attribute specifies the paths that are used by default to search for any DLL that provides a function for a platform invoke, in any code in the assembly.
-        [TestMethod]
+        [Fact]
         public async Task Test_LibraryImportAndAssemblyDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -634,10 +630,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         // It will have a compiler warning and recommend to use [LibraryImport] also.
-        [TestMethod]
+        [Fact]
         public async Task Test_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -657,10 +654,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         // It will have a compiler warning and recommend to use [LibraryImport] also.
-        [TestMethod]
+        [Fact]
         public async Task Test_AssemblyDefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -680,7 +678,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await RunAnalyzerAsync(source, MessageBoxImplementation_NoDllImport);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportAndLibraryImportWarnsOnLibraryImport()
         {
             var source = """
@@ -692,7 +690,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     [LibraryImport("user32.dll")]
                     public static partial int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-                }
+                } 
                 """ + LibraryImportAttribute;
 
             await RunAnalyzerAsync(source, MessageBoxImplementation_DllImport, GetCSharpResultAt(8, 31,
@@ -702,10 +700,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         // [LibraryImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_LibraryImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -727,10 +726,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         // [LibraryImport] is set with an absolute path.
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_LibraryImportAttributeWithAbsolutePath_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 
@@ -749,10 +749,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await RunAnalyzerAsync(source, MessageBoxImplementation_NoDllImport);
         }
 
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnosticAsync()
         {
             var source = """
+
                 using System;
                 using System.Runtime.InteropServices;
 

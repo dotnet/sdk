@@ -1,9 +1,10 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-Imports System.Collections.Immutable
 Imports System.Composition
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.Operations
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -38,12 +39,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Return False
         End Function
 
-        Protected Overrides Function GetArguments(argumentListNode As SyntaxNode) As ImmutableArray(Of SyntaxNode)
-            Return CType(argumentListNode, ArgumentListSyntax).Arguments.Cast(Of SyntaxNode)().ToImmutableArray()
-        End Function
-
-        Protected Overrides Function CreateArgumentList(arguments As IEnumerable(Of SyntaxNode)) As SyntaxNode
-            Return SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments.Cast(Of ArgumentSyntax)()))
+        Protected Overrides Function CreateCodeAction(document As Document, argumentListNode As SyntaxNode, sourceCharLiteral As Char) As CodeAction
+            Return New BasicReplaceStringLiteralWithCharLiteralCodeAction(document, argumentListNode, sourceCharLiteral)
         End Function
 
         Private Shared Function TryGetCharFromLiteralExpressionSyntax(sourceLiteralExpressionSyntax As LiteralExpressionSyntax, ByRef parsedCharLiteral As Char) As Boolean
@@ -58,5 +55,25 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Return False
         End Function
+
+        Private NotInheritable Class BasicReplaceStringLiteralWithCharLiteralCodeAction
+            Inherits ReplaceStringLiteralWithCharLiteralCodeAction
+
+            Public Sub New(document As Document, argumentListNode As SyntaxNode, sourceCharLiteral As Char)
+                MyBase.New(document, argumentListNode, sourceCharLiteral)
+            End Sub
+
+            Protected Overrides Sub ApplyFix(editor As DocumentEditor, model As SemanticModel, oldArgumentListNode As SyntaxNode, c As Char)
+                Dim argumentNode = DirectCast(editor.Generator.Argument(editor.Generator.LiteralExpression(c)), ArgumentSyntax)
+                Dim arguments = {argumentNode}.Concat(
+                    CType(oldArgumentListNode, ArgumentListSyntax).Arguments.
+                        Select(Function(arg) (arg, operation:=TryCast(model.GetOperation(arg), IArgumentOperation))).
+                        Where(Function(t) PreserveArgument(t.operation)).
+                        Select(Function(t) t.arg))
+                Dim argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments))
+
+                editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode))
+            End Sub
+        End Class
     End Class
 End Namespace

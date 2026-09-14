@@ -5,15 +5,16 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishACppCliAppProject : SdkTest
     {
-        [TestMethod]
-        [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
+        public GivenThatWeWantToPublishACppCliAppProject(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
         public void It_should_fail_with_error_message()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("NETCoreCppClApp")
                 .WithSource();
 

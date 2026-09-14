@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -37,7 +35,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
     /// <summary>
     /// Launches a process.
-    /// Virtual for testing.
+    /// Virutal for testing.
     /// </summary>
     public virtual async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
     {
@@ -330,7 +328,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 }
                 else
                 {
-                    TerminateUnixProcess(process, state, logger, force);
+                    TerminateUnixProcess(state, logger, force);
                 }
             }
         }
@@ -366,26 +364,12 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
     }
 
-    [UnsupportedOSPlatform("windows")]
-    private static void TerminateUnixProcess(Process process, ProcessState state, ILogger logger, bool force)
+    private static void TerminateUnixProcess(ProcessState state, ILogger logger, bool force)
     {
-        var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
         var signalName = force ? "SIGKILL" : "SIGTERM";
         logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-        string? error = null;
-        try
-        {
-            process.SafeHandle.Signal(signal);
-        }
-        catch (Win32Exception ex)
-        {
-            // A process that has already exited is handled by Signal's non-exception return path.
-            // This catch is for exceptional failures, such as attempting to signal a process
-            // that we don't have permission to kill.
-            error = ex.Message;
-        }
-
+        var error = ProcessUtilities.SendPosixSignal(state.ProcessId, signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM);
         if (error != null)
         {
             logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);

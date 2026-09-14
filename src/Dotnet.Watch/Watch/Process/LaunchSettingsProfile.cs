@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
@@ -24,11 +23,7 @@ internal sealed class LaunchSettingsProfile
     public bool LaunchBrowser { get; init; }
     public string? LaunchUrl { get; init; }
 
-    internal static LaunchSettingsProfile? ReadLaunchProfile(
-        ProjectRepresentation project,
-        string? launchProfileName,
-        ILogger logger,
-        Func<string, string> evaluateExpression)
+    internal static LaunchSettingsProfile? ReadLaunchProfile(ProjectRepresentation project, string? launchProfileName, ILogger logger)
     {
         var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(project.ProjectOrEntryPointFilePath, launchProfileName, (message, isError) =>
         {
@@ -63,7 +58,7 @@ internal sealed class LaunchSettingsProfile
         if (string.IsNullOrEmpty(launchProfileName))
         {
             // Load the default (first) launch profile
-            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(evaluateExpression, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger);
         }
 
         // Load the specified launch profile
@@ -83,36 +78,12 @@ internal sealed class LaunchSettingsProfile
                 logger.LogWarning("Note: Launch profile names are case-sensitive. Did you mean '{ProfileName}'?", caseInsensitiveNamedProfile);
             }
 
-            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(evaluateExpression, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger);
         }
 
         logger.LogDebug("Found named launch profile '{ProfileName}'.", launchProfileName);
         namedProfile.LaunchProfileName = launchProfileName;
-        return namedProfile.WithExpandedVariables(evaluateExpression, logger);
-    }
-
-    private LaunchSettingsProfile? WithExpandedVariables(
-        Func<string, string> evaluateExpression,
-        ILogger logger)
-    {
-        try
-        {
-            return new LaunchSettingsProfile
-            {
-                LaunchProfileName = LaunchProfileName,
-                ApplicationUrl = ApplicationUrl,
-                CommandName = CommandName,
-                LaunchBrowser = LaunchBrowser,
-                LaunchUrl = LaunchUrl is null
-                    ? null
-                    : LaunchProfileParser.ExpandVariables(LaunchUrl, evaluateExpression),
-            };
-        }
-        catch (InvalidProjectFileException e)
-        {
-            logger.LogDebug("Error expanding launch profile: {Message}.", e.Message);
-            return null;
-        }
+        return namedProfile;
     }
 
     private static LaunchSettingsProfile? ReadDefaultLaunchProfile(LaunchSettingsJson? launchSettings, ILogger logger)

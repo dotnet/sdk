@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Remove.Package.Tests
 {
-    [TestClass]
     public class GivenDotnetRemovePackage : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -39,13 +38,13 @@ Commands:
   package <PACKAGE_NAME>      Remove a NuGet package reference from the project.
   reference <PROJECT_PATH>    Remove a project-to-project reference from the project";
 
-        public GivenDotnetRemovePackage()
+        public GivenDotnetRemovePackage(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [DataRow("--help")]
-        [DataRow("-h")]
+        [Theory]
+        [InlineData("--help")]
+        [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new DotnetCommand(Log).Execute($"remove", "package", helpArg);
@@ -53,9 +52,9 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [TestMethod]
-        [DataRow("")]
-        [DataRow("unknownCommandName")]
+        [Theory]
+        [InlineData("")]
+        [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -64,10 +63,10 @@ Commands:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenReferencedPackageIsPassedItGetsRemoved()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource().Path;
 
@@ -87,11 +86,11 @@ Commands:
             remove.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
         {
             const string testAsset = "TestAppSimple";
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource().Path;
 
@@ -114,10 +113,10 @@ Commands:
             remove.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void FileBasedApp()
         {
-            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -136,10 +135,10 @@ Commands:
                 """);
         }
 
-        [TestMethod]
+        [Fact]
         public void FileBasedApp_Multiple()
         {
-            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -164,10 +163,10 @@ Commands:
                 """);
         }
 
-        [TestMethod]
+        [Fact]
         public void FileBasedApp_None()
         {
-            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();

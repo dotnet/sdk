@@ -10,8 +10,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class MergeConfigurationProperties : Task, IMultiThreadableTask
+public class MergeConfigurationProperties : Task
 {
     [Required]
     public ITaskItem[] CandidateConfigurations { get; set; }
@@ -21,8 +20,6 @@ public class MergeConfigurationProperties : Task, IMultiThreadableTask
 
     [Output]
     public ITaskItem[] ProjectConfigurations { get; set; }
-
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     public override bool Execute()
     {
@@ -113,7 +110,7 @@ public class MergeConfigurationProperties : Task, IMultiThreadableTask
             // We can be more lenient here and fallback to the project reference ItemSpec if not present.
             referenceMetadata = !string.IsNullOrEmpty(referenceMetadata) ? referenceMetadata : projectReference.ItemSpec;
             var configurationFullPath = configuration.GetMetadata("FullPath");
-            var projectReferenceFullPath = Path.GetFullPath((string)TaskEnvironment.GetAbsolutePath(referenceMetadata));
+            var projectReferenceFullPath = Path.GetFullPath(referenceMetadata);
             var matchPath = string.Equals(
                 configurationFullPath,
                 projectReferenceFullPath,

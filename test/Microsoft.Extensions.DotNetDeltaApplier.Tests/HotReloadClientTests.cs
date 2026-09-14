@@ -1,14 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Test.MSTest.Utilities;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.HotReload.UnitTests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class HotReloadClientTests
+public class HotReloadClientTests(ITestOutputHelper output)
 {
-    public TestContext TestContext { get; set; } = null!;
     private sealed class Test : IAsyncDisposable
     {
         public readonly TestLogger Logger;
@@ -17,19 +15,19 @@ public class HotReloadClientTests
         private readonly CancellationTokenSource _cancellationSource;
         private readonly Task<Task> _listenerTaskFactory;
 
-        public Test(TestContext testContext, TestHotReloadAgent agent)
+        public Test(ITestOutputHelper output, TestHotReloadAgent agent)
         {
-            Logger = new TestLogger(testContext);
-            AgentLogger = new TestLogger(testContext);
+            Logger = new TestLogger(output);
+            AgentLogger = new TestLogger(output);
             var clientTransport = new NamedPipeClientTransport(Logger);
             Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", handlesStaticAssetUpdates: true, clientTransport);
 
             _cancellationSource = new CancellationTokenSource();
 
-            Client.InitiateConnection(environmentVariables: [], CancellationToken.None);
+            Client.InitiateConnection(CancellationToken.None);
             var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
             var listener = new Listener(agentTransport, agent, log: _ => { });
-            _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token), testContext.CancellationToken);
+            _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));
         }
 
         public async ValueTask DisposeAsync()
@@ -48,7 +46,7 @@ public class HotReloadClientTests
         }
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ApplyManagedCodeUpdates()
     {
         var moduleId = Guid.NewGuid();
@@ -58,10 +56,10 @@ public class HotReloadClientTests
             Capabilities = "Baseline AddMethodToExistingType AddStaticFieldToExistingType",
         };
 
-        await using var test = new Test(TestContext, agent);
+        await using var test = new Test(output, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: moduleId,
@@ -83,7 +81,7 @@ public class HotReloadClientTests
         Assert.Contains(agentMessage, agentMessages);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ApplyManagedCodeUpdates_Failure()
     {
         var agent = new TestHotReloadAgent()
@@ -92,10 +90,10 @@ public class HotReloadClientTests
             ApplyManagedCodeUpdatesImpl = updates => throw new Exception("Bug!")
         };
 
-        await using var test = new Test(TestContext, agent);
+        await using var test = new Test(output, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: Guid.NewGuid(),

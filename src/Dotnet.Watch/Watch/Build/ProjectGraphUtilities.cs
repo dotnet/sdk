@@ -56,16 +56,13 @@ internal static class ProjectGraphUtilities
         => projectNode.GetCapabilities().Any(static value => value is ProjectCapability.AspNetCore or ProjectCapability.WebAssembly);
 
     public static string? GetOutputDirectory(this ProjectInstance project)
-        => project.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(project.Directory, NormalizeSeparators(path))) : null;
+        => project.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(project.Directory, path)) : null;
 
     public static string GetAssemblyName(this ProjectInstance project)
         => project.GetPropertyValue(PropertyNames.TargetName);
 
-    internal static string NormalizeSeparators(string path)
-        => Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
-
     public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
-        => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, NormalizeSeparators(path)) : null;
+        => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, path) : null;
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems(ItemNames.ProjectCapability).Select(item => item.EvaluatedInclude);
@@ -77,7 +74,6 @@ internal static class ProjectGraphUtilities
         => projectNode.GetBooleanPropertyValue(PropertyNames.EnableDefaultItems);
 
     public static IReadOnlyList<string> GetDefaultItemExcludes(this ProjectGraphNode projectNode)
-        // NormalizeSeparators is not required for globs as MSBuildGlob.Parse treats `\` as a directory separator on Linux
         => projectNode.GetStringListPropertyValue(PropertyNames.DefaultItemExcludes);
 
     public static IReadOnlyList<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)

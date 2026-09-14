@@ -1,14 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public partial class DotnetNewDetailsTest : BaseIntegrationTest
+    public partial class DotnetNewDetailsTest : BaseIntegrationTest, IClassFixture<DiagnosticFixture>
     {
-        private ITestOutputHelper _log => Log;
+        private readonly ITestOutputHelper _log;
+        private readonly IMessageSink _messageSink;
 
-        [TestMethod]
+        public DotnetNewDetailsTest(DiagnosticFixture diagnosisFixture, ITestOutputHelper log) : base(log)
+        {
+            _log = log;
+            _messageSink = diagnosisFixture.DiagnosticSink;
+        }
+
+        [Fact]
         public void CanDisplayDetails_LocalPackage()
         {
             string packageLocation = PackTestNuGetPackage(_log);
@@ -31,7 +37,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching($"Microsoft.TemplateEngine.TestTemplates{Environment.NewLine}   Authors:{Environment.NewLine}      Microsoft{Environment.NewLine}   Templates:");
         }
 
-        [TestMethod]
+        [Fact]
         public void CannotDisplayUnknownPackageDetails()
         {
             // skip the test in internal test runs as it will error on the internal feed

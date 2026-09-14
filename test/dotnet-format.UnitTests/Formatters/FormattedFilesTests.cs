@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 #nullable disable
 
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
-    [TestClass]
     public class FormattedFilesTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
@@ -23,24 +21,29 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             ["end_of_line"] = "lf",
         };
 
-        [TestMethod]
+        public FormattedFilesTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
+
+        [Fact]
         public async Task ReturnsItem_WhenFileFormatted()
         {
             var testCode = "class C\n{\n}";
 
             var result = await TestFormattedFiles(testCode);
 
-            Assert.ContainsSingle(result);
+            Assert.Single(result);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnsEmptyList_WhenNoFilesFormatted()
         {
             var testCode = "class C\n{\n}\n";
 
             var result = await TestFormattedFiles(testCode);
 
-            Assert.IsEmpty(result);
+            Assert.Empty(result);
         }
 
         private async Task<List<FormattedFile>> TestFormattedFiles(string testCode)
@@ -68,8 +71,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: false,
-                BinaryLogPath: null,
-                TargetFramework: null);
+                BinaryLogPath: null);
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 

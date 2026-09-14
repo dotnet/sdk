@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSTest.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -8,8 +8,7 @@
     <RollForward>LatestMajor</RollForward>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);binaries\**;projects\**</DefaultExcludesInProjectFolder>
-    <!-- Test classes use disjoint workspaces; methods within a class may share test assets. -->
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Format\dotnet-format\dotnet-format.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <!-- Tests depend on the SdkTargetFramework reference assemblies -->

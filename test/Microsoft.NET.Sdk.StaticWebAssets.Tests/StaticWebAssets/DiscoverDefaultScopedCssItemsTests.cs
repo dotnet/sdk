@@ -1,20 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Utilities;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.Razor.Test
 {
-    [TestClass]
     public class DiscoverDefaultScopedCssItemsTests
     {
-        [TestMethod]
+        [Fact]
         public void DiscoversScopedCssFiles_BasedOnTheirExtension()
         {
             // Arrange
@@ -36,7 +30,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             taskInstance.DiscoveredScopedCssInputs.Should().HaveCount(3);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotDiscoversScopedCssFilesForViews_IfFeatureIsUnsupported()
         {
             // Arrange
@@ -58,7 +52,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             taskInstance.DiscoveredScopedCssInputs.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void DiscoversScopedCssFilesForViews_BasedOnTheirExtension()
         {
             // Arrange
@@ -81,7 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             taskInstance.DiscoveredScopedCssInputs.Should().HaveCount(3);
         }
 
-        [TestMethod]
+        [Fact]
         public void DiscoversScopedCssFilesForViews_SkipsFilesWithScopedAttributeWithAFalseValue()
         {
             // Arrange

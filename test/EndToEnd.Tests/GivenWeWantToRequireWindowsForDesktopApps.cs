@@ -1,5 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #nullable disable
 
@@ -7,12 +7,9 @@ using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public class GivenWeWantToRequireWindowsForDesktopApps : SdkTest
+    public class GivenWeWantToRequireWindowsForDesktopApps(ITestOutputHelper log) : SdkTest(log)
     {
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [Ignore("https://github.com/dotnet/sdk/issues/42230")]
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD, Skip = "https://github.com/dotnet/sdk/issues/42230")]
         public void It_does_not_download_desktop_targeting_packs_on_unix()
         {
             var testProjectCreator = new TestProjectCreator()
@@ -23,7 +20,7 @@ namespace EndToEnd.Tests
             testProjectCreator.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
             testProjectCreator.AdditionalProperties["OutputType"] = "exe";
 
-            var testInstance = testProjectCreator.Create(TestAssetsManager);
+            var testInstance = testProjectCreator.Create(_testAssetsManager);
 
             new DotnetBuildCommand(testInstance)
                 .Execute().Should().Pass();
@@ -32,8 +29,7 @@ namespace EndToEnd.Tests
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void It_does_not_download_desktop_runtime_packs_on_unix()
         {
             const string Rid = "win-x64";
@@ -63,7 +59,7 @@ namespace EndToEnd.Tests
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            var testInstance = testProjectCreator.Create(TestAssetsManager)
+            var testInstance = testProjectCreator.Create(_testAssetsManager)
                 .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
             new PublishCommand(testInstance)

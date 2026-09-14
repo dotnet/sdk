@@ -1,1 +1,0 @@
-﻿The template "TestAssets.TemplateWithGeneratedSwitchInComputed" was created successfully.

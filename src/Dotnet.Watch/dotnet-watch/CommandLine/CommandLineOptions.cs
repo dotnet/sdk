@@ -42,10 +42,9 @@ internal sealed class CommandLineOptions
     public required IReadOnlyList<string> CommandArguments { get; init; }
 
     /// <summary>
-    /// <see cref="CommandArguments"/> excluding MSBuild-only options that would interfere with positional file discovery.
-    /// Workaround for https://github.com/dotnet/sdk/issues/49989.
+    /// <see cref="CommandArguments"/> excluding binlog options. Workaround for https://github.com/dotnet/sdk/issues/49989.
     /// </summary>
-    public required IReadOnlyList<string> CommandArgumentsForFileDiscovery { get; init; }
+    public required IReadOnlyList<string> CommandArgumentsWithoutBinLog { get; init; }
 
     /// <summary>
     /// Arguments passed to `dotnet build` and to design-time build evaluation.
@@ -124,8 +123,7 @@ internal sealed class CommandLineOptions
             isExplicitCommand,
             out var binLogToken,
             out var binLogPath,
-            out var commandArgumentsForFileDiscovery,
-            out var multiThreadedTokens);
+            out var commandArgumentsWithoutBinLog);
 
         // We assume that forwarded options, if any, are intended for `dotnet build`.
         // Exclude --target option since we need to control the targets being built.
@@ -142,12 +140,7 @@ internal sealed class CommandLineOptions
             buildArguments.Add(binLogToken);
         }
 
-        // -mt configures the MSBuild engine used by the builds watch runs on every change.
-        buildArguments.AddRange(multiThreadedTokens);
-
-        var logLevel = parseResult.GetValue(definition.TraceOption)
-            ? LogLevel.Trace
-            : parseResult.GetValue(definition.VerboseOption)
+        var logLevel = parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
             : parseResult.GetValue(definition.QuietOption)
             ? LogLevel.Warning
@@ -169,7 +162,7 @@ internal sealed class CommandLineOptions
             },
 
             CommandArguments = commandArguments,
-            CommandArgumentsForFileDiscovery = commandArgumentsForFileDiscovery,
+            CommandArgumentsWithoutBinLog = commandArgumentsWithoutBinLog,
             Command = command,
             IsExplicitCommand = isExplicitCommand,
 
@@ -205,8 +198,7 @@ internal sealed class CommandLineOptions
         bool isExplicitCommand,
         out string? binLogToken,
         out string? binLogPath,
-        out IReadOnlyList<string> argumentsForFileDiscovery,
-        out IReadOnlyList<string> multiThreadedTokens)
+        out IReadOnlyList<string> argumentsWithoutBinLog)
     {
         var definition = (DotnetWatchCommandDefinition)parseResult.CommandResult.Command;
 
@@ -273,15 +265,13 @@ internal sealed class CommandLineOptions
         var dashDashInserted = false;
 
 
-        var argumentsForFileDiscoveryBuilder = new List<string>();
-        argumentsForFileDiscoveryBuilder.AddRange(arguments);
-
-        var multiThreadedTokensBuilder = new List<string>();
+        var argumentsWithoutBinLogBuilder = new List<string>();
+        argumentsWithoutBinLogBuilder.AddRange(arguments);
 
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
             var token = parseResult.UnmatchedTokens[i];
-            var isMSBuildOnlyToken = false;
+            var isBinLogToken = false;
 
             if (i < unmatchedTokensBeforeDashDash)
             {
@@ -308,37 +298,28 @@ internal sealed class CommandLineOptions
                             binLogPath = token[(name.Length + 1)..];
                         }
 
-                        isMSBuildOnlyToken = true;
+                        isBinLogToken = true;
                         break;
                     }
-                }
-
-                // Watch runs `dotnet build` itself, so MSBuild engine switches have to be copied into the
-                // build arguments; commands do not model -mt as a forwarding option either.
-                if (MSBuildArgumentParser.IsMultiThreadedSwitch(token))
-                {
-                    multiThreadedTokensBuilder.Add(token);
-                    isMSBuildOnlyToken = true;
                 }
             }
 
             if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
             {
                 arguments.Add("--");
-                argumentsForFileDiscoveryBuilder.Add("--");
+                argumentsWithoutBinLogBuilder.Add("--");
                 dashDashInserted = true;
             }
 
             arguments.Add(token);
 
-            if (!isMSBuildOnlyToken)
+            if (!isBinLogToken)
             {
-                argumentsForFileDiscoveryBuilder.Add(token);
+                argumentsWithoutBinLogBuilder.Add(token);
             }
         }
 
-        argumentsForFileDiscovery = argumentsForFileDiscoveryBuilder;
-        multiThreadedTokens = multiThreadedTokensBuilder;
+        argumentsWithoutBinLog = argumentsWithoutBinLogBuilder;
         return arguments;
     }
 

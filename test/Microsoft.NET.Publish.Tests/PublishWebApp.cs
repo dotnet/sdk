@@ -5,10 +5,13 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class PublishWebApp : SdkTest
     {
-        [TestMethod]
+        public PublishWebApp(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void It_publishes_and_runs_self_contained_web_app()
         {
             var testProject = new TestProject()
@@ -20,7 +23,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                             .WithProjectChanges(project =>
                             {
                                 var ns = project.Root.Name.Namespace;

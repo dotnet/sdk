@@ -13,56 +13,25 @@ namespace Aspire.Tools.Service;
 /// <summary>
 /// Used by the SocketConnectionManager to track one socket connection. It needs to be disposed when done with it
 /// </summary>
-internal sealed class WebSocketConnection(WebSocket socket, TaskCompletionSource tcs, string dcpId, CancellationToken httpRequestAborted) : IDisposable
+internal class WebSocketConnection : IDisposable
 {
-    public WebSocket Socket { get; } = socket;
-    public TaskCompletionSource Tcs { get; } = tcs;
-    public string DcpId { get; } = dcpId;
-    public CancellationToken HttpRequestAborted { get; } = httpRequestAborted;
+    public WebSocketConnection(WebSocket socket, TaskCompletionSource tcs, string dcpId, CancellationToken httpRequestAborted)
+    {
+        Socket = socket;
+        Tcs = tcs;
+        DcpId = dcpId;
+        HttpRequestAborted = httpRequestAborted;
+    }
 
-    private readonly Lock _cancelTokenRegistrationLock = new();
-    private CancellationTokenRegistration? _cancelTokenRegistration;
-    private bool _isDisposed;
+    public WebSocket Socket { get; }
+    public TaskCompletionSource Tcs { get; }
+    public string DcpId { get; }
+    public CancellationToken HttpRequestAborted { get; }
+    public CancellationTokenRegistration CancelTokenRegistration { get; set; }
 
     public void Dispose()
     {
-        Tcs.TrySetResult();
-
-        CancellationTokenRegistration? registrationToDispose = null;
-        lock (_cancelTokenRegistrationLock)
-        {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
-                registrationToDispose = _cancelTokenRegistration;
-                _cancelTokenRegistration = null;
-            }
-        }
-
-        // The callback might be called during disposal, do so outside of the lock:
-        registrationToDispose?.Dispose();
-    }
-
-    public void RegisterCancellationCallback(Action<WebSocketConnection> callback)
-    {
-        // Note that the callback can be called synchronously before Register returns.
-        var cancelTokenRegistration = HttpRequestAborted.Register(() => callback(this));
-
-        bool disposeRegistration;
-        lock (_cancelTokenRegistrationLock)
-        {
-            disposeRegistration = _isDisposed;
-
-            if (!disposeRegistration)
-            {
-                _cancelTokenRegistration = cancelTokenRegistration;
-            }
-        }
-
-        if (disposeRegistration)
-        {
-            // The callback might be called during disposal, do so outside of the lock:
-            cancelTokenRegistration.Dispose();
-        }
+       Tcs.SetResult();
+       CancelTokenRegistration.Dispose();
     }
 }

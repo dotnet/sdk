@@ -2,22 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession buildSession) : ITestHandler
+internal sealed class MSBuildHandler(BuildOptions buildOptions)
 {
     private readonly BuildOptions _buildOptions = buildOptions;
-    private readonly MSBuildSession _buildSession = buildSession;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
-
-    public bool Initialize()
+    public bool RunMSBuild()
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 
@@ -27,8 +23,8 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
         }
 
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions, _buildSession) :
-            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions, _buildSession);
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions);
 
         LogProjectProperties(projects);
 
@@ -70,22 +66,13 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
         return true;
     }
 
-    public int RunTestApplications(TestApplicationActionQueue actionQueue)
+    public void EnqueueTestApplications(TestApplicationActionQueue queue)
     {
         foreach (var testApp in _testApplications)
         {
-            actionQueue.Enqueue(testApp);
+            queue.Enqueue(testApp);
         }
-
-        return actionQueue.CompleteEnqueueAndWait();
     }
-
-    public IEnumerable<TestModule> EnumerateTestModules()
-        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
-
-    public IEnumerable<string?> GetTestApplicationWorkingDirectories()
-        => _testApplications.SelectMany(static group => group)
-            .Select(static module => module.RunProperties.WorkingDirectory);
 
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {

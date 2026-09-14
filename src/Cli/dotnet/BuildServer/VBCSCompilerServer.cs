@@ -17,7 +17,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
     private static readonly string s_shutdownArg = "-shutdown";
 
     internal static readonly string VBCSCompilerPath = Path.Combine(
-            AppContext.BaseDirectory,
+            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
             "Roslyn",
             "bincore",
             "VBCSCompiler.dll");

@@ -10,7 +10,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
-    [TestClass]
     public class WindowsEnvironmentPathTests
     {
         public WindowsEnvironmentPathTests()
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         private readonly MockPathInternal _mockPathInternal;
         private const string _toolsPath = @"C:\Users\username\.dotnet\tools";
 
-        [TestMethod]
+        [Fact]
         public void GivenPathIsNullItItAddsToEnvironment()
         {
             _mockPathInternal.UserLevelPath = null;
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             _mockPathInternal.UserLevelPath.Should().Be(@"%USERPROFILE%\.dotnet\tools");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathNotSetInProcessItPrintsReopenNoticeAndNoChangeInEnvironment()
         {
             _mockPathInternal.UserLevelPath = @"%USERPROFILE%\.dotnet\tools";
@@ -54,7 +53,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             _reporter.Lines.Should().Equal(CliStrings.EnvironmentPathWindowsNeedReopen);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathNotSetInProcessWhenAddPackageExecutablePathToUserPathItPrintsReopenNoticeAndNoChangeInEnvironment()
         {
             _mockPathInternal.UserLevelPath = @"%USERPROFILE%\Other;%USERPROFILE%\.dotnet\tools";
@@ -66,7 +65,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Be(@"%USERPROFILE%\Other;%USERPROFILE%\.dotnet\tools", "no change");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathNotSetItAddsToEnvironment()
         {
             _mockPathInternal.UserLevelPath = @"%USERPROFILE%\Other";
@@ -77,7 +76,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             _mockPathInternal.UserLevelPath.Should().Be(@"%USERPROFILE%\Other;%USERPROFILE%\.dotnet\tools");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathNotSetItPrintsManualInstructions()
         {
             _mockPathInternal.UserLevelPath = @"%USERPROFILE%\Other";
@@ -89,7 +88,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     _toolsPath));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathSetInProcessAndEnvironmentItPrintsNothingAndNoChangeInEnvironment()
         {
             var pathWithToolPath = @"%USERPROFILE%\Other;%USERPROFILE%\.dotnet\tools";
@@ -101,7 +100,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             _reporter.Lines.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenPathSetItDoesNotAddPathToEnvironment()
         {
             var pathWithToolPath = @"%USERPROFILE%\Other;%USERPROFILE%\.dotnet\tools";

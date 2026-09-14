@@ -5,11 +5,13 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToDetectAspireWorkloadDeprecation : SdkTest
     {
+        public GivenThatWeWantToDetectAspireWorkloadDeprecation(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_when_Aspire_host_with_old_SDK_version()
         {
             var testProject = new TestProject()
@@ -23,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["IsAspireHost"] = "true";
             testProject.AdditionalProperties["AspireHostingSDKVersion"] = "8.1.0"; // Below 8.2.0
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -37,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("https://aka.ms/aspire/update-to-sdk");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_when_Aspire_host_with_no_SDK_version()
         {
             var testProject = new TestProject()
@@ -51,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
             // This represents the old workload-based project pattern
             testProject.AdditionalProperties["IsAspireHost"] = "true";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -63,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Aspire Workload which has been deprecated");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_error_when_Aspire_host_with_new_SDK_version()
         {
             var testProject = new TestProject()
@@ -77,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["IsAspireHost"] = "true";
             testProject.AdditionalProperties["AspireHostingSDKVersion"] = "9.0.0"; // At 9.0.0 or above
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -87,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1228");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_error_when_not_Aspire_host()
         {
             var testProject = new TestProject()
@@ -99,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
 
             // No Aspire-related properties set
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -109,7 +111,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1228");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_for_old_workload_based_project_pattern()
         {
             var testProject = new TestProject()
@@ -124,7 +126,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["UserSecretsId"] = "6dac1860-9125-4f25-b9f8-2790fdfd4b37";
             testProject.PackageReferences.Add(new TestPackageReference("Aspire.Hosting.AppHost", "8.2.2"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -136,7 +138,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Aspire Workload which has been deprecated");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_error_for_new_SDK_based_project_pattern()
         {
             var testProject = new TestProject()
@@ -152,7 +154,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["AspireHostingSDKVersion"] = "9.0.0"; // This would be set by Aspire.AppHost.Sdk
             testProject.PackageReferences.Add(new TestPackageReference("Aspire.Hosting.AppHost", "9.0.0"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()

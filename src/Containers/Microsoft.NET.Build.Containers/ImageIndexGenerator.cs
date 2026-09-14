@@ -74,8 +74,8 @@ internal static class ImageIndexGenerator
                 digest = images[i].ManifestDigest,
                 platform = new PlatformInformation
                 {
-                    architecture = images[i].Architecture,
-                    os = images[i].OS
+                    architecture = images[i].Architecture!,
+                    os = images[i].OS!
                 }
             };
         }
@@ -90,13 +90,7 @@ internal static class ImageIndexGenerator
         return GetJsonStringFromImageIndex(imageIndex);
     }
 
-    internal static string GenerateImageIndexWithAnnotations(
-        string manifestMediaType,
-        string manifestDigest,
-        long manifestSize,
-        string repository,
-        string[] tags,
-        PlatformInformation platform = default)
+    internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
         
@@ -109,7 +103,6 @@ internal static class ImageIndexGenerator
                 mediaType = manifestMediaType,
                 size = manifestSize,
                 digest = manifestDigest,
-                platform = platform,
                 annotations = new Dictionary<string, string> 
                 {
                     { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },

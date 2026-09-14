@@ -1,17 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildANetStandard2Library : SdkTest
     {
+        public GivenThatWeWantToBuildANetStandard2Library(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [DataRow("netstandard2.0")]
-        [DataRow("netstandard2.1")]
+        [Theory]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
         public void It_builds_a_netstandard2_library_successfully(string targetFramework)
         {
             TestProject project = new()
@@ -20,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -31,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void It_resolves_assembly_conflicts()
         {
             TestProject project = new()
@@ -47,7 +49,7 @@ public static class {project.Name}
     {ConflictResolutionAssets.ConflictResolutionTestMethod}
 }}";
 
-            var testAsset = TestAssetsManager.CreateTestProject(project)
+            var testAsset = _testAssetsManager.CreateTestProject(project)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;

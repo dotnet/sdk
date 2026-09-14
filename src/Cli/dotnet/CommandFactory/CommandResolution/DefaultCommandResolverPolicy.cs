@@ -1,20 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 public class DefaultCommandResolverPolicy : ICommandResolverPolicy
 {
-    public CompositeCommandResolver CreateCommandResolver(string? sdkRoot = null, string? currentWorkingDirectory = null)
+    public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
     {
-        return Create(sdkRoot: sdkRoot, currentWorkingDirectory: currentWorkingDirectory);
+        return Create(currentWorkingDirectory);
     }
 
-    public static CompositeCommandResolver Create(string? sdkRoot = null,string? currentWorkingDirectory = null)
+    public static CompositeCommandResolver Create(string currentWorkingDirectory = null)
     {
         var environment = new EnvironmentProvider();
+        var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
         var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
 
         IPlatformCommandSpecFactory platformCommandSpecFactory;
@@ -29,45 +32,27 @@ public class DefaultCommandResolverPolicy : ICommandResolverPolicy
 
         return CreateDefaultCommandResolver(
             environment,
-#if !CLI_AOT
-            new PackagedCommandSpecFactoryWithCliRuntime(),
-#endif
+            packagedCommandSpecFactory,
             platformCommandSpecFactory,
             publishedPathCommandSpecFactory,
-            sdkRoot,
             currentWorkingDirectory);
     }
 
     public static CompositeCommandResolver CreateDefaultCommandResolver(
         IEnvironmentProvider environment,
-#if !CLI_AOT
         IPackagedCommandSpecFactory packagedCommandSpecFactory,
-#endif
         IPlatformCommandSpecFactory platformCommandSpecFactory,
         IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
-        string? sdkRoot = null,
-        string? currentWorkingDirectory = null)
+        string currentWorkingDirectory = null)
     {
         var compositeCommandResolver = new CompositeCommandResolver();
 
         compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
-        if (sdkRoot != null)
-        {
-            compositeCommandResolver.AddCommandResolver(DotnetToolsCommandResolver.ForSdkRoot(sdkRoot));
-        }
-        else
-        {
-            compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
-        }
+        compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
         compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
         compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
-#if !CLI_AOT
-        // ProjectToolsCommandResolver resolves legacy DotNetCliToolReference tools by evaluating the
-        // project with MSBuild and reading the NuGet lock file - neither of which is AOT-compatible.
-        // The AOT bridge omits it and falls back to the managed CLI for these (rare) invocations.
         compositeCommandResolver.AddCommandResolver(
             new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
-#endif
         compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
         compositeCommandResolver.AddCommandResolver(
             new AppBaseCommandResolver(environment, platformCommandSpecFactory));

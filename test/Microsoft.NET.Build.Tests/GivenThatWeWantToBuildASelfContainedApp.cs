@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,16 +9,17 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildASelfContainedApp : SdkTest
     {
+        public GivenThatWeWantToBuildASelfContainedApp(ITestOutputHelper log) : base(log)
+        {
+        }
 
         // Some netcoreapp2.0 Linux tests are no longer working on ubuntu 2404
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
-        [DataRow("netcoreapp1.1", false)]
-        [DataRow("netcoreapp2.0", false)]
-        [DataRow("netcoreapp3.0", true)]
+        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp2.0", false)]
+        [InlineData("netcoreapp3.0", true)]
         public void It_builds_a_runnable_output(string targetFramework, bool dependenciesIncluded)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -27,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -82,13 +83,13 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_errors_out_when_RuntimeIdentifier_architecture_and_PlatformTarget_do_not_match()
         {
             const string RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             const string PlatformTarget = "x86";
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -111,12 +112,12 @@ namespace Microsoft.NET.Build.Tests
                     PlatformTarget));
         }
 
-        [TestMethod]
+        [Fact]
         public void It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -147,8 +148,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_resolves_runtimepack_from_packs_folder()
         {
             var testProject = new TestProject()
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use separate packages download folder for this project so that we can verify whether it had to download runtime packs
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "RuntimePack", GetValuesCommand.ValueType.Item)
             {
@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tests
             //  Download runtime packs into separate folder under test assets
             packageDownloadProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packs";
 
-            var packageDownloadAsset = TestAssetsManager.CreateTestProject(packageDownloadProject);
+            var packageDownloadAsset = _testAssetsManager.CreateTestProject(packageDownloadProject);
 
             new RestoreCommand(packageDownloadAsset)
                 .Execute()
@@ -231,8 +231,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_resolves_pack_versions_from_workload_manifest()
         {
             static string GetVersionBand(string sdkVersion)
@@ -279,7 +278,7 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             //  Set up test workload manifest that will suply targeting and runtime pack versions
             string sdkVersionBand = GetVersionBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
@@ -344,9 +343,8 @@ namespace Microsoft.NET.Build.Tests
             testRuntimePack.metadata["NuGetPackageVersion"].Should().Be("1.0.42-abc");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.4.0.51802")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [RequiresMSBuildVersionTheory("17.4.0.51802")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_publish_runtime_specific_apps_with_library_dependencies_self_contained(string targetFramework)
         {
 
@@ -366,7 +364,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
-            var createdLibProject = TestAssetsManager.CreateTestProject(libProject);
+            var createdLibProject = _testAssetsManager.CreateTestProject(libProject);
             var appProject = new TestProject("RidSelfContainedApp")
             {
                 IsExe = true,
@@ -374,14 +372,14 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true
             };
             appProject.ReferencedProjects.Add(libProject);
-            var createdAppProject = TestAssetsManager.CreateTestProject(appProject);
+            var createdAppProject = _testAssetsManager.CreateTestProject(appProject);
             var publishCommand = new PublishCommand(createdAppProject);
             publishCommand.Execute(new[] { "-property:SelfContained=true", "-property:_CommandLineDefinedSelfContained=true", $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" }).Should().Pass().And.NotHaveStdOutContaining("warning");
         }
 
-        [TestMethod]
-        [DataRow("net7.0")]
-        [DataRow("net8.0")]
+        [Theory]
+        [InlineData("net7.0")]
+        [InlineData("net8.0")]
         public void It_does_or_doesnt_imply_SelfContained_based_on_RuntimeIdentifier_and_TargetFramework(string targetFramework)
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -395,7 +393,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.RecordProperties("SelfContained");
             testProject.AdditionalProperties["RuntimeIdentifier"] = runtimeIdentifier;
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             new DotnetBuildCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.Path, "MainProject"))
                 .Execute()
@@ -403,17 +401,17 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
-            Assert.AreEqual(bool.Parse(properties["SelfContained"]), resultShouldBeSelfContained);
+            Assert.Equal(bool.Parse(properties["SelfContained"]), resultShouldBeSelfContained);
         }
 
-        [TestMethod]
-        [DataRow("net7.0", true)]
-        [DataRow("net7.0", false)]
-        [DataRow("net8.0", false)]
+        [Theory]
+        [InlineData("net7.0", true)]
+        [InlineData("net7.0", false)]
+        [InlineData("net8.0", false)]
         public void It_does_or_doesnt_warn_based_on_SelfContained_and_TargetFramework_breaking_RID_change(string targetFramework, bool defineSelfContained)
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework + defineSelfContained.ToString())
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -451,12 +449,12 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_build_SelfContained_due_to_PublishSelfContained_being_true()
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: "ItDoesNotBuildSCDueToPSC")
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -478,7 +476,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().NotHaveFile($"hostfxr{FileNameSuffixes.CurrentPlatform.DynamicLib}"); // This file will only appear if SelfContained.
         }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_using_regular_apphost_with_PublishSingleFile()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -490,7 +488,7 @@ namespace Microsoft.NET.Build.Tests
                     { "PublishSingleFile", "true"},
                     { "SelfContained", "true" } }
             };
-            var asset = TestAssetsManager.CreateTestProject(project);
+            var asset = _testAssetsManager.CreateTestProject(project);
 
             // Validate apphost is used, not singlefilehost
             var command = new GetValuesCommand(Log,
@@ -526,11 +524,11 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [TestMethod]
-        [DataRow("PublishReadyToRun")]
-        [DataRow("PublishSingleFile")]
-        [DataRow("PublishSelfContained")]
-        [DataRow("PublishAot")]
+        [Theory]
+        [InlineData("PublishReadyToRun")]
+        [InlineData("PublishSingleFile")]
+        [InlineData("PublishSelfContained")]
+        [InlineData("PublishAot")]
         public void It_builds_without_implicit_rid_with_RuntimeIdentifier_specific_during_publish_only_properties(string property)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -541,7 +539,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties[property] = "true";
             testProject.RecordProperties("RuntimeIdentifier");
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: property);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: property);
 
             var buildCommand = new DotnetBuildCommand(testAsset);
             buildCommand
@@ -553,8 +551,8 @@ namespace Microsoft.NET.Build.Tests
             properties["RuntimeIdentifier"].Should().Be("");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_output_with_Prefer32Bit(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -563,7 +561,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -596,8 +594,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_output_with_PreferNativeArm64(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -606,7 +604,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)

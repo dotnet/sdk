@@ -3,22 +3,18 @@
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
-    [TestClass]
     public class GivenDotnetRunThrowsAParseError : SdkTest
     {
-        public GivenDotnetRunThrowsAParseError()
+        public GivenDotnetRunThrowsAParseError(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
-            // Use a dedicated empty directory because file-based program support means that dotnet run will
-            //  pick up stray .cs files from other tests.
-            var emptyDir = TestAssetsManager.CreateTestDirectory().Path;
-
             new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(emptyDir)
+                // executing in a known path, with no project, is a sure way to get run to throw a parse error
+                .WithWorkingDirectory(Directory.CreateTempSubdirectory().FullName)
                 .Execute("--", "1")
                 .Should().Fail()
                 .And.HaveStdErrContainingOnce("Couldn't find a project to run.");

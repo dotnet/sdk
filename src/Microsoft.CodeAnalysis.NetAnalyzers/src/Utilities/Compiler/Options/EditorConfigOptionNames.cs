@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 namespace Analyzer.Utilities
 {
@@ -9,7 +8,7 @@ namespace Analyzer.Utilities
     internal static partial class EditorConfigOptionNames
     {
         // =============================================================================================================
-        // NOTE: Keep this file in sync with documentation at '<%REPO_ROOT%>\docs\analyzer-configuration.md'
+        // NOTE: Keep this file in sync with documentation at '<%REPO_ROOT%>\docs\Analyzer Configuration.md'
         // =============================================================================================================
 
         /// <summary>

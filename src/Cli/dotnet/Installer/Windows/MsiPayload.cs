@@ -3,8 +3,7 @@
 
 #nullable disable
 
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
 
@@ -69,7 +68,7 @@ internal class MsiPayload(string manifestPath, string msiPath)
     {
         get
         {
-            _manifest ??= JsonSerializer.Deserialize(File.ReadAllText(ManifestPath), MsiManifestJsonSerializerContext.Default.MsiManifest);
+            _manifest ??= JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(ManifestPath));
 
             return _manifest;
         }

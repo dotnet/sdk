@@ -3,10 +3,9 @@
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    [TestClass]
     public class MSBuildHandlerTests
     {
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldReturnTrue_WhenBinaryLoggerArgumentIsPresent()
         {
             // Arrange
@@ -16,11 +15,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(CliConstants.BinLogFileName, binLogFileName);
+            Assert.True(result);
+            Assert.Equal(CliConstants.BinLogFileName, binLogFileName);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldReturnTrue_WhenBinaryLoggerArgumentWithFileNameIsPresent()
         {
             // Arrange
@@ -30,11 +29,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual("custom.binlog", binLogFileName);
+            Assert.True(result);
+            Assert.Equal("custom.binlog", binLogFileName);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldReturnFalse_WhenBinaryLoggerArgumentIsNotPresent()
         {
             // Arrange
@@ -44,11 +43,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.AreEqual(string.Empty, binLogFileName);
+            Assert.False(result);
+            Assert.Equal(string.Empty, binLogFileName);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldRemoveBinaryLoggerArgumentsFromArgs()
         {
             // Arrange
@@ -58,12 +57,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(CliConstants.BinLogFileName, binLogFileName);
+            Assert.True(result);
+            Assert.Equal(CliConstants.BinLogFileName, binLogFileName);
             Assert.DoesNotContain("--binaryLogger", args);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldHandleMultipleBinaryLoggerArguments()
         {
             // Arrange
@@ -73,14 +72,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual("custom2.binlog", binLogFileName);
+            Assert.True(result);
+            Assert.Equal("custom2.binlog", binLogFileName);
             Assert.DoesNotContain("--binaryLogger", args);
             Assert.DoesNotContain("--binaryLogger:custom1.binlog", args);
             Assert.DoesNotContain("--binaryLogger:custom2.binlog", args);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldHandleInvalidBinaryLoggerArgumentFormat()
         {
             // Arrange
@@ -90,12 +89,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(CliConstants.BinLogFileName, binLogFileName);
+            Assert.True(result);
+            Assert.Equal(CliConstants.BinLogFileName, binLogFileName);
             Assert.DoesNotContain("--binaryLogger:", args);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsBinaryLoggerEnabled_ShouldHandleEmptyBinaryLoggerFilename()
         {
             // Arrange
@@ -105,8 +104,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var result = MSBuildUtility.IsBinaryLoggerEnabled(ref args, out string binLogFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(CliConstants.BinLogFileName, binLogFileName);
+            Assert.True(result);
+            Assert.Equal(CliConstants.BinLogFileName, binLogFileName);
         }
     }
 }

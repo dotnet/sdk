@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 #nullable disable
 
@@ -8,12 +7,12 @@ using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.CodeAnalysis.Tools.Tests.XUnit;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
-    [TestClass]
-    public class ThirdPartyAnalyzerFormatterTests : CSharpFormatterTests
+    public class ThirdPartyAnalyzerFormatterTests : CSharpFormatterTests, IAsyncLifetime
     {
         private static readonly string s_analyzerProjectFilePath = Path.Combine("for_analyzer_formatter", "analyzer_project", "analyzer_project.csproj");
 
@@ -21,7 +20,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
         private Project _analyzerReferencesProject;
 
-        [TestInitialize]
+        public ThirdPartyAnalyzerFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
+
         public async Task InitializeAsync()
         {
             var logger = new TestLogger();
@@ -30,16 +33,16 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             {
                 // Restore the Analyzer packages that have been added to `for_analyzer_formatter/analyzer_project/analyzer_project.csproj`
                 var exitCode = await DotNetHelper.PerformRestoreAsync(s_analyzerProjectFilePath, TestOutputHelper);
-                Assert.AreEqual(0, exitCode);
+                Assert.Equal(0, exitCode);
 
                 // Load the analyzer_project into a MSBuildWorkspace.
                 var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_analyzerProjectFilePath);
-                using var loadedWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
+                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
 
                 TestOutputHelper.WriteLine(logger.GetLog());
 
                 // From this project we can get valid AnalyzerReferences to add to our test project.
-                _analyzerReferencesProject = loadedWorkspace.Workspace.CurrentSolution.Projects.Single();
+                _analyzerReferencesProject = analyzerWorkspace.CurrentSolution.Projects.Single();
             }
             catch
             {
@@ -48,16 +51,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             }
         }
 
-        [TestCleanup]
-        public void CleanupAsync()
+        public Task DisposeAsync()
         {
             _analyzerReferencesProject = null;
+
+            return Task.CompletedTask;
         }
 
         private IEnumerable<AnalyzerReference> GetAnalyzerReferences(string prefix)
             => _analyzerReferencesProject.AnalyzerReferences.Where(reference => reference.Display.StartsWith(prefix));
 
-        [TestMethod]
+        [MSBuildFact]
         public async Task TestStyleCopBlankLineFixer_RemovesUnnecessaryBlankLines()
         {
             var analyzerReferences = GetAnalyzerReferences("StyleCop");
@@ -111,7 +115,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
 
-        [TestMethod]
+        [MSBuildFact]
         public async Task TestIDisposableAnalyzer_AddsUsing()
         {
             var analyzerReferences = GetAnalyzerReferences("IDisposable");
@@ -157,7 +161,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
 
-        [TestMethod]
+        [MSBuildFact]
         public async Task TestLoadingAllAnalyzers_LoadsDependenciesFromAllSearchPaths()
         {
             // Loads all analyzer references.

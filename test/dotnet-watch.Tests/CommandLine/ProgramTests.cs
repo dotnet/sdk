@@ -7,10 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class ProgramTests : DotNetWatchTestBase
+public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [TestMethod]
+    [Fact]
     public async Task ConsoleCancelKey()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
@@ -33,22 +32,22 @@ public class ProgramTests : DotNetWatchTestBase
             reporter,
             out var errorCode);
 
-        Assert.AreEqual(0, errorCode);
-        Assert.IsNotNull(program);
+        Assert.Equal(0, errorCode);
+        Assert.NotNull(program);
 
         var run = program.RunAsync();
 
-        await watching.WaitAsync(TestContext.CancellationToken);
+        await watching.WaitAsync();
 
         console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
 
         var exitCode = await run;
-        Assert.AreEqual(0, exitCode);
+        Assert.Equal(0, exitCode);
 
-        await shutdownRequested.WaitAsync(TestContext.CancellationToken);
+        await shutdownRequested.WaitAsync();
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ProjectGraphLoadFailure()
     {
         var testAsset = TestAssets
@@ -73,7 +72,7 @@ public class ProgramTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ListsFiles()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")

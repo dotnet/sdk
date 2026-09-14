@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,10 +6,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.TaintedDataAnalysis)]
+    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.TaintedDataAnalysis)]
     public abstract class TaintedDataAnalyzerTestBase<TCSharpAnalyzer, TVisualBasicAnalyzer>
         where TCSharpAnalyzer : DiagnosticAnalyzer, new()
         where TVisualBasicAnalyzer : DiagnosticAnalyzer, new()
@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             }
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, (string additionalFile, string fileContent) file, params DiagnosticResult[] expected)
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             test.TestState.AnalyzerConfigFiles.Add(file);
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         protected DiagnosticResult GetBasicResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
@@ -105,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             }
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 #nullable disable
 
@@ -15,12 +14,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     public static class AnalyzerAssemblyGenerator
     {
-        private static readonly Lazy<Task<IEnumerable<MetadataReference>>> s_references = new(ResolveReferencesAsync);
+        private static IEnumerable<MetadataReference> s_references;
 
-        private static Task<IEnumerable<MetadataReference>> GetReferencesAsync() => s_references.Value;
-
-        private static async Task<IEnumerable<MetadataReference>> ResolveReferencesAsync()
+        private static async Task<IEnumerable<MetadataReference>> GetReferencesAsync()
         {
+            if (s_references is not null)
+            {
+                return s_references;
+            }
+
             var references = new List<MetadataReference>()
             {
                 MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location),
@@ -42,6 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var netcoreMetadataReferences = await sdkTargetFrameworkReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
             references.AddRange(netcoreMetadataReferences.Where(reference => Path.GetFileName(reference.Display) != "System.Collections.Immutable.dll"));
 
+            s_references = references;
             return references;
         }
 

@@ -9,12 +9,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
+public class GenerateStaticWebAssetsManifest : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     [Required]
     public string Source { get; set; }
 
@@ -48,7 +44,7 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
     {
         try
         {
-            var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment, validate: true);
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, validate: true);
             Array.Sort(assets, (l, r) => string.CompareOrdinal(l.Identity, r.Identity));
 
             var endpoints = FilterPublishEndpointsIfNeeded(assets);
@@ -61,10 +57,9 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
             Log.LogMessage(MessageImportance.Low, "Generating manifest for '{0}' assets and '{1}' endpoints", assets.Length, endpoints.Length);
 
             var assetsByTargetPath = GroupAssetsByTargetPath(assets);
-            var groupSet = new HashSet<string>(StringComparer.Ordinal);
             foreach (var group in assetsByTargetPath)
             {
-                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.Value, out var reason, groupSet))
+                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.Value, out var reason))
                 {
                     Log.LogError(reason);
                     return false;
@@ -128,20 +123,16 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
 
     private void PersistManifest(StaticWebAssetsManifest manifest)
     {
-        // Absolutize once; preserve original paths for log messages.
-        string absolutizedManifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : ManifestPath;
-        bool isManifestCacheFileConfigured = !string.IsNullOrEmpty(ManifestCacheFilePath);
-        string absolutizedManifestCacheFilePath = isManifestCacheFileConfigured ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : ManifestCacheFilePath;
-        var cacheFileExists = isManifestCacheFileConfigured && File.Exists(absolutizedManifestCacheFilePath);
-        var manifestFileExists = File.Exists(absolutizedManifestPath);
+        var cacheFileExists = File.Exists(ManifestCacheFilePath);
+        var fileExists = File.Exists(ManifestPath);
         var existingManifestHash = cacheFileExists ?
-            File.ReadAllText(absolutizedManifestCacheFilePath) :
-            manifestFileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(absolutizedManifestPath)).Hash : "";
+            File.ReadAllText(ManifestCacheFilePath) :
+            fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
 
-        if (!manifestFileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
+        if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
         {
             var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
-            if (!manifestFileExists)
+            if (!fileExists)
             {
                 Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
             }
@@ -149,10 +140,10 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
             {
                 Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
             }
-            File.WriteAllBytes(absolutizedManifestPath, data);
-            if (isManifestCacheFileConfigured)
+            File.WriteAllBytes(ManifestPath, data);
+            if (!string.IsNullOrEmpty(ManifestCacheFilePath))
             {
-                File.WriteAllText(absolutizedManifestCacheFilePath, manifest.Hash);
+                File.WriteAllText(ManifestCacheFilePath, manifest.Hash);
             }
         }
         else
@@ -167,7 +158,7 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
 
         foreach (var asset in assets)
         {
-            var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+            var targetPath = asset.ComputeTargetPath("", '/');
 
             if (result.TryGetValue(targetPath, out var existing))
             {

@@ -1,16 +1,14 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public class GivenNetFrameworkSupportsNetStandard2 : SdkTest
+    public class GivenNetFrameworkSupportsNetStandard2(ITestOutputHelper log) : SdkTest(log)
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void Anet462ProjectCanReferenceANETStandardProject()
         {
-            var _testInstance = TestAssetsManager
+            var _testInstance = _testAssetsManager
                 .CopyTestAsset("NETFrameworkReferenceNETStandard20", testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
 

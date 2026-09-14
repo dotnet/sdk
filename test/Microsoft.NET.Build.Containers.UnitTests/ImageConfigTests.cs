@@ -5,7 +5,6 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
-[TestClass]
 public class ImageConfigTests
 {
     private const string SampleImageConfig = """
@@ -44,28 +43,15 @@ public class ImageConfigTests
                 }
                 """;
 
-    [DataRow("User")]
-    [DataRow("Volumes")]
-    [DataRow("StopSignal")]
-    [TestMethod]
+    [InlineData("User")]
+    [InlineData("Volumes")]
+    [InlineData("StopSignal")]
+    [Theory]
     public void PassesThroughPropertyEvenThoughPropertyIsntExplicitlyHandled(string property)
     {
         ImageConfig c = new(SampleImageConfig);
-        JsonNode after = JsonNode.Parse(c.BuildConfig(DateTime.UtcNow))!;
+        JsonNode after = JsonNode.Parse(c.BuildConfig())!;
         JsonNode? prop = after["config"]?[property];
-        Assert.IsNotNull(prop);
-    }
-
-    [TestMethod]
-    public void BuildConfigUsesProvidedCreationTime()
-    {
-        var createdAt = new DateTime(2021, 11, 8, 12, 34, 56, DateTimeKind.Utc);
-        ImageConfig config = new(SampleImageConfig);
-
-        JsonNode result = JsonNode.Parse(config.BuildConfig(createdAt))!;
-
-        Assert.AreEqual("2021-11-08T12:34:56.0000000Z", result["created"]?.GetValue<string>());
-        Assert.IsTrue(result["history"]!.AsArray().All(entry =>
-            entry?["created"]?.GetValue<string>() == "2021-11-08T12:34:56.0000000Z"));
+        Assert.NotNull(prop);
     }
 }

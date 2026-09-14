@@ -5,10 +5,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class CompilationHandlerTests : DotNetWatchTestBase
+public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [TestMethod]
+    [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
@@ -25,7 +24,7 @@ public class CompilationHandlerTests : DotNetWatchTestBase
 
         var factory = new ProjectGraphFactory([hostProjectRepr], buildProperties: [], NullLogger.Instance, cmdOptions.GlobalOptions, environmentOptions);
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, virtualProjectTargetFramework: null, CancellationToken.None);
-        Assert.IsNotNull(projectGraph);
+        Assert.NotNull(projectGraph);
 
         var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance);
         var workspace = new ManagedCodeWorkspace(NullLogger.Instance, handler);

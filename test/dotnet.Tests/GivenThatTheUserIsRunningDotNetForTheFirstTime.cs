@@ -75,21 +75,17 @@ namespace Microsoft.DotNet.Tests
         }
     }
 
-    [TestClass]
-    public class GivenThatTheUserIsRunningDotNetForTheFirstTime : SdkTest
+    public class GivenThatTheUserIsRunningDotNetForTheFirstTime : SdkTest, IClassFixture<DotNetFirstTimeFixture>
     {
-        private static DotNetFirstTimeFixture _fixtureInstance;
-        private DotNetFirstTimeFixture _fixture = null!;
+        DotNetFirstTimeFixture _fixture;
 
-        [TestInitialize]
-        public void TestInit()
+        public GivenThatTheUserIsRunningDotNetForTheFirstTime(ITestOutputHelper log, DotNetFirstTimeFixture fixture) : base(log)
         {
-            _fixtureInstance ??= new DotNetFirstTimeFixture();
-            _fixtureInstance.Init(Log, TestAssetsManager);
-            _fixture = _fixtureInstance;
+            fixture.Init(log, _testAssetsManager);
+            _fixture = fixture;
         }
 
-        [TestMethod]
+        [Fact]
         public void UsingDotnetForTheFirstTimeSucceeds()
         {
             _fixture.FirstDotnetVerbUseCommandResult
@@ -97,7 +93,7 @@ namespace Microsoft.DotNet.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void UsingDotnetForTheFirstTimeWithNonVerbsDoesNotPrintEula()
         {
             string firstTimeNonVerbUseMessage = Cli.Utils.LocalizableStrings.DotNetSdkInfoLabel;
@@ -107,7 +103,7 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
@@ -122,8 +118,7 @@ namespace Microsoft.DotNet.Tests
                 .And.NotContain("Restore completed in");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void FirstRunExperienceMessagesShouldGoToStdErr()
         {
             // This test ensures that first-run experience messages go to stderr, 
@@ -147,7 +142,7 @@ namespace Microsoft.DotNet.Tests
                 .And.NotContain("Write your first app");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCreatesAFirstUseSentinelFileUnderTheDotDotNetFolder()
         {
             _fixture.DotDotnetFolder
@@ -155,7 +150,7 @@ namespace Microsoft.DotNet.Tests
                 .HaveFile($"{GetDotnetVersion()}.dotnetFirstUseSentinel");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCreatesAnAspNetCertificateSentinelFileUnderTheDotDotNetFolder()
         {
             _fixture.DotDotnetFolder
@@ -163,14 +158,15 @@ namespace Microsoft.DotNet.Tests
                 .HaveFile($"{GetDotnetVersion()}.aspNetCertificateSentinel");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotCreateAFirstUseSentinelFileNorAnAspNetCertificateSentinelFileUnderTheDotDotNetFolderWhenInternalReportInstallSuccessIsInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
 
-            // Disable telemetry to prevent the creation of the .dotnet folder for machineid and docker cache files.
+            // Disable telemetry to prevent the creation of the .dotnet folder
+            // for machineid and docker cache files
             command = command.WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "true");
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
@@ -179,13 +175,12 @@ namespace Microsoft.DotNet.Tests
             homeFolder.Should().NotExist();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItShowsTheTelemetryNoticeWhenInvokingACommandAfterInternalReportInstallSuccessHasBeenInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
 
@@ -202,12 +197,12 @@ namespace Microsoft.DotNet.Tests
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShowsTheAspNetCertificateGenerationMessageWhenInvokingACommandAfterInternalReportInstallSuccessHasBeenInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager);
+            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
 
 
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
@@ -215,14 +210,12 @@ namespace Microsoft.DotNet.Tests
             command.Execute("new", "--debug:ephemeral-hive");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
+        [LinuxOnlyFact]
         public void ItCreatesTheProfileFileOnLinuxWhenInvokedFromNativeInstaller()
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager)
-                .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true");
+            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
 
             var profiled = Path.Combine(dotnetFirstTime.TestDirectory, "profile.d");
 
@@ -233,14 +226,12 @@ namespace Microsoft.DotNet.Tests
                 $"export PATH=\"$PATH:{CliFolderPathCalculator.ToolsShimPathInUnix.PathWithDollar}\"");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOsOnlyFact]
         public void ItCreatesThePathDFileOnMacOSWhenInvokedFromNativeInstaller()
         {
             var dotnetFirstTime = new DotNetFirstTime();
 
-            var command = dotnetFirstTime.Setup(Log, TestAssetsManager)
-                .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "true");
+            var command = dotnetFirstTime.Setup(Log, _testAssetsManager);
 
             var pathsd = Path.Combine(dotnetFirstTime.TestDirectory, "paths.d");
 

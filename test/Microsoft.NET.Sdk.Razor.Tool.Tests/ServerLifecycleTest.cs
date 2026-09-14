@@ -5,16 +5,11 @@
 
 using System.Diagnostics;
 using Moq;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
-    [TestClass]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public class ServerLifecycleTest
     {
-        public TestContext TestContext { get; set; }
-
         private static ServerRequest EmptyServerRequest => new(1, Array.Empty<RequestArgument>());
 
         private static ServerResponse EmptyServerResponse => new CompletedServerResponse(
@@ -23,7 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             output: string.Empty,
             error: string.Empty);
 
-        [TestMethod]
+        [Fact]
         public void ServerStartup_MutexAlreadyAcquired_Fails()
         {
             // Arrange
@@ -35,13 +30,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Act & Assert
             using (var mutex = new Mutex(initiallyOwned: true, name: mutexName, createdNew: out var holdsMutex))
             {
-                Assert.IsTrue(holdsMutex);
+                Assert.True(holdsMutex);
                 try
                 {
-                    var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, cancellationToken: TestContext.CancellationToken);
+                    var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object);
 
                     // Assert failure
-                    Assert.AreEqual(1, result);
+                    Assert.Equal(1, result);
                 }
                 finally
                 {
@@ -50,7 +45,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ServerStartup_SuccessfullyAcquiredMutex()
         {
             // Arrange, Act & Assert
@@ -58,6 +53,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var mutexName = MutexName.GetServerMutexName(pipeName);
             var compilerHost = new Mock<CompilerHost>(MockBehavior.Strict);
             var host = new Mock<ConnectionHost>(MockBehavior.Strict);
+#pragma warning disable xUnit1031
             host
                 .Setup(x => x.WaitForConnectionAsync(It.IsAny<CancellationToken>()))
                 .Returns(() =>
@@ -70,8 +66,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                         Mutex mutex = null;
                         try
                         {
-                            Assert.IsTrue(Mutex.TryOpenExisting(mutexName, out mutex));
-                            Assert.IsFalse(mutex.WaitOne(millisecondsTimeout: 0));
+                            Assert.True(Mutex.TryOpenExisting(mutexName, out mutex));
+                            Assert.False(mutex.WaitOne(millisecondsTimeout: 0));
                             source.SetResult(true);
                         }
                         catch (Exception ex)
@@ -89,16 +85,17 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                     // ensure the above check completes before the server hits a timeout and 
                     // releases the mutex. 
                     thread.Start();
-                    source.Task.Wait(TestContext.CancellationToken);
+                    source.Task.Wait();
 
                     return new TaskCompletionSource<Connection>().Task;
                 });
+#pragma warning restore xUnit1031
 
-            var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, cancellationToken: TestContext.CancellationToken, keepAlive: TimeSpan.FromSeconds(1));
-            Assert.AreEqual(0, result);
+            var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, keepAlive: TimeSpan.FromSeconds(1));
+            Assert.Equal(0, result);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ServerRunning_ShutdownRequest_processesSuccessfully()
         {
             // Arrange
@@ -108,7 +105,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 var serverProcessId = await ServerUtilities.SendShutdown(serverData.PipeName);
 
                 // Assert
-                Assert.AreEqual(Process.GetCurrentProcess().Id, serverProcessId);
+                Assert.Equal(Process.GetCurrentProcess().Id, serverProcessId);
                 await serverData.Verify(connections: 1, completed: 1);
             }
         }
@@ -117,21 +114,23 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         /// A shutdown request should not abort an existing compilation.  It should be allowed to run to 
         /// completion.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task ServerRunning_ShutdownRequest_DoesNotAbortCompilation()
         {
             // Arrange
             var startCompilationSource = new TaskCompletionSource<bool>();
             var finishCompilationSource = new TaskCompletionSource<bool>();
+#pragma warning disable xUnit1031
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
                 // At this point, the connection has been accepted and the compilation has started.
                 startCompilationSource.SetResult(true);
 
                 // We want this to keep running even after the shutdown is seen.
-                finishCompilationSource.Task.Wait(TestContext.CancellationToken);
+                finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
+#pragma warning restore xUnit1031
 
             using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
             {
@@ -143,15 +142,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 // Act
                 // The compilation is now in progress, send the shutdown.
                 await ServerUtilities.SendShutdown(serverData.PipeName);
-                Assert.IsFalse(compileTask.IsCompleted);
+                Assert.False(compileTask.IsCompleted);
 
                 // Now let the task complete.
                 finishCompilationSource.SetResult(true);
 
                 // Assert
                 var response = await compileTask;
-                Assert.AreEqual(ServerResponse.ResponseType.Completed, response.Type);
-                Assert.AreEqual(0, ((CompletedServerResponse)response).ReturnCode);
+                Assert.Equal(ServerResponse.ResponseType.Completed, response.Type);
+                Assert.Equal(0, ((CompletedServerResponse)response).ReturnCode);
 
                 await serverData.Verify(connections: 2, completed: 2);
             }
@@ -160,21 +159,23 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         /// <summary>
         /// Multiple clients should be able to send shutdown requests to the server.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task ServerRunning_MultipleShutdownRequests_HandlesSuccessfully()
         {
             // Arrange
             var startCompilationSource = new TaskCompletionSource<bool>();
             var finishCompilationSource = new TaskCompletionSource<bool>();
+#pragma warning disable xUnit1031
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
                 // At this point, the connection has been accepted and the compilation has started.
                 startCompilationSource.SetResult(true);
 
                 // We want this to keep running even after the shutdown is seen.
-                finishCompilationSource.Task.Wait(TestContext.CancellationToken);
+                finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
+#pragma warning restore xUnit1031
 
             using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
             {
@@ -188,8 +189,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 {
                     // The compilation is now in progress, send the shutdown.
                     var processId = await ServerUtilities.SendShutdown(serverData.PipeName);
-                    Assert.AreEqual(Process.GetCurrentProcess().Id, processId);
-                    Assert.IsFalse(compileTask.IsCompleted);
+                    Assert.Equal(Process.GetCurrentProcess().Id, processId);
+                    Assert.False(compileTask.IsCompleted);
                 }
 
                 // Now let the task complete.
@@ -197,16 +198,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
                 // Assert
                 var response = await compileTask;
-                Assert.AreEqual(ServerResponse.ResponseType.Completed, response.Type);
-                Assert.AreEqual(0, ((CompletedServerResponse)response).ReturnCode);
+                Assert.Equal(ServerResponse.ResponseType.Completed, response.Type);
+                Assert.Equal(0, ((CompletedServerResponse)response).ReturnCode);
 
                 await serverData.Verify(connections: 11, completed: 11);
             }
         }
 
         // https://github.com/aspnet/Razor/issues/1991
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
             // Arrange
@@ -236,10 +236,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 for (var i = 0; i < requestCount; i++)
                 {
                     // Wait for the server to start listening.
-                    await semaphore.WaitAsync(TimeSpan.FromMinutes(1), TestContext.CancellationToken);
+                    await semaphore.WaitAsync(TimeSpan.FromMinutes(1));
 
-                    var client = await Client.ConnectAsync(serverData.PipeName, timeout: null, cancellationToken: TestContext.CancellationToken);
-                    await EmptyServerRequest.WriteAsync(client.Stream, TestContext.CancellationToken);
+                    var client = await Client.ConnectAsync(serverData.PipeName, timeout: null, cancellationToken: default);
+                    await EmptyServerRequest.WriteAsync(client.Stream);
                     clients.Add(client);
                 }
 
@@ -251,15 +251,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 var stats = await serverData.CancelAndCompleteAsync();
 
                 // Assert
-                Assert.AreEqual(requestCount, stats.Connections);
-                Assert.AreEqual(requestCount, count);
+                Assert.Equal(requestCount, stats.Connections);
+                Assert.Equal(requestCount, count);
 
                 // Read the server response to each client.
                 foreach (var client in clients)
                 {
-                    var task = ServerResponse.ReadAsync(client.Stream, TestContext.CancellationToken);
+                    var task = ServerResponse.ReadAsync(client.Stream);
                     // We expect this to throw because the stream is already closed.
-                    await Assert.ThrowsAsync<IOException>(() => task);
+                    await Assert.ThrowsAnyAsync<IOException>(() => task);
                     client.Dispose();
                 }
             }

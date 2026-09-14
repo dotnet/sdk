@@ -105,7 +105,7 @@ namespace Beta
             using (var symbolStream = new MemoryStream())
             {
                 var result = compilation.Emit(assemblyStream, symbolStream);
-                Assert.IsEmpty(result.Diagnostics);
+                Assert.Empty(result.Diagnostics);
 
                 return new AssemblyBlob(assemblyName, assemblyStream.GetBuffer(), symbolStream.GetBuffer());
             }

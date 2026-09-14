@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -7,12 +7,11 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
-    [TestClass]
     public class UpdateTests : BaseTest
     {
-        [TestMethod]
-        [DataRow("--add-source")]
-        [DataRow("--nuget-source")]
+        [Theory]
+        [InlineData("--add-source")]
+        [InlineData("--nuget-source")]
         public void Update_CanParseAddSourceOption(string optionName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -21,15 +20,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new update {optionName} my-custom-source");
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsNotNull(args.AdditionalSources);
-            Assert.HasCount(1, args.AdditionalSources);
+            Assert.NotNull(args.AdditionalSources);
+            Assert.Single(args.AdditionalSources);
             Assert.Contains("my-custom-source", args.AdditionalSources);
         }
 
-        [TestMethod]
-        [DataRow("--update-apply")]
-        [DataRow("--update-check")]
-        [DataRow("update")]
+        [Theory]
+        [InlineData("--update-apply")]
+        [InlineData("--update-check")]
+        [InlineData("update")]
         public void Update_Error_WhenArguments(string commandName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -37,13 +36,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             ParseResult parseResult = myCommand.Parse($"new {commandName} source");
 
-            Assert.IsNotEmpty(parseResult.Errors);
-            Assert.Contains(error => error.Message.Contains("Unrecognized command or argument 'source'"), parseResult.Errors);
+            Assert.True(parseResult.Errors.Any());
+            Assert.Contains(parseResult.Errors, error => error.Message.Contains("Unrecognized command or argument 'source'"));
         }
 
-        [TestMethod]
-        [DataRow("new update --add-source my-custom-source1 my-custom-source2")]
-        [DataRow("new update --check-only --add-source my-custom-source1 --add-source my-custom-source2")]
+        [Theory]
+        [InlineData("new update --add-source my-custom-source1 my-custom-source2")]
+        [InlineData("new update --check-only --add-source my-custom-source1 --add-source my-custom-source2")]
         public void Update_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -51,13 +50,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsNotNull(args.AdditionalSources);
-            Assert.HasCount(2, args.AdditionalSources);
+            Assert.NotNull(args.AdditionalSources);
+            Assert.Equal(2, args.AdditionalSources.Count);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
         }
 
-        [TestMethod]
+        [Fact]
         public void Update_CanParseInteractiveOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -66,17 +65,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new update --interactive");
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsTrue(args.Interactive);
+            Assert.True(args.Interactive);
 
             parseResult = myCommand.Parse($"new update");
             args = new UpdateCommandArgs(parseResult);
 
-            Assert.IsFalse(args.Interactive);
+            Assert.False(args.Interactive);
         }
 
-        [TestMethod]
-        [DataRow("--check-only")]
-        [DataRow("--dry-run")]
+        [Theory]
+        [InlineData("--check-only")]
+        [InlineData("--dry-run")]
         public void Update_CanParseCheckOnlyOption(string optionAlias)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -85,15 +84,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new update {optionAlias}");
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsTrue(args.CheckOnly);
+            Assert.True(args.CheckOnly);
 
             parseResult = myCommand.Parse($"new update");
             args = new UpdateCommandArgs(parseResult);
 
-            Assert.IsFalse(args.CheckOnly);
+            Assert.False(args.CheckOnly);
         }
 
-        [TestMethod]
+        [Fact]
         public void Update_Legacy_CanParseCheckOnlyOption()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -102,18 +101,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new --update-check");
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsTrue(args.CheckOnly);
+            Assert.True(args.CheckOnly);
 
             parseResult = myCommand.Parse($"new --update-apply");
             args = new UpdateCommandArgs(parseResult);
 
-            Assert.IsFalse(args.CheckOnly);
+            Assert.False(args.CheckOnly);
         }
 
-        [TestMethod]
-        [DataRow("new --update-check --add-source my-custom-source")]
-        [DataRow("new --update-apply --nuget-source my-custom-source")]
-        [DataRow("new --nuget-source my-custom-source --update-apply")]
+        [Theory]
+        [InlineData("new --update-check --add-source my-custom-source")]
+        [InlineData("new --update-apply --nuget-source my-custom-source")]
+        [InlineData("new --nuget-source my-custom-source --update-apply")]
         public void Update_Legacy_CanParseAddSourceOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -122,14 +121,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsNotNull(args.AdditionalSources);
-            Assert.HasCount(1, args.AdditionalSources);
+            Assert.NotNull(args.AdditionalSources);
+            Assert.Single(args.AdditionalSources);
             Assert.Contains("my-custom-source", args.AdditionalSources);
         }
 
-        [TestMethod]
-        [DataRow("new --update-check source --interactive")]
-        [DataRow("new --interactive --update-apply source")]
+        [Theory]
+        [InlineData("new --update-check source --interactive")]
+        [InlineData("new --interactive --update-apply source")]
         public void Update_Legacy_CanParseInteractiveOption(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -138,13 +137,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsTrue(args.Interactive);
+            Assert.True(args.Interactive);
         }
 
-        [TestMethod]
-        [DataRow("new --update-check --add-source my-custom-source1 --add-source my-custom-source2")]
-        [DataRow("new --add-source my-custom-source1 --add-source my-custom-source2 --update-apply source")]
-        [DataRow("new --add-source my-custom-source1 --update-apply --add-source my-custom-source2")]
+        [Theory]
+        [InlineData("new --update-check --add-source my-custom-source1 --add-source my-custom-source2")]
+        [InlineData("new --add-source my-custom-source1 --add-source my-custom-source2 --update-apply source")]
+        [InlineData("new --add-source my-custom-source1 --update-apply --add-source my-custom-source2")]
         public void Update_Legacy_CanParseAddSourceOption_MultipleEntries(string testCase)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -152,20 +151,20 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(testCase);
             UpdateCommandArgs args = new(parseResult);
 
-            Assert.IsNotNull(args.AdditionalSources);
-            Assert.HasCount(2, args.AdditionalSources);
+            Assert.NotNull(args.AdditionalSources);
+            Assert.Equal(2, args.AdditionalSources.Count);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
         }
 
-        [TestMethod]
-        [DataRow("new --add-source my-custom-source update source", "'--add-source','my-custom-source'|'source'")]
-        [DataRow("new --interactive update source", "'--interactive'|'source'")]
-        [DataRow("new --language F# --update-check", "'--language','F#'")]
-        [DataRow("new --language F# --update-apply", "'--language','F#'")]
-        [DataRow("new --language F# update", "'--language','F#'")]
-        [DataRow("new source1 source2 source3 --update-apply source", "'source1'|'source'|'source2','source3'")]
-        [DataRow("new source1 --update-apply source", "'source1'|'source'")]
+        [Theory]
+        [InlineData("new --add-source my-custom-source update source", "'--add-source','my-custom-source'|'source'")]
+        [InlineData("new --interactive update source", "'--interactive'|'source'")]
+        [InlineData("new --language F# --update-check", "'--language','F#'")]
+        [InlineData("new --language F# --update-apply", "'--language','F#'")]
+        [InlineData("new --language F# update", "'--language','F#'")]
+        [InlineData("new source1 source2 source3 --update-apply source", "'source1'|'source'|'source2','source3'")]
+        [InlineData("new source1 --update-apply source", "'source1'|'source'")]
         public void Update_CanReturnParseError(string command, string expectedInvalidTokens)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -176,15 +175,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             string[] expectedInvalidTokenSets = expectedInvalidTokens.Split("|");
 
-            Assert.IsNotEmpty(parseResult.Errors);
-            Assert.HasCount(expectedInvalidTokenSets.Length, parseResult.Errors);
+            Assert.NotEmpty(parseResult.Errors);
+            Assert.Equal(expectedInvalidTokenSets.Length, parseResult.Errors.Count);
             foreach (string tokenSet in expectedInvalidTokenSets)
             {
-                Assert.IsTrue(errorMessages.Contains($"Unrecognized command or argument(s): {tokenSet}.") || errorMessages.Contains($"Unrecognized command or argument {tokenSet}."));
+                Assert.True(errorMessages.Contains($"Unrecognized command or argument(s): {tokenSet}.") || errorMessages.Contains($"Unrecognized command or argument {tokenSet}."));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -195,7 +194,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ParseResult parseResult = rootCommand.Parse("dotnet new update");
-            Assert.AreEqual("dotnet new update", Example.For<NewCommand>(parseResult).WithSubcommand<UpdateCommand>());
+            Assert.Equal("dotnet new update", Example.For<NewCommand>(parseResult).WithSubcommand<UpdateCommand>());
         }
     }
 }

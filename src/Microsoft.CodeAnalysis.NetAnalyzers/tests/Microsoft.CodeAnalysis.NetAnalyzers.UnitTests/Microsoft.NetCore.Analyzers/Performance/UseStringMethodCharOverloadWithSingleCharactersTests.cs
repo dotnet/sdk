@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.NetCore.Analyzers.Performance.CSharpUseStringMethodCharOverloadWithSingleCharacters,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseStringMethodCharOverloadWithSingleCharactersFixer>;
@@ -17,7 +17,6 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class UseStringMethodCharOverloadWithSingleCharactersTests
     {
         public static IEnumerable<object[]> Methods
@@ -49,8 +48,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_NotSingleChar(string method)
         {
             var testCode = $$"""
@@ -66,8 +65,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_RegularStringLiteral(string method)
         {
             var testCode = $$"""
@@ -83,8 +82,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_StringComparisonOrdinal(string method)
         {
             var testCode = $$"""
@@ -121,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         [WorkItem(6930, "https://github.com/dotnet/roslyn-analyzers/issues/6930")]
         public async Task CS_PreservesTrivia()
         {
@@ -162,8 +161,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(IndexOfLastIndexOfMethods))]
+        [Theory]
+        [MemberData(nameof(IndexOfLastIndexOfMethods))]
         public async Task CS_IndexOfLastIndexOf_PreservesStartsIndexAndCount(string method)
         {
             var testCode = $$"""
@@ -193,8 +192,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_NamedArguments(string method)
         {
             var testCode = $$"""
@@ -224,8 +223,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(IndexOfLastIndexOfMethods))]
+        [Theory]
+        [MemberData(nameof(IndexOfLastIndexOfMethods))]
         public async Task CS_IndexOfLastIndexOf_PreservesStartsIndexAndCount_NamedArguments(string method)
         {
             var testCode = $$"""
@@ -255,8 +254,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_StringComparisonInvariantCultureAndAsciiChar(string method)
         {
             var testCode = $$"""
@@ -286,8 +285,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_StringComparisonInvariantCultureAndNonAsciiChar(string method)
         {
             var testCode = $$"""
@@ -305,8 +304,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(StartsWithEndsWithMethods))]
+        [Theory]
+        [MemberData(nameof(StartsWithEndsWithMethods))]
         public async Task CS_CultureInfoInvariantCulture(string method)
         {
             var testCode = $$"""
@@ -336,8 +335,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(StartsWithEndsWithMethods))]
+        [Theory]
+        [MemberData(nameof(StartsWithEndsWithMethods))]
         public async Task CS_CultureInfoAnythingElse(string method)
         {
             var testCode = $$"""
@@ -355,8 +354,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task CS_StringComparisonAnythingElse(string method)
         {
             var testCode = $$"""
@@ -374,8 +373,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_NotSingleChar(string method)
         {
             var testCode = $$"""
@@ -389,7 +388,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
+        [Fact]
         [WorkItem(6930, "https://github.com/dotnet/roslyn-analyzers/issues/6930")]
         public async Task VB_PreservesTrivia()
         {
@@ -424,8 +423,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_RegularStringLiteral(string method)
         {
             var testCode = $$"""
@@ -439,8 +438,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_StringComparisonOrdinal(string method)
         {
             var testCode = $$"""
@@ -466,8 +465,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(IndexOfLastIndexOfMethods))]
+        [Theory]
+        [MemberData(nameof(IndexOfLastIndexOfMethods))]
         public async Task VB_IndexOfLastIndexOf_PreservesStartsIndexAndCount(string method)
         {
             var testCode = $$"""
@@ -493,8 +492,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_StringComparisonInvariantCultureAndAsciiChar(string method)
         {
             var testCode = $$"""
@@ -520,8 +519,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_StringComparisonInvariantCultureAndNonAsciiChar(string method)
         {
             var testCode = $$"""
@@ -537,8 +536,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(Methods))]
+        [Theory]
+        [MemberData(nameof(Methods))]
         public async Task VB_StringComparisonAnythingElse(string method)
         {
             var testCode = $$"""
@@ -554,62 +553,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [TestMethod]
-        public async Task CS_NestedIndexOf_FixAllRewritesBoth()
-        {
-            var testCode = """
-                using System;
-
-                public class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        "test".IndexOf{|CA1865:("a", "abc".IndexOf{|CA1865:("b", StringComparison.Ordinal)|}, StringComparison.Ordinal)|};
-                    }
-                }
-                """;
-
-            var fixedCode = """
-                using System;
-
-                public class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        "test".IndexOf('a', "abc".IndexOf('b'));
-                    }
-                }
-                """;
-
-            await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
-        }
-
-        [TestMethod]
-        public async Task VB_NestedIndexOf_FixAllRewritesBoth()
-        {
-            var testCode = """
-                Imports System
-
-                Public Class TestClass
-                    Public Sub TestMethod()
-                        Dim a = "test".IndexOf{|CA1865:("a", "abc".IndexOf{|CA1865:("b", StringComparison.Ordinal)|}, StringComparison.Ordinal)|}
-                    End Sub
-                End Class
-                """;
-
-            var fixedCode = """
-                Imports System
-
-                Public Class TestClass
-                    Public Sub TestMethod()
-                        Dim a = "test".IndexOf("a"c, "abc".IndexOf("b"c))
-                    End Sub
-                End Class
-                """;
-
-            await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
-        }
-
         private static async Task VerifyCSAsync(
             string source,
             ReferenceAssemblies referenceAssemblies,
@@ -622,7 +565,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource,
                 DiagnosticVerifier = diagnosticVerifier,
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
         private static async Task VerifyVBAsync(
@@ -637,7 +580,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource,
                 DiagnosticVerifier = diagnosticVerifier,
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
     }
 }

@@ -3,17 +3,18 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildASolutionWithProjRefDiffCase : SdkTest
     {
+        public GivenThatWeWantToBuildASolutionWithProjRefDiffCase(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public void ItBuildsTheSolutionSuccessfully()
         {
             const string solutionFile = "AppWithProjRefCaseDiff.sln";
 
-            var asset = TestAssetsManager
+            var asset = _testAssetsManager
                 .CopyTestAsset("AppWithProjRefCaseDiff")
                 .WithSource();
 

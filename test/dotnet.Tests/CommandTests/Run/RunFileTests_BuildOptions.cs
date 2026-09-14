@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -8,16 +8,15 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-[TestClass]
-public sealed class RunFileTests_BuildOptions : RunFileTestBase
+public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTestBase(log)
 {
     /// <summary>
     /// Main method is supported just like top-level statements.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void MainMethod()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
+        var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
         File.Delete(Path.Join(testInstance.Path, "MSBuildTestApp.csproj"));
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -30,10 +29,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Empty file does not contain entry point, so that's an error.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void EmptyFile()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), string.Empty);
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -46,10 +45,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// See <see href="https://github.com/dotnet/sdk/issues/51778"/>.
     /// </summary>
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void WorkingDirectory(bool cscOnly)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = """
@@ -97,10 +96,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Combination of <see cref="WorkingDirectory"/> and <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void WorkingDirectory_CscOnly_AfterMSBuild()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = """
@@ -170,10 +169,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Implicit build files have an effect.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void DirectoryBuildProps()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -195,10 +194,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// This is equivalent to the behavior of symlinked project files.
     /// See <see href="https://github.com/dotnet/sdk/pull/52064#issuecomment-3628958688"/>.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void DirectoryBuildProps_SymbolicLink()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         var dir1 = Path.Join(testInstance.Path, "dir1");
         Directory.CreateDirectory(dir1);
@@ -249,10 +248,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Overriding default (implicit) properties of file-based apps via implicit build files.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void DefaultProps_DirectoryBuildProps()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("Hi");
             """);
@@ -289,10 +288,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Overriding default (implicit) properties of file-based apps from custom SDKs.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void DefaultProps_CustomSdk()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         var sdkDir = Path.Join(testInstance.Path, "MySdk");
         Directory.CreateDirectory(sdkDir);
@@ -368,10 +367,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOutContaining("error CS0103");
     }
 
-    [TestMethod]
+    [Fact]
     public void ComputeRunArguments_Success()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
             <Project>
@@ -393,10 +392,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void ComputeRunArguments_Failure()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
             <Project>
@@ -419,14 +418,14 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Command-line arguments should be passed through.
     /// </summary>
-    [TestMethod]
-    [DataRow("other;args", "other;args")]
-    [DataRow("--;other;args", "other;args")]
-    [DataRow("--appArg", "--appArg")]
-    [DataRow("-c;Debug;--xyz", "--xyz")]
+    [Theory]
+    [InlineData("other;args", "other;args")]
+    [InlineData("--;other;args", "other;args")]
+    [InlineData("--appArg", "--appArg")]
+    [InlineData("-c;Debug;--xyz", "--xyz")]
     public void Arguments_PassThrough(string input, string output)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, ["run", "Program.cs", .. input.Split(';')])
@@ -442,10 +441,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// <c>dotnet run --unknown-arg file.cs</c> fallbacks to normal <c>dotnet run</c> behavior.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void Arguments_Unrecognized()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, ["run", "--arg", "Program.cs"])
@@ -461,10 +460,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// <c>dotnet run --some-known-arg file.cs</c> is supported.
     /// </summary>
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void Arguments_Recognized(bool beforeFile)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -485,10 +484,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// <c>dotnet run -bl file.cs</c> produces a binary log.
     /// </summary>
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void BinaryLog_Run(bool beforeFile)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -507,10 +506,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Should().BeEquivalentTo(["msbuild.binlog"]);
     }
 
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void BinaryLog_Build([CombinatorialValues("restore", "build")] string command, bool beforeFile)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -528,18 +527,18 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Should().BeEquivalentTo(["msbuild.binlog"]);
     }
 
-    [TestMethod]
-    [DataRow("-bl")]
-    [DataRow("-BL")]
-    [DataRow("-bl:msbuild.binlog")]
-    [DataRow("/bl")]
-    [DataRow("/bl:msbuild.binlog")]
-    [DataRow("--binaryLogger")]
-    [DataRow("--binaryLogger:msbuild.binlog")]
-    [DataRow("-bl:another.binlog")]
+    [Theory]
+    [InlineData("-bl")]
+    [InlineData("-BL")]
+    [InlineData("-bl:msbuild.binlog")]
+    [InlineData("/bl")]
+    [InlineData("/bl:msbuild.binlog")]
+    [InlineData("--binaryLogger")]
+    [InlineData("--binaryLogger:msbuild.binlog")]
+    [InlineData("-bl:another.binlog")]
     public void BinaryLog_ArgumentForms(string arg)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", arg)
@@ -556,10 +555,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Should().BeEquivalentTo([$"{fileName}.binlog"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void BinaryLog_Multiple()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-bl:one.binlog", "two.binlog", "/bl:three.binlog")
@@ -577,10 +576,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Should().BeEquivalentTo(["three.binlog"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void BinaryLog_WrongExtension()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl:test.test")
@@ -598,10 +597,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// <c>dotnet run file.cs</c> should not produce a binary log.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void BinaryLog_NotSpecified()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -619,10 +618,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Binary logs from our in-memory projects should have evaluation data.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void BinaryLog_EvaluationData()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-bl")
@@ -641,10 +640,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// Binary logs from our in-memory projects should have evaluation data.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void BinaryLog_EvaluationData_MultiFile()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
@@ -687,10 +686,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// <summary>
     /// If we skip build due to up-to-date check, no binlog should be created.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void BinaryLog_EvaluationData_UpToDate()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, s_program);
@@ -718,23 +717,23 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
         new FileInfo(binaryLogPath).Should().NotExist();
     }
 
-    [TestMethod]
-    [DataRow("-tl")]
-    [DataRow("-tl:off")]
-    [DataRow("-TL:off")]
-    [DataRow("-tL:OFF")]
-    [DataRow("/tl:off")]
-    [DataRow("--terminalLogger:off")]
-    [DataRow("-tlp:verbosity=quiet")]
-    [DataRow("-TLP:verbosity=quiet")]
-    [DataRow("/tlp:DISABLENODEDISPLAY")]
-    [DataRow("--terminalLoggerParameters:verbosity=quiet")]
-    [DataRow("-clp:NoSummary")]
-    [DataRow("-cLp:NoSummary")]
-    [DataRow("--consoleLoggerParameters:NoSummary")]
+    [Theory]
+    [InlineData("-tl")]
+    [InlineData("-tl:off")]
+    [InlineData("-TL:off")]
+    [InlineData("-tL:OFF")]
+    [InlineData("/tl:off")]
+    [InlineData("--terminalLogger:off")]
+    [InlineData("-tlp:verbosity=quiet")]
+    [InlineData("-TLP:verbosity=quiet")]
+    [InlineData("/tlp:DISABLENODEDISPLAY")]
+    [InlineData("--terminalLoggerParameters:verbosity=quiet")]
+    [InlineData("-clp:NoSummary")]
+    [InlineData("-cLp:NoSummary")]
+    [InlineData("--consoleLoggerParameters:NoSummary")]
     public void LoggerArgument_Run_ArgumentForms(string arg)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", arg)
@@ -745,10 +744,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.NotHaveStdOutContaining("echo args:");
     }
 
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void LoggerArgument_Run(bool beforeFile)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -762,170 +761,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOut("Hello from Program");
     }
 
-    [TestMethod]
-    [DataRow("true", "-mt:\"true\"")]
-    [DataRow("false", "-mt:\"false\"")]
-    [DataRow("quoted-empty", "-mt:\"\"")]
-    [DataRow("whole-switch", "\"--mt:false\"")]
-    public void MultiThreadedArgument_ResponseFile(string id, string argument)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: id);
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "mt.rsp"), argument);
-
-        new DotnetCommand(Log, "build", "Program.cs", "@mt.rsp")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        new DotnetCommand(Log, "run", "--no-build", "Program.cs", "@mt.rsp")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello from Program");
-    }
-
-    [TestMethod]
-    [DataRow(null, null, new string[0], false)]
-    [DataRow("1", null, new string[0], true)]
-    [DataRow("1", null, new[] { "-mt:false" }, true)]
-    [DataRow(null, "1", new string[0], true)]
-    [DataRow(null, "1", new[] { "-mt:false" }, false)]
-    [DataRow(null, null, new[] { "-mt:false", "-mt:" }, false)]
-    [DataRow(null, null, new[] { "-mt:false", "-mt:\"\"" }, false)]
-    [DataRow(null, null, new[] { "-mt:false", "-mt" }, true)]
-    [DataRow(null, null, new[] { "-mt:" }, true)]
-    public void MultiThreadedArgument_EnvironmentAndNodeCount(
-        string? force, string? enable, string[] arguments, bool enabled)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
-
-        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
-        string actual = GetBuildNodeCount(testInstance.Path, "build", "Program.cs", arguments, force, enable);
-
-        actual.Should().Be(enabled ? logicalCoreCount : "1");
-    }
-
-    [TestMethod]
-    [DataRow("-mt", new string[0], true)]
-    [DataRow("-mt:false", new string[0], false)]
-    [DataRow("-mt", new[] { "-mt:false" }, false)]
-    [DataRow("-mt:false", new[] { "-mt" }, true)]
-    [DataRow("-mt:false", new[] { "-mt:" }, false)]
-    [DataRow("-mt:false", new[] { "-mt:\"\"" }, false)]
-    public void MultiThreadedArgument_DirectoryResponseFile(string responseSwitch, string[] arguments, bool enabled)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "@concurrency.rsp");
-        File.WriteAllText(Path.Join(testInstance.Path, "concurrency.rsp"), responseSwitch);
-
-        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
-        string actual = GetBuildNodeCount(testInstance.Path, "build", "Program.cs", arguments, null, null);
-
-        actual.Should().Be(enabled ? logicalCoreCount : "1");
-    }
-
-    [TestMethod]
-    public void MultiThreadedArgument_ProjectResponseFilePrecedence()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "-mt:false");
-        File.WriteAllText(Path.Join(testInstance.Path, "MSBuild.rsp"), "-mt");
-
-        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
-        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", [], null, null).Should().Be(logicalCoreCount);
-        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", ["-mt:false"], null, null).Should().Be("1");
-        GetBuildNodeCount(testInstance.Path, "build", "Program.cs", ["-mt:false"], "1", null).Should().Be(logicalCoreCount);
-    }
-
-    [TestMethod]
-    public void MultiThreadedArgument_ResponseFileSearchUsesSourceDirectory()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        string nested = Directory.CreateDirectory(Path.Join(testInstance.Path, "nested")).FullName;
-        string app = Directory.CreateDirectory(Path.Join(nested, "app")).FullName;
-        string program = Path.Join(app, "Program.cs");
-        File.WriteAllText(program, s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Count.proj"), "<Project><Target Name=\"Build\" /></Project>");
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.rsp"), "-mt:false");
-        File.WriteAllText(Path.Join(nested, "Directory.Build.rsp"), "-mt");
-
-        string logicalCoreCount = GetBuildNodeCount(testInstance.Path, "msbuild", "Count.proj", ["-target:Build"], null, null);
-        GetBuildNodeCount(testInstance.Path, "build", program, [], null, null).Should().Be(logicalCoreCount);
-    }
-
-    [TestMethod]
-    [DataRow("0", "-mt")]
-    [DataRow("1", "-mt:false")]
-    public void MultiThreadedArgument_BuildsProjectReferencesInProcess(string force, string argument)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: force);
-        string processIds = Directory.CreateDirectory(Path.Join(testInstance.Path, "node-pids")).FullName;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:project LibraryA/LibraryA.csproj
-            #:project LibraryB/LibraryB.csproj
-            Console.WriteLine(LibraryA.Value + LibraryB.Value);
-            """);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
-            <Project>
-              <Target Name="RecordBuildNode" AfterTargets="Build">
-                <WriteLinesToFile File="$(MSBuildThisFileDirectory)node-pids/$(MSBuildProjectName).pid"
-                                  Lines="$([System.Environment]::ProcessId)" Overwrite="true" />
-              </Target>
-            </Project>
-            """);
-        foreach (string name in new[] { "LibraryA", "LibraryB" })
-        {
-            string directory = Directory.CreateDirectory(Path.Join(testInstance.Path, name)).FullName;
-            File.WriteAllText(Path.Join(directory, name + ".csproj"), $"""
-                <Project Sdk="Microsoft.NET.Sdk">
-                  <PropertyGroup>
-                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                  </PropertyGroup>
-                </Project>
-                """);
-            File.WriteAllText(Path.Join(directory, name + ".cs"), $"public static class {name} {{ public static string Value => \"{name}\"; }}");
-        }
-
-        new DotnetCommand(Log, "build", "Program.cs", argument)
-            .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", force)
-            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
-            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
-            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
-            .Execute()
-            .Should().Pass();
-
-        string[] files = Directory.GetFiles(processIds, "*.pid");
-        files.Should().HaveCount(3);
-        files.Select(path => File.ReadAllText(path).Trim()).Distinct().Should().ContainSingle();
-    }
-
-    private string GetBuildNodeCount(
-        string directory, string command, string projectOrFile, string[] arguments, string? force, string? enable)
-    {
-        var result = new DotnetCommand(Log, [command, projectOrFile, "-getProperty:MSBuildNodeCount", .. arguments])
-            .WithWorkingDirectory(directory)
-            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", force ?? "0")
-            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", enable ?? "0")
-            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
-            .Execute();
-
-        result.Should().Pass();
-        Assert.IsNotNull(result.StdOut);
-        return result.StdOut.Trim();
-    }
-
-    [TestMethod]
+    [Fact]
     public void NoConsoleLogger_Run_SuppressesBuildOutput()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-v:n")
@@ -943,10 +782,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOut("Hello from Program");
     }
 
-    [TestMethod]
+    [Fact]
     public void LoggerArgument_Run_PreservesApplicationArguments()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-tl:off", "appArg")
@@ -959,10 +798,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void LoggerArgument_Run_DoubleDashPreservesApplicationArguments()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "--", "-tl:off", "-clp:NoSummary")
@@ -975,13 +814,13 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
                 """);
     }
 
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void LoggerArgument_Build(
         [CombinatorialValues("restore", "build")] string command,
         [CombinatorialValues("-tl:off", "-tlp:verbosity=quiet", "-clp:NoSummary")] string loggerArg,
         bool beforeFile)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -994,10 +833,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Should().Pass();
     }
 
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void TerminalLogger(bool on)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -1019,10 +858,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
         }
     }
 
-    [TestMethod]
+    [Fact]
     public void Verbosity_Run()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -1036,10 +875,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.NotHaveStdErr();
     }
 
-    [TestMethod] // https://github.com/dotnet/sdk/issues/50227
+    [Fact] // https://github.com/dotnet/sdk/issues/50227
     public void Verbosity_Build()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -1051,10 +890,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOutContaining("Program.dll");
     }
 
-    [TestMethod]
+    [Fact]
     public void Verbosity_CompilationDiagnostics()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             string x = null;
@@ -1082,10 +921,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
     }
 
-    [TestMethod]
+    [Fact]
     public void MissingShebangWarning()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         // Single-file program without shebang should NOT produce CA2266
         // (the warning only fires when there are multiple files via #:include).
@@ -1144,10 +983,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOut("hello");
     }
 
-    [TestMethod]
+    [Fact]
     public void MissingShebangWarning_RefDirective()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         EnableRefDirective(testInstance);
 
@@ -1185,10 +1024,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOut("hello from ref");
     }
 
-    [TestMethod]
+    [Fact]
     public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         // Directory.Build.props adds a Compile item, but CA2266 should only fire
         // for files included via #:include.
@@ -1246,10 +1085,10 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOutContaining("hello included");
     }
 
-    [TestMethod]
+    [Fact]
     public void MissingShebangWarning_NonCsFile()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "file.json"), "{}");
 
@@ -1313,31 +1152,13 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOutContaining("hello");
     }
 
-    [TestMethod]
-    public void UnquotedDirectiveWarning()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:property Description=value with a space
-            Console.WriteLine("hello");
-            """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("warning CA2267")
-            .And.HaveStdOutContaining("hello");
-    }
-
     /// <summary>
     /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void EmbeddedResource()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
@@ -1397,12 +1218,12 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     /// Scripts in repo root should not include <c>.resx</c> files.
     /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
     /// </summary>
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
         bool considered = ext is "sln" or "slnx" or "csproj";
 
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}

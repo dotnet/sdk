@@ -1,12 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <OutputType>Exe</OutputType>
     <RollForward>Major</RollForward>
-    <UseAppHost>false</UseAppHost>
-    <!-- This tool needs to run during the build.-->
-    <EnableKnownPackVersionUpdatesForCurrentTargetFramework>false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

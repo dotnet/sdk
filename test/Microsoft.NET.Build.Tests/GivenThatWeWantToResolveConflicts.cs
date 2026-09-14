@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -12,13 +12,15 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToResolveConflicts : SdkTest
     {
+        public GivenThatWeWantToResolveConflicts(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [DataRow("netcoreapp2.0")]
-        [DataRow("netstandard2.0")]
+        [Theory]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netstandard2.0")]
         public void The_same_references_are_used_with_or_without_DisableDefaultPackageConflictOverrides(string targetFramework)
         {
             var defaultProject = new TestProject()
@@ -48,8 +50,8 @@ namespace Microsoft.NET.Build.Tests
                 referenceCopyLocalPaths: out List<string> disableReferenceCopyLocalPaths,
                 targetFramework);
 
-            Assert.AreSequenceEqual(defaultReferences, disableReferences);
-            Assert.AreSequenceEqual(defaultReferenceCopyLocalPaths, disableReferenceCopyLocalPaths);
+            Assert.Equal(defaultReferences, disableReferences);
+            Assert.Equal(defaultReferenceCopyLocalPaths, disableReferenceCopyLocalPaths);
         }
 
         private void AddConflictReferences(TestProject testProject)
@@ -63,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
         private void GetReferences(TestProject testProject, bool expectConflicts, out List<string> references, out List<string> referenceCopyLocalPaths, string identifier)
         {
             string targetFramework = testProject.TargetFrameworks;
-            TestAsset tempTestAsset = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            TestAsset tempTestAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             string projectFolder = Path.Combine(tempTestAsset.TestRoot, testProject.Name);
 
@@ -102,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
             referenceCopyLocalPaths = getReferenceCopyLocalPathsCommand.GetValues();
         }
 
-        [TestMethod]
+        [Fact]
         public void CompileConflictsAreNotRemovedFromRuntimeDepsAssets()
         {
             TestProject testProject = new()
@@ -119,7 +121,7 @@ namespace Microsoft.NET.Build.Tests
             //  an easier way to test that files that were removed 
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -141,7 +143,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void AProjectCanReferenceADllInAPackageDirectly()
         {
             TestProject testProject = new()
@@ -153,7 +155,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.VisualStudio.Composition", "15.8.112"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -172,7 +174,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void DuplicateFrameworkAssembly()
         {
             TestProject testProject = new()
@@ -185,7 +187,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.References.Add("System.Runtime");
             testProject.PackageReferences.Add(new TestPackageReference("System.Runtime", "4.3.0"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -195,7 +197,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void FilesFromAspNetCoreSharedFrameworkAreNotIncluded()
         {
             var testProject = new TestProject()
@@ -207,7 +209,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyInjection.Abstractions", "2.2.0"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -229,8 +231,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().NotHaveFile("Microsoft.Extensions.DependencyInjection.Abstractions.dll");
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
+        [CoreMSBuildOnlyFact]
         public void AnalyzersAreConflictResolved()
         {
             var testProject = new TestProject()
@@ -243,7 +244,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.CodeAnalysis.NetAnalyzers", "5.0.3"));
 
             // enable inbox analyzers too
-            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -270,10 +271,9 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Should also run on full framework, but needs the right version of NuGet, which isn't on CI yet
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void PlatformPackagesCanBePruned(bool prunePackages)
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -292,7 +292,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -312,31 +312,30 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
-        [DataRow("net9.0")]
-        [DataRow("net8.0")]
-        [DataRow("net7.0")]
-        [DataRow("net6.0")]
-        [DataRow("netcoreapp3.1")]
-        [DataRow("netcoreapp3.0")]
-        [DataRow("netcoreapp2.1")]
-        [DataRow("netcoreapp2.0")]
-        [DataRow("netcoreapp1.1", false)]
-        [DataRow("netcoreapp1.0", false)]
-        [DataRow("netstandard2.1")]
-        [DataRow("netstandard2.0")]
-        [DataRow("netstandard1.1", false)]
-        [DataRow("netstandard1.0", false)]
-        [DataRow("net451", false)]
-        [DataRow("net462", false)]
-        [DataRow("net481", false)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData("net9.0")]
+        [InlineData("net8.0")]
+        [InlineData("net7.0")]
+        [InlineData("net6.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp1.0", false)]
+        [InlineData("netstandard2.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard1.1", false)]
+        [InlineData("netstandard1.0", false)]
+        [InlineData("net451", false)]
+        [InlineData("net462", false)]
+        [InlineData("net481", false)]
         //  These target frameworks shouldn't prune packages unless explicitly enabled
-        [DataRow("net9.0", false, "")]
-        [DataRow("netstandard2.1", false, "")]
+        [InlineData("net9.0", false, "")]
+        [InlineData("netstandard2.1", false, "")]
         //  .NET 10 and up should prune packages by default
-        [DataRow("net10.0", true, "")]
+        [InlineData("net10.0", true, "")]
         public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
@@ -360,7 +359,7 @@ namespace Microsoft.NET.Build.Tests
                     testProject.AdditionalProperties["EnableWindowsTargeting"] = "True";
                 }
 
-                var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
 
                 var buildCommand = new BuildCommand(testAsset);
 
@@ -411,7 +410,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TransitiveFrameworkReferencesDoNotAffectPruning()
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -430,7 +429,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset).Execute().Should().Pass();
 
@@ -450,11 +449,10 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow("net10.0;net9.0", true)]
-        [DataRow("net10.0;net8.0", true)]
-        [DataRow("net6.0;net7.0", false)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData("net10.0;net9.0", true)]
+        [InlineData("net10.0;net8.0", true)]
+        [InlineData("net6.0;net7.0", false)]
         public void WithMultitargetedProjects_PruningsDefaultsAreApplies(string frameworks, bool prunePackages)
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -472,7 +470,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -494,7 +492,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void WithMultitargetedProject_NETFrameworkIsNotPruned()
         {
             var project = new TestProject("MultitargetedPruning")
@@ -508,7 +506,7 @@ public class Class1
     public (int, int) GetTuple() => (1, 2);
 }
 ");
-            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
             var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");

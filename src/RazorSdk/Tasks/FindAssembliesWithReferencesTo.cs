@@ -9,12 +9,8 @@ using Task = Microsoft.Build.Utilities.Task;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    [MSBuildMultiThreadableTask]
-    public class FindAssembliesWithReferencesTo : Task, IMultiThreadableTask
+    public class FindAssembliesWithReferencesTo : Task
     {
-        /// <inheritdoc/>
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         [Required]
         public ITaskItem[] TargetAssemblyNames { get; set; }
 
@@ -42,9 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     AssemblyName = assemblyName,
                     IsFrameworkReference = item.GetMetadata("IsFrameworkReference") == "true",
-                    Path = string.IsNullOrEmpty(item.ItemSpec)
-                        ? item.ItemSpec
-                        : TaskEnvironment.GetAbsolutePath(item.ItemSpec).Value,
+                    Path = item.ItemSpec,
                 });
             }
 

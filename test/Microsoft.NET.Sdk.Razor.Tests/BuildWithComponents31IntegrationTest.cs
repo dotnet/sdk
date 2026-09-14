@@ -3,19 +3,18 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    [TestClass]
     public class BuildWithComponents31IntegrationTest : AspNetSdkTest
     {
-        [TestMethod]
-        [CoreMSBuildOnly]
+        public BuildWithComponents31IntegrationTest(ITestOutputHelper log) : base(log) { }
+
+        [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works()
         {
             var testAsset = "Razorblazor31";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.TestRoot);
-            ExecuteCommand(build).Should().Pass();
+            build.Execute().Should().Pass();
 
             string outputPath = build.GetOutputDirectory("netcoreapp3.1").ToString();
 

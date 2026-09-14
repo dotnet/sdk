@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    [TestClass]
     public class BrowserScriptMiddlewareTest
     {
         private readonly RequestDelegate _next = (context) => Task.CompletedTask;
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _logger = loggerFactory.CreateLogger<BrowserScriptMiddleware>();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InvokeAsync_ReturnsScript()
         {
             var context = new DefaultHttpContext();
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.Contains("'test-key'", script);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InvokeAsync_ConfiguresHeaders()
         {
             var context = new DefaultHttpContext();
@@ -53,14 +52,23 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await middleware.InvokeAsync(context);
 
             var response = context.Response;
-            var headers = response.Headers.OrderBy(h => h.Key).ToArray();
-            Assert.HasCount(3, headers);
-            Assert.AreEqual("Cache-Control", headers[0].Key);
-            Assert.AreEqual("no-store", headers[0].Value.ToString());
-            Assert.AreEqual("Content-Length", headers[1].Key);
-            Assert.AreNotEqual(0, headers[1].Value.Count);
-            Assert.AreEqual("Content-Type", headers[2].Key);
-            Assert.AreEqual("application/javascript; charset=utf-8", headers[2].Value.ToString());
+            Assert.Collection(
+                response.Headers.OrderBy(h => h.Key),
+                kvp =>
+                {
+                    Assert.Equal("Cache-Control", kvp.Key);
+                    Assert.Equal("no-store", kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("Content-Length", kvp.Key);
+                    Assert.NotEqual(0, kvp.Value.Count);
+                },
+                kvp =>
+                {
+                    Assert.Equal("Content-Type", kvp.Key);
+                    Assert.Equal("application/javascript; charset=utf-8", kvp.Value);
+                });
         }
     }
 }

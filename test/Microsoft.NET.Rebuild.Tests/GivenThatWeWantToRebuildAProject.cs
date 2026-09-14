@@ -6,13 +6,16 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Rebuild.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToRebuildAHelloWorldProject : SdkTest
     {
-        [TestMethod]
+        public GivenThatWeWantToRebuildAHelloWorldProject(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void It_rebuilds_with_logging_assets_message()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", "RebuildHelloWorld")
                 .WithSource()
                 .Restore(Log);

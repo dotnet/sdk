@@ -46,6 +46,12 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (LocalRegistry == "Podman")
+        {
+            Log.LogError(Strings.ImageIndex_PodmanNotSupported);
+            return false;
+        }
+
         using MSBuildLoggerProvider loggerProvider = new(Log);
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
@@ -149,13 +155,13 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return (string.Empty, string.Empty);
         }
         var architecture = configJson["architecture"]?.ToString();
-        if (string.IsNullOrEmpty(architecture))
+        if (architecture is null)
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
             return (string.Empty, string.Empty);
         } 
         var os = configJson["os"]?.ToString();
-        if (string.IsNullOrEmpty(os))
+        if (os is null)
         {
             Log.LogError(Strings.ImageConfigMissingOs);
             return (string.Empty, string.Empty);

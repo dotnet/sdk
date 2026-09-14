@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class WatchOutputTests : DotNetWatchTestBase
+public class WatchOutputTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task CapturesStdOutWithNoHotReload()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")

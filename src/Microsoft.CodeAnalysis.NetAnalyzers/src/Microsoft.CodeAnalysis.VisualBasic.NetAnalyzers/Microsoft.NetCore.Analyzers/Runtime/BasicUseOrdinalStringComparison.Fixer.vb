@@ -2,6 +2,7 @@
 
 Imports System.Composition
 Imports Microsoft.NetCore.Analyzers.Runtime
+Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
@@ -20,36 +21,42 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                    DirectCast(node, SimpleArgumentSyntax).Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression)
         End Function
 
-        Protected Overrides Sub FixArgument(argument As SyntaxNode, editor As SyntaxEditor)
-            Dim memberAccess = TryCast(DirectCast(argument, SimpleArgumentSyntax).Expression, MemberAccessExpressionSyntax)
-            If memberAccess Is Nothing Then
-                Return
+        Protected Overrides Function FixArgumentAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, argument As SyntaxNode) As Task(Of Document)
+            Dim memberAccess = TryCast(TryCast(argument, SimpleArgumentSyntax)?.Expression, MemberAccessExpressionSyntax)
+            If memberAccess IsNot Nothing Then
+                ' preserve the "IgnoreCase" suffix if present
+                Dim isIgnoreCase = memberAccess.Name.GetText().ToString().EndsWith(UseOrdinalStringComparisonAnalyzer.IgnoreCaseText, StringComparison.Ordinal)
+                Dim newOrdinalText = If(isIgnoreCase, UseOrdinalStringComparisonAnalyzer.OrdinalIgnoreCaseText, UseOrdinalStringComparisonAnalyzer.OrdinalText)
+                Dim newIdentifier = generator.IdentifierName(newOrdinalText)
+                Dim newMemberAccess = memberAccess.WithName(CType(newIdentifier, SimpleNameSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
+                Dim newRoot = root.ReplaceNode(memberAccess, newMemberAccess)
+                Return Task.FromResult(document.WithSyntaxRoot(newRoot))
             End If
 
-            ' preserve the "IgnoreCase" suffix if present
-            Dim isIgnoreCase = memberAccess.Name.GetText().ToString().EndsWith(UseOrdinalStringComparisonAnalyzer.IgnoreCaseText, StringComparison.Ordinal)
-            Dim newOrdinalText = If(isIgnoreCase, UseOrdinalStringComparisonAnalyzer.OrdinalIgnoreCaseText, UseOrdinalStringComparisonAnalyzer.OrdinalText)
-
-            editor.ReplaceNode(
-                memberAccess,
-                Function(currentMemberAccess, generator) DirectCast(currentMemberAccess, MemberAccessExpressionSyntax).
-                    WithName(CType(generator.IdentifierName(newOrdinalText), SimpleNameSyntax)).
-                    WithAdditionalAnnotations(Formatter.Annotation))
-        End Sub
+            Return Task.FromResult(document)
+        End Function
 
         Protected Overrides Function IsInIdentifierNameContext(node As SyntaxNode) As Boolean
             Return node.IsKind(SyntaxKind.IdentifierName) AndAlso
-                   GetInvocation(node) IsNot Nothing
+                   node?.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)() IsNot Nothing
         End Function
 
-        Protected Overrides Function GetInvocation(identifier As SyntaxNode) As SyntaxNode
-            Return identifier.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)()
-        End Function
+        Protected Overrides Async Function FixIdentifierNameAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, identifier As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim invokeParent = identifier.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)()
+            If invokeParent IsNot Nothing Then
+                Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
+                Dim methodSymbol = TryCast(model.GetSymbolInfo(identifier, cancellationToken).Symbol, IMethodSymbol)
+                If methodSymbol IsNot Nothing AndAlso CanAddStringComparison(methodSymbol, model) Then
+                    ' append a New StringComparison.Ordinal argument
+                    Dim newArg = generator.Argument(CreateOrdinalMemberAccess(generator, model)).
+                                WithAdditionalAnnotations(Formatter.Annotation)
+                    Dim newInvoke = invokeParent.AddArgumentListArguments(CType(newArg, ArgumentSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
+                    Dim newRoot = root.ReplaceNode(invokeParent, newInvoke)
+                    Return document.WithSyntaxRoot(newRoot)
+                End If
+            End If
 
-        Protected Overrides Function AddArgument(invocation As SyntaxNode, argument As SyntaxNode) As SyntaxNode
-            Return DirectCast(invocation, InvocationExpressionSyntax).
-                AddArgumentListArguments(CType(argument, ArgumentSyntax)).
-                WithAdditionalAnnotations(Formatter.Annotation)
+            Return document
         End Function
     End Class
 End Namespace

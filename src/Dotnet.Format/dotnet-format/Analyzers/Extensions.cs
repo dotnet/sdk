@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections;
 using System.Collections.Immutable;
@@ -36,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CancellationToken cancellationToken)
         {
             var severity = DiagnosticSeverity.Hidden;
-            var compilation = await project.GetCompilationAsync(cancellationToken);
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
             if (compilation is null)
             {
                 return severity;
@@ -50,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     continue;
                 }
 
-                var options = await document.GetOptionsAsync(cancellationToken);
+                var options = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
 
                 var documentSeverity = analyzer.GetSeverity(document, project.AnalyzerOptions, options, compilation);
                 if (documentSeverity > severity)

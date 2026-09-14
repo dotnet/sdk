@@ -1,24 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
-[TestClass]
 public class ContentTypeProviderTests
 {
     private readonly TaskLoggingHelper _log = new TestTaskLoggingHelper();
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_ReturnsTextPlainForTextFiles()
     {
         // Arrange
@@ -28,10 +22,10 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("Fake-License.txt"), _log);
 
         // Assert
-        Assert.AreEqual("text/plain", contentType.MimeType);
+        Assert.Equal("text/plain", contentType.MimeType);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_ReturnsMappingForRelativePath()
     {
         // Arrange
@@ -41,7 +35,7 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("Components/Pages/Counter.razor.js"), _log);
 
         // Assert
-        Assert.AreEqual("text/javascript", contentType.MimeType);
+        Assert.Equal("text/javascript", contentType.MimeType);
     }
 
     private StaticWebAssetGlobMatcher.MatchContext CreateContext(string v)
@@ -53,7 +47,7 @@ public class ContentTypeProviderTests
 
     // wwwroot\exampleJsInterop.js.gz
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_ReturnsMappingForCompressedRelativePath()
     {
         // Arrange
@@ -63,10 +57,10 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("wwwroot/exampleJsInterop.js.gz"), _log);
 
         // Assert
-        Assert.AreEqual("text/javascript", contentType.MimeType);
+        Assert.Equal("text/javascript", contentType.MimeType);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_HandlesFingerprintedPaths()
     {
         // Arrange
@@ -74,10 +68,10 @@ public class ContentTypeProviderTests
         // Act
         var contentType = provider.ResolveContentTypeMapping(CreateContext("_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency#[.{fingerprint}].bundle.scp.css.gz"), _log);
         // Assert
-        Assert.AreEqual("text/css", contentType.MimeType);
+        Assert.Equal("text/css", contentType.MimeType);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_ReturnsDefaultForUnknownMappings()
     {
         // Arrange
@@ -87,12 +81,12 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("something.unknown"), _log);
 
         // Assert
-        Assert.IsNull(contentType.MimeType);
+        Assert.Null(contentType.MimeType);
     }
 
-    [TestMethod]
-    [DataRow("something.unknown.gz", "application/x-gzip")]
-    [DataRow("something.unknown.br", "application/octet-stream")]
+    [Theory]
+    [InlineData("something.unknown.gz", "application/x-gzip")]
+    [InlineData("something.unknown.br", "application/octet-stream")]
     public void GetContentType_ReturnsGzipOrBrotliForUnknownCompressedMappings(string path, string expectedMapping)
     {
         // Arrange
@@ -102,12 +96,12 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext(path), _log);
 
         // Assert
-        Assert.AreEqual(expectedMapping, contentType.MimeType);
+        Assert.Equal(expectedMapping, contentType.MimeType);
     }
 
-    [TestMethod]
-    [DataRow("Fake-License.txt.gz")]
-    [DataRow("Fake-License.txt.br")]
+    [Theory]
+    [InlineData("Fake-License.txt.gz")]
+    [InlineData("Fake-License.txt.br")]
     public void GetContentType_ReturnsTextPlainForCompressedTextFiles(string path)
     {
         // Arrange
@@ -117,10 +111,10 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext(path), _log);
 
         // Assert
-        Assert.AreEqual("text/plain", contentType.MimeType);
+        Assert.Equal("text/plain", contentType.MimeType);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_CustomMappingOverridesBuiltInMapping()
     {
         // Arrange
@@ -131,13 +125,13 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("index.html"), _log);
 
         // Assert
-        Assert.AreEqual("text/html", contentType.MimeType);
-        Assert.AreEqual("no-store, must-revalidate, no-cache", contentType.Cache);
-        Assert.AreEqual("*.html", contentType.Pattern);
-        Assert.AreEqual(2, contentType.Priority);
+        Assert.Equal("text/html", contentType.MimeType);
+        Assert.Equal("no-store, must-revalidate, no-cache", contentType.Cache);
+        Assert.Equal("*.html", contentType.Pattern);
+        Assert.Equal(2, contentType.Priority);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_CustomMappingOverridesBuiltInMappingForCompressedFiles()
     {
         // Arrange
@@ -148,13 +142,13 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("index.html.gz"), _log);
 
         // Assert
-        Assert.AreEqual("text/html", contentType.MimeType);
-        Assert.AreEqual("no-store, must-revalidate, no-cache", contentType.Cache);
-        Assert.AreEqual("*.html", contentType.Pattern);
-        Assert.AreEqual(2, contentType.Priority);
+        Assert.Equal("text/html", contentType.MimeType);
+        Assert.Equal("no-store, must-revalidate, no-cache", contentType.Cache);
+        Assert.Equal("*.html", contentType.Pattern);
+        Assert.Equal(2, contentType.Priority);
     }
 
-    [TestMethod]
+    [Fact]
     public void GetContentType_CustomJavaScriptMappingOverridesBuiltIn()
     {
         // Arrange
@@ -165,10 +159,10 @@ public class ContentTypeProviderTests
         var contentType = provider.ResolveContentTypeMapping(CreateContext("app.js"), _log);
 
         // Assert
-        Assert.AreEqual("text/javascript", contentType.MimeType);
-        Assert.AreEqual("max-age=3600", contentType.Cache);
-        Assert.AreEqual("*.js", contentType.Pattern);
-        Assert.AreEqual(3, contentType.Priority);
+        Assert.Equal("text/javascript", contentType.MimeType);
+        Assert.Equal("max-age=3600", contentType.Cache);
+        Assert.Equal("*.js", contentType.Pattern);
+        Assert.Equal(3, contentType.Priority);
     }
 
     private class TestTaskLoggingHelper : TaskLoggingHelper

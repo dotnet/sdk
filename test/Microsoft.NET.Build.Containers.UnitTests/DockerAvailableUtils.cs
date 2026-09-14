@@ -3,52 +3,59 @@
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
-public sealed class DockerUnavailableCondition : ConditionBaseAttribute
+public class DockerAvailableTheoryAttribute : TheoryAttribute
 {
-    public DockerUnavailableCondition()
-        : base(ConditionMode.Exclude)
+    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
+
+    public DockerAvailableTheoryAttribute(bool skipPodman = false)
     {
-        IgnoreMessage = "Skipping test because Docker is not available on this host.";
-    }
-
-    public override string GroupName => nameof(DockerUnavailableCondition);
-
-    public override bool IsConditionMet => !DockerCliStatus.IsAvailable;
-}
-
-public sealed class PodmanCliCondition : ConditionBaseAttribute
-{
-    public PodmanCliCondition()
-        : base(ConditionMode.Exclude)
-    {
-        IgnoreMessage = "Skipping test with podman cli.";
-    }
-
-    public override string GroupName => nameof(PodmanCliCondition);
-
-    public override bool IsConditionMet => DockerCliStatus.Runtime == ContainerRuntimeKind.Podman;
-}
-
-// Cache the Docker/Podman probe for the lifetime of the test process.
-internal static class DockerCliStatus
-{
-    private static readonly Lazy<(bool IsAvailable, ContainerRuntimeKind Runtime)> s_status = new(
-        GetStatus,
-        LazyThreadSafetyMode.ExecutionAndPublication);
-
-    public static bool IsAvailable => s_status.Value.IsAvailable;
-    public static ContainerRuntimeKind Runtime => s_status.Value.Runtime;
-    public static string LocalRegistry
-        => Runtime switch
+        if (!DockerCliStatus.IsAvailable)
         {
-            ContainerRuntimeKind.Podman => KnownLocalRegistryTypes.Podman,
-            _ => KnownLocalRegistryTypes.Docker
-        };
+            base.Skip = "Skipping test because Docker is not available on this host.";
+        }
 
-    private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
+        if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
+        {
+            base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
+        }
+    }
+}
+
+public class DockerAvailableFactAttribute : FactAttribute
+{
+    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
+
+    public DockerAvailableFactAttribute(bool skipPodman = false, bool checkContainerdStoreAvailability = false)
     {
-        ContainerRuntime runtime = new(new TestLoggerFactory(), probePlatformNativeCli: false);
-        bool isAvailable = runtime.IsAvailable();
-        return (isAvailable, runtime.GetTelemetryValue());
+        if (!DockerCliStatus.IsAvailable)
+        {
+            base.Skip = "Skipping test because Docker is not available on this host.";
+        }
+        else if (checkContainerdStoreAvailability && !DockerCli.IsContainerdStoreEnabledForDocker())
+        {
+            base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
+        }
+        else if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
+        {
+            base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
+        }      
+    }
+}
+
+// tiny optimization - since there are many instances of this attribute we should only get
+// the daemon status once
+static file class DockerCliStatus
+{
+    public static readonly bool IsAvailable;
+    public static readonly string? Command;
+    public static string LocalRegistry
+        => Command == DockerCli.PodmanCommand ? KnownLocalRegistryTypes.Podman
+                                              : KnownLocalRegistryTypes.Docker;
+
+    static DockerCliStatus()
+    {
+        DockerCli cli = new(new TestLoggerFactory());
+        IsAvailable = cli.IsAvailable();
+        Command = cli.GetCommand();
     }
 }

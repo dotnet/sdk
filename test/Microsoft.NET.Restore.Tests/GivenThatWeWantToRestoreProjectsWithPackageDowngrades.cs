@@ -3,10 +3,13 @@
 
 namespace Microsoft.NET.Restore.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToRestoreProjectsWithPackageDowngrades : SdkTest
     {
-        [TestMethod]
+        public GivenThatWeWantToRestoreProjectsWithPackageDowngrades(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void DowngradeWarningsAreErrorsByDefault()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";
@@ -19,7 +22,7 @@ namespace Microsoft.NET.Restore.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0", null));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0", null));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 
@@ -36,7 +39,7 @@ namespace Microsoft.NET.Restore.Tests
                 .And.HaveStdOutContaining("NU1605");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItIsPossibleToTurnOffDowngradeWarningsAsErrors()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";
@@ -50,7 +53,7 @@ namespace Microsoft.NET.Restore.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0", null));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0", null));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 

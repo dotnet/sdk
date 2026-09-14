@@ -1,15 +1,16 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
-#if NETFRAMEWORK
+#if NET472
 using System.Management;
 #endif
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 {
     public class ProcessWrapper
     {
-        public int? RunProcess(string fileName, string arguments, string workingDirectory, out int? processId, bool createDirectoryIfNotExists = true, bool waitForExit = true, TestContext testContext = null)
+        public int? RunProcess(string fileName, string arguments, string workingDirectory, out int? processId, bool createDirectoryIfNotExists = true, bool waitForExit = true, ITestOutputHelper testOutputHelper = null)
         {
             if (createDirectoryIfNotExists && !Directory.Exists(workingDirectory))
             {
@@ -37,8 +38,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
                 testProcess.WaitForExit(3 * 60 * 1000);
                 var standardOut = testProcess.StandardOutput.ReadToEnd();
                 var standardError = testProcess.StandardError.ReadToEnd();
-                testContext?.WriteLine(standardOut);
-                testContext?.WriteLine(standardError);
+                testOutputHelper?.WriteLine(standardOut);
+                testOutputHelper?.WriteLine(standardError);
                 return testProcess?.ExitCode;
             }
 
@@ -47,63 +48,39 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 
         public static void KillProcessTree(int processId)
         {
-            Process process;
             try
             {
-                process = Process.GetProcessById(processId);
+                Process process = Process.GetProcessById(processId);
+                if (process != null && !process.HasExited)
+                {
+                    KillProcessTreeInternal(processId);
+                }
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
-                // Process might have already exited.
-                return;
             }
 
-            using (process)
-            {
-                try
-                {
-                    if (!process.HasExited)
-                    {
-#if NETFRAMEWORK
-                        KillProcessTreeInternal(process.Id);
-#else
-                        process.Kill(entireProcessTree: true);
-#endif
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
 
-#if NETFRAMEWORK
         private static void KillProcessTreeInternal(int pid)
         {
-            using (ManagementObjectSearcher searcher = new("Select * From Win32_Process Where ParentProcessID=" + pid))
-            using (ManagementObjectCollection moc = searcher.Get())
+#if NET472
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
+            ManagementObjectCollection moc = searcher.Get();
+            foreach (ManagementObject mo in moc)
             {
-                foreach (ManagementObject mo in moc)
-                {
-                    using (mo)
-                    {
-                        KillProcessTreeInternal(Convert.ToInt32(mo["ProcessID"]));
-                    }
-                }
+                KillProcessTreeInternal(Convert.ToInt32(mo["ProcessID"]));
             }
-
+#endif
             try
             {
-                using (Process proc = Process.GetProcessById(pid))
-                {
-                    proc.Kill();
-                }
+                Process proc = Process.GetProcessById(pid);
+                proc.Kill();
             }
             catch (ArgumentException)
             {
-                // Process might have already exited.
+                // vramak: Process might have already exited.
             }
         }
-#endif
     }
 }

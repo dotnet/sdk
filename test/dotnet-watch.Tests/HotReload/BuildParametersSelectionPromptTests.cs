@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using SpectreTestConsole = Spectre.Console.Testing.TestConsole;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
 public class BuildParametersSelectionPromptTests
 {
     private static DeviceInfo[] CreateTestDevices() =>
@@ -15,7 +14,7 @@ public class BuildParametersSelectionPromptTests
         new("0A041FDD400327", "Pixel 7 Pro", "Device", "Online", "android-arm64"),
     ];
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task SelectsFrameworkByArrowKeysAndEnter([CombinatorialRange(0, count: 3)] int index)
     {
@@ -32,11 +31,11 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
-        Assert.AreEqual(frameworks[index], result);
-        Assert.AreEqual(frameworks[index], prompt.PreviousFrameworkSelection);
+        Assert.Equal(frameworks[index], result);
+        Assert.Equal(frameworks[index], prompt.PreviousFrameworkSelection);
     }
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task PreviousFrameworkSelectionIsReusedWhenUnchanged([CombinatorialRange(0, count: 3)] int index)
     {
@@ -53,14 +52,14 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
-        Assert.AreEqual(frameworks[index], first);
+        Assert.Equal(frameworks[index], first);
 
         // Same frameworks (reordered, different casing) should reuse previous selection without prompting
         var second = await prompt.SelectTargetFrameworkAsync(["NET9.0", "net7.0", "net8.0"], CancellationToken.None);
-        Assert.AreEqual(first, second);
+        Assert.Equal(first, second);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task PromptsAgainWhenFrameworksChange()
     {
         var console = new SpectreTestConsole();
@@ -73,13 +72,13 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectTargetFrameworkAsync(["net7.0", "net8.0", "net9.0"], CancellationToken.None);
-        Assert.AreEqual("net7.0", first);
+        Assert.Equal("net7.0", first);
 
         var second = await prompt.SelectTargetFrameworkAsync(["net9.0", "net10.0"], CancellationToken.None);
-        Assert.AreEqual("net10.0", second);
+        Assert.Equal("net10.0", second);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SelectsFrameworkBySearchText()
     {
         var console = new SpectreTestConsole();
@@ -92,10 +91,10 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
-        Assert.AreEqual("net9.0", result);
+        Assert.Equal("net9.0", result);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SelectsFirstDeviceByEnter()
     {
         var console = new SpectreTestConsole();
@@ -107,11 +106,11 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual(devices[0], result);
-        Assert.AreEqual(devices[0], prompt.PreviousDeviceSelection);
+        Assert.Equal(devices[0], result);
+        Assert.Equal(devices[0], prompt.PreviousDeviceSelection);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SelectsDeviceBySearchText()
     {
         var console = new SpectreTestConsole();
@@ -124,11 +123,11 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual("0A041FDD400327", result.Id);
-        Assert.AreEqual("android-arm64", result.RuntimeIdentifier);
+        Assert.Equal("0A041FDD400327", result.Id);
+        Assert.Equal("android-arm64", result.RuntimeIdentifier);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task PreviousDeviceSelectionIsReusedWhenUnchanged()
     {
         var console = new SpectreTestConsole();
@@ -140,14 +139,14 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual(devices[0], first);
+        Assert.Equal(devices[0], first);
 
         // Same devices should reuse previous selection without prompting
         var second = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual(first, second);
+        Assert.Equal(first, second);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task PromptsAgainWhenDevicesChange()
     {
         var console = new SpectreTestConsole();
@@ -160,7 +159,7 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var first = await prompt.SelectDeviceAsync(CreateTestDevices(), CancellationToken.None);
-        Assert.AreEqual("emulator-5554", first.Id);
+        Assert.Equal("emulator-5554", first.Id);
 
         DeviceInfo[] newDevices =
         [
@@ -168,10 +167,10 @@ public class BuildParametersSelectionPromptTests
             new("sim-2", "iPhone 15 - iOS 26.0", "Simulator", "Shutdown", "iossimulator-arm64"),
         ];
         var second = await prompt.SelectDeviceAsync(newDevices, CancellationToken.None);
-        Assert.AreEqual("sim-2", second.Id);
+        Assert.Equal("sim-2", second.Id);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SelectsDeviceBySearchingId()
     {
         var console = new SpectreTestConsole();
@@ -184,43 +183,43 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var result = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual("emulator-5555", result.Id);
-        Assert.AreEqual("android-x64", result.RuntimeIdentifier);
+        Assert.Equal("emulator-5555", result.Id);
+        Assert.Equal("android-x64", result.RuntimeIdentifier);
     }
 
-    [TestMethod]
+    [Fact]
     public void FormatDevice_WithAllMetadata()
     {
         var device = new DeviceInfo("emulator-5554", "Pixel 7 - API 35", "Emulator", "Online", "android-x64");
         var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
-        Assert.AreEqual("emulator-5554 - Pixel 7 - API 35 (Emulator, Online)", formatted);
+        Assert.Equal("emulator-5554 - Pixel 7 - API 35 (Emulator, Online)", formatted);
     }
 
-    [TestMethod]
+    [Fact]
     public void FormatDevice_WithoutType()
     {
         var device = new DeviceInfo("device-1", "My Phone", null, "Connected", null);
         var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
-        Assert.AreEqual("device-1 - My Phone (Connected)", formatted);
+        Assert.Equal("device-1 - My Phone (Connected)", formatted);
     }
 
-    [TestMethod]
+    [Fact]
     public void FormatDevice_WithoutStatus()
     {
         var device = new DeviceInfo("device-1", "My Phone", "Device", null, null);
         var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
-        Assert.AreEqual("device-1 - My Phone (Device)", formatted);
+        Assert.Equal("device-1 - My Phone (Device)", formatted);
     }
 
-    [TestMethod]
+    [Fact]
     public void FormatDevice_IdOnly()
     {
         var device = new DeviceInfo("device-1", null, null, null, null);
         var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
-        Assert.AreEqual("device-1", formatted);
+        Assert.Equal("device-1", formatted);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SelectsFrameworkThenDevice()
     {
         var console = new SpectreTestConsole();
@@ -239,9 +238,9 @@ public class BuildParametersSelectionPromptTests
         var prompt = new SpectreBuildParametersSelectionPrompt(console);
 
         var selectedFramework = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
-        Assert.AreEqual("net9.0", selectedFramework);
+        Assert.Equal("net9.0", selectedFramework);
 
         var selectedDevice = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
-        Assert.AreEqual("0A041FDD400327", selectedDevice.Id);
+        Assert.Equal("0A041FDD400327", selectedDevice.Id);
     }
 }

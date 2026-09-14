@@ -8,10 +8,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class GivenAnAppBaseCommandResolver
     {
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_is_null()
         {
             var appBaseCommandResolver = SetupPlatformAppBaseCommandResolver(forceGeneric: true);
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_does_not_exist_applocal()
         {
             var appBaseCommandResolver = SetupPlatformAppBaseCommandResolver(forceGeneric: true);
@@ -43,7 +42,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_a_CommandSpec_with_CommandName_as_FileName_when_CommandName_exists_applocal()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -66,7 +65,7 @@ namespace Microsoft.DotNet.Tests
             commandFile.Should().Be("appbasetestcommand1");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_exists_applocal_in_a_subdirectory()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -86,7 +85,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_escapes_CommandArguments_when_returning_a_CommandSpec()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -106,7 +105,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Be("\"arg with space\"");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_a_CommandSpec_with_Args_as_stringEmpty_when_returning_a_CommandSpec_and_CommandArguments_are_null()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -126,7 +125,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Be(string.Empty);
         }
 
-        [TestMethod]
+        [Fact]
         public void It_prefers_EXE_over_CMD_when_two_command_candidates_exist_and_using_WindowsExePreferredCommandSpecFactory()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -151,8 +150,7 @@ namespace Microsoft.DotNet.Tests
             commandFile.Should().Be("appbasetestcommand1.exe");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_wraps_command_with_CMD_EXE_when_command_has_CMD_Extension_and_using_WindowsExePreferredCommandSpecFactory()
         {
             var environment = new EnvironmentProvider(new[] { ".cmd" });

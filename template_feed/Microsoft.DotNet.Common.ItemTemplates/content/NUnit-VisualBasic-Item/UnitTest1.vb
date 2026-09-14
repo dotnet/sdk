@@ -1,14 +1,18 @@
 ﻿Imports NUnit.Framework
 
-Public Class UnitTest1
+Namespace Tests
 
-    <SetUp>
-    Public Sub Setup()
-    End Sub
+    Public Class UnitTest1
 
-    <Test>
-    Public Sub Test1()
-        Assert.Pass()
-    End Sub
+        <SetUp>
+        Public Sub Setup()
+        End Sub
 
-End Class
+        <Test>
+        Public Sub Test1()
+            Assert.Pass()
+        End Sub
+
+    End Class
+
+End Namespace

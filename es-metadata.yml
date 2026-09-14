@@ -1,4 +1,3 @@
-# Docs: https://aka.ms/inventory-as-code
 schemaVersion: 0.0.1
 isProduction: true
 accountableOwners:

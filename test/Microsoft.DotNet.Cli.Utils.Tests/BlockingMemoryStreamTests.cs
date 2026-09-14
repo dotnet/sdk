@@ -3,13 +3,12 @@
 
 namespace Microsoft.DotNet.Cli.Utils
 {
-    [TestClass]
     public class BlockingMemoryStreamTests
     {
         /// <summary>
         /// Tests reading a bigger buffer than what is available.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void ReadBiggerBuffer()
         {
             using (var stream = new BlockingMemoryStream())
@@ -18,17 +17,17 @@ namespace Microsoft.DotNet.Cli.Utils
 
                 byte[] buffer = new byte[10];
                 int count = stream.Read(buffer, 0, buffer.Length);
-                Assert.AreEqual(3, count);
-                Assert.AreEqual(1, buffer[0]);
-                Assert.AreEqual(2, buffer[1]);
-                Assert.AreEqual(3, buffer[2]);
+                Assert.Equal(3, count);
+                Assert.Equal(1, buffer[0]);
+                Assert.Equal(2, buffer[1]);
+                Assert.Equal(3, buffer[2]);
             }
         }
 
         /// <summary>
         /// Tests reading smaller buffers than what is available.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void ReadSmallerBuffers()
         {
             using (var stream = new BlockingMemoryStream())
@@ -39,32 +38,32 @@ namespace Microsoft.DotNet.Cli.Utils
                 byte[] buffer = new byte[3];
 
                 int count = stream.Read(buffer, 0, buffer.Length);
-                Assert.AreEqual(3, count);
-                Assert.AreEqual(1, buffer[0]);
-                Assert.AreEqual(2, buffer[1]);
-                Assert.AreEqual(3, buffer[2]);
+                Assert.Equal(3, count);
+                Assert.Equal(1, buffer[0]);
+                Assert.Equal(2, buffer[1]);
+                Assert.Equal(3, buffer[2]);
 
                 count = stream.Read(buffer, 0, buffer.Length);
-                Assert.AreEqual(1, count);
-                Assert.AreEqual(4, buffer[0]);
+                Assert.Equal(1, count);
+                Assert.Equal(4, buffer[0]);
 
                 count = stream.Read(buffer, 0, buffer.Length);
-                Assert.AreEqual(3, count);
-                Assert.AreEqual(5, buffer[0]);
-                Assert.AreEqual(6, buffer[1]);
-                Assert.AreEqual(7, buffer[2]);
+                Assert.Equal(3, count);
+                Assert.Equal(5, buffer[0]);
+                Assert.Equal(6, buffer[1]);
+                Assert.Equal(7, buffer[2]);
 
                 count = stream.Read(buffer, 0, buffer.Length);
-                Assert.AreEqual(2, count);
-                Assert.AreEqual(8, buffer[0]);
-                Assert.AreEqual(9, buffer[1]);
+                Assert.Equal(2, count);
+                Assert.Equal(8, buffer[0]);
+                Assert.Equal(9, buffer[1]);
             }
         }
 
         /// <summary>
         /// Tests reading will block until the stream is written to.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestReadBlocksUntilWrite()
         {
             using (var stream = new BlockingMemoryStream())
@@ -78,10 +77,10 @@ namespace Microsoft.DotNet.Cli.Utils
                     readerThreadExecuting.Set();
                     int count = stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.AreEqual(3, count);
-                    Assert.AreEqual(1, buffer[0]);
-                    Assert.AreEqual(2, buffer[1]);
-                    Assert.AreEqual(3, buffer[2]);
+                    Assert.Equal(3, count);
+                    Assert.Equal(1, buffer[0]);
+                    Assert.Equal(2, buffer[1]);
+                    Assert.Equal(3, buffer[2]);
 
                     readerThreadSuccessful = true;
                 })
@@ -93,16 +92,16 @@ namespace Microsoft.DotNet.Cli.Utils
                 // ensure the thread is executing
                 readerThreadExecuting.WaitOne();
 
-                Assert.IsTrue(readerThread.IsAlive);
+                Assert.True(readerThread.IsAlive);
 
                 // give it a little while to ensure it is blocking
                 Thread.Sleep(10);
-                Assert.IsTrue(readerThread.IsAlive);
+                Assert.True(readerThread.IsAlive);
 
                 stream.Write(new byte[] { 1, 2, 3 }, 0, 3);
 
-                Assert.IsTrue(readerThread.Join(1000));
-                Assert.IsTrue(readerThreadSuccessful);
+                Assert.True(readerThread.Join(1000));
+                Assert.True(readerThreadSuccessful);
             }
         }
     }

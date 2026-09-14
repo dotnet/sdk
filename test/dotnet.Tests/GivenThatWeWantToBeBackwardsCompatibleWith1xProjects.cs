@@ -1,23 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBeBackwardsCompatibleWith1xProjects : SdkTest
     {
-        public GivenThatWeWantToBeBackwardsCompatibleWith1xProjects()
+        public GivenThatWeWantToBeBackwardsCompatibleWith1xProjects(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [RequiresSpecificFramework("netcoreapp1.1")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ItRestoresBuildsAndRuns(string target)
         {
 
             var testAppName = "TestAppSimple";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
                 .WithSource();
 
             //   Replace the 'TargetFramework'
@@ -39,14 +37,14 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [TestMethod]
-        [DataRow("netstandard1.3")]
-        [DataRow("netstandard1.6")]
+        [Theory]
+        [InlineData("netstandard1.3")]
+        [InlineData("netstandard1.6")]
         public void ItRestoresBuildsAndPacks(string target)
         {
 
             var testAppName = "TestAppSimple";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
                 .WithSource();
 
             //   Replace the 'TargetFramework'
@@ -61,11 +59,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [TestMethod]
-        [RequiresSpecificFramework("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
+        [RequiresSpecificFrameworkFact("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
         public void ItRunsABackwardsVersionedTool()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset("11TestAppWith10CLIToolReferences")
                 .WithSource();
 

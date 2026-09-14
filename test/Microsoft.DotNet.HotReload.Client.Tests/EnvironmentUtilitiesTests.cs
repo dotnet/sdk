@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watch.UnitTests;
+
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
-[TestClass]
 public class EnvironmentUtilitiesTests
 {
-    [TestMethod]
+    [Fact]
     public void MultipleValues()
     {
         var builder = new Dictionary<string, string>();
@@ -14,10 +15,10 @@ public class EnvironmentUtilitiesTests
         builder.InsertListItem("X", "b", separator: ';');
         builder.InsertListItem("X", "a", separator: ';');
 
-        Assert.AreSequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
+        AssertEx.SequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
     }
 
-    [TestMethod]
+    [Fact]
     public void EmptyValue()
     {
         var builder = new Dictionary<string, string>();
@@ -27,6 +28,6 @@ public class EnvironmentUtilitiesTests
         builder.InsertListItem("X", "b", separator: ';');
         builder.InsertListItem("X", "a", separator: ';');
 
-        Assert.AreSequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
+        AssertEx.SequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
     }
 }

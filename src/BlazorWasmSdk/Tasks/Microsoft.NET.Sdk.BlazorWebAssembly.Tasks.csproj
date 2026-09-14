@@ -2,17 +2,15 @@
 
   <PropertyGroup>
     <BlazorWasmSdkRoot>$(RepoRoot)\src\BlazorWasmSdk\</BlazorWasmSdkRoot>
-    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk.BlazorWebAssembly</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
-    <Description>SDK for building and publishing Blazor WebAssembly applications.</Description>
-    <RootNamespace>Microsoft.NET.Sdk.BlazorWebAssembly</RootNamespace>
+    <OutputType>Library</OutputType>
 
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -32,8 +30,16 @@
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
 
-    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
+  <PropertyGroup>
+    <Description>SDK for building and publishing Blazor WebAssembly applications.</Description>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Microsoft.NET.Sdk.BlazorWebAssembly</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,13 +69,11 @@
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAsset.cs" />
-    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetGroup.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetPathPattern.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetPathSegment.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetSegmentPart.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetTokenResolver.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Utils\FileHasher.cs" />
-    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Utils\OSPath.cs" />
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">

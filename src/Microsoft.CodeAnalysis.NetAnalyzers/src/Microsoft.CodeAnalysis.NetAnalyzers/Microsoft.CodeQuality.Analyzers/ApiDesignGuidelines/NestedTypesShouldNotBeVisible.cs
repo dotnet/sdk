@@ -1,5 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -73,12 +72,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             // Do not report diagnostic for compiler generated nested types for delegate declaration
                             if (nestedType.TypeKind == TypeKind.Delegate)
-                            {
-                                return;
-                            }
-
-                            // Do not report diagnostic for extension members
-                            if (nestedType.TypeKind == ITypeSymbolExtensions.ExtensionTypeKind)
                             {
                                 return;
                             }

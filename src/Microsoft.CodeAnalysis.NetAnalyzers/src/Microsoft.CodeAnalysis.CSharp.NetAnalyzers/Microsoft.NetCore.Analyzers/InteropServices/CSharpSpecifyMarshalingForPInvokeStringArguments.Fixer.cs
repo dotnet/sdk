@@ -1,15 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using Microsoft.NetCore.Analyzers.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 {
@@ -31,8 +31,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             return false;
         }
 
-        protected override void FixDeclareStatement(SyntaxEditor editor, SyntaxNode node)
+        protected override Task<Document> FixDeclareStatementAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
+            return Task.FromResult(document);
         }
     }
 }

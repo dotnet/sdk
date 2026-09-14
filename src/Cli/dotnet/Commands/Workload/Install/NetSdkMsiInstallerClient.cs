@@ -37,31 +37,23 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
     private readonly string _dependent;
 
-    private readonly WindowsMsiManifestInstaller _manifestInstaller;
-
     public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
-    /// <summary>
-    ///  Creates a new <see cref="NetSdkMsiInstallerClient"./>
-    /// </summary>
-    /// <inheritdoc cref="InstallerBase.InstallerBase"/>
-    public NetSdkMsiInstallerClient(
-        InstallElevationContextBase elevationContext,
+    public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
         ISetupLogger logger,
-        bool verifyMsiSignature,
+        bool verifySignatures,
         IWorkloadResolver workloadResolver,
         SdkFeatureBand sdkFeatureBand,
         INuGetPackageDownloader nugetPackageDownloader = null,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         PackageSourceLocation packageSourceLocation = null,
-        IReporter reporter = null) : base(elevationContext, logger, verifyMsiSignature, reporter)
+        IReporter reporter = null) : base(elevationContext, logger, verifySignatures, reporter)
     {
         _packageSourceLocation = packageSourceLocation;
         _nugetPackageDownloader = nugetPackageDownloader;
         _sdkFeatureBand = sdkFeatureBand;
         _workloadResolver = workloadResolver;
         _dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
-        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError);
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
@@ -72,7 +64,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         Log?.LogMessage($"{nameof(ProcessorArchitecture)}: {ProcessorArchitecture}");
         Log?.LogMessage($"{nameof(HostArchitecture)}: {HostArchitecture}");
         Log?.LogMessage($"{nameof(SdkDirectory)}: {SdkDirectory}");
-        Log?.LogMessage($"{nameof(VerifyMsiSignature)}: {VerifyMsiSignature}");
+        Log?.LogMessage($"{nameof(VerifySignatures)}: {VerifySignatures}");
         Log?.LogMessage($"SDK feature band: {_sdkFeatureBand}");
 
         if (IsElevated)
@@ -372,7 +364,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         {
             throw new GracefulException(string.Format(CliCommandStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
         }
-        ValidateMsiDatabase(msi);
+        VerifyPackage(msi);
 
         string installationFolder = Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
@@ -449,7 +441,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 }
                 else
                 {
-                    ValidateMsiDatabase(msi);
+                    VerifyPackage(msi);
                     ExecutePackage(msi, InstallAction.Uninstall, msiNuGetPackageId);
                 }
             }
@@ -475,7 +467,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 }
                 else
                 {
-                    ValidateMsiDatabase(msi);
+                    VerifyPackage(msi);
                     ExecutePackage(msi, InstallAction.Uninstall, msiNuGetPackageId);
                 }
             }
@@ -511,7 +503,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     // No need to plan. We know that there are no other dependents, the MSI is installed and we
                     // want to remove it.
-                    ValidateMsiDatabase(msi);
+                    VerifyPackage(msi);
                     ExecutePackage(msi, InstallAction.Uninstall, id);
                 }
             }
@@ -582,7 +574,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
         // Retrieve the payload from the MSI package cache.
         MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
-        ValidateMsiDatabase(msi);
+        VerifyPackage(msi);
         DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
         InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
 
@@ -602,7 +594,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 // Retrieve the payload from the MSI package cache.
                 MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, offlineCache);
-                ValidateMsiDatabase(msi);
+                VerifyPackage(msi);
                 DetectState state = DetectPackage(msi, out Version installedVersion);
                 InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion);
                 ExecutePackage(msi, plannedAction, aquirableMsi.NuGetPackageId);
@@ -634,7 +626,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     // Retrieve the payload from the MSI package cache.
                     MsiPayload msi = GetCachedMsiPayload(msiToInstall.NuGetPackageId, msiToInstall.NuGetPackageVersion, offlineCache);
-                    ValidateMsiDatabase(msi);
+                    VerifyPackage(msi);
                     DetectState state = DetectPackage(msi, out Version installedVersion);
                     InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
                     if (plannedAction == InstallAction.Install)
@@ -680,7 +672,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
             // Retrieve the payload from the MSI package cache.
             MsiPayload msi = GetCachedMsiPayload(msiToRollback.NuGetPackageId, msiToRollback.NuGetPackageVersion, offlineCache);
-            ValidateMsiDatabase(msi);
+            VerifyPackage(msi);
 
             // Check the provider key first in case we were installed and we only need to remove
             // a dependent.
@@ -739,10 +731,92 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
-        => _manifestInstaller.GetManifestPackageId(manifestId, featureBand);
+    {
+        if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
+        {
+            return new PackageId($"{manifestId}.{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+        }
+        else
+        {
+            return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+        }
+    }
 
-    public Task ExtractManifestAsync(string nupkgPath, string targetPath)
-        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath);
+    private static readonly object _msiAdminInstallLock = new();
+
+    public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
+    {
+        Log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
+        string extractionPath = TemporaryDirectory.CreateSubdirectory();
+
+        try
+        {
+            Log?.LogMessage($"ExtractManifestAsync: Temporary extraction path: '{extractionPath}'");
+            await _nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
+            if (Directory.Exists(targetPath))
+            {
+                Directory.Delete(targetPath, true);
+            }
+
+            string extractedManifestPath = Path.Combine(extractionPath, "data", "extractedManifest");
+            if (Directory.Exists(extractedManifestPath))
+            {
+                Log?.LogMessage($"ExtractManifestAsync: Copying manifest from '{extractionPath}' to '{targetPath}'");
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(extractedManifestPath, targetPath));
+            }
+            else
+            {
+                string packageDataPath = Path.Combine(extractionPath, "data");
+                if (!Cache.TryGetMsiPathFromPackageData(packageDataPath, out string msiPath, out _))
+                {
+                    throw new FileNotFoundException(string.Format(CliCommandStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
+                }
+                string msiExtractionPath = Path.Combine(extractionPath, "msi");
+
+
+                lock (_msiAdminInstallLock)
+                {
+                    string adminInstallLog = GetMsiLogNameForAdminInstall(msiPath);
+
+                    Log?.LogMessage($"ExtractManifestAsync: Running admin install for '{msiExtractionPath}'.  Log file: '{adminInstallLog}'");
+
+                    ConfigureInstall(adminInstallLog);
+
+                    var result = WindowsInstaller.InstallProduct(msiPath, $"TARGETDIR={msiExtractionPath} ACTION=ADMIN");
+
+                    if (result != Error.SUCCESS)
+                    {
+                        Log?.LogMessage($"ExtractManifestAsync: Admin install failed: {result}");
+                        throw new GracefulException(string.Format(CliCommandStrings.FailedToExtractMsi, msiPath));
+                    }
+                }
+
+                var manifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
+
+                string manifestFolder = null;
+                string manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
+                if (manifestsFeatureBandFolder != null)
+                {
+                    manifestFolder = Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
+                }
+
+                if (manifestFolder == null)
+                {
+                    throw new GracefulException(string.Format(CliCommandStrings.ExpectedSingleManifest, nupkgPath));
+                }
+
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestFolder, targetPath));
+            }
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(extractionPath) && Directory.Exists(extractionPath))
+            {
+                Directory.Delete(extractionPath, true);
+            }
+        }
+    }
 
     private void LogPackInfo(PackInfo packInfo)
     {
@@ -1015,16 +1089,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     /// <summary>
-    /// Validates that the <see cref="MsiPayload"/> refers to a well-formed Windows Installer database (MSI).
+    /// Verifies that the <see cref="MsiPayload"/> refers to a valid Windows Installer package (MSI).
     /// </summary>
-    /// <remarks>
-    /// <b>NOTE:</b> This is NOT a cryptographic signature check. This calls <c>MsiVerifyPackage</c>
-    /// which validates the MSI database structure (tables, columns, schema). Authenticode signature
-    /// verification is performed separately by <see cref="MsiPackageCache.VerifyPackageSignature"/>
-    /// when retrieving payloads from the cache.
-    /// </remarks>
-    /// <param name="msiPayload">The payload to validate.</param>
-    private void ValidateMsiDatabase(MsiPayload msiPayload)
+    /// <param name="msiPayload">The payload to verify.</param>
+    private void VerifyPackage(MsiPayload msiPayload)
     {
         uint error = WindowsInstaller.VerifyPackage(msiPayload.MsiPath);
         ExitOnError(error, $"Failed to verify package: {msiPayload.MsiPath}.");
@@ -1034,9 +1102,12 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// Creates a new <see cref="NetSdkMsiInstallerClient"/> instance. If the current host process is not elevated,
     /// the elevated server process will also be started by running an additional command.
     /// </summary>
-    /// <inheritdoc cref="NetSdkMsiInstallerClient">
+    /// <param name="nugetPackageDownloader"></param>
+    /// <param name="verbosity"></param>
+    /// <param name="packageSourceLocation"></param>
+    /// <returns></returns>
     public static NetSdkMsiInstallerClient Create(
-        bool verifyMsiSignature,
+        bool verifySignatures,
         SdkFeatureBand sdkFeatureBand,
         IWorkloadResolver workloadResolver,
         INuGetPackageDownloader nugetPackageDownloader = null,
@@ -1056,31 +1127,13 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         {
             DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? TemporaryDirectory.CreateSubdirectory() : tempDirPath);
 
-            // Fallback NuGet downloader: NuGet-level package signature verification is NOT enabled here
-            // (verifyNuGetSignatures: false). This is acceptable because:
-            //   1. The primary callers (WorkloadCommandBase subclasses) provide their own NuGetPackageDownloader
-            //      that has verifyNuGetSignatures correctly configured via WorkloadUtilities.ShouldVerifySignatures.
-            //   2. This fallback is used for internal operations (e.g., WorkloadInfoHelper) where the NuGet
-            //      package is only used to extract MSI payloads that are subsequently Authenticode-verified
-            //      by MsiPackageCache.VerifyPackageSignature before execution.
-            // The MSI Authenticode check (controlled by verifyMsiSignature above) is the primary security
-            // gate for the Windows MSI installer path.
-            nugetPackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
-                tempPackagesDir,
-                verifyNuGetSignatures: false,
-                restoreActionConfig: restoreActionConfig);
+            nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
+                filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
+                new NullLogger(), restoreActionConfig: restoreActionConfig);
         }
 
-        return new NetSdkMsiInstallerClient(
-            elevationContext,
-            logger,
-            verifyMsiSignature,
-            workloadResolver,
-            sdkFeatureBand,
-            nugetPackageDownloader,
-            verbosity,
-            packageSourceLocation,
-            reporter);
+        return new NetSdkMsiInstallerClient(elevationContext, logger, verifySignatures, workloadResolver, sdkFeatureBand, nugetPackageDownloader,
+            verbosity, packageSourceLocation, reporter);
     }
 
     /// <summary>

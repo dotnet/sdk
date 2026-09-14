@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureRandomness,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,122 +12,109 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotUseInsecureRandomnessTests
     {
-        [TestMethod]
+        [Fact]
         public async Task Test_UsingMethodNext_OfRandom_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
-
-                class TestClass
-                {
-                    public void TestMethod(Random random)
-                    {
-                        var sensitiveVariable = random.Next();
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod(Random random)
+    {
+        var sensitiveVariable = random.Next();
+    }
+}",
             GetCSharpResultAt(8, 33, "Random"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
-
-                class TestClass
-                    public Sub TestMethod(random As Random)
-                        Dim sensitiveVariable As Integer
-                        sensitiveVariable = random.Next()
-                    End Sub
-                End Class
-                """,
+class TestClass
+    public Sub TestMethod(random As Random)
+        Dim sensitiveVariable As Integer
+        sensitiveVariable = random.Next()
+    End Sub
+End Class",
             GetBasicResultAt(7, 29, "Random"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UsingMethodNextDouble_OfRandom_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
-
-                class TestClass
-                {
-                    public void TestMethod(Random random)
-                    {
-                        var sensitiveVariable = random.NextDouble();
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod(Random random)
+    {
+        var sensitiveVariable = random.NextDouble();
+    }
+}",
             GetCSharpResultAt(8, 33, "Random"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
-
-                class TestClass
-                    public Sub TestMethod(random As Random)
-                        Dim sensitiveVariable As Integer
-                        sensitiveVariable = random.NextDouble()
-                    End Sub
-                End Class
-                """,
+class TestClass
+    public Sub TestMethod(random As Random)
+        Dim sensitiveVariable As Integer
+        sensitiveVariable = random.NextDouble()
+    End Sub
+End Class",
             GetBasicResultAt(7, 29, "Random"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UsingMethodGetHashCode_OfObject_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                class TestClass
-                {
-                    public void TestMethod(Random random)
-                    {
-                        var hashCode = random.GetHashCode();
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod(Random random)
+    {
+        var hashCode = random.GetHashCode();
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                class TestClass
-                    public Sub TestMethod(random As Random)
-                        Dim hashCode As Integer
-                        hashCode = random.GetHashCode()
-                    End Sub
-                End Class
-                """);
+class TestClass
+    public Sub TestMethod(random As Random)
+        Dim hashCode As Integer
+        hashCode = random.GetHashCode()
+    End Sub
+End Class");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UsingConstructor_OfRandom_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var random = new Random();
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        var random = new Random();
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                class TestClass
-                    public Sub TestMethod
-                        Dim random As New Random
-                    End Sub
-                End Class
-                """);
+class TestClass
+    public Sub TestMethod
+        Dim random As New Random
+    End Sub
+End Class");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

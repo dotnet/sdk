@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Composition;
@@ -20,13 +19,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDynamicInterfaceCastableImplementationFixer : DynamicInterfaceCastableImplementationFixer
     {
-        protected override async Task ImplementInterfacesOnDynamicCastableImplementationAsync(
+        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+            SyntaxNode root,
             SyntaxNode declaration,
             Document document,
-            SyntaxEditor editor,
+            SyntaxGenerator generator,
             CancellationToken cancellationToken)
         {
-            var generator = editor.Generator;
             var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var type = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, cancellationToken)!;
 
@@ -47,22 +46,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         };
                         if (implementation is not null)
                         {
-                            if (generator.AsPrivateInterfaceImplementation(
+                            generatedMembers.Add(generator.AsPrivateInterfaceImplementation(
                                 implementation,
-                                generator.NameExpression(member.ContainingType)) is not SyntaxNode privateImplementation)
-                            {
-                                return;
-                            }
-
-                            generatedMembers.Add(privateImplementation);
+                                generator.NameExpression(member.ContainingType)));
                         }
                     }
                 }
             }
 
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53605
-            var members = generatedMembers.Cast<MemberDeclarationSyntax>().ToArray();
-            editor.ReplaceNode(declaration, (currentNode, _) => ((TypeDeclarationSyntax)currentNode).AddMembers(members));
+            var typeDeclaration = (TypeDeclarationSyntax)declaration;
+            typeDeclaration = typeDeclaration.AddMembers(generatedMembers.Cast<MemberDeclarationSyntax>().ToArray());
+
+            return document.WithSyntaxRoot(root.ReplaceNode(declaration, typeDeclaration));
 
             SyntaxNode? GenerateMethodImplementation(IMethodSymbol method)
             {
@@ -151,7 +147,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         setAccessor.SemicolonToken)));
         }
 
-        private static SyntaxNode? GenerateEventImplementation(
+        private static SyntaxNode GenerateEventImplementation(
             IEventSymbol evt,
             SyntaxGenerator generator,
             SyntaxNode[] defaultMethodBodyStatements)
@@ -159,42 +155,36 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             var eventDeclaration = generator.CustomEventDeclaration(evt);
             eventDeclaration = generator.WithModifiers(eventDeclaration, generator.GetModifiers(eventDeclaration).WithIsAbstract(false));
 
-            if (generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor) is not SyntaxNode addAccessor ||
-                generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor) is not SyntaxNode removeAccessor)
-            {
-                return null;
-            }
-
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53649
             return ((EventDeclarationSyntax)eventDeclaration).WithAccessorList(
                 SyntaxFactory.AccessorList(
                     SyntaxFactory.List(
                 new[]
                 {
-                        (AccessorDeclarationSyntax)generator.WithStatements(addAccessor, defaultMethodBodyStatements),
-                        (AccessorDeclarationSyntax)generator.WithStatements(removeAccessor, defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
                 })));
         }
 
-        protected override async Task MakeMemberDeclaredOnImplementationTypeStaticAsync(SyntaxNode declaration, Document document, SyntaxEditor editor, CancellationToken cancellationToken)
+        protected override async Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(SyntaxNode declaration, Document document, CancellationToken cancellationToken)
         {
-            var root = editor.OriginalRoot;
+            var root = (await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false))!;
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
-            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var defaultMethodBodyStatements = generator.DefaultMethodBody(semanticModel.Compilation).ToArray();
+            var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
 
-            var symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
+            var symbol = editor.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
 
             if (symbol is not IMethodSymbol)
             {
                 // We can't automatically make properties or events static.
-                return;
+                return document;
             }
 
             // We're going to convert the this parameter to a @this parameter at the start of the parameter list,
             // so we need to warn if the symbol already exists in scope since the fix may produce broken code.
 
-            SymbolInfo introducedThisParamInfo = semanticModel.GetSpeculativeSymbolInfo(
+            SymbolInfo introducedThisParamInfo = editor.SemanticModel.GetSpeculativeSymbolInfo(
                 declaration.SpanStart,
                 SyntaxFactory.IdentifierName(EscapedThisToken),
                 SpeculativeBindingOption.BindAsExpression);
@@ -295,6 +285,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
                     return updatedMethod;
                 });
+
+            return editor.GetChangedDocument();
         }
 
         private static readonly SyntaxToken EscapedThisToken = SyntaxFactory.Identifier(

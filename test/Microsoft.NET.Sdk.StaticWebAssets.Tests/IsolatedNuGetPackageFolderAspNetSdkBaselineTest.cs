@@ -2,28 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestCategory("NugetIsolation")]
-    [TestCategory("BaselineTest")]
-    [TestProperty("AspNetCore", "NugetIsolation")]
-    [TestProperty("AspNetCore", "BaselineTest")]
-    public abstract class IsolatedNuGetPackageFolderAspNetSdkBaselineTest : AspNetSdkBaselineTest
+    [Trait("AspNetCore", "NugetIsolation")]
+    [Trait("AspNetCore", "BaselineTest")]
+    public class IsolatedNuGetPackageFolderAspNetSdkBaselineTest : AspNetSdkBaselineTest
     {
-        protected abstract string RestoreNugetPackagePath { get; }
+        private readonly string _cachePath;
 
-        private string? _cachePath;
-        protected override string GetNuGetCachePath() =>
-            _cachePath ??= Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Shorten(RestoreNugetPackagePath)));
+        public IsolatedNuGetPackageFolderAspNetSdkBaselineTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log)
+        {
+            _cachePath = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Shorten(restoreNugetPackagePath)));
+        }
+
         private static string Shorten(string restoreNugetPackagePath) =>
             restoreNugetPackagePath
                 .Replace("IntegrationTest", string.Empty, StringComparison.OrdinalIgnoreCase)
                 .Replace("Tests", string.Empty, StringComparison.OrdinalIgnoreCase);
 
+        protected override string GetNuGetCachePath() => _cachePath;
     }
 }
+

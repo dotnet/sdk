@@ -1,22 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
     public class StaticWebAssetsCompressionIntegrationTest : AspNetSdkBaselineTest
     {
-        [TestMethod]
+        public StaticWebAssetsCompressionIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
+        [Fact]
         public void Build_Detects_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -99,7 +94,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CanEnable_CompressionOnAllAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -131,7 +126,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(finalPath).Should().Exist();
         }
 
-        [TestMethod]
+        [Fact]
         public void PublishWorks_With_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();

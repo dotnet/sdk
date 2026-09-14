@@ -177,11 +177,6 @@
       Show verbose output
     </value>
   </data>
-  <data name="Help_Trace" xml:space="preserve">
-    <value>
-      Show trace output
-    </value>
-  </data>
   <data name="Help_Quiet" xml:space="preserve">
     <value>
       Suppresses all output except warnings and errors

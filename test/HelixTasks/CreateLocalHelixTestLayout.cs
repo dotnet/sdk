@@ -20,37 +20,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return false;
             };
 
-            // Clean the test output directory once at the start
-            if (Directory.Exists(TestOutputDirectory))
-            {
-                Directory.Delete(TestOutputDirectory, recursive: true);
-            }
-
             foreach (var payload in HelixCorrelationPayload)
             {
-                var sourceItem = payload.ItemSpec;
+                var copyfrom = new DirectoryInfo(payload.GetMetadata("PayloadDirectory"));
                 var relativeDestinationPathOnHelix = payload.GetMetadata("Destination");
-                var destinationDir = Path.Combine(TestOutputDirectory ?? string.Empty, relativeDestinationPathOnHelix);
+                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory ?? string.Empty, relativeDestinationPathOnHelix));
 
-                if (File.Exists(sourceItem))
+                if (Directory.Exists(destination.FullName))
                 {
-                    // It's a file - copy just this file to the destination directory
-                    Directory.CreateDirectory(destinationDir);
-                    var fileName = Path.GetFileName(sourceItem);
-                    File.Copy(sourceItem, Path.Combine(destinationDir, fileName), overwrite: true);
+                    Directory.Delete(destination.FullName, true);
                 }
-                else if (Directory.Exists(sourceItem))
-                {
-                    // It's a directory - copy all its contents
-                    var source = new DirectoryInfo(sourceItem);
-                    var destination = new DirectoryInfo(destinationDir);
 
-                    CopyAll(source, destination);
-                }
-                else
-                {
-                    Log.LogWarning($"Payload item '{sourceItem}' does not exist.");
-                }
+                CopyAll(copyfrom, destination);
             }
             Log.LogMessage($"set HELIX_CORRELATION_PAYLOAD={TestOutputDirectory}");
             return true;
@@ -63,7 +44,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return;
             }
 
-            Directory.CreateDirectory(target.FullName);
+            if (Directory.Exists(target.FullName) == false)
+            {
+                Directory.CreateDirectory(target.FullName);
+            }
 
             foreach (FileInfo fi in source.GetFiles())
             {

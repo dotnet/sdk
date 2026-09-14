@@ -1,17 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildANetCoreAppWithWap : SdkTest
     {
+        public GivenThatWeWantToBuildANetCoreAppWithWap(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void WhenNetCoreProjectIsReferencedByAWapProject()
         {
-            var testInstance = TestAssetsManager
+            var testInstance = _testAssetsManager
                 .CopyTestAsset("TestAppWithWapAndWpf")
                 .WithSource();
 

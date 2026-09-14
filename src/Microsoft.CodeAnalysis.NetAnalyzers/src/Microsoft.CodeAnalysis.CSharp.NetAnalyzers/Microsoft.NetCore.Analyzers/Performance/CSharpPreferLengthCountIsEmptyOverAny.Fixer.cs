@@ -1,8 +1,6 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,21 +13,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpPreferLengthCountIsEmptyOverAnyFixer : PreferLengthCountIsEmptyOverAnyFixer
     {
-        protected override SyntaxNode? GetNodeToReplace(SyntaxNode node)
+        protected override SyntaxNode? ReplaceAnyWithIsEmpty(SyntaxNode root, SyntaxNode node)
         {
-            if (node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax } invocation)
+            if (node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccess } invocation)
             {
                 return null;
             }
 
-            return invocation.Parent.IsKind(SyntaxKind.LogicalNotExpression) ? invocation.Parent : invocation;
-        }
-
-        protected override SyntaxNode? ReplaceAnyWithIsEmpty(SyntaxNode currentNode)
-        {
-            if (!TrySplit(currentNode, out bool isNegated, out ExpressionSyntax? expression))
+            var expression = memberAccess.Expression;
+            if (invocation.ArgumentList.Arguments.Count > 0)
             {
-                return null;
+                expression = invocation.ArgumentList.Arguments[0].Expression;
             }
 
             var newMemberAccess = MemberAccessExpression(
@@ -37,57 +31,67 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 expression,
                 IdentifierName(PreferLengthCountIsEmptyOverAnyAnalyzer.IsEmptyText)
             );
-
-            if (isNegated)
+            if (invocation.Parent.IsKind(SyntaxKind.LogicalNotExpression))
             {
-                return newMemberAccess.WithTriviaFrom(currentNode);
+                return root.ReplaceNode(invocation.Parent, newMemberAccess.WithTriviaFrom(invocation.Parent));
             }
 
-            return PrefixUnaryExpression(
+            var negatedExpression = PrefixUnaryExpression(
                 SyntaxKind.LogicalNotExpression,
                 newMemberAccess
-            ).WithTriviaFrom(currentNode);
+            );
+
+            return root.ReplaceNode(invocation, negatedExpression.WithTriviaFrom(invocation));
         }
 
-        protected override SyntaxNode? ReplaceAnyWithPropertyCheck(SyntaxNode currentNode, string propertyName)
+        protected override SyntaxNode? ReplaceAnyWithLength(SyntaxNode root, SyntaxNode node)
         {
-            if (!TrySplit(currentNode, out bool isNegated, out ExpressionSyntax? expression))
+            return ReplaceAnyWithPropertyCheck(root, node, PreferLengthCountIsEmptyOverAnyAnalyzer.LengthText);
+        }
+
+        protected override SyntaxNode? ReplaceAnyWithCount(SyntaxNode root, SyntaxNode node)
+        {
+            return ReplaceAnyWithPropertyCheck(root, node, PreferLengthCountIsEmptyOverAnyAnalyzer.CountText);
+        }
+
+        private static SyntaxNode? ReplaceAnyWithPropertyCheck(SyntaxNode root, SyntaxNode node, string propertyName)
+        {
+            if (node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccess } invocation)
             {
                 return null;
             }
 
-            return BinaryExpression(
-                isNegated ? SyntaxKind.EqualsExpression : SyntaxKind.NotEqualsExpression,
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    expression,
-                    IdentifierName(propertyName)
-                ),
-                LiteralExpression(
-                    SyntaxKind.NumericLiteralExpression,
-                    Literal(0)
-                )
-            ).WithTriviaFrom(currentNode);
-        }
-
-        private static bool TrySplit(SyntaxNode currentNode, out bool isNegated, [NotNullWhen(true)] out ExpressionSyntax? expression)
-        {
-            isNegated = currentNode is PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.LogicalNotExpression };
-            SyntaxNode operand = isNegated ? ((PrefixUnaryExpressionSyntax)currentNode).Operand : currentNode;
-
-            if (operand is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccess } invocation)
+            var expression = memberAccess.Expression;
+            if (invocation.ArgumentList.Arguments.Count > 0)
             {
-                expression = null;
-
-                return false;
+                // .Any() used like a normal static method and not like an extension method.
+                expression = invocation.ArgumentList.Arguments[0].Expression;
             }
 
-            // `.Any()` used like a normal static method and not like an extension method.
-            expression = invocation.ArgumentList.Arguments.Count > 0
-                ? invocation.ArgumentList.Arguments[0].Expression
-                : memberAccess.Expression;
+            static BinaryExpressionSyntax GetBinaryExpression(ExpressionSyntax expression, string member, SyntaxKind expressionKind)
+            {
+                return BinaryExpression(
+                    expressionKind,
+                    MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        expression,
+                        IdentifierName(member)
+                    ),
+                    LiteralExpression(
+                        SyntaxKind.NumericLiteralExpression,
+                        Literal(0)
+                    )
+                );
+            }
 
-            return true;
+            if (invocation.Parent.IsKind(SyntaxKind.LogicalNotExpression))
+            {
+                var binaryExpression = GetBinaryExpression(expression, propertyName, SyntaxKind.EqualsExpression);
+
+                return root.ReplaceNode(invocation.Parent, binaryExpression.WithTriviaFrom(invocation.Parent));
+            }
+
+            return root.ReplaceNode(invocation, GetBinaryExpression(expression, propertyName, SyntaxKind.NotEqualsExpression).WithTriviaFrom(invocation));
         }
     }
 }

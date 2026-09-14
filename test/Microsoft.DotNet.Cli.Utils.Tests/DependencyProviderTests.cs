@@ -8,24 +8,21 @@ using Microsoft.Win32;
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
 #pragma warning disable CA1416
-    [TestClass]
     public class DependencyProviderTests
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false, "NET.CORE.SDK,v6.0", @"SOFTWARE\Classes\Installer\Dependencies\NET.CORE.SDK,v6.0\Dependents", "HKEY_CURRENT_USER")]
-        [DataRow(true, "NET.CORE.SDK,v6.0", @"SOFTWARE\Classes\Installer\Dependencies\NET.CORE.SDK,v6.0\Dependents", "HKEY_LOCAL_MACHINE")]
+        [WindowsOnlyTheory]
+        [InlineData(false, "NET.CORE.SDK,v6.0", @"SOFTWARE\Classes\Installer\Dependencies\NET.CORE.SDK,v6.0\Dependents", "HKEY_CURRENT_USER")]
+        [InlineData(true, "NET.CORE.SDK,v6.0", @"SOFTWARE\Classes\Installer\Dependencies\NET.CORE.SDK,v6.0\Dependents", "HKEY_LOCAL_MACHINE")]
         public void ProviderProperties(bool allUsers, string providerKeyName, string expectedDependentsKeyPath, string expectedBaseKeyName)
         {
             DependencyProvider dep = new(providerKeyName, allUsers);
 
-            Assert.AreEqual(expectedDependentsKeyPath, dep.DependentsKeyPath);
-            Assert.AreEqual(expectedBaseKeyName, dep.BaseKey.Name);
-            Assert.AreEqual(providerKeyName, dep.ProviderKeyName);
+            Assert.Equal(expectedDependentsKeyPath, dep.DependentsKeyPath);
+            Assert.Equal(expectedBaseKeyName, dep.BaseKey.Name);
+            Assert.Equal(providerKeyName, dep.ProviderKeyName);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItCanAddDependents()
         {
             // We cannot create per-machine entries unless the tests run elevated. The results are the
@@ -35,12 +32,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             try
             {
                 // We should not have any dependents
-                Assert.IsEmpty(dep.Dependents);
+                Assert.Empty(dep.Dependents);
 
                 dep.AddDependent("Microsoft.NET.SDK,v6.0.100");
 
-                Assert.ContainsSingle(dep.Dependents);
-                Assert.AreEqual("Microsoft.NET.SDK,v6.0.100", dep.Dependents.First());
+                Assert.Single(dep.Dependents);
+                Assert.Equal("Microsoft.NET.SDK,v6.0.100", dep.Dependents.First());
             }
             finally
             {
@@ -48,8 +45,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItCanFindVisualStudioDependents()
         {
             DependencyProvider dep = new(".NET_SDK_TEST_PROVIDER_KEY", allUsers: false);
@@ -57,12 +53,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             try
             {
                 // We should not have any dependents
-                Assert.IsEmpty(dep.Dependents);
+                Assert.Empty(dep.Dependents);
 
                 // Write the VS dependents key
                 dep.AddDependent(DependencyProvider.VisualStudioDependentKeyName);
 
-                Assert.IsTrue(dep.HasVisualStudioDependency);
+                Assert.True(dep.HasVisualStudioDependency);
             }
             finally
             {
@@ -70,8 +66,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItWillNotRemoveTheProviderIfOtherDependentsExist()
         {
             DependencyProvider dep = new(".NET_SDK_TEST_PROVIDER_KEY", allUsers: false);
@@ -82,11 +77,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 dep.AddDependent(DependencyProvider.VisualStudioDependentKeyName);
                 dep.AddDependent("Microsoft.NET.SDK,v6.0.100");
 
-                Assert.HasCount(2, dep.Dependents);
+                Assert.Equal(2, dep.Dependents.Count());
 
                 dep.RemoveDependent("Microsoft.NET.SDK,v6.0.100", removeProvider: true);
 
-                Assert.IsTrue(dep.HasVisualStudioDependency);
+                Assert.True(dep.HasVisualStudioDependency);
             }
             finally
             {
@@ -94,8 +89,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItReturnsNullIfProductCodeDoesNotExist()
         {
             string providerKeyName = "Microsoft.NET.Test.Pack";
@@ -104,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             try
             {
-                Assert.IsNull(dep.ProductCode);
+                Assert.Null(dep.ProductCode);
             }
             finally
             {
@@ -112,8 +106,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void ItCanRetrieveTheProductCodeFromTheProviderKey()
         {
             string providerKeyName = "Microsoft.NET.Test.Pack";
@@ -124,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             try
             {
-                Assert.AreEqual(productCode, dep.ProductCode);
+                Assert.Equal(productCode, dep.ProductCode);
             }
             finally
             {
@@ -135,7 +128,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         private void DeleteProviderKey(DependencyProvider dep)
         {
             using RegistryKey providerKey = dep.BaseKey.OpenSubKey(DependencyProvider.DependenciesKeyRelativePath, writable: true);
-            providerKey?.DeleteSubKeyTree(dep.ProviderKeyName, throwOnMissingSubKey: false);
+            providerKey?.DeleteSubKeyTree(dep.ProviderKeyName);
         }
     }
 #pragma warning restore CA1416

@@ -8,12 +8,14 @@ using Microsoft.NET.Build.Tests;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishANetCoreAppForTelemetry : SdkTest
     {
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public GivenThatWeWantToPublishANetCoreAppForTelemetry(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_collects_empty_Trimmer_SingleFile_ReadyToRun_Aot_publishing_properties(string targetFramework)
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
@@ -24,28 +26,26 @@ namespace Microsoft.NET.Publish.Tests
                 };
 
             var testProject = CreateTestProject(targetFramework, "PlainProject");
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_collects_Trimmer_SingleFile_ReadyToRun_publishing_properties(string targetFramework)
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
                 {
                     "--property:SelfContained=true",
-                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}",
-                    this.BinLogArgument(["targetFramework", targetFramework])
+                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
 
             var testProject = CreateTestProject(targetFramework, "TrimmedR2RSingleFileProject", true, true, true);
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testProjectInstance).WithWorkingDirectory(testProjectInstance.TestRoot);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testProjectInstance);
             string s = publishCommand.Execute(TelemetryTestLogger).StdOut;//.Should()
             s.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"True\",\"PublishSingleFile\":\"True\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
@@ -59,10 +59,9 @@ namespace Microsoft.NET.Publish.Tests
                 "\"CompileListCount\":\"[1-9]\\d?\"");  // Do not hardcode number of assemblies being compiled here, due to ILTrimmer
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
-        public void It_collects_crossgen2_publishing_properties(string targetFramework)
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        void It_collects_crossgen2_publishing_properties(string targetFramework)
         {
             // Crossgen2 only supported for Linux/Windows x64 scenarios for now
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64)
@@ -77,7 +76,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProject(targetFramework, "TrimmedR2RSingleFileProject", r2r: true);
             testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should()
                 .Contain(
@@ -90,9 +89,8 @@ namespace Microsoft.NET.Publish.Tests
                     "\"CompileListCount\":\"1\",\"FailedCount\":\"0\"");
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_collects_Aot_publishing_properties(string targetFramework)
         {
             // NativeAOT is only supported on Linux/Windows x64 scenarios for now
@@ -111,7 +109,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProject(targetFramework, "AotProject", aot: true);
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"true\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"True\",\"PublishProtocol\":\"null\"}");

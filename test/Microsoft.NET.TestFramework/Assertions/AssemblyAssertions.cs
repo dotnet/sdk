@@ -3,6 +3,7 @@
 
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using FluentAssertions;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {

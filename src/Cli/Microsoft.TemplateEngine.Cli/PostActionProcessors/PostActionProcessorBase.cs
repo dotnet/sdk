@@ -3,8 +3,7 @@
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
@@ -123,26 +122,26 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private static bool TryParseAsJson(string targetFiles, out IReadOnlyList<string> paths)
         {
             paths = new List<string>();
-            targetFiles.TryParse(out JsonNode? config);
+            targetFiles.TryParse(out JToken? config);
             if (config is null)
             {
                 return false;
             }
 
-            if (config.GetValueKind() == JsonValueKind.String)
+            if (config.Type == JTokenType.String)
             {
-                paths = config.GetValue<string>().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                paths = config.ToString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                 return true;
             }
 
-            if (config is not JsonArray arr)
+            if (config is not JArray arr)
             {
                 return false;
             }
 
             var parts = arr
-                .Where(token => token != null && token.GetValueKind() == JsonValueKind.String)
-                .Select(token => token!.GetValue<string>()).ToList();
+                .Where(token => token.Type == JTokenType.String)
+                .Select(token => token.ToString()).ToList();
 
             if (parts.Count == 0)
             {

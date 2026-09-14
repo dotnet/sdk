@@ -1,285 +1,172 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class EquatableFixerTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CodeFixForStructWithEqualsOverrideButNoIEquatableImplementationAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
 
-                struct {|CA1066:S|}
-                {
-                    public override bool Equals(object other)
-                    {
-                        return true;
-                    }
-
-                    public override int GetHashCode() => 0;
-                }
-                """, """
-    using System;
-
-    struct S : IEquatable<S>
+struct {|CA1066:S|}
+{
+    public override bool Equals(object other)
     {
-        public override bool Equals(object other)
-        {
-            return true;
-        }
-
-        public override int GetHashCode() => 0;
-
-        public bool Equals(S other)
-        {
-            throw new NotImplementedException();
-        }
+        return true;
     }
-    """);
+
+    public override int GetHashCode() => 0;
+}
+", @"
+using System;
+
+struct S : IEquatable<S>
+{
+    public override bool Equals(object other)
+    {
+        return true;
+    }
+
+    public override int GetHashCode() => 0;
+
+    public bool Equals(S other)
+    {
+        throw new NotImplementedException();
+    }
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CodeFixForStructWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
 
-                struct {|CA1067:S|} : IEquatable<S>
-                {
-                    public bool Equals(S other)
-                    {
-                        return true;
-                    }
-                }
-                """, """
-    using System;
-
-    struct S : IEquatable<S>
+struct {|CA1067:S|} : IEquatable<S>
+{
+    public bool Equals(S other)
     {
-        public bool Equals(S other)
-        {
-            return true;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is S && Equals((S)obj);
-        }
+        return true;
     }
-    """);
+}
+", @"
+using System;
+
+struct S : IEquatable<S>
+{
+    public bool Equals(S other)
+    {
+        return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is S && Equals((S)obj);
+    }
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CodeFixForClassWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
 
-                class {|CA1067:C|} : IEquatable<C>
-                {
-                    public bool Equals(C other)
-                    {
-                        return true;
-                    }
-                }
-                """, """
-    using System;
-
-    class C : IEquatable<C>
+class {|CA1067:C|} : IEquatable<C>
+{
+    public bool Equals(C other)
     {
-        public bool Equals(C other)
-        {
-            return true;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as C);
-        }
+        return true;
     }
-    """);
+}
+", @"
+using System;
+
+class C : IEquatable<C>
+{
+    public bool Equals(C other)
+    {
+        return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as C);
+    }
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CodeFixForClassWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
 
-                class {|CA1067:C|} : IEquatable<C>
-                {
-                    bool IEquatable<C>.Equals(C other)
-                    {
-                        return true;
-                    }
-                }
-                """, """
-    using System;
-
-    class C : IEquatable<C>
+class {|CA1067:C|} : IEquatable<C>
+{
+    bool IEquatable<C>.Equals(C other)
     {
-        bool IEquatable<C>.Equals(C other)
-        {
-            return true;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return ((IEquatable<C>)this).Equals(obj as C);
-        }
+        return true;
     }
-    """);
+}
+", @"
+using System;
+
+class C : IEquatable<C>
+{
+    bool IEquatable<C>.Equals(C other)
+    {
+        return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return ((IEquatable<C>)this).Equals(obj as C);
+    }
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CodeFixForStructWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
 
-                struct {|CA1067:S|} : IEquatable<S>
-                {
-                    bool IEquatable<S>.Equals(S other)
-                    {
-                        return true;
-                    }
-                }
-                """, """
-    using System;
-
-    struct S : IEquatable<S>
+struct {|CA1067:S|} : IEquatable<S>
+{
+    bool IEquatable<S>.Equals(S other)
     {
-        bool IEquatable<S>.Equals(S other)
-        {
-            return true;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is S && ((IEquatable<S>)this).Equals((S)obj);
-        }
+        return true;
     }
-    """);
-        }
+}
+", @"
+using System;
 
-        [TestMethod]
-        public async Task CSharp_NestedStructsMissingIEquatable_FixAllImplementsEquatableOnBothAsync()
-        {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
-
-                struct {|CA1066:Outer|}
-                {
-                    public override bool Equals(object other)
-                    {
-                        return true;
-                    }
-
-                    public override int GetHashCode() => 0;
-
-                    struct {|CA1066:Inner|}
-                    {
-                        public override bool Equals(object other)
-                        {
-                            return true;
-                        }
-
-                        public override int GetHashCode() => 0;
-                    }
-                }
-                """, """
-    using System;
-
-    struct Outer : IEquatable<Outer>
+struct S : IEquatable<S>
+{
+    bool IEquatable<S>.Equals(S other)
     {
-        public override bool Equals(object other)
-        {
-            return true;
-        }
-
-        public override int GetHashCode() => 0;
-
-        struct Inner : IEquatable<Inner>
-        {
-            public override bool Equals(object other)
-            {
-                return true;
-            }
-
-            public override int GetHashCode() => 0;
-
-            public bool Equals(Inner other)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public bool Equals(Outer other)
-        {
-            throw new NotImplementedException();
-        }
+        return true;
     }
-    """);
-        }
 
-        [TestMethod]
-        public async Task CSharp_NestedClassesMissingEqualsOverride_FixAllOverridesEqualsOnBothAsync()
-        {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System;
-
-                class {|CA1067:Outer|} : IEquatable<Outer>
-                {
-                    public bool Equals(Outer other)
-                    {
-                        return true;
-                    }
-
-                    class {|CA1067:Inner|} : IEquatable<Inner>
-                    {
-                        public bool Equals(Inner other)
-                        {
-                            return true;
-                        }
-                    }
-                }
-                """, """
-    using System;
-
-    class Outer : IEquatable<Outer>
+    public override bool Equals(object obj)
     {
-        public bool Equals(Outer other)
-        {
-            return true;
-        }
-
-        class Inner : IEquatable<Inner>
-        {
-            public bool Equals(Inner other)
-            {
-                return true;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as Inner);
-            }
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Outer);
-        }
+        return obj is S && ((IEquatable<S>)this).Equals((S)obj);
     }
-    """);
+}
+");
         }
     }
 }

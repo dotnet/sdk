@@ -33,26 +33,16 @@ internal interface IUpdateRequest : IRequest
 
 internal enum RequestType : byte
 {
-    SetEnvironmentVariables = 1,
-    ManagedCodeUpdate = 2,
-    StaticAssetUpdate = 3,
-    InitialUpdatesCompleted = 4,
+    ManagedCodeUpdate = 1,
+    StaticAssetUpdate = 2,
+    InitialUpdatesCompleted = 3,
 }
 
 internal enum ResponseType : byte
 {
     InitializationResponse = 1,
-    EnvironmentVariablesSet = 2,
-    UpdateResponse = 3,
-    HotReloadExceptionNotification = 4,
-}
-
-internal readonly struct SetEnvironmentVariablesResponse() : IResponse
-{
-    public ResponseType Type => ResponseType.EnvironmentVariablesSet;
-
-    public ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
-        => default;
+    UpdateResponse = 2,
+    HotReloadExceptionNotification = 3,
 }
 
 internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<RuntimeManagedCodeUpdate> updates, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest

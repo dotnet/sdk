@@ -5,16 +5,15 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class ProgramTests_HostArguments : DotNetWatchTestBase
+public class ProgramTests_HostArguments(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [TestMethod]
-    [DataRow(new[] { "--no-hot-reload", "--", "run", "args" }, "Argument Specified in Props,run,args")]
-    [DataRow(new[] { "--", "run", "args" }, "Argument Specified in Props,run,args")]
+    [Theory]
+    [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "Argument Specified in Props,run,args")]
+    [InlineData(new[] { "--", "run", "args" }, "Argument Specified in Props,run,args")]
     // if arguments specified on command line the ones from launch profile are ignored
-    [DataRow(new[] { "-lp", "P1", "--", "run", "args" },"Argument Specified in Props,run,args")]
+    [InlineData(new[] { "-lp", "P1", "--", "run", "args" },"Argument Specified in Props,run,args")]
     // arguments specified in build file override arguments in launch profile
-    [DataRow(new[] { "-lp", "P1" }, "Argument Specified in Props")]
+    [InlineData(new[] { "-lp", "P1" }, "Argument Specified in Props")]
     public async Task Arguments_HostArguments(string[] arguments, string expectedApplicationArgs)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppCustomHost", identifier: string.Join(",", arguments))

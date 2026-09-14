@@ -1,24 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using WorkloadSuggestionCandidate = Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadSuggestionFinder.WorkloadSuggestionCandidate;
 
 namespace ManifestReaderTests
 {
-    [TestClass]
     public class WorkloadSuggestionFinderTests : SdkTest
     {
         private const string fakeRootPath = "fakeRootPath";
         private readonly string ManifestPath;
 
-        public WorkloadSuggestionFinderTests()
+        public WorkloadSuggestionFinderTests(ITestOutputHelper log) : base(log)
         {
-            ManifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            ManifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanSuggestSimpleWorkload()
         {
             var manifestProvider = new FakeManifestProvider(ManifestPath);
@@ -36,7 +34,7 @@ namespace ManifestReaderTests
             suggestions!.First().Id.ToString().Should().Be("xamarin-android-build");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanSuggestTwoWorkloadsToFulfilTwoRequirements()
         {
             var manifestProvider = new FakeManifestProvider(ManifestPath);
@@ -61,7 +59,7 @@ namespace ManifestReaderTests
             suggestions!.Should().Contain(s => s.Id == "xamarin-android-build-x86");
         }
 
-        [TestMethod]
+        [Fact]
         public void CanSuggestWorkloadThatFulfillsTwoRequirements()
         {
             var manifestProvider = new FakeManifestProvider(ManifestPath);
@@ -85,8 +83,8 @@ namespace ManifestReaderTests
             suggestions!.First().Id.ToString().Should().Be("xamarin-android-complete");
         }
 
-        [TestMethod]
-        public void CanFindSimpleAndPartialSuggestions()
+        [Fact]
+        public static void CanFindSimpleAndPartialSuggestions()
         {
             var workloads = new (string workloadId, string[] packIds)[]
             {
@@ -111,18 +109,18 @@ namespace ManifestReaderTests
                 out List<WorkloadSuggestionCandidate> partialSuggestions,
                 out HashSet<WorkloadSuggestionCandidate> completeSimpleSuggestions);
 
-            Assert.HasCount(3, partialSuggestions);
-            partialSuggestions.Should().Contain(p => p.Workloads.Single().ToString() == "workload2");
-            partialSuggestions.Should().Contain(p => p.Workloads.Single().ToString() == "workload3");
-            partialSuggestions.Should().Contain(p => p.Workloads.Single().ToString() == "workload6");
+            Assert.Equal(3, partialSuggestions.Count);
+            Assert.Contains(partialSuggestions, p => p.Workloads.Single().ToString() == "workload2");
+            Assert.Contains(partialSuggestions, p => p.Workloads.Single().ToString() == "workload3");
+            Assert.Contains(partialSuggestions, p => p.Workloads.Single().ToString() == "workload6");
 
-            Assert.HasCount(2, completeSimpleSuggestions);
-            completeSimpleSuggestions.Should().Contain(p => p.Workloads.Single().ToString() == "workload4");
-            completeSimpleSuggestions.Should().Contain(p => p.Workloads.Single().ToString() == "workload5");
+            Assert.Equal(2, completeSimpleSuggestions.Count);
+            Assert.Contains(completeSimpleSuggestions, p => p.Workloads.Single().ToString() == "workload4");
+            Assert.Contains(completeSimpleSuggestions, p => p.Workloads.Single().ToString() == "workload5");
         }
 
-        [TestMethod]
-        public void SuggestionsArePermutedCorrectly()
+        [Fact]
+        public static void SuggestionsArePermutedCorrectly()
         {
             static HashSet<WorkloadPackId> ConstructPackHash(params string[] packIds)
                 => new(packIds.Select(id => new WorkloadPackId(id)));
@@ -145,7 +143,7 @@ namespace ManifestReaderTests
 
             var completeSuggestions = WorkloadSuggestionFinder.GatherUniqueCompletePermutedSuggestions(partialSuggestions);
 
-            Assert.HasCount(4, completeSuggestions);
+            Assert.Equal(4, completeSuggestions.Count);
 
             static int CountMatchingSuggestions(HashSet<WorkloadSuggestionCandidate> suggestions, params string[] workloadIds)
             {
@@ -163,14 +161,14 @@ namespace ManifestReaderTests
                 return found;
             }
 
-            Assert.AreEqual(1, CountMatchingSuggestions(completeSuggestions, "workload1", "workload3", "workload4"));
-            Assert.AreEqual(1, CountMatchingSuggestions(completeSuggestions, "workload1", "workload5"));
-            Assert.AreEqual(1, CountMatchingSuggestions(completeSuggestions, "workload2", "workload4"));
-            Assert.AreEqual(1, CountMatchingSuggestions(completeSuggestions, "workload2", "workload5"));
+            Assert.Equal(1, CountMatchingSuggestions(completeSuggestions, "workload1", "workload3", "workload4"));
+            Assert.Equal(1, CountMatchingSuggestions(completeSuggestions, "workload1", "workload5"));
+            Assert.Equal(1, CountMatchingSuggestions(completeSuggestions, "workload2", "workload4"));
+            Assert.Equal(1, CountMatchingSuggestions(completeSuggestions, "workload2", "workload5"));
         }
 
-        [TestMethod]
-        public void CanDetermineBestSuggestion()
+        [Fact]
+        public static void CanDetermineBestSuggestion()
         {
             static WorkloadSuggestionFinder.WorkloadSuggestion Suggestion(int extraPacks, params string[] workloadIds)
                 => new(new HashSet<WorkloadId>(workloadIds.Select(id => new WorkloadId(id))), extraPacks);
@@ -186,8 +184,8 @@ namespace ManifestReaderTests
 
             var best = WorkloadSuggestionFinder.GetBestSuggestion(suggestions);
 
-            Assert.AreEqual(0, best.ExtraPacks);
-            Assert.HasCount(2, best.Workloads);
+            Assert.Equal(0, best.ExtraPacks);
+            Assert.Equal(2, best.Workloads.Count);
             Assert.Contains(new WorkloadId("TheBest"), best.Workloads);
             Assert.Contains(new WorkloadId("Match"), best.Workloads);
         }

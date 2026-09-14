@@ -7,25 +7,24 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Restore.Test
 {
-    [TestClass]
     public class GivenThatIWantToRestoreApp : SdkTest
     {
-        public GivenThatIWantToRestoreApp()
+        public GivenThatIWantToRestoreApp(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItRestoresAppToSpecificDirectory(bool useStaticGraphEvaluation)
         {
-            var rootPath = TestAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
+            var rootPath = _testAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
 
             string dir = "pkgs";
             string fullPath = Path.GetFullPath(Path.Combine(rootPath, dir));
 
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(sln, identifier: useStaticGraphEvaluation.ToString())
                 .WithSource()
                 .Path;
@@ -43,11 +42,11 @@ namespace Microsoft.DotNet.Restore.Test
             Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
         }
 
-        [TestMethod]
-        [DataRow(true, ".csproj")]
-        [DataRow(false, ".csproj")]
-        [DataRow(true, ".fsproj")]
-        [DataRow(false, ".fsproj")]
+        [Theory]
+        [InlineData(true, ".csproj")]
+        [InlineData(false, ".csproj")]
+        [InlineData(true, ".fsproj")]
+        [InlineData(false, ".fsproj")]
         public void ItRestoresLibToSpecificDirectory(bool useStaticGraphEvaluation, string extension)
         {
             var testProject = new TestProject()
@@ -63,7 +62,7 @@ namespace Microsoft.DotNet.Restore.Test
                 testProject.PackageReferences.Add(new TestPackageReference("FSharp.Core", "6.0.1", updatePackageReference: true));
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: useStaticGraphEvaluation.ToString() + extension);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: useStaticGraphEvaluation.ToString() + extension);
 
             var rootPath = Path.Combine(testAsset.TestRoot, testProject.Name);
 
@@ -96,12 +95,12 @@ namespace Microsoft.DotNet.Restore.Test
             dllCount.Should().BeGreaterThan(0);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItRestoresTestAppToSpecificDirectory(bool useStaticGraphEvaluation)
         {
-            var rootPath = TestAssetsManager.CopyTestAsset("VSTestCore", identifier: useStaticGraphEvaluation.ToString())
+            var rootPath = _testAssetsManager.CopyTestAsset("VSTestCore", identifier: useStaticGraphEvaluation.ToString())
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
@@ -122,12 +121,12 @@ namespace Microsoft.DotNet.Restore.Test
             Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItRestoresWithTheSpecifiedVerbosity(bool useStaticGraphEvaluation)
         {
-            var rootPath = TestAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
+            var rootPath = _testAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
 
             string dir = "pkgs";
             string fullPath = Path.GetFullPath(Path.Combine(rootPath, dir));
@@ -151,10 +150,10 @@ namespace Microsoft.DotNet.Restore.Test
                  .And.NotHaveStdOut();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItAcceptsArgumentsAfterProperties()
         {
-            var rootPath = TestAssetsManager.CreateTestDirectory().Path;
+            var rootPath = _testAssetsManager.CreateTestDirectory().Path;
 
             string[] newArgs = new[] { "console", "-o", rootPath, "--no-restore" };
             new DotnetNewCommand(Log)
@@ -175,13 +174,13 @@ namespace Microsoft.DotNet.Restore.Test
         /// <summary>
         /// Tests for RID-specific restore options: -r/--runtime, --os, and -a/--arch
         /// </summary>
-        [TestMethod]
-        [DataRow("-r", "linux-x64")]
-        [DataRow("--runtime", "win-x64")]
-        [DataRow("--os", "linux")]
-        [DataRow("-a", "arm64")]
-        [DataRow("--arch", "x64")]
-        [DataRow("--os", "linux", "-a", "arm64")]
+        [Theory]
+        [InlineData("-r", "linux-x64")]
+        [InlineData("--runtime", "win-x64")]
+        [InlineData("--os", "linux")]
+        [InlineData("-a", "arm64")]
+        [InlineData("--arch", "x64")]
+        [InlineData("--os", "linux", "-a", "arm64")]
         public void ItRestoresWithRidSpecificOptions(params string[] ridOptions)
         {
             // Skip test for #24251
@@ -193,7 +192,7 @@ namespace Microsoft.DotNet.Restore.Test
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: string.Join("_", ridOptions));
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: string.Join("_", ridOptions));
             
             var rootPath = Path.Combine(testAsset.TestRoot, testProject.Name);
 

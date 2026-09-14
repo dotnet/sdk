@@ -5,12 +5,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
     public partial class DotnetNewSearchTests
     {
-        [TestMethod]
-        [DataRow("--search")]
-        [DataRow("search")]
+        [Theory]
+        [InlineData("--search")]
+        [InlineData("search")]
         public Task CannotExecuteEmptyCriteria(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase)
@@ -24,7 +23,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");

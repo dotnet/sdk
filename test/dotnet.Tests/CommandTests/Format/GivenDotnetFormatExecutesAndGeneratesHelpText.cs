@@ -3,14 +3,13 @@
 
 namespace Microsoft.DotNet.Cli.Format.Tests
 {
-    [TestClass]
     public class GivenDotnetFormatExecutesAndGeneratesHelpText : SdkTest
     {
-        public GivenDotnetFormatExecutesAndGeneratesHelpText()
+        public GivenDotnetFormatExecutesAndGeneratesHelpText(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRuns()
         {
             new DotnetCommand(Log, "format")

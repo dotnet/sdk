@@ -1,20 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using SharedTestOutputHelper = Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public class TemplateDiscoveryTool : IDisposable
     {
         private readonly string dotnetNewTestExecutionDir;
-        private readonly ITestOutputHelper testOutputHelper;
+        private readonly SharedTestOutputHelper testOutputHelper;
 
-        public TemplateDiscoveryTool(ITestOutputHelper log)
+        public TemplateDiscoveryTool(IMessageSink messageSink)
         {
-            testOutputHelper = log;
+            testOutputHelper = new SharedTestOutputHelper(messageSink);
             string home = Utilities.CreateTemporaryFolder("home");
-            dotnetNewTestExecutionDir = Utilities.CreateTemporaryFolder(nameof(TemplateDiscoveryTool));
+            dotnetNewTestExecutionDir = Utilities.GetTestExecutionTempFolder();
             string toolManifestPath = Path.Combine(dotnetNewTestExecutionDir, "dotnet-tools.json");
             if (!File.Exists(toolManifestPath))
             {
@@ -54,10 +54,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         public void Dispose()
         {
-            if (!PathUtility.TryDeleteDirectory(dotnetNewTestExecutionDir))
-            {
-                testOutputHelper.WriteLine($"Failed to delete temporary directory '{dotnetNewTestExecutionDir}'.");
-            }
         }
     }
 }

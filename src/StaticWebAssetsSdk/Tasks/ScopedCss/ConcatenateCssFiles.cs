@@ -10,8 +10,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class ConcatenateCssFiles : Task, IMultiThreadableTask
+public class ConcatenateCssFiles : Task
 {
     private static readonly char[] _separator = ['/'];
 
@@ -29,8 +28,6 @@ public class ConcatenateCssFiles : Task, IMultiThreadableTask
 
     [Required]
     public string OutputFile { get; set; }
-
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     public override bool Execute()
     {
@@ -87,7 +84,7 @@ public class ConcatenateCssFiles : Task, IMultiThreadableTask
 #else
             builder.AppendLine(CultureInfo.InvariantCulture, $"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
 #endif
-            foreach (var line in File.ReadLines(TaskEnvironment.GetAbsolutePath(current.ItemSpec)))
+            foreach (var line in File.ReadLines(current.GetMetadata("FullPath")))
             {
                 builder.AppendLine(line);
             }
@@ -95,11 +92,10 @@ public class ConcatenateCssFiles : Task, IMultiThreadableTask
 
         var content = builder.ToString();
 
-        string outputFile = string.IsNullOrWhiteSpace(OutputFile) ? OutputFile : TaskEnvironment.GetAbsolutePath(OutputFile);
-        if (!File.Exists(outputFile) || !SameContent(content, outputFile))
+        if (!File.Exists(OutputFile) || !SameContent(content, OutputFile))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
-            File.WriteAllText(outputFile, content);
+            Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+            File.WriteAllText(OutputFile, content);
         }
 
         return !Log.HasLoggedErrors;

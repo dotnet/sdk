@@ -13,14 +13,13 @@ namespace Microsoft.NET.Build.Tasks
     /// package, the PackageDownload items can have a semicolon-separated list of versions (each in brackets) as the Version metadata.
     /// So this task groups a list of items with Version metadata into a list of items which can be used as PackageDownloads.
     /// </summary>
-    [MSBuildMultiThreadableTask]
     public class CollatePackageDownloads : TaskBase
     {
         [Required]
         public ITaskItem[] Packages { get; set; }
         
         [Output]
-        public ITaskItem[] PackageDownloads { get; set; }
+        public ITaskItem [] PackageDownloads { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -29,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var packageDownloadItem = new TaskItem(g.Key);
                     packageDownloadItem.SetMetadata("Version", string.Join(";",
-                        g.Select(p => "[" + p.GetMetadata("Version").Trim('[', ']') + "]")));
+                        g.Select(p => "[" + p.GetMetadata("Version") + "]")));
                     return packageDownloadItem;
                 }).ToArray();
         }

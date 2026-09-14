@@ -10,10 +10,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 /// <summary>
 /// Integration tests for device selection in dotnet run
 /// </summary>
-[TestClass]
 public class GivenDotnetRunSelectsDevice : SdkTest
 {
-    public GivenDotnetRunSelectsDevice()
+    public GivenDotnetRunSelectsDevice(ITestOutputHelper log) : base(log)
     {
     }
 
@@ -29,10 +28,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         assertion(targets);
     }
 
-    [TestMethod]
+    [Fact]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -44,10 +43,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItListsDevicesForSpecifiedFramework()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -60,12 +59,12 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("Emulator");
     }
 
-    [TestMethod]
-    [DataRow("test-device-1")]
-    [DataRow("test-device-2")]
+    [Theory]
+    [InlineData("test-device-1")]
+    [InlineData("test-device-2")]
     public void ItRunsDifferentDevicesInMultiTargetedApp(string deviceId)
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         new DotnetCommand(Log, "run")
@@ -75,10 +74,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"Device: {deviceId}");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItShowsErrorMessageWithAvailableDevices_InNonInteractiveMode()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -92,10 +91,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining("test-device-2");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset(
+        var testInstance = _testAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -110,10 +109,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("This string came from the test library!");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItTreatsEmptyDeviceSpecificationAsNotSpecified()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -125,10 +124,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItWorksWithDevicePropertySyntax()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -139,10 +138,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"Device: {deviceId}");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItWorksWithDeviceWithoutRuntimeIdentifier()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-2";
@@ -154,12 +153,12 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("RuntimeIdentifier:");
     }
 
-    [TestMethod]
-    [DataRow(true)]  // interactive
-    [DataRow(false)] // non-interactive
+    [Theory]
+    [InlineData(true)]  // interactive
+    [InlineData(false)] // non-interactive
     public void ItAutoSelectsSingleDeviceWithoutPrompting(bool interactive)
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -186,10 +185,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should run to discover available devices"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItCreatesBinlogWhenRequestedForDeviceSelection()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         // When /bl:device-list.binlog is specified, the verb "dotnet-run" is appended
@@ -208,10 +207,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should have been executed"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItFailsWhenNoDevicesAreAvailable()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -223,13 +222,13 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
     }
 
-    [TestMethod]
-    [DataRow("--device")]
-    [DataRow("-p:Device=")]
+    [Theory]
+    [InlineData("--device")]
+    [InlineData("-p:Device=")]
     public void ItDoesNotRunComputeAvailableDevicesWhenDeviceIsPreSpecified(string deviceArgPrefix)
     {
         string deviceId = "test-device-2";
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -260,10 +259,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().BeEmpty("ComputeAvailableDevices target should not have been executed when device is pre-specified"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItPromptsForTargetFrameworkEvenWhenDeviceIsSpecified()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -280,10 +279,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining("Your project targets multiple frameworks. Specify which framework to run using '--framework'");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsSpecified()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -310,10 +309,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             });
     }
 
-    [TestMethod]
+    [Fact]
     public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -341,10 +340,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed even with --no-build"));
     }
 
-    [TestMethod]
+    [Fact]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsAutoSelected()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -375,27 +374,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             });
     }
 
-    [TestMethod]
-    public void ItSetsDotnetHostPathForDirectDeviceTargets()
-    {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "DotnetHostPath")
-            .WithSource();
-
-        var command = new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(testInstance.Path);
-        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
-
-        command.Execute(
-            "--framework",
-            ToolsetInfo.CurrentTargetFramework,
-            "-p:SingleDevice=true")
-            .Should().Pass();
-    }
-
-    [TestMethod]
+    [Fact]
     public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -411,10 +393,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"RuntimeIdentifier: {rid}");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItPassesEnvironmentVariablesToTargets()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -475,10 +457,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         File.Exists(tempPropsFile).Should().BeFalse("the temporary props file should be deleted after build");
     }
 
-    [TestMethod]
+    [Fact]
     public void ItDoesNotPassEnvironmentVariablesToTargetsWithoutOptIn()
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -536,33 +518,9 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             });
 
         // Verify no props file was created (since opt-in is false)
+        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
         var build = BinaryLog.ReadBuild(buildBinlogPath);
         var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
         propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
-    }
-
-    [TestMethod]
-    public void ItHonorsRuntimeEnvironmentVariableChangesFromTargetsWhenRunningApp()
-    {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarRunHonored")
-            .WithSource();
-
-        string deviceId = "test-device-1";
-
-        // A target (_ModifyRuntimeEnvironmentVariable) changes RUNE_FOO and injects RUNE_INJECTED
-        // before ComputeRunArguments. The launched app should observe those changes.
-        var result = new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
-                     "-e", "RUNE_FOO=original",
-                     "-p:ModifyRuntimeEnvironmentVariable=true");
-
-        result.Should().Pass()
-            // The value changed by the target wins over the original -e value.
-            .And.HaveStdOutContaining("EnvVar: RUNE_FOO=modified-by-target")
-            // A variable added by the target is passed to the app.
-            .And.HaveStdOutContaining("EnvVar: RUNE_INJECTED=injected-by-target");
-
-        result.Should().NotHaveStdOutContaining("EnvVar: RUNE_FOO=original");
     }
 }

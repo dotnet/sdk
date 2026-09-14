@@ -20,7 +20,6 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    [TestClass]
     public class ToolInstallLocalCommandTests : SdkTest
     {
         private readonly IFileSystem _fileSystem;
@@ -39,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
 
-        public ToolInstallLocalCommandTests()
+        public ToolInstallLocalCommandTests(ITestOutputHelper log) : base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageNewVersionA = NuGetVersion.Parse("2.0.0");
@@ -92,7 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")),
                     1);
         }
-        [TestMethod]
+        [Fact]
         public void WhenPassingRestoreActionConfigOptions()
         {
             var parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
@@ -117,7 +116,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -127,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenCreateManifestIfNeededWithoutArgumentTheDefaultIsTrueForLegacyBehavior()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -146,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallLocalCommand.Execute().Should().Be(0);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -169,7 +168,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithExplicitManifestFileItShouldAddEntryToExplicitManifestFile()
         {
             var explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
@@ -193,7 +192,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithRollForwardItShouldRollForwardToTrueInManifestFile()
         {
             ParseResult parseResult =
@@ -213,7 +212,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain("\"rollForward\": true");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithoutRollForwardItShouldDefaultRollForwardToFalseInManifestFile()
         {
             ParseResult parseResult =
@@ -233,7 +232,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain("\"rollForward\": false");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -246,7 +245,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -262,7 +261,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath).Green());
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
         {
             ParseResult result = Parser.Parse($"dotnet tool install non-exist");
@@ -284,7 +283,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(_jsonContent, "Manifest file should not be changed");
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenManifestFileConflictItShouldNotAddToCache()
         {
             _toolManifestEditor.Add(
@@ -309,7 +308,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                                "But restore do not need to 'revert' since it just set in nuget global directory");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithExistingManifestInConfigDirectoryItShouldAddToExistingManifest()
         {
             // Test backward compatibility: ensure tools can be added to existing manifests in .config directories
@@ -349,7 +348,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
             ParseResult result = Parser.Parse(
@@ -367,7 +366,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Parse(
@@ -385,7 +384,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithPrereleaseAndPackageVersionItShouldSucceed()
         {
             ParseResult result =
@@ -415,7 +414,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInGit()
         {
             _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, ".git"));
@@ -439,7 +438,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestFileItUsesCreateManifestIfNeededByDefault()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -460,7 +459,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInSln()
         {
             _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, "test1.sln"));
@@ -484,7 +483,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInCurrentFolder()
         {
             _fileSystem.File.Delete(_manifestFilePath);

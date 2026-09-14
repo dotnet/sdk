@@ -13,10 +13,9 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
 {
-    [TestClass]
     public class ListTemplateResolverTests : BaseTest
     {
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_UniqueNameMatchesCorrectly))]
         public async Task TestGetTemplateResolutionResult_UniqueNameMatchesCorrectly()
         {
             IReadOnlyList<ITemplateInfo> templatesToSearch = new List<ITemplateInfo>()
@@ -29,16 +28,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console2"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
-            Assert.AreEqual("console2", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
-            Assert.AreEqual("Console.App2", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
-            Assert.HasCount(1, matchResult.UnambiguousTemplateGroup?.Templates!);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.NotNull(matchResult.UnambiguousTemplateGroup);
+            Assert.Equal("console2", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
+            Assert.Equal("Console.App2", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
+            Assert.Single(matchResult.UnambiguousTemplateGroup?.Templates!);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_ExactMatchOnShortNameMatchesCorrectly))]
         public async Task TestGetTemplateResolutionResult_ExactMatchOnShortNameMatchesCorrectly()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -51,16 +50,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
-            Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.IsNotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates).Single(t => t.Identity == "Console.App"));
-            Assert.IsNotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates).Single(t => t.Identity == "Console.App2"));
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
+            Assert.Equal(2, matchResult.TemplateGroupsWithMatchingTemplateInfo.Count());
+            Assert.NotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates).Single(t => t.Identity == "Console.App"));
+            Assert.NotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates).Single(t => t.Identity == "Console.App2"));
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_UnambiguousGroupIsFound))]
         public async Task TestGetTemplateResolutionResult_UnambiguousGroupIsFound()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -74,16 +73,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(3, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-            Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
-            Assert.HasCount(3, matchResult.UnambiguousTemplateGroup!.Templates);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Equal(3, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Count);
+            Assert.NotNull(matchResult.UnambiguousTemplateGroup);
+            Assert.Equal(3, matchResult.UnambiguousTemplateGroup?.Templates.Count);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_MultipleGroupsAreFound))]
         public async Task TestGetTemplateResolutionResult_MultipleGroupsAreFound()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -99,15 +98,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list c"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(5, matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates));
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Equal(2, matchResult.TemplateGroupsWithMatchingTemplateInfo.Count());
+            Assert.Equal(5, matchResult.TemplateGroupsWithMatchingTemplateInfo.SelectMany(group => group.Templates).Count());
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_DefaultLanguageDisambiguates))]
         public async Task TestGetTemplateResolutionResult_DefaultLanguageDisambiguates()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -120,17 +119,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-            Assert.IsNotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Single(t => t.Identity == "Console.App.L1"));
-            Assert.IsNotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Single(t => t.Identity == "Console.App.L2"));
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.NotNull(matchResult.UnambiguousTemplateGroup);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Equal(2, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Count);
+            Assert.NotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Single(t => t.Identity == "Console.App.L1"));
+            Assert.NotNull(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates.Single(t => t.Identity == "Console.App.L2"));
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_InputLanguageIsPreferredOverDefault))]
         public async Task TestGetTemplateResolutionResult_InputLanguageIsPreferredOverDefault()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -143,15 +142,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
-            Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfo!.Single().Templates);
-            Assert.HasCount(2, matchResult.UnambiguousTemplateGroup!.Templates);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.NotNull(matchResult.UnambiguousTemplateGroup);
+            Assert.Equal(2, matchResult.TemplateGroupsWithMatchingTemplateInfo?.Single().Templates.Count);
+            Assert.Equal(2, matchResult.UnambiguousTemplateGroup?.Templates.Count);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_PartialMatch_HasLanguageMismatch))]
         public async Task TestGetTemplateResolutionResult_PartialMatch_HasLanguageMismatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -166,19 +165,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsTrue(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.True(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_PartialMatch_HasContextMismatch))]
         public async Task TestGetTemplateResolutionResult_PartialMatch_HasContextMismatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -193,19 +192,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --type item"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsTrue(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.True(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_PartialMatch_HasBaselineMismatch))]
         public async Task TestGetTemplateResolutionResult_PartialMatch_HasBaselineMismatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -220,19 +219,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --baseline core"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsTrue(matchResult.HasBaselineMismatch);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.True(matchResult.HasBaselineMismatch);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_PartialMatch_HasMultipleMismatches))]
         public async Task TestGetTemplateResolutionResult_PartialMatch_HasMultipleMismatches()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -247,19 +246,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2 --type item --baseline core"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsTrue(matchResult.HasLanguageMismatch);
-            Assert.IsTrue(matchResult.HasTypeMismatch);
-            Assert.IsTrue(matchResult.HasBaselineMismatch);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.True(matchResult.HasLanguageMismatch);
+            Assert.True(matchResult.HasTypeMismatch);
+            Assert.True(matchResult.HasBaselineMismatch);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_NoMatch))]
         public async Task TestGetTemplateResolutionResult_NoMatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -274,20 +273,20 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list zzzzz --language L1 --type project --baseline app"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupMatches);
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.IsEmpty(matchResult.TemplateGroups);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.IsFalse(matchResult.HasClassificationMismatch);
-            Assert.IsNull(matchResult.UnambiguousTemplateGroup);
+            Assert.False(matchResult.HasTemplateGroupMatches);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Empty(matchResult.TemplateGroups);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasClassificationMismatch);
+            Assert.Null(matchResult.UnambiguousTemplateGroup);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_MatchByTags))]
         public async Task TestGetTemplateResolutionResult_MatchByTags()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -303,18 +302,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list --tag Common"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.IsFalse(matchResult.HasClassificationMismatch);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasClassificationMismatch);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_MatchByTagsIgnoredOnNameMatch))]
         public async Task TestGetTemplateResolutionResult_MatchByTagsIgnoredOnNameMatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -335,19 +334,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list Test"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.AreEqual("console1", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
-            Assert.AreEqual("Console.App.T1", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.Equal("console1", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
+            Assert.Equal("Console.App.T1", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_MatchByTagsIgnoredOnShortNameMatch))]
         public async Task TestGetTemplateResolutionResult_MatchByTagsIgnoredOnShortNameMatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -368,19 +367,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list Console"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
-            Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.AreEqual("console", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
-            Assert.AreEqual("Console.App.T1", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
+            Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.Equal("console", matchResult.UnambiguousTemplateGroup?.Templates.Single().ShortNameList.Single());
+            Assert.Equal("Console.App.T1", matchResult.UnambiguousTemplateGroup?.Templates.Single().Identity);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_MatchByTagsAndMismatchByOtherFilter))]
         public async Task TestGetTemplateResolutionResult_MatchByTagsAndMismatchByOtherFilter()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -396,25 +395,25 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list --language L2 --type item --tag Common"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsTrue(matchResult.HasLanguageMismatch);
-            Assert.IsTrue(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.True(matchResult.HasTemplateGroupMatches);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.True(matchResult.HasLanguageMismatch);
+            Assert.True(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
         }
 
-        [TestMethod]
-        [DataRow("TestAuthor", "Test", true)]
-        [DataRow("TestAuthor", "Other", false)]
-        [DataRow("TestAuthor", "TeST", true)]
-        [DataRow("TestAuthor", "Teşt", false)]
-        [DataRow("match_middle_test", "middle", true)]
-        [DataRow("input", "İnput", false)]
+        [Theory(DisplayName = nameof(TestGetTemplateResolutionResult_AuthorMatch))]
+        [InlineData("TestAuthor", "Test", true)]
+        [InlineData("TestAuthor", "Other", false)]
+        [InlineData("TestAuthor", "TeST", true)]
+        [InlineData("TestAuthor", "Teşt", false)]
+        [InlineData("match_middle_test", "middle", true)]
+        [InlineData("input", "İnput", false)]
         public async Task TestGetTemplateResolutionResult_AuthorMatch(string templateAuthor, string commandAuthor, bool matchExpected)
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -430,40 +429,40 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor($"new list console --author {commandAuthor}"),
                      defaultLanguage: null,
-                     TestContext.CancellationToken);
+                     default);
 
             if (matchExpected)
             {
-                Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-                Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-                Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-                Assert.IsFalse(matchResult.HasAuthorMismatch);
+                Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+                Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+                Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
+                Assert.False(matchResult.HasAuthorMismatch);
             }
             else
             {
-                Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-                Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-                Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-                Assert.HasCount(1, matchResult.TemplateGroups);
-                Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-                Assert.IsTrue(matchResult.HasAuthorMismatch);
+                Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+                Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+                Assert.True(matchResult.HasTemplateGroupMatches);
+                Assert.Single(matchResult.TemplateGroups);
+                Assert.Single(matchResult.TemplateGroups.Single().Templates);
+                Assert.True(matchResult.HasAuthorMismatch);
             }
 
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
         }
 
-        [TestMethod]
-        [DataRow("TestTag", "TestTag", true)]
-        [DataRow("Tag1||Tag2", "Tag1", true)]
-        [DataRow("Tag1||Tag2", "Tag", false)]
-        [DataRow("", "Tag", false)]
-        [DataRow("TestTag", "Other", false)]
-        [DataRow("TestTag", "TeSTTag", true)]
-        [DataRow("TestTag", "TeştTag", false)]
-        [DataRow("match_middle_test", "middle", false)]
-        [DataRow("input", "İnput", false)]
+        [Theory(DisplayName = nameof(TestGetTemplateResolutionResult_TagsMatch))]
+        [InlineData("TestTag", "TestTag", true)]
+        [InlineData("Tag1||Tag2", "Tag1", true)]
+        [InlineData("Tag1||Tag2", "Tag", false)]
+        [InlineData("", "Tag", false)]
+        [InlineData("TestTag", "Other", false)]
+        [InlineData("TestTag", "TeSTTag", true)]
+        [InlineData("TestTag", "TeştTag", false)]
+        [InlineData("match_middle_test", "middle", false)]
+        [InlineData("input", "İnput", false)]
         public async Task TestGetTemplateResolutionResult_TagsMatch(string templateTags, string commandTag, bool matchExpected)
         {
             const string separator = "||";
@@ -482,32 +481,32 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor($"new list console --tag {commandTag}"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
             if (matchExpected)
             {
-                Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-                Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
-                Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
-                Assert.IsFalse(matchResult.HasClassificationMismatch);
+                Assert.True(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+                Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+                Assert.Single(matchResult.TemplateGroupsWithMatchingTemplateInfo.Single().Templates);
+                Assert.False(matchResult.HasClassificationMismatch);
             }
             else
             {
-                Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-                Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-                Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-                Assert.HasCount(1, matchResult.TemplateGroups);
-                Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-                Assert.IsTrue(matchResult.HasClassificationMismatch);
+                Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+                Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+                Assert.True(matchResult.HasTemplateGroupMatches);
+                Assert.Single(matchResult.TemplateGroups);
+                Assert.Single(matchResult.TemplateGroups.Single().Templates);
+                Assert.True(matchResult.HasClassificationMismatch);
             }
 
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsFalse(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
-            Assert.IsFalse(matchResult.HasAuthorMismatch);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.False(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasAuthorMismatch);
         }
 
-        [TestMethod]
+        [Fact(DisplayName = nameof(TestGetTemplateResolutionResult_TemplateWithoutTypeShouldNotBeMatchedForContextFilter))]
         public async Task TestGetTemplateResolutionResult_TemplateWithoutTypeShouldNotBeMatchedForContextFilter()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -520,19 +519,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --type item"),
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
-            Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-            Assert.HasCount(1, matchResult.TemplateGroups);
-            Assert.HasCount(1, matchResult.TemplateGroups.Single().Templates);
-            Assert.IsFalse(matchResult.HasLanguageMismatch);
-            Assert.IsTrue(matchResult.HasTypeMismatch);
-            Assert.IsFalse(matchResult.HasBaselineMismatch);
+            Assert.False(matchResult.HasTemplateGroupWithTemplateInfoMatches);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfo);
+            Assert.True(matchResult.HasTemplateGroupMatches);
+            Assert.Single(matchResult.TemplateGroups);
+            Assert.Single(matchResult.TemplateGroups.Single().Templates);
+            Assert.False(matchResult.HasLanguageMismatch);
+            Assert.True(matchResult.HasTypeMismatch);
+            Assert.False(matchResult.HasBaselineMismatch);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestGetTemplateResolutionResult_ConstraintsMismatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -555,15 +554,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 args,
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.AreEqual(2, matchResult.ContraintsMismatchGroupCount);
-            Assert.IsEmpty(matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters);
-            Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-            Assert.HasCount(2, matchResult.TemplateGroups);
+            Assert.Equal(2, matchResult.ContraintsMismatchGroupCount);
+            Assert.Empty(matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters);
+            Assert.True(matchResult.HasTemplateGroupMatches);
+            Assert.Equal(2, matchResult.TemplateGroups.Count());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestGetTemplateResolutionResult_IgnoreConstraintsMismatch()
         {
             List<ITemplateInfo> templatesToSearch = new()
@@ -586,12 +585,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 args,
                 defaultLanguage: null,
-                TestContext.CancellationToken);
+                default);
 
-            Assert.AreEqual(0, matchResult.ContraintsMismatchGroupCount);
-            Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters);
-            Assert.IsTrue(matchResult.HasTemplateGroupMatches);
-            Assert.HasCount(2, matchResult.TemplateGroups);
+            Assert.Equal(0, matchResult.ContraintsMismatchGroupCount);
+            Assert.Equal(2, matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters.Count());
+            Assert.True(matchResult.HasTemplateGroupMatches);
+            Assert.Equal(2, matchResult.TemplateGroups.Count());
         }
 
         private static ListCommandArgs GetListCommandArgsFor(string commandInput)

@@ -63,7 +63,7 @@
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
     <SdkRootUrl>$(PublicBaseURL)Sdk/$(FullNugetVersion)</SdkRootUrl>
 
-    <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(TargetOS)' == 'windows'">true</IncludeWpfAndWinForms>
+    <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == ''">false</IncludeWpfAndWinForms>
   </PropertyGroup>
 
@@ -311,10 +311,9 @@
       </UrisToDownload>
     </ItemGroup>
 
-    <Microsoft.DotNet.Arcade.Sdk.DownloadFile
-      Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
-      Uris="@(UrisToDownload)"
-      DestinationPath="%(DownloadDestination)" />
+    <DownloadFile Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="%(DownloadDestination)" />
   </Target>
 
 </Project>

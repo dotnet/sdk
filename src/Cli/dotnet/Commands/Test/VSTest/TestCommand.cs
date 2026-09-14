@@ -520,48 +520,30 @@ public class TerminalLoggerDetector
         }
     }
 
-    internal static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
+    private static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
     {
-        // Two orderings matter here:
-        //   * Use exact name matching (not StartsWith) so that e.g. "-tlp:default=true" is not
-        //     incorrectly returned when searching for "tl".
-        //   * Check "--" before "-" so that if both "-tl" and "--tl" variants appear in the
-        //     same token list, the long form wins.
-        foreach (string prefix in new[] { "--", "-", "/" })
+        foreach (string prefix in new string[] { "-", "--", "/" })
         {
             foreach (var name in names)
             {
-                foreach (var token in unmatchedTokens)
+                var found = unmatchedTokens.FirstOrDefault(t => t.StartsWith(prefix + name, StringComparison.OrdinalIgnoreCase));
+                if (found != null)
                 {
-                    if (TryMatchExact(token, prefix, name, out string? value))
+                    var param = found.Substring(prefix.Length);
+                    if (!param.Contains(":"))
                     {
-                        return new Switch(name, value);
+                        return new Switch(param, null);
+                    }
+                    else
+                    {
+                        var parts = param.Split(":", 2);
+                        return new Switch(parts[0], parts[1]);
                     }
                 }
             }
         }
 
         return null;
-
-        static bool TryMatchExact(string token, string prefix, string name, out string? value)
-        {
-            value = null;
-            if (!token.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            var rest = token.AsSpan(prefix.Length);
-            int colonIndex = rest.IndexOf(':');
-            var tokenName = colonIndex < 0 ? rest : rest[..colonIndex];
-            if (!tokenName.Equals(name.AsSpan(), StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            value = colonIndex < 0 ? null : rest[(colonIndex + 1)..].ToString();
-            return true;
-        }
     }
 
     internal static class NativeMethods
@@ -709,7 +691,7 @@ public class TerminalLoggerDetector
             => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
-    internal record class Switch(string Name, string? Value);
+    private record class Switch(string Name, string? Value);
 }
 
 public enum TerminalLoggerMode

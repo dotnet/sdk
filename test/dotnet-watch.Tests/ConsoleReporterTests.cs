@@ -7,41 +7,40 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
 public class ConsoleReporterTests
 {
     private static readonly string EOL = Environment.NewLine;
 
-    [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void WritesToStandardStreams(bool suppressEmojis)
     {
         var testConsole = new TestConsole();
         var reporter = new ConsoleReporter(testConsole, "test prefix", suppressEmojis: suppressEmojis);
 
         reporter.Report(id: default, Emoji.Watch, LogLevel.Trace, "trace {0}");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} trace {{0}}" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "⌚")} trace {{0}}" + EOL, testConsole.GetError());
         testConsole.Clear();
 
         reporter.Report(id: default, Emoji.Watch, LogLevel.Debug, "verbose");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} verbose" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "⌚")} verbose" + EOL, testConsole.GetError());
         testConsole.Clear();
 
         reporter.Report(id: default, Emoji.Watch, LogLevel.Information, "out");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} out" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "⌚")} out" + EOL, testConsole.GetError());
         testConsole.Clear();
 
         reporter.Report(id: default, Emoji.Warning, LogLevel.Warning, "warn");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⚠")} warn" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "⚠")} warn" + EOL, testConsole.GetError());
         testConsole.Clear();
 
         reporter.Report(id: default, Emoji.Error, LogLevel.Error, "error");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
         testConsole.Clear();
 
         reporter.Report(id: default, Emoji.Error, LogLevel.Critical, "critical");
-        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "❌")} critical" + EOL, testConsole.GetError());
+        Assert.Equal($"test prefix {(suppressEmojis ? ":" : "❌")} critical" + EOL, testConsole.GetError());
         testConsole.Clear();
     }
 

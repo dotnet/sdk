@@ -7,13 +7,14 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions.Shells;
+using Xunit;
+using Xunit.Abstractions;
 
-[TestClass]
-public class ZshShellProviderTests : VerifyMSTest.VerifyBase
+public class ZshShellProviderTests(ITestOutputHelper log)
 {
     private IShellProvider _provider = new ZshShellProvider();
 
-    [TestMethod]
+    [Fact]
     public async Task GenericCompletions()
     {
         Command command = new Command("my-app") {
@@ -35,10 +36,10 @@ public class ZshShellProviderTests : VerifyMSTest.VerifyBase
                 new Command("test")
             }
         };
-        await _provider.Verify(command, TestContext);
+        await _provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task DynamicCompletionsGeneration()
     {
         var staticOption = new Option<int>("--static")
@@ -63,10 +64,10 @@ public class ZshShellProviderTests : VerifyMSTest.VerifyBase
             staticOption,
             dynamicArg
         };
-        await _provider.Verify(command, TestContext);
+        await _provider.Verify(command, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task CustomStaticCompletionsGeneration()
     {
         var staticOption = new Option<int>("--static");
@@ -85,6 +86,6 @@ public class ZshShellProviderTests : VerifyMSTest.VerifyBase
             staticOption,
             dynamicArg
         };
-        await _provider.Verify(command, TestContext);
+        await _provider.Verify(command, log);
     }
 }

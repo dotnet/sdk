@@ -1,16 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithSharedProject : SdkTest
     {
+        public GivenThatWeWantToBuildAnAppWithSharedProject(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_assign_link_metadata_to_items_from_shared_project()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithSharedProject")
                 .WithSource();
 
@@ -42,10 +44,10 @@ namespace Microsoft.NET.Build.Tests
                                                   link: Path.Combine("MyFolder", "TextFile1.txt")));
         }
 
-        [TestMethod]
+        [Fact]
         public void It_copies_items_from_shared_project_to_correct_output_folder()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithSharedProject")
                 .WithSource();
 

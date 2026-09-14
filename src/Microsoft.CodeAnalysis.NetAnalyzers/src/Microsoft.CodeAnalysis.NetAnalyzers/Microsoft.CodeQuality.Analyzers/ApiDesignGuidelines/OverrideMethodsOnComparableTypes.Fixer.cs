@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -8,100 +7,112 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class OverrideMethodsOnComparableTypesFixer : SyntaxEditorBasedCodeFixProvider
+    public sealed class OverrideMethodsOnComparableTypesFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OverrideMethodsOnComparableTypesAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            if (await GetTypeToFixAsync(context.Document, context.Span, context.CancellationToken).ConfigureAwait(false) is null)
+            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            SyntaxNode declaration = root.FindNode(context.Span);
+            declaration = generator.GetDeclaration(declaration);
+            if (declaration == null)
+            {
+                return;
+            }
+
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var typeSymbol = model.GetDeclaredSymbol(declaration, context.CancellationToken) as INamedTypeSymbol;
+            if (typeSymbol?.TypeKind is not TypeKind.Class and
+                not TypeKind.Struct)
             {
                 return;
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.ImplementComparable;
-            RegisterCodeFix(context, title, title);
+            context.RegisterCodeFix(
+                CodeAction.Create(title,
+                    async ct => await ImplementComparableAsync(context.Document, declaration, typeSymbol, ct).ConfigureAwait(false),
+                    equivalenceKey: title),
+                context.Diagnostics);
         }
 
-        private static async Task<INamedTypeSymbol?> GetTypeToFixAsync(Document document, TextSpan span, CancellationToken cancellationToken)
+        private static async Task<Document> ImplementComparableAsync(Document document, SyntaxNode declaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
         {
-            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(document);
-            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
-            SyntaxNode? declaration = generator.GetDeclaration(root.FindNode(span));
-            if (declaration is null)
-            {
-                return null;
-            }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            return model.GetDeclaredSymbol(declaration, cancellationToken) is INamedTypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } typeSymbol
-                ? typeSymbol
-                : null;
-        }
-
-        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SyntaxGenerator generator = editor.Generator;
-            SyntaxNode? declaration = generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
-            if (declaration is null)
-            {
-                return;
-            }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } typeSymbol)
-            {
-                return;
-            }
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var generator = editor.Generator;
 
             if (!typeSymbol.OverridesEquals())
             {
-                editor.AddMember(declaration, generator.DefaultEqualsOverrideDeclaration(model.Compilation, typeSymbol));
+                var equalsMethod = generator.DefaultEqualsOverrideDeclaration(editor.SemanticModel.Compilation, typeSymbol);
+
+                editor.AddMember(declaration, equalsMethod);
             }
 
             if (!typeSymbol.OverridesGetHashCode())
             {
-                editor.AddMember(declaration, generator.DefaultGetHashCodeOverrideDeclaration(model.Compilation));
+                var getHashCodeMethod = generator.DefaultGetHashCodeOverrideDeclaration(editor.SemanticModel.Compilation);
+
+                editor.AddMember(declaration, getHashCodeMethod);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.EqualityOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorEqualityDeclaration(typeSymbol));
+                var equalityOperator = generator.DefaultOperatorEqualityDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, equalityOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.InequalityOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorInequalityDeclaration(typeSymbol));
+                var inequalityOperator = generator.DefaultOperatorInequalityDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, inequalityOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.LessThanOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorLessThanDeclaration(typeSymbol));
+                var lessThanOperator = generator.DefaultOperatorLessThanDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, lessThanOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.LessThanOrEqualOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorLessThanOrEqualDeclaration(typeSymbol));
+                var lessThanOrEqualOperator = generator.DefaultOperatorLessThanOrEqualDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, lessThanOrEqualOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.GreaterThanOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorGreaterThanDeclaration(typeSymbol));
+                var greaterThanOperator = generator.DefaultOperatorGreaterThanDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, greaterThanOperator);
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.GreaterThanOrEqualOperatorName))
             {
-                editor.AddMember(declaration, generator.DefaultOperatorGreaterThanOrEqualDeclaration(typeSymbol));
+                var greaterThanOrEqualOperator = generator.DefaultOperatorGreaterThanOrEqualDeclaration(typeSymbol);
+
+                editor.AddMember(declaration, greaterThanOrEqualOperator);
             }
+
+            return editor.GetChangedDocument();
+        }
+
+        public override FixAllProvider GetFixAllProvider()
+        {
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

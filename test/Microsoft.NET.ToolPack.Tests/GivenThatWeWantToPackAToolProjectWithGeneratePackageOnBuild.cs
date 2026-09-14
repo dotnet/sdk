@@ -9,14 +9,17 @@ using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPackAToolProjectWithGeneratePackageOnBuild : SdkTest
     {
 
         private const string AppName = "consoledemo";
+
+        public GivenThatWeWantToPackAToolProjectWithGeneratePackageOnBuild(ITestOutputHelper log) : base(log)
+        { }
+
         private TestAsset SetupAndRestoreTestAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = TestAssetsManager
+            TestAsset testAsset = _testAssetsManager
                 .CopyTestAsset("PortableToolWithP2P", callingMethod)
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -32,7 +35,7 @@ namespace Microsoft.NET.ToolPack.Tests
             return testAsset;
         }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_successfully()
         {
             TestAsset testAsset = SetupAndRestoreTestAsset();
@@ -46,7 +49,7 @@ namespace Microsoft.NET.ToolPack.Tests
                   .NotHaveStdOutContaining("There is a circular dependency");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_and_result_contains_dependencies_dll()
         {
             TestAsset testAsset = SetupAndRestoreTestAsset();
@@ -70,17 +73,16 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/10335")]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/10335")]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
         public void It_packs_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
 
-            TestAsset testAsset = TestAssetsManager
+            TestAsset testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: generatePackageOnBuild.ToString() + packAsTool.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

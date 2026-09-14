@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,17 +8,16 @@ using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class GivenThatDotNetRunsCommands : SdkTest
     {
-        public GivenThatDotNetRunsCommands()
+        public GivenThatDotNetRunsCommands(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void UnresolvedPlatformReferencesFailAsExpected()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
                             .WithSource();
 
             new RestoreCommand(testInstance)
@@ -34,9 +33,9 @@ namespace Microsoft.DotNet.Tests
                     .And.HaveStdOutContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-crash"));
         }
 
-        [TestMethod]
-        [DataRow("")]
-        [DataRow(null)]
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
         public void GivenAMissingHomeVariableItExecutesHelpCommandSuccessfully(string value)
         {
             new DotnetCommand(Log)
@@ -49,10 +48,10 @@ namespace Microsoft.DotNet.Tests
                 .HaveStdOutContaining(LocalizableStrings.DotNetSdkInfo);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenASpecifiedDotnetCliHomeVariableItPrintsUsageMessage()
         {
-            var home = TestAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
+            var home = _testAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
 
             new DotnetCommand(Log)
                 .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, home)

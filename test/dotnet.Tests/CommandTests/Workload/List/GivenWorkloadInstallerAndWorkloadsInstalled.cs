@@ -17,7 +17,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
-    [TestClass]
     public class GivenInstalledWorkloadAndManifestUpdater : SdkTest
     {
         private const string CurrentSdkVersion = "6.0.101";
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         private MockNuGetPackageDownloader _nugetDownloader;
         private string _dotnetRoot;
 
-        public GivenInstalledWorkloadAndManifestUpdater()
+        public GivenInstalledWorkloadAndManifestUpdater(ITestOutputHelper log) : base(log)
         {
         }
 
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
         private void Setup([CallerMemberName] string identifier = "")
         {
-            _testDirectory = TestAssetsManager.CreateTestDirectory(identifier: identifier).Path;
+            _testDirectory = _testAssetsManager.CreateTestDirectory(identifier: identifier).Path;
             _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             _nugetDownloader = new(_dotnetRoot);
             var currentSdkFeatureBand = new SdkFeatureBand(CurrentSdkVersion);
@@ -123,7 +122,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 workloadResolver: workloadResolver);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldGetAvailableUpdate()
         {
             Setup();
@@ -137,7 +136,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             result[0].Description.Should().Be(XamarinAndroidDescription);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldGetListOfWorkloadWithCurrentSdkVersionBand()
         {
             Setup();
@@ -145,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter.Lines.Should().Contain(c => c.Contains("\"installed\":[\"xamarin-android\"]"));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenLowerTargetVersionItShouldThrow()
         {
             _workloadListCommand = new WorkloadListCommand(
@@ -165,7 +164,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             a.Should().Throw<ArgumentException>();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenSameLowerTargetVersionBandItShouldNotThrow()
         {
             _workloadListCommand = new WorkloadListCommand(

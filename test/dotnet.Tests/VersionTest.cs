@@ -8,14 +8,13 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class GivenDotnetSdk : SdkTest
     {
-        public GivenDotnetSdk()
+        public GivenDotnetSdk(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void VersionCommandDisplaysCorrectVersion()
         {
             var assemblyMetadata = typeof(GivenDotnetSdk).Assembly
@@ -32,7 +31,7 @@ namespace Microsoft.DotNet.Tests
             result.StdOut.Trim().Should().Be(expectedVersion);
         }
 
-        [TestMethod]
+        [Fact]
         public void VersionIsNotDisplayedFollowingUnrecognizedCommand()
         {
             var result = new DotnetCommand(Log)

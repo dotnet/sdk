@@ -6,42 +6,42 @@
 namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
+using Xunit;
+using Xunit.Abstractions;
 
-[TestClass]
-public class BashShellProviderTests : VerifyMSTest.VerifyBase
+public class BashShellProviderTests(ITestOutputHelper log)
 {
     private IShellProvider provider = new BashShellProvider();
-
-    [TestMethod]
+    [Fact]
     public async Task GenericCompletions()
     {
-        await provider.Verify(new("mycommand"), TestContext);
+        await provider.Verify(new("mycommand"), log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SimpleOptionCompletion()
     {
         await provider.Verify(new("mycommand") {
             new Option<string>("--name")
-        }, TestContext);
+        }, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task SubcommandAndOptionInTopLevelList()
     {
         await provider.Verify(new("mycommand") {
                 new Option<string>("--name"),
                 new Command("subcommand")
-            }, TestContext);
+            }, log);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task NestedSubcommandCompletion()
     {
         await provider.Verify(new("mycommand") {
             new Command("subcommand") {
                 new Command("nested")
             }
-        }, TestContext);
+        }, log);
     }
 }

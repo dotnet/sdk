@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseRegexMembers,
     Microsoft.NetCore.Analyzers.Runtime.UseRegexMembersFixer>;
@@ -12,10 +12,9 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    [TestClass]
     public class UseRegexMembersTests
     {
-        [TestMethod]
+        [Fact]
         public async Task Regex_MatchToIsMatch_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync("""
@@ -118,7 +117,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Regex_MatchToIsMatch_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync("""
@@ -151,7 +150,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Regex_MatchesToCount_CSharpAsync()
         {
             await new VerifyCS.Test()
@@ -227,10 +226,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void Use(int count) {}
                 }
                 """
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NoDiagnostics_NoRegexCount_CSharpAsync()
         {
             await new VerifyCS.Test()
@@ -248,57 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         }
                     }
                     """
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod]
-        public async Task Regex_NestedMatchSuccess_FixAllRewritesBoth_CSharpAsync()
-        {
-            await VerifyCS.VerifyCodeFixAsync("""
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    bool M(Regex r)
-                    {
-                        return {|CA1874:r.Match({|CA1874:r.Match("input").Success|}.ToString()).Success|};
-                    }
-                }
-                """,
-                """
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    bool M(Regex r)
-                    {
-                        return r.IsMatch(r.IsMatch("input").ToString());
-                    }
-                }
-                """);
-        }
-
-        [TestMethod]
-        public async Task Regex_NestedMatchSuccess_FixAllRewritesBoth_BasicAsync()
-        {
-            await VerifyVB.VerifyCodeFixAsync("""
-                Imports System.Text.RegularExpressions
-
-                Class C
-                    Function M(r As Regex) As Boolean
-                        Return {|CA1874:r.Match({|CA1874:r.Match("input").Success|}.ToString()).Success|}
-                    End Function
-                End Class
-                """,
-                """
-                Imports System.Text.RegularExpressions
-
-                Class C
-                    Function M(r As Regex) As Boolean
-                        Return r.IsMatch(r.IsMatch("input").ToString())
-                    End Function
-                End Class
-                """);
+            }.RunAsync();
         }
     }
 }

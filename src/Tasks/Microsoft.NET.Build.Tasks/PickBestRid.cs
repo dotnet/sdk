@@ -9,10 +9,8 @@ namespace Microsoft.NET.Build.Tasks;
 /// <summary>
 /// This task uses the given RID graph in a given SDK to pick the best match from among a set of supported RIDs for the current RID
 /// </summary>
-[MSBuildMultiThreadableTask]
-public sealed class PickBestRid : TaskBase, IMultiThreadableTask
+public sealed class PickBestRid : TaskBase
 {
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
     /// <summary>
     /// The path to the RID graph to read
     /// </summary>
@@ -39,20 +37,13 @@ public sealed class PickBestRid : TaskBase, IMultiThreadableTask
 
     protected override void ExecuteCore()
     {
-        if (string.IsNullOrEmpty(RuntimeGraphPath))
+        if (!File.Exists(RuntimeGraphPath))
         {
             Log.LogError(Strings.RuntimeGraphFileDoesNotExist, RuntimeGraphPath);
             return;
         }
 
-        AbsolutePath runtimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
-        if (!File.Exists(runtimeGraphPath))
-        {
-            Log.LogError(Strings.RuntimeGraphFileDoesNotExist, RuntimeGraphPath);
-            return;
-        }
-
-        RuntimeGraph graph = new RuntimeGraphCache(this).GetRuntimeGraph(runtimeGraphPath);
+        RuntimeGraph graph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
         var bestRidForPlatform = NuGetUtils.GetBestMatchingRid(graph, TargetRid, SupportedRids, out bool wasInGraph);
 
         if (!wasInGraph || bestRidForPlatform == null)

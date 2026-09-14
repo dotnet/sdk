@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -10,18 +10,17 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
-    [TestClass]
     public class GivenDotnetListPackage : SdkTest
     {
-        public GivenDotnetListPackage()
+        public GivenDotnetListPackage(ITestOutputHelper output) : base(output)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShowsCoreOutputOnMinimalVerbosity()
         {
             var testAssetName = "NewtonSoftDependentProject";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -41,11 +40,11 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContaining("NewtonSoft.Json");
         }
 
-        [TestMethod]
+        [Fact]
         public void RequestedAndResolvedVersionsMatch()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
 
@@ -73,11 +72,11 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContainingIgnoreSpaces(packageName + packageVersion + packageVersion);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItListsAutoReferencedPackages()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource()
                 .WithProjectChanges(ChangeTargetFrameworkTo2_1);
@@ -106,11 +105,11 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRunOnSolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -131,11 +130,11 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContainingIgnoreSpaces("NewtonSoft.Json");
         }
 
-        [TestMethod]
+        [Fact]
         public void AssetsPathExistsButNotRestored()
         {
             var testAsset = "NewtonSoftDependentProject";
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -148,11 +147,11 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void RestoresAndLists()
         {
             var testAsset = "NewtonSoftDependentProject";
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -166,13 +165,13 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContaining("NewtonSoft.Json");
         }
 
-        [TestMethod]
+        [Fact]
         public void RestoresAndLists_FileBasedApp()
         {
             var packageId = "Newtonsoft.Json";
             var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
 
-            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "file.cs");
             File.WriteAllText(file, $"""
                 #:package {packageId}@{packageVersion}
@@ -187,7 +186,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContaining(packageVersion);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItListsTransitivePackage()
         {
             var testProject = new TestProject
@@ -225,7 +224,7 @@ class Program
             //  Disable package pruning so that there are still transitive dependencies to test the command
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 
             new RestoreCommand(testAsset)
@@ -251,21 +250,21 @@ class Program
                 .And.HaveStdOutContaining("System.IO.FileSystem");
         }
 
-        [TestMethod]
-        [DataRow("", "[net451]", null)]
-        [DataRow("", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
-        [DataRow($"--framework {ToolsetInfo.CurrentTargetFramework} --framework net451", "[net451]", null)]
-        [DataRow($"--framework {ToolsetInfo.CurrentTargetFramework} --framework net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
-        [DataRow($"--framework {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
-        [DataRow("--framework net451", "[net451]", "[netcoreapp3.0]")]
-        [DataRow($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", "[net451]", null)]
-        [DataRow($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
-        [DataRow($"-f {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
-        [DataRow("-f net451", "[net451]", "[netcoreapp3.0]")]
+        [Theory]
+        [InlineData("", "[net451]", null)]
+        [InlineData("", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
+        [InlineData($"--framework {ToolsetInfo.CurrentTargetFramework} --framework net451", "[net451]", null)]
+        [InlineData($"--framework {ToolsetInfo.CurrentTargetFramework} --framework net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
+        [InlineData($"--framework {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
+        [InlineData("--framework net451", "[net451]", "[netcoreapp3.0]")]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", "[net451]", null)]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
+        [InlineData("-f net451", "[net451]", "[netcoreapp3.0]")]
         public void ItListsValidFrameworks(string args, string shouldInclude, string shouldntInclude)
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName, identifier: args.GetHashCode().ToString() + shouldInclude)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -300,11 +299,11 @@ class Program
 
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotAcceptInvalidFramework()
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -321,12 +320,11 @@ class Program
                 .Fail();
         }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void ItListsFSharpProject()
         {
             var testAssetName = "FSharpTestAppSimple";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -345,43 +343,43 @@ class Program
                 .And.NotHaveStdErr();
         }
 
-        [TestMethod]
-        [DataRow(false, "--no-restore")]
-        [DataRow(false, "--vulnerable")]
-        [DataRow(false, "--no-restore", "--include-transitive")]
-        [DataRow(false, "--no-restore", "--include-prerelease")]
-        [DataRow(false, "--no-restore", "--deprecated")]
-        [DataRow(false, "--no-restore", "--outdated")]
-        [DataRow(false, "--no-restore", "--vulnerable")]
-        [DataRow(false, "--vulnerable", "--include-transitive")]
-        [DataRow(false, "--vulnerable", "--include-prerelease")]
-        [DataRow(false, "--deprecated", "--highest-minor")]
-        [DataRow(false, "--deprecated", "--highest-patch")]
-        [DataRow(false, "--outdated", "--include-prerelease")]
-        [DataRow(false, "--outdated", "--highest-minor")]
-        [DataRow(false, "--outdated", "--highest-patch")]
-        [DataRow(false, "--config")]
-        [DataRow(false, "--configfile")]
-        [DataRow(false, "--source")]
-        [DataRow(false, "-s")]
-        [DataRow(false, "--config", "--deprecated")]
-        [DataRow(false, "--configfile", "--deprecated")]
-        [DataRow(false, "--source", "--vulnerable")]
-        [DataRow(false, "-s", "--vulnerable")]
-        [DataRow(true, "--vulnerable", "--deprecated")]
-        [DataRow(true, "--vulnerable", "--outdated")]
-        [DataRow(true, "--deprecated", "--outdated")]
+        [Theory]
+        [InlineData(false, "--no-restore")]
+        [InlineData(false, "--vulnerable")]
+        [InlineData(false, "--no-restore", "--include-transitive")]
+        [InlineData(false, "--no-restore", "--include-prerelease")]
+        [InlineData(false, "--no-restore", "--deprecated")]
+        [InlineData(false, "--no-restore", "--outdated")]
+        [InlineData(false, "--no-restore", "--vulnerable")]
+        [InlineData(false, "--vulnerable", "--include-transitive")]
+        [InlineData(false, "--vulnerable", "--include-prerelease")]
+        [InlineData(false, "--deprecated", "--highest-minor")]
+        [InlineData(false, "--deprecated", "--highest-patch")]
+        [InlineData(false, "--outdated", "--include-prerelease")]
+        [InlineData(false, "--outdated", "--highest-minor")]
+        [InlineData(false, "--outdated", "--highest-patch")]
+        [InlineData(false, "--config")]
+        [InlineData(false, "--configfile")]
+        [InlineData(false, "--source")]
+        [InlineData(false, "-s")]
+        [InlineData(false, "--config", "--deprecated")]
+        [InlineData(false, "--configfile", "--deprecated")]
+        [InlineData(false, "--source", "--vulnerable")]
+        [InlineData(false, "-s", "--vulnerable")]
+        [InlineData(true, "--vulnerable", "--deprecated")]
+        [InlineData(true, "--vulnerable", "--outdated")]
+        [InlineData(true, "--deprecated", "--outdated")]
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
 
-            var command = Assert.IsExactInstanceOfType<ListPackageCommandDefinition>(parseResult.CommandResult.Command);
+            var command = Assert.IsType<ListPackageCommandDefinition>(parseResult.CommandResult.Command);
 
             Action checkRules = () => command.EnforceOptionRules(parseResult);
 
             if (throws)
             {
-                Assert.ThrowsExactly<GracefulException>(checkRules);
+                Assert.Throws<GracefulException>(checkRules);
             }
             else
             {
@@ -389,13 +387,12 @@ class Program
             }
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void ItRunsInCurrentDirectoryWithPoundInPath()
         {
             // Regression test for https://github.com/dotnet/sdk/issues/19654
             var testAssetName = "TestAppSimple";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName, "C#")
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -412,11 +409,11 @@ class Program
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRecognizesRelativePathsForAProject()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
 
@@ -435,11 +432,11 @@ class Program
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRecognizesRelativePathsForASolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
 
@@ -458,11 +455,11 @@ class Program
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRecognizesRelativePathsForASolutionFromSubFolder()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
 

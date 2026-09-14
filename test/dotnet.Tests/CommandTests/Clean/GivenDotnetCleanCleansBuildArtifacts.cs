@@ -3,18 +3,17 @@
 
 namespace Microsoft.DotNet.Cli.Clean.Tests
 {
-    [TestClass]
     public class GivenDotnetCleanCleansBuildArtifacts : SdkTest
     {
-        public GivenDotnetCleanCleansBuildArtifacts()
+        public GivenDotnetCleanCleansBuildArtifacts(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCleansAProjectBuiltWithRuntimeIdentifier()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)

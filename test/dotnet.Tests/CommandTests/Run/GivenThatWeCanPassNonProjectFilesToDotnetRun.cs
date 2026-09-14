@@ -5,17 +5,16 @@ using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
-    [TestClass]
     public class GivenThatWeCanPassNonProjectFilesToDotnetRun : SdkTest
     {
-        public GivenThatWeCanPassNonProjectFilesToDotnetRun()
+        public GivenThatWeCanPassNonProjectFilesToDotnetRun(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferences")
                 .WithSource()
                 .Path;

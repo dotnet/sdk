@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
@@ -6,9 +6,11 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildANetCoreAppAndPassingALogger : SdkTest
     {
+        public GivenThatWeWantToBuildANetCoreAppAndPassingALogger(ITestOutputHelper log) : base(log)
+        {
+        }
 
         private string CreateTargetFrameworkEvalTelemetryJson(
             string targetFrameworkVersion,
@@ -31,8 +33,7 @@ namespace Microsoft.NET.Build.Tests
             return $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{targetFrameworkVersion}\",\"RuntimeIdentifier\":\"{runtimeIdentifier}\",\"SelfContained\":\"{selfContained}\",\"UseApphost\":\"{useApphost}\",\"OutputType\":\"{outputType}\",\"UseArtifactsOutput\":\"{useArtifactsOutput}\",\"ArtifactsPathLocationType\":\"{artifactsPathLocationType}\",\"TargetPlatformIdentifier\":\"{targetPlatformIdentifier}\",\"UseMonoRuntime\":\"{useMonoRuntime}\",\"PublishAot\":\"{publishAot}\",\"PublishTrimmed\":\"{publishTrimmed}\",\"PublishSelfContained\":\"{publishSelfContained}\",\"PublishReadyToRun\":\"{publishReadyToRun}\",\"PublishReadyToRunComposite\":\"{publishReadyToRunComposite}\",\"PublishProtocol\":\"{publishProtocol}\",\"Configuration\":\"{Sha256Hasher.HashWithNormalizedCasing(configuration)}\"}}";
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
+        [CoreMSBuildOnlyFact]
         public void It_collects_TargetFramework_version_and_other_properties()
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -57,8 +58,7 @@ namespace Microsoft.NET.Build.Tests
                     $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
         }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
+        [CoreMSBuildOnlyFact]
         public void It_collects_multi_TargetFramework_version_and_other_properties()
         {
             string targetFramework = $"net46;{ToolsetInfo.CurrentTargetFramework}";
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

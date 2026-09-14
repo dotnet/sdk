@@ -1,57 +1,54 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseAccountSAS,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotUseAccountSASTests
     {
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            string microsoftWindowsAzureStorageCSharpSourceCode = """
+            string microsoftWindowsAzureStorageCSharpSourceCode = @"
+using System;
 
-                using System;
+namespace Microsoft.WindowsAzure.Storage
+{
+    public class CloudStorageAccount
+    {
+        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
+        {
+            return """";
+        }
 
-                namespace Microsoft.WindowsAzure.Storage
-                {
-                    public class CloudStorageAccount
-                    {
-                        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
-                        {
-                            return "";
-                        }
+        public void NormalMethod()
+        {
+        }
+    }
 
-                        public void NormalMethod()
-                        {
-                        }
-                    }
+    public sealed class SharedAccessAccountPolicy
+    {
+    }
+}
 
-                    public sealed class SharedAccessAccountPolicy
-                    {
-                    }
-                }
+namespace NormalNamespace
+{
+    public class CloudStorageAccount
+    {
+        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
+        {
+            return """";
+        }
+    }
 
-                namespace NormalNamespace
-                {
-                    public class CloudStorageAccount
-                    {
-                        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
-                        {
-                            return "";
-                        }
-                    }
-
-                    public sealed class SharedAccessAccountPolicy
-                    {
-                    }
-                }
-                """;
+    public sealed class SharedAccessAccountPolicy
+    {
+    }
+}";
             var csharpTest = new VerifyCS.Test
             {
                 TestState =
@@ -62,63 +59,59 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(CancellationToken.None);
+            await csharpTest.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
 
-                using System;
-                using Microsoft.WindowsAzure.Storage;
-
-                class TestClass
-                {
-                    public void TestMethod(SharedAccessAccountPolicy policy)
-                    {
-                        var cloudStorageAccount = new CloudStorageAccount();
-                        cloudStorageAccount.GetSharedAccessSignature(policy);
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod(SharedAccessAccountPolicy policy)
+    {
+        var cloudStorageAccount = new CloudStorageAccount();
+        cloudStorageAccount.GetSharedAccessSignature(policy);
+    }
+}",
             GetCSharpResultAt(10, 9));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestNormalMethodOfCloudStorageAccountNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System;
-                using Microsoft.WindowsAzure.Storage;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var cloudStorageAccount = new CloudStorageAccount();
-                        cloudStorageAccount.NormalMethod();
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        var cloudStorageAccount = new CloudStorageAccount();
+        cloudStorageAccount.NormalMethod();
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System;
-                using NormalNamespace;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using NormalNamespace;
 
-                class TestClass
-                {
-                    public void TestMethod(SharedAccessAccountPolicy policy)
-                    {
-                        var cloudStorageAccount = new CloudStorageAccount();
-                        cloudStorageAccount.GetSharedAccessSignature(policy);
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod(SharedAccessAccountPolicy policy)
+    {
+        var cloudStorageAccount = new CloudStorageAccount();
+        cloudStorageAccount.GetSharedAccessSignature(policy);
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

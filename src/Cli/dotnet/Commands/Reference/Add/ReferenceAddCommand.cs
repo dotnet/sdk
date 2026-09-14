@@ -8,7 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;

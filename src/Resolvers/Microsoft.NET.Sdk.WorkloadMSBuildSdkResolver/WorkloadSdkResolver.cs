@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -29,8 +29,6 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 
             public string? GlobalJsonPath { get; init; }
 
-            public string? UserProfileDir { get; init; }
-
             public CachingWorkloadResolver? WorkloadResolver { get; init; }
         }
 
@@ -52,26 +50,23 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                 var sdkVersion = Path.GetFileName(sdkDirectory);
 
                 var globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(GetGlobalJsonStartDir(resolverContext));
-                var userProfileDir = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
 
                 cachedState = new CachedState()
                 {
                     DotnetRootPath = dotnetRootPath,
                     SdkVersion = sdkVersion,
                     GlobalJsonPath = globalJsonPath,
-                    UserProfileDir = userProfileDir,
-                    //  Asked once per submission, not once per SDK reference: MSBuild re-applies
-                    //  the client environment to a reused process on every build.
-                    WorkloadResolver = CachingWorkloadResolver.GetShared(CachingWorkloadResolver.IsEnabled(), userProfileDir, globalJsonPath)
+                    WorkloadResolver = new CachingWorkloadResolver()
                 };
 
                 resolverContext.State = cachedState;
             }
 
+            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
             ResolutionResult? result = null;
             if (cachedState.DotnetRootPath is not null && cachedState.SdkVersion is not null)
             {
-                result = cachedState.WorkloadResolver?.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, cachedState.UserProfileDir, cachedState.GlobalJsonPath);
+                result = cachedState.WorkloadResolver?.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, userProfileDir, cachedState.GlobalJsonPath);
             }
 
             return result?.ToSdkResult(sdkReference, factory);
@@ -80,7 +75,8 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         private string? GetSdkDirectory(SdkResolverContext context)
         {
 #if NET
-            return SdkPaths.SdkDirectory;
+            var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
+            return sdkDirectory;
 
 #else
             string dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory();
@@ -121,3 +117,4 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         }
     }
 }
+

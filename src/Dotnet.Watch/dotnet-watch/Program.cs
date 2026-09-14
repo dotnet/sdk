@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
@@ -73,8 +72,7 @@ internal sealed class Program(
     private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, out int errorCode)
     {
         var reporter = new ConsoleReporter(console, environmentOptions.LogMessagePrefix, environmentOptions.SuppressEmojis);
-        var parserLogLevel = environmentOptions.CliContextVerbose ? LogLevel.Debug : LogLevel.Information;
-        var parsingLoggerFactory = new LoggerFactory(reporter, parserLogLevel);
+        var parsingLoggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? LogLevel.Information);
         var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
         if (options == null)
         {
@@ -82,7 +80,7 @@ internal sealed class Program(
             return null;
         }
 
-        var loggerFactory = new LoggerFactory(reporter, options.GlobalOptions.GetEffectiveLogLevel(environmentOptions));
+        var loggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel);
         return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
     }
 
@@ -158,7 +156,7 @@ internal sealed class Program(
             return false;
         }
 
-        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsForFileDiscovery, CommandLineOptions.ParserConfiguration);
+        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsWithoutBinLog, CommandLineOptions.ParserConfiguration);
         if (runParseResult.GetValue(runCommandDefinition.ApplicationArguments) is not [var firstArg, ..])
         {
             entryPointPath = null;

@@ -1,10 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 // Check if the log level exceeds the configured maximum threshold.
                 if (logLevel != LogLevelPassedAsParameter &&
-                    logLevel <= LogLevelCritical &&
+                    logLevel < LogLevelCritical &&
                     logLevel > ParseLogLevel(context.Options.GetStringOptionValue(EditorConfigOptionNames.MaxLogLevel, Rule, invocation.Syntax.SyntaxTree, context.Compilation)))
                 {
                     return;
@@ -90,9 +90,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // Check each argument if it is potentially expensive to evaluate and raise a diagnostic if it is.
                 foreach (var argument in invocation.Arguments.Skip(invocation.IsExtensionMethodAndHasNoInstance() ? 1 : 0))
                 {
-                    if (GetExpenseReason(argument.Value) is { } reason)
+                    if (IsPotentiallyExpensive(argument.Value))
                     {
-                        context.ReportDiagnostic(argument.CreateDiagnostic(Rule, reason));
+                        context.ReportDiagnostic(argument.CreateDiagnostic(Rule));
                     }
                 }
 
@@ -102,118 +102,95 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private static string? GetExpenseReason(IOperation? operation)
+        private static bool IsPotentiallyExpensive(IOperation? operation)
         {
             if (operation is null)
             {
-                return null;
+                return false;
             }
 
-            if (operation is ICollectionExpressionOperation)
+            if (ICollectionExpressionOperationWrapper.IsInstance(operation) ||
+                operation is IAnonymousObjectCreationOperation or IAwaitOperation or IWithOperation)
             {
-                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression;
-            }
-
-            if (operation is IAnonymousObjectCreationOperation)
-            {
-                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation;
-            }
-
-            if (operation is IAwaitOperation)
-            {
-                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression;
-            }
-
-            if (operation is IWithOperation)
-            {
-                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression;
+                return true;
             }
 
             if (operation is IInvocationOperation invocationOperation)
             {
-                return !IsTrivialInvocation(invocationOperation)
-                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation
-                    : null;
+                return !IsTrivialInvocation(invocationOperation);
             }
 
             if (operation is IObjectCreationOperation { Type.IsReferenceType: true })
             {
-                return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation;
+                return true;
             }
 
             if (operation is IArrayCreationOperation arrayCreationOperation)
             {
-                return !IsEmptyImplicitParamsArrayCreation(arrayCreationOperation)
-                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation
-                    : null;
+                return !IsEmptyImplicitParamsArrayCreation(arrayCreationOperation);
             }
 
             if (operation is IConversionOperation conversionOperation)
             {
-                return IsBoxing(conversionOperation)
-                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion
-                    : GetExpenseReason(conversionOperation.Operand);
+                return IsBoxing(conversionOperation) || IsPotentiallyExpensive(conversionOperation.Operand);
             }
 
             if (operation is IArrayElementReferenceOperation arrayElementReferenceOperation)
             {
-                return GetExpenseReason(arrayElementReferenceOperation.ArrayReference) ??
-                       arrayElementReferenceOperation.Indices.Select(GetExpenseReason).FirstOrDefault(r => r is not null);
+                return IsPotentiallyExpensive(arrayElementReferenceOperation.ArrayReference) ||
+                       arrayElementReferenceOperation.Indices.Any(IsPotentiallyExpensive);
             }
 
             if (operation is IBinaryOperation binaryOperation)
             {
-                return GetExpenseReason(binaryOperation.LeftOperand) ??
-                       GetExpenseReason(binaryOperation.RightOperand);
+                return IsPotentiallyExpensive(binaryOperation.LeftOperand) ||
+                       IsPotentiallyExpensive(binaryOperation.RightOperand);
             }
 
             if (operation is ICoalesceOperation coalesceOperation)
             {
-                return GetExpenseReason(coalesceOperation.Value) ??
-                       GetExpenseReason(coalesceOperation.WhenNull);
+                return IsPotentiallyExpensive(coalesceOperation.Value) ||
+                       IsPotentiallyExpensive(coalesceOperation.WhenNull);
             }
 
             if (operation is IConditionalAccessOperation conditionalAccessOperation)
             {
-                return GetExpenseReason(conditionalAccessOperation.WhenNotNull);
+                return IsPotentiallyExpensive(conditionalAccessOperation.WhenNotNull);
             }
 
             if (operation is IIncrementOrDecrementOperation incrementOrDecrementOperation)
             {
-                return GetExpenseReason(incrementOrDecrementOperation.Target);
+                return IsPotentiallyExpensive(incrementOrDecrementOperation.Target);
             }
 
             if (operation is IInterpolatedStringOperation interpolatedStringOperation)
             {
                 return interpolatedStringOperation.Parts.Any(p => p is
                     IInterpolationOperation { Expression.ConstantValue.HasValue: false } or
-                    IInterpolatedStringTextOperation { Text.ConstantValue.HasValue: false })
-                    ? MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation
-                    : null;
+                    IInterpolatedStringTextOperation { Text.ConstantValue.HasValue: false });
             }
 
             if (operation is IMemberReferenceOperation memberReferenceOperation)
             {
-                var instanceReason = GetExpenseReason(memberReferenceOperation.Instance);
-                if (instanceReason is not null)
+                if (IsPotentiallyExpensive(memberReferenceOperation.Instance))
                 {
-                    return instanceReason;
+                    return true;
                 }
 
                 if (memberReferenceOperation is IPropertyReferenceOperation propertyReferenceOperation)
                 {
                     // We assume simple property accesses are cheap. For properties with arguments (indexers),
                     // we do still need to validate the arguments.
-                    return propertyReferenceOperation.Arguments.Select(static a => GetExpenseReason(a.Value)).FirstOrDefault(r => r is not null);
+                    return propertyReferenceOperation.Arguments.Any(static a => IsPotentiallyExpensive(a.Value));
                 }
             }
 
             if (operation is IUnaryOperation unaryOperation)
             {
-                return GetExpenseReason(unaryOperation.Operand);
+                return IsPotentiallyExpensive(unaryOperation.Operand);
             }
 
-            return null;
+            return false;
 
             static bool IsTrivialInvocation(IInvocationOperation invocationOperation)
             {
@@ -234,9 +211,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (method.Name == nameof(Stopwatch.GetTimestamp) &&
                     method.IsStatic &&
                     method.Parameters.IsEmpty &&
-                    SymbolEqualityComparer.Default.Equals(
-                        method.ContainingType,
-                        WellKnownTypeProvider.GetOrCreate(invocationOperation.SemanticModel!.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsStopwatch)))
+                    method.ContainingType?.ToDisplayString() == "System.Diagnostics.Stopwatch")
                 {
                     return true;
                 }

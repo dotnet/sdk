@@ -55,13 +55,13 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
     /// </summary>
-    internal BuiltImage Build(DateTime? createdAt = null)
+    internal BuiltImage Build()
     {
         // before we build, we need to make sure that any image customizations occur
         AssignUserFromEnvironment();
         AssignPortsFromEnvironment();
 
-        string imageJsonStr = _baseImageConfig.BuildConfig(createdAt ?? DateTime.UtcNow);
+        string imageJsonStr = _baseImageConfig.BuildConfig();
         string imageSha = DigestUtils.ComputeSha256(imageJsonStr);
         string imageDigest = DigestUtils.FormatSha256Digest(imageSha);
         long imageSize = Encoding.UTF8.GetBytes(imageJsonStr).Length;
@@ -94,9 +94,7 @@ internal sealed class ImageBuilder
             Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
-            Layers = _manifest.Layers,
-            Architecture = BaseImageConfig.Architecture,
-            OS = BaseImageConfig.OS
+            Layers = _manifest.Layers
         };
     }
 

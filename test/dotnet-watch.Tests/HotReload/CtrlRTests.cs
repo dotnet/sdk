@@ -3,10 +3,9 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class CtrlRTests : DotNetWatchTestBase
+public class CtrlRTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task RestartsBuild()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -46,10 +45,10 @@ public class CtrlRTests : DotNetWatchTestBase
         // DOTNET_WATCH_ITERATION = 2
         await hasExpectedOutput.Task;
 
-        Assert.AreEqual(2, buildCounter);
+        Assert.Equal(2, buildCounter);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task CancelsWaitForFileChange()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -85,6 +84,6 @@ public class CtrlRTests : DotNetWatchTestBase
 
         await hasExpectedOutput.Task;
 
-        Assert.AreEqual(2, buildCounter);
+        Assert.Equal(2, buildCounter);
     }
 }

@@ -65,7 +65,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadSet FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-            return FromDictionaryForJson(JsonSerializer.Deserialize(json, WorkloadSetJsonSerializerContext.Default.IDictionaryStringString)!, defaultFeatureBand);
+            var jsonSerializerOptions = new JsonSerializerOptions()
+            {
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+            return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
         }
 
         public static WorkloadSet? FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
@@ -115,7 +120,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ToJson()
         {
-            var json = JsonSerializer.Serialize(ToDictionaryForJson(), WorkloadSetJsonSerializerContext.Default.DictionaryStringString);
+            var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
             return json;
         }
 

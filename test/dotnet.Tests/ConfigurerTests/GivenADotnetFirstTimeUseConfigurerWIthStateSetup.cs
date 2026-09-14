@@ -10,9 +10,7 @@ using static Microsoft.DotNet.Configurer.UnitTests.GivenADotnetFirstTimeUseConfi
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
-    [TestClass]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
-    [DoNotParallelize]
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenADotnetFirstTimeUseConfigurerWithStateSetup
     {
         private MockBasicSentinel _firstTimeUseNoticeSentinelMock;
@@ -23,20 +21,14 @@ namespace Microsoft.DotNet.Configurer.UnitTests
         private Mock<IEnvironmentPath> _pathAdderMock;
         private Mock<IEnvironmentProvider> _environmentProvider;
 
-        public TestContext TestContext { get; set; } = null!;
-
-        private ITestOutputHelper _log;
-
-        protected ITestOutputHelper Log => _log ??= new TestContextOutputHelper(TestContext);
-
-        public GivenADotnetFirstTimeUseConfigurerWithStateSetup()
+        public GivenADotnetFirstTimeUseConfigurerWithStateSetup(ITestOutputHelper output)
         {
             ResetObjectState();
         }
 
         private void ResetObjectState()
         {
-            TelemetryClient.DisabledForTests = false;
+            Telemetry.EnableForTests();
             _firstTimeUseNoticeSentinelMock = new MockBasicSentinel();
             _aspNetCertificateSentinelMock = new MockBasicSentinel();
             _aspNetCoreCertificateGeneratorMock = new Mock<IAspNetCoreCertificateGenerator>(MockBehavior.Strict);
@@ -46,23 +38,23 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
         }
 
-        [TestMethod]
-        [DataRow(false, false, false, false, Never, FirstRun, FirstRun, true, true)]
-        [DataRow(true, false, false, false, FirstRun, FirstRun, FirstRun, true, true)]
-        [DataRow(false, true, false, false, Never, FirstRun, Never, false, false)]
-        [DataRow(true, true, false, false, FirstRun, FirstRun, Never, false, false)]
-        [DataRow(false, false, true, false, Never, Never, Never, true, true)]
-        [DataRow(true, false, true, false, FirstRun, Never, Never, true, true)]
-        [DataRow(false, true, true, false, Never, Never, Never, false, false)]
-        [DataRow(true, true, true, false, FirstRun, Never, Never, false, false)]
-        [DataRow(false, false, false, true, Never, SecondRun, SecondRun, true, true)]
-        [DataRow(true, false, false, true, SecondRun, SecondRun, SecondRun, true, true)]
-        [DataRow(false, true, false, true, Never, SecondRun, Never, false, false)]
-        [DataRow(true, true, false, true, SecondRun, SecondRun, Never, false, false)]
-        [DataRow(false, false, true, true, Never, Never, Never, true, true)]
-        [DataRow(true, false, true, true, SecondRun, Never, Never, true, true)]
-        [DataRow(false, true, true, true, Never, Never, Never, false, false)]
-        [DataRow(true, true, true, true, SecondRun, Never, Never, false, false)]
+        [Theory]
+        [InlineData(false, false, false, false, Never, FirstRun, FirstRun, true, true)]
+        [InlineData(true, false, false, false, FirstRun, FirstRun, FirstRun, true, true)]
+        [InlineData(false, true, false, false, Never, FirstRun, Never, false, false)]
+        [InlineData(true, true, false, false, FirstRun, FirstRun, Never, false, false)]
+        [InlineData(false, false, true, false, Never, Never, Never, true, true)]
+        [InlineData(true, false, true, false, FirstRun, Never, Never, true, true)]
+        [InlineData(false, true, true, false, Never, Never, Never, false, false)]
+        [InlineData(true, true, true, false, FirstRun, Never, Never, false, false)]
+        [InlineData(false, false, false, true, Never, SecondRun, SecondRun, true, true)]
+        [InlineData(true, false, false, true, SecondRun, SecondRun, SecondRun, true, true)]
+        [InlineData(false, true, false, true, Never, SecondRun, Never, false, false)]
+        [InlineData(true, true, false, true, SecondRun, SecondRun, Never, false, false)]
+        [InlineData(false, false, true, true, Never, Never, Never, true, true)]
+        [InlineData(true, false, true, true, SecondRun, Never, Never, true, true)]
+        [InlineData(false, true, true, true, Never, Never, Never, false, false)]
+        [InlineData(true, true, true, true, SecondRun, Never, Never, false, false)]
         public void FlagsCombinationAndAction(
             // Inputs
             bool DOTNET_GENERATE_ASPNET_CERTIFICATE,
@@ -191,6 +183,16 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             }
         }
 
+        private static ActionCalledTime GetCalledTime(bool predicate, ActionCalledTime actionCalledTime)
+        {
+            if (actionCalledTime != FirstRun && predicate)
+            {
+                actionCalledTime = SecondRun;
+            }
+
+            return actionCalledTime;
+        }
+
         public enum ActionCalledTime
         {
             Never,
@@ -198,7 +200,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             SecondRun
         }
 
-        private TelemetryClient RunConfigUsingMocks(bool isInstallerRun)
+        private Telemetry RunConfigUsingMocks(bool isInstallerRun)
         {
             // Assume the following objects set up are in sync with production behavior.
             // subject to future refactoring to de-dup with production code.
@@ -250,7 +252,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             configurer.Configure();
 
-            return new TelemetryClient("test", environmentProvider: _environmentProviderObject);
+            return new Telemetry(firstTimeUseNoticeSentinel,
+                "test",
+                environmentProvider: _environmentProviderObject,
+                senderCount: 0);
         }
 
         private class MockBasicSentinel : IFileSentinel, IFirstTimeUseNoticeSentinel, IAspNetCertificateSentinel

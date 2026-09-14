@@ -5,14 +5,13 @@ using Microsoft.DotNet.DotNetSdkResolver;
 
 namespace Microsoft.DotNet.TemplateLocator.Tests
 {
-    [TestClass]
     public class GivenAnTemplateLocator : SdkTest
     {
         private readonly TemplateLocator _resolver;
         private readonly string _manifestDirectory;
         private readonly string _fakeDotnetRootDirectory;
 
-        public GivenAnTemplateLocator()
+        public GivenAnTemplateLocator(ITestOutputHelper logger) : base(logger)
         {
             _resolver = new TemplateLocator(Environment.GetEnvironmentVariable, null, VSSettings.Ambient, null, null);
             _fakeDotnetRootDirectory =
@@ -29,7 +28,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldReturnListOfTemplates()
         {
             Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             result.Should().HaveCount(1);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoSdkToBondItShouldReturnEmpty()
         {
             Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
@@ -61,7 +60,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             result.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestDirectoryItShouldReturnEmpty()
         {
             var fakeDotnetRootDirectory =

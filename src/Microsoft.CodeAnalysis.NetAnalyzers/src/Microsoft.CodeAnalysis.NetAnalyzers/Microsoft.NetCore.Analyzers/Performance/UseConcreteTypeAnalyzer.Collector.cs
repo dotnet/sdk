@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -122,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property))
+                                    if (CanUpgrade(propertyRef.Property, false))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, targetMethod);
                                     }
@@ -183,7 +182,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property))
+                                    if (CanUpgrade(propertyRef.Property, false))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, op.TargetMethod);
                                     }
@@ -344,7 +343,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         foreach (var property in op.InitializedProperties)
                         {
-                            if (CanUpgrade(property))
+                            if (CanUpgrade(property, false))
                             {
                                 RecordAssignment(property, valueType);
                             }
@@ -400,7 +399,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         if (methodSym.AssociatedSymbol is IPropertySymbol propertySym)
                         {
-                            if (CanUpgrade(propertySym))
+                            if (CanUpgrade(propertySym, false))
                             {
                                 var valueTypes = GetValueTypes(op.ReturnedValue);
                                 foreach (var valueType in valueTypes)
@@ -726,16 +725,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// <summary>
             /// Trivial reject for properties that can't be upgraded in order to avoid wasted work.
             /// </summary>
-            private bool CanUpgrade(IPropertySymbol propSym)
+            private bool CanUpgrade(IPropertySymbol propSym, bool setter)
             {
-                var m = propSym.GetMethod!;
+                var m = setter ? propSym.SetMethod! : propSym.GetMethod!;
 
                 return _checkVisibility!(m)
                     && !m.IsImplementationOfAnyInterfaceMember()
                     && !m.IsOverride
                     && !m.IsVirtual
-                    && m.PartialDefinitionPart == null &&
-                    m.DeclaredAccessibility >= (propSym.SetMethod?.DeclaredAccessibility ?? default);
+                    && m.PartialDefinitionPart == null;
             }
 
             private void RecordVirtualDispatch(IFieldSymbol field, IMethodSymbol target) => VirtualDispatchFields.GetOrAdd(field, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);

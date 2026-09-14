@@ -10,15 +10,29 @@ namespace Microsoft.DotNet.Cli.Utils;
 public static class Product
 {
     public static readonly string Version;
-    public static readonly string TargetFrameworkVersion = "11.0";
+    public static readonly string TargetFrameworkVersion;
 
     static Product()
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
-        Version = versionFile.BuildNumber
-            ?? typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-                .InformationalVersion
-            ?? string.Empty;
+        Version = versionFile.BuildNumber ??
+                System.Diagnostics.FileVersionInfo.GetVersionInfo(
+                        typeof(Product).GetTypeInfo().Assembly.Location)
+                    .ProductVersion ??
+                string.Empty;
+
+        int firstDotIndex = Version.IndexOf('.');
+        if (firstDotIndex >= 0)
+        {
+            int secondDotIndex = Version.IndexOf('.', firstDotIndex + 1);
+            TargetFrameworkVersion = secondDotIndex >= 0
+                ? Version.Substring(0, secondDotIndex)
+                : Version;
+        }
+        else
+        {
+            TargetFrameworkVersion = string.Empty;
+        }
     }
 }
 

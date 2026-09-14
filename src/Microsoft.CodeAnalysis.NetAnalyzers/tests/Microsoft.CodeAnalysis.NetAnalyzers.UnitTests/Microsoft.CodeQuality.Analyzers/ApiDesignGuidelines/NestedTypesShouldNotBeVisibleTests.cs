@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.NestedTypesShouldNotBeVisibleAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,480 +14,461 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class NestedTypesShouldNotBeVisibleTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CSharpDiagnosticPublicNestedClassAsync()
         {
-            var code = """
-
-                public class Outer
-                {
-                    public class Inner
-                    {
-                    }
-                }
-
-                """;
+            var code = @"
+public class Outer
+{
+    public class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpCA1034ResultAt(4, 18, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicDiagnosticPublicNestedClassAsync()
         {
-            var code = """
-
-                Public Class Outer
-                    Public Class Inner
-                    End Class
-                End Class
-
-                """;
+            var code = @"
+Public Class Outer
+    Public Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicCA1034ResultAt(3, 18, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpDiagnosticPublicNestedStructAsync()
         {
-            var code = """
-
-                public class Outer
-                {
-                    public struct Inner
-                    {
-                    }
-                }
-
-                """;
+            var code = @"
+public class Outer
+{
+    public struct Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpCA1034ResultAt(4, 19, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicDiagnosticPublicNestedStructureAsync()
         {
-            var code = """
-
-                Public Class Outer
-                    Public Structure Inner
-                    End Structure
-                End Class
-
-                """;
+            var code = @"
+Public Class Outer
+    Public Structure Inner
+    End Structure
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicCA1034ResultAt(3, 22, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticPublicNestedEnumAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    public enum Inner
-                    {
-                        None = 0
-                    }
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    public enum Inner
+    {
+        None = 0
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticPublicNestedEnumAsync()
         {
-            var code = """
-                Public Class Outer
-                    Public Enum Inner
-                        None = 0
-                    End Enum
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Public Enum Inner
+        None = 0
+    End Enum
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicDiagnosticPublicTypeNestedInModuleAsync()
         {
-            var code = """
-
-                Public Module Outer
-                    Public Class Inner
-                    End Class
-                End Module
-
-                """;
+            var code = @"
+Public Module Outer
+    Public Class Inner
+    End Class
+End Module
+";
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicCA1034ModuleResultAt(3, 18, "Inner"));
         }
 
-        [TestMethod, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
+        [Fact, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
         public async Task CSharpDiagnosticPublicNestedDelegateAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    public delegate void Inner();
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    public delegate void Inner();
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
+        [Fact, WorkItem(1347, "https://github.com/dotnet/roslyn-analyzers/issues/1347")]
         public async Task BasicDiagnosticPublicNestedDelegateAsync()
         {
-            var code = """
-                Public Class Outer
-                    Delegate Sub Inner()
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Delegate Sub Inner()
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticPrivateNestedTypeAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    private class Inner
-                    {
-                    }
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    private class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticPrivateNestedTypeAsync()
         {
-            var code = """
-                Public Class Outer
-                    Private Class Inner
-                    End Class
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Private Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticProtectedNestedTypeAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    protected class Inner
-                    {
-                    }
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    protected class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticProtectedNestedTypeAsync()
         {
-            var code = """
-                Public Class Outer
-                    Protected Class Inner
-                    End Class
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Protected Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticInternalNestedTypeAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    internal class Inner
-                    {
-                    }
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    internal class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticFriendNestedTypeAsync()
         {
-            var code = """
-                Public Class Outer
-                    Friend Class Inner
-                    End Class
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Friend Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticProtectedOrInternalNestedTypeAsync()
         {
-            var code = """
-                public class Outer
-                {
-                    protected internal class Inner
-                    {
-                    }
-                }
-                """;
+            var code = @"
+public class Outer
+{
+    protected internal class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticProtectedOrFriendNestedTypeAsync()
         {
-            var code = """
-                Public Class Outer
-                    Protected Friend Class Inner
-                    End Class
-                End Class
-                """;
+            var code = @"
+Public Class Outer
+    Protected Friend Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticNonPublicTypeNestedInModuleAsync()
         {
-            var code = """
-                Public Module Outer
-                    Friend Class Inner
-                    End Class
-                End Module
-                """;
+            var code = @"
+Public Module Outer
+    Friend Class Inner
+    End Class
+End Module
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticPublicNestedEnumeratorAsync()
         {
-            var code = """
-                using System.Collections;
+            var code = @"
+using System.Collections;
 
-                public class Outer
-                {
-                    public class MyEnumerator: IEnumerator
-                    {
-                        public bool MoveNext() { return true; }
-                        public object Current { get; } = null;
-                        public void Reset() {}
-                    }
-                }
-                """;
+public class Outer
+{
+    public class MyEnumerator: IEnumerator
+    {
+        public bool MoveNext() { return true; }
+        public object Current { get; } = null;
+        public void Reset() {}
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticPublicTypeNestedInInternalTypeAsync()
         {
-            var code = """
-                internal class Outer
-                {
-                    public class Inner
-                    {
-                    }
-                }
-                """;
+            var code = @"
+internal class Outer
+{
+    public class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticPublicTypeNestedInFriendTypeAsync()
         {
-            var code = """
-                Friend Class Outer
-                    Public Class Inner
-                    End Class
-                End Class
-                """;
+            var code = @"
+Friend Class Outer
+    Public Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticPublicNestedEnumeratorAsync()
         {
-            var code = """
-                Imports System
-                Imports System.Collections
+            var code = @"
+Imports System
+Imports System.Collections
 
-                Public Class Outer
-                    Public Class MyEnumerator
-                        Implements IEnumerator
+Public Class Outer
+    Public Class MyEnumerator
+        Implements IEnumerator
 
-                        Public Function MoveNext() As Boolean Implements IEnumerator.MoveNext
-                            Return True
-                        End Function
+        Public Function MoveNext() As Boolean Implements IEnumerator.MoveNext
+            Return True
+        End Function
 
-                        Public ReadOnly Property Current As Object Implements IEnumerator.Current
-                            Get
-                                Return Nothing
-                            End Get
-                        End Property
+        Public ReadOnly Property Current As Object Implements IEnumerator.Current
+            Get
+                Return Nothing
+            End Get
+        End Property
 
-                        Public Sub Reset() Implements IEnumerator.Reset
-                        End Sub
-                    End Class
-                End Class
-                """;
+        Public Sub Reset() Implements IEnumerator.Reset
+        End Sub
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagnosticDataSetSpecialCasesAsync()
         {
-            var code = """
-                using System.Data;
+            var code = @"
+using System.Data;
 
-                public class MyDataSet : DataSet
-                {
-                    public class MyDataTable : DataTable
-                    {
-                    }
+public class MyDataSet : DataSet
+{
+    public class MyDataTable : DataTable
+    {
+    }
 
-                    public class MyDataRow : DataRow
-                    {
-                        public MyDataRow(DataRowBuilder builder) : base(builder)
-                        {
-                        }
-                    }
-                }
-                """;
+    public class MyDataRow : DataRow
+    {
+        public MyDataRow(DataRowBuilder builder) : base(builder)
+        {
+        }
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiagnosticDataSetSpecialCasesAsync()
         {
-            var code = """
-                Imports System.Data
+            var code = @"
+Imports System.Data
 
-                Public Class MyDataSet
-                    Inherits DataSet
+Public Class MyDataSet
+    Inherits DataSet
 
-                    Public Class MyDataTable
-                        Inherits DataTable
-                    End Class
+    Public Class MyDataTable
+        Inherits DataTable
+    End Class
 
-                    Public Class MyDataRow
-                        Inherits DataRow
+    Public Class MyDataRow
+        Inherits DataRow
 
-                        Public Sub New(builder As DataRowBuilder)
-                            MyBase.New(builder)
-                        End Sub
-                    End Class
-                End Class
-                """;
+        Public Sub New(builder As DataRowBuilder)
+            MyBase.New(builder)
+        End Sub
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpDiagnosticDataSetWithOtherNestedClassAsync()
         {
-            var code = """
+            var code = @"
+using System.Data;
 
-                using System.Data;
+public class MyDataSet : DataSet
+{
+    public class MyDataTable : DataTable
+    {
+    }
 
-                public class MyDataSet : DataSet
-                {
-                    public class MyDataTable : DataTable
-                    {
-                    }
+    public class MyDataRow : DataRow
+    {
+        public MyDataRow(DataRowBuilder builder) : base(builder)
+        {
+        }
+    }
 
-                    public class MyDataRow : DataRow
-                    {
-                        public MyDataRow(DataRowBuilder builder) : base(builder)
-                        {
-                        }
-                    }
-
-                    public class Inner
-                    {
-                    }
-                }
-
-                """;
+    public class Inner
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpCA1034ResultAt(17, 18, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicDiagnosticDataSetWithOtherNestedClassAsync()
         {
-            var code = """
+            var code = @"
+Imports System.Data
 
-                Imports System.Data
+Public Class MyDataSet
+    Inherits DataSet
 
-                Public Class MyDataSet
-                    Inherits DataSet
+    Public Class MyDataTable
+        Inherits DataTable
+    End Class
 
-                    Public Class MyDataTable
-                        Inherits DataTable
-                    End Class
+    Public Class MyDataRow
+        Inherits DataRow
 
-                    Public Class MyDataRow
-                        Inherits DataRow
+        Public Sub New(builder As DataRowBuilder)
+            MyBase.New(builder)
+        End Sub
+    End Class
 
-                        Public Sub New(builder As DataRowBuilder)
-                            MyBase.New(builder)
-                        End Sub
-                    End Class
-
-                    Public Class Inner
-                    End Class
-                End Class
-
-                """;
+    Public Class Inner
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicCA1034ResultAt(19, 18, "Inner"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpDiagnosticNestedDataClassesWithinOtherClassAsync()
         {
-            var code = """
+            var code = @"
+using System.Data;
 
-                using System.Data;
+public class Outer
+{
+    public class MyDataTable : DataTable
+    {
+    }
 
-                public class Outer
-                {
-                    public class MyDataTable : DataTable
-                    {
-                    }
-
-                    public class MyDataRow : DataRow
-                    {
-                        public MyDataRow(DataRowBuilder builder) : base(builder)
-                        {
-                        }
-                    }
-                }
-
-                """;
+    public class MyDataRow : DataRow
+    {
+        public MyDataRow(DataRowBuilder builder) : base(builder)
+        {
+        }
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpCA1034ResultAt(6, 18, "MyDataTable"),
                 GetCSharpCA1034ResultAt(10, 18, "MyDataRow"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicDiagnosticNestedDataClassesWithinOtherClassAsync()
         {
-            var code = """
+            var code = @"
+Imports System.Data
 
-                Imports System.Data
+Public Class Outer
+    Public Class MyDataTable
+        Inherits DataTable
+    End Class
 
-                Public Class Outer
-                    Public Class MyDataTable
-                        Inherits DataTable
-                    End Class
+    Public Class MyDataRow
+        Inherits DataRow
 
-                    Public Class MyDataRow
-                        Inherits DataRow
-
-                        Public Sub New(builder As DataRowBuilder)
-                            MyBase.New(builder)
-                        End Sub
-                    End Class
-                End Class
-
-                """;
+        Public Sub New(builder As DataRowBuilder)
+            MyBase.New(builder)
+        End Sub
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicCA1034ResultAt(5, 18, "MyDataTable"),
                 GetBasicCA1034ResultAt(9, 18, "MyDataRow"));
@@ -503,12 +483,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             IncorrectNotNamedBuilder,
         }
 
-        [TestMethod, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
-        [DataRow(BuilderPatternVariant.Correct)]
-        [DataRow(BuilderPatternVariant.CorrectWithNameEndsInBuilder)]
-        [DataRow(BuilderPatternVariant.IncorrectWithPublicOuterConstructor)]
-        [DataRow(BuilderPatternVariant.IncorrectWithProtectedOuterConstructor)]
-        [DataRow(BuilderPatternVariant.IncorrectNotNamedBuilder)]
+        [Theory, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
+        [InlineData(BuilderPatternVariant.Correct)]
+        [InlineData(BuilderPatternVariant.CorrectWithNameEndsInBuilder)]
+        [InlineData(BuilderPatternVariant.IncorrectWithPublicOuterConstructor)]
+        [InlineData(BuilderPatternVariant.IncorrectWithProtectedOuterConstructor)]
+        [InlineData(BuilderPatternVariant.IncorrectNotNamedBuilder)]
         public async Task CA1034_BuilderPatternVariantsAsync(BuilderPatternVariant variant)
         {
             string builderName = "Builder";
@@ -542,204 +522,176 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                     throw new ArgumentOutOfRangeException(nameof(variant));
             }
 
-            await VerifyCS.VerifyAnalyzerAsync($$"""
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Pizza
+{{
+    public bool HasCheese {{ get; }}
+    public bool HasBacon {{ get; }}
 
-                public class Pizza
-                {
-                    public bool HasCheese { get; }
-                    public bool HasBacon { get; }
+    {outerClassCtorAccessibility} Pizza(bool hasCheese, bool hasBacon)
+    {{
+        HasCheese = hasCheese;
+        HasBacon = hasBacon;
+    }}
 
-                    {{outerClassCtorAccessibility}} Pizza(bool hasCheese, bool hasBacon)
-                    {
-                        HasCheese = hasCheese;
-                        HasBacon = hasBacon;
-                    }
+    public sealed class {builderName}
+    {{
+        private bool hasCheese;
+        private bool hasBacon;
 
-                    public sealed class {{builderName}}
-                    {
-                        private bool hasCheese;
-                        private bool hasBacon;
+        private {builderName}() {{ }}
 
-                        private {{builderName}}() { }
+        public static {builderName} Create()
+        {{
+            return new {builderName}();
+        }}
 
-                        public static {{builderName}} Create()
-                        {
-                            return new {{builderName}}();
-                        }
+        public {builderName} WithCheese()
+        {{
+            hasCheese = true;
+            return this;
+        }}
 
-                        public {{builderName}} WithCheese()
-                        {
-                            hasCheese = true;
-                            return this;
-                        }
+        public {builderName} WithBacon()
+        {{
+            hasBacon = true;
+            return this;
+        }}
 
-                        public {{builderName}} WithBacon()
-                        {
-                            hasBacon = true;
-                            return this;
-                        }
+        public Pizza ToPizza()
+        {{
+            return new Pizza(hasCheese, hasBacon);
+        }}
+    }}
+}}", csharpExpectedDiagnostics);
 
-                        public Pizza ToPizza()
-                        {
-                            return new Pizza(hasCheese, hasBacon);
-                        }
-                    }
-                }
-                """, csharpExpectedDiagnostics);
+            await VerifyVB.VerifyAnalyzerAsync($@"
+Public Class Pizza
+    Public ReadOnly Property HasCheese As Boolean
+    Public ReadOnly Property HasBacon As Boolean
 
-            await VerifyVB.VerifyAnalyzerAsync($"""
+    {outerClassCtorAccessibility} Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
+        Me.HasCheese = hasCheese
+        Me.HasBacon = hasBacon
+    End Sub
 
-                Public Class Pizza
-                    Public ReadOnly Property HasCheese As Boolean
-                    Public ReadOnly Property HasBacon As Boolean
+    Public NotInheritable Class {builderName}
+        Private hasCheese As Boolean
+        Private hasBacon As Boolean
 
-                    {outerClassCtorAccessibility} Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
-                        Me.HasCheese = hasCheese
-                        Me.HasBacon = hasBacon
-                    End Sub
+        Private Sub New()
+        End Sub
 
-                    Public NotInheritable Class {builderName}
-                        Private hasCheese As Boolean
-                        Private hasBacon As Boolean
+        Public Shared Function Create() As {builderName}
+            Return New {builderName}()
+        End Function
 
-                        Private Sub New()
-                        End Sub
+        Public Function WithCheese() As {builderName}
+            hasCheese = True
+            Return Me
+        End Function
 
-                        Public Shared Function Create() As {builderName}
-                            Return New {builderName}()
-                        End Function
+        Public Function WithBacon() As {builderName}
+            hasBacon = True
+            Return Me
+        End Function
 
-                        Public Function WithCheese() As {builderName}
-                            hasCheese = True
-                            Return Me
-                        End Function
-
-                        Public Function WithBacon() As {builderName}
-                            hasBacon = True
-                            Return Me
-                        End Function
-
-                        Public Function ToPizza() As Pizza
-                            Return New Pizza(hasCheese, hasBacon)
-                        End Function
-                    End Class
-                End Class
-
-                """, vbnetExpectedDiagnostics);
+        Public Function ToPizza() As Pizza
+            Return New Pizza(hasCheese, hasBacon)
+        End Function
+    End Class
+End Class
+", vbnetExpectedDiagnostics);
         }
 
-        [TestMethod, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
+        [Fact, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
         public async Task CA1034_BuilderPatternTooDeep_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Outer
+{
+    public class Pizza
+    {
+        public bool HasCheese { get; }
+        public bool HasBacon { get; }
 
-                public class Outer
-                {
-                    public class Pizza
-                    {
-                        public bool HasCheese { get; }
-                        public bool HasBacon { get; }
-
-                        protected Pizza(bool hasCheese, bool hasBacon)
-                        {
-                            HasCheese = hasCheese;
-                            HasBacon = hasBacon;
-                        }
-
-                        public sealed class Builder
-                        {
-                            private bool hasCheese;
-                            private bool hasBacon;
-
-                            private Builder() { }
-
-                            public static Builder Create()
-                            {
-                                return new Builder();
-                            }
-
-                            public Builder WithCheese()
-                            {
-                                hasCheese = true;
-                                return this;
-                            }
-
-                            public Builder WithBacon()
-                            {
-                                hasBacon = true;
-                                return this;
-                            }
-
-                            public Pizza ToPizza()
-                            {
-                                return new Pizza(hasCheese, hasBacon);
-                            }
-                        }
-                    }
-                }
-                """, GetCSharpCA1034ResultAt(4, 18, "Pizza"), GetCSharpCA1034ResultAt(15, 29, "Builder"));
-
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class Outer
-                    Public Class Pizza
-                        Public ReadOnly Property HasCheese As Boolean
-                        Public ReadOnly Property HasBacon As Boolean
-
-                         Protected Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
-                            Me.HasCheese = hasCheese
-                            Me.HasBacon = hasBacon
-                        End Sub
-
-                        Public NotInheritable Class Builder
-                            Private hasCheese As Boolean
-                            Private hasBacon As Boolean
-
-                            Private Sub New()
-                            End Sub
-
-                            Public Shared Function Create() As Builder
-                                Return New Builder()
-                            End Function
-
-                            Public Function WithCheese() As Builder
-                                hasCheese = True
-                                Return Me
-                            End Function
-
-                            Public Function WithBacon() As Builder
-                                hasBacon = True
-                                Return Me
-                            End Function
-
-                            Public Function ToPizza() As Pizza
-                                Return New Pizza(hasCheese, hasBacon)
-                            End Function
-                        End Class
-                    End Class
-                End Class
-
-                """, GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
+        protected Pizza(bool hasCheese, bool hasBacon)
+        {
+            HasCheese = hasCheese;
+            HasBacon = hasBacon;
         }
 
-        [TestMethod, WorkItem(51681, "https://github.com/dotnet/sdk/issues/51681")]
-        public Task CSharpNoDiagnosticExtensionMembersAsync()
+        public sealed class Builder
         {
-            var code = """
-                public static class E
-                {
-                	extension(int x)
-                	{
-                		public int M() => x + 1;
-                	}
-                }
-                """;
+            private bool hasCheese;
+            private bool hasBacon;
 
-            return new VerifyCS.Test
+            private Builder() { }
+
+            public static Builder Create()
             {
-                TestCode = code,
-                LanguageVersion = LanguageVersion.CSharp14,
-            }.RunAsync(CancellationToken.None);
+                return new Builder();
+            }
+
+            public Builder WithCheese()
+            {
+                hasCheese = true;
+                return this;
+            }
+
+            public Builder WithBacon()
+            {
+                hasBacon = true;
+                return this;
+            }
+
+            public Pizza ToPizza()
+            {
+                return new Pizza(hasCheese, hasBacon);
+            }
+        }
+    }
+}", GetCSharpCA1034ResultAt(4, 18, "Pizza"), GetCSharpCA1034ResultAt(15, 29, "Builder"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class Outer
+    Public Class Pizza
+        Public ReadOnly Property HasCheese As Boolean
+        Public ReadOnly Property HasBacon As Boolean
+
+         Protected Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
+            Me.HasCheese = hasCheese
+            Me.HasBacon = hasBacon
+        End Sub
+
+        Public NotInheritable Class Builder
+            Private hasCheese As Boolean
+            Private hasBacon As Boolean
+
+            Private Sub New()
+            End Sub
+
+            Public Shared Function Create() As Builder
+                Return New Builder()
+            End Function
+
+            Public Function WithCheese() As Builder
+                hasCheese = True
+                Return Me
+            End Function
+
+            Public Function WithBacon() As Builder
+                hasBacon = True
+                Return Me
+            End Function
+
+            Public Function ToPizza() As Pizza
+                Return New Pizza(hasCheese, hasBacon)
+            End Function
+        End Class
+    End Class
+End Class
+", GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)

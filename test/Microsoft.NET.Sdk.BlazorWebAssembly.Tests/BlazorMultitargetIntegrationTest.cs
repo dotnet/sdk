@@ -2,17 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.StaticWebAssets.Tests;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    [TestClass]
-    public class BlazorMultitargetIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
+    public class BlazorMultitargetIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorMultitargetIntegrationTest))
     {
-        protected override string RestoreNugetPackagePath => nameof(BlazorMultitargetIntegrationTest);
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange
@@ -32,8 +29,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             browserDependencies.File("captured-references.txt").Should().NotContain("Microsoft.AspNetCore.Components.Server.dll");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void ReferencedMultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange

@@ -11,35 +11,52 @@ namespace Microsoft.DotNet.ApiCompat
     internal static class ValidateAssemblies
     {
         public static int Run(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
-            ValidateAssembliesOptions options)
+            bool generateSuppressionFile,
+            bool preserveUnnecessarySuppressions,
+            bool permitUnnecessarySuppressions,
+            string[]? suppressionFiles,
+            string? suppressionOutputFile,
+            string? noWarn,
+            bool respectInternals,
+            bool enableRuleAttributesMustMatch,
+            string[]? excludeAttributesFiles,
+            bool enableRuleCannotChangeParameterName,
+            string[] leftAssemblies,
+            string[] rightAssemblies,
+            bool enableStrictMode,
+            string[][]? leftAssembliesReferences,
+            string[][]? rightAssembliesReferences,
+            bool createWorkItemPerAssembly,
+            (string CaptureGroupPattern, string ReplacementString)[]? leftAssembliesTransformationPatterns,
+            (string CaptureGroupPattern, string ReplacementString)[]? rightAssembliesTransformationPatterns)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
-                () => SuppressionFileHelper.CreateSuppressionEngine(options.SuppressionFiles, options.NoWarn, options.GenerateSuppressionFile),
+                () => SuppressionFileHelper.CreateSuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
                 (log) => new RuleFactory(log,
-                    options.EnableRuleAttributesMustMatch,
-                    options.EnableRuleCannotChangeParameterName),
-                options.RespectInternals,
-                options.ExcludeAttributesFiles);
+                    enableRuleAttributesMustMatch,
+                    enableRuleCannotChangeParameterName),
+                respectInternals,
+                excludeAttributesFiles);
 
             IApiCompatRunner apiCompatRunner = serviceProvider.ApiCompatRunner;
-            ApiCompatRunnerOptions apiCompatOptions = new(options.EnableStrictMode);
+            ApiCompatRunnerOptions apiCompatOptions = new(enableStrictMode);
 
             // Optionally provide a string transformer if a transformation pattern is passed in.
-            RegexStringTransformer? leftAssembliesStringTransformer = options.LeftAssembliesTransformationPatterns != null ? new RegexStringTransformer(options.LeftAssembliesTransformationPatterns) : null;
-            RegexStringTransformer? rightAssembliesStringTransformer = options.RightAssembliesTransformationPatterns != null ? new RegexStringTransformer(options.RightAssembliesTransformationPatterns) : null;
+            RegexStringTransformer? leftAssembliesStringTransformer = leftAssembliesTransformationPatterns != null ? new RegexStringTransformer(leftAssembliesTransformationPatterns) : null;
+            RegexStringTransformer? rightAssembliesStringTransformer = rightAssembliesTransformationPatterns != null ? new RegexStringTransformer(rightAssembliesTransformationPatterns) : null;
 
-            if (options.CreateWorkItemPerAssembly)
+            if (createWorkItemPerAssembly)
             {
-                if (options.LeftAssemblies.Length != options.RightAssemblies.Length)
+                if (leftAssemblies.Length != rightAssemblies.Length)
                 {
                     throw new Exception(CommonResources.CreateWorkItemPerAssemblyAssembliesNotEqual);
                 }
 
-                for (int i = 0; i < options.LeftAssemblies.Length; i++)
+                for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    List<MetadataInformation> leftMetadataInformation = GetMetadataInformation(options.LeftAssemblies[i], GetAssemblyReferences(options.LeftAssembliesReferences, i), leftAssembliesStringTransformer);
-                    List<MetadataInformation> rightMetadataInformation = GetMetadataInformation(options.RightAssemblies[i], GetAssemblyReferences(options.RightAssembliesReferences, i), rightAssembliesStringTransformer);
+                    List<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
+                    List<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
 
                     // Enqueue the work item
                     ApiCompatRunnerWorkItem workItem = new(leftMetadataInformation, apiCompatOptions, rightMetadataInformation);
@@ -49,16 +66,16 @@ namespace Microsoft.DotNet.ApiCompat
             else
             {
                 // Create the work item that corresponds to the passed in left assembly.
-                List<MetadataInformation> leftAssembliesMetadataInformation = new(options.LeftAssemblies.Length);
-                for (int i = 0; i < options.LeftAssemblies.Length; i++)
+                List<MetadataInformation> leftAssembliesMetadataInformation = new(leftAssemblies.Length);
+                for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    leftAssembliesMetadataInformation.AddRange(GetMetadataInformation(options.LeftAssemblies[i], GetAssemblyReferences(options.LeftAssembliesReferences, i), leftAssembliesStringTransformer));
+                    leftAssembliesMetadataInformation.AddRange(GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer));
                 }
 
-                List<MetadataInformation> rightAssembliesMetadataInformation = new(options.RightAssemblies.Length);
-                for (int i = 0; i < options.RightAssemblies.Length; i++)
+                List<MetadataInformation> rightAssembliesMetadataInformation = new(rightAssemblies.Length);
+                for (int i = 0; i < rightAssemblies.Length; i++)
                 {
-                    rightAssembliesMetadataInformation.AddRange(GetMetadataInformation(options.RightAssemblies[i], GetAssemblyReferences(options.RightAssembliesReferences, i), rightAssembliesStringTransformer));
+                    rightAssembliesMetadataInformation.AddRange(GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer));
                 }
 
                 // Enqueue the work item
@@ -69,17 +86,17 @@ namespace Microsoft.DotNet.ApiCompat
             // Execute the enqueued work item(s).
             apiCompatRunner.ExecuteWorkItems();
 
-            SuppressionFileHelper.LogApiCompatSuccessOrFailure(options.GenerateSuppressionFile, serviceProvider.SuppressibleLog);
+            SuppressionFileHelper.LogApiCompatSuccessOrFailure(generateSuppressionFile, serviceProvider.SuppressibleLog);
 
-            if (options.GenerateSuppressionFile)
+            if (generateSuppressionFile)
             {
                 SuppressionFileHelper.GenerateSuppressionFile(serviceProvider.SuppressionEngine,
                     serviceProvider.SuppressibleLog,
-                    options.PreserveUnnecessarySuppressions,
-                    options.SuppressionFiles,
-                    options.SuppressionOutputFile);
+                    preserveUnnecessarySuppressions,
+                    suppressionFiles,
+                    suppressionOutputFile);
             }
-            else if (!options.PermitUnnecessarySuppressions)
+            else if (!permitUnnecessarySuppressions)
             {
                 SuppressionFileHelper.ValidateUnnecessarySuppressions(serviceProvider.SuppressionEngine, serviceProvider.SuppressibleLog);
             }
@@ -129,7 +146,11 @@ namespace Microsoft.DotNet.ApiCompat
 
             // If the path isn't a directory, see if it's a glob expression.
             string filename = Path.GetFileName(path);
+#if NET
             if (filename.Contains('*'))
+#else
+            if (filename.Contains("*"))
+#endif
             {
                 string? directoryName = Path.GetDirectoryName(path);
                 if (directoryName != null)

@@ -9,8 +9,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTask
+public class StaticWebAssetsGeneratePackagePropsFile : Task
 {
     [Required]
     public string PropsFileImport { get; set; }
@@ -20,12 +19,8 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTas
     [Required]
     public string BuildTargetPath { get; set; }
 
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     public override bool Execute()
     {
-        var buildTargetPath = string.IsNullOrEmpty(BuildTargetPath) ? BuildTargetPath : TaskEnvironment.GetAbsolutePath(BuildTargetPath).Value;
-
         var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
         var elements = (AdditionalImports ?? []).Select(e => e.ItemSpec).Prepend(PropsFileImport)
             .OrderBy(id => id, StringComparer.Ordinal);
@@ -54,26 +49,26 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTas
         }
 
         var data = memoryStream.ToArray();
-        WriteFile(data, buildTargetPath);
+        WriteFile(data);
 
         return !Log.HasLoggedErrors;
     }
 
-    private void WriteFile(byte[] data, string buildTargetPath)
+    private void WriteFile(byte[] data)
     {
         var dataHash = ComputeHash(data);
-        var fileExists = File.Exists(buildTargetPath);
-        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(buildTargetPath)) : "";
+        var fileExists = File.Exists(BuildTargetPath);
+        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(BuildTargetPath)) : "";
 
         if (!fileExists)
         {
-            Log.LogMessage(MessageImportance.Low, $"Creating file '{BuildTargetPath}' because it does not exist.");
-            File.WriteAllBytes(buildTargetPath, data);
+            Log.LogMessage(MessageImportance.Low, $"Creating file '{BuildTargetPath}' does not exist.");
+            File.WriteAllBytes(BuildTargetPath, data);
         }
         else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
         {
             Log.LogMessage(MessageImportance.Low, $"Updating '{BuildTargetPath}' file because the hash '{dataHash}' is different from existing file hash '{existingFileHash}'.");
-            File.WriteAllBytes(buildTargetPath, data);
+            File.WriteAllBytes(BuildTargetPath, data);
         }
         else
         {

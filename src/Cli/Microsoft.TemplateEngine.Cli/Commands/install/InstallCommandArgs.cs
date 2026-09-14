@@ -32,7 +32,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Interactive = parseResult.GetValue(installCommand.Definition.InteractiveOption);
             AdditionalSources = parseResult.GetValue(installCommand.Definition.AddSourceOption);
             Force = parseResult.GetValue(installCommand.Definition.ForceOption);
-            Prerelease = installCommand is not LegacyInstallCommand && parseResult.GetValue(installCommand.Definition.PrereleaseOption);
         }
 
         public IReadOnlyList<string> TemplatePackages { get; }
@@ -42,7 +41,5 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         public IReadOnlyList<string>? AdditionalSources { get; }
 
         public bool Force { get; }
-
-        public bool Prerelease { get; }
     }
 }

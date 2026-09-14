@@ -8,10 +8,9 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
-    [TestClass]
     public class CompositeRazorProjectFileSystemTest
     {
-        [TestMethod]
+        [Fact]
         public void EnumerateItems_ReturnsResultsFromAllFileSystems()
         {
             // Arrange
@@ -32,10 +31,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.EnumerateItems(basePath);
 
             // Assert
-            Assert.AreSequenceEqual(new[] { file1, file2, file3 }, result);
+            Assert.Equal(new[] { file1, file2, file3 }, result);
         }
 
-        [TestMethod]
+        [Fact]
         public void EnumerateItems_ReturnsEmptySequence_IfNoFileSystemReturnsResults()
         {
             // Arrange
@@ -51,10 +50,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.EnumerateItems(basePath);
 
             // Assert
-            Assert.IsEmpty(result);
+            Assert.Empty(result);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetItem_ReturnsFirstInstanceThatExists()
         {
             // Arrange
@@ -76,7 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.GetItem(filePath, fileKind: null);
 
             // Assert
-            Assert.AreSame(file2, result);
+            Assert.Same(file2, result);
         }
     }
 }

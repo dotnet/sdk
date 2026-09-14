@@ -1,8 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -38,16 +36,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return;
             }
 
-            var compilation = await project.GetCompilationAsync(cancellationToken);
-            if (compilation is null)
+            // For projects targeting NetStandard, the Runtime references are resolved from the project.assets.json.
+            // This file is generated during a `dotnet restore`.
+            if (!AllReferencedProjectsLoaded(project))
             {
+                logger.LogWarning(Resources.Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting, project.Name);
                 return;
             }
 
-            // If we didn't get a useful set of references, then we really don't want to be trying to run analyzers.
-            if (!await AllReferencedProjectsLoadedAsync(project, cancellationToken))
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            if (compilation is null)
             {
-                logger.LogWarning(Resources.Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting, project.Name);
                 return;
             }
 
@@ -74,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     reportSuppressedDiagnostics: false);
                 var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
 
-                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken);
+                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
                 diagnostics = diagnostics.AddRange(compilerDiagnostics);
             }
 
@@ -93,26 +92,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             return;
 
-            static async Task<bool> AllReferencedProjectsLoadedAsync(Project project, CancellationToken cancellationToken)
+            static bool AllReferencedProjectsLoaded(Project project)
             {
-                var compilation = await project.GetCompilationAsync(cancellationToken);
-                if (compilation is null)
-                    return false;
-
-                // If we don't have a System.Object this project is clearly missing references and we shouldn't try to process it further
-                if (compilation.ObjectType.TypeKind == TypeKind.Error)
-                    return false;
-
-                foreach (var projectReference in project.ProjectReferences)
+                // Use mscorlib to represent Runtime references being loaded.
+                if (!project.MetadataReferences.Any(reference => reference.Display?.EndsWith("mscorlib.dll") == true))
                 {
-                    var referencedProject = project.Solution.GetProject(projectReference.ProjectId);
-                    Debug.Assert(referencedProject is not null);
-
-                    if (!await AllReferencedProjectsLoadedAsync(referencedProject, cancellationToken))
-                        return false;
+                    return false;
                 }
 
-                return true;
+                return project.ProjectReferences
+                    .Select(projectReference => project.Solution.GetProject(projectReference.ProjectId))
+                    .All(referencedProject => referencedProject != null && AllReferencedProjectsLoaded(referencedProject));
             }
         }
     }

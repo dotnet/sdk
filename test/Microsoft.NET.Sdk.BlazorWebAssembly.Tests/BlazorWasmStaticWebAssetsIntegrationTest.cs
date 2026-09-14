@@ -1,18 +1,15 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    [TestClass]
-    public class BlazorWasmStaticWebAssetsIntegrationTest : BlazorWasmBaselineTests
+    public class BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -54,8 +51,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
@@ -92,8 +88,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
@@ -133,8 +128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
@@ -174,8 +168,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_DoesNotIncludeXmlDocumentationFiles_AsAssets()
         {
             // Arrange
@@ -215,7 +208,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [TestMethod]
+        [Fact]
         public void StaticWebAssets_HostedApp_ReferencingNetStandardLibrary_Works()
         {
             // Arrange
@@ -266,8 +259,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  ILLINK : Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void StaticWebAssets_BackCompatibilityPublish_Hosted_Works()
         {
             // Arrange

@@ -57,8 +57,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                         if (node.Match != null)
                         {
                             var stem = ComputeStem(segments, state.StemStartIndex);
-                            var capturedStem = ComputeCapturedStem(segments, state.StemStartIndex, state.StemEndIndex);
-                            return new(true, node.Match, stem, capturedStem);
+                            return new(true, node.Match, stem);
                         }
 
                         // We got to the end with no matches, pop the next element on the stack.
@@ -151,32 +150,6 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
         return stem.ToString();
 #endif
-    }
-
-    // Computes only the portion of the path captured by **, excluding any trailing literal segments in the pattern.
-    // For **/index.html matching admin/index.html: returns "admin" (not "admin/index.html").
-    // For wwwroot/** matching wwwroot/css/style.css: returns "css/style.css" (same as Stem since ** is at the end).
-    // For patterns without **: returns empty string.
-    private static string ComputeCapturedStem(PathTokenizer.SegmentCollection segments, int stemStartIndex, int stemEndIndex)
-    {
-        if (stemStartIndex == -1 || stemEndIndex <= stemStartIndex)
-        {
-            return string.Empty;
-        }
-        var stem = new StringBuilder();
-        for (var i = stemStartIndex; i < stemEndIndex; i++)
-        {
-#if NET
-            stem.Append(segments[i]);
-#else
-            stem.Append(segments[i].ToString());
-#endif
-            if (i < stemEndIndex - 1)
-            {
-                stem.Append('/');
-            }
-        }
-        return stem.ToString();
     }
 
     private static void MatchComplex(PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
@@ -300,12 +273,9 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             var nextSegment = state.NextSegment(node.RecursiveWildCard, i);
             // The stem is calculated as the first time the /**/ pattern is matched til the remainder of the path, otherwise, the stem is
             // the file name.
-            // StemStartIndex and StemEndIndex are set per iteration since NextSegment propagates the current values (-1 initially).
-            // Each state pushed onto the stack has a distinct i, so StemEndIndex correctly reflects how many segments ** consumed.
             if (nextSegment.StemStartIndex == -1)
             {
                 nextSegment.StemStartIndex = state.SegmentIndex;
-                nextSegment.StemEndIndex = state.SegmentIndex + i;
             }
 
             stateStack.Push(nextSegment);
@@ -390,10 +360,6 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 
         public int StemStartIndex { get; set; } = -1;
 
-        // Tracks the segment index where ** stopped consuming (exclusive end of the ** captured portion).
-        // Set alongside StemStartIndex in MatchRecursiveWildCard.
-        public int StemEndIndex { get; set; } = -1;
-
         internal readonly bool HasValue => Node != null;
 
         public readonly void Deconstruct(out GlobNode node, out MatchStage stage, out int segmentIndex, out int extensionIndex, out int complexIndex)
@@ -406,7 +372,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
 
         internal MatchState NextSegment(GlobNode candidate, int elements = 1, int complexIndex = 0) =>
-            new(candidate, GetInitialStage(candidate), SegmentIndex + elements, 0, complexIndex) { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+            new(candidate, GetInitialStage(candidate), SegmentIndex + elements, 0, complexIndex) { StemStartIndex = StemStartIndex };
 
         internal MatchState NextStage()
         {
@@ -416,68 +382,68 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                     if (Node.HasExtensions())
                     {
                         return new(Node, MatchStage.Extension, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.ComplexGlobSegments != null && Node.ComplexGlobSegments.Count > 0)
                     {
                         return new(Node, MatchStage.Complex, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.WildCard != null)
                     {
                         return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.RecursiveWildCard != null)
                     {
                         return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.Extension:
                     if (Node.ComplexGlobSegments != null && Node.ComplexGlobSegments.Count > 0)
                     {
                         return new(Node, MatchStage.Complex, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.WildCard != null)
                     {
                         return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.RecursiveWildCard != null)
                     {
                         return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.Complex:
                     if (Node.WildCard != null)
                     {
                         return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
                     if (Node.RecursiveWildCard != null)
                     {
                         return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.WildCard:
                     if (Node.RecursiveWildCard != null)
                     {
                         return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
-                        { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.RecursiveWildCard:
                     return new(Node, MatchStage.Done, SegmentIndex, 0, 0)
-                    { StemStartIndex = StemStartIndex, StemEndIndex = StemEndIndex };
+                    { StemStartIndex = StemStartIndex };
             }
 
             return default;
@@ -515,8 +481,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 
         internal readonly MatchState NextExtension(int extensionIndex) => new(Node, MatchStage.Extension, SegmentIndex, extensionIndex, ComplexSegmentIndex)
         {
-            StemStartIndex = StemStartIndex,
-            StemEndIndex = StemEndIndex
+            StemStartIndex = StemStartIndex
         };
 
         internal readonly MatchState NextComplex() => new(Node, MatchStage.Complex, SegmentIndex, ExtensionSegmentIndex, ComplexSegmentIndex + 1);

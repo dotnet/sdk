@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli;
@@ -19,11 +20,8 @@ namespace Microsoft.NET.Build.Tasks
     /// targeting packs which provide the reference assemblies, and creates RuntimeFramework
     /// items, which are written to the runtimeconfig file
     /// </summary>
-    [MSBuildMultiThreadableTask]
-    public class ProcessFrameworkReferences : TaskBase, IMultiThreadableTask
+    public class ProcessFrameworkReferences : TaskBase
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         public string? TargetFrameworkIdentifier { get; set; }
 
         [Required]
@@ -43,12 +41,6 @@ namespace Microsoft.NET.Build.Tasks
         public bool ReadyToRunEnabled { get; set; }
 
         public bool ReadyToRunUseCrossgen2 { get; set; }
-
-        /// <summary>
-        /// Acquires the crossgen2 pack for a build that uses the tool for something other than
-        /// compiling ReadyToRun images, such as reading the target's ABI from its type system.
-        /// </summary>
-        public bool RequiresCrossgen2Pack { get; set; }
 
         public bool PublishAot { get; set; }
 
@@ -304,7 +296,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(knownFrameworkReference.Profile))
                 {
-                    targetingPack.SetMetadata(MetadataKeys.Profile, knownFrameworkReference.Profile);
+                    targetingPack.SetMetadata("Profile", knownFrameworkReference.Profile);
                 }
 
                 //  Get the path of the targeting pack in the targeting pack root (e.g. dotnet/packs)
@@ -433,11 +425,9 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     TaskItem runtimeFramework = new(knownFrameworkReference.RuntimeFrameworkName);
 
-                    // NOTE: Any metadata added here must be part of the cache key in
-                    // ResolveTargetingPackAssets.
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
-                    runtimeFramework.SetMetadata(MetadataKeys.Profile, knownFrameworkReference.Profile);
+                    runtimeFramework.SetMetadata("Profile", knownFrameworkReference.Profile);
 
                     runtimeFrameworks.Add(runtimeFramework);
                     Log.LogMessage(MessageImportance.Low, $"Added runtime framework '{runtimeFramework.ItemSpec}@{runtimeFrameworkVersion}'");
@@ -479,27 +469,11 @@ namespace Microsoft.NET.Build.Tasks
 
             List<ITaskItem> implicitPackageReferences = new();
 
-            if ((ReadyToRunEnabled && ReadyToRunUseCrossgen2) || RequiresCrossgen2Pack)
+            if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
-                ToolPackSupport crossgen2PackSupport = AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
-                if (crossgen2PackSupport is not ToolPackSupport.Supported)
+                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
-                    // ReadyToRun keeps NETSDK1094, which tells the user to turn PublishReadyToRun
-                    // off. That is no help to a build that asked for the tool itself, so report
-                    // whichever of the two the pack did not match: the host, or the target framework.
-                    if (ReadyToRunEnabled)
-                    {
-                        Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
-                    }
-                    else if (crossgen2PackSupport is ToolPackSupport.UnsupportedForHostRuntimeIdentifier)
-                    {
-                        Log.LogError(Strings.Crossgen2UnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
-                    }
-                    else
-                    {
-                        Log.LogError(Strings.Crossgen2UnsupportedTargetFramework);
-                    }
-
+                    Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                     return;
                 }
             }
@@ -1138,7 +1112,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             IEnumerable<string> GetPackFolders()
             {
-                var packRootEnvironmentVariable = TaskEnvironment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+                var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
                 if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
                 {
                     foreach (var packRoot in packRootEnvironmentVariable.Split(Path.PathSeparator))
@@ -1149,9 +1123,8 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
                 {
-                    AbsolutePath netCoreRoot = TaskEnvironment.GetAbsolutePath(NetCoreRoot);
-                    if (WorkloadFileBasedInstall.IsUserLocal(netCoreRoot, NETCoreSdkVersion) &&
-                        new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath() is { } userProfileDir)
+                    if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
+                        CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath() is { } userProfileDir)
                     {
                         yield return Path.Combine(userProfileDir, "packs");
                     }
@@ -1166,9 +1139,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var packFolder in GetPackFolders())
             {
                 string packPath = Path.Combine(packFolder, packName, packVersion);
-                AbsolutePath absolutePackPath = TaskEnvironment.GetAbsolutePath(packPath);
-
-                if (Directory.Exists(absolutePackPath))
+                if (Directory.Exists(packPath))
                 {
                     return packPath;
                 }
@@ -1206,19 +1177,14 @@ namespace Microsoft.NET.Build.Tasks
         {
             return new(() =>
         {
-                string? userProfileDir = new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath();
-                string? absoluteUserProfileDir = string.IsNullOrEmpty(userProfileDir) ? null : (string)TaskEnvironment.GetAbsolutePath(userProfileDir);
+                string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
 
+                //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
+                //  starting point to search for global.json
+                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
 
-                string netCoreRoot = string.IsNullOrWhiteSpace(NetCoreRoot) ? NetCoreRoot : TaskEnvironment.GetAbsolutePath(NetCoreRoot);
-
-                //  Use TaskEnvironment.ProjectDirectory (rather than Directory.GetCurrentDirectory) as the starting point
-                //  to search for global.json, since the current directory is not guaranteed to match the project directory
-                //  when tasks run on MSBuild worker nodes.
-                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
-
-                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(netCoreRoot, NETCoreSdkVersion, TaskEnvironment.GetEnvironmentVariable, absoluteUserProfileDir, globalJsonPath);
-                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, absoluteUserProfileDir, TaskEnvironment.GetEnvironmentVariable);
+                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(NetCoreRoot, NETCoreSdkVersion, userProfileDir, globalJsonPath);
+                return WorkloadResolver.Create(manifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);
         });
         }
 
@@ -1334,7 +1300,7 @@ namespace Microsoft.NET.Build.Tasks
             public bool RuntimePackAlwaysCopyLocal =>
                 _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-            public string Profile => _item.GetMetadata(MetadataKeys.Profile);
+            public string Profile => _item.GetMetadata("Profile");
 
             public NuGetFramework TargetFramework { get; }
 

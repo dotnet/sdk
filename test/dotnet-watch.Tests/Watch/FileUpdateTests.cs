@@ -3,10 +3,9 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class FileUpdateTests : DotNetWatchTestBase
+public class FileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task RestartProcessOnFileChange()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -22,11 +21,11 @@ public class FileUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("Started");
 
         var processIdentifier2 = await App.WaitUntilOutputContains("Process identifier =");
-        Assert.AreNotEqual(processIdentifier, processIdentifier2);
+        Assert.NotEqual(processIdentifier, processIdentifier2);
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task RestartProcessThatTerminatesAfterFileChange()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -46,15 +45,14 @@ public class FileUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("Started");
 
         var processIdentifier2 = await App.WaitUntilOutputContains("Process identifier =");
-        Assert.AreNotEqual(processIdentifier, processIdentifier2);
+        Assert.NotEqual(processIdentifier, processIdentifier2);
         await App.WaitUntilOutputContains("Exiting"); // process should exit after run
     }
 
     /// <summary>
     /// Validates `dotnet watch test` scenario: https://github.com/dotnet/sdk/issues/52528
     /// </summary>
-    [TestMethod]
-    [Ignore("https://github.com/dotnet/sdk/issues/54176")]
+    [Fact] 
     public async Task TestCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchXUnit")
@@ -62,14 +60,14 @@ public class FileUpdateTests : DotNetWatchTestBase
 
         var testFile = Path.Combine(testAsset.Path, "UnitTest1.cs");
         File.WriteAllText(testFile, """
+            using Xunit;
 
-            [TestClass]
             public class UnitTest1
             {
-                [TestMethod]
+                [Fact]
                 public void Test1()
                 {
-                    Assert.IsTrue(false);
+                    Assert.True(false);
                 }
             }
             """);
@@ -82,14 +80,14 @@ public class FileUpdateTests : DotNetWatchTestBase
         App.Process.ClearOutput();
 
         UpdateSourceFile(testFile, """
+            using Xunit;
             
-            [TestClass]
             public class UnitTest1
             {
-                [TestMethod]
+                [Fact]
                 public void Test1()
                 {
-                    Assert.IsTrue(true);
+                    Assert.True(true);
                 }
             }
             """);

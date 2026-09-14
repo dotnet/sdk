@@ -16,11 +16,8 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    [MSBuildMultiThreadableTask]
-    public class GenerateDepsFile : TaskBase, IMultiThreadableTask
+    public class GenerateDepsFile : TaskBase
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         [Required]
         public string ProjectPath { get; set; }
 
@@ -93,7 +90,7 @@ namespace Microsoft.NET.Build.Tasks
         // CopyLocal subset ot of @(ReferencePath), @(ReferenceDependencyPath)
         // Used to filter out non-runtime assemblies from deps file. Only project and direct references in this
         // set will be written to deps file as runtime dependencies.
-        public ITaskItem[] UserRuntimeAssemblies { get; set; } = [];
+        public string[] UserRuntimeAssemblies { get; set; }
 
         public bool IsSelfContained { get; set; }
 
@@ -136,14 +133,13 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(AbsolutePath projectPath, AbsolutePath depsFilePath)
+        private void WriteDepsFile(string depsFilePath)
         {
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(
-                    string.IsNullOrEmpty(AssetsFilePath) ? AssetsFilePath : TaskEnvironment.GetAbsolutePath(AssetsFilePath));
+                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -157,13 +153,13 @@ namespace Microsoft.NET.Build.Tasks
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
-                projectPath,
+                ProjectPath,
                 AssemblyName,
                 AssemblyExtension,
                 AssemblyVersion,
                 AssemblySatelliteAssemblies);
 
-            var userRuntimeAssemblySet = new HashSet<string>(UserRuntimeAssemblies is not null ? UserRuntimeAssemblies.Select(i => i.ItemSpec) : Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var userRuntimeAssemblySet = new HashSet<string>(UserRuntimeAssemblies ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             Func<ITaskItem, bool> isUserRuntimeAssembly = item => userRuntimeAssemblySet.Contains(item.ItemSpec);
 
             IEnumerable<ReferenceInfo> referenceAssemblyInfos =
@@ -222,12 +218,8 @@ namespace Microsoft.NET.Build.Tasks
                 // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
-                RuntimeGraph runtimeGraph = null;
-                if (IsSelfContained)
-                {
-                    runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(
-                        string.IsNullOrEmpty(RuntimeGraphPath) ? RuntimeGraphPath : TaskEnvironment.GetAbsolutePath(RuntimeGraphPath));
-                }
+                RuntimeGraph runtimeGraph =
+                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
@@ -237,10 +229,10 @@ namespace Microsoft.NET.Build.Tasks
                     mainProject,
                     IncludeRuntimeFileVersions,
                     RuntimeFrameworks,
-                    EffectiveRuntimeIdentifier,
-                    IsSelfContained,
-                    PlatformLibraryName,
-                    TargetFramework);
+                    isSelfContained: IsSelfContained,
+                    platformLibraryName: PlatformLibraryName,
+                    runtimeIdentifier: EffectiveRuntimeIdentifier,
+                    targetFramework: TargetFramework);
             }
 
             builder = builder
@@ -252,7 +244,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
-                .WithReferenceAssembliesPath(new FrameworkReferenceResolver(TaskEnvironment.GetEnvironmentVariable).GetDefaultReferenceAssembliesPath())
+                .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWereFiltered(GetFilteredPackages());
 
             if (CompileReferences.Length > 0)
@@ -260,24 +252,18 @@ namespace Microsoft.NET.Build.Tasks
                 builder = builder.WithCompileReferences(ReferenceInfo.CreateReferenceInfos(CompileReferences));
             }
 
-            var resolvedNuGetFileInfos = ResolvedNuGetFiles.Select(f => new ResolvedFile(f, false))
+            var resolvedNuGetFiles = ResolvedNuGetFiles.Select(f => new ResolvedFile(f, false))
                                 .Concat(ResolvedRuntimeTargetsFiles.Select(f => new ResolvedFile(f, true)));
-            builder = builder.WithResolvedNuGetFiles(resolvedNuGetFileInfos);
+            builder = builder.WithResolvedNuGetFiles(resolvedNuGetFiles);
 
-            var userRuntimeAssemblies = UserRuntimeAssemblies.Select(i =>
-            {
-                string destinationSubDir = i.GetMetadata(MetadataKeys.DestinationSubDirectory);
-                string destinationSubPath = string.IsNullOrEmpty(destinationSubDir) ? null : Path.Combine(destinationSubDir, Path.GetFileName(i.ItemSpec));
-                return (TaskEnvironment.GetAbsolutePath(i.ItemSpec), destinationSubPath);
-            }).ToArray();
-            DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
+            DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
             using (var fileStream = File.Create(depsFilePath))
             {
                 writer.Write(dependencyContext, fileStream);
             }
-            _filesWritten.Add(new TaskItem(depsFilePath.OriginalValue));
+            _filesWritten.Add(new TaskItem(depsFilePath));
 
             if (ValidRuntimeIdentifierPlatformsForAssets != null)
             {
@@ -285,8 +271,8 @@ namespace Microsoft.NET.Build.Tasks
                 var affectedRids = new List<string>();
                 foreach (var lib in dependencyContext.RuntimeLibraries)
                 {
-                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifier)
-                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifier));
+                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer)
+                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer));
                     if (warnOnRids.Any())
                     {
                         affectedLibs.Add(lib.Name);
@@ -303,7 +289,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private bool ShouldWarnOnRuntimeIdentifier(string runtimeIdentifier)
+        private bool ShouldWarnOnRuntimeIdentifer(string runtimeIdentifier)
         {
             if (string.IsNullOrEmpty(runtimeIdentifier))
                 return false;
@@ -318,9 +304,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            AbsolutePath absoluteProjectPath = TaskEnvironment.GetAbsolutePath(ProjectPath);
-            AbsolutePath absoluteDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
-            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath);
+            WriteDepsFile(DepsFilePath);
         }
     }
 }

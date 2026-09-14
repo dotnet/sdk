@@ -1,7 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesFixer>;
@@ -11,117 +11,104 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    [TestClass]
     public class SealMethodsThatSatisfyPrivateInterfacesFixerTests
     {
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public abstract class B
-    {
-        public abstract void M();
-    }
+public abstract class B
+{
+    public abstract void M();
+}
 
-    public class C : B, IFace
+public class C : B, IFace
+{
+    public override void [|M|]()
     {
-        public override void [|M|]()
-        {
-        }
     }
-    """,
+}",
 
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public abstract class B
-    {
-        public abstract void M();
-    }
+public abstract class B
+{
+    public abstract void M();
+}
 
-    public class C : B, IFace
+public class C : B, IFace
+{
+    public sealed override void M()
     {
-        public sealed override void M()
-        {
-        }
     }
-    """);
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public class C : IFace
+public class C : IFace
+{
+    public virtual void [|M|]()
     {
-        public virtual void [|M|]()
-        {
-        }
     }
-    """,
+}",
 
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public class C : IFace
+public class C : IFace
+{
+    public void M()
     {
-        public void M()
-        {
-        }
     }
-    """);
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public abstract class C : IFace
-    {
-        public abstract void [|M|]();
-    }
-    """,
+public abstract class C : IFace
+{
+    public abstract void [|M|]();
+}",
 
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public abstract class C : IFace
+public abstract class C : IFace
+{
+    public void M()
     {
-        public void M()
-        {
-        }
     }
-    """);
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_ContainingTypeChangedToSealedAsync()
         {
             await new VerifyCS.Test
@@ -130,56 +117,52 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            public class C : B, IFace
-                            {
-                                public override void [|M|]()
-                                {
-                                }
-                            }
-                            """,
+public class C : B, IFace
+{
+    public override void [|M|]()
+    {
+    }
+}",
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            public sealed class C : B, IFace
-                            {
-                                public override void M()
-                                {
-                                }
-                            }
-                            """,
+public sealed class C : B, IFace
+{
+    public override void M()
+    {
+    }
+}",
                     },
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -188,56 +171,52 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            public class C : B, IFace
-                            {
-                                public override void [|M|]()
-                                {
-                                }
-                            }
-                            """,
+public class C : B, IFace
+{
+    public override void [|M|]()
+    {
+    }
+}",
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            internal class C : B, IFace
-                            {
-                                public override void M()
-                                {
-                                }
-                            }
-                            """,
+internal class C : B, IFace
+{
+    public override void M()
+    {
+    }
+}",
                     },
                 },
                 CodeActionIndex = 2,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -246,97 +225,89 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            public abstract class C : B, IFace
-                            {
-                                public override void [|M|]()
-                                {
-                                }
-                            }
-                            """,
+public abstract class C : B, IFace
+{
+    public override void [|M|]()
+    {
+    }
+}",
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            internal abstract class C : B, IFace
-                            {
-                                public override void M()
-                                {
-                                }
-                            }
-                            """,
+internal abstract class C : B, IFace
+{
+    public override void M()
+    {
+    }
+}",
                     },
                 },
                 CodeActionIndex = 1, // sealed option is not available because class is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public class B
+public class B
+{
+    public virtual void M()
     {
-        public virtual void M()
-        {
-        }
     }
+}
 
-    public class [|C|] : B, IFace
-    {
-    }
-    """,
+public class [|C|] : B, IFace
+{
+}",
 
-"""
-    internal interface IFace
-    {
-        void M();
-    }
+@"internal interface IFace
+{
+    void M();
+}
 
-    public class B
+public class B
+{
+    public virtual void M()
     {
-        public virtual void M()
-        {
-        }
     }
+}
 
-    public sealed class C : B, IFace
-    {
-    }
-    """);
+public sealed class C : B, IFace
+{
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -345,54 +316,50 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public class B
-                            {
-                                public virtual void M()
-                                {
-                                }
-                            }
+public class B
+{
+    public virtual void M()
+    {
+    }
+}
 
-                            public class [|C|] : B, IFace
-                            {
-                            }
-                            """,
+public class [|C|] : B, IFace
+{
+}",
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public class B
-                            {
-                                public virtual void M()
-                                {
-                                }
-                            }
+public class B
+{
+    public virtual void M()
+    {
+    }
+}
 
-                            internal class C : B, IFace
-                            {
-                            }
-                            """,
+internal class C : B, IFace
+{
+}",
                     },
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestCSharp_ImplicitOverride_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -401,149 +368,133 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            public abstract class [|C|] : B, IFace
-                            {
-                            }
-                            """,
+public abstract class [|C|] : B, IFace
+{
+}",
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        """
-                            internal interface IFace
-                            {
-                                void M();
-                            }
+                        @"internal interface IFace
+{
+    void M();
+}
 
-                            public abstract class B
-                            {
-                                public abstract void M();
-                            }
+public abstract class B
+{
+    public abstract void M();
+}
 
-                            internal abstract class C : B, IFace
-                            {
-                            }
-                            """,
+internal abstract class C : B, IFace
+{
+}",
                     },
                 },
                 CodeActionIndex = 0, // sealed option is not available because type is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestBasic_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public MustInherit Class B
-        Public MustOverride Sub M()
-    End Class
+Public MustInherit Class B
+    Public MustOverride Sub M()
+End Class
 
-    Public Class C
-        Inherits B
-        Implements IFace
+Public Class C
+    Inherits B
+    Implements IFace
 
-        Public Overrides Sub [|M|]() Implements IFace.M
-        End Sub
-    End Class
-    """,
+    Public Overrides Sub [|M|]() Implements IFace.M
+    End Sub
+End Class",
 
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public MustInherit Class B
-        Public MustOverride Sub M()
-    End Class
+Public MustInherit Class B
+    Public MustOverride Sub M()
+End Class
 
-    Public Class C
-        Inherits B
-        Implements IFace
+Public Class C
+    Inherits B
+    Implements IFace
 
-        Public NotOverridable Overrides Sub M() Implements IFace.M
-        End Sub
-    End Class
-    """);
+    Public NotOverridable Overrides Sub M() Implements IFace.M
+    End Sub
+End Class");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestBasic_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public Class C
-        Implements IFace
+Public Class C
+    Implements IFace
 
-        Public Overridable Sub [|M|]() Implements IFace.M
-        End Sub
-    End Class
-    """,
+    Public Overridable Sub [|M|]() Implements IFace.M
+    End Sub
+End Class",
 
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public Class C
-        Implements IFace
+Public Class C
+    Implements IFace
 
-        Public Sub M() Implements IFace.M
-        End Sub
-    End Class
-    """);
+    Public Sub M() Implements IFace.M
+    End Sub
+End Class");
         }
 
-        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/2285")]
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2285")]
         public async Task TestBasic_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public MustInherit Class C
-        Implements IFace
+Public MustInherit Class C
+    Implements IFace
 
-        Public MustOverride Sub [|M|]() Implements IFace.M
-    End Class
-    """,
+    Public MustOverride Sub [|M|]() Implements IFace.M
+End Class",
 
-"""
-    Friend Interface IFace
-        Sub M()
-    End Interface
+@"Friend Interface IFace
+    Sub M()
+End Interface
 
-    Public MustInherit Class C
-        Implements IFace
+Public MustInherit Class C
+    Implements IFace
 
-        Public Sub M() Implements IFace.M
-        End Sub
-    End Class
-    """);
+    Public Sub M() Implements IFace.M
+    End Sub
+End Class");
         }
     }
 }

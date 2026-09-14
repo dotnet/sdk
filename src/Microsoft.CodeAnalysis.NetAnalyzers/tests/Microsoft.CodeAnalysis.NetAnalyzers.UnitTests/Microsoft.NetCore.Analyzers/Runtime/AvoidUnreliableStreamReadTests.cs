@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidUnreliableStreamReadAnalyzer,
@@ -14,10 +14,9 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    [TestClass]
     public class AvoidUnreliableStreamReadTests
     {
-        [TestMethod]
+        [Fact]
         public async Task EntireBuffer_OffersFixer_CS()
         {
             string source = """
@@ -59,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WithCount_OffersFixer_CS()
         {
             string source = """
@@ -95,7 +94,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WithOffsetAndCount_OffersFixer_CS()
         {
             string source = """
@@ -131,7 +130,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DifferentBufferInstances_OffersFixer_CS()
         {
             string source = """
@@ -187,7 +186,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SpecificStreamType_OffersFixer_CS()
         {
             string source = """
@@ -219,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NamedArguments_OffersFixer_CS()
         {
             string source = """
@@ -267,7 +266,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NamedArgumentsSwapped_OffersFixer_CS()
         {
             string source = """
@@ -311,7 +310,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -357,7 +356,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadExactlyNotAvailable_ReportsDiagnostic_CS()
         {
             string source = """
@@ -377,7 +376,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, source, ReferenceAssemblies.Net.Net60);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnValueIsUsed_NoDiagnostic_CS()
         {
             string source = """
@@ -404,7 +403,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DifferentRead_NoDiagnostic_CS()
         {
             string source = """
@@ -424,7 +423,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [TestMethod, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
+        [Fact, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
         public async Task StreamTypeIsKnownReliable_NoDiagnostic_CS()
         {
             string source = """
@@ -446,7 +445,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task EntireBuffer_OffersFixer_VB()
         {
             string source = """
@@ -484,7 +483,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WithCount_OffersFixer_VB()
         {
             string source = """
@@ -516,7 +515,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WithOffsetAndCount_OffersFixer_VB()
         {
             string source = """
@@ -548,7 +547,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DifferentBufferInstances_OffersFixer_VB()
         {
             string source = """
@@ -600,7 +599,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SpecificStreamType_OffersFixer_VB()
         {
             string source = """
@@ -628,7 +627,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NamedArguments_OffersFixer_VB()
         {
             string source = """
@@ -673,7 +672,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         // Order of arguments in IOperation is based on evaluation order, which seems to be parameter order for VB.
-        [TestMethod, WorkItem(3655, "https://github.com/dotnet/roslyn-analyzers/issues/3655")]
+        [Fact, WorkItem(3655, "https://github.com/dotnet/roslyn-analyzers/issues/3655")]
         public async Task NamedArgumentsSwapped_OffersFixer_VB()
         {
             string source = """
@@ -713,7 +712,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreserved_OffersFixer_VB()
         {
             string source = """
@@ -755,7 +754,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadExactlyNotAvailable_ReportsDiagnostic_VB()
         {
             string source = """
@@ -773,7 +772,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, source, ReferenceAssemblies.Net.Net60);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnValueIsUsed_NoDiagnostic_VB()
         {
             string source = """
@@ -799,7 +798,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DifferentRead_NoDiagnostic_VB()
         {
             string source = """
@@ -817,7 +816,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [TestMethod, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
+        [Fact, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
         public async Task StreamTypeIsKnownReliable_NoDiagnostic_VB()
         {
             string source = """
@@ -844,7 +843,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net70
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
         private static async Task VerifyBasicCodeFixAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies = null)
@@ -854,7 +853,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net70
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
     }
 }

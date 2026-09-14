@@ -1,20 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
     public class GenerateStaticWebAssetsManifestTest
     {
         public GenerateStaticWebAssetsManifestTest()
@@ -25,7 +19,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         public string TempFilePath { get; }
 
-        [TestMethod]
+        [Fact]
         public void CanGenerateEmptyManifest()
         {
             var errorMessages = new List<string>();
@@ -69,7 +63,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifest.Source.Should().Be("MyProject");
         }
 
-        [TestMethod]
+        [Fact]
         public void GeneratesManifestWithAssets()
         {
             var errorMessages = new List<string>();
@@ -177,8 +171,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(GeneratesManifestFailsWhenInvalidAssetsAreProvidedData))]
+        [Theory]
+        [MemberData(nameof(GeneratesManifestFailsWhenInvalidAssetsAreProvidedData))]
         public void GeneratesManifestFailsWhenInvalidAssetsAreProvided(Action<StaticWebAsset> change)
         {
             var errorMessages = new List<string>();
@@ -255,8 +249,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePathData))]
+        [Theory]
+        [MemberData(nameof(GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePathData))]
         public void GeneratesManifestFailsWhenTwoAssetsEndUpOnTheSamePath(StaticWebAsset first, StaticWebAsset second)
         {
             var errorMessages = new List<string>();
@@ -292,7 +286,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void GeneratesManifestWithReferencedProjectConfigurations()
         {
             var errorMessages = new List<string>();
@@ -329,7 +323,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             newProjectConfig.Should().Be(projectReference);
         }
 
-        [TestMethod]
+        [Fact]
         public void GeneratesManifestWithDiscoveryPatterns()
         {
             var errorMessages = new List<string>();

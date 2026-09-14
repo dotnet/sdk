@@ -5,10 +5,9 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class GivenADefaultCommandResolver
     {
-        [TestMethod]
+        [Fact]
         public void It_contains_resolvers_in_the_right_order()
         {
             var defaultCommandResolver = DefaultCommandResolverPolicy.Create();

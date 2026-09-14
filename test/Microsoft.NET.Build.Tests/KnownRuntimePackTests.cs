@@ -1,18 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class KnownRuntimePackTests : SdkTest
     {
+        public KnownRuntimePackTests(ITestOutputHelper log) : base(log)
+        {
+        }
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void BuildSucceedsWithRuntimePackWithDifferentLabel()
         {
             var testProject = new TestProject()
@@ -22,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
 
@@ -36,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void DuplicateRuntimePackCausesFailure()
         {
             var testProject = new TestProject()
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
             knownRuntimePack.Attribute("RuntimePackLabels").Value = "";
@@ -65,8 +66,7 @@ namespace Microsoft.NET.Build.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RuntimePackWithLabelIsSelected()
         {
             var testProject = new TestProject()
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var knownRuntimePack = CreateTestKnownRuntimePack();
 
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void AspNetRuntimePackIsNotRestoredForAndroid()
         {
             var testProject = new TestProject()
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["RuntimeIdentifiers"] = "android-arm;android-arm64;android-x86;android-x64";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var knownFrameworkReferenceUpdate = new XElement("KnownFrameworkReference",
                 new XAttribute("Update", "Microsoft.AspNetCore.App"),

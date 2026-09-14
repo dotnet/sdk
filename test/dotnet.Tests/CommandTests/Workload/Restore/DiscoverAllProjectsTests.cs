@@ -5,17 +5,16 @@ using Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
 namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
 {
-    [TestClass]
     public class DiscoverAllProjectsTests : SdkTest
     {
-        public DiscoverAllProjectsTests()
+        public DiscoverAllProjectsTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCallWithNoSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -24,10 +23,10 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "App.csproj");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCallWithSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -45,10 +44,10 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "Lib.csproj", "from directly pass in");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCallWithDirectoryWith2ProjectItShouldFindAll()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -60,10 +59,10 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "Second.csproj");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCallWithSlnContainingSolutionFolderItExcludesFolderProjectsFromSolution()
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSolutionFolders")
                 .WithSource()
                 .Path;

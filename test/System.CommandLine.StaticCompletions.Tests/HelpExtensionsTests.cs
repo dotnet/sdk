@@ -7,29 +7,30 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions;
+using FluentAssertions;
+using Xunit;
 
-[TestClass]
 public class HelpExtensionsTests
 {
-    [TestMethod]
+    [Fact]
     public void HelpOptionOnlyShowsUsefulNames()
     {
         new HelpOption().Names().Should().BeEquivalentTo(["--help", "-h"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void OptionNamesListNameThenAliases()
     {
         new Option<string>("--name", "-n", "--nombre").Names().Should().Equal(["--name", "-n", "--nombre"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void OptionsWithNoAliasesHaveOnlyOneName()
     {
         new Option<string>("--name").Names().Should().Equal(["--name"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void HeirarchicalOptionsAreFlattened()
     {
         var parentCommand = new Command("parent");

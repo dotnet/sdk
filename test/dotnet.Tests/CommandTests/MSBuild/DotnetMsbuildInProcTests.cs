@@ -5,24 +5,22 @@
 
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [TestClass]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
-    [DoNotParallelize]
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class DotnetMsbuildInProcTests : SdkTest
     {
-        public DotnetMsbuildInProcTests()
+        public DotnetMsbuildInProcTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenTelemetryIsEnabledTheLoggerIsAddedToTheCommandLine()
         {
-            string[] allArgs = GetArgsForMSBuild(() => true, out TelemetryClient telemetry);
+            Telemetry.Telemetry telemetry;
+            string[] allArgs = GetArgsForMSBuild(() => true, out telemetry);
             // telemetry will still be disabled if environment variable is set
             if (telemetry.Enabled)
             {
@@ -34,7 +32,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenTelemetryIsDisabledTheLoggerIsNotAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => false);
@@ -48,13 +46,15 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         private string[] GetArgsForMSBuild(Func<bool> sentinelExists)
         {
-            return GetArgsForMSBuild(sentinelExists, out TelemetryClient telemetry);
+            Telemetry.Telemetry telemetry;
+            return GetArgsForMSBuild(sentinelExists, out telemetry);
         }
 
-        private string[] GetArgsForMSBuild(Func<bool> sentinelExists, out TelemetryClient telemetry)
+        private string[] GetArgsForMSBuild(Func<bool> sentinelExists, out Telemetry.Telemetry telemetry)
         {
-            TelemetryClient.DisabledForTests = true; // reset static session id modified by telemetry constructor
-            telemetry = new TelemetryClient();
+
+            Telemetry.Telemetry.DisableForTests(); // reset static session id modified by telemetry constructor
+            telemetry = new Telemetry.Telemetry(new MockFirstTimeUseNoticeSentinel(sentinelExists));
 
             MSBuildForwardingApp msBuildForwardingApp = new(Enumerable.Empty<string>());
 

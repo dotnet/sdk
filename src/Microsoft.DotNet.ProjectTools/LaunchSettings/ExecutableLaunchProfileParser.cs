@@ -16,20 +16,15 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
     {
     }
 
-    public override LaunchProfileParseResult ParseProfile(
-        string launchSettingsPath,
-        string? launchProfileName,
-        string json,
-        Func<string, string>? evaluateExpression,
-        bool expandCommandLineArgs)
+    public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ExecutableLaunchProfile);
+        var profile = JsonSerializer.Deserialize<ExecutableLaunchProfile>(json);
         if (profile == null)
         {
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
-        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, evaluateExpression, out var workingDirectory, out var error))
+        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
         {
             return LaunchProfileParseResult.Failure(error);
         }
@@ -37,26 +32,15 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         return LaunchProfileParseResult.Success(new ExecutableLaunchProfile
         {
             LaunchProfileName = launchProfileName,
-            ExecutablePath = ExpandVariables(profile.ExecutablePath, evaluateExpression),
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, evaluateExpression, expandCommandLineArgs),
+            ExecutablePath = ExpandVariables(profile.ExecutablePath),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
             WorkingDirectory = workingDirectory,
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, evaluateExpression),
+            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
         });
     }
 
-    internal static bool RequiresMSBuildExpansion(ExecutableLaunchProfile profile, bool includeCommandLineArgs)
-        => LaunchProfileParser.RequiresMSBuildExpansion(profile.ExecutablePath)
-            || LaunchProfileParser.RequiresMSBuildExpansion(profile.WorkingDirectory)
-            || (includeCommandLineArgs && LaunchProfileParser.RequiresMSBuildExpansion(profile.CommandLineArgs))
-            || profile.EnvironmentVariables.Values.Any(LaunchProfileParser.RequiresMSBuildExpansion);
-
-    private static bool TryParseWorkingDirectory(
-        string launchSettingsPath,
-        string? value,
-        Func<string, string>? evaluateExpression,
-        out string? workingDirectory,
-        [NotNullWhen(false)] out string? error)
+    private static bool TryParseWorkingDirectory(string launchSettingsPath, string? value, out string? workingDirectory, [NotNullWhen(false)] out string? error)
     {
         if (value == null)
         {
@@ -65,7 +49,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             return true;
         }
 
-        var expandedValue = ExpandVariables(value, evaluateExpression);
+        var expandedValue = ExpandVariables(value);
 
         try
         {

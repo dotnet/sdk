@@ -7,14 +7,19 @@ using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPackAToolProjectWithExplicitConfig : SdkTest
     {
-        [TestMethod]
+
+        public GivenThatWeWantToPackAToolProjectWithExplicitConfig(ITestOutputHelper log) : base(log)
+        {
+
+        }
+
+        [Fact]
         public void It_finds_the_entry_point_dll_and_put_in_setting_file()
         {
             const string explicitEntryPoint = "explicit_entry_point.dll";
-            TestAsset helloWorldAsset = TestAssetsManager
+            TestAsset helloWorldAsset = _testAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolEntryPoint")
                                         .WithSource()
                                         .WithProjectChanges(project =>
@@ -46,11 +51,11 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void It_finds_commandName_and_put_in_setting_file()
         {
             const string explicitCommandName = "explicit_command_name";
-            TestAsset helloWorldAsset = TestAssetsManager
+            TestAsset helloWorldAsset = _testAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolCommandName")
                                         .WithSource()
                                         .WithProjectChanges(project =>

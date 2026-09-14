@@ -34,23 +34,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void Dispose() => Environment.SetEnvironmentVariable(_PATH_VAR_NAME, _originalPath);
     }
 
-    // The class fixture mutates PATH, and the shared tool builder mutates the NuGet global packages folder.
-    [TestClass]
-    [DoNotParallelize]
-    public class ToolPackageDownloaderTests : SdkTest
+    [Collection(nameof(TestToolBuilderCollection))]
+    public class ToolPackageDownloaderTests : SdkTest, IClassFixture<DotnetEnvironmentTestFixture>
     {
-        private static DotnetEnvironmentTestFixture _envFixture;
-        private static readonly TestToolBuilder ToolBuilder = TestToolBuilder.SharedInstance.Value;
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext _) => _envFixture = new DotnetEnvironmentTestFixture();
-
-        [ClassCleanup]
-        public static void ClassCleanup() => _envFixture?.Dispose();
-
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -71,9 +60,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenNugetConfigInstallSucceedsInTransaction(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -101,9 +90,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenNugetConfigInstallCreatesAnAssetFile(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -139,9 +128,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir(
             bool testMockBehaviorIsInSync)
         {
@@ -166,9 +155,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -183,13 +172,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
 
-        [TestMethod]
-        [DataRow(false, "1.0.0-rc*", TestPackageVersion)]
-        [DataRow(true, "1.0.0-rc*", TestPackageVersion)]
-        [DataRow(false, "1.*", TestPackageVersion)]
-        [DataRow(true, "1.*", TestPackageVersion)]
-        [DataRow(false, TestPackageVersion, TestPackageVersion)]
-        [DataRow(true, TestPackageVersion, TestPackageVersion)]
+        [Theory]
+        [InlineData(false, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(true, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(false, "1.*", TestPackageVersion)]
+        [InlineData(true, "1.*", TestPackageVersion)]
+        [InlineData(false, TestPackageVersion, TestPackageVersion)]
+        [InlineData(true, TestPackageVersion, TestPackageVersion)]
         public void GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
         {
 
@@ -209,9 +198,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             package.OriginalVersion.Should().Be(expectedVersion);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAllButNoPackageVersionItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -231,9 +220,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAllButNoTargetFrameworkItCanDownloadThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -252,9 +241,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenASourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -276,9 +265,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
@@ -310,9 +299,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAUriSourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
@@ -337,9 +326,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAEmptySourceAndNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -363,9 +352,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenFailureAfterRestoreInstallWillRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -400,9 +389,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenSecondInstallInATransactionTheFirstInstallShouldRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -449,9 +438,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenFailureWhenInstallLocalToolsItWillRollbackPackageVersion(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -514,9 +503,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeFalse();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenSecondInstallOfLocalToolItShouldNotThrowException(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -553,9 +542,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             a();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenSecondInstallWithoutATransactionTheFirstShouldNotRollback(bool testMockBehaviorIsInSync)
         {
             new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
@@ -609,9 +598,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -636,9 +625,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRollsbackWhenTransactionFails(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -672,9 +661,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackageWhenTransactionCommits(
             bool testMockBehaviorIsInSync)
         {
@@ -705,9 +694,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAPackageNameWithDifferentCaseItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -726,13 +715,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenARootWithNonAsciiCharacterInstallSucceeds()
         {
             var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
             string nonAscii = "ab Ṱ̺̺̕o 田中さん åä," + surrogate;
 
-            var root = TestAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
+            var root = _testAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
             var reporter = new BufferedReporter();
             var fileSystem = new FileSystemWrapper();
             var store = new ToolPackageStoreAndQuery(new DirectoryPath(root.Path));
@@ -762,9 +751,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         // repro https://github.com/dotnet/cli/issues/9409
         public void GivenAComplexVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
@@ -789,10 +778,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [UnixOnlyTheory]
+        [InlineData(false)]
+        [InlineData(true)]
         // repro https://github.com/dotnet/cli/issues/10101
         public void GivenAPackageWithCasingAndenUSPOSIXInstallSucceeds(bool testMockBehaviorIsInSync)
         {
@@ -886,7 +874,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 [CallerMemberName] string callingMethod = "",
                 string identiifer = null)
         {
-            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
+            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
@@ -971,69 +959,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse(ToolPackageDownloaderMock2.DefaultTargetFramework) };
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
 
-        public ToolPackageDownloaderTests() { }
+        private readonly TestToolBuilder ToolBuilder;
 
-        [TestMethod]
-        public void GivenAToolWithHigherFrameworkItShowsAppropriateErrorMessage()
+        public ToolPackageDownloaderTests(ITestOutputHelper log, TestToolBuilder toolBuilder) : base(log)
         {
-            // Create a mock tool package with net99.0 framework to simulate a tool requiring a higher .NET version
-            var testDir = TestAssetsManager.CreateTestDirectory();
-            var fileSystem = new FileSystemWrapper();
-            var packageId = new PackageId("test.tool.higher.framework");
-            var packageVersion = new NuGetVersion("1.0.0");
-            var packageRoot = new DirectoryPath(testDir.Path).WithSubDirectories(".store", packageId.ToString(), packageVersion.ToNormalizedString());
-
-            // Create the package directory structure with net99.0 framework
-            var toolsPath = Path.Combine(packageRoot.Value, "tools", "net99.0", "any");
-            fileSystem.Directory.CreateDirectory(toolsPath);
-
-            // Create DotnetToolSettings.xml
-            var settingsContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<DotNetCliTool Version=""1"">
-  <Commands>
-    <Command Name=""test-tool"" EntryPoint=""test.dll"" Runner=""dotnet"" />
-  </Commands>
-</DotNetCliTool>";
-            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "DotnetToolSettings.xml"), settingsContent);
-
-            // Create a dummy assembly file
-            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "test.dll"), "dummy");
-
-            // Create an empty asset file (simulating NuGet restore with no compatible frameworks)
-            var assetFilePath = Path.Combine(packageRoot.Value, "project.assets.json");
-            var currentFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
-            var assetFileContents = $$"""
-                {
-                  "version": 3,
-                  "targets": {
-                    "{{currentFramework}}/{{RuntimeInformation.RuntimeIdentifier}}": {
-                      "{{packageId}}/{{packageVersion}}": {
-                        "type": "package",
-                        "tools": {
-                        }
-                      }
-                    }
-                  },
-                  "libraries": {},
-                  "projectFileDependencyGroups": {}
-                }
-                """;
-            fileSystem.File.WriteAllText(assetFilePath, assetFileContents);
-
-            // Try to create a ToolPackageInstance, which should throw an informative error
-            Action action = () =>
-            {
-                _ = new ToolPackageInstance(
-                    packageId,
-                    packageVersion,
-                    new DirectoryPath(testDir.Path).WithSubDirectories(".store"),
-                    packageRoot,
-                    fileSystem);
-            };
-
-            action.Should().Throw<GracefulException>()
-                .WithMessage("*requires a higher version of .NET*")
-                .WithMessage("*.NET 99*");
+            ToolBuilder = toolBuilder;
         }
     }
 }

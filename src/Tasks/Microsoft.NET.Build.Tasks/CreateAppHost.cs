@@ -13,8 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     /// Creates the runtime host to be used for an application.
     /// This embeds the application DLL path into the apphost and performs additional customizations as requested.
     /// </summary>
-    [MSBuildMultiThreadableTask]
-    public class CreateAppHost : TaskBase, IMultiThreadableTask
+    public class CreateAppHost : TaskBase
     {
         /// <summary>
         /// The number of additional retries to attempt for creating the apphost.
@@ -55,16 +54,12 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppRelativeDotNet { get; set; } = null;
 
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         protected override void ExecuteCore()
         {
             try
             {
                 var isGUI = WindowsGraphicalUserInterface;
-                AbsolutePath appHostSource = TaskEnvironment.GetAbsolutePath(AppHostSourcePath);
-                AbsolutePath appHostDest = TaskEnvironment.GetAbsolutePath(AppHostDestinationPath);
-                AbsolutePath resourcesAssembly = TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
+                var resourcesAssembly = IntermediateAssembly;
 
                 int attempts = 0;
 
@@ -96,9 +91,9 @@ namespace Microsoft.NET.Build.Tasks
                             };
                         }
 
-                        HostWriter.CreateAppHost(appHostSourceFilePath: appHostSource,
-                                                appHostDestinationFilePath: appHostDest,
-                                                appBinaryFilePath: AppBinaryName, // Not absolutized — HostWriter embeds this as a relative path, never resolves it on disk
+                        HostWriter.CreateAppHost(appHostSourceFilePath: AppHostSourcePath,
+                                                appHostDestinationFilePath: AppHostDestinationPath,
+                                                appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
                                                 enableMacOSCodeSign: EnableMacOSCodeSign,

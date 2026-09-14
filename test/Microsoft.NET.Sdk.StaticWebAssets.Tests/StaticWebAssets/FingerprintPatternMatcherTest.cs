@@ -1,24 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
-[TestClass]
 public class FingerprintPatternMatcherTest
 {
     private readonly TaskLoggingHelper _log = new TestTaskLoggingHelper();
 
-    [TestMethod]
+    [Fact]
     public void AppendFingerprintPattern_AlreadyContainsFingerprint_ReturnsIdentity()
     {
         // Arrange
@@ -28,10 +22,10 @@ public class FingerprintPatternMatcherTest
         var result = new FingerprintPatternMatcher(_log, []).AppendFingerprintPattern(CreateMatchContext(relativePath), "Identity");
 
         // Assert
-        Assert.AreEqual(relativePath, result);
+        Assert.Equal(relativePath, result);
     }
 
-    [TestMethod]
+    [Fact]
     public void AppendFingerprintPattern_AppendsPattern_AtTheEndOfTheFileName()
     {
         // Arrange
@@ -42,10 +36,10 @@ public class FingerprintPatternMatcherTest
         var result = new FingerprintPatternMatcher(_log, []).AppendFingerprintPattern(CreateMatchContext(relativePath), "Identity");
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.Equal(expected, result);
     }
 
-    [TestMethod]
+    [Fact]
     public void AppendFingerprintPattern_AppendsPattern_AtTheEndOfTheFileName_WhenFileNameContainsDots()
     {
         // Arrange
@@ -54,10 +48,10 @@ public class FingerprintPatternMatcherTest
         // Act
         var result = new FingerprintPatternMatcher(_log, []).AppendFingerprintPattern(CreateMatchContext(relativePath), "Identity");
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.Equal(expected, result);
     }
 
-    [TestMethod]
+    [Fact]
     public void AppendFingerprintPattern_AppendsPattern_AtTheEndOfTheFileName_WhenFileDoesNotHaveExtension()
     {
         // Arrange
@@ -66,10 +60,10 @@ public class FingerprintPatternMatcherTest
         // Act
         var result = new FingerprintPatternMatcher(_log, []).AppendFingerprintPattern(CreateMatchContext(relativePath), "Identity");
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.Equal(expected, result);
     }
 
-    [TestMethod]
+    [Fact]
     public void AppendFingerprintPattern_AppendsPattern_AtTheRightLocation_WhenACustomPatternIsProvided()
     {
         // Arrange
@@ -83,7 +77,7 @@ public class FingerprintPatternMatcherTest
             .AppendFingerprintPattern(CreateMatchContext(relativePath), "Identity");
 
         // Assert
-        Assert.AreEqual(expected, result);
+        Assert.Equal(expected, result);
     }
 
     private StaticWebAssetGlobMatcher.MatchContext CreateMatchContext(string path)

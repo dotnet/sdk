@@ -1,6 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
 using System;
@@ -10,7 +7,6 @@ using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public class AddPackageType : Task
     {
         public string? CurrentPackageType { get; set; }

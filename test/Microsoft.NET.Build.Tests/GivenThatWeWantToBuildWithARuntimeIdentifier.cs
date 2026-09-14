@@ -5,15 +5,16 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildWithARuntimeIdentifier : SdkTest
     {
+        public GivenThatWeWantToBuildWithARuntimeIdentifier(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [CoreMSBuildOnly]
+        [CoreMSBuildOnlyFact]
         public void It_fails_with_solution_level_RID()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource();
 
@@ -26,10 +27,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1134");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_succeeds_with_project_level_RID()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -47,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_fails_with_unsupported_RID()
         {
             var testProject = new TestProject()
@@ -60,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = "won-x64"
             };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()

@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotLockOnObjectsWithWeakIdentityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,81 +13,78 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    [TestClass]
     public class DoNotLockOnObjectsWithWeakIdentityTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CA2002TestLockOnStrongTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                            using System;
-                            public class SomeClass {
-                                public void Test() {
-                                    object o = new object();
-                                    lock (o) {
-                                        Console.WriteLine();
-                                    }
-                                }
-                            }
-                """);
-            await VerifyVB.VerifyAnalyzerAsync("""
-                            Imports System
-                            Public Class SomeClass
-                                Public Sub Test()
-                                    Dim o As new Object()
-                                    SyncLock o
-                                        Console.WriteLine()
-                                    End SyncLock
-                                End Sub
-                            End Class
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+            using System;
+            public class SomeClass {
+                public void Test() {
+                    object o = new object();
+                    lock (o) {
+                        Console.WriteLine();
+                    }
+                }
+            }
+");
+            await VerifyVB.VerifyAnalyzerAsync(@"
+            Imports System
+            Public Class SomeClass
+                Public Sub Test()
+                    Dim o As new Object()
+                    SyncLock o
+                        Console.WriteLine()
+                    End SyncLock
+                End Sub
+            End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA2002TestLockOnWeakIdentitiesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+            using System;
+            public class SomeClass
+            {
+                public void Test()
+                {
+                    string s1 = """";
+                    lock (s1) { }
+                    lock (""Hello"") { }
 
-                            using System;
-                            public class SomeClass
-                            {
-                                public void Test()
-                                {
-                                    string s1 = "";
-                                    lock (s1) { }
-                                    lock ("Hello") { }
+                    var o1 = new OutOfMemoryException();
+                    lock (o1) { }
+                    var o2 = new StackOverflowException();
+                    lock (o2) { }
+                    var o3 = new ExecutionEngineException();
+                    lock (o3) { }
 
-                                    var o1 = new OutOfMemoryException();
-                                    lock (o1) { }
-                                    var o2 = new StackOverflowException();
-                                    lock (o2) { }
-                                    var o3 = new ExecutionEngineException();
-                                    lock (o3) { }
+                    lock (System.Threading.Thread.CurrentThread) { }
 
-                                    lock (System.Threading.Thread.CurrentThread) { }
+                    lock (typeof(SomeClass)) { }
 
-                                    lock (typeof(SomeClass)) { }
+                    System.Reflection.MemberInfo mi = null;
+                    lock (mi) { }
 
-                                    System.Reflection.MemberInfo mi = null;
-                                    lock (mi) { }
+                    System.Reflection.ConstructorInfo ci = null;
+                    lock (ci) { }
 
-                                    System.Reflection.ConstructorInfo ci = null;
-                                    lock (ci) { }
+                    System.Reflection.ParameterInfo pi = null;
+                    lock (pi) { }
 
-                                    System.Reflection.ParameterInfo pi = null;
-                                    lock (pi) { }
+                    int[] values = { 1, 2, 3 };
+                    lock (values) { }
 
-                                    int[] values = { 1, 2, 3 };
-                                    lock (values) { }
+                    System.Reflection.MemberInfo[] values1 = null;
+                    lock (values1) { }
 
-                                    System.Reflection.MemberInfo[] values1 = null;
-                                    lock (values1) { }
-
-                                    lock (this) { }
-                                }
-                            }
-
-                """,
+                    lock (this) { }
+                }
+            }
+            ",
             GetCSharpResultAt(8, 27, "string"),
             GetCSharpResultAt(9, 27, "string"),
             GetCSharpResultAt(12, 27, "System.OutOfMemoryException"),
@@ -101,58 +98,56 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             GetCSharpResultAt(32, 27, "int[]"),
             GetCSharpResultAt(37, 27, "this"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+            Imports System
+            Public Class SomeClass
+                Public Sub Test()
+                    Dim s1 As String = """"
+                    SyncLock s1
+                    End SyncLock
+                    SyncLock (""Hello"")
+                    End SyncLock
 
-                            Imports System
-                            Public Class SomeClass
-                                Public Sub Test()
-                                    Dim s1 As String = ""
-                                    SyncLock s1
-                                    End SyncLock
-                                    SyncLock ("Hello")
-                                    End SyncLock
+                    Dim o1 = New OutOfMemoryException()
+                    SyncLock o1
+                    End SyncLock
+                    Dim o2 = New StackOverflowException()
+                    SyncLock o2
+                    End SyncLock
+                    Dim o3 = New ExecutionEngineException()
+                    SyncLock o3
+                    End SyncLock
 
-                                    Dim o1 = New OutOfMemoryException()
-                                    SyncLock o1
-                                    End SyncLock
-                                    Dim o2 = New StackOverflowException()
-                                    SyncLock o2
-                                    End SyncLock
-                                    Dim o3 = New ExecutionEngineException()
-                                    SyncLock o3
-                                    End SyncLock
+                    SyncLock System.Threading.Thread.CurrentThread
+                    End SyncLock
 
-                                    SyncLock System.Threading.Thread.CurrentThread
-                                    End SyncLock
+                    SyncLock GetType(SomeClass)
+                    End SyncLock
 
-                                    SyncLock GetType(SomeClass)
-                                    End SyncLock
+                    Dim mi As System.Reflection.MemberInfo = Nothing
+                    SyncLock mi
+                    End SyncLock
 
-                                    Dim mi As System.Reflection.MemberInfo = Nothing
-                                    SyncLock mi
-                                    End SyncLock
+                    Dim ci As System.Reflection.ConstructorInfo = Nothing
+                    SyncLock ci
+                    End SyncLock
 
-                                    Dim ci As System.Reflection.ConstructorInfo = Nothing
-                                    SyncLock ci
-                                    End SyncLock
+                    Dim pi As System.Reflection.ParameterInfo = Nothing
+                    SyncLock pi
+                    End SyncLock
 
-                                    Dim pi As System.Reflection.ParameterInfo = Nothing
-                                    SyncLock pi
-                                    End SyncLock
+                    Dim values As Integer() = { 1, 2, 3}
+                    SyncLock values
+                    End SyncLock
 
-                                    Dim values As Integer() = { 1, 2, 3}
-                                    SyncLock values
-                                    End SyncLock
+                    Dim values1 As System.Reflection.MemberInfo() = Nothing
+                    SyncLock values1
+                    End SyncLock
 
-                                    Dim values1 As System.Reflection.MemberInfo() = Nothing
-                                    SyncLock values1
-                                    End SyncLock
-
-                                    SyncLock Me
-                                    End SyncLock
-                                End Sub
-                            End Class
-                """,
+                    SyncLock Me
+                    End SyncLock
+                End Sub
+            End Class",
             GetBasicResultAt(6, 30, "String"),
             GetBasicResultAt(8, 30, "String"),
             GetBasicResultAt(12, 30, "System.OutOfMemoryException"),
@@ -167,177 +162,169 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             GetBasicResultAt(47, 30, "Me"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA2002TestLockOnWeakIdentitiesWithScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                            using System;
-                            public class SomeClass
-                            {
-                                public void Test()
-                                {
-                                    string s1 = "";
-                                    lock ([|s1|]) { }
-                                    lock ([|"Hello"|]) { }
+            await VerifyCS.VerifyAnalyzerAsync(@"
+            using System;
+            public class SomeClass
+            {
+                public void Test()
+                {
+                    string s1 = """";
+                    lock ([|s1|]) { }
+                    lock ([|""Hello""|]) { }
 
-                                    var o1 = new OutOfMemoryException();
-                                    lock ([|o1|]) { }
-                                    var o2 = new StackOverflowException();
-                                    lock ([|o2|]) { }
-                                    var o3 = new ExecutionEngineException();
-                                    lock ([|o3|]) { }
+                    var o1 = new OutOfMemoryException();
+                    lock ([|o1|]) { }
+                    var o2 = new StackOverflowException();
+                    lock ([|o2|]) { }
+                    var o3 = new ExecutionEngineException();
+                    lock ([|o3|]) { }
 
-                                    lock ([|System.Threading.Thread.CurrentThread|]) { }
+                    lock ([|System.Threading.Thread.CurrentThread|]) { }
 
-                                    lock ([|typeof(SomeClass)|]) { }
+                    lock ([|typeof(SomeClass)|]) { }
 
-                                    System.Reflection.MemberInfo mi = null;
-                                    lock ([|mi|]) { }
+                    System.Reflection.MemberInfo mi = null;
+                    lock ([|mi|]) { }
 
-                                    System.Reflection.ConstructorInfo ci = null;
-                                    lock ([|ci|]) { }
+                    System.Reflection.ConstructorInfo ci = null;
+                    lock ([|ci|]) { }
 
-                                    System.Reflection.ParameterInfo pi = null;
-                                    lock ([|pi|]) { }
+                    System.Reflection.ParameterInfo pi = null;
+                    lock ([|pi|]) { }
 
-                                    int[] values = { 1, 2, 3 };
-                                    lock ([|values|]) { }
+                    int[] values = { 1, 2, 3 };
+                    lock ([|values|]) { }
 
-                                    System.Reflection.MemberInfo[] values1 = null;
-                                    lock (values1) { }
-                                }
-                            }
-                """);
+                    System.Reflection.MemberInfo[] values1 = null;
+                    lock (values1) { }
+                }
+            }");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                            Imports System
-                            Public Class SomeClass
-                                Public Sub Test()
-                                    Dim s1 As String = ""
-                                    SyncLock [|s1|]
-                                    End SyncLock
-                                    SyncLock [|("Hello")|]
-                                    End SyncLock
+            await VerifyVB.VerifyAnalyzerAsync(@"
+            Imports System
+            Public Class SomeClass
+                Public Sub Test()
+                    Dim s1 As String = """"
+                    SyncLock [|s1|]
+                    End SyncLock
+                    SyncLock [|(""Hello"")|]
+                    End SyncLock
 
-                                    Dim o1 = New OutOfMemoryException()
-                                    SyncLock [|o1|]
-                                    End SyncLock
-                                    Dim o2 = New StackOverflowException()
-                                    SyncLock [|o2|]
-                                    End SyncLock
-                                    Dim o3 = New ExecutionEngineException()
-                                    SyncLock [|o3|]
-                                    End SyncLock
+                    Dim o1 = New OutOfMemoryException()
+                    SyncLock [|o1|]
+                    End SyncLock
+                    Dim o2 = New StackOverflowException()
+                    SyncLock [|o2|]
+                    End SyncLock
+                    Dim o3 = New ExecutionEngineException()
+                    SyncLock [|o3|]
+                    End SyncLock
 
-                                    SyncLock [|System.Threading.Thread.CurrentThread|]
-                                    End SyncLock
+                    SyncLock [|System.Threading.Thread.CurrentThread|]
+                    End SyncLock
 
-                                    SyncLock [|GetType (SomeClass)|]
-                                    End SyncLock
+                    SyncLock [|GetType (SomeClass)|]
+                    End SyncLock
 
-                                    Dim mi As System.Reflection.MemberInfo = Nothing
-                                    SyncLock [|mi|]
-                                    End SyncLock
+                    Dim mi As System.Reflection.MemberInfo = Nothing
+                    SyncLock [|mi|]
+                    End SyncLock
 
-                                    Dim ci As System.Reflection.ConstructorInfo = Nothing
-                                    SyncLock [|ci|]
-                                    End SyncLock
+                    Dim ci As System.Reflection.ConstructorInfo = Nothing
+                    SyncLock [|ci|]
+                    End SyncLock
 
-                                    Dim pi As System.Reflection.ParameterInfo = Nothing
-                                    SyncLock [|pi|]
-                                    End SyncLock
+                    Dim pi As System.Reflection.ParameterInfo = Nothing
+                    SyncLock [|pi|]
+                    End SyncLock
 
-                                    Dim values As Integer() = { 1, 2, 3}
-                                    SyncLock [|values|]
-                                    End SyncLock
+                    Dim values As Integer() = { 1, 2, 3}
+                    SyncLock [|values|]
+                    End SyncLock
 
-                                    Dim values1 As System.Reflection.MemberInfo() = Nothing
-                                    SyncLock values1
-                                    End SyncLock
-                                End Sub
-                            End Class
-                """);
+                    Dim values1 As System.Reflection.MemberInfo() = Nothing
+                    SyncLock values1
+                    End SyncLock
+                End Sub
+            End Class");
         }
 
-        [TestMethod]
+        [Fact]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
         public async Task CA2002_MonitorEnter_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading;
 
-                using System.Threading;
+public class C
+{
+    public void SomeMethod()
+    {
+        Monitor.Enter(this);
+        Monitor.Enter(""test1"");
 
-                public class C
-                {
-                    public void SomeMethod()
-                    {
-                        Monitor.Enter(this);
-                        Monitor.Enter("test1");
-
-                        bool b = true;
-                        Monitor.Enter(this, ref b);
-                        Monitor.Enter("test1", ref b);
-                    }
-                }
-                """,
+        bool b = true;
+        Monitor.Enter(this, ref b);
+        Monitor.Enter(""test1"", ref b);
+    }
+}",
                 GetCSharpResultAt(8, 23, "C"),
                 GetCSharpResultAt(9, 23, "C"),
                 GetCSharpResultAt(12, 23, "C"),
                 GetCSharpResultAt(13, 23, "C"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading
 
-                Imports System.Threading
+Public Class C
+    Public Sub SomeMethod()
+        Monitor.Enter(Me)
+        Monitor.Enter(""test1"")
 
-                Public Class C
-                    Public Sub SomeMethod()
-                        Monitor.Enter(Me)
-                        Monitor.Enter("test1")
-
-                        Dim b As Boolean = True
-                        Monitor.Enter(Me, b)
-                        Monitor.Enter("test1", b)
-                    End Sub
-                End Class
-
-                """,
+        Dim b As Boolean = True
+        Monitor.Enter(Me, b)
+        Monitor.Enter(""test1"", b)
+    End Sub
+End Class
+",
                 GetBasicResultAt(6, 23, "C"),
                 GetBasicResultAt(7, 23, "C"),
                 GetBasicResultAt(10, 23, "C"),
                 GetBasicResultAt(11, 23, "C"));
         }
 
-        [TestMethod]
+        [Fact]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
         public async Task CA2002_MonitorTryEnter_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
 
-                using System;
-                using System.Threading;
+public class C
+{
+    public void SomeMethod()
+    {
+        Monitor.TryEnter(this);
+        Monitor.TryEnter(""test1"");
 
-                public class C
-                {
-                    public void SomeMethod()
-                    {
-                        Monitor.TryEnter(this);
-                        Monitor.TryEnter("test1");
+        Monitor.TryEnter(this, 42);
+        Monitor.TryEnter(""test1"", 42);
 
-                        Monitor.TryEnter(this, 42);
-                        Monitor.TryEnter("test1", 42);
+        Monitor.TryEnter(this, TimeSpan.FromMilliseconds(42));
+        Monitor.TryEnter(""test1"", TimeSpan.FromMilliseconds(42));
 
-                        Monitor.TryEnter(this, TimeSpan.FromMilliseconds(42));
-                        Monitor.TryEnter("test1", TimeSpan.FromMilliseconds(42));
+        bool b = true;
+        Monitor.TryEnter(this, ref b);
+        Monitor.TryEnter(""test1"", ref b);
 
-                        bool b = true;
-                        Monitor.TryEnter(this, ref b);
-                        Monitor.TryEnter("test1", ref b);
-
-                        Monitor.TryEnter(this, 42, ref b);
-                        Monitor.TryEnter("test1", 42, ref b);
-                    }
-                }
-                """,
+        Monitor.TryEnter(this, 42, ref b);
+        Monitor.TryEnter(""test1"", 42, ref b);
+    }
+}",
                 GetCSharpResultAt(9, 26, "C"),
                 GetCSharpResultAt(10, 26, "C"),
                 GetCSharpResultAt(12, 26, "C"),
@@ -349,32 +336,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetCSharpResultAt(22, 26, "C"),
                 GetCSharpResultAt(23, 26, "C"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
 
-                Imports System
-                Imports System.Threading
+Public Class C
+    Public Sub SomeMethod()
+        Monitor.TryEnter(Me)
+        Monitor.TryEnter(""test1"")
 
-                Public Class C
-                    Public Sub SomeMethod()
-                        Monitor.TryEnter(Me)
-                        Monitor.TryEnter("test1")
+        Monitor.TryEnter(Me, 42)
+        Monitor.TryEnter(""test1"", 42)
 
-                        Monitor.TryEnter(Me, 42)
-                        Monitor.TryEnter("test1", 42)
+        Monitor.TryEnter(Me, TimeSpan.FromMilliseconds(42))
+        Monitor.TryEnter(""test1"", TimeSpan.FromMilliseconds(42))
 
-                        Monitor.TryEnter(Me, TimeSpan.FromMilliseconds(42))
-                        Monitor.TryEnter("test1", TimeSpan.FromMilliseconds(42))
+        Dim b As Boolean = True
+        Monitor.TryEnter(Me, b)
+        Monitor.TryEnter(""test1"", b)
 
-                        Dim b As Boolean = True
-                        Monitor.TryEnter(Me, b)
-                        Monitor.TryEnter("test1", b)
-
-                        Monitor.TryEnter(Me, 42, b)
-                        Monitor.TryEnter("test1", 42, b)
-                    End Sub
-                End Class
-
-                """,
+        Monitor.TryEnter(Me, 42, b)
+        Monitor.TryEnter(""test1"", 42, b)
+    End Sub
+End Class
+",
                 GetBasicResultAt(7, 26, "C"),
                 GetBasicResultAt(8, 26, "C"),
                 GetBasicResultAt(10, 26, "C"),

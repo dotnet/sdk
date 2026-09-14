@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class MobileHotReloadTests : DotNetWatchTestBase
+public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
     // Matches WebSocket URLs like ws://localhost:12345 where port is non-zero
     private static readonly Regex WebSocketServerStartedPattern = new(@"WebSocket server started at: ws://localhost:([1-9]\d*)");
@@ -15,7 +14,7 @@ public class MobileHotReloadTests : DotNetWatchTestBase
     /// Tests that hot reload works for projects with the HotReloadWebSockets capability.
     /// Mobile workloads (Android, iOS) add this capability to indicate WebSocket transport should be used.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public async Task HotReload_WithWebSocketCapability()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
@@ -40,7 +39,7 @@ public class MobileHotReloadTests : DotNetWatchTestBase
         await App.AssertOutputLineStartsWith("Changed!");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task CtrlC_ShutsDownCleanly()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
@@ -64,7 +63,7 @@ public class MobileHotReloadTests : DotNetWatchTestBase
         App.AssertOutputDoesNotContain("An unexpected error occurred");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task CtrlR_RestartsCleanly()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")

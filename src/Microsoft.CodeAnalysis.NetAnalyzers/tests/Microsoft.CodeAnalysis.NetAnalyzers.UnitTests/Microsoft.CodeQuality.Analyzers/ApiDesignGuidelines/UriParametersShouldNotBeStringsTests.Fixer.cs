@@ -1,7 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsFixer>;
@@ -11,163 +11,146 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class UriParametersShouldNotBeStringsFixerTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CA1054WarningWithUrlAsync()
         {
-            var code = """
+            var code = @"
+using System;
 
-                using System;
+public class A
+{
+    public static void Method(string [|url|]) { }
+}
+";
 
-                public class A
-                {
-                    public static void Method(string [|url|]) { }
-                }
+            var fix = @"
+using System;
 
-                """;
+public class A
+{
+    public static void Method(string url) { }
 
-            var fix = """
-
-                using System;
-
-                public class A
-                {
-                    public static void Method(string url) { }
-
-                    public static void Method(Uri url)
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                """;
+    public static void Method(Uri url)
+    {
+        throw new NotImplementedException();
+    }
+}
+";
 
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1054MultipleWarningWithUrlAsync()
         {
-            var code = """
+            var code = @"
+using System;
 
-                using System;
+public class A
+{
+    public static void Method(string [|url|], string [|url2|]) { }
+}
+";
+            var fix = @"
+using System;
 
-                public class A
-                {
-                    public static void Method(string [|url|], string [|url2|]) { }
-                }
+public class A
+{
+    public static void Method(string url, string url2) { }
 
-                """;
-            var fix = """
+    public static void Method(Uri url, string url2)
+    {
+        throw new NotImplementedException();
+    }
 
-                using System;
+    public static void Method(string url, Uri url2)
+    {
+        throw new NotImplementedException();
+    }
 
-                public class A
-                {
-                    public static void Method(string url, string url2) { }
-
-                    public static void Method(Uri url, string url2)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    public static void Method(string url, Uri url2)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    public static void Method(Uri url, Uri url2)
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                """;
+    public static void Method(Uri url, Uri url2)
+    {
+        throw new NotImplementedException();
+    }
+}
+";
 
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 3,
-                NumberOfFixAllIterations = 2,
-            }.RunAsync(CancellationToken.None);
+                NumberOfFixAllIterations = 3,
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
-            var code = """
+            var code = @"
+using System;
 
-                using System;
+public class A
+{
+    public static void Method(string [|url|], string [|url2|]) { }
+    public static void Method(Uri url, Uri url2) { }
+}
+";
+            var fix = @"
+using System;
 
-                public class A
-                {
-                    public static void Method(string [|url|], string [|url2|]) { }
-                    public static void Method(Uri url, Uri url2) { }
-                }
+public class A
+{
+    public static void Method(string url, string url2) { }
+    public static void Method(Uri url, Uri url2) { }
 
-                """;
-            var fix = """
+    public static void Method(Uri url, string url2)
+    {
+        throw new NotImplementedException();
+    }
 
-                using System;
-
-                public class A
-                {
-                    public static void Method(string url, string url2) { }
-                    public static void Method(Uri url, Uri url2) { }
-
-                    public static void Method(Uri url, string url2)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    public static void Method(string url, Uri url2)
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                """;
+    public static void Method(string url, Uri url2)
+    {
+        throw new NotImplementedException();
+    }
+}
+";
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 2,
-                NumberOfFixAllIterations = 1,
-            }.RunAsync(CancellationToken.None);
+                NumberOfFixAllIterations = 2,
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
-            var code = """
+            var code = @"
+Imports System
 
-                Imports System
+Public Class A
+    Public Sub Method([|firstUri|] As String)
+    End Sub
+End Class
+";
+            var fix = @"
+Imports System
 
-                Public Class A
-                    Public Sub Method([|firstUri|] As String)
-                    End Sub
-                End Class
+Public Class A
+    Public Sub Method(firstUri As String)
+    End Sub
 
-                """;
-            var fix = """
-
-                Imports System
-
-                Public Class A
-                    Public Sub Method(firstUri As String)
-                    End Sub
-
-                    Public Sub Method(firstUri As Uri)
-                        Throw New NotImplementedException()
-                    End Sub
-                End Class
-
-                """;
+    Public Sub Method(firstUri As Uri)
+        Throw New NotImplementedException()
+    End Sub
+End Class
+";
 
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }

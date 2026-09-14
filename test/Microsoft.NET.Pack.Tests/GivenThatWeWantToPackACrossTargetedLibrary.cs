@@ -3,15 +3,16 @@
 
 namespace Microsoft.NET.Pack.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPackACrossTargetedLibrary : SdkTest
     {
+        public GivenThatWeWantToPackACrossTargetedLibrary(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.1.0.60101")]
+        [RequiresMSBuildVersionFact("17.1.0.60101")]
         public void It_packs_nondesktop_library_successfully_on_all_platforms()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("CrossTargeting")
                 .WithSource();
 
@@ -28,7 +29,6 @@ namespace Microsoft.NET.Pack.Tests
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.pdb",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.json",
-                $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.dev.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/Newtonsoft.Json.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp{EnvironmentInfo.ExecutableExtension}",

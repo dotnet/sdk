@@ -1,30 +1,24 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-[TestClass]
 public class OverrideHtmlAssetPlaceholdersTest
 {
-    [TestMethod]
-    [DataRow(
+    [Theory]
+    [InlineData(
         """
         <script src="main#[.{fingerprint}].js"></script>
         """,
         true,
         "main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="main#[.{fingerprint}].js">
         </script>
@@ -32,66 +26,66 @@ public class OverrideHtmlAssetPlaceholdersTest
         true,
         "main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script    src="main#[.{fingerprint}].js"   >   </script>
         """,
         true,
         "main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="./main#[.{fingerprint}].js"></script>
         """,
         true,
         "./main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="./folder/folder/file.name.something#[.{fingerprint}].js"></script>
         """,
         true,
         "./folder/folder/file.name.something.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="main#[.{fingerprint}].suffix.js"></script>
         """,
         true,
         "main.suffix.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="/root/main#[.{fingerprint}].suffix.js"></script>
         """,
         true,
         "/root/main.suffix.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src="main.js"></script>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src='main#[.{fingerprint}].js'></script>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <script src=main#[.{fingerprint}].js></script>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <h1>main#[.{fingerprint}].js</h1>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <script>
           var url = "main#[.{fingerprint}].js"
@@ -100,7 +94,7 @@ public class OverrideHtmlAssetPlaceholdersTest
         true,
         "main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <script type='importmap'>{
           "imports": {
@@ -111,7 +105,7 @@ public class OverrideHtmlAssetPlaceholdersTest
         true,
         "./main.js"
     )]
-    [DataRow(
+    [InlineData(
         """
         <link href="main#[.{fingerprint}].js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous">
         """,
@@ -121,35 +115,35 @@ public class OverrideHtmlAssetPlaceholdersTest
     public void ValidateAssetsRegex(string input, bool shouldMatch, string fileName = null)
     {
         var match = OverrideHtmlAssetPlaceholders._assetsRegex.Match(input);
-        Assert.AreEqual(shouldMatch, match.Success);
+        Assert.Equal(shouldMatch, match.Success);
 
         if (fileName != null)
         {
-            Assert.AreEqual(fileName, match.Groups["fileName"].Value + match.Groups["fileExtension"].Value);
+            Assert.Equal(fileName, match.Groups["fileName"].Value + match.Groups["fileExtension"].Value);
         }
     }
 
-    [TestMethod]
-    [DataRow(
+    [Theory]
+    [InlineData(
         """
         <script type="importmap"></script>
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <script   type="importmap"   >   </script>
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <script type="importmap">
         </script>
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <script
          type="importmap"
@@ -158,7 +152,7 @@ public class OverrideHtmlAssetPlaceholdersTest
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <script type="importmap">
         {
@@ -169,13 +163,13 @@ public class OverrideHtmlAssetPlaceholdersTest
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <script type=importmap></script>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <script type='importmap'></script>
         """,
@@ -183,97 +177,97 @@ public class OverrideHtmlAssetPlaceholdersTest
     )]
     public void ValidateImportMapRegex(string input, bool shouldMatch)
     {
-        Assert.AreEqual(shouldMatch, OverrideHtmlAssetPlaceholders._importMapRegex.Match(input).Success);
+        Assert.Equal(shouldMatch, OverrideHtmlAssetPlaceholders._importMapRegex.Match(input).Success);
     }
 
-    [TestMethod]
-    [DataRow(
+    [Theory]
+    [InlineData(
         """
         <link rel="preload"/>
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <link   rel="preload"    />
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <link    rel="preload">
         """,
         true
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel=preload />
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel='preload' />
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload"
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link />"
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link>"
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload" href="file.png" />
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload" id="webassembly" />
         """,
         true,
         "webassembly"
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload" id="webassembly">
         """,
         true,
         "webassembly"
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload" id='webassembly'>
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link rel="preload"id="webassembly" />
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link id="webassembly" rel="preload" />
         """,
         false
     )]
-    [DataRow(
+    [InlineData(
         """
         <link
          rel="preload"
@@ -286,11 +280,11 @@ public class OverrideHtmlAssetPlaceholdersTest
     public void ValidatePreloadRegex(string input, bool shouldMatch, string group = null)
     {
         var match = OverrideHtmlAssetPlaceholders._preloadRegex.Match(input);
-        Assert.AreEqual(shouldMatch, match.Success);
+        Assert.Equal(shouldMatch, match.Success);
 
         if (group != null)
         {
-            Assert.AreEqual(group, match.Groups["group"]?.Value);
+            Assert.Equal(group, match.Groups["group"]?.Value);
         }
     }
 }

@@ -1,20 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
     public class DotnetNewCompleteTests : BaseIntegrationTest
     {
-        private ITestOutputHelper _log => Log;
+        private readonly ITestOutputHelper _log;
 
-        public DotnetNewCompleteTests()
+        public DotnetNewCompleteTests(ITestOutputHelper log) : base(log)
         {
+            _log = log;
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanDoTabCompletion()
         {
             string homeDir = CreateTemporaryFolder();
@@ -32,8 +32,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/command-line-api/issues/1519")]
+        [Fact(Skip = "https://github.com/dotnet/command-line-api/issues/1519")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanDoTabCompletionAtGivenPosition()
         {

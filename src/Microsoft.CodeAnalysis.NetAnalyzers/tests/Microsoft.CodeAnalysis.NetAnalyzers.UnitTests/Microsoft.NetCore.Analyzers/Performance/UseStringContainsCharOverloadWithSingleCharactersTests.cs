@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseStringContainsCharOverloadWithSingleCharactersAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseStringContainsCharOverloadWithSingleCharactersFixer>;
@@ -12,271 +12,189 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class UseStringContainsCharOverloadWithSingleCharactersTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CSharp_RegularStringLiteral_FixedAsync()
         {
-            var violatingSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains([|"a"|]);
-                    }
-                }
-                """;
+            var violatingSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains([|""a""|]);
+    }
+}";
 
-            var fixedSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains('a');
-                    }
-                }
-                """;
+            var fixedSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains('a');
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_RegularStringLiteralWithStringComparisonOverload_FixedAsync()
         {
-            var violatingSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains([|"a"|], StringComparison.InvariantCultureIgnoreCase);
-                    }
-                }
-                """;
+            var violatingSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains([|""a""|], StringComparison.InvariantCultureIgnoreCase);
+    }
+}";
 
-            var fixedSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains('a', StringComparison.InvariantCultureIgnoreCase);
-                    }
-                }
-                """;
+            var fixedSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains('a', StringComparison.InvariantCultureIgnoreCase);
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_RegularStringLiteralWithStringComparisonOverloadAndReorderedNamedArguments_FixedAsync()
         {
-            var violatingSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains(comparisonType: StringComparison.InvariantCultureIgnoreCase, [|value: "a"|]);
-                    }
-                }
-                """;
+            var violatingSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains(comparisonType: StringComparison.InvariantCultureIgnoreCase, [|value: ""a""|]);
+    }
+}";
 
-            var fixedSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains(comparisonType: StringComparison.InvariantCultureIgnoreCase, value: 'a');
-                    }
-                }
-                """;
+            var fixedSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains(comparisonType: StringComparison.InvariantCultureIgnoreCase, value: 'a');
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_ConstructedStringLiteral_UnchangedAsync()
         {
-            var sourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains("a"+"samplesuffix");
-                    }
-                }
-                """;
+            var sourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains(""a""+""samplesuffix"");
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_ConstructedStringLiteralWithStringComparisonOverload_UnchangedAsync()
         {
-            var sourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return "testString".Contains("a"+"samplesuffix", StringComparison.InvariantCultureIgnoreCase);
-                    }
-                }
-                """;
+            var sourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return ""testString"".Contains(""a""+""samplesuffix"", StringComparison.InvariantCultureIgnoreCase);
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_SingleCharacterStringVariable_UnchangedAsync()
         {
-            var sourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        var singleCharacterString = "a";
-                        return "testString".Contains(singleCharacterString);
-                    }
-                }
-                """;
+            var sourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        var singleCharacterString = ""a"";
+        return ""testString"".Contains(singleCharacterString);
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharp_SingleCharacterStringVariableWithStringComparisonOverload_UnchangedAsync()
         {
-            var sourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        var singleCharacterString = "a";
-                        return "testString".Contains(singleCharacterString, StringComparison.InvariantCultureIgnoreCase);
-                    }
-                }
-                """;
+            var sourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        var singleCharacterString = ""a"";
+        return ""testString"".Contains(singleCharacterString, StringComparison.InvariantCultureIgnoreCase);
+    }
+}";
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task VB_RegularStringLiteralWithoutAvailableOverload_NoDiagnosticAsync()
         {
             var test = new VerifyVB.Test()
             {
-                TestCode = """
-                    Public Class Program
-                        Public Sub M()
-                            Dim a = "testString".Contains("a")
-                        End Sub
-                    End Class
-                    """,
+                TestCode = @"Public Class Program
+    Public Sub M()
+        Dim a = ""testString"".Contains(""a"")
+    End Sub
+End Class",
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task VB_RegularStringLiteral_FixedAsync()
         {
             var test = new VerifyVB.Test()
             {
-                TestCode = """
-                    Public Class Program
-                        Public Sub M()
-                            Dim a = "testString".Contains([|"t"|])
-                        End Sub
-                    End Class
-                    """,
+                TestCode = @"Public Class Program
+    Public Sub M()
+        Dim a = ""testString"".Contains([|""t""|])
+    End Sub
+End Class",
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard21,
-                FixedCode = """
-                    Public Class Program
-                        Public Sub M()
-                            Dim a = "testString".Contains("t"c)
-                        End Sub
-                    End Class
-                    """
+                FixedCode = @"Public Class Program
+    Public Sub M()
+        Dim a = ""testString"".Contains(""t""c)
+    End Sub
+End Class"
             };
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task VB_NamedStringLiteral_FixedAsync()
         {
             var test = new VerifyVB.Test()
             {
-                TestCode = """
-                    Public Class Program
-                        Public Sub M()
-                            Dim a = "testString".Contains([|value:="t"|])
-                        End Sub
-                    End Class
-                    """,
+                TestCode = @"Public Class Program
+    Public Sub M()
+        Dim a = ""testString"".Contains([|value:=""t""|])
+    End Sub
+End Class",
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard21,
-                FixedCode = """
-                    Public Class Program
-                        Public Sub M()
-                            Dim a = "testString".Contains(value:="t"c)
-                        End Sub
-                    End Class
-                    """
+                FixedCode = @"Public Class Program
+    Public Sub M()
+        Dim a = ""testString"".Contains(value:=""t""c)
+    End Sub
+End Class"
             };
-            await test.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod]
-        public async Task CSharp_TwoLiteralsUnderOneExpression_FixAllRewritesBothAsync()
-        {
-            var violatingSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return input.Contains([|"a"|]).ToString().Contains([|"b"|]);
-                    }
-                }
-                """;
-
-            var fixedSourceCode = """
-                using System;
-                public class TestClass
-                {
-                    public bool TestMethod(string input)
-                    {
-                        return input.Contains('a').ToString().Contains('b');
-                    }
-                }
-                """;
-            await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
-        }
-
-        [TestMethod]
-        public async Task VB_TwoLiteralsUnderOneExpression_FixAllRewritesBothAsync()
-        {
-            var test = new VerifyVB.Test()
-            {
-                TestCode = """
-                    Public Class Program
-                        Public Sub M(input As String)
-                            Dim a = input.Contains([|"t"|]).ToString().Contains([|value:="r"|])
-                        End Sub
-                    End Class
-                    """,
-                ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard21,
-                FixedCode = """
-                    Public Class Program
-                        Public Sub M(input As String)
-                            Dim a = input.Contains("t"c).ToString().Contains(value:="r"c)
-                        End Sub
-                    End Class
-                    """
-            };
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
         private static async Task VerifyCSCodeFixWithGivenReferenceAssembliesAsync(string source, ReferenceAssemblies referenceAssemblies, string fixedSource)
@@ -286,7 +204,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
     }
 }

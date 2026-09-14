@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -107,20 +106,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
             }
 
-            if (operation.TargetMethod.Name == "StructureToPtr")
+            if (operation.TargetMethod.Name == "StructureToPtr" && operation.Arguments[0].Value.Type!.IsUnmanagedType)
             {
-                IOperation structure = operation.Arguments.GetArgumentForParameterAtIndex(0).Value;
-                if (structure.Type!.IsUnmanagedType)
-                {
-                    IOperation destination = operation.Arguments.GetArgumentForParameterAtIndex(1).Value;
-                    editor.ReplaceNode(syntax,
-                        editor.Generator.AssignmentStatement(
-                            SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
-                                (ExpressionSyntax)editor.Generator.CastExpression(editor.SemanticModel.Compilation.CreatePointerTypeSymbol(structure.Type!),
-                                    destination.Syntax)),
-                            structure.Syntax));
-                    return true;
-                }
+                editor.ReplaceNode(syntax,
+                    editor.Generator.AssignmentStatement(
+                        SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
+                            (ExpressionSyntax)editor.Generator.CastExpression(editor.SemanticModel.Compilation.CreatePointerTypeSymbol(operation.Arguments[0].Value.Type!),
+                                operation.Arguments[1].Value.Syntax)),
+                        operation.Arguments[0].Value.Syntax));
+                return true;
             }
 
             if (operation.TargetMethod.Name == "PtrToStructure")
@@ -132,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
                 else if (operation.TargetMethod.ReturnType.SpecialType == SpecialType.System_Object
                         && operation.Arguments.Length == 2
-                        && operation.Arguments.GetArgumentForParameterAtIndex(1).Value is ITypeOfOperation typeOf)
+                        && operation.Arguments[1].Value is ITypeOfOperation typeOf)
                 {
                     type = typeOf.TypeOperand;
                 }
@@ -144,7 +138,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (operation.Arguments.Length > 0)
                 {
                     SyntaxNode replacementNode;
-                    IOperation pointer = operation.Arguments.GetArgumentForParameterAtIndex(0).Value;
+                    IOperation pointer = operation.Arguments[0].Value;
                     if (type.IsNullableValueType() && type.GetNullableValueTypeUnderlyingType() is ITypeSymbol { IsUnmanagedType: true } underlyingType)
                     {
                         var nonNullPtrIdentifier = pointerIdentifierGenerator.NextIdentifier();
@@ -154,13 +148,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             return false;
                         }
 
-                        SyntaxAnnotation renameIdentifierAnnotation = RenameAnnotation.Create();
+                        SyntaxAnnotation renameIdentiferAnnotation = RenameAnnotation.Create();
 
                         IdentifierNameSyntax nonNullPtrIdentifierNode = SyntaxFactory.IdentifierName(nonNullPtrIdentifier);
 
                         if (addRenameAnnotation)
                         {
-                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentifierAnnotation);
+                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentiferAnnotation);
                         }
 
                         var pointerCast = editor.Generator.CastExpression(
@@ -205,10 +199,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static void AddUnsafeModifierToEnclosingMethod(DocumentEditor editor, SyntaxNode syntax)
         {
-            if (FindEnclosingMethod(syntax) is BaseMethodDeclarationSyntax enclosingMethod)
-            {
-                editor.SetModifiers(enclosingMethod, editor.Generator.GetModifiers(enclosingMethod).WithIsUnsafe(true));
-            }
+            var enclosingMethod = FindEnclosingMethod(syntax);
 
             static BaseMethodDeclarationSyntax? FindEnclosingMethod(SyntaxNode syntax)
             {
@@ -219,6 +210,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return (BaseMethodDeclarationSyntax?)syntax.Parent;
             }
+
+            editor.SetModifiers(enclosingMethod, editor.Generator.GetModifiers(enclosingMethod).WithIsUnsafe(true));
         }
     }
 }

@@ -8,10 +8,9 @@ using Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 namespace dotnet.Tests.ToolSearchTests
 {
-    [TestClass]
     public class NugetSearchApiParameterTests
     {
-        [TestMethod]
+        [Fact]
         public void ItShouldValidateSkipType()
         {
             var result = Parser.Parse("dotnet tool search mytool --skip wrongtype");
@@ -21,7 +20,7 @@ namespace dotnet.Tests.ToolSearchTests
             a.Should().Throw<GracefulException>();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldValidateTakeType()
         {
             var result = Parser.Parse("dotnet tool search mytool --take wrongtype");
@@ -31,7 +30,7 @@ namespace dotnet.Tests.ToolSearchTests
             a.Should().Throw<GracefulException>();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldNotThrowWhenInputIsValid()
         {
             var parseResult = Parser.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");

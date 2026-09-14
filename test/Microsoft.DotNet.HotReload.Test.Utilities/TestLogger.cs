@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.TestFramework;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 

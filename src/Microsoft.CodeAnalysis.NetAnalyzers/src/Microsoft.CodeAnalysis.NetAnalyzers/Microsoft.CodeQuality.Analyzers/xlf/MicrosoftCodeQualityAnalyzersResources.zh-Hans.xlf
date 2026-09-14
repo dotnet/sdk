@@ -447,62 +447,62 @@
         <target state="translated">此规则检测特定于平台的内部函数的使用情况，这些内部函数可以替换为等效的跨平台内部函数。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opAddition">
         <source>The addition operator should be preferred</source>
         <target state="translated">应优先使用加法运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
         <target state="translated">应优先使用按位和运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseOr">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
         <target state="translated">应优先使用按位或运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Division">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opDivison">
         <source>The division operator should be preferred</source>
         <target state="translated">应优先使用除法运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
         <target state="translated">应优先使用异或运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_LeftShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opLeftShift">
         <source>The left-shift operator should be preferred</source>
         <target state="translated">应优先使用左移运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Multiply">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opMultiply">
         <source>The multiply operator should be preferred</source>
         <target state="translated">应优先使用乘法运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_OnesComplement">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opOnesComplement">
         <source>The ones-complement operator should be preferred</source>
         <target state="translated">应优先使用一的补码运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_RightShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opRightShift">
         <source>The right-shift operator should be preferred</source>
         <target state="translated">应优先使用右移运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Subtraction">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opSubtraction">
         <source>The subtraction operator should be preferred</source>
         <target state="translated">应优先使用减法运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnaryNegation">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnaryNegation">
         <source>The unary-negation operator should be preferred</source>
         <target state="translated">应优先使用一元否定运算符</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
         <target state="translated">应优先使用无符号右移运算符</target>
         <note />

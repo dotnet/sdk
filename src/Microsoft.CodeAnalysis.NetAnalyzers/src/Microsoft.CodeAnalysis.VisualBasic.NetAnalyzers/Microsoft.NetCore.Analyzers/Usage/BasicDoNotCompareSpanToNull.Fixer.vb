@@ -1,10 +1,13 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Composition
+Imports Analyzer.Utilities
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports Microsoft.NetCore.Analyzers
 Imports Microsoft.NetCore.Analyzers.Usage
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Tasks
@@ -12,10 +15,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Tasks
     Public Class BasicDoNotCompareSpanToNullFixer
         Inherits DoNotCompareSpanToNullFixer
 
-        Protected Overrides Function MakeIsEmptyCheck(comparison As SyntaxNode) As SyntaxNode
-            Dim binaryExpression = TryCast(comparison, BinaryExpressionSyntax)
+        Public Overrides Async Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
+            Dim root = Await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(False)
+            Dim condition = root.FindNode(context.Span, getInnermostNodeForTie:=True)
+            Dim binaryExpression = TryCast(condition, BinaryExpressionSyntax)
             If binaryExpression Is Nothing Then
-                Return Nothing
+                Return
             End If
 
             Dim memberAccess As ExpressionSyntax = SyntaxFactory.MemberAccessExpression(
@@ -26,10 +31,15 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Tasks
             )
 
             If binaryExpression.IsKind(SyntaxKind.NotEqualsExpression) Then
-                Return SyntaxFactory.NotExpression(memberAccess)
+                memberAccess = SyntaxFactory.NotExpression(memberAccess)
             End If
 
-            Return memberAccess
+            Dim useIsEmptyCodeAction = CodeAction.Create(
+                MicrosoftNetCoreAnalyzersResources.DoNotCompareSpanToNullIsEmptyCodeFixTitle,
+                Function(ct) Task.FromResult(context.Document.WithSyntaxRoot(root.ReplaceNode(binaryExpression, memberAccess))),
+                MicrosoftNetCoreAnalyzersResources.DoNotCompareSpanToNullIsEmptyCodeFixTitle
+            )
+            context.RegisterCodeFix(useIsEmptyCodeAction, context.Diagnostics)
         End Function
 
         Private Shared Function GetComparatorExpression(binaryExpression As BinaryExpressionSyntax) As ExpressionSyntax

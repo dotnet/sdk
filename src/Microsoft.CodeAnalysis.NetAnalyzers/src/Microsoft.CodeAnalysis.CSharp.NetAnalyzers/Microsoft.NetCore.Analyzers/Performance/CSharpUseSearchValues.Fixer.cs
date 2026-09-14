@@ -1,9 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +16,7 @@ using Microsoft.NetCore.Analyzers.Performance;
 namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 {
     /// <inheritdoc/>
-    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
+    [ExportCodeFixProvider(LanguageNames.CSharp)]
     public sealed class CSharpUseSearchValuesFixer : UseSearchValuesFixer
     {
         protected override async ValueTask<(SyntaxNode TypeDeclaration, INamedTypeSymbol? TypeSymbol, bool IsRealType)> GetTypeSymbolAsync(SemanticModel semanticModel, SyntaxNode node, CancellationToken cancellationToken)
@@ -105,7 +103,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                 if (isByte &&
                     (operation.SemanticModel?.Compilation is not CSharpCompilation compilation ||
-                    compilation.LanguageVersion < LanguageVersion.CSharp11))
+                    compilation.LanguageVersion < (LanguageVersion)1100)) // LanguageVersion.CSharp11
                 {
                     // Can't use Utf8StringLiterals
                     return null;
@@ -134,11 +132,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     string valuesString = string.Concat(values);
                     string stringLiteral = SymbolDisplay.FormatLiteral(valuesString, quote: true);
 
+                    const SyntaxKind Utf8StringLiteralExpression = (SyntaxKind)8756;
+                    const SyntaxKind Utf8StringLiteralToken = (SyntaxKind)8520;
+
                     return SyntaxFactory.LiteralExpression(
-                        isByte ? SyntaxKind.Utf8StringLiteralExpression : SyntaxKind.StringLiteralExpression,
+                        isByte ? Utf8StringLiteralExpression : SyntaxKind.StringLiteralExpression,
                         SyntaxFactory.Token(
                             leading: default,
-                            kind: isByte ? SyntaxKind.Utf8StringLiteralToken : SyntaxKind.StringLiteralToken,
+                            kind: isByte ? Utf8StringLiteralToken : SyntaxKind.StringLiteralToken,
                             text: isByte ? $"{stringLiteral}u8" : stringLiteral,
                             valueText: valuesString,
                             trailing: default));

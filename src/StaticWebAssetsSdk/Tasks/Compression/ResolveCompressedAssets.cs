@@ -8,12 +8,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class ResolveCompressedAssets : Task, IMultiThreadableTask
+public class ResolveCompressedAssets : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     private static readonly char[] PatternSeparator = [';'];
 
     private const string GzipAssetTraitValue = "gzip";
@@ -58,8 +54,8 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
             return true;
         }
 
-        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets, TaskEnvironment).ToArray();
-        var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets, TaskEnvironment);
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets).ToArray();
+        var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets);
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates);
 
         var includePatterns = SplitPattern(IncludePatterns);
@@ -120,7 +116,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         // generating new a static web asset definition for each compressed item.
         var formats = SplitPattern(Formats);
         var assetsToCompress = new ITaskItem[matchingCandidateAssets.Count * formats.Length];
-        var outputPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(OutputPath));
+        var outputPath = Path.GetFullPath(OutputPath);
         var assetCounter = 0;
         foreach (var asset in matchingCandidateAssets)
         {
@@ -192,7 +188,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
     private static string CreatePathTemplate(StaticWebAsset asset, string outputPath)
     {
         var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + asset.AssetGroups + relativePath);
+        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + relativePath);
         return Path.Combine(outputPath, $"{pathHash}-{{0}}-{asset.Fingerprint}");
     }
 
@@ -303,9 +299,8 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         // This combination must be unique across all assets, so this will avoid collisions when two files on
         // the same project have the same contents, when it happens across different projects or between Build/Publish
         // assets.
-        // pathTemplate is already rooted at the absolute output path (see CreatePathTemplate), so itemSpec is a full
-        // path without recombining with the relative OutputPath or resolving against the process working directory.
-        var itemSpec = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
+        var fileName = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
+        var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
         if (previousAsset != null)
         {

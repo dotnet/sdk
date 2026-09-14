@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
 using System.Linq;
@@ -28,7 +27,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
             if (conditionalSyntax is IfStatementSyntax ifStatementSyntax)
             {
-                return IsInElseBranch(childStatementSyntax)
+                var guardedCallInElse = childStatementSyntax.Parent is ElseClauseSyntax || childStatementSyntax.Parent?.Parent is ElseClauseSyntax;
+
+                return guardedCallInElse
                     ? ifStatementSyntax.Else?.Statement.ChildNodes().Count() == 1
                     : ifStatementSyntax.Statement.ChildNodes().Count() == 1;
             }
@@ -36,33 +37,39 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             return false;
         }
 
-        protected override bool IsInElseBranch(SyntaxNode childStatementSyntax)
-            => childStatementSyntax.Parent is ElseClauseSyntax || childStatementSyntax.Parent?.Parent is ElseClauseSyntax;
-
-        protected override SyntaxNode ReplaceConditionWithChild(SyntaxNode currentConditional, bool guardedCallInElse, SyntaxGenerator generator)
+        protected override Document ReplaceConditionWithChild(Document document, SyntaxNode root, SyntaxNode conditionalOperationNode, SyntaxNode childOperationNode)
         {
-            if (currentConditional is not IfStatementSyntax ifStatementSyntax ||
-                GetGuardedStatement(guardedCallInElse ? ifStatementSyntax.Else?.Statement : ifStatementSyntax.Statement) is not ExpressionStatementSyntax guardedStatement)
-            {
-                return currentConditional;
-            }
+            SyntaxNode newRoot;
 
-            if (ifStatementSyntax.Else is null)
+            if (conditionalOperationNode is IfStatementSyntax { Else: not null } ifStatementSyntax)
             {
-                return guardedStatement
+                var expression = GetNegatedExpression(document, childOperationNode);
+                var guardedCallInElse = childOperationNode.Parent is ElseClauseSyntax || childOperationNode.Parent?.Parent is ElseClauseSyntax;
+
+                SyntaxNode newConditionalOperationNode = ifStatementSyntax
+                    .WithCondition((ExpressionSyntax)expression)
+                    .WithStatement(guardedCallInElse ? ifStatementSyntax.Statement : ifStatementSyntax.Else.Statement)
+                    .WithElse(null)
+                    .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode);
+
+                newRoot = root.ReplaceNode(conditionalOperationNode, newConditionalOperationNode);
+            }
+            else
+            {
+                SyntaxNode newConditionNode = childOperationNode
                     .WithAdditionalAnnotations(Formatter.Annotation)
-                    .WithTriviaFrom(currentConditional);
+                    .WithTriviaFrom(conditionalOperationNode);
+
+                newRoot = root.ReplaceNode(conditionalOperationNode, newConditionNode);
             }
 
-            return ifStatementSyntax
-                .WithCondition((ExpressionSyntax)generator.LogicalNotExpression(guardedStatement.Expression.WithoutTrivia()))
-                .WithStatement(guardedCallInElse ? ifStatementSyntax.Statement : ifStatementSyntax.Else.Statement)
-                .WithElse(null)
-                .WithAdditionalAnnotations(Formatter.Annotation)
-                .WithTriviaFrom(currentConditional);
+            return document.WithSyntaxRoot(newRoot);
         }
 
-        private static ExpressionStatementSyntax? GetGuardedStatement(StatementSyntax? branch)
-            => branch as ExpressionStatementSyntax ?? branch?.ChildNodes().SingleOrDefault() as ExpressionStatementSyntax;
+        private static SyntaxNode GetNegatedExpression(Document document, SyntaxNode newConditionNode)
+        {
+            var generator = SyntaxGenerator.GetGenerator(document);
+            return generator.LogicalNotExpression(((ExpressionStatementSyntax)newConditionNode).Expression.WithoutTrivia());
+        }
     }
 }

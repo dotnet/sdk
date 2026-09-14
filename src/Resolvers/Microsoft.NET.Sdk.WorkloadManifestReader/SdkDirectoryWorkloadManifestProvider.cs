@@ -364,17 +364,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            string versionBandString = _sdkVersionBand.ToString();
-
             if (_manifestRoots.Length == 1)
             {
                 //  Optimization for common case where test hook to add additional directories isn't being used
-                var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], versionBandString);
+                var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], _sdkVersionBand.ToString());
                 if (Directory.Exists(manifestVersionBandDirectory))
                 {
                     foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
                     {
-                        ProbeDirectory(workloadManifestDirectory, versionBandString);
+                        ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
                     }
                 }
             }
@@ -384,7 +382,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 Dictionary<string, string> directoriesWithManifests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var manifestRoot in _manifestRoots.Reverse())
                 {
-                    var manifestVersionBandDirectory = Path.Combine(manifestRoot, versionBandString);
+                    var manifestVersionBandDirectory = Path.Combine(manifestRoot, _sdkVersionBand.ToString());
                     if (Directory.Exists(manifestVersionBandDirectory))
                     {
                         foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
@@ -396,7 +394,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
                 foreach (var workloadManifestDirectory in directoriesWithManifests.Values)
                 {
-                    ProbeDirectory(workloadManifestDirectory, versionBandString);
+                    ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
                 }
             }
 

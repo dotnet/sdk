@@ -1,68 +1,63 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseXslTransform,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotUseXslTransformTests
     {
-        [TestMethod]
+        [Fact]
         public async Task TestConstructXslTransformDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Xml.Xsl;
 
-                using System;
-                using System.Xml.Xsl;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new XslTransform();
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        new XslTransform();
+    }
+}",
             GetCSharpResultAt(9, 9));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConstructNormalClassNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Xml.Xsl;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Xml.Xsl;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        new TestClass();
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        new TestClass();
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestInvokeMethodOfXslTransformNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Xml.Xsl;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Xml.Xsl;
 
-                class TestClass
-                {
-                    public void TestMethod(XslTransform xslTransform)
-                    {
-                        xslTransform.Load("url");
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod(XslTransform xslTransform)
+    {
+        xslTransform.Load(""url"");
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

@@ -3,13 +3,16 @@
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
     public partial class DotnetNewArgumentsTests
     {
-        public TestContext TestContext { get; set; } = null!;
-        private ITestOutputHelper _log => new TestContextOutputHelper(TestContext);
+        private readonly ITestOutputHelper _log;
 
-        [TestMethod]
+        public DotnetNewArgumentsTests(ITestOutputHelper log)
+        {
+            _log = log;
+        }
+
+        [Fact]
         public void ShowsDetailedOutputOnMissedRequiredParam()
         {
             var dotnetNewHelpOutput = new DotnetNewCommand(_log, "--help")

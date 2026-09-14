@@ -3,19 +3,22 @@
 
 namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
 {
-    [TestClass]
     public class GivenDotnetInvokesMSBuild : SdkTest
     {
-        [TestMethod]
-        [DataRow("build")]
-        [DataRow("clean")]
-        [DataRow("msbuild")]
-        [DataRow("pack")]
-        [DataRow("publish")]
-        [DataRow("test")]
+        public GivenDotnetInvokesMSBuild(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [InlineData("build")]
+        [InlineData("clean")]
+        [InlineData("msbuild")]
+        [InlineData("pack")]
+        [InlineData("publish")]
+        [InlineData("test")]
         public void When_dotnet_command_invokes_msbuild_Then_env_vars_and_m_are_passed(string command)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -24,14 +27,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
                 .Should().Pass();
         }
 
-        [TestMethod]
-        [DataRow("build")]
-        [DataRow("msbuild")]
-        [DataRow("pack")]
-        [DataRow("publish")]
+        [Theory]
+        [InlineData("build")]
+        [InlineData("msbuild")]
+        [InlineData("pack")]
+        [InlineData("publish")]
         public void When_dotnet_command_invokes_msbuild_with_no_args_verbosity_is_set_to_minimum(string command)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
                 .WithSource();
 
             var cmd = new DotnetCommand(Log)
@@ -45,14 +48,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
                      .And.Contain("Message with high importance", "Because high importance messages are shown on minimum verbosity");
         }
 
-        [TestMethod]
-        [DataRow("build")]
-        [DataRow("clean")]
-        [DataRow("pack")]
-        [DataRow("publish")]
+        [Theory]
+        [InlineData("build")]
+        [InlineData("clean")]
+        [InlineData("pack")]
+        [InlineData("publish")]
         public void When_dotnet_command_invokes_msbuild_with_diag_verbosity_Then_arg_is_passed(string command)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration", identifier: command)
                 .WithSource();
 
             var cmd = new DotnetCommand(Log)
@@ -66,10 +69,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
             cmd.StdOut.Should().Contain("Message with low importance");
         }
 
-        [TestMethod]
+        [Fact]
         public void When_dotnet_test_invokes_msbuild_with_no_args_verbosity_is_set_to_minimum()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration")
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration")
                 .WithSource();
 
             var cmd = new DotnetCommand(Log)
@@ -80,10 +83,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
             cmd.StdOut.Should().Contain("Message with high importance");
         }
 
-        [TestMethod]
+        [Fact]
         public void When_dotnet_msbuild_command_is_invoked_with_non_msbuild_switch_Then_it_fails()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration")
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration")
                 .WithSource();
 
             var cmd = new DotnetCommand(Log)
@@ -93,10 +96,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
             cmd.ExitCode.Should().NotBe(0);
         }
 
-        [TestMethod]
+        [Fact]
         public void When_MSBuildSDKsPath_is_set_by_env_var_then_it_is_not_overridden()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildIntegration")
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildIntegration")
                 .WithSource();
 
             var cmd = new DotnetCommand(Log)

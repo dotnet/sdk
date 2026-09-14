@@ -27,13 +27,13 @@ namespace Microsoft.NET.TestFramework
         //  The TestProject from which this asset was created, if any
         public TestProject? TestProject { get; set; }
 
-        internal TestAsset(string testDestination, ITestOutputHelper log) : base(testDestination)
+        internal TestAsset(string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             Log = log;
             Name = new DirectoryInfo(testDestination).Name;
         }
 
-        internal TestAsset(string testAssetRoot, string testDestination, ITestOutputHelper log) : base(testDestination)
+        internal TestAsset(string testAssetRoot, string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             if (string.IsNullOrEmpty(testAssetRoot))
             {
@@ -89,12 +89,6 @@ namespace Microsoft.NET.TestFramework
                                       return !IsInBinOrObjFolder(file);
                                   });
 
-            //  Project files (and .xml) are rewritten below with substitutions applied, so there is
-            //  no need to also File.Copy them first: copying would write the file only to have it
-            //  immediately overwritten by the substitution pass. Defer them and copy every other
-            //  source file verbatim.
-            var projectFilesToRewrite = new List<(string source, string destination)>();
-
             foreach (string srcFile in sourceFiles)
             {
                 string destFile = srcFile.Replace(_testAssetRoot ?? string.Empty, Path);
@@ -102,17 +96,13 @@ namespace Microsoft.NET.TestFramework
                 if (System.IO.Path.GetFileName(srcFile).EndsWith("proj") || System.IO.Path.GetFileName(srcFile).EndsWith("xml"))
                 {
                     _projectFiles.Add(destFile);
-                    projectFilesToRewrite.Add((srcFile, destFile));
                 }
-                else
-                {
-                    File.Copy(srcFile, destFile, true);
-                }
+                File.Copy(srcFile, destFile, true);
             }
 
             targetFramework ??= ToolsetInfo.CurrentTargetFramework;
 
-            var propertySubstitutions = new[]
+            var substitutions = new[]
             {
                 (propertyName: "TargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
                 (propertyName: "CurrentTargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
@@ -122,30 +112,14 @@ namespace Microsoft.NET.TestFramework
                 (propertyName: "RuntimeIdentifier", variableName: "LatestRuntimeIdentifiers", value: ToolsetInfo.LatestRuntimeIdentifiers)
             };
 
-            var packageVersionSubstitutions = (packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties()).ToArray();
-
-            //  Apply every property and package-version substitution in a single load/mutate/save
-            //  pass per project file, reading from the source and writing the result straight to the
-            //  destination. Previously each substitution called WithProjectChanges independently,
-            //  reloading and rewriting every project file once per substitution (~14 rewrites per
-            //  file, on top of the File.Copy above) during the setup of every test that uses
-            //  WithSource.
-            foreach (var (source, destination) in projectFilesToRewrite)
+            foreach (var (propertyName, variableName, value) in substitutions)
             {
-                var project = XDocument.Load(source);
+                UpdateProjProperty(propertyName, variableName, value);
+            }
 
-                foreach (var (propertyName, variableName, value) in propertySubstitutions)
-                {
-                    ApplyUpdateProjProperty(project, propertyName, variableName, value);
-                }
-
-                foreach (var (propertyName, version) in packageVersionSubstitutions)
-                {
-                    ApplyReplacePackageVersionVariable(project, propertyName, version);
-                }
-
-                using var file = File.CreateText(destination);
-                project.Save(file);
+            foreach (var (propertyName, version) in packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties())
+            {
+                ReplacePackageVersionVariable(propertyName, version);
             }
 
             return this;
@@ -153,22 +127,21 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset UpdateProjProperty(string propertyName, string variableName, string targetValue)
         {
-            return WithProjectChanges(p => ApplyUpdateProjProperty(p, propertyName, variableName, targetValue));
-        }
-
-        private static void ApplyUpdateProjProperty(XDocument project, string propertyName, string variableName, string targetValue)
-        {
-            if (project.Root is not null)
+            return WithProjectChanges(
+            p =>
             {
-                var ns = project.Root.Name.Namespace;
-                var nodes = project.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
-                            project.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
-
-                foreach (var node in nodes)
+                if (p.Root is not null)
                 {
-                    node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
+                    var ns = p.Root.Name.Namespace;
+                    var nodes = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
+                                p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
+
+                    foreach (var node in nodes)
+                    {
+                        node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
+                    }
                 }
-            }
+            });
         }
 
         public TestAsset SetProjProperty(string propertyName, string value)
@@ -187,29 +160,29 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset ReplacePackageVersionVariable(string targetName, string targetValue)
         {
-            return WithProjectChanges(project => ApplyReplacePackageVersionVariable(project, targetName, targetValue));
-        }
-
-        private static void ApplyReplacePackageVersionVariable(XDocument project, string targetName, string targetValue)
-        {
             var elementsWithVersionAttribute = new[] { "PackageReference", "Package", "Sdk" };
 
-            if (project.Root is not null)
+            return WithProjectChanges(project =>
             {
-                var ns = project.Root.Name.Namespace;
-                foreach (var elementName in elementsWithVersionAttribute)
+                if (project.Root is not null)
                 {
-                    var packageReferencesToUpdate =
-                        project.Root.Descendants(ns + elementName)
-                            .Select(p => p.Attribute("Version"))
-                            .OfType<XAttribute>()
-                            .Where(va => va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
-                    foreach (var versionAttribute in packageReferencesToUpdate)
+                    var ns = project.Root.Name.Namespace;
+                    foreach (var elementName in elementsWithVersionAttribute)
                     {
-                        versionAttribute.Value = targetValue;
+                        var packageReferencesToUpdate =
+                            project.Root.Descendants(ns + elementName)
+                                .Select(p => p.Attribute("Version"))
+                                .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                        foreach (var versionAttribute in packageReferencesToUpdate)
+                        {
+                            if (versionAttribute is not null)
+                            {
+                                versionAttribute.Value = targetValue;
+                            }
+                        }
                     }
                 }
-            }
+            });
         }
 
         public TestAsset WithTargetFramework(string targetFramework, string? projectName = null)

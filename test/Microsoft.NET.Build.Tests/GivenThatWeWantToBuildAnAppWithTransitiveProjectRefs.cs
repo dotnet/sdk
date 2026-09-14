@@ -3,18 +3,20 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs : SdkTest
     {
+        public GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRef")
                 .WithSource();
 
@@ -37,7 +39,6 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
-                "TestApp.runtimeconfig.dev.json",
                 "MainLibrary.dll",
                 "MainLibrary.pdb",
                 "AuxLibrary.dll",
@@ -54,11 +55,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("This string came from AuxLibrary!");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs")
                 .WithSource();
 
@@ -77,7 +77,6 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
-                "TestApp.runtimeconfig.dev.json",
                 "MainLibrary.dll",
                 "MainLibrary.pdb",
                 "AuxLibrary.dll",
@@ -94,14 +93,14 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(Array.Empty<string>());
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_build_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRefDisabled")
                 .WithSource();
 

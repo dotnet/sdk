@@ -1,16 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [TestClass]
-    public class GivenDotnetCleanInvocation : SdkTest
+    [Collection(TestConstants.UsesStaticTelemetryState)]
+    public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
-
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
 
@@ -18,7 +15,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetCleanInvocation));
 
-        [TestMethod]
+        [Fact]
         public void ItAddsProjectToMsbuildInvocation()
         {
             var msbuildPath = "<msbuildpath>";
@@ -28,34 +25,34 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .BeEquivalentTo([.. ExpectedPrefix, "<project>"]);
         }
 
-        [TestMethod]
-        [DataRow(new string[] { }, new string[] { })]
-        [DataRow(new string[] { "-o", "<output>" },
+        [Theory]
+        [InlineData(new string[] { }, new string[] { })]
+        [InlineData(new string[] { "-o", "<output>" },
             new string[] { "--property:OutputPath=<cwd><output>", "--property:_CommandLineDefinedOutputPath=true" })]
-        [DataRow(new string[] { "--output", "<output>" },
+        [InlineData(new string[] { "--output", "<output>" },
             new string[] { "--property:OutputPath=<cwd><output>", "--property:_CommandLineDefinedOutputPath=true" })]
-        [DataRow(new string[] { "--artifacts-path", "foo" },
+        [InlineData(new string[] { "--artifacts-path", "foo" },
             new string[] { "--property:ArtifactsPath=<cwd>foo" })]
-        [DataRow(new string[] { "-f", "<framework>" },
+        [InlineData(new string[] { "-f", "<framework>" },
             new string[] { "--property:TargetFramework=<framework>" })]
-        [DataRow(new string[] { "--framework", "<framework>" },
+        [InlineData(new string[] { "--framework", "<framework>" },
             new string[] { "--property:TargetFramework=<framework>" })]
-        [DataRow(new string[] { "-c", "<configuration>" },
+        [InlineData(new string[] { "-c", "<configuration>" },
             new string[] { "--property:Configuration=<configuration>" })]
-        [DataRow(new string[] { "--configuration", "<configuration>" },
+        [InlineData(new string[] { "--configuration", "<configuration>" },
             new string[] { "--property:Configuration=<configuration>" })]
-        [DataRow(new string[] { "-v", "diag" },
+        [InlineData(new string[] { "-v", "diag" },
             new string[] { "--verbosity:diag" })]
-        [DataRow(new string[] { "--verbosity", "diag" },
+        [InlineData(new string[] { "--verbosity", "diag" },
             new string[] { "--verbosity:diag" })]
-        [DataRow(new string[] { "--disable-build-servers" },
+        [InlineData(new string[] { "--disable-build-servers" },
             new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("<output>", "<output>" + Path.DirectorySeparatorChar))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
@@ -67,4 +64,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

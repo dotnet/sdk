@@ -9,26 +9,25 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
-    [TestClass]
     public class AppSettingsTransformTests
     {
-        [TestMethod]
+        [Fact]
         public void GenerateDefaultAppSettingsJsonFile_CreatesCorrectDefaultFile()
         {
             // Act 
             string resultFile = AppSettingsTransform.GenerateDefaultAppSettingsJsonFile();
 
             // Assert
-            Assert.IsTrue(File.Exists(resultFile));
+            Assert.True(File.Exists(resultFile));
             JToken defaultConnectionString = JObject.Parse(File.ReadAllText(resultFile))["ConnectionStrings"]["DefaultConnection"];
-            Assert.AreEqual(defaultConnectionString.ToString(), string.Empty);
+            Assert.Equal(defaultConnectionString.ToString(), string.Empty);
         }
 
 
-        [TestMethod]
-        [DataRow("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
-        [DataRow("EmptyConnection", @"")]
-        [DataRow("", @"SomeConnectionStringValue")]
+        [Theory]
+        [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
+        [InlineData("EmptyConnection", @"")]
+        [InlineData("", @"SomeConnectionStringValue")]
         public void AppSettingsTransform_UpdatesSingleConnectionString(string connectionName, string connectionString)
         {
             // Arrange
@@ -44,7 +43,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 
             // Assert
             JToken connectionStringValue = JObject.Parse(File.ReadAllText(appsettingsFile))["ConnectionStrings"][connectionName];
-            Assert.AreEqual(connectionStringValue.ToString(), connectionString);
+            Assert.Equal(connectionStringValue.ToString(), connectionString);
 
             if (File.Exists(appsettingsFile))
             {
@@ -52,10 +51,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             }
         }
 
-        [TestMethod]
-        [DataRow("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
-        [DataRow("EmptyConnection", @"")]
-        [DataRow("", @"SomeConnectionStringValue")]
+        [Theory]
+        [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
+        [InlineData("EmptyConnection", @"")]
+        [InlineData("", @"SomeConnectionStringValue")]
         public void AppSettingsTransform_DoesNotFailsIfEntryIsMissinginAppSettings(string connectionName, string connectionString)
         {
             // Arrange
@@ -71,7 +70,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             bool succeed = AppSettingsTransform.UpdateDestinationConnectionStringEntries(appsettingsFile, taskItemArray);
 
             // Assert
-            Assert.IsTrue(succeed);
+            Assert.True(succeed);
 
             if (File.Exists(appsettingsFile))
             {
@@ -94,8 +93,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             get { return testData; }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ConnectionStringsData), typeof(AppSettingsTransformTests))]
+        [Theory]
+        [MemberData(nameof(ConnectionStringsData), MemberType = typeof(AppSettingsTransformTests))]
         public void AppSettingsTransform_UpdatesMultipleConnectionStrings(ITaskItem[] values)
         {
             // Arrange
@@ -108,7 +107,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             foreach (var eachValue in values)
             {
                 JToken connectionStringValue = JObject.Parse(File.ReadAllText(destinationAppSettingsFile))["ConnectionStrings"][eachValue.ItemSpec];
-                Assert.AreEqual(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
+                Assert.Equal(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
             }
 
             if (File.Exists(destinationAppSettingsFile))
@@ -117,10 +116,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             }
         }
 
-        [TestMethod]
-        [DataRow("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
-        [DataRow("EmptyConnection", @"")]
-        [DataRow("", @"SomeConnectionStringValue")]
+        [Theory]
+        [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
+        [InlineData("EmptyConnection", @"")]
+        [InlineData("", @"SomeConnectionStringValue")]
         public void AppSettingsTransform_UpdateConnectionStringEvenIfConnectionStringSectionMissing(string connectionName, string connectionString)
         {
             // Arrange
@@ -138,7 +137,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 
             // Assert
             JToken connectionStringValue = JObject.Parse(File.ReadAllText(appsettingsFile))["ConnectionStrings"][connectionName];
-            Assert.AreEqual(connectionStringValue.ToString(), connectionString);
+            Assert.Equal(connectionStringValue.ToString(), connectionString);
 
             if (File.Exists(appsettingsFile))
             {

@@ -6,14 +6,16 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Clean.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToCleanAHelloWorldProject : SdkTest
     {
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12.0")]
+        public GivenThatWeWantToCleanAHelloWorldProject(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [RequiresMSBuildVersionFact("17.12.0")]
         public void It_cleans_without_logging_assets_message()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", "CleanHelloWorld")
                 .WithSource()
                 .Restore(Log);
@@ -40,10 +42,10 @@ namespace Microsoft.NET.Clean.Tests
                 .NotHaveStdOutContaining("warning");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_cleans_without_assets_file_present()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -60,10 +62,10 @@ namespace Microsoft.NET.Clean.Tests
 
         // Related to https://github.com/dotnet/sdk/issues/2233
         // This test will fail if the naive fix for not reading assets file during clean is attempted
-        [TestMethod]
+        [Fact]
         public void It_can_clean_and_build_without_using_rebuild()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
               .CopyTestAsset("HelloWorld")
               .WithSource();
 

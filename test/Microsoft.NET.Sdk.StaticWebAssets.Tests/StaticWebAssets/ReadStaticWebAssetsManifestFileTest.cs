@@ -1,13 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -15,7 +10,6 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    [TestClass]
     public class ReadStaticWebAssetsManifestFileTest
     {
         public ReadStaticWebAssetsManifestFileTest()
@@ -26,7 +20,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         public string TempFilePath { get; }
 
-        [TestMethod]
+        [Fact]
         public void CanReadManifestWithoutProperties()
         {
             var errorMessages = new List<string>();
@@ -54,7 +48,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.ReferencedProjectsConfiguration.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void CanReadEmptyManifest()
         {
             var errorMessages = new List<string>();
@@ -93,7 +87,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.ReferencedProjectsConfiguration.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void ConvertsAssetsToTaskItems()
         {
             var errorMessages = new List<string>();
@@ -208,7 +202,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                             .BeEquivalentTo("""[{"Name":"Content-Length","Value":"__content-length__"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"__etag__"},{"Name":"Last-Modified","Value":"__last-modified__"}]""");
         }
 
-        [TestMethod]
+        [Fact]
         public void ConvertsReferencedProjectsConfigurationsToTaskItems()
         {
             var errorMessages = new List<string>();
@@ -272,7 +266,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             projectConfiguration.GetMetadata(nameof(StaticWebAssetsManifest.ReferencedProjectConfiguration.AdditionalBuildPropertiesToRemove)).Should().BeEquivalentTo(";WebPublishProfileFile");
         }
 
-        [TestMethod]
+        [Fact]
         public void ConvertsDiscoveryPatternsToTaskItems()
         {
             var errorMessages = new List<string>();
@@ -328,7 +322,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             discoveryPattern.GetMetadata(nameof(StaticWebAssetsDiscoveryPattern.Pattern)).Should().BeEquivalentTo("**");
         }
 
-        [TestMethod]
+        [Fact]
         public void ReturnsErrorwhenManifestDoesNotExist()
         {
             var errorMessages = new List<string>();
@@ -354,34 +348,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.ReferencedProjectsConfiguration.Should().BeNull();
         }
 
-        [TestMethod]
-        public void ReturnsErrorWhenManifestPathIsEmpty()
-        {
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-            var task = new ReadStaticWebAssetsManifestFile
-            {
-                BuildEngine = buildEngine.Object,
-                ManifestPath = ""
-            };
-
-            // Act
-            var result = task.Execute();
-
-            // Assert
-            result.Should().Be(false);
-            errorMessages.Count.Should().Be(1);
-            errorMessages[0].Should().Be("Manifest file at '' not found.");
-            task.Assets.Should().BeNull();
-            task.Endpoints.Should().BeNull();
-            task.DiscoveryPatterns.Should().BeNull();
-            task.ReferencedProjectsConfiguration.Should().BeNull();
-        }
-
-        [TestMethod]
+        [Fact]
         public void ReturnsErrorwhenManifestIsMalformed()
         {
             var errorMessages = new List<string>();

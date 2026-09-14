@@ -1,9 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferLengthCountIsEmptyOverAnyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferLengthCountIsEmptyOverAnyFixer>;
@@ -13,269 +13,251 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    [TestClass]
     public class PreferLengthOverAnyTests
     {
         private static readonly DiagnosticResult ExpectedDiagnostic = new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(0);
 
-        [TestMethod]
-        public async Task TestLocalDeclarationAsync()
+        [Fact]
+        public Task TestLocalDeclarationAsync()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public void M() {
-                        var array = new int[0];
-                        _ = {|#0:array.Any()|};
-                    }
-                }
-                """;
-            const string fixedCode = """
-                using System.Collections.Generic;
-                using System.Linq;
+public class Tests {
+    public void M() {
+        var array = new int[0];
+        _ = {|#0:array.Any()|};
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public void M() {
-                        var array = new int[0];
-                        _ = array.Length != 0;
-                    }
-                }
-                """;
+public class Tests {
+    public void M() {
+        var array = new int[0];
+        _ = array.Length != 0;
+    }
+}";
 
-            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task VbTestLocalDeclarationAsync()
+        [Fact]
+        public Task VbTestLocalDeclarationAsync()
         {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function M()
-                        Dim array = new Integer() {}
-                        Dim x = {|#0:array.Any()|}
-                    End Function
-                End Class
-                """;
-            const string fixedCode = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+Public Class Tests
+    Public Function M()
+        Dim array = new Integer() {}
+        Dim x = {|#0:array.Any()|}
+    End Function
+End Class";
+            const string fixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function M()
-                        Dim array = new Integer() {}
-                        Dim x = array.Length <> 0
-                    End Function
-                End Class
-                """;
+Public Class Tests
+    Public Function M()
+        Dim array = new Integer() {}
+        Dim x = array.Length <> 0
+    End Function
+End Class";
 
-            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task TestParameterDeclarationAsync()
+        [Fact]
+        public Task TestParameterDeclarationAsync()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool HasContent(int[] array) {
-                        return {|#0:array.Any()|};
-                    }
-                }
-                """;
-            const string fixedCode = """
-                using System.Collections.Generic;
-                using System.Linq;
+public class Tests {
+    public bool HasContent(int[] array) {
+        return {|#0:array.Any()|};
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool HasContent(int[] array) {
-                        return array.Length != 0;
-                    }
-                }
-                """;
+public class Tests {
+    public bool HasContent(int[] array) {
+        return array.Length != 0;
+    }
+}";
 
-            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task VbTestParameterDeclarationAsync()
+        [Fact]
+        public Task VbTestParameterDeclarationAsync()
         {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function HasContents(array As Integer()) As Boolean
-                        Return {|#0:array.Any()|}
-                    End Function
-                End Class
-                """;
-            const string fixedCode = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+Public Class Tests
+    Public Function HasContents(array As Integer()) As Boolean
+        Return {|#0:array.Any()|}
+    End Function
+End Class";
+            const string fixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function HasContents(array As Integer()) As Boolean
-                        Return array.Length <> 0
-                    End Function
-                End Class
-                """;
+Public Class Tests
+    Public Function HasContents(array As Integer()) As Boolean
+        Return array.Length <> 0
+    End Function
+End Class";
 
-            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task TestNegatedAnyAsync()
+        [Fact]
+        public Task TestNegatedAnyAsync()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool IsEmpty(int[] array) {
-                        return !{|#0:array.Any()|};
-                    }
-                }
-                """;
-            const string fixedCode = """
-                using System.Collections.Generic;
-                using System.Linq;
+public class Tests {
+    public bool IsEmpty(int[] array) {
+        return !{|#0:array.Any()|};
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool IsEmpty(int[] array) {
-                        return array.Length == 0;
-                    }
-                }
-                """;
+public class Tests {
+    public bool IsEmpty(int[] array) {
+        return array.Length == 0;
+    }
+}";
 
-            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task VbTestNegatedAnyAsync()
+        [Fact]
+        public Task VbTestNegatedAnyAsync()
         {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function IsEmpty(array As Integer()) As Boolean
-                        Return Not {|#0:array.Any()|}
-                    End Function
-                End Class
-                """;
-            const string fixedCode = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+Public Class Tests
+    Public Function IsEmpty(array As Integer()) As Boolean
+        Return Not {|#0:array.Any()|}
+    End Function
+End Class";
+            const string fixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function IsEmpty(array As Integer()) As Boolean
-                        Return array.Length = 0
-                    End Function
-                End Class
-                """;
+Public Class Tests
+    Public Function IsEmpty(array As Integer()) As Boolean
+        Return array.Length = 0
+    End Function
+End Class";
 
-            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [TestMethod]
-        public async Task DontWarnOnChainedLinqWithAnyAsync()
+        [Fact]
+        public Task DontWarnOnChainedLinqWithAnyAsync()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool HasContents(int[] array) {
-                        return array.Select(x => x).Any();
-                    }
-                }
-                """;
+public class Tests {
+    public bool HasContents(int[] array) {
+        return array.Select(x => x).Any();
+    }
+}";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
-        public async Task VbDontWarnOnChainedLinqWithAnyAsync()
+        [Fact]
+        public Task VbDontWarnOnChainedLinqWithAnyAsync()
         {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function HasContents(array As Integer()) As Boolean
-                        Return array.Select(Function(x) x).Any()
-                    End Function
-                End Class
-                """;
+Public Class Tests
+    Public Function HasContents(array As Integer()) As Boolean
+        Return array.Select(Function(x) x).Any()
+    End Function
+End Class";
 
-            await VerifyVB.VerifyAnalyzerAsync(code);
+            return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
-        public async Task DontWarnOnAnyWithPredicateAsync()
+        [Fact]
+        public Task DontWarnOnAnyWithPredicateAsync()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool HasContents(int[] array) {
-                        return array.Any(x => x > 5);
-                    }
-                }
-                """;
+public class Tests {
+    public bool HasContents(int[] array) {
+        return array.Any(x => x > 5);
+    }
+}";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
-        public async Task VbDontWarnOnAnyWithPredicateAsync()
+        [Fact]
+        public Task VbDontWarnOnAnyWithPredicateAsync()
         {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-                Public Class Tests
-                    Public Function HasContents(array As Integer()) As Boolean
-                        Return array.Any(Function(x) x > 5)
-                    End Function
-                End Class
-                """;
+Public Class Tests
+    Public Function HasContents(array As Integer()) As Boolean
+        Return array.Any(Function(x) x > 5)
+    End Function
+End Class";
 
-            await VerifyVB.VerifyAnalyzerAsync(code);
+            return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod]
-        public async Task DontWarnOnCustomType()
+        [Fact]
+        public Task DontWarnOnCustomType()
         {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
 
-                public class Tests {
-                    public bool HasContents(MyCollection collection) {
-                        return collection.Any();
-                    }
-                }
+public class Tests {
+    public bool HasContents(MyCollection collection) {
+        return collection.Any();
+    }
+}
 
-                public class MyCollection {
-                    public bool Any() => throw null;
-                    public int Length => throw null;
-                }
-                """;
+public class MyCollection {
+    public bool Any() => throw null;
+    public int Length => throw null;
+}";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public async Task WhenInExpressionTree_NoDiagnostic()
+        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public Task WhenInExpressionTree_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -288,18 +270,18 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                                         var array = new int[0];
                                         Evaluate(() => array.Any());
                                     }
-
+                                
                                     private void Evaluate(Expression<Func<bool>> expression)
                                     {
                                     }
                                 }
                 """;
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public async Task WhenInFunc_Diagnostic()
+        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public Task WhenInFunc_Diagnostic()
         {
             const string code = """
                                 using System;
@@ -312,7 +294,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                                         var array = new int[0];
                                         Evaluate(() => {|#0:array.Any()|});
                                     }
-
+                                
                                     private void Evaluate(Func<bool> func)
                                     {
                                     }
@@ -329,82 +311,14 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                                         var array = new int[0];
                                         Evaluate(() => array.Length != 0);
                                     }
-
+                                
                                     private void Evaluate(Func<bool> func)
                                     {
                                     }
                                 }
                 """;
 
-            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
-        }
-
-        [TestMethod]
-        public async Task CS_NestedAny_FixAllRewritesBothAsync()
-        {
-            const string code = """
-                using System.Collections.Generic;
-                using System.Linq;
-
-                public class Tests {
-                    public bool M(int[] outer, int[] inner) {
-                        return {|#0:({|#1:inner.Any()|} ? outer : inner).Any()|};
-                    }
-                }
-                """;
-            const string fixedCode = """
-                using System.Collections.Generic;
-                using System.Linq;
-
-                public class Tests {
-                    public bool M(int[] outer, int[] inner) {
-                        return (inner.Length != 0 ? outer : inner).Length != 0;
-                    }
-                }
-                """;
-
-            await VerifyCS.VerifyCodeFixAsync(
-                code,
-                new[]
-                {
-                    ExpectedDiagnostic,
-                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
-                },
-                fixedCode);
-        }
-
-        [TestMethod]
-        public async Task VB_NestedAny_FixAllRewritesBothAsync()
-        {
-            const string code = """
-                Imports System.Collections.Generic
-                Imports System.Linq
-
-                Public Class Tests
-                    Public Function M(outer As Integer(), inner As Integer()) As Boolean
-                        Return {|#0:If({|#1:inner.Any()|}, outer, inner).Any()|}
-                    End Function
-                End Class
-                """;
-            const string fixedCode = """
-                Imports System.Collections.Generic
-                Imports System.Linq
-
-                Public Class Tests
-                    Public Function M(outer As Integer(), inner As Integer()) As Boolean
-                        Return If(inner.Length <> 0, outer, inner).Length <> 0
-                    End Function
-                End Class
-                """;
-
-            await VerifyVB.VerifyCodeFixAsync(
-                code,
-                new[]
-                {
-                    ExpectedDiagnostic,
-                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
-                },
-                fixedCode);
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
     }
 }

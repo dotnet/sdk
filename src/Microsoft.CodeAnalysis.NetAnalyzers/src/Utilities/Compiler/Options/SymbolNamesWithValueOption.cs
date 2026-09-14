@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -56,7 +55,7 @@ namespace Analyzer.Utilities
         /// </summary>
         private readonly ConcurrentDictionary<ISymbol, KeyValuePair<string?, TValue?>> _wildcardMatchResult = new();
 
-        private readonly ConcurrentDictionary<ISymbol, string?> _symbolToDeclarationId = new();
+        private readonly ConcurrentDictionary<ISymbol, string> _symbolToDeclarationId = new();
 
         private SymbolNamesWithValueOption(ImmutableDictionary<string, TValue> names, ImmutableDictionary<ISymbol, TValue> symbols,
             ImmutableDictionary<SymbolKind, ImmutableDictionary<string, TValue>> wildcardNamesBySymbolKind)
@@ -302,11 +301,10 @@ namespace Analyzer.Utilities
 #pragma warning restore CS8762 // Parameter 'firstMatchValue' must have a non-null value when exiting with 'true'
             }
 
-            string? symbolDeclarationId = _symbolToDeclarationId.GetOrAdd(symbol, GetDeclarationId);
+            var symbolDeclarationId = _symbolToDeclarationId.GetOrAdd(symbol, GetDeclarationId);
 
             // We start by trying to match with the most precise definition (prefix)...
-            if (symbolDeclarationId is not null &&
-                _wildcardNamesBySymbolKind.TryGetValue(symbol.Kind, out var names) &&
+            if (_wildcardNamesBySymbolKind.TryGetValue(symbol.Kind, out var names) &&
                 names.FirstOrDefault(kvp => symbolDeclarationId.StartsWith(kvp.Key, StringComparison.Ordinal)) is var prefixedFirstMatchOrDefault &&
                 !string.IsNullOrWhiteSpace(prefixedFirstMatchOrDefault.Key))
             {
@@ -316,8 +314,7 @@ namespace Analyzer.Utilities
             }
 
             // If not found, then we try to match with the symbol full declaration ID...
-            if (symbolDeclarationId is not null &&
-                _wildcardNamesBySymbolKind.TryGetValue(AllKinds, out var value) &&
+            if (_wildcardNamesBySymbolKind.TryGetValue(AllKinds, out var value) &&
                 value.FirstOrDefault(kvp => symbolDeclarationId.StartsWith(kvp.Key, StringComparison.Ordinal)) is var unprefixedFirstMatchOrDefault &&
                 !string.IsNullOrWhiteSpace(unprefixedFirstMatchOrDefault.Key))
             {
@@ -342,14 +339,9 @@ namespace Analyzer.Utilities
             _wildcardMatchResult.AddOrUpdate(symbol, new KeyValuePair<string?, TValue?>(null, default), (s, match) => new KeyValuePair<string?, TValue?>(null, default));
             return false;
 
-            static string? GetDeclarationId(ISymbol symbol)
+            static string GetDeclarationId(ISymbol symbol)
             {
-                if (DocumentationCommentId.CreateDeclarationId(symbol) is not string declarationId)
-                {
-                    return null;
-                }
-
-                var declarationIdWithoutPrefix = declarationId[2..];
+                var declarationIdWithoutPrefix = DocumentationCommentId.CreateDeclarationId(symbol)[2..];
 
                 // Documentation comment ID for constructors uses '#ctor', but '#' is a comment start token for editorconfig.
                 declarationIdWithoutPrefix = declarationIdWithoutPrefix
@@ -383,7 +375,7 @@ namespace Analyzer.Utilities
 
             internal ref readonly ConcurrentDictionary<ISymbol, KeyValuePair<string?, TValue?>> WildcardMatchResult => ref _symbolNamesWithValueOption._wildcardMatchResult;
 
-            internal ref readonly ConcurrentDictionary<ISymbol, string?> SymbolToDeclarationId => ref _symbolNamesWithValueOption._symbolToDeclarationId;
+            internal ref readonly ConcurrentDictionary<ISymbol, string> SymbolToDeclarationId => ref _symbolNamesWithValueOption._symbolToDeclarationId;
         }
 
         /// <summary>

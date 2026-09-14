@@ -1,10 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -13,7 +11,6 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
@@ -37,14 +34,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         /// <summary>
         /// Gets an optional <see cref="FixAllProvider" /> that can fix all/multiple occurrences of diagnostics fixed by this code fix provider.
+        /// Return null if the provider doesn't support fix all/multiple occurrences.
+        /// Otherwise, you can return any of the well known fix all providers from <see cref="WellKnownFixAllProviders" /> or implement your own fix all provider.
         /// </summary>
         /// <returns>FixAllProvider.</returns>
-        /// <remarks>
-        /// The synchronous and asynchronous fixes carry different equivalence keys, so this filters on the key
-        /// itself -- <see cref="SyntaxEditorFixAllProvider"/> does not.
-        /// </remarks>
         public sealed override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<string?>(context => context.CodeActionEquivalenceKey, ApplyFixAsync);
+        {
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
+        }
 
         /// <summary>
         /// Computes one or more fixes for the specified <see cref="CodeFixContext" />.
@@ -57,87 +55,20 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span);
-            var diagnostic = context.Diagnostics[0];
-            var isAsync = IsAsync(diagnostic);
+            var properties = context.Diagnostics[0].Properties;
+            var shouldNegateKey = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
+            var isAsync = properties.ContainsKey(UseCountProperlyAnalyzer.IsAsyncKey) ||
+                context.Diagnostics[0].Id == UseCountProperlyAnalyzer.CA1828;
 
             if (node is object &&
-                diagnostic.Properties.TryGetValue(UseCountProperlyAnalyzer.OperationKey, out var operation) &&
-                this.TryGetFixer(node, operation!, isAsync, out _, out _))
+                properties.TryGetValue(UseCountProperlyAnalyzer.OperationKey, out var operation) &&
+                this.TryGetFixer(node, operation!, isAsync, out var expression, out var arguments))
             {
-                var document = context.Document;
-                var diagnostics = context.Diagnostics;
-                var title = GetTitle(isAsync);
-
                 context.RegisterCodeFix(
-                    CodeAction.Create(
-                        title,
-                        ct => SyntaxEditorFixAllProvider.ApplyFixesAsync(document, diagnostics, (doc, diag, editor, token) => ApplyFixAsync(doc, diag, editor, title, token), ct),
-                        title),
-                    diagnostics);
+                    new DoNotUseCountWhenAnyCanBeUsedCodeAction(isAsync, context.Document, node, expression, arguments, shouldNegateKey),
+                    context.Diagnostics);
             }
         }
-
-        private Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey, CancellationToken cancellationToken)
-        {
-            var isAsync = IsAsync(diagnostic);
-
-            if (equivalenceKey is not null && equivalenceKey != GetTitle(isAsync))
-            {
-                return Task.CompletedTask;
-            }
-
-            var pattern = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-
-            if (pattern is null ||
-                !diagnostic.Properties.TryGetValue(UseCountProperlyAnalyzer.OperationKey, out var operation) ||
-                !this.TryGetFixer(pattern, operation!, isAsync, out var expression, out var arguments))
-            {
-                return Task.CompletedTask;
-            }
-
-            var shouldNegate = diagnostic.Properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
-            var carriedOver = new List<SyntaxNode>(arguments) { expression };
-
-            //  The replacement is built out of the reported node's own descendants, so track them: a nested
-            //  violation may already have been rewritten by the time this fix runs.
-            foreach (var node in carriedOver)
-            {
-                editor.TrackNode(node);
-            }
-
-            editor.ReplaceNode(pattern, (currentNode, generator) =>
-            {
-                SyntaxNode Current(SyntaxNode original) => currentNode.GetCurrentNode(original) ?? original;
-
-                var memberAccess = generator.MemberAccessExpression(Current(expression).WithoutTrailingTrivia(), isAsync ? AsyncMethodName : SyncMethodName);
-                var replacementSyntax = generator.InvocationExpression(memberAccess, arguments.Select(Current));
-
-                if (isAsync)
-                {
-                    replacementSyntax = generator.AwaitExpression(replacementSyntax);
-                }
-
-                if (shouldNegate)
-                {
-                    replacementSyntax = generator.LogicalNotExpression(replacementSyntax);
-                }
-
-                return replacementSyntax
-                    .WithAdditionalAnnotations(Formatter.Annotation)
-                    .WithTriviaFrom(currentNode);
-            });
-
-            return Task.CompletedTask;
-        }
-
-        private static bool IsAsync(Diagnostic diagnostic)
-            => diagnostic.Properties.ContainsKey(UseCountProperlyAnalyzer.IsAsyncKey) ||
-               diagnostic.Id == UseCountProperlyAnalyzer.CA1828;
-
-        private static string GetTitle(bool isAsync)
-            => isAsync ?
-                MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle :
-                MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle;
 
         /// <summary>
         /// Tries to get a fixer for the specified <paramref name="node" />.
@@ -154,5 +85,67 @@ namespace Microsoft.NetCore.Analyzers.Performance
             bool isAsync,
             [NotNullWhen(returnValue: true)] out SyntaxNode? expression,
             [NotNullWhen(returnValue: true)] out IEnumerable<SyntaxNode>? arguments);
+
+        private class DoNotUseCountWhenAnyCanBeUsedCodeAction : CodeAction
+        {
+            private readonly bool _isAsync;
+            private readonly Document _document;
+            private readonly SyntaxNode _pattern;
+            private readonly SyntaxNode _expression;
+            private readonly IEnumerable<SyntaxNode> _arguments;
+            private readonly bool _shouldNegateKey;
+
+            public DoNotUseCountWhenAnyCanBeUsedCodeAction(
+                bool isAsync,
+                Document document,
+                SyntaxNode pattern,
+                SyntaxNode expression,
+                IEnumerable<SyntaxNode> arguments,
+                bool shouldNegateKey)
+            {
+                this._isAsync = isAsync;
+                this._document = document;
+                this._pattern = pattern;
+                this._expression = expression;
+                this._arguments = arguments;
+                this._shouldNegateKey = shouldNegateKey;
+
+                var title = !isAsync ?
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle :
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+                this.Title = title;
+                this.EquivalenceKey = title;
+            }
+
+            public override string Title { get; }
+
+            public override string EquivalenceKey { get; }
+
+            protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
+            {
+                var editor = await DocumentEditor.CreateAsync(this._document, cancellationToken).ConfigureAwait(false);
+                var generator = editor.Generator;
+                var memberAccess = generator.MemberAccessExpression(this._expression.WithoutTrailingTrivia(), this._isAsync ? AsyncMethodName : SyncMethodName);
+                var replacementSyntax = generator.InvocationExpression(memberAccess, _arguments);
+
+                if (this._isAsync)
+                {
+                    replacementSyntax = generator.AwaitExpression(replacementSyntax);
+                }
+
+                if (this._shouldNegateKey)
+                {
+                    replacementSyntax = generator.LogicalNotExpression(replacementSyntax);
+                }
+
+                replacementSyntax = replacementSyntax
+                    .WithAdditionalAnnotations(Formatter.Annotation)
+                    .WithTriviaFrom(this._pattern);
+
+                editor.ReplaceNode(this._pattern, replacementSyntax);
+
+                return editor.GetChangedDocument();
+            }
+        }
     }
 }

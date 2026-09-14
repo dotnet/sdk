@@ -2,6 +2,7 @@
 
 Imports System.Composition
 Imports Microsoft.NetCore.Analyzers.InteropServices
+Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
@@ -29,15 +30,18 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.InteropServices
                    node.IsKind(SyntaxKind.DeclareSubStatement)
         End Function
 
-        Protected Overrides Sub FixDeclareStatement(editor As SyntaxEditor, node As SyntaxNode)
+        Protected Overrides Async Function FixDeclareStatementAsync(document As Document, node As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim editor = Await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(False)
             Dim decl = CType(node, DeclareStatementSyntax)
             Dim newCharSetKeyword = SyntaxFactory.Token(SyntaxKind.UnicodeKeyword).
                     WithLeadingTrivia(decl.CharsetKeyword.LeadingTrivia).
                     WithTrailingTrivia(decl.CharsetKeyword.TrailingTrivia).
                     WithAdditionalAnnotations(Formatter.Annotation)
+            Dim newDecl = decl.WithCharsetKeyword(newCharSetKeyword)
 
-            editor.ReplaceNode(decl, decl.WithCharsetKeyword(newCharSetKeyword))
-        End Sub
+            editor.ReplaceNode(decl, newDecl)
+            Return editor.GetChangedDocument()
+        End Function
 
     End Class
 End Namespace

@@ -7,22 +7,18 @@ public static class TestPathUtility
 {
 #if NET
     /// <summary>
-    /// Resolves symlinked macOS temporary-directory prefixes, such as <c>/tmp</c> and <c>/var</c>.
+    /// For path like <c>/tmp/something</c>, returns <c>/private/tmp/something</c> on macOS.
     /// </summary>
     public static string ResolveTempPrefixLink(string path)
     {
+        // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
         if (OperatingSystem.IsMacOS())
         {
-            string[] tempPaths = ["/tmp/", "/var/"];
-            foreach (string tempPath in tempPaths)
+            string tmpPath = "/tmp/";
+            var tmp = new DirectoryInfo(tmpPath[..^1]); // No trailing slash in order to properly check the link target
+            if (tmp.LinkTarget != null && path.StartsWith(tmpPath) && tmp.ResolveLinkTarget(true) is { } linkTarget)
             {
-                var tempRoot = new DirectoryInfo(tempPath[..^1]);
-                if (path.StartsWith(tempPath, StringComparison.Ordinal)
-                    && tempRoot.LinkTarget != null
-                    && tempRoot.ResolveLinkTarget(true) is { } linkTarget)
-                {
-                    return Path.Combine(linkTarget.FullName, path[tempPath.Length..]);
-                }
+                return Path.Combine(linkTarget.FullName, path[tmpPath.Length..]);
             }
         }
 

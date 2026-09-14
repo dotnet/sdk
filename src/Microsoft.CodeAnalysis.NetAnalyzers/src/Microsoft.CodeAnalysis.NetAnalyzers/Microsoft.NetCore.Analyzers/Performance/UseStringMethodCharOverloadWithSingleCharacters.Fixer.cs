@@ -1,21 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
-    public abstract class UseStringMethodCharOverloadWithSingleCharactersFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class UseStringMethodCharOverloadWithSingleCharactersFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
             UseStringMethodCharOverloadWithSingleCharacters.SafeTransformationRule.Id);
@@ -26,56 +23,58 @@ namespace Microsoft.NetCore.Analyzers.Performance
             var argumentListNode = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             var model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (TryGetChar(model, argumentListNode, out _))
+            if (TryGetChar(model, argumentListNode, out var c))
             {
-                RegisterCodeFix(context,
-                    MicrosoftNetCoreAnalyzersResources.ReplaceStringLiteralWithCharLiteralCodeActionTitle,
-                    nameof(MicrosoftNetCoreAnalyzersResources.ReplaceStringLiteralWithCharLiteralCodeActionTitle));
+                context.RegisterCodeFix(CreateCodeAction(context.Document, argumentListNode, c), context.Diagnostics);
             }
         }
 
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public override FixAllProvider GetFixAllProvider()
         {
-            var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var argumentListNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-
-            if (!TryGetChar(model, argumentListNode, out var c))
-            {
-                return;
-            }
-
-            // Which arguments survive is a semantic question and has to be answered against the original
-            // tree, but a surviving argument can itself hold a diagnosed call, so the nodes carried over
-            // are taken by position from the list as the editor has rewritten it.
-            var preservedIndices = GetArguments(argumentListNode)
-                .Select((argument, index) => (argument, index))
-                .Where(t => PreserveArgument(model.GetOperation(t.argument, cancellationToken) as IArgumentOperation))
-                .Select(t => t.index)
-                .ToImmutableArray();
-
-            editor.ReplaceNode(argumentListNode, (currentNode, generator) =>
-            {
-                var currentArguments = GetArguments(currentNode);
-                var arguments = new[] { generator.Argument(generator.LiteralExpression(c)) }
-                    .Concat(preservedIndices.Select(index => currentArguments[index]));
-
-                return CreateArgumentList(arguments).WithTriviaFrom(currentNode);
-            });
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
         protected abstract bool TryGetChar(SemanticModel model, SyntaxNode argumentListNode, out char c);
 
-        protected abstract ImmutableArray<SyntaxNode> GetArguments(SyntaxNode argumentListNode);
+        protected abstract CodeAction CreateCodeAction(Document document, SyntaxNode argumentListNode, char sourceCharLiteral);
 
-        protected abstract SyntaxNode CreateArgumentList(IEnumerable<SyntaxNode> arguments);
-
-        private static bool PreserveArgument(IArgumentOperation? argument)
+        protected abstract class ReplaceStringLiteralWithCharLiteralCodeAction : CodeAction
         {
-            // In our target methods, IndexOf/LastIndexOf have additional int arguments for the `startIndex` and `count`
-            // that we want to preserve when fixing.
-            // A better method might be to detect StringComparison and CultureInfo in particular and return false on these instead,
-            // but that will require a lot of additional effort to resolve these types from here.
-            return argument?.Value.Type != null && argument.Value.Type.SpecialType == SpecialType.System_Int32;
+            private readonly Document _document;
+            private readonly SyntaxNode _argumentListNode;
+            private readonly char _sourceCharLiteral;
+
+            protected ReplaceStringLiteralWithCharLiteralCodeAction(Document document, SyntaxNode argumentListNode, char sourceCharLiteral)
+            {
+                _document = document;
+                _argumentListNode = argumentListNode;
+                _sourceCharLiteral = sourceCharLiteral;
+            }
+
+            public override string Title => MicrosoftNetCoreAnalyzersResources.ReplaceStringLiteralWithCharLiteralCodeActionTitle;
+
+            public override string EquivalenceKey => nameof(ReplaceStringLiteralWithCharLiteralCodeAction);
+
+            protected abstract void ApplyFix(DocumentEditor editor, SemanticModel model, SyntaxNode oldArgumentListNode, char c);
+
+            protected static bool PreserveArgument(IArgumentOperation? argument)
+            {
+                // In our target methods, IndexOf/LastIndexOf have additional int arguments for the `startIndex` and `count`
+                // that we want to preserve when fixing.
+                // A better method might be to detect StringComparison and CultureInfo in particular and return false on these instead,
+                // but that will require a lot of additional effort to resolve these types from here.
+                return argument?.Value.Type != null && argument.Value.Type.SpecialType == SpecialType.System_Int32;
+            }
+
+            protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
+            {
+                var editor = await DocumentEditor.CreateAsync(_document, cancellationToken).ConfigureAwait(false);
+                var model = await _document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+                ApplyFix(editor, model, _argumentListNode, _sourceCharLiteral);
+
+                return editor.GetChangedDocument();
+            }
         }
     }
 }

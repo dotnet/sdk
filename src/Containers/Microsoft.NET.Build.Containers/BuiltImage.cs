@@ -46,12 +46,12 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image OS.
     /// </summary>
-    internal required string OS { get; init; }
+    internal string? OS { get; init; }
 
     /// <summary>
     /// Gets image architecture.
     /// </summary>
-    internal required string Architecture { get; init; }
+    internal string? Architecture { get; init; }
 
     /// <summary>
     /// Gets layers descriptors.

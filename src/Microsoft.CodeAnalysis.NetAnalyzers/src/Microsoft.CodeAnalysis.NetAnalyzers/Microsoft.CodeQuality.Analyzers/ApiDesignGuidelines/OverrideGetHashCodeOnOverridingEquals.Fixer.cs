@@ -1,40 +1,57 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
     /// CA2218: Override GetHashCode on overriding Equals
     /// </summary>
-    public abstract class OverrideGetHashCodeOnOverridingEqualsFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class OverrideGetHashCodeOnOverridingEqualsFixer : CodeFixProvider
     {
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            string title = MicrosoftCodeQualityAnalyzersResources.OverrideGetHashCodeOnOverridingEqualsCodeActionTitle;
-            RegisterCodeFix(context, title, title);
-            return Task.CompletedTask;
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode? typeDeclaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
-            if (typeDeclaration is null)
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            SyntaxNode typeDeclaration = root.FindNode(context.Span);
+            typeDeclaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(typeDeclaration);
+            if (typeDeclaration == null)
             {
                 return;
             }
 
             // CONSIDER: Do we need to confirm that System.Object.GetHashCode isn't shadowed in a base type?
 
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            editor.AddMember(typeDeclaration, editor.Generator.DefaultGetHashCodeOverrideDeclaration(model.Compilation));
+            string title = MicrosoftCodeQualityAnalyzersResources.OverrideGetHashCodeOnOverridingEqualsCodeActionTitle;
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    title,
+                    cancellationToken => OverrideObjectGetHashCodeAsync(context.Document, typeDeclaration, cancellationToken),
+                    equivalenceKey: title),
+                context.Diagnostics);
+        }
+
+        private static async Task<Document> OverrideObjectGetHashCodeAsync(Document document, SyntaxNode typeDeclaration, CancellationToken cancellationToken)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var generator = editor.Generator;
+
+            var methodDeclaration = generator.DefaultGetHashCodeOverrideDeclaration(editor.SemanticModel.Compilation);
+
+            editor.AddMember(typeDeclaration, methodDeclaration);
+            return editor.GetChangedDocument();
         }
     }
 }

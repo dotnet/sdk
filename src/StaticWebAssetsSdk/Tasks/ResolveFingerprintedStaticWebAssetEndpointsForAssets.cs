@@ -13,12 +13,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // cumbersome to do so, specially for third-party targets and SDKs. This task encapsulates the logic to
 // resolve the preferrred set of endpoints for a given set of assets, taking into account the hosting model
 // (Standalone or Hosted) and ensuring that fingerprinted endpoints are used when possible.
-[MSBuildMultiThreadableTask]
-public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task, IMultiThreadableTask
+public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     [Required] public ITaskItem[] CandidateEndpoints { get; set; }
 
     [Required] public ITaskItem[] CandidateAssets { get; set; }
@@ -30,7 +26,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task, IMulti
     public override bool Execute()
     {
         var candidateEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
-        var candidateAssets = StaticWebAsset.FromTaskItemGroup(CandidateAssets, TaskEnvironment);
+        var candidateAssets = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var resolvedEndpoints = new List<StaticWebAssetEndpoint>();
 
         var endpointsByAsset = candidateEndpoints.GroupBy(e => e.AssetFile, OSPath.PathComparer)

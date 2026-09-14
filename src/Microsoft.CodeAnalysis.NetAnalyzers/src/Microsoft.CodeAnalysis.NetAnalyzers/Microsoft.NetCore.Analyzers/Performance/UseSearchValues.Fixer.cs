@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,6 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
@@ -30,33 +28,28 @@ namespace Microsoft.NetCore.Analyzers.Performance
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseSearchValuesAnalyzer.DiagnosticId);
 
-        /// <summary>
-        /// Each extraction has to see the field names the extractions before it took, and the
-        /// <see langword="System"/> import has to be added at most once, so both are carried per document.
-        /// </summary>
-        private sealed class FixState
+        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            public HashSet<string> FieldNames { get; } = new(StringComparer.Ordinal);
+            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            if (root is null)
+            {
+                return;
+            }
 
-            public bool ImportedSystemNamespace { get; set; }
-        }
-
-        public sealed override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<FixState>(_ => new FixState(), ConvertToSearchValuesAsync);
-
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
-        {
-            Document document = context.Document;
-            ImmutableArray<Diagnostic> diagnostics = context.Diagnostics;
+            var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
+            if (node is null)
+            {
+                return;
+            }
 
             context.RegisterCodeFix(
                 CodeAction.Create(
                     UseSearchValuesCodeFixTitle,
-                    cancellationToken => ConvertAllToSearchValuesAsync(document, diagnostics, cancellationToken),
+                    cancellationToken => ConvertToSearchValuesAsync(context.Document, node, cancellationToken),
                     equivalenceKey: nameof(UseSearchValuesCodeFixTitle)),
-                diagnostics);
-
-            return Task.CompletedTask;
+                context.Diagnostics);
         }
 
         protected abstract ValueTask<(SyntaxNode TypeDeclaration, INamedTypeSymbol? TypeSymbol, bool IsRealType)> GetTypeSymbolAsync(SemanticModel semanticModel, SyntaxNode node, CancellationToken cancellationToken);
@@ -67,26 +60,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         protected abstract SyntaxNode? TryReplaceArrayCreationWithInlineLiteralExpression(IOperation operation);
 
-        private Task<Document> ConvertAllToSearchValuesAsync(Document document, ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken)
+        private async Task<Document> ConvertToSearchValuesAsync(Document document, SyntaxNode argumentNode, CancellationToken cancellationToken)
         {
-            FixState state = new();
-
-            return SyntaxEditorFixAllProvider.ApplyFixesAsync(
-                document,
-                diagnostics,
-                (doc, diagnostic, editor, ct) => ConvertToSearchValuesAsync(doc, diagnostic, editor, state, ct),
-                cancellationToken);
-        }
-
-        private async Task ConvertToSearchValuesAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, FixState state, CancellationToken cancellationToken)
-        {
-            SyntaxNode? argumentNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            if (argumentNode is null)
-            {
-                return;
-            }
-
             SemanticModel? semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
 
             if (semanticModel?.Compilation is not { } compilation ||
@@ -96,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 semanticModel.GetOperation(argumentNode, cancellationToken) is not { } argument ||
                 GetArgumentOperationAncestorOrSelf(argument) is not { } argumentOperation)
             {
-                return;
+                return document;
             }
 
             bool isByte =
@@ -133,19 +110,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             (var typeDeclaration, var typeSymbol, bool isRealType) = await GetTypeSymbolAsync(semanticModel, argumentNode, cancellationToken).ConfigureAwait(false);
 
-            // Find a unique name for the field that does not conflict with other members in scope, or with a
-            // field an earlier fix in this same pass already introduced.
-            if (fieldName != removedMemberName)
+            // Find a unique name for the field that does not conflict with other members in scope.
+            if (typeSymbol is not null && fieldName != removedMemberName)
             {
-                var members = GetAllMemberNamesInScope(typeSymbol).Concat(state.FieldNames).ToArray();
+                var members = GetAllMemberNamesInScope(typeSymbol).ToArray();
                 int memberCount = 1;
                 while (members.Contains(fieldName, StringComparer.Ordinal))
                 {
                     fieldName = $"{defaultSearchValuesFieldName}{memberCount++}";
                 }
             }
-
-            state.FieldNames.Add(fieldName);
 
             // private static readonly SearchValues<T> s_myValues = SearchValues.Create(argument);
             var newField = generator.FieldDeclaration(
@@ -181,31 +155,25 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 indexOfAnyOperation.Instance?.Syntax is { } stringInstance)
             {
                 // foo.IndexOfAny => foo.AsSpan().IndexOfAny
-                editor.ReplaceNode(stringInstance, (currentInstance, g) => g.InvocationExpression(g.MemberAccessExpression(currentInstance, "AsSpan")));
+                editor.ReplaceNode(stringInstance, generator.InvocationExpression(generator.MemberAccessExpression(stringInstance, "AsSpan")));
 
                 // We are now using the MemoryExtensions.AsSpan() extension method. Make sure it's in scope.
-                ImportSystemNamespaceIfNeeded(editor, semanticModel, memoryExtensions, stringInstance, state);
+                ImportSystemNamespaceIfNeeded(editor, memoryExtensions, stringInstance);
             }
+
+            return editor.GetChangedDocument();
         }
 
-        private static void ImportSystemNamespaceIfNeeded(SyntaxEditor editor, SemanticModel semanticModel, INamedTypeSymbol memoryExtensions, SyntaxNode node, FixState state)
+        private static void ImportSystemNamespaceIfNeeded(DocumentEditor editor, INamedTypeSymbol memoryExtensions, SyntaxNode node)
         {
-            if (state.ImportedSystemNamespace)
-            {
-                return;
-            }
-
-            var symbols = semanticModel.LookupNamespacesAndTypes(node.SpanStart, name: nameof(MemoryExtensions));
+            var symbols = editor.SemanticModel.LookupNamespacesAndTypes(node.SpanStart, name: nameof(MemoryExtensions));
 
             if (!symbols.Contains(memoryExtensions, SymbolEqualityComparer.Default))
             {
-                // The import has to be computed from the root as the other fixes left it, not from the root this
-                // fix started with, or it re-emits the whole document in its pre-fix form.
-                editor.ReplaceNode(
-                    editor.OriginalRoot,
-                    (currentRoot, generator) => generator.AddNamespaceImports(currentRoot, generator.NamespaceImportDeclaration(nameof(System))));
-
-                state.ImportedSystemNamespace = true;
+                SyntaxNode withoutSystemImport = editor.GetChangedRoot();
+                SyntaxNode systemNamespaceImportStatement = editor.Generator.NamespaceImportDeclaration(nameof(System));
+                SyntaxNode withSystemImport = editor.Generator.AddNamespaceImports(withoutSystemImport, systemNamespaceImportStatement);
+                editor.ReplaceNode(editor.OriginalRoot, withSystemImport);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,13 +7,13 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
-    public abstract class SpecifyMarshalingForPInvokeStringArgumentsFixer : SyntaxEditorBasedCodeFixProvider
+    public abstract class SpecifyMarshalingForPInvokeStringArgumentsFixer : CodeFixProvider
     {
         protected const string CharSetText = "CharSet";
         protected const string LPWStrText = "LPWStr";
@@ -26,63 +25,60 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
-            if (node is null || (!IsAttribute(node) && !IsDeclareStatement(node)))
+            if (node == null)
             {
                 return;
             }
 
             SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (!TryGetInteropTypes(model.Compilation, out _))
+            INamedTypeSymbol? charSetType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCharSet);
+            INamedTypeSymbol? dllImportType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute);
+            INamedTypeSymbol? marshalAsType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesMarshalAsAttribute);
+            INamedTypeSymbol? unmanagedType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesUnmanagedType);
+            if (charSetType == null || dllImportType == null || marshalAsType == null || unmanagedType == null)
             {
                 return;
             }
 
             string title = MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsTitle;
-            RegisterCodeFix(context, title, title);
-        }
-
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            if (node is null)
-            {
-                return;
-            }
-
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (!TryGetInteropTypes(model.Compilation, out InteropTypes types))
-            {
-                return;
-            }
 
             if (IsAttribute(node))
             {
-                FixAttributeArguments(editor, model, node, types, cancellationToken);
+                context.RegisterCodeFix(CodeAction.Create(title,
+                                                         async ct => await FixAttributeArgumentsAsync(context.Document, node, charSetType, dllImportType, marshalAsType, unmanagedType, ct).ConfigureAwait(false),
+                                                         equivalenceKey: title),
+                                        context.Diagnostics);
             }
             else if (IsDeclareStatement(node))
             {
-                FixDeclareStatement(editor, node);
+                context.RegisterCodeFix(CodeAction.Create(title,
+                                                         async ct => await FixDeclareStatementAsync(context.Document, node, ct).ConfigureAwait(false),
+                                                         equivalenceKey: title),
+                                        context.Diagnostics);
             }
         }
 
         protected abstract bool IsAttribute(SyntaxNode node);
         protected abstract bool IsDeclareStatement(SyntaxNode node);
-        protected abstract void FixDeclareStatement(SyntaxEditor editor, SyntaxNode node);
+        protected abstract Task<Document> FixDeclareStatementAsync(Document document, SyntaxNode node, CancellationToken cancellationToken);
         protected abstract SyntaxNode FindNamedArgument(IReadOnlyList<SyntaxNode> arguments, string argumentName);
 
-        private void FixAttributeArguments(SyntaxEditor editor, SemanticModel model, SyntaxNode attributeDeclaration, InteropTypes types, CancellationToken cancellationToken)
+        private async Task<Document> FixAttributeArgumentsAsync(Document document, SyntaxNode attributeDeclaration,
+            INamedTypeSymbol charSetType, INamedTypeSymbol dllImportType, INamedTypeSymbol marshalAsType, INamedTypeSymbol unmanagedType, CancellationToken cancellationToken)
         {
+            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             // could be either a [DllImport] or [MarshalAs] attribute
             ISymbol? attributeType = model.GetSymbolInfo(attributeDeclaration, cancellationToken).Symbol;
             IReadOnlyList<SyntaxNode> arguments = generator.GetAttributeArguments(attributeDeclaration);
 
-            if (types.DllImport.Equals(attributeType?.ContainingType))
+            if (dllImportType.Equals(attributeType?.ContainingType))
             {
                 // [DllImport] attribute, add or replace CharSet named parameter
                 SyntaxNode argumentValue = generator.MemberAccessExpression(
-                                        generator.TypeExpression(types.CharSet),
+                                        generator.TypeExpression(charSetType),
                                         generator.IdentifierName(UnicodeText));
                 SyntaxNode newCharSetArgument = generator.AttributeArgument(CharSetText, argumentValue);
 
@@ -98,48 +94,23 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     editor.ReplaceNode(charSetArgument, newCharSetArgument);
                 }
             }
-            else if (types.MarshalAs.Equals(attributeType?.ContainingType) && arguments.Count == 1)
+            else if (marshalAsType.Equals(attributeType?.ContainingType) && arguments.Count == 1)
             {
                 // [MarshalAs] attribute, replace the only argument
                 SyntaxNode newArgument = generator.AttributeArgument(
                                         generator.MemberAccessExpression(
-                                            generator.TypeExpression(types.Unmanaged),
+                                            generator.TypeExpression(unmanagedType),
                                             generator.IdentifierName(LPWStrText)));
 
                 editor.ReplaceNode(arguments[0], newArgument);
             }
+
+            return editor.GetChangedDocument();
         }
 
-        private static bool TryGetInteropTypes(Compilation compilation, out InteropTypes types)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            types = default;
-
-            if (compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCharSet) is not INamedTypeSymbol charSetType ||
-                compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute) is not INamedTypeSymbol dllImportType ||
-                compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesMarshalAsAttribute) is not INamedTypeSymbol marshalAsType ||
-                compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesUnmanagedType) is not INamedTypeSymbol unmanagedType)
-            {
-                return false;
-            }
-
-            types = new InteropTypes(charSetType, dllImportType, marshalAsType, unmanagedType);
-            return true;
-        }
-
-        private readonly struct InteropTypes
-        {
-            public InteropTypes(INamedTypeSymbol charSet, INamedTypeSymbol dllImport, INamedTypeSymbol marshalAs, INamedTypeSymbol unmanaged)
-            {
-                CharSet = charSet;
-                DllImport = dllImport;
-                MarshalAs = marshalAs;
-                Unmanaged = unmanaged;
-            }
-
-            public INamedTypeSymbol CharSet { get; }
-            public INamedTypeSymbol DllImport { get; }
-            public INamedTypeSymbol MarshalAs { get; }
-            public INamedTypeSymbol Unmanaged { get; }
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

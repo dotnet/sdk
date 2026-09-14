@@ -3,11 +3,13 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAP2PReferenceWithTargetPlatform : SdkTest
     {
+        public GivenThatWeWantToBuildAP2PReferenceWithTargetPlatform(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_successfully()
         {
             var appProject = new TestProject()
@@ -25,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
 
             appProject.ReferencedProjects.Add(libraryProject);
 
-            var testAsset = TestAssetsManager.CreateTestProject(appProject);
+            var testAsset = _testAssetsManager.CreateTestProject(appProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand

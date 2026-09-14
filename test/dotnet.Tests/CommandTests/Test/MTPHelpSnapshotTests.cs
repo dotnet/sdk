@@ -3,30 +3,26 @@
 
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
-using VerifyMSTest;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests;
 
-[TestClass]
-[UsesVerify]
-public partial class MTPHelpSnapshotTests : SdkTest
+public class MTPHelpSnapshotTests : SdkTest
 {
-    public MTPHelpSnapshotTests()
+    public MTPHelpSnapshotTests(ITestOutputHelper log) : base(log)
     {
     }
 
-    [TestMethod]
+    [Fact]
     public async Task VerifyMTPHelpOutput()
     {
-        TestAsset testInstance = TestAssetsManager
+        TestAsset testInstance = _testAssetsManager
             .CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString())
             .WithSource();
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable, "0")
             .Execute(CliConstants.HelpOptionKey);
 
         result.ExitCode.Should().Be(ExitCodes.Success);
@@ -48,11 +44,7 @@ public partial class MTPHelpSnapshotTests : SdkTest
             Log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not helix-related");
             settings.UseDirectory("snapshots");
         }
-
-        // MTP emits a "Running tests from <abs-path>\TestProject.dll (<tfm>|<arch>)" line whose
-        // path/TFM/architecture vary by machine and run. Scrub it so the snapshot stays stable.
-        settings.ScrubLinesContaining("Running tests from");
-
+        
         await Verify(helpOutput, settings);
     }
 }

@@ -11,11 +11,9 @@ using Moq;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
-    [TestClass]
     public class OsxEnvironmentPathTests
     {
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void GivenPathNotSetItPrintsManualInstructions()
         {
             var reporter = new BufferedReporter();
@@ -41,8 +39,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     toolsPath.Path));
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void GivenPathNotSetAndProfileExistsItPrintsReopenMessage()
         {
             var reporter = new BufferedReporter();
@@ -68,10 +65,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().Equal(CliStrings.EnvironmentPathOSXNeedReopen);
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [DataRow("/home/user/.dotnet/tools")]
-        [DataRow("~/.dotnet/tools")]
+        [UnixOnlyTheory]
+        [InlineData("/home/user/.dotnet/tools")]
+        [InlineData("~/.dotnet/tools")]
         public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
         {
             var reporter = new BufferedReporter();
@@ -94,8 +90,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void GivenPathSetItDoesNotAddPathToEnvironment()
         {
             var reporter = new BufferedReporter();
@@ -124,8 +119,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Be(false);
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void GivenPathNotSetItAddsToEnvironment()
         {
             var reporter = new BufferedReporter();

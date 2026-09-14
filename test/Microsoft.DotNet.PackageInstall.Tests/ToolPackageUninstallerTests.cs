@@ -15,13 +15,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [TestClass]
     public class ToolPackageUninstallerTests : SdkTest
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [WindowsOnlyTheory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -74,7 +72,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             [CallerMemberName] string testName = "",
             string identifier = null)
         {
-            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(testName, identifier).Path);
+            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(testName, identifier).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
@@ -125,6 +123,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo.with.shim");
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
-        public ToolPackageUninstallerTests() { }
+        public ToolPackageUninstallerTests(ITestOutputHelper log) : base(log)
+        {
+        }
     }
 }

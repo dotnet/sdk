@@ -1,16 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToReferenceAnAssembly : SdkTest
     {
+        public GivenThatWeWantToReferenceAnAssembly(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "net40")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "net8.0")]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net8.0")]
         public void ItRunsAppsDirectlyReferencingAssemblies(
             string referencerTarget,
             string dependencyTarget)
@@ -44,7 +46,7 @@ public class Class1
 }
 ";
 
-            var dependencyAsset = TestAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
+            var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
             TestProject referencerProject = new()
@@ -66,7 +68,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -75,9 +77,9 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a direct reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework)]
         public void ItRunsAppsDirectlyReferencingAssembliesWithSatellites(
             string referencerTarget,
             string dependencyTarget)
@@ -165,7 +167,7 @@ public class Class1
 </root>
 ";
 
-            var dependencyAsset = TestAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
+            var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
             TestProject referencerProject = new()
@@ -187,7 +189,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -196,10 +198,10 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for a direct reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "net40")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "net8.0")]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net8.0")]
         public void ItRunsAppsDirectlyReferencingAssembliesWhichReferenceAssemblies(
             string referencerTarget,
             string dllDependencyTarget)
@@ -250,7 +252,7 @@ public class Class1
 }
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject referencerProject = new()
@@ -272,7 +274,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -281,9 +283,9 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a reference of an indirect reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework)]
         public void ItRunsAppsDirectlyReferencingAssembliesWhichReferenceAssembliesWithSatellites(
             string referencerTarget,
             string dllDependencyTarget)
@@ -388,7 +390,7 @@ public class Class1
 }
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject referencerProject = new()
@@ -410,7 +412,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -419,10 +421,10 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for a reference of an indirect reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssemblies(
             string referencerTarget,
             string dependencyTarget,
@@ -457,7 +459,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -496,7 +498,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -505,9 +507,9 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from an indirect reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard2.0")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard2.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", ToolsetInfo.CurrentTargetFramework)]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWithSatellites(
             string referencerTarget,
             string dependencyTarget,
@@ -596,7 +598,7 @@ public class Class2
 </root>
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -635,7 +637,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -644,10 +646,10 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for an indirect reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWhichReferenceAssemblies(
             string referencerTarget,
             string dependencyTarget,
@@ -699,7 +701,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -738,7 +740,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -747,9 +749,9 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a reference of an indirect reference.");
         }
 
-        [TestMethod]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard2.0")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", ToolsetInfo.CurrentTargetFramework)]
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard2.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", ToolsetInfo.CurrentTargetFramework)]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWhichReferenceAssembliesWithSatellites(
             string referencerTarget,
             string dependencyTarget,
@@ -855,7 +857,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -894,7 +896,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)

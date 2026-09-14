@@ -6,17 +6,16 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    [TestClass]
     public class ResponseFileTests : SdkTest
     {
-        public ResponseFileTests()
+        public ResponseFileTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void Can_safely_expand_response_file_lines()
         {
-            var tempFileDir = TestAssetsManager.CreateTestDirectory().Path;
+            var tempFileDir = _testAssetsManager.CreateTestDirectory().Path;
             var tempFilePath = Path.Combine(tempFileDir, "params.rsp");
             var lines = new[] {
                 "build",
@@ -43,10 +42,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             tokens.Skip(1).Should().BeEquivalentTo(tokenized);
         }
 
-        [TestMethod]
+        [Fact]
         public void Can_skip_empty_and_commented_lines()
         {
-            var tempFileDir = TestAssetsManager.CreateTestDirectory().Path;
+            var tempFileDir = _testAssetsManager.CreateTestDirectory().Path;
             var tempFilePath = Path.Combine(tempFileDir, "skips.rsp");
             var lines = new[] {
                 "build",

@@ -1,18 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class AspNetCoreOnFullFramework : SdkTest
     {
+        public AspNetCoreOnFullFramework(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("1.1.2")]
-        [DataRow("2.0.4")]
+        [WindowsOnlyTheory]
+        [InlineData("1.1.2")]
+        [InlineData("2.0.4")]
         public void It_discovers_assembly_parts(string aspnetVersion)
         {
             var testProject = new TestProject()
@@ -69,7 +70,7 @@ class Class1
             testProject.ReferencedProjects.Add(referencedProjectWithPart);
             testProject.ReferencedProjects.Add(referencedProjectWithMvc);
 
-            var testProjectInstance = TestAssetsManager
+            var testProjectInstance = _testAssetsManager
                 .CreateTestProject(testProject, identifier: aspnetVersion);
 
             var buildCommand = new BuildCommand(testProjectInstance);

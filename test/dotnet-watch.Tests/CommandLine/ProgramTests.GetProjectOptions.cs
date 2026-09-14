@@ -1,34 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-extern alias MSTestFramework;
-
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class Program_GetProjectOptionsTests
+public class Program_GetProjectOptionsTests(ITestOutputHelper output)
 {
-    public TestContext TestContext { get; set; } = null!;
-    private DualOutputHelper? _output;
-    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
-    private TestAssetsManager? _testAssetManager;
-    private TestAssetsManager TestAssetManager => _testAssetManager ??= new(Output);
+    private readonly TestAssetsManager _testAssetManager = new(output);
     private readonly TestLogger _testLogger = new();
 
     private string CreateTempDirectory([CallerMemberName] string? callingMethod = null, string? identifier = null)
-        => TestAssetManager.CreateTestDirectory(callingMethod, identifier).Path;
+        => _testAssetManager.CreateTestDirectory(callingMethod, identifier).Path;
 
     private CommandLineOptions ParseOptions(string[] args)
     {
         var output = new StringWriter();
         var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out _);
-        Assert.IsNotNull(options);
+        Assert.NotNull(options);
         return options;
     }
 
-    [TestMethod]
+    [Fact]
     public void ExplicitProjectPath()
     {
         var tempDir = CreateTempDirectory();
@@ -38,14 +31,14 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--project", projectPath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(projectPath, result.Representation.PhysicalPath);
-        Assert.IsNull(result.Representation.EntryPointFilePath);
-        Assert.AreEqual(tempDir, result.WorkingDirectory);
-        Assert.IsTrue(result.IsMainProject);
+        Assert.NotNull(result);
+        Assert.Equal(projectPath, result.Representation.PhysicalPath);
+        Assert.Null(result.Representation.EntryPointFilePath);
+        Assert.Equal(tempDir, result.WorkingDirectory);
+        Assert.True(result.IsMainProject);
     }
 
-    [TestMethod]
+    [Fact]
     public void ProjectInWorkingDirectory()
     {
         var tempDir = CreateTempDirectory();
@@ -55,12 +48,12 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(projectPath, result.Representation.PhysicalPath);
-        Assert.IsNull(result.Representation.EntryPointFilePath);
+        Assert.NotNull(result);
+        Assert.Equal(projectPath, result.Representation.PhysicalPath);
+        Assert.Null(result.Representation.EntryPointFilePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void MultipleProjects()
     {
         var tempDir = CreateTempDirectory();
@@ -70,13 +63,13 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNull(result);
+        Assert.Null(result);
         AssertEx.SequenceEqual(
             [$"[Error] {string.Format(Resources.Error_MultipleProjectsFound, tempDir)}"],
             _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void NonExistentProject()
     {
         var tempDir = CreateTempDirectory();
@@ -84,13 +77,13 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--project", projectPath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNull(result);
+        Assert.Null(result);
         AssertEx.SequenceEqual(
             [$"[Error] {string.Format(Resources.Error_ProjectPath_NotFound, projectPath)}"],
             _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void NoProjectsInDirectoryAndNoCSharpFile()
     {
         var tempDir = CreateTempDirectory();
@@ -100,13 +93,13 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([]);
         var result = Program.GetMainProjectOptions(options, emptyDir, _testLogger);
 
-        Assert.IsNull(result);
+        Assert.Null(result);
         AssertEx.SequenceEqual(
             [$"[Error] {string.Format(Resources.Could_not_find_msbuild_project_file_in_0, emptyDir)}"],
             _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void ProjectDirectory()
     {
         var tempDir = CreateTempDirectory();
@@ -118,15 +111,15 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--project", subDir]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(projectPath, result.Representation.PhysicalPath);
+        Assert.NotNull(result);
+        Assert.Equal(projectPath, result.Representation.PhysicalPath);
     }
 
-    [TestMethod]
-    [DataRow("csproj")]
-    [DataRow("fsproj")]
-    [DataRow("vbproj")]
-    [DataRow("proj")]
+    [Theory]
+    [InlineData("csproj")]
+    [InlineData("fsproj")]
+    [InlineData("vbproj")]
+    [InlineData("proj")]
     public void ProjectFile_AcceptedExtension(string projExtension)
     {
         var tempDir = CreateTempDirectory(projExtension);
@@ -136,12 +129,12 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(projectPath, result.Representation.PhysicalPath);
+        Assert.NotNull(result);
+        Assert.Equal(projectPath, result.Representation.PhysicalPath);
     }
 
-    [TestMethod]
-    [DataRow("shproj")]
+    [Theory]
+    [InlineData("shproj")]
     public void ProjectFile_RejectedExtension(string projExtension)
     {
         var tempDir = CreateTempDirectory(projExtension);
@@ -151,13 +144,13 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNull(result);
+        Assert.Null(result);
         AssertEx.SequenceEqual(
             [$"[Error] {string.Format(Resources.Could_not_find_msbuild_project_file_in_0, tempDir)}"],
             _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void InvalidFilePath()
     {
         var tempDir = CreateTempDirectory();
@@ -177,13 +170,13 @@ public class Program_GetProjectOptionsTests
             message = e.Message;
         }
 
-        Assert.IsNull(result);
+        Assert.Null(result);
         AssertEx.SequenceEqual(
             [$"[Error] {string.Format(Resources.The_specified_path_0_is_invalid_1, invalidPath, message)}"],
             _testLogger.GetAndClearMessages());
     }
 
-    [TestMethod]
+    [Fact]
     public void FilePathOption()
     {
         var tempDir = CreateTempDirectory();
@@ -193,12 +186,12 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--file", csFilePath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
-        Assert.IsNull(result.Representation.PhysicalPath);
+        Assert.NotNull(result);
+        Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
+        Assert.Null(result.Representation.PhysicalPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void CSharpFileSpecifiedAsArgument()
     {
         var tempDir = CreateTempDirectory();
@@ -209,30 +202,11 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions([csFilePath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
+        Assert.NotNull(result);
+        Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
     }
 
-    [TestMethod]
-    [DataRow("-mt")]
-    [DataRow("-mt:\"true\"")]
-    [DataRow("-mt:\"false\"")]
-    [DataRow("-mt:\"\"")]
-    [DataRow("\"--mt:false\"")]
-    public void CSharpFileSpecifiedAfterMultiThreadedOption(string option)
-    {
-        var tempDir = CreateTempDirectory();
-        var csFilePath = Path.Combine(tempDir, "App.cs");
-        File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
-
-        var options = ParseOptions([option, csFilePath]);
-        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
-
-        Assert.IsNotNull(result);
-        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
-    }
-
-    [TestMethod]
+    [Fact]
     public void FileWithShebangSpecifiedAsArgument()
     {
         var tempDir = CreateTempDirectory();
@@ -243,18 +217,18 @@ public class Program_GetProjectOptionsTests
         var options1 = ParseOptions([filePath]);
         var result1 = Program.GetMainProjectOptions(options1, tempDir, _testLogger);
 
-        Assert.IsNotNull(result1);
-        Assert.AreEqual(filePath, result1.Representation.EntryPointFilePath);
+        Assert.NotNull(result1);
+        Assert.Equal(filePath, result1.Representation.EntryPointFilePath);
 
         // dotnet watch -bl -e X=1 App.txt
         var options2 = ParseOptions(["-bl", "-e", "X=1", filePath]);
         var result2 = Program.GetMainProjectOptions(options2, tempDir, _testLogger);
 
-        Assert.IsNotNull(result2);
-        Assert.AreEqual(filePath, result2.Representation.EntryPointFilePath);
+        Assert.NotNull(result2);
+        Assert.Equal(filePath, result2.Representation.EntryPointFilePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void RelativeProjectPath()
     {
         var tempDir = CreateTempDirectory();
@@ -266,11 +240,11 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--project", "subdir/Test.csproj"]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(projectPath, result.Representation.PhysicalPath);
+        Assert.NotNull(result);
+        Assert.Equal(projectPath, result.Representation.PhysicalPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void RelativeFilePath()
     {
         var tempDir = CreateTempDirectory();
@@ -280,11 +254,11 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--file", "Script.cs"]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
+        Assert.NotNull(result);
+        Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void FilePathOptionTakesPrecedenceOverProjectPath()
     {
         var tempDir = CreateTempDirectory();
@@ -296,8 +270,8 @@ public class Program_GetProjectOptionsTests
         var options = ParseOptions(["--file", csFilePath]);
         var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
-        Assert.IsNotNull(result);
-        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
-        Assert.IsNull(result.Representation.PhysicalPath);
+        Assert.NotNull(result);
+        Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
+        Assert.Null(result.Representation.PhysicalPath);
     }
 }

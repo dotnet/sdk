@@ -8,14 +8,13 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class BundledTargetFrameworkTests : SdkTest
     {
-        public BundledTargetFrameworkTests()
+        public BundledTargetFrameworkTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void VersionCommandDisplaysCorrectVersion()
         {
             var filePath = Path.Combine(

@@ -13,44 +13,16 @@ using Moq;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 {
-    [TestClass]
-    // These tests mutate the process-global Microsoft.DotNet.Cli.Utils.Reporter.
-    [ResourceLock(nameof(Reporter))]
-    public class AddJsonPropertyPostActionTests
+    public class AddJsonPropertyPostActionTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
-        // mirrors the per-class lifetime that xUnit's IClassFixture provides.
-        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
-            new(() => new EnvironmentSettingsHelper());
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
-        private IReporter _originalErrorReporter = null!;
-
-        [TestInitialize]
-        public void TestInitialize()
+        public AddJsonPropertyPostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _originalErrorReporter = Reporter.Error;
-            _engineEnvironmentSettings = s_environmentSettingsHelper.Value.CreateEnvironment(
-                hostIdentifier: GetType().Name,
-                virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            Reporter.SetError(_originalErrorReporter);
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            if (s_environmentSettingsHelper.IsValueCreated)
-            {
-                s_environmentSettingsHelper.Value.Dispose();
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void FailsWhenParentPropertyPathIsInvalid()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -87,11 +59,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
             mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid, parentPropertyPath)), Times.Once);
         }
 
-        [TestMethod]
+        [Fact]
         public void FailsWhenPropertyPathCasingIsNotCorrect()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -121,13 +93,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
 
-            Assert.AreEqual(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
+            Assert.Equal(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ModifyJsonPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), typeof(ModifyJsonPostActionTestCase<Mock<IReporter>>))]
+        [Theory]
+        [MemberData(nameof(ModifyJsonPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<Mock<IReporter>>))]
         public void FailsWhenMandatoryArgumentsNotConfigured(ModifyJsonPostActionTestCase<Mock<IReporter>> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -156,20 +128,20 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
 
             testCase.AssertionCallback(mockReporter);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
+        [Theory]
+        [MemberData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
         public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase<(JsonNode, bool)> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
             string? jsonFileName = testCase.PostActionArgs["jsonFileName"];
 
-            Assert.IsNotNull(jsonFileName);
+            Assert.NotNull(jsonFileName);
 
             string jsonFilePath = CreateJsonFile(targetBasePath, jsonFileName, testCase.OriginalJsonContent);
 
@@ -188,17 +160,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsTrue(result);
+            Assert.True(result);
 
             JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
 
-            Assert.IsNotNull(modifiedJsonContent);
+            Assert.NotNull(modifiedJsonContent);
 
             testCase.AssertionCallback((modifiedJsonContent, false));
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
+        [Theory]
+        [MemberData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
         public void CanSuccessfullyCreateAndModifyJsonFileWhenAllowFileCreationAndPathCreationAreSet(ModifyJsonPostActionTestCase<(JsonNode, bool)> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -222,18 +194,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsTrue(result);
+            Assert.True(result);
 
             string jsonFilePath = Path.Combine(targetBasePath, jsonFileName);
             JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
 
-            Assert.IsNotNull(modifiedJsonContent);
+            Assert.NotNull(modifiedJsonContent);
 
             testCase.AssertionCallback((modifiedJsonContent, true));
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
+        [Theory]
+        [MemberData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
         public void CanSuccessfullyModifyJsonFileWhenPathDoesNotExistAndAllowPathCreationIsSet(ModifyJsonPostActionTestCase<(JsonNode, bool)> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -259,16 +231,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsTrue(result);
+            Assert.True(result);
 
             JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
 
-            Assert.IsNotNull(modifiedJsonContent);
+            Assert.NotNull(modifiedJsonContent);
 
             testCase.AssertionCallback((modifiedJsonContent, true));
         }
 
-        [TestMethod]
+        [Fact]
         public void FailsWhenFileExistsButPathDoesNotExistAndAllowPathCreationIsNotSet()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -299,12 +271,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
 
-            Assert.AreEqual(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
+            Assert.Equal(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
-        [TestMethod]
+        [Fact]
         public void FailsWhenFileDoesNotExistAndAllowFileCreationIsNotSet()
         {
             string jsonFileName = Guid.NewGuid().ToString("N") + ".json";
@@ -332,13 +304,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
 
             string jsonFilePath = Path.Combine(targetBasePath, jsonFileName);
-            Assert.IsFalse(_engineEnvironmentSettings.Host.FileSystem.FileExists(jsonFilePath));
+            Assert.False(_engineEnvironmentSettings.Host.FileSystem.FileExists(jsonFilePath));
         }
 
-        [TestMethod]
+        [Fact]
         public void FailsWhenFileDoesNotExistAndAllowFileCreationIsSetButAllowPathCreationIsNotSet()
         {
             string jsonFileName = Guid.NewGuid().ToString("N") + ".json";
@@ -367,13 +339,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.IsFalse(result);
+            Assert.False(result);
 
             string jsonFilePath = Path.Combine(targetBasePath, jsonFileName);
-            Assert.AreEqual("{}", _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
+            Assert.Equal("{}", _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGlobalJson_NoSlnInvolved()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -386,7 +358,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGlobalJson_SlnInSubDirectory()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -400,7 +372,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGlobalJson_SlnInParent()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -414,7 +386,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGitDirectory_NoSlnInvolved()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -427,7 +399,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGitDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGitDirectory_SlnInSubDirectory()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -441,7 +413,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGitDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepoRootDetectionShouldPreferGitDirectory_SlnInParent()
         {
             var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
@@ -484,7 +456,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 },
                 tuple =>
                 {
-                    Assert.AreEqual("Watson", tuple.ResultingJson["person"]!["lastName"]!.ToString());
+                    Assert.Equal("Watson", tuple.ResultingJson["person"]!["lastName"]!.ToString());
                 }),
 
             new(
@@ -499,7 +471,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 },
                 tuple =>
                 {
-                    Assert.AreEqual("street name", tuple.ResultingJson["person"]!["address"]!["street"]!.ToString());
+                    Assert.Equal("street name", tuple.ResultingJson["person"]!["address"]!["street"]!.ToString());
                 }),
 
             new(
@@ -516,11 +488,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 {
                     if (tuple.IsNewJson)
                     {
-                        Assert.AreEqual(@"{""secondProperty"":""bar""}", tuple.ResultingJson.ToJsonString());
+                        Assert.Equal(@"{""secondProperty"":""bar""}", tuple.ResultingJson.ToJsonString());
                     }
                     else
                     {
-                        Assert.AreEqual(@"{""firstProperty"":""foo"",""secondProperty"":""bar""}", tuple.ResultingJson.ToJsonString());
+                        Assert.Equal(@"{""firstProperty"":""foo"",""secondProperty"":""bar""}", tuple.ResultingJson.ToJsonString());
                     }
                 }),
 
@@ -538,11 +510,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 {
                     if (tuple.IsNewJson)
                     {
-                        Assert.AreEqual(@"{""rootProperty"":{""subProperty1"":{""subProperty2"":{""subProperty3"":{""foo"":""bar""}}}}}", tuple.ResultingJson.ToJsonString());
+                        Assert.Equal(@"{""rootProperty"":{""subProperty1"":{""subProperty2"":{""subProperty3"":{""foo"":""bar""}}}}}", tuple.ResultingJson.ToJsonString());
                     }
                     else
                     {
-                        Assert.AreEqual(@"{""rootProperty"":{""subProperty1"":{""subProperty2"":{""subProperty3"":{""name"":""test"",""foo"":""bar""}}}}}", tuple.ResultingJson.ToJsonString());
+                        Assert.Equal(@"{""rootProperty"":{""subProperty1"":{""subProperty2"":{""subProperty3"":{""name"":""test"",""foo"":""bar""}}}}}", tuple.ResultingJson.ToJsonString());
                     }
                 })
         };

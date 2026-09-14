@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -531,20 +530,7 @@ namespace GenerateDocumentationAndConfigFiles
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    try
-                    {
-                        Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
-                    }
-                    finally
-                    {
-                        // Best-effort cleanup of the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
-                        try
-                        {
-                            File.Delete(fileWithPath);
-                        }
-                        catch (IOException) { }
-                        catch (UnauthorizedAccessException) { }
-                    }
+                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
                 }
 
                 return;
@@ -740,7 +726,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(shippedFile, line, kind)),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: true);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
@@ -750,7 +736,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
                             var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(unshippedFile, line, kind)),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: false);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
@@ -889,11 +875,6 @@ namespace GenerateDocumentationAndConfigFiles
                 }
             }
         }
-
-        private static string InvalidEntryMessage(string file, TextLine line, InvalidEntryKind kind)
-            => kind == InvalidEntryKind.HelpLink
-                ? $"Documentation link does not match the rule ID in {file} at {line.LineNumber}: '{line}'. Expected '{ReleaseTrackingHelper.HelpLinkPrefix}' followed by the lowercased rule ID."
-                : $"Invalid entry in {file} at {line.LineNumber}: '{line}'";
 
         private static void CreateRuleset(
             string analyzerRulesetsDir,

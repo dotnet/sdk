@@ -8,12 +8,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
+public class DefineStaticWebAssetEndpoints : Task
 {
-    /// <inheritdoc/>
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
@@ -21,8 +17,6 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 
     [Required]
     public ITaskItem[] ContentTypeMappings { get; set; }
-
-    public ITaskItem[] AdditionalEndpointDefinitions { get; set; }
 
     [Output]
     public ITaskItem[] Endpoints { get; set; }
@@ -32,7 +26,6 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
         var contentTypeMappings = CreateAdditionalContentTypeMappings();
         var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-        var additionalEndpointDefinitions = CreateAdditionalEndpointDefinitions();
         var endpoints = new List<StaticWebAssetEndpoint>(CandidateAssets.Length);
 
         Parallel.For(
@@ -44,9 +37,7 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
                 CandidateAssets,
                 existingEndpointsByAssetFile,
                 Log,
-                contentTypeProvider,
-                additionalEndpointDefinitions,
-                TaskEnvironment),
+                contentTypeProvider),
             static (i, loop, state) => state.Process(i, loop),
             static worker => worker.Finally());
 
@@ -108,48 +99,13 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
         return null;
     }
 
-    private AdditionalEndpointDefinition[] CreateAdditionalEndpointDefinitions()
-    {
-        if (AdditionalEndpointDefinitions == null || AdditionalEndpointDefinitions.Length == 0)
-        {
-            return [];
-        }
-
-        var result = new AdditionalEndpointDefinition[AdditionalEndpointDefinitions.Length];
-        for (var i = 0; i < AdditionalEndpointDefinitions.Length; i++)
-        {
-            var item = AdditionalEndpointDefinitions[i];
-            var pattern = item.GetMetadata("Pattern");
-            var replacement = item.GetMetadata("Replacement");
-            var order = item.GetMetadata("Order");
-
-            var builder = new StaticWebAssetGlobMatcherBuilder();
-            builder.AddIncludePatterns(pattern);
-            var matcher = builder.Build();
-
-            result[i] = new AdditionalEndpointDefinition(pattern, replacement, order, matcher);
-        }
-
-        return result;
-    }
-
-    internal readonly struct AdditionalEndpointDefinition(string pattern, string replacement, string order, StaticWebAssetGlobMatcher matcher)
-    {
-        public string Pattern { get; } = pattern;
-        public string Replacement { get; } = replacement;
-        public string Order { get; } = order;
-        public StaticWebAssetGlobMatcher Matcher { get; } = matcher;
-    }
-
     private readonly struct ParallelWorker(
         List<StaticWebAssetEndpoint> collectedEndpoints,
         List<StaticWebAssetEndpoint> currentEndpoints,
         ITaskItem[] candidateAssets,
         Dictionary<string, HashSet<string>> existingEndpointsByAssetFile,
         TaskLoggingHelper log,
-        ContentTypeProvider contentTypeProvider,
-        DefineStaticWebAssetEndpoints.AdditionalEndpointDefinition[] additionalEndpointDefinitions,
-        TaskEnvironment taskEnvironment)
+        ContentTypeProvider contentTypeProvider)
     {
         public List<StaticWebAssetEndpoint> CollectedEndpoints { get; } = collectedEndpoints;
         public List<StaticWebAssetEndpoint> CurrentEndpoints { get; } = currentEndpoints;
@@ -157,8 +113,6 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
         public Dictionary<string, HashSet<string>> ExistingEndpointsByAssetFile { get; } = existingEndpointsByAssetFile;
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
-        public DefineStaticWebAssetEndpoints.AdditionalEndpointDefinition[] AdditionalEndpointDefinitions { get; } = additionalEndpointDefinitions;
-        public TaskEnvironment TaskEnvironment { get; } = taskEnvironment;
 
         private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
 
@@ -242,66 +196,6 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 
                 Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                 CurrentEndpoints.Add(endpoint);
-
-                // Generate additional endpoints from definitions
-                if (AdditionalEndpointDefinitions.Length > 0)
-                {
-                    CreateAdditionalEndpoints(endpoint, matchContext);
-                }
-            }
-        }
-
-        private void CreateAdditionalEndpoints(StaticWebAssetEndpoint sourceEndpoint, StaticWebAssetGlobMatcher.MatchContext matchContext)
-        {
-            for (var d = 0; d < AdditionalEndpointDefinitions.Length; d++)
-            {
-                var definition = AdditionalEndpointDefinitions[d];
-                matchContext.SetPathAndReinitialize(sourceEndpoint.Route);
-                var match = definition.Matcher.Match(matchContext);
-                if (!match.IsMatch)
-                {
-                    continue;
-                }
-
-                // Use the CapturedStem from the match, which contains only the portion matched by **,
-                // without any trailing literal segments from the pattern.
-                // For **/index.html matching admin/index.html: CapturedStem="admin".
-                // For index.html (no **) matching index.html: CapturedStem="".
-                var capturedStem = match.CapturedStem;
-
-                // Build the new route from the captured stem and the replacement.
-                string newRoute;
-                if (string.IsNullOrEmpty(definition.Replacement))
-                {
-                    // When replacement is empty, the new route is just the captured stem (e.g., **/index.html -> the ** part)
-                    newRoute = capturedStem;
-                }
-                else if (string.IsNullOrEmpty(capturedStem))
-                {
-                    // When there's no captured stem, the replacement becomes the full route (e.g., index.html -> {**fallback:nonfile})
-                    newRoute = definition.Replacement;
-                }
-                else
-                {
-                    // Combine captured stem with replacement (e.g., capturedStem=admin, replacement=something -> admin/something)
-                    newRoute = $"{capturedStem}/{definition.Replacement}";
-                }
-
-                // Normalize the route
-                newRoute = StaticWebAsset.Normalize(newRoute);
-
-                var additionalEndpoint = new StaticWebAssetEndpoint()
-                {
-                    Route = newRoute,
-                    AssetFile = sourceEndpoint.AssetFile,
-                    Selectors = sourceEndpoint.Selectors.ToArray(),
-                    ResponseHeaders = sourceEndpoint.ResponseHeaders.ToArray(),
-                    EndpointProperties = sourceEndpoint.EndpointProperties.ToArray(),
-                    Order = !string.IsNullOrEmpty(definition.Order) ? definition.Order : null,
-                };
-
-                Log.LogMessage(MessageImportance.Low, $"Adding additional endpoint {additionalEndpoint.Route} (order={definition.Order}) for asset {sourceEndpoint.AssetFile} from pattern {definition.Pattern}.");
-                CurrentEndpoints.Add(additionalEndpoint);
             }
         }
 
@@ -332,7 +226,7 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 
         internal ParallelWorker Process(int i, ParallelLoopState _)
         {
-            var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i], TaskEnvironment);
+            var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
             asset.ComputeRoutes(_resolvedRoutes);
             // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
             var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));

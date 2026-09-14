@@ -7,8 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[MSBuildMultiThreadableTask]
-public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
+public class ReadStaticWebAssetsManifestFile : Task
 {
     [Required]
     public string ManifestPath { get; set; }
@@ -25,13 +24,9 @@ public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
     [Output]
     public ITaskItem[] ReferencedProjectsConfiguration { get; set; }
 
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     public override bool Execute()
     {
-        string manifestPath = string.IsNullOrEmpty(ManifestPath) ? ManifestPath : TaskEnvironment.GetAbsolutePath(ManifestPath);
-
-        if (!File.Exists(manifestPath))
+        if (!File.Exists(ManifestPath))
         {
             Log.LogError($"Manifest file at '{ManifestPath}' not found.");
             return false;
@@ -39,7 +34,7 @@ public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
 
         try
         {
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
 
             Assets = manifest.Assets?.Select(a => a.ToTaskItem()).ToArray() ?? [];
 

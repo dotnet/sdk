@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using SharedTestOutputHelper = Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -13,9 +14,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         private readonly HashSet<string> _installedPackages = new();
 
-        public SharedHomeDirectory(ITestOutputHelper log)
+        public SharedHomeDirectory(IMessageSink messageSink)
         {
-            Log = log;
+            Log = new SharedTestOutputHelper(messageSink);
             Log.WriteLine("Initializing SharedHomeDirectory for folder {0}", HomeDirectory);
             Initialize();
         }

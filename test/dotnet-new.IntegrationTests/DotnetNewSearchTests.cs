@@ -5,26 +5,21 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public partial class DotnetNewSearchTests : BaseIntegrationTest
+    public partial class DotnetNewSearchTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
     {
-        private ITestOutputHelper _log => Log;
-        private static SharedHomeDirectory s_sharedHome = null!;
+        private readonly SharedHomeDirectory _sharedHome;
+        private readonly ITestOutputHelper _log;
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext ctx)
+        public DotnetNewSearchTests(SharedHomeDirectory sharedHome, ITestOutputHelper log) : base(log)
         {
-            s_sharedHome = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            _sharedHome = sharedHome;
+            _log = log;
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup() => s_sharedHome?.Dispose();
-
-        private SharedHomeDirectory _sharedHome => s_sharedHome;
-
-        [TestMethod]
-        [DataRow("console --search")]
-        [DataRow("--search console")]
-        [DataRow("search console")]
+        [Theory]
+        [InlineData("console --search")]
+        [InlineData("--search console")]
+        [InlineData("search console")]
         public void BasicTest(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -42,17 +37,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search c")]
-        [DataRow("search c")]
+        [Theory]
+        [InlineData("--search c")]
+        [InlineData("search c")]
         public void CannotExecuteSearchWithShortCriteria(string testCase)
         {
             new DotnetNewCommand(_log, testCase.Split(" "))
@@ -62,12 +57,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("Search failed: template name is too short, minimum 2 characters are required.");
         }
 
-        [TestMethod]
-        [DataRow("--search fofofo", "'fofofo'")]
-        [DataRow("search fofofo", "'fofofo'")]
-        [DataRow("search fofofo --type item", "'fofofo', --type='item'")]
-        [DataRow("search fofofo --language Z#", "'fofofo', --language='Z#'")]
-        [DataRow("search -lang Z#", "-lang='Z#'")]
+        [Theory]
+        [InlineData("--search fofofo", "'fofofo'")]
+        [InlineData("search fofofo", "'fofofo'")]
+        [InlineData("search fofofo --type item", "'fofofo', --type='item'")]
+        [InlineData("search fofofo --language Z#", "'fofofo', --language='Z#'")]
+        [InlineData("search -lang Z#", "-lang='Z#'")]
         public void CanDisplayNoResults(string testCase, string criteria)
         {
             new DotnetNewCommand(_log, testCase.Split(" "))
@@ -77,10 +72,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining($"No templates found matching: {criteria}.");
         }
 
-        [TestMethod]
-        [DataRow("azure --search --columns author")]
-        [DataRow("--search azure --columns author")]
-        [DataRow("search azure --columns author")]
+        [Theory]
+        [InlineData("azure --search --columns author")]
+        [InlineData("--search azure --columns author")]
+        [InlineData("search azure --columns author")]
         public void ExamplePrefersMicrosoftPackage(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -97,7 +92,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "azure"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "azure"), "'Template Name' or 'Short Name' columns do not contain the criteria");
 
             IEnumerable<List<string>> microsoftPackages = tableOutput.Where(row => row[2] == "Microsoft" && row[3].StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase));
             IEnumerable<string> installationCommands = microsoftPackages.Select(package => $"new install {package[3].Split(" /")[0]}").ToList();
@@ -106,10 +101,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should().HaveStdOutContaining(ContainsOneOfInstallationCommands, "Checks if the output contains one of the expected installation commands");
         }
 
-        [TestMethod]
-        [DataRow("console --search --columns-all")]
-        [DataRow("--columns-all --search console")]
-        [DataRow("search console --columns-all")]
+        [Theory]
+        [InlineData("console --search --columns-all")]
+        [InlineData("--columns-all --search console")]
+        [InlineData("search console --columns-all")]
         public void CanShowAllColumns(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -126,17 +121,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Language", "Type", "Tags", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("console --search --columns tags --tag Common")]
-        [DataRow("--search console --columns tags --tag Common")]
-        [DataRow("search console --columns tags --tag Common")]
+        [Theory]
+        [InlineData("console --search --columns tags --tag Common")]
+        [InlineData("--search console --columns tags --tag Common")]
+        [InlineData("search console --columns tags --tag Common")]
         public void CanFilterTags(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -155,19 +150,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Tags", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Tags" }, "Common"), "'Tags' column does not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Tags"), "'Tags' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Tags" }, "Common"), "'Tags' column does not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Tags"), "'Tags' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search --columns tags --tag Common")]
-        [DataRow("--columns tags --search --tag Common")]
-        [DataRow("search --columns tags --tag Common")]
+        [Theory]
+        [InlineData("--search --columns tags --tag Common")]
+        [InlineData("--columns tags --search --tag Common")]
+        [InlineData("search --columns tags --tag Common")]
         public void CanFilterTags_WithoutName(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -185,18 +180,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Tags", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Tags" }, "Common"), "'Tags' column does not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Tags"), "'Tags' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Tags" }, "Common"), "'Tags' column does not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Tags"), "'Tags' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("func --search --columns author --author micro")]
-        [DataRow("--search func --columns author --author micro")]
-        [DataRow("search func --columns author --author micro")]
+        [Theory]
+        [InlineData("func --search --columns author --author micro")]
+        [InlineData("--search func --columns author --author micro")]
+        [InlineData("search func --columns author --author micro")]
         public void CanFilterAuthor(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -216,18 +211,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "func"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Author" }, "micro"), "'Author' column does not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Author"), "'Author' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "func"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Author" }, "micro"), "'Author' column does not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Author"), "'Author' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search --columns author --author micro")]
-        [DataRow("search --columns author --author micro")]
+        [Theory]
+        [InlineData("--search --columns author --author micro")]
+        [InlineData("search --columns author --author micro")]
         public void CanFilterAuthor_WithoutName(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -246,20 +241,20 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Author" }, "micro"), "'Author' column does not contain the criteria");
-            Assert.IsTrue(SomeRowsContain(tableOutput, new[] { "Author" }, "Microsoft"), "'Author' column does not contain any rows with 'Microsoft'");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Author"), "'Author' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Author" }, "micro"), "'Author' column does not contain the criteria");
+            Assert.True(SomeRowsContain(tableOutput, new[] { "Author" }, "Microsoft"), "'Author' column does not contain any rows with 'Microsoft'");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Author"), "'Author' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("console --search --columns language --language Q#")]
-        [DataRow("--search console --columns language --language Q#")]
-        [DataRow("search console --columns language --language Q#")]
+        [Theory]
+        [InlineData("console --search --columns language --language Q#")]
+        [InlineData("--search console --columns language --language Q#")]
+        [InlineData("search console --columns language --language Q#")]
         public void CanFilterLanguage(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -278,21 +273,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Language" }, "Q#"), "'Language' column does not contain criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Language" }, "Q#"), "'Language' column does not contain criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Language"), "'Language' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Language"), "'Language' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search --columns language --language Q#", "--language")]
-        [DataRow("search --columns language --language Q#", "--language")]
-        [DataRow("--search --columns language -lang Q#", "-lang")]
-        [DataRow("search --columns language -lang Q#", "-lang")]
+        [Theory]
+        [InlineData("--search --columns language --language Q#", "--language")]
+        [InlineData("search --columns language --language Q#", "--language")]
+        [InlineData("--search --columns language -lang Q#", "-lang")]
+        [InlineData("search --columns language -lang Q#", "-lang")]
         public void CanFilterLanguage_WithoutName(string testCase, string optionName)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -310,19 +305,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Language" }, "Q#"), "'Language' column does not contain criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Language" }, "Q#"), "'Language' column does not contain criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Language"), "'Language' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Language"), "'Language' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("console --search --columns type --type item")]
-        [DataRow("--search console --columns type --type item")]
-        [DataRow("search console --columns type --type item")]
+        [Theory]
+        [InlineData("console --search --columns type --type item")]
+        [InlineData("--search console --columns type --type item")]
+        [InlineData("search console --columns type --type item")]
         public void CanFilterType(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -341,19 +336,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Type", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AllRowsEqual(tableOutput, new[] { "Type" }, "item"), "'Type' column does not contain criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsEqual(tableOutput, new[] { "Type" }, "item"), "'Type' column does not contain criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Type"), "'Type' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Type"), "'Type' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search --columns type --type item")]
-        [DataRow("search --columns type --type item")]
+        [Theory]
+        [InlineData("--search --columns type --type item")]
+        [InlineData("search --columns type --type item")]
         public void CanFilterType_WithoutName(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -371,20 +366,20 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Type", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsEqual(tableOutput, new[] { "Type" }, "item"), "'Type' column does not contain criteria");
+            Assert.True(AllRowsEqual(tableOutput, new[] { "Type" }, "item"), "'Type' column does not contain criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Type"), "'Type' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Type"), "'Type' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("console --search --package core")]
-        [DataRow("--search console --package core")]
-        [DataRow("search console --package core")]
+        [Theory]
+        [InlineData("console --search --package core")]
+        [InlineData("--search console --package core")]
+        [InlineData("search console --package core")]
         public void CanFilterPackage(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -403,19 +398,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Package Name / Owners" }, "core"), "'Package Name / Owners' column does not contain criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "console"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Package Name / Owners" }, "core"), "'Package Name / Owners' column does not contain criteria");
 
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("--search --package core")]
-        [DataRow("search --package core")]
+        [Theory]
+        [InlineData("--search --package core")]
+        [InlineData("search --package core")]
         public void CanFilterPackage_WithoutName(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -433,18 +428,20 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Package Name / Owners" }, "core"), "'Package Name / Owners' column does not contain criteria");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name \\/ Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Package Name / Owners" }, "core"), "'Package Name / Owners' column does not contain criteria");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name \\/ Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [TestMethod]
-        [DataRow("console --search")]
-        [DataRow("--search console")]
-        [DataRow("search console")]
+#pragma warning disable xUnit1004
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/39772")]
+#pragma warning restore xUnit1004
+        [InlineData("console --search")]
+        [InlineData("--search console")]
+        [InlineData("search console")]
         public void CanSortByDownloadCountAndThenByName(string testCase)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, testCase.Split(" "))
@@ -461,40 +458,29 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
 
-            Assert.IsGreaterThan(2, tableOutput.Count, "At least 2 search hits are expected");
+            Assert.True(tableOutput.Count > 2, "At least 2 search hits are expected");
 
+            // rows can be shrunk: ML.NET Console App for Training and ML.NET Console App for Train...
+            // in this case ML.NET Console App for Training < ML.NET Console App for Train...
+            // therefore use custom comparer
+            var nameComparer = new ShrinkAwareCurrentCultureStringComparer();
             var downloadCountComparer = new DownloadCountComparer();
 
-            var rows = tableOutput
+            var orderedRows = tableOutput
                 .Skip(1)
                 .Select(x => new { name = x[0], count = x[5] })
-                .ToList();
+                .OrderByDescending(x => x.count, downloadCountComparer)
+                .ThenBy(x => x.name, nameComparer);
 
-            for (int i = 0; i < rows.Count; i++)
+            for (int i = 1; i < tableOutput.Count; i++)
             {
-                for (int j = i + 1; j < rows.Count; j++)
-                {
-                    int downloadCountComparison = downloadCountComparer.Compare(rows[i].count, rows[j].count);
-                    Assert.IsGreaterThanOrEqualTo(
-                        0,
-                        downloadCountComparison,
-                        $"Expected download count '{rows[i].count}' at row {i + 1} to be greater than or equal to '{rows[j].count}' at row {j + 1}.");
-
-                    if (downloadCountComparison == 0
-                        && TryCompareRenderedNames(rows[i].name, rows[j].name, out int nameComparison))
-                    {
-                        Assert.IsLessThanOrEqualTo(
-                            0,
-                            nameComparison,
-                            $"Expected template '{rows[i].name}' at row {i + 1} to be ordered before '{rows[j].name}' at row {j + 1}.");
-                    }
-                }
+                Assert.Equal(orderedRows.ElementAt(i - 1).name, tableOutput[i][0]);
+                Assert.Equal(orderedRows.ElementAt(i - 1).count, tableOutput[i][5]);
             }
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameter()
         {
@@ -512,12 +498,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
 
             commandResult = new DotnetNewCommand(_log, "con", "--search", "-f")
                 .WithCustomHive(_sharedHome.HomeDirectory)
@@ -533,11 +519,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
 
             commandResult = new DotnetNewCommand(_log, "--search", "-f")
                 .WithCustomHive(_sharedHome.HomeDirectory)
@@ -553,15 +539,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByNonChoiceParameter()
         {
@@ -580,11 +565,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
 
             commandResult = new DotnetNewCommand(_log, "--search", "--langVersion")
                 .WithCustomHive(_sharedHome.HomeDirectory)
@@ -601,15 +586,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void IgnoresValueForNonChoiceParameter()
         {
@@ -628,11 +612,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
 
             commandResult = new DotnetNewCommand(_log, "--search", "--langVersion", "smth")
                 .WithCustomHive(_sharedHome.HomeDirectory)
@@ -649,15 +633,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameterWithValue()
         {
@@ -676,11 +659,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "con"), "'Template Name' or 'Short Name' columns do not contain the criteria");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
 
             commandResult = new DotnetNewCommand(_log, "--search", "-f", "net5.0")
                 .WithCustomHive(_sharedHome.HomeDirectory)
@@ -697,15 +680,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
             tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
-            Assert.IsTrue(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Template Name"), "'Template Name' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
+            Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CannotSearchTemplatesWithUnknownParameter()
         {
@@ -728,10 +710,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
               .And.HaveStdErrContaining("No templates found matching: 'con', language='C#', --unknown.");
         }
 
-        [TestMethod]
-        [DataRow("zoop --search", "--search zoop")]
-        [DataRow("zoop --search --language F#", "--search zoop --language F#")]
-        [DataRow("zoop --search --columns-all", "--search zoop --columns-all")]
+        [Theory]
+        [InlineData("zoop --search", "--search zoop")]
+        [InlineData("zoop --search --language F#", "--search zoop --language F#")]
+        [InlineData("zoop --search --columns-all", "--search zoop --columns-all")]
         public void CanFallbackToSearchOption(string command1, string command2)
         {
             CommandResult commandResult1 = new DotnetNewCommand(_log, command1.Split())
@@ -742,19 +724,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .WithCustomHive(_sharedHome.HomeDirectory)
                .Execute();
 
-            Assert.AreEqual(commandResult1.StdOut, commandResult2.StdOut);
+            Assert.Equal(commandResult1.StdOut, commandResult2.StdOut);
         }
 
-        [TestMethod]
-        [DataRow("--search foo --columns-all bar", "bar", "foo")]
-        [DataRow("--search foo bar", "bar", "foo")]
-        [DataRow("foo --search --columns-all --framework net6.0 bar", "bar|net6.0|foo", "--framework")]
-        [DataRow("foo --search --columns-all -other-param --framework net6.0 bar", "bar|net6.0|--framework|foo", "-other-param")]
-        [DataRow("search foo --columns-all bar", "bar", "foo")]
-        [DataRow("foo --search bar", "foo", "bar")]
-        [DataRow("foo --search bar --language F#", "foo", "bar")]
-        [DataRow("foo --search --columns-all bar", "foo", "bar")]
-        [DataRow("foo search bar", "foo", "bar")]
+        [Theory]
+        [InlineData("--search foo --columns-all bar", "bar", "foo")]
+        [InlineData("--search foo bar", "bar", "foo")]
+        [InlineData("foo --search --columns-all --framework net6.0 bar", "bar|net6.0|foo", "--framework")]
+        [InlineData("foo --search --columns-all -other-param --framework net6.0 bar", "bar|net6.0|--framework|foo", "-other-param")]
+        [InlineData("search foo --columns-all bar", "bar", "foo")]
+        [InlineData("foo --search bar", "foo", "bar")]
+        [InlineData("foo --search bar --language F#", "foo", "bar")]
+        [InlineData("foo --search --columns-all bar", "foo", "bar")]
+        [InlineData("foo search bar", "foo", "bar")]
         public void CannotSearchOnParseError(string command, string invalidArguments, string validArguments)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, command.Split())
@@ -775,7 +757,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CanShowDeprecationMessage_WhenLegacyCommandIsUsed()
         {
             const string deprecationMessage =
@@ -794,7 +776,7 @@ For more information, run:
             Assert.StartsWith(deprecationMessage, commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "console")
@@ -955,24 +937,44 @@ For more information, run:
             }
         }
 
-        private static bool TryCompareRenderedNames(string left, string right, out int comparison)
+        private class ShrinkAwareCurrentCultureStringComparer : IComparer<string>
         {
-            bool leftIsShrunk = left.EndsWith("...");
-            bool rightIsShrunk = right.EndsWith("...");
-
-            if (leftIsShrunk ^ rightIsShrunk)
+            public int Compare(string? left, string? right)
             {
-                string shrunkName = leftIsShrunk ? left : right;
-                string fullName = leftIsShrunk ? right : left;
-                if (fullName.StartsWith(shrunkName[..^3], StringComparison.CurrentCultureIgnoreCase))
+                if (string.IsNullOrEmpty(left) && string.IsNullOrEmpty(right))
                 {
-                    comparison = 0;
-                    return false;
+                    return 0;
                 }
-            }
 
-            comparison = string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
-            return true;
+                if (string.IsNullOrEmpty(left))
+                {
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(right))
+                {
+                    return 1;
+                }
+
+                bool leftIsShrunk = left.EndsWith("...");
+                bool rightIsShrunk = right.EndsWith("...");
+                if (!(leftIsShrunk ^ rightIsShrunk))
+                {
+                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+                    return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+                }
+
+                if (rightIsShrunk && left.StartsWith(right.Substring(0, right.Length - 3), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return -1;
+                }
+                if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return -1;
+                }
+                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+                return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+            }
         }
 
         private class DownloadCountComparer : IComparer<string>

@@ -7,18 +7,21 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishASelfContainedApp : SdkTest
     {
         private const string TestProjectName = "HelloWorld";
         private const string TargetFramework = "netcoreapp2.1";
 
-        [TestMethod]
+        public GivenThatWeWantToPublishASelfContainedApp(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void It_errors_when_publishing_self_contained_without_apphost()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource();
 
@@ -38,13 +41,12 @@ namespace Microsoft.NET.Publish.Tests
         // repro https://github.com/dotnet/sdk/issues/2466
         //  https://github.com/dotnet/sdk/issues/49665
         //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_does_not_fail_publishing_a_self_twice()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource();
 
@@ -69,13 +71,12 @@ namespace Microsoft.NET.Publish.Tests
         private const int PEHeaderPointerOffset = 0x3C;
         private const int SubsystemOffset = 0x5C;
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_can_make_a_Windows_GUI_exe()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithProjectChanges(doc =>
@@ -104,11 +105,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Be(2);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.4.0.41702")]
+        [RequiresMSBuildVersionFact("17.4.0.41702")]
         public void It_publishes_an_app_with_a_netcoreapp_lib_reference()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithNetCoreAppLib")
                 .WithSource();
 
@@ -127,8 +127,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_publishes_runtime_pack_resources()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -143,7 +142,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties.Add("UseWPF", "true");
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
             var command = new PublishCommand(testProjectInstance);
@@ -172,8 +171,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_publishes_runtime_pack_resources_for_specific_languages()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -189,7 +187,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties.Add("UseWPF", "true");
             testProject.AdditionalProperties.Add("SatelliteResourceLanguages", "cs;zh-Hant;ko");
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
             var command = new PublishCommand(testProjectInstance);
@@ -223,11 +221,10 @@ namespace Microsoft.NET.Publish.Tests
                 });
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void NoStaticLibs()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                .CopyTestAsset(TestProjectName)
                .WithSource();
 

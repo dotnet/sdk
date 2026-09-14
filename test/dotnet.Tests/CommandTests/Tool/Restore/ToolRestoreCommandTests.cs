@@ -21,7 +21,6 @@ using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    [TestClass]
     public class ToolRestoreCommandTests: SdkTest
     {
         private readonly IFileSystem _fileSystem;
@@ -49,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private int _installCalledCount = 0;
 
-        public ToolRestoreCommandTests()
+        public ToolRestoreCommandTests(ITestOutputHelper log): base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     1);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunItCanSaveCommandsToCache()
         {
             IToolManifestFinder manifestFinder =
@@ -148,7 +147,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().BeTrue($"Cached command should be found at {restoredCommand.Executable.Value}");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunItCanSaveCommandsToCacheAndShowSuccessMessage()
         {
             IToolManifestFinder manifestFinder =
@@ -185,7 +184,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 "ansicolor code for green, message should be green");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRestoredCommandHasTheSameCommandNameItThrows()
         {
             IToolManifestFinder manifestFinder =
@@ -242,7 +241,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().BeOneOf(allPossibleErrorMessage, "Run in parallel, no order guarantee");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenSomePackageFailedToRestoreItCanRestorePartiallySuccessful()
         {
             IToolManifestFinder manifestFinder =
@@ -285,7 +284,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().BeTrue("Existing package will succeed despite other package failed");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldFailWhenPackageCommandNameDoesNotMatchManifestCommands()
         {
             ToolCommandName differentCommandNameA = new("different-command-nameA");
@@ -315,10 +314,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                             "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "a")));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRestoresMultipleTools()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             string configContents = """
                 {
@@ -388,10 +387,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             public string PathToExecutable { get; set; }
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRestoresCorrectToolVersion()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             string configContents = """
                 {
@@ -435,7 +434,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             rows[0].Version.Should().Be("8.0.0-rc.1.23419.6");
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCannotFindManifestFileItPrintsWarning()
         {
             IToolManifestFinder realManifestFinderImplementationWithMockFinderSystem =
@@ -456,7 +455,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     l.Contains(string.Format(CliStrings.CannotFindAManifestFile, "")));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenPackageIsRestoredAlreadyItWillNotRestoreItAgain()
         {
             IToolManifestFinder manifestFinder =
@@ -484,7 +483,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenPackageIsRestoredAlreadyButDllIsRemovedItRestoresAgain()
         {
             IToolManifestFinder manifestFinder =
@@ -513,7 +512,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore + 1);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenRunWithoutManifestFileItShouldPrintSpecificRestoreErrorMessage()
         {
             IToolManifestFinder manifestFinder =
@@ -533,7 +532,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 l.Contains(AnsiExtensions.Yellow(CliCommandStrings.NoToolsWereRestored)));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenNewerVersionIsAvailableItShowsWarning()
         {
             // Use an explicit version to prevent test from breaking if _packageVersionA changes
@@ -590,7 +589,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerPackageVersion.ToNormalizedString())));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCurrentVersionIsPrereleaseAndNewerStableIsAvailableItShowsWarning()
         {
             var currentPrereleaseVersion = NuGetVersion.Parse("1.0.0-rc1");
@@ -646,7 +645,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerStableVersion.ToNormalizedString())));
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenCurrentVersionIsStableAndNewerPrereleaseIsAvailableItDoesNotShowWarning()
         {
             var currentStableVersion = NuGetVersion.Parse("1.0.0");

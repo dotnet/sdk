@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -16,61 +16,59 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [TestMethod]
+        [Fact]
         public async Task XmlDocumentDefaultResolversInXmlReaderSettingsPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                """
+                @"
+using System;
+using System.Reflection;
+using System.Xml;
 
-                    using System;
-                    using System.Reflection;
-                    using System.Xml;
-
-                    namespace TestNamespace
-                    {
-                        public class TestClass
-                        {
-                            public void TestMethod(string path)
-                            {
-                                XmlReaderSettings settings = new XmlReaderSettings();
-                                XmlReader reader = XmlReader.Create(path, settings);
-                                XmlDocument doc = new XmlDocument();
-                                doc.Load(reader);
-                            }
-                        }
-                    }
-
-                    """,
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public void TestMethod(string path)
+        {
+            XmlReaderSettings settings = new XmlReaderSettings();
+            XmlReader reader = XmlReader.Create(path, settings);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+        }
+    }
+}
+",
             GetCSharpResultAt(14, 31)
             );
 
         }
 
-        [TestMethod]
+        [Fact]
         public async Task XmlDocumentDefaultResolversInXmlReaderSettingsPre452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                """
-                    using System;
-                    using System.Reflection;
-                    using System.Xml;
+                @"
+using System;
+using System.Reflection;
+using System.Xml;
 
-                    namespace TestNamespace
-                    {
-                        public class TestClass
-                        {
-                            public void TestMethod(string path)
-                            {
-                                XmlReaderSettings settings = new XmlReaderSettings();
-                                XmlReader reader = XmlReader.Create(path, settings);
-                                XmlDocument doc = new XmlDocument();
-                                doc.Load(reader);
-                            }
-                        }
-                    }
-                    """
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public void TestMethod(string path)
+        {
+            XmlReaderSettings settings = new XmlReaderSettings();
+            XmlReader reader = XmlReader.Create(path, settings);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+        }
+    }
+}
+"
             );
         }
     }

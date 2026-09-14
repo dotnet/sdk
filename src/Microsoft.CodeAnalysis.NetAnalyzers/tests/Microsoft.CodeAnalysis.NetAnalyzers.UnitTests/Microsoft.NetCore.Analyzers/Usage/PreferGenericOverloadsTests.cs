@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpPreferGenericOverloadsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpPreferGenericOverloadsFixer>;
@@ -13,10 +13,9 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
-    [TestClass]
     public class PreferGenericOverloadsTests
     {
-        [TestMethod]
+        [Fact]
         public async Task NoTypeArgument_NoDiagnostic_CS()
         {
             string source = """
@@ -35,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task RuntimeTypeArgument_NoDiagnostic_CS()
         {
             string source = """
@@ -54,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticClassAsTypeArgument_NoDiagnostic_CS()
         {
             string source = """
@@ -73,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnboundGenericTypeArgument_NoDiagnostic_CS()
         {
             string source = """
@@ -94,7 +93,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod, WorkItem(7246, "https://github.com/dotnet/roslyn-analyzers/issues/7246")]
+        [Fact, WorkItem(7246, "https://github.com/dotnet/roslyn-analyzers/issues/7246")]
         public async Task UnboundGenericTypeArgumentWithMatchingOtherArguments_NoDiagnostic_CS()
         {
             string source = """
@@ -116,7 +115,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongArity_NoDiagnostic_CS()
         {
             string source = """
@@ -136,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterCount_NoDiagnostic_CS()
         {
             string source = """
@@ -156,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterType_NoDiagnostic_CS()
         {
             string source = """
@@ -175,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterTypeWithOneMatching_NoDiagnostic_CS()
         {
             string source = """
@@ -194,7 +193,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SameAsContainingSymbol_NoDiagnostic_CS()
         {
             string source = """
@@ -208,7 +207,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesValueTypeConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -229,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesValueTypeConstraint_OffersFixer_CS()
         {
             string source = """
@@ -265,7 +264,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesReferenceTypeConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -286,7 +285,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesReferenceTypeConstraint_OffersFixer_CS()
         {
             string source = """
@@ -322,7 +321,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesUnmanagedTypeConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -343,7 +342,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesUnmanagedTypeConstraint_OffersFixer_CS()
         {
             string source = """
@@ -379,7 +378,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesConstructorConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -403,7 +402,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesConstructorConstraint_OffersFixer_CS()
         {
             string source = """
@@ -445,7 +444,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesTypeConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -466,7 +465,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesTypeConstraint_OffersFixer_CS()
         {
             string source = """
@@ -502,7 +501,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
+        [Fact, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
         public async Task ViolatesNullabilityConstraint_NoDiagnostic_CS()
         {
             string source = """
@@ -527,10 +526,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
+        [Fact, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
         public async Task ViolatesNullabilityConstraintNullableDisabled_NoDiagnostic_CS()
         {
             string source = """
@@ -555,10 +554,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgument_OffersFixer_CS()
         {
             string source = """
@@ -590,7 +589,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArguments_OffersFixer_CS()
         {
             string source = """
@@ -628,7 +627,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherArgument_OffersFixer_CS()
         {
             string source = """
@@ -660,7 +659,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherArgument_OffersFixer_CS()
         {
             string source = """
@@ -698,7 +697,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherArguments_OffersFixer_CS()
         {
             string source = """
@@ -730,7 +729,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherArguments_OffersFixer_CS()
         {
             string source = """
@@ -768,7 +767,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherGenericArgument_OffersFixer_CS()
         {
             string source = """
@@ -800,7 +799,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherGenericArgument_OffersFixer_CS()
         {
             string source = """
@@ -838,7 +837,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeParameterNotFirst_OffersFixer_CS()
         {
             string source = """
@@ -870,7 +869,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethod_OffersFixer_CS()
         {
             string source = """
@@ -908,7 +907,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethodCalledDirectly_OffersFixer_CS()
         {
             string source = """
@@ -946,7 +945,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeAlias_OffersFixer_CS()
         {
             string source = """
@@ -982,7 +981,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task OptionalParameters_OffersFixer_CS()
         {
             string source = """
@@ -1014,7 +1013,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticMethods_OffersFixer_CS()
         {
             string source = """
@@ -1046,7 +1045,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticMethodsInStaticClass_OffersFixer_CS()
         {
             string source = """
@@ -1084,7 +1083,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticMethodsInStaticClassWithNamespace_OffersFixer_CS()
         {
             string source = """
@@ -1128,7 +1127,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnTypeIsNotCompatible_NoDiagnostic_CS()
         {
             string source = """
@@ -1144,7 +1143,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_CS()
         {
             string source = """
@@ -1170,7 +1169,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnnecessaryCastIsRemoved_OffersFixer_CS()
         {
             string source = """
@@ -1202,7 +1201,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NeededCastIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -1234,7 +1233,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnaryPostfixOperatorIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -1283,10 +1282,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NullConditionalMemberAccessOperatorIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -1330,10 +1329,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync(CancellationToken.None);
+            await test.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NamedParametersArePreserved_OffersFixer_CS()
         {
             string source = """
@@ -1365,7 +1364,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -1399,7 +1398,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreservedWhenCastIsRemoved_OffersFixer_CS()
         {
             string source = """
@@ -1433,7 +1432,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NoTypeArgument_NoDiagnostic_VB()
         {
             string source = """
@@ -1450,7 +1449,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task RuntimeTypeArgument_NoDiagnostic_VB()
         {
             string source = """
@@ -1467,7 +1466,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnboundGenericTypeArgument_NoDiagnostic_VB()
         {
             string source = """
@@ -1486,7 +1485,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod, WorkItem(7246, "https://github.com/dotnet/roslyn-analyzers/issues/7246")]
+        [Fact, WorkItem(7246, "https://github.com/dotnet/roslyn-analyzers/issues/7246")]
         public async Task UnboundGenericTypeArgumentWithMatchingOtherArguments_NoDiagnostic_VB()
         {
             string source = """
@@ -1506,7 +1505,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongArity_NoDiagnostic_VB()
         {
             string source = """
@@ -1524,7 +1523,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterCount_NoDiagnostic_VB()
         {
             string source = """
@@ -1542,7 +1541,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterType_NoDiagnostic_VB()
         {
             string source = """
@@ -1559,7 +1558,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WrongParameterTypeWithOneMatching_NoDiagnostic_VB()
         {
             string source = """
@@ -1576,7 +1575,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SameAsContainingSymbol_NoDiagnostic_VB()
         {
             string source = """
@@ -1594,7 +1593,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesValueTypeConstraint_NoDiagnostic_VB()
         {
             string source = """
@@ -1613,7 +1612,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesValueTypeConstraint_OffersFixer_VB()
         {
             string source = """
@@ -1645,7 +1644,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesReferenceTypeConstraint_NoDiagnostic_VB()
         {
             string source = """
@@ -1664,7 +1663,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesReferenceTypeConstraint_OffersFixer_VB()
         {
             string source = """
@@ -1696,7 +1695,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesConstructorConstraint_NoDiagnostic_VB()
         {
             string source = """
@@ -1717,7 +1716,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesConstructorConstraint_OffersFixer_VB()
         {
             string source = """
@@ -1753,7 +1752,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ViolatesTypeConstraint_NoDiagnostic_VB()
         {
             string source = """
@@ -1772,7 +1771,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SatisfiesTypeConstraint_OffersFixer_VB()
         {
             string source = """
@@ -1808,7 +1807,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgument_OffersFixer_VB()
         {
             string source = """
@@ -1836,7 +1835,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArguments_OffersFixer_VB()
         {
             string source = """
@@ -1870,7 +1869,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherArgument_OffersFixer_VB()
         {
             string source = """
@@ -1898,7 +1897,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherArgument_OffersFixer_VB()
         {
             string source = """
@@ -1932,7 +1931,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherArguments_OffersFixer_VB()
         {
             string source = """
@@ -1960,7 +1959,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherArguments_OffersFixer_VB()
         {
             string source = """
@@ -1994,7 +1993,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SingleTypeArgumentWithOtherGenericArgument_OffersFixer_VB()
         {
             string source = """
@@ -2022,7 +2021,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task MultipleTypeArgumentsWithOtherGenericArgument_OffersFixer_VB()
         {
             string source = """
@@ -2056,7 +2055,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeParameterNotFirst_OffersFixer_VB()
         {
             string source = """
@@ -2084,7 +2083,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethod_OffersFixer_VB()
         {
             string source = """
@@ -2124,7 +2123,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExtensionMethodCalledDirectly_OffersFixer_VB()
         {
             string source = """
@@ -2164,7 +2163,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TypeAlias_OffersFixer_VB()
         {
             string source = """
@@ -2196,7 +2195,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task OptionalParameters_OffersFixer_VB()
         {
             string source = """
@@ -2224,7 +2223,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticMethods_OffersFixer_VB()
         {
             string source = """
@@ -2252,7 +2251,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StaticMethodsWithNamespace_OffersFixer_VB()
         {
             string source = """
@@ -2288,7 +2287,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnTypeIsNotCompatible_NoDiagnostic_VB()
         {
             string source = """
@@ -2302,7 +2301,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_VB()
         {
             string source = """
@@ -2324,7 +2323,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UnnecessaryCastIsRemoved_OffersFixer_VB()
         {
             string source = """
@@ -2366,7 +2365,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NeededCastIsPreserved_OffersFixer_VB()
         {
             string source = """
@@ -2408,7 +2407,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NamedParametersArePreserved_OffersFixer_VB()
         {
             string source = """
@@ -2436,7 +2435,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreserved_OffersFixer_VB()
         {
             string source = """
@@ -2466,7 +2465,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TriviaIsPreservedWhenCastIsRemoved_OffersFixer_VB()
         {
             string source = """

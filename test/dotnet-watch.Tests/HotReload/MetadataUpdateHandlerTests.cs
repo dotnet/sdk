@@ -5,10 +5,9 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class MetadataUpdateHandlerTests : DotNetWatchTestBase
+public class MetadataUpdateHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task NoActions()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -40,7 +39,7 @@ public class MetadataUpdateHandlerTests : DotNetWatchTestBase
             $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
     }
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task Exception(bool verbose)
     {

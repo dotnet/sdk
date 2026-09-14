@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -7,18 +7,17 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.VSTest.Tests
 {
-    [TestClass]
     public class VSTestTests : SdkTest
     {
-        public VSTestTests()
+        public VSTestTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
-            var testAsset = TestAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
+            var testAsset = _testAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
                 .WithSource()
                 .WithVersionVariables();
 
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("1");
@@ -89,11 +88,11 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldSetDotnetRootToLocationOfDotnetExecutable()
         {
             var testAppName = "VSTestCore";
-            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -119,7 +118,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             result.StartInfo.EnvironmentVariables[dotnetRoot].Should().Be(Path.GetDirectoryName(dotnet));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldAcceptMultipleLoggers()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
@@ -162,7 +161,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             testResultsDirectory.Exists.Should().BeTrue("expected the test results file to be created");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldAcceptNoLoggers()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
@@ -198,7 +197,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestTestRunParameters";
 
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
                             .WithSource()
                             .WithVersionVariables();
 

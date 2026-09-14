@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -57,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static async Task<Document> GetUpdatedDocumentForParameterRenameAsync(Document document, ISymbol parameter, string newName, CancellationToken cancellationToken)
         {
-            Solution newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, parameter, new SymbolRenameOptions(), newName, cancellationToken).ConfigureAwait(false);
+            Solution newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, parameter, newName, document.Project.Solution.Options, cancellationToken).ConfigureAwait(false);
             return newSolution.GetDocument(document.Id)!;
         }
     }

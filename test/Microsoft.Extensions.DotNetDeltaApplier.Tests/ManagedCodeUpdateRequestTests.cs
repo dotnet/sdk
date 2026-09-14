@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.HotReload.UnitTests;
+using Microsoft.DotNet.HotReload;
 
-[TestClass]
+namespace Microsoft.DotNet.Watch.UnitTests;
+
 public class ManagedCodeUpdateRequestTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Roundtrip()
     {
         var initial = new ManagedCodeUpdateRequest(
@@ -35,7 +36,7 @@ public class ManagedCodeUpdateRequestTests
         AssertEqual(initial, read);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task WithLargeDeltas()
     {
         var initial = new ManagedCodeUpdateRequest(
@@ -60,19 +61,19 @@ public class ManagedCodeUpdateRequestTests
 
     private static void AssertEqual(ManagedCodeUpdateRequest initial, ManagedCodeUpdateRequest read)
     {
-        Assert.HasCount(initial.Updates.Count, read.Updates);
+        Assert.Equal(initial.Updates.Count, read.Updates.Count);
 
         for (var i = 0; i < initial.Updates.Count; i++)
         {
             var e = initial.Updates[i];
             var a = read.Updates[i];
 
-            Assert.AreEqual(e.ModuleId, a.ModuleId);
-            Assert.AreSequenceEqual(e.ILDelta, a.ILDelta);
-            Assert.AreSequenceEqual(e.MetadataDelta, a.MetadataDelta);
-            Assert.AreSequenceEqual(e.UpdatedTypes, a.UpdatedTypes);
+            Assert.Equal(e.ModuleId, a.ModuleId);
+            Assert.Equal(e.ILDelta, a.ILDelta);
+            Assert.Equal(e.MetadataDelta, a.MetadataDelta);
+            Assert.Equal(e.UpdatedTypes, a.UpdatedTypes);
         }
 
-        Assert.AreEqual(initial.ResponseLoggingLevel, read.ResponseLoggingLevel);
+        Assert.Equal(initial.ResponseLoggingLevel, read.ResponseLoggingLevel);
     }
 }

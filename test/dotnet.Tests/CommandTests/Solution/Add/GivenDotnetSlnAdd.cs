@@ -22,7 +22,6 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
         public const string DefaultProjectGuid = "{130159A9-F047-44B3-88CF-0CF7F02ED50F}";
     }
 
-    [TestClass]
     public class GivenDotnetSlnAdd : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -41,19 +40,19 @@ Options:
   --include-references                     Recursively add projects' ReferencedProjects to solution [default: True]
   -?, -h, --help                           Show command line help";
 
-        public GivenDotnetSlnAdd()
+        public GivenDotnetSlnAdd(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [DataRow("sln", "--help")]
-        [DataRow("sln", "-h")]
-        [DataRow("sln", "-?")]
-        [DataRow("sln", "/?")]
-        [DataRow("solution", "--help")]
-        [DataRow("solution", "-h")]
-        [DataRow("solution", "-?")]
-        [DataRow("solution", "/?")]
+        [Theory]
+        [InlineData("sln", "--help")]
+        [InlineData("sln", "-h")]
+        [InlineData("sln", "-?")]
+        [InlineData("sln", "/?")]
+        [InlineData("solution", "--help")]
+        [InlineData("solution", "-h")]
+        [InlineData("solution", "-?")]
+        [InlineData("solution", "/?")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string solutionCommand, string helpArg)
         {
             var cmd = new DotnetCommand(Log)
@@ -62,11 +61,11 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [TestMethod]
-        [DataRow("sln", "")]
-        [DataRow("sln", "unknownCommandName")]
-        [DataRow("solution", "")]
-        [DataRow("solution", "unknownCommandName")]
+        [Theory]
+        [InlineData("sln", "")]
+        [InlineData("sln", "unknownCommandName")]
+        [InlineData("solution", "")]
+        [InlineData("solution", "unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string solutionCommand, string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -75,9 +74,9 @@ Options:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenTooManyArgumentsArePassedItPrintsError(string solutionCommand)
         {
             var cmd = new DotnetCommand(Log)
@@ -87,17 +86,17 @@ Options:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
-        [TestMethod]
-        [DataRow("sln", "idontexist.sln")]
-        [DataRow("sln", "ihave?invalidcharacters")]
-        [DataRow("sln", "ihaveinv@lidcharacters")]
-        [DataRow("sln", "ihaveinvalid/characters")]
-        [DataRow("sln", "ihaveinvalidchar\\acters")]
-        [DataRow("solution", "idontexist.sln")]
-        [DataRow("solution", "ihave?invalidcharacters")]
-        [DataRow("solution", "ihaveinv@lidcharacters")]
-        [DataRow("solution", "ihaveinvalid/characters")]
-        [DataRow("solution", "ihaveinvalidchar\\acters")]
+        [Theory]
+        [InlineData("sln", "idontexist.sln")]
+        [InlineData("sln", "ihave?invalidcharacters")]
+        [InlineData("sln", "ihaveinv@lidcharacters")]
+        [InlineData("sln", "ihaveinvalid/characters")]
+        [InlineData("sln", "ihaveinvalidchar\\acters")]
+        [InlineData("solution", "idontexist.sln")]
+        [InlineData("solution", "ihave?invalidcharacters")]
+        [InlineData("solution", "ihaveinv@lidcharacters")]
+        [InlineData("solution", "ihaveinvalid/characters")]
+        [InlineData("solution", "ihaveinvalidchar\\acters")]
         public void WhenNonExistingSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionName)
         {
             var cmd = new DotnetCommand(Log)
@@ -107,14 +106,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -128,15 +127,15 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
 
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenInvalidSolutionIsFoundAddPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectoryRoot = TestAssetsManager
+            var projectDirectoryRoot = _testAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -155,14 +154,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -175,12 +174,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenNoSolutionExistsInTheDirectoryAddPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -194,12 +193,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -213,15 +212,15 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
 
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreated(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -247,17 +246,17 @@ Options:
             cmd.Should().Pass();
         }
 
-        [TestMethod]
+        [Theory]
         // needs https://github.com/microsoft/vs-solutionpersistence/pull/101
-        // [DataRow("sln", true, ".sln")]
-        // [DataRow("sln", false, ".sln")]
-        // [DataRow("solution", true, ".sln")]
-        // [DataRow("solution", false, ".sln")]
-        [DataRow("sln", true, ".slnx")]
-        [DataRow("solution", false, ".slnx")]
+        // [InlineData("sln", true, ".sln")]
+        // [InlineData("sln", false, ".sln")]
+        // [InlineData("solution", true, ".sln")]
+        // [InlineData("solution", false, ".sln")]
+        [InlineData("sln", true, ".slnx")]
+        [InlineData("solution", false, ".slnx")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(string solutionCommand, bool fooFirst, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVS", identifier: $"GivenDotnetSlnAdd{solutionCommand}{fooFirst}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -295,12 +294,12 @@ Options:
 
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47859")]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVSErrors", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
                .WithSource()
                .Path;
@@ -324,16 +323,16 @@ Options:
                 .And.HaveStdErrContaining("Base");
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAnd472CsprojFiles", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAnd472CsprojFiles", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAnd472CsprojFiles", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAnd472CsprojFiles", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAnd472CsprojFiles", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAnd472CsprojFiles", ".slnx")]
         public void WhenDirectoryContainingProjectIsGivenProjectIsAdded(string solutionCommand, string testAsset, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -352,14 +351,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -381,14 +380,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -410,14 +409,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public async Task WhenMultipleProjectsFromSameDirectoryAreAddedSolutionFolderIsNotDuplicated(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -450,14 +449,14 @@ Options:
             multipleProjects.All(p => p.Parent?.Id == solutionFolder.Id).Should().BeTrue();
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public async Task WhenProjectDirectoryIsAddedSolutionFoldersAreNotCreated(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -478,14 +477,14 @@ Options:
                 .Should().Be(0);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSharedProjectAddedShouldStillBuild(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -503,16 +502,16 @@ Options:
             cmd.Should().Pass();
         }
 
-        [TestMethod]
-        [DataRow("sln", ".", ".sln")]
-        [DataRow("sln", "", ".sln")]
-        [DataRow("solution", ".", ".sln")]
-        [DataRow("solution", "", ".sln")]
-        [DataRow("sln", ".", ".slnx")]
-        [DataRow("solution", "", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".", ".sln")]
+        [InlineData("sln", "", ".sln")]
+        [InlineData("solution", ".", ".sln")]
+        [InlineData("solution", "", ".sln")]
+        [InlineData("sln", ".", ".slnx")]
+        [InlineData("solution", "", ".slnx")]
         public async Task WhenSolutionFolderExistsItDoesNotGetAdded(string solutionCommand, string firstComponent, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSolutionFolders", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{firstComponent}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -538,16 +537,16 @@ Options:
             libProject.Parent.Id.Should().Be(newlyAddedSrcFolder.Id);
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
-        [DataRow("sln", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
-        [DataRow("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".slnx")]
-        [DataRow("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
+        [InlineData("sln", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
+        [InlineData("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".slnx")]
+        [InlineData("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".slnx")]
         public void WhenValidProjectIsPassedBuildConfigsAreAdded(
             string solutionCommand,
             string testAsset,
@@ -555,7 +554,7 @@ Options:
             string expectedProjectGuid,
             string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
@@ -578,19 +577,19 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("sln", "TestAppWithEmptySln", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("solution", "TestAppWithEmptySln", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithEmptySln", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("sln", "TestAppWithEmptySln", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("solution", "TestAppWithEmptySln", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithEmptySln", ".slnx")]
         public void WhenValidProjectIsPassedItGetsAdded(string solutionCommand, string testAsset, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -605,12 +604,12 @@ Options:
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenProjectIsAddedSolutionHasUTF8BOM(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithEmptySln", $"GivenDotnetSlnAdd-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -646,19 +645,19 @@ Options:
             }
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("sln", "TestAppWithEmptySln", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("solution", "TestAppWithEmptySln", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithEmptySln", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("sln", "TestAppWithEmptySln", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("solution", "TestAppWithEmptySln", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithEmptySln", ".slnx")]
         public async Task WhenInvalidProjectIsPassedItDoesNotGetAdded(string solutionCommand, string testAsset, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -681,19 +680,19 @@ Options:
             solution.SolutionProjects.Count().Should().Be(expectedNumberOfProjects);
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("sln", "TestAppWithEmptySln", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
-        [DataRow("solution", "TestAppWithEmptySln", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
-        [DataRow("solution", "TestAppWithEmptySln", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("sln", "TestAppWithEmptySln", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".sln")]
+        [InlineData("solution", "TestAppWithEmptySln", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ".slnx")]
+        [InlineData("solution", "TestAppWithEmptySln", ".slnx")]
         public void WhenValidProjectIsPassedTheSlnBuilds(string solutionCommand, string testAsset, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -728,16 +727,16 @@ Options:
                 .And.HaveFile("Lib.dll");
         }
 
-        [TestMethod]
-        [DataRow("sln", "TestAppWithSlnAndExistingCsprojReferences", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndExistingCsprojReferences", ".sln")]
-        [DataRow("solution", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".sln")]
-        [DataRow("sln", "TestAppWithSlnAndExistingCsprojReferences", ".slnx")]
-        [DataRow("solution", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".slnx")]
+        [Theory]
+        [InlineData("sln", "TestAppWithSlnAndExistingCsprojReferences", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndExistingCsprojReferences", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndExistingCsprojReferences", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep", ".slnx")]
         public void WhenSolutionAlreadyContainsProjectItDoesntDuplicate(string solutionCommand, string testAsset, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -751,14 +750,14 @@ Options:
             cmd.StdOut.Should().Be(string.Format(CliStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenPassedMultipleProjectsAndOneOfthemDoesNotExistItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -777,13 +776,12 @@ Options:
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/522")]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/522")]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenPassedAnUnknownProjectTypeItFails(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProject", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -803,17 +801,17 @@ Options:
         }
 
         // SLN ONLY
-        [TestMethod]
-        [DataRow("sln", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
-        [DataRow("sln", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
-        [DataRow("sln", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [DataRow("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
-        [DataRow("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
-        [DataRow("solution", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
-        [DataRow("solution", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
-        [DataRow("solution", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [DataRow("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
-        [DataRow("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [Theory]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
         public async Task WhenPassedAProjectItAddsCorrectProjectTypeGuid(
             string solutionCommand,
             string testAsset,
@@ -821,7 +819,7 @@ Options:
             string projectName,
             string expectedTypeGuid)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
@@ -841,14 +839,14 @@ Options:
             nonSolutionFolderProjects.Single().TypeId.Should().Be(new Guid(expectedTypeGuid));
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenPassedAProjectWithoutATypeGuidNorDefaultTypeGuidItErrors(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -872,14 +870,14 @@ Options:
                 .BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenPassedAProjectWithDefaultProjectGuidItPasses(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndDefaultProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -892,14 +890,14 @@ Options:
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
-        public async Task WhenSlnContainsSolutionFolderWithDifferentCasingItDoesNotCreateDuplicate(string solutionCommand, string solutionExtension)
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        private async Task WhenSlnContainsSolutionFolderWithDifferentCasingItDoesNotCreateDuplicate(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCaseSensitiveSolutionFolders", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -915,14 +913,14 @@ Options:
             solution.SolutionFolders.Count().Should().Be(1);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenProjectWithoutMatchingConfigurationsIsAddedSolutionMapsToFirstAvailable(string solutionCommand, string solutionExtension)
         {
-            var slnDirectory = TestAssetsManager
+            var slnDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -940,14 +938,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedResult);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenProjectWithMatchingConfigurationsIsAddedSolutionMapsAll(string solutionCommand, string solutionExtension)
         {
-            var slnDirectory = TestAssetsManager
+            var slnDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -965,14 +963,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedResult);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenProjectWithAdditionalConfigurationsIsAddedSolutionDoesNotMapThem(string solutionCommand, string solutionExtension)
         {
-            var slnDirectory = TestAssetsManager
+            var slnDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -990,14 +988,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedResult);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void ItAddsACSharpProjectThatIsMultitargeted(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1013,14 +1011,14 @@ Options:
                 .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void ItAddsAVisualBasicProjectThatIsMultitargeted(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1036,14 +1034,14 @@ Options:
                 .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void ItAddsAnFSharpProjectThatIsMultitargeted(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1060,14 +1058,14 @@ Options:
                 .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenNestedProjectIsAddedAndInRootOptionIsPassedNoSolutionFoldersAreCreated(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1087,14 +1085,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionFolderIsPassedProjectsAreAddedThere(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1115,14 +1113,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionFolderAndInRootIsPassedItFails(string solutionCommand, string solutionExtension)
         {
-            var solutionDirectory = TestAssetsManager
+            var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1144,17 +1142,17 @@ Options:
                 .BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [TestMethod]
-        [DataRow("sln", "/TestFolder//", "ForwardSlash", ".sln")]
-        [DataRow("sln", "\\TestFolder\\\\", "BackwardSlash", ".sln")]
-        [DataRow("solution", "/TestFolder//", "ForwardSlash", ".sln")]
-        [DataRow("solution", "\\TestFolder\\\\", "BackwardSlash", ".sln")]
+        [Theory]
+        [InlineData("sln", "/TestFolder//", "ForwardSlash", ".sln")]
+        [InlineData("sln", "\\TestFolder\\\\", "BackwardSlash", ".sln")]
+        [InlineData("solution", "/TestFolder//", "ForwardSlash", ".sln")]
+        [InlineData("solution", "\\TestFolder\\\\", "BackwardSlash", ".sln")]
 
-        [DataRow("sln", "/TestFolder//", "ForwardSlash", ".slnx")]
-        [DataRow("solution", "\\TestFolder\\\\", "BackwardSlash", ".slnx")]
+        [InlineData("sln", "/TestFolder//", "ForwardSlash", ".slnx")]
+        [InlineData("solution", "\\TestFolder\\\\", "BackwardSlash", ".slnx")]
         public void WhenSolutionFolderIsPassedWithDirectorySeparatorFolderStructureIsCorrect(string solutionCommand, string solutionFolder, string testIdentifier, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{testIdentifier}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1175,14 +1173,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".sln")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".sln")]
+        [InlineData("solution", ".slnx")]
         public async Task WhenAddingProjectOutsideDirectoryItShouldNotAddSolutionFolders(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInParentDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1198,18 +1196,18 @@ Options:
             solution.SolutionFolders.Count.Should().Be(0);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln", "--include-references=true")]
-        [DataRow("solution", ".sln", "--include-references=true")]
-        [DataRow("sln", ".slnx", "--include-references=true")]
-        [DataRow("solution", ".slnx", "--include-references=true")]
-        [DataRow("sln", ".sln", "--include-references=false")]
-        [DataRow("solution", ".sln", "--include-references=false")]
-        [DataRow("sln", ".slnx", "--include-references=false")]
-        [DataRow("solution", ".slnx", "--include-references=false")]
+        [Theory]
+        [InlineData("sln", ".sln", "--include-references=true")]
+        [InlineData("solution", ".sln", "--include-references=true")]
+        [InlineData("sln", ".slnx", "--include-references=true")]
+        [InlineData("solution", ".slnx", "--include-references=true")]
+        [InlineData("sln", ".sln", "--include-references=false")]
+        [InlineData("solution", ".sln", "--include-references=false")]
+        [InlineData("sln", ".slnx", "--include-references=false")]
+        [InlineData("solution", ".slnx", "--include-references=false")]
         public async Task WhenSolutionIsPassedAProjectWithReferenceItAddsOtherProjectUnlessSpecified(string solutionCommand, string solutionExtension, string option)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithReferencedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1286,31 +1284,31 @@ Options:
             return slnContents;
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "", solutionExtension);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithInRootItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--in-root", solutionExtension);
         }
 
-        [TestMethod]
-        [DataRow("sln", ".sln")]
-        [DataRow("solution", ".sln")]
-        [DataRow("sln", ".slnx")]
-        [DataRow("solution", ".slnx")]
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithSolutionFolderItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);
@@ -1319,7 +1317,7 @@ Options:
 
         private void VerifySuggestionAndUsage(string solutionCommand, string arguments, string solutionExtension)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{arguments}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -1349,7 +1347,7 @@ Options:
 
         private string GetSolutionFileTemplateContents(string templateFileName)
         {
-            var templateContentDirectory = TestAssetsManager
+            var templateContentDirectory = _testAssetsManager
                 .CopyTestAsset("SolutionFilesTemplates", identifier: "SolutionFilesTemplates")
                 .WithSource()
                 .Path;
@@ -1357,12 +1355,12 @@ Options:
         }
 
         // SLNF TESTS
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenAddingProjectToSlnfItAddsOnlyIfInParentSolution(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-Slnf-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1381,12 +1379,12 @@ Options:
             slnfContent.Should().Contain("src\\\\Lib\\\\Lib.csproj");
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenRemovingProjectFromSlnfItRemovesSuccessfully(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfRemove-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1405,12 +1403,12 @@ Options:
             slnfContent.Should().NotContain("src\\\\App\\\\App.csproj");
         }
 
-        [TestMethod]
-        [DataRow("sln")]
-        [DataRow("solution")]
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
         public void WhenAddingProjectToSlnfWithInRootOptionItErrors(string solutionCommand)
         {
-            var projectDirectory = TestAssetsManager
+            var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfInRoot-{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -1421,49 +1419,5 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
         }
-
-        // Each path value below contains an unescaped Windows backslash before a character that is a
-        // valid JSON escape letter (\b, \n), which must be repaired before JSON parsing.
-        // The paths use the pattern "..\<dir>\..\App.slnx" so the intermediate directory cancels out
-        // and the path resolves to the existing App.slnx regardless of whether <dir> exists on disk.
-        [TestMethod]
-        [DataRow("sln", @"..\App.slnx")]                    // \A – not a JSON escape char (baseline)
-        [DataRow("solution", @"..\App.slnx")]
-        [DataRow("sln", @"..\bins\..\App.slnx")]            // \b in \bins is a JSON backspace escape
-        [DataRow("solution", @"..\bins\..\App.slnx")]
-        [DataRow("sln", @"..\new\..\App.slnx")]             // \n in \new is a JSON newline escape
-        [DataRow("solution", @"..\new\..\App.slnx")]
-        public void WhenAddingProjectToSlnfWithUnescapedBackslashesInPathItSucceeds(string solutionCommand, string pathValue)
-        {
-            var identifier = pathValue.Replace('\\', '_').Replace('.', '_').Replace('/', '_');
-            var projectDirectory = TestAssetsManager
-                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfUnescapedBackslash-{solutionCommand}-{identifier}")
-                .WithSource()
-                .Path;
-
-            // Create a filters subdirectory and a .slnf file with unescaped backslashes in the path,
-            // simulating the output of "dotnet new slnf -s ..\App.slnx" on Windows.
-            var filtersDirectory = Path.Combine(projectDirectory, "filters");
-            Directory.CreateDirectory(filtersDirectory);
-            var slnfFullPath = Path.Combine(filtersDirectory, "Filter.slnf");
-            // Write pathValue directly into the JSON string – pathValue contains raw backslashes,
-            // which is invalid JSON but mirrors what "dotnet new slnf" produced on Windows.
-            File.WriteAllText(slnfFullPath, $$"""
-                {
-                    "solution": {
-                        "path": "{{pathValue}}",
-                        "projects": []
-                    }
-                }
-                """);
-
-            // Verify dotnet sln can parse the .slnf file with unescaped backslashes and add a project
-            var cmd = new DotnetCommand(Log)
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, Path.Combine("filters", "Filter.slnf"), "add", Path.Combine("src", "Lib", "Lib.csproj"));
-            cmd.Should().Pass();
-            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectAddedToTheSolution, Path.Combine("src", "Lib", "Lib.csproj")));
-        }
-
     }
 }

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -164,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     IConditionalOperation? condition = throwOperation.Parent as IConditionalOperation;
                     if (condition is null)
                     {
-                        if (throwOperation.Parent is IBlockOperation parentBlock && parentBlock.ChildOperations.Count == 1)
+                        if (throwOperation.Parent is IBlockOperation parentBlock && parentBlock.Children.Count() == 1)
                         {
                             condition = parentBlock.Parent as IConditionalOperation;
                         }

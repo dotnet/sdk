@@ -9,7 +9,6 @@ using Moq;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class NuGetSignatureVerificationEnablerTests
     {
         private static readonly string FakeFilePath = Path.Combine(Path.GetTempPath(), "file.fake");
@@ -32,31 +31,30 @@ namespace Microsoft.DotNet.Tests
             yield return new object[] { "FALSE" };
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenANullForwardingAppThrows()
         {
             ForwardingApp forwardingApp = null!;
 
-            ArgumentNullException exception = Assert.ThrowsExactly<ArgumentNullException>(
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp));
 
-            Assert.AreEqual("forwardingApp", exception.ParamName);
+            Assert.Equal("forwardingApp", exception.ParamName);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenANullMSBuildForwardingAppThrows()
         {
             MSBuildForwardingApp forwardingApp = null!;
 
-            ArgumentNullException exception = Assert.ThrowsExactly<ArgumentNullException>(
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp));
 
-            Assert.AreEqual("forwardingApp", exception.ParamName);
+            Assert.Equal("forwardingApp", exception.ParamName);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
-        [DynamicData(nameof(GetNonFalseValues))]
+        [LinuxOnlyTheory]
+        [MemberData(nameof(GetNonFalseValues))]
         public void GivenAForwardingAppAndAnEnvironmentVariableValueThatIsNotFalseSetsTrueOnLinux(string? value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
@@ -69,9 +67,8 @@ namespace Microsoft.DotNet.Tests
             VerifyEnvironmentVariable(forwardingApp.GetProcessStartInfo(), bool.TrueString);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
-        [DynamicData(nameof(GetFalseValues))]
+        [LinuxOnlyTheory]
+        [MemberData(nameof(GetFalseValues))]
         public void GivenAForwardingAppAndAnEnvironmentVariableValueThatIsFalseSetsFalseOnLinux(string value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
@@ -84,9 +81,8 @@ namespace Microsoft.DotNet.Tests
             VerifyEnvironmentVariable(forwardingApp.GetProcessStartInfo(), bool.FalseString);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
-        [DynamicData(nameof(GetNonFalseValues))]
+        [LinuxOnlyTheory]
+        [MemberData(nameof(GetNonFalseValues))]
         public void GivenAnMSBuildForwardingAppAndAnEnvironmentVariableValueThatIsNotFalseSetsTrueOnLinux(string? value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
@@ -99,9 +95,8 @@ namespace Microsoft.DotNet.Tests
             VerifyEnvironmentVariable(forwardingApp.GetProcessStartInfo(), bool.TrueString);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
-        [DynamicData(nameof(GetFalseValues))]
+        [LinuxOnlyTheory]
+        [MemberData(nameof(GetFalseValues))]
         public void GivenAnMSBuildForwardingAppAndAnEnvironmentVariableValueThatIsFalseSetsFalseOnLinux(string value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
@@ -114,8 +109,7 @@ namespace Microsoft.DotNet.Tests
             VerifyEnvironmentVariable(forwardingApp.GetProcessStartInfo(), bool.FalseString);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOSOnlyFact]
         public void GivenAForwardingAppDoesNothingOnMacOs()
         {
             var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
@@ -128,8 +122,7 @@ namespace Microsoft.DotNet.Tests
             VerifyNoEnvironmentVariable(forwardingApp.GetProcessStartInfo());
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOSOnlyFact]
         public void GivenAnMSBuildForwardingAppDoesNothingOnMacOs()
         {
             var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
@@ -155,13 +148,13 @@ namespace Microsoft.DotNet.Tests
 
         private static void VerifyEnvironmentVariable(ProcessStartInfo startInfo, string expectedValue)
         {
-            Assert.IsTrue(startInfo.EnvironmentVariables.ContainsKey(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification));
-            Assert.AreEqual(expectedValue, startInfo.EnvironmentVariables[NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification]);
+            Assert.True(startInfo.EnvironmentVariables.ContainsKey(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification));
+            Assert.Equal(expectedValue, startInfo.EnvironmentVariables[NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification]);
         }
 
         private static void VerifyNoEnvironmentVariable(ProcessStartInfo startInfo)
         {
-            Assert.IsFalse(startInfo.EnvironmentVariables.ContainsKey(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification));
+            Assert.False(startInfo.EnvironmentVariables.ContainsKey(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification));
         }
     }
 }

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Cli.Alias
 {
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
             CommandAliases = new Dictionary<string, IReadOnlyList<string>>(commandAliases.ToDictionary(x => x.Key, x => x.Value), StringComparer.OrdinalIgnoreCase);
         }
 
-        [JsonInclude]
+        [JsonProperty]
         internal Dictionary<string, IReadOnlyList<string>> CommandAliases { get; set; }
 
         internal void AddCommandAlias(string aliasName, IReadOnlyList<string> aliasTokens)

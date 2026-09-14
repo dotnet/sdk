@@ -7,7 +7,8 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -155,11 +156,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             if (expected == null)
             {
-                Assert.IsNull(actual);
+                Assert.Null(actual);
             }
             else
             {
-                Assert.IsNotNull(actual);
+                Assert.NotNull(actual);
             }
 
             Debug.Assert(expected != null);
@@ -212,7 +213,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             => SequenceEqual([], collection);
 
         public static void Fail(string message)
-            => throw new AssertFailedException(message);
+            => throw new XunitException(message);
 
         public static void EqualFileList(string root, IEnumerable<string> expectedFiles, IEnumerable<string> actualFiles)
         {
@@ -227,10 +228,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var actual = new HashSet<string>(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize));
             if (!expected.SetEquals(actual))
             {
-                Fail(
-                    "File sets should be equal" + Environment.NewLine +
-                    "Expected:" + Environment.NewLine + string.Join(Environment.NewLine, expected.OrderBy(p => p)) + Environment.NewLine +
-                    "Actual:" + Environment.NewLine + string.Join(Environment.NewLine, actual.OrderBy(p => p)));
+                throw NotEqualException.ForEqualValues(
+                    expected: "\n" + string.Join("\n", expected.OrderBy(p => p)),
+                    actual: "\n" + string.Join("\n", actual.OrderBy(p => p)),
+                    banner: "File sets should be equal");
             }
         }
 

@@ -44,6 +44,7 @@ internal sealed class EvaluationResult(
 
         return BuildUtilities.ParseBuildProperties(buildArguments)
             .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
+            .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")

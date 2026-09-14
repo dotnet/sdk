@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -15,13 +14,8 @@ public partial class DefineStaticWebAssets : Task
 {
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
-        // Absolutize the cache manifest path relative to the project directory so file I/O in the cache
-        // does not depend on the process working directory (required for multithreaded task execution).
-        var cacheManifestPath = string.IsNullOrEmpty(CacheManifestPath)
-            ? null
-            : TaskEnvironment.GetAbsolutePath(CacheManifestPath).Value;
-        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, cacheManifestPath);
-        if (cacheManifestPath == null)
+        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
+        if (CacheManifestPath == null)
         {
             assetsCache.NoCache(CandidateAssets);
             return assetsCache;
@@ -54,7 +48,7 @@ public partial class DefineStaticWebAssets : Task
 #else
         var candidateAssetMetadata = new[] {
 #endif
-            "RelativePath", "TargetPath", "Link", nameof(StaticWebAsset.SourceId),
+            "FullPath", "RelativePath", "TargetPath", "Link", "ModifiedTime", nameof(StaticWebAsset.SourceId),
             nameof(StaticWebAsset.SourceType), nameof(StaticWebAsset.BasePath), nameof(StaticWebAsset.ContentRoot),
             nameof(StaticWebAsset.AssetKind), nameof(StaticWebAsset.AssetMode), nameof(StaticWebAsset.AssetRole),
             nameof(StaticWebAsset.AssetMergeBehavior), nameof(StaticWebAsset.AssetMergeSource), nameof(StaticWebAsset.RelatedAsset),
@@ -66,43 +60,11 @@ public partial class DefineStaticWebAssets : Task
 #else
         };
 #endif
-        var inputHashes = ComputeInputHashes(memoryStream, candidateAssetMetadata);
+        var inputHashes = HashingUtils.ComputeHashLookup(memoryStream, CandidateAssets ?? [], candidateAssetMetadata);
 
         assetsCache.Update(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
 
         return assetsCache;
-    }
-
-    private Dictionary<string, ITaskItem> ComputeInputHashes(
-        MemoryStream memoryStream,
-#if NET9_0_OR_GREATER
-        Span<string> candidateAssetMetadata)
-#else
-        string[] candidateAssetMetadata)
-#endif
-    {
-        const int metadataOffset = 3;
-        var candidateAssets = CandidateAssets ?? [];
-        var inputHashes = new Dictionary<string, ITaskItem>(candidateAssets.Length);
-        for (var i = 0; i < candidateAssets.Length; i++)
-        {
-            var candidate = candidateAssets[i];
-            var candidateFullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(candidate.ItemSpec));
-            var file = new FileInfo(candidateFullPath);
-
-            var values = new string[candidateAssetMetadata.Length + metadataOffset];
-            values[0] = candidate.ItemSpec;
-            values[1] = candidateFullPath;
-            values[2] = file.Exists ? file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "";
-            for (var j = 0; j < candidateAssetMetadata.Length; j++)
-            {
-                values[j + metadataOffset] = candidate.GetMetadata(candidateAssetMetadata[j]);
-            }
-
-            inputHashes.Add(Convert.ToBase64String(HashingUtils.ComputeHash(memoryStream, values)), candidate);
-        }
-
-        return inputHashes;
     }
 
     internal class DefineStaticWebAssetsCache
@@ -130,7 +92,7 @@ public partial class DefineStaticWebAssets : Task
         public Dictionary<string, StaticWebAsset> CachedAssets { get; set; } = [];
         public Dictionary<string, CopyCandidate> CachedCopyCandidates { get; set; } = [];
 
-        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string? manifestPath)
+        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string manifestPath)
         {
             if (manifestPath != null && File.Exists(manifestPath))
             {

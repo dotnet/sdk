@@ -8,26 +8,25 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.UnitTests.Resources
 {
-    [TestClass]
     public class ResourceTests
     {
-        [TestMethod]
+        [Fact]
         public void GetString_ReturnsValueFromResources()
         {
-            Assert.AreEqual("CONTAINER0000: Value for unit test {0}", Resource.GetString(nameof(Strings._Test)));
+            Assert.Equal("CONTAINER0000: Value for unit test {0}", Resource.GetString(nameof(Strings._Test)));
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatString_ReturnsValueFromResources()
         {
-            Assert.AreEqual("CONTAINER0000: Value for unit test 1", Resource.FormatString(nameof(Strings._Test), 1));
+            Assert.Equal("CONTAINER0000: Value for unit test 1", Resource.FormatString(nameof(Strings._Test), 1));
         }
 
-        [TestMethod]
+        [Fact]
         public void EnsureErrorCodeUniqueness()
         {
             ResourceSet? resourceSet = Resource.Manager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
-            Assert.IsNotNull(resourceSet);
+            Assert.NotNull(resourceSet);
 
             IEnumerable<IGrouping<string, DictionaryEntry>> groups = resourceSet
                 .OfType<DictionaryEntry>()
@@ -45,10 +44,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests.Resources
                 {
                     string prefix = group.First().Key!.ToString()!.Split('_')[0];
 
-                    foreach (DictionaryEntry entry in group)
-                    {
-                        Assert.StartsWith(prefix, entry.Key!.ToString()!, StringComparison.Ordinal);
-                    }
+                    Assert.All(group, e => e.Key!.ToString()!.StartsWith(prefix, StringComparison.Ordinal));
                 }
             }
         }

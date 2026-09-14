@@ -3,12 +3,13 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Watch.UnitTests;
+
 namespace Aspire.Tools.Service.UnitTests;
 
-[TestClass]
 public class RunSessionRequestTests
 {
-    [TestMethod]
+    [Fact]
     public void RunSessionRequest_ToProjectLaunchRequest()
     {
         var request = new RunSessionRequest()
@@ -35,21 +36,21 @@ public class RunSessionRequestTests
 
         var info = request.ToProjectLaunchInformation();
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             "--someArg"
         ], info.Arguments);
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             "var1='value1'",
             "var2='value2'",
             "var3=''"
         ], info.Environment.Select(e => $"{e.Key}='{e.Value}'"));
 
-        Assert.AreEqual(@"c:\test\Projects\project1.csproj", info.ProjectPath);
-        Assert.IsTrue(info.Debug);
-        Assert.AreEqual("specificProfileName", info.LaunchProfile);
-        Assert.IsTrue(info.DisableLaunchProfile);
+        Assert.Equal(@"c:\test\Projects\project1.csproj", info.ProjectPath);
+        Assert.True(info.Debug);
+        Assert.Equal("specificProfileName", info.LaunchProfile);
+        Assert.True(info.DisableLaunchProfile);
     }
 }

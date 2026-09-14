@@ -7,11 +7,8 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
-    [TestClass]
     public class DefaultRequestDispatcherTest
     {
-        public TestContext TestContext { get; set; }
-
         private static ServerRequest EmptyServerRequest => new(1, Array.Empty<RequestArgument>());
 
         private static ServerResponse EmptyServerResponse => new CompletedServerResponse(
@@ -20,7 +17,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             output: string.Empty,
             error: string.Empty);
 
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_ReadingRequestFails_ClosesConnection()
         {
             // Arrange
@@ -35,14 +32,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Task.FromResult<Connection>(connection), accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.CompilationNotStarted, result.CloseReason);
+            Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, result.CloseReason);
         }
 
         /// <summary>
         /// A failure to write the results to the client is considered a client disconnection.  Any error
         /// from when the build starts to when the write completes should be handled this way. 
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_WritingResultsFails_ClosesConnection()
         {
             // Arrange
@@ -72,15 +69,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Task.FromResult<Connection>(connection), accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.ClientDisconnect, connectionResult.CloseReason);
-            Assert.IsNull(connectionResult.KeepAlive);
+            Assert.Equal(ConnectionResult.Reason.ClientDisconnect, connectionResult.CloseReason);
+            Assert.Null(connectionResult.KeepAlive);
         }
 
         /// <summary>
         /// Ensure the Connection correctly handles the case where a client disconnects while in the 
         /// middle of executing a request.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_ClientDisconnectsWhenExecutingRequest_ClosesConnection()
         {
             // Arrange
@@ -91,11 +88,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var buildTaskCancellationToken = default(CancellationToken);
             var compilerHost = CreateCompilerHost(c =>
             {
+#pragma warning disable xUnit1031
                 c.ExecuteFunc = (req, ct) =>
                 {
                     Task.WaitAll(buildTaskSource.Task);
                     return EmptyServerResponse;
                 };
+#pragma warning restore xUnit1031
             });
 
             var dispatcher = new DefaultRequestDispatcher(connectionHost, compilerHost, CancellationToken.None);
@@ -124,12 +123,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             buildTaskSource.SetResult(true);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.ClientDisconnect, connectionResult.CloseReason);
-            Assert.IsNull(connectionResult.KeepAlive);
-            Assert.IsTrue(buildTaskCancellationToken.IsCancellationRequested);
+            Assert.Equal(ConnectionResult.Reason.ClientDisconnect, connectionResult.CloseReason);
+            Assert.Null(connectionResult.KeepAlive);
+            Assert.True(buildTaskCancellationToken.IsCancellationRequested);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_AcceptFalse_RejectsBuildRequest()
         {
             // Arrange
@@ -147,13 +146,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Task.FromResult<Connection>(connection), accept: false, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
+            Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream, TestContext.CancellationToken);
-            Assert.AreEqual(ServerResponse.ResponseType.Rejected, response.Type);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
+            Assert.Equal(ServerResponse.ResponseType.Rejected, response.Type);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_ShutdownRequest_ReturnsShutdownResponse()
         {
             // Arrange
@@ -171,13 +170,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Task.FromResult<Connection>(connection), accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.ClientShutdownRequest, connectionResult.CloseReason);
+            Assert.Equal(ConnectionResult.Reason.ClientShutdownRequest, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream, TestContext.CancellationToken);
-            Assert.AreEqual(ServerResponse.ResponseType.Shutdown, response.Type);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
+            Assert.Equal(ServerResponse.ResponseType.Shutdown, response.Type);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_ConnectionHostThrowsWhenConnecting_ClosesConnection()
         {
             // Arrange
@@ -192,11 +191,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Task.FromResult<Connection>(connection), accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
-            Assert.IsNull(connectionResult.KeepAlive);
+            Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
+            Assert.Null(connectionResult.KeepAlive);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AcceptConnection_ClientConnectionThrowsWhenConnecting_ClosesConnection()
         {
             // Arrange
@@ -210,11 +209,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 connectionTask, accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.AreEqual(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
-            Assert.IsNull(connectionResult.KeepAlive);
+            Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
+            Assert.Null(connectionResult.KeepAlive);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dispatcher_ClientConnectionThrowsWhenExecutingRequest_ClosesConnection()
         {
             // Arrange
@@ -237,12 +236,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 connectionTask, accept: true, cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.IsTrue(called);
-            Assert.AreEqual(ConnectionResult.Reason.ClientException, connectionResult.CloseReason);
-            Assert.IsNull(connectionResult.KeepAlive);
+            Assert.True(called);
+            Assert.Equal(ConnectionResult.Reason.ClientException, connectionResult.CloseReason);
+            Assert.Null(connectionResult.KeepAlive);
         }
 
-        [TestMethod]
+        [Fact]
         public void Dispatcher_NoConnections_HitsKeepAliveTimeout()
         {
             // Arrange
@@ -261,13 +260,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             dispatcher.Run();
 
             // Assert
-            Assert.IsTrue(eventBus.HitKeepAliveTimeout);
+            Assert.True(eventBus.HitKeepAliveTimeout);
         }
 
         /// <summary>
         /// Ensure server respects keep alive and shuts down after processing a single connection.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Dispatcher_ProcessSingleConnection_HitsKeepAliveTimeout()
         {
             // Arrange
@@ -289,15 +288,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             dispatcher.Run();
 
             // Assert
-            Assert.AreEqual(1, eventBus.CompletedCount);
-            Assert.IsTrue(eventBus.LastProcessedTime.HasValue);
-            Assert.IsTrue(eventBus.HitKeepAliveTimeout);
+            Assert.Equal(1, eventBus.CompletedCount);
+            Assert.True(eventBus.LastProcessedTime.HasValue);
+            Assert.True(eventBus.HitKeepAliveTimeout);
         }
 
         /// <summary>
         /// Ensure server respects keep alive and shuts down after processing multiple connections.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Dispatcher_ProcessMultipleConnections_HitsKeepAliveTimeout()
         {
             // Arrange
@@ -327,21 +326,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             dispatcher.Run();
 
             // Assert
-            Assert.AreEqual(count, eventBus.CompletedCount);
-            Assert.IsTrue(eventBus.LastProcessedTime.HasValue);
-            Assert.IsTrue(eventBus.HitKeepAliveTimeout);
+            Assert.Equal(count, eventBus.CompletedCount);
+            Assert.True(eventBus.LastProcessedTime.HasValue);
+            Assert.True(eventBus.HitKeepAliveTimeout);
         }
 
         /// <summary>
         /// Ensure server respects keep alive and shuts down after processing simultaneous connections.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task Dispatcher_ProcessSimultaneousConnections_HitsKeepAliveTimeout()
         {
             // Arrange
             var totalCount = 2;
-            var timeout = TimeSpan.FromMinutes(1);
-            var readySource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readySource = new TaskCompletionSource<bool>();
             var list = new List<TaskCompletionSource<bool>>();
             var connectionHost = new Mock<ConnectionHost>();
             connectionHost
@@ -350,7 +348,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 {
                     if (list.Count < totalCount)
                     {
-                        var source = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                        var source = new TaskCompletionSource<bool>();
                         var connectionTask = CreateConnectionWithEmptyServerRequest(c =>
                         {
                             // Keep the connection active until we decide to end it.
@@ -374,28 +372,27 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             var eventBus = new TestableEventBus();
             var completedCompilations = 0;
-            var allCompilationsComplete = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allCompilationsComplete = new TaskCompletionSource<bool>();
             eventBus.CompilationComplete += (obj, args) =>
             {
-                if (Interlocked.Increment(ref completedCompilations) == totalCount)
+                if (++completedCompilations == totalCount)
                 {
                     // All compilations have completed.
                     allCompilationsComplete.SetResult(true);
                 }
             };
             var keepAlive = TimeSpan.FromSeconds(1);
-
             var dispatcherTask = Task.Run(() =>
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);
                 dispatcher.Run();
-            }, TestContext.CancellationToken);
+            });
 
             // Wait for all connections to be created.
-            await readySource.Task.WaitAsync(timeout, TestContext.CancellationToken);
+            await readySource.Task;
 
             // Wait for all compilations to complete.
-            await allCompilationsComplete.Task.WaitAsync(timeout, TestContext.CancellationToken);
+            await allCompilationsComplete.Task;
 
             // Now allow all the connections to be disconnected.
             foreach (var source in list)
@@ -405,16 +402,16 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             // Act
             // Now dispatcher should be in an idle state with no active connections.
-            await dispatcherTask.WaitAsync(timeout, TestContext.CancellationToken);
+            await dispatcherTask;
 
             // Assert
-            Assert.IsFalse(eventBus.HasDetectedBadConnection);
-            Assert.AreEqual(totalCount, eventBus.CompletedCount);
-            Assert.IsTrue(eventBus.LastProcessedTime.HasValue, "LastProcessedTime should have had a value.");
-            Assert.IsTrue(eventBus.HitKeepAliveTimeout, "HitKeepAliveTimeout should have been hit.");
+            Assert.False(eventBus.HasDetectedBadConnection);
+            Assert.Equal(totalCount, eventBus.CompletedCount);
+            Assert.True(eventBus.LastProcessedTime.HasValue, "LastProcessedTime should have had a value.");
+            Assert.True(eventBus.HitKeepAliveTimeout, "HitKeepAliveTimeout should have been hit.");
         }
 
-        [TestMethod]
+        [Fact]
         public void Dispatcher_ClientConnectionThrows_BeginsShutdown()
         {
             // Arrange
@@ -445,8 +442,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             dispatcher.Run();
 
             // Assert
-            Assert.IsTrue(eventBus.HasDetectedBadConnection);
-            Assert.IsTrue(listenCancellationToken.IsCancellationRequested);
+            Assert.True(eventBus.HasDetectedBadConnection);
+            Assert.True(listenCancellationToken.IsCancellationRequested);
         }
 
         private static TestableConnection CreateConnection(Stream stream, string identifier = null)

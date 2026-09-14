@@ -10,20 +10,22 @@ using NuGet.Packaging.Signing;
 
 namespace Microsoft.NET.Restore.Tests
 {
-    [TestClass]
-    [ResourceLock(RestoreTestResources.NuGetCache)]
     public class GivenThatWeWantToRestoreProjectsUsingNuGetConfigProperties : SdkTest
     {
-        [TestMethod]
-        [DataRow("netstandard1.3", "1.3", false)]
-        [DataRow("netcoreapp1.0", "1.0", true)]
-        [DataRow("netcoreapp1.1", "1.1", true)]
-        [DataRow("netstandard2.0", "2.0", false)]
-        [DataRow("netcoreapp2.0", "2.0app", false)]
-        [DataRow("net462", "461app", false)]
-        [DataRow("netcoreapp2.0;net462", "multiTFM20app", false)]
-        [DataRow("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
-        [DataRow("netcoreapp1.0;net462", "multiTFM1046app", true)]
+        public GivenThatWeWantToRestoreProjectsUsingNuGetConfigProperties(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [InlineData("netstandard1.3", "1.3", false)]
+        [InlineData("netcoreapp1.0", "1.0", true)]
+        [InlineData("netcoreapp1.1", "1.1", true)]
+        [InlineData("netstandard2.0", "2.0", false)]
+        [InlineData("netcoreapp2.0", "2.0app", false)]
+        [InlineData("net462", "461app", false)]
+        [InlineData("netcoreapp2.0;net462", "multiTFM20app", false)]
+        [InlineData("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
+        [InlineData("netcoreapp1.0;net462", "multiTFM1046app", true)]
         public void I_can_restore_a_project_with_implicit_msbuild_nuget_config(
             string frameworks,
             string projectPrefix,
@@ -44,9 +46,9 @@ namespace Microsoft.NET.Restore.Tests
                 $"{GetUniquePackageNameForEachTestProject(testProjectName)}.1.0.0.nupkg")).Should().Be(fileExists);
         }
 
-        [TestMethod]
-        [DataRow("netstandard1.3", "1.3")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [Theory]
+        [InlineData("netstandard1.3", "1.3")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
         // base line of the following tests
         public void I_can_restore_with_implicit_msbuild_nuget_config(string frameworks, string projectPrefix)
         {
@@ -57,12 +59,12 @@ namespace Microsoft.NET.Restore.Tests
             restoreCommand.Execute($"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}").Should().Pass();
         }
 
-        [TestMethod]
-        [DataRow("netstandard1.3", "1.3")]
-        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
-        [DataRow("netcoreapp1.1", "1.1")]
-        [DataRow("netstandard2.0", "2.0")]
-        [DataRow("netcoreapp2.0", "2.0app")]
+        [Theory]
+        [InlineData("netstandard1.3", "1.3")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData("netcoreapp1.1", "1.1")]
+        [InlineData("netstandard2.0", "2.0")]
+        [InlineData("netcoreapp2.0", "2.0app")]
         public void I_can_disable_implicit_msbuild_nuget_config(string frameworks, string projectPrefix)
         {
             string testProjectName = $"{projectPrefix}DisabledFallback";
@@ -72,12 +74,12 @@ namespace Microsoft.NET.Restore.Tests
             restoreCommand.Execute($"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
         }
 
-        [TestMethod]
-        [DataRow("netstandard1.3", "1.3", true)]
-        [DataRow("netcoreapp1.0", "1.0", false)]
-        [DataRow("netcoreapp1.1", "1.1", false)]
-        [DataRow("netstandard2.0", "2.0", true)]
-        [DataRow("netcoreapp2.0", "2.0app", true)]
+        [Theory]
+        [InlineData("netstandard1.3", "1.3", true)]
+        [InlineData("netcoreapp1.0", "1.0", false)]
+        [InlineData("netcoreapp1.1", "1.1", false)]
+        [InlineData("netstandard2.0", "2.0", true)]
+        [InlineData("netcoreapp2.0", "2.0app", true)]
         public void I_can_disable_1_x_implicit_msbuild_nuget_config(string frameworks, string projectPrefix, bool shouldExecutePass)
         {
             string testProjectName = $"{projectPrefix}1xDisabledFallback";
@@ -109,7 +111,7 @@ namespace Microsoft.NET.Restore.Tests
 
             testProject.PackageReferences.Add(packageInNuGetFallbackFolder);
 
-            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
+            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 testProjectName);
@@ -135,7 +137,7 @@ namespace Microsoft.NET.Restore.Tests
             if (!projectInNuGetFallbackFolderPackageReference.NuGetPackageExists())
             {
                 var projectInNuGetFallbackFolderTestAsset =
-                    TestAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
+                    _testAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
                 var packageRestoreCommand = projectInNuGetFallbackFolderTestAsset.GetRestoreCommand(
                     Log,
                     relativePath: projectInNuGetFallbackFolder.Name).Execute().Should().Pass();

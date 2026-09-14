@@ -6,11 +6,10 @@ using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    [TestClass]
     public class VSTestArgumentConverterTests
     {
-        [TestMethod]
-        [DynamicData(nameof(DataSource.GetArguments), typeof(DataSource))]
+        [Theory]
+        [MemberData(nameof(DataSource.GetArguments), MemberType = typeof(DataSource))]
         public void ConvertArgsShouldConvertValidArgsIntoVSTestParsableArgs(string input, string expectedString)
         {
             string[] args = input.Split(' ');
@@ -23,8 +22,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             ignoredArgs.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DynamicData(nameof(DataSource.GetVerbosityArguments), typeof(DataSource))]
+        [Theory]
+        [MemberData(nameof(DataSource.GetVerbosityArguments), MemberType = typeof(DataSource))]
         public void ConvertArgshouldConvertsVerbosityArgsIntoVSTestParsableArgs(string input, string expectedString)
         {
             string[] args = input.Split(' ');
@@ -37,8 +36,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             ignoredArgs.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [DynamicData(nameof(DataSource.GetIgnoredArguments), typeof(DataSource))]
+        [Theory]
+        [MemberData(nameof(DataSource.GetIgnoredArguments), MemberType = typeof(DataSource))]
         public void ConvertArgsShouldIgnoreKnownArgsWhileConvertingArgsIntoVSTestParsableArgs(string input, string expectedArgString, string expIgnoredArgString)
         {
             string[] args = input.Split(' ');
@@ -52,7 +51,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             ignoredArgs.Select(x => x.ToUpperInvariant()).Should().BeEquivalentTo(expIgnoredArgs.Select(x => x.ToUpperInvariant()));
         }
 
-        [TestMethod]
+        [Fact]
         public void ConvertArgsThrowsWhenWeTryToParseInlineSettings()
         {
             string[] args = "sometest.dll -s test.settings -- inlineSetting=1".Split(" ");

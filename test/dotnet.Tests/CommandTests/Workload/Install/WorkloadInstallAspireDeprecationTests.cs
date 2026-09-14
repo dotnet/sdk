@@ -10,20 +10,19 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
-    [TestClass]
     public class WorkloadInstallAspireDeprecationTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
 
-        public WorkloadInstallAspireDeprecationTests()
+        public WorkloadInstallAspireDeprecationTests(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenOnlyAspireWorkloadItShowsDeprecationMessage()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -55,10 +54,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             workloadInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenAspireWithOtherWorkloadsItShowsDeprecationAndInstallsOthers()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -91,10 +90,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             workloadInstaller.InstallationRecordRepository.InstalledWorkloads.Should().NotContain(new WorkloadId("aspire"));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenAspireWorkloadDeprecationMessageIsShownOnlyOnce()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -125,6 +124,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             deprecationLines.Should().HaveCount(1, "deprecation message should be shown exactly once");
         }
 
-        private string _manifestPath => Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+        private string _manifestPath => Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
     }
 }

@@ -1,22 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-extern alias MSTestFramework;
-
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class EvaluationTests
+public class EvaluationTests(ITestOutputHelper output)
 {
-    public TestContext TestContext { get; set; } = null!;
-    private DualOutputHelper? _output;
-    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
-    private TestLogger? _logger;
-    private TestLogger Logger => _logger ??= new TestLogger(Output);
-    private TestAssetsManager? _testAssets;
-    private TestAssetsManager TestAssets => _testAssets ??= new TestAssetsManager(Output);
+    private readonly TestLogger _logger = new(output);
+    private readonly TestAssetsManager _testAssets = new(output);
 
     private static string InspectPath(string path, string rootDir)
         => path.Substring(rootDir.Length + 1).Replace("\\", "/");
@@ -47,7 +39,7 @@ public class EvaluationTests
         return 1;
         """;
 
-    [TestMethod]
+    [Fact]
     public async Task FindsCustomWatchItems()
     {
         var project = new TestProject("Project1")
@@ -65,7 +57,7 @@ public class EvaluationTests
             }
         };
 
-        var testAsset = TestAssets.CreateTestProject(project)
+        var testAsset = _testAssets.CreateTestProject(project)
             .WithProjectChanges(d => d.Root!.Add(XElement.Parse("""
                 <ItemGroup>
                   <Watch Include="*.js" Exclude="gulpfile.js" />
@@ -83,7 +75,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
     {
         var project = new TestProject("Project1")
@@ -112,7 +104,7 @@ public class EvaluationTests
             }
         };
 
-        var testAsset = TestAssets.CreateTestProject(project);
+        var testAsset = _testAssets.CreateTestProject(project);
 
         await VerifyEvaluation(testAsset,
         [
@@ -125,7 +117,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
     {
@@ -146,7 +138,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(project, identifier: $"{isWeb}_{enableStaticWebAssets}");
+        var testAsset = _testAssets.CreateTestProject(project, identifier: $"{isWeb}_{enableStaticWebAssets}");
 
         await VerifyEvaluation(testAsset,
             isWeb && enableStaticWebAssets != false ?
@@ -168,7 +160,7 @@ public class EvaluationTests
             suppressStaticWebAssets: enableStaticWebAssets == false);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task RazorClassLibrary()
     {
         var projectRcl = new TestProject("RCL")
@@ -205,7 +197,7 @@ public class EvaluationTests
             }
         };
 
-        var testAsset = TestAssets.CreateTestProject(project);
+        var testAsset = _testAssets.CreateTestProject(project);
 
         await VerifyEvaluation(testAsset,
         [
@@ -218,7 +210,10 @@ public class EvaluationTests
             new("Project1/wwwroot/js/site.js", "js/site.js"),
             new("RCL/Code.cs"),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
+            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
+            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/ValidatableTypeAttribute.cs", graphOnly: true),
             new("RCL/Page1.razor"),
             new("RCL/Page1.razor.css"),
             new("RCL/Page2.cshtml"),
@@ -229,7 +224,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ProjectReferences_OneLevel()
     {
         var project2 = new TestProject("Project2")
@@ -248,7 +243,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(project1);
+        var testAsset = _testAssets.CreateTestProject(project1);
 
         await VerifyEvaluation(testAsset, targetFramework: ToolsetInfo.CurrentTargetFramework,
         [
@@ -263,7 +258,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TransitiveProjectReferences_TwoLevels()
     {
         var project3 = new TestProject("Project3")
@@ -288,7 +283,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(project1);
+        var testAsset = _testAssets.CreateTestProject(project1);
 
         await VerifyEvaluation(testAsset, targetFramework: ToolsetInfo.CurrentTargetFramework,
         [
@@ -307,7 +302,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task SingleTargetRoot_MultiTargetedDependency(bool specifyTargetFramework)
     {
@@ -327,7 +322,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(project1, identifier: specifyTargetFramework.ToString());
+        var testAsset = _testAssets.CreateTestProject(project1, identifier: specifyTargetFramework.ToString());
 
         await VerifyEvaluation(testAsset, specifyTargetFramework ? ToolsetInfo.CurrentTargetFramework : null,
         [
@@ -344,7 +339,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task FSharpProjectDependency()
     {
         var projectFS = new TestProject("FSProj")
@@ -371,7 +366,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(projectCS);
+        var testAsset = _testAssets.CreateTestProject(projectCS);
 
         await VerifyEvaluation(testAsset,
         [
@@ -386,7 +381,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task VBProjectDependency()
     {
         var projectVB = new TestProject("VB")
@@ -413,7 +408,7 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(projectCS);
+        var testAsset = _testAssets.CreateTestProject(projectCS);
 
         await VerifyEvaluation(testAsset,
         [
@@ -428,7 +423,7 @@ public class EvaluationTests
         ]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task ProjectReferences_Graph()
     {
         // A->B,F,W(Watch=False)
@@ -439,7 +434,7 @@ public class EvaluationTests
         // G->E
         // W->U
         // Y->B,F,Z
-        var testDirectory = TestAssets.CopyTestAsset("ProjectReferences_Graph")
+        var testDirectory = _testAssets.CopyTestAsset("ProjectReferences_Graph")
             .WithSource()
             .Path;
         var projectA = Path.Combine(testDirectory, "A", "A.csproj");
@@ -447,10 +442,10 @@ public class EvaluationTests
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, Logger, TestOptions.GlobalOptions, options);
+        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, _logger, TestOptions.GlobalOptions, options);
 
         var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
 
         AssertEx.SequenceEqual(
         [
@@ -483,10 +478,10 @@ public class EvaluationTests
                 "'F'",
                 "'G'",
             ],
-            Logger.GetAndClearMessages().Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
+            _logger.GetAndClearMessages().Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
     }
 
-    [TestMethod]
+    [Fact]
     public async Task MsbuildOutput()
     {
         var project2 = new TestProject("Project2")
@@ -505,20 +500,20 @@ public class EvaluationTests
             },
         };
 
-        var testAsset = TestAssets.CreateTestProject(project1);
+        var testAsset = _testAssets.CreateTestProject(project1);
         var project1Path = GetTestProjectPath(testAsset);
 
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, Logger, TestOptions.GlobalOptions, options);
+        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, _logger, TestOptions.GlobalOptions, options);
         var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
-        Assert.IsNull(result);
+        Assert.Null(result);
 
         // note: msbuild prints errors to stdout, we match the pattern and report as error:
         Assert.Contains(
             $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
-            Logger.GetAndClearMessages());
+            _logger.GetAndClearMessages());
     }
 
     private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)
@@ -537,10 +532,10 @@ public class EvaluationTests
         var testDir = testAsset.Path;
         var rootProjectPath = GetTestProjectPath(testAsset);
 
-        Output.WriteLine("=== Evaluate using target ===");
+        output.WriteLine("=== Evaluate using target ===");
         await VerifyTargetsEvaluation();
 
-        Output.WriteLine("=== Evaluate using project graph ===");
+        output.WriteLine("=== Evaluate using project graph ===");
         await VerifyProjectGraphEvaluation();
 
         async Task VerifyTargetsEvaluation()
@@ -548,9 +543,9 @@ public class EvaluationTests
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir) with { TestOutput = testDir };
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, Logger, TestOptions.GlobalOptions, options);
+            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, _logger, TestOptions.GlobalOptions, options);
             var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
-            Assert.IsNotNull(targetsResult);
+            Assert.NotNull(targetsResult);
 
             var normalizedActual = Inspect(targetsResult.Files);
             var normalizedExpected = expectedFiles.Where(f => !f.GraphOnly).Select(f => (f.Path, f.StaticAssetUrl)).OrderBy(f => f.Path);
@@ -561,7 +556,7 @@ public class EvaluationTests
         {
             // Needs to be executed in dotnet-watch process in order for msbuild to load from the correct location.
 
-            await using var watchableApp = WatchableApp.CreateDotnetWatchApp(Output);
+            await using var watchableApp = WatchableApp.CreateDotnetWatchApp(output);
             var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
 
             if (suppressStaticWebAssets)

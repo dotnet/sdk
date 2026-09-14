@@ -1,20 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps : SdkTest
     {
-        public GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps()
+        public GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps(ITestOutputHelper log) : base(log)
         {
             _buildAsset = new Lazy<TestAsset>(BuildAsset);
         }
 
         private readonly Lazy<TestAsset> _buildAsset;
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void It_can_generate_correct_depsJson_file()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -25,8 +23,7 @@ namespace Microsoft.NET.Build.Tests
             depsJsonContent.Should().Contain("NETCoreCppCliTestC.dll", "should contain transitive reference");
         }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void It_can_generate_all_runtimeconfig_files_to_output_folder()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -38,8 +35,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void It_can_generate_all_depsjson_files_to_output_folder()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -52,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
 
         private TestAsset BuildAsset()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("NetCoreCppCliLibWithTransitiveDeps")
                 .WithSource();
 

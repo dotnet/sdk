@@ -6,12 +6,14 @@
 namespace Microsoft.NET.Build.Tests
 {
 
-    [TestClass]
     public class GivenThatWeWantToUseContentFiles : SdkTest
     {
+        public GivenThatWeWantToUseContentFiles(ITestOutputHelper log) : base(log)
+        {
+        }
 
 
-        [TestMethod]
+        [Fact]
         public void It_handles_content_files_correctly()
         {
             const string targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -39,7 +41,7 @@ namespace {project.Name}
     }}
 }}";
 
-            var asset = TestAssetsManager
+            var asset = _testAssetsManager
                 .CreateTestProject(project);
 
             // First Build

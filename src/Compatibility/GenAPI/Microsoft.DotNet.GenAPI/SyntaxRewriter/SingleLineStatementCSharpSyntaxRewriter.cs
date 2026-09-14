@@ -108,18 +108,10 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
                 }
 
                 accessorList = accessorList
-                    .WithOpenBraceToken(accessorList.OpenBraceToken.WithLeadingTrivia(SyntaxFactory.Space).WithTrailingTrivia())
+                    .WithOpenBraceToken(accessorList.OpenBraceToken.WithTrailingTrivia())
                     .WithCloseBraceToken(accessorList.CloseBraceToken.WithLeadingTrivia())
                     .WithAccessors(accessors);
             }
-
-            node = node switch
-            {
-                EventDeclarationSyntax eventDeclaration => eventDeclaration.WithIdentifier(eventDeclaration.Identifier.WithTrailingTrivia()),
-                IndexerDeclarationSyntax indexerDeclaration => indexerDeclaration.WithParameterList(indexerDeclaration.ParameterList.WithTrailingTrivia()),
-                PropertyDeclarationSyntax propertyDeclaration => propertyDeclaration.WithIdentifier(propertyDeclaration.Identifier.WithTrailingTrivia()),
-                _ => node
-            };
 
             return node.WithAccessorList(accessorList);
         }

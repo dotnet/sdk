@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
@@ -11,7 +10,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace ManifestReaderTests
 {
-    [TestClass]
     public class SdkDirectoryWorkloadManifestProviderTests : SdkTest
     {
         private string? _testDirectory;
@@ -19,26 +17,26 @@ namespace ManifestReaderTests
         private string? _manifestVersionBandDirectory;
         private string? _fakeDotnetRootDirectory;
 
-        public SdkDirectoryWorkloadManifestProviderTests()
+        public SdkDirectoryWorkloadManifestProviderTests(ITestOutputHelper logger) : base(logger)
         {
         }
 
         [MemberNotNull("_testDirectory", "_manifestRoot", "_manifestVersionBandDirectory", "_fakeDotnetRootDirectory")]
         void Initialize(string featureBand = "5.0.100", [CallerMemberName] string? testName = null, string? identifier = null)
         {
-            _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier).Path;
+            _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier).Path;
             _fakeDotnetRootDirectory = Path.Combine(_testDirectory, "dotnet");
             _manifestRoot = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests");
             _manifestVersionBandDirectory = Path.Combine(_manifestRoot, featureBand);
             Directory.CreateDirectory(_manifestVersionBandDirectory);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItShouldPrioritizeInstallStateOverWorkloadSetUnlessSpecified(bool preferWorkloadSet)
         {
-            Initialize(identifier: preferWorkloadSet.ToString());
+            Initialize();
 
             CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.6", true);
@@ -67,12 +65,12 @@ namespace ManifestReaderTests
             Directory.Delete(Path.Combine(_manifestRoot, "8.0.400"), recursive: true);
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
         {
-            Initialize(identifier: useWorkloadSet.ToString());
+            Initialize();
 
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
@@ -109,7 +107,7 @@ namespace ManifestReaderTests
             Directory.Delete(Path.Combine(_manifestRoot, "8.0.200-rc.2"), recursive: true);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldReturnListOfManifestFiles()
         {
             Initialize();
@@ -129,7 +127,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo(iosManifestFileContent, androidManifestFileContent);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenSDKVersionItShouldReturnListOfManifestFilesForThisVersionBand()
         {
             Initialize();
@@ -146,7 +144,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo(androidManifestFileContent);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestDirectoryItShouldReturnEmpty()
         {
             Initialize();
@@ -156,7 +154,7 @@ namespace ManifestReaderTests
             sdkDirectoryWorkloadManifestProvider.GetManifests().Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoManifestJsonFileInDirectoryItShouldIgnoreIt()
         {
             Initialize();
@@ -171,13 +169,13 @@ namespace ManifestReaderTests
                 .BeEmpty();
         }
 
-        [TestMethod]
-        [DataRow("11.0.1", "11.0.2", "11.0.2-rc.1", "11.0.2")]
-        [DataRow("8.0.200", "8.0.201", "8.0.105", "8.0.201")]
-        [DataRow("8.0.203.1", "8.0.203", "8.0.200-rc.1", "8.0.203.1")]
-        [DataRow("9.0.100-preview.2", "9.0.100-preview.2.3.4", "9.0.100-preview.2.4.3", "9.0.100-preview.2.4.3")]
-        [DataRow("8.0.201.1-preview", "8.0.201.1-rc.1", "8.0.201.1-rc.2", "8.0.201.1-rc.2")]
-        [DataRow("8.0.200-servicing.23015", "8.0.200-preview.7.30301", "8.0.200-servicing.23201", "8.0.200-servicing.23201")]
+        [Theory]
+        [InlineData("11.0.1", "11.0.2", "11.0.2-rc.1", "11.0.2")]
+        [InlineData("8.0.200", "8.0.201", "8.0.105", "8.0.201")]
+        [InlineData("8.0.203.1", "8.0.203", "8.0.200-rc.1", "8.0.203.1")]
+        [InlineData("9.0.100-preview.2", "9.0.100-preview.2.3.4", "9.0.100-preview.2.4.3", "9.0.100-preview.2.4.3")]
+        [InlineData("8.0.201.1-preview", "8.0.201.1-rc.1", "8.0.201.1-rc.2", "8.0.201.1-rc.2")]
+        [InlineData("8.0.200-servicing.23015", "8.0.200-preview.7.30301", "8.0.200-servicing.23201", "8.0.200-servicing.23201")]
         public void ItReturnsLatestManifestVersion(string first, string second, string third, string answer)
         {
             Initialize(identifier: answer);
@@ -196,7 +194,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo($"ios: {answer}/5.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItPrefersManifestsInSubfolders()
         {
             Initialize();
@@ -216,7 +214,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/5.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFallsBackToLatestManifestVersion()
         {
             Initialize("8.0.200");
@@ -242,7 +240,7 @@ namespace ManifestReaderTests
                                 "ios: 18.0.1/7.0.400");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesManifestsFromWorkloadSet()
         {
             Initialize("8.0.200");
@@ -277,7 +275,7 @@ namespace ManifestReaderTests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void WorkloadSetCanHaveTrailingCommasInJson()
         {
             Initialize("8.0.200");
@@ -302,9 +300,9 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100", "android: 33.0.2-rc.1/8.0.200", "maui: 15.0.1-rc.456/8.0.200-rc.2");
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void ItUsesLatestWorkloadSet(bool globalJsonExists)
         {
             Initialize("8.0.200", identifier: globalJsonExists.ToString());
@@ -354,7 +352,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 12.0.1/8.0.200");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesLatestManifestThatIsNotInWorkloadSet()
         {
             Initialize("8.0.200");
@@ -387,7 +385,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100", "android: 33.0.2-rc.1/8.0.200", "maui: 15.0.2/8.0.200");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFallsBackForManifestNotInWorkloadSet()
         {
             Initialize("8.0.200");
@@ -421,7 +419,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100", "android: 33.0.2/8.0.100", "maui: 15.0.1-rc.456/8.0.200-rc.2");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItThrowsIfManifestFromWorkloadSetIsNotFound()
         {
             Initialize("8.0.200");
@@ -438,10 +436,10 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            Assert.ThrowsExactly<InvalidOperationException>(() => GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList());
+            Assert.Throws<InvalidOperationException>(() => GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void WorkloadSetCanIncludeMultipleJsonFiles()
         {
             Initialize("8.0.200");
@@ -483,7 +481,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100", "android: 33.0.2-rc.1/8.0.200");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItThrowsExceptionIfWorkloadSetJsonFilesHaveDuplicateManifests()
         {
             Initialize("8.0.200");
@@ -511,11 +509,11 @@ namespace ManifestReaderTests
                 }
                 """);
 
-            Assert.ThrowsExactly<InvalidOperationException>(() =>
+            Assert.Throws<InvalidOperationException>(() =>
                 new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesWorkloadSetFromGlobalJson()
         {
             Initialize("8.0.200");
@@ -557,42 +555,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100");
         }
 
-        [TestMethod]
-        [DataRow("utf-16")] // UTF-16 LE with BOM
-        [DataRow("utf-16BE")] // UTF-16 BE with BOM
-        public void ItUsesWorkloadSetFromGlobalJsonWithUtf16Encoding(string encodingName)
-        {
-            Initialize("8.0.200", identifier: encodingName);
-
-            string? globalJsonPath = Path.Combine(_testDirectory, "global.json");
-            var encoding = System.Text.Encoding.GetEncoding(encodingName);
-            File.WriteAllText(globalJsonPath, """
-            {
-                "sdk": {
-                    "version": "8.0.200",
-                    "workloadVersion": "8.0.201"
-                }
-            }
-            """, encoding);
-
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
-            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
-{
-  "ios": "11.0.1/8.0.100"
-}
-""");
-
-            var sdkDirectoryWorkloadManifestProvider
-                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
-
-            GetManifestContents(sdkDirectoryWorkloadManifestProvider)
-                .Should()
-                .BeEquivalentTo("ios: 11.0.1/8.0.100");
-        }
-
-        [TestMethod]
+        [Fact]
         public void ItFailsIfWorkloadSetFromGlobalJsonIsNotInstalled()
         {
             Initialize("8.0.200");
@@ -619,11 +582,11 @@ namespace ManifestReaderTests
 """);
 
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
-            var ex = Assert.ThrowsExactly<FileNotFoundException>(() => manifestProvider.GetManifests());
+            var ex = Assert.Throws<FileNotFoundException>(() => manifestProvider.GetManifests());
             ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, "8.0.201", globalJsonPath));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsIfGlobalJsonIsMalformed()
         {
             Initialize("8.0.200");
@@ -645,11 +608,11 @@ namespace ManifestReaderTests
 }
 """);
 
-            var ex = Assert.ThrowsExactly<SdkDirectoryWorkloadManifestProvider.JsonFormatException>(
+            var ex = Assert.Throws<SdkDirectoryWorkloadManifestProvider.JsonFormatException>(
                 () => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesWorkloadSetFromInstallState()
         {
             Initialize("8.0.200");
@@ -685,7 +648,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsIfWorkloadSetFromInstallStateIsNotInstalled()
         {
             Initialize("8.0.200");
@@ -713,13 +676,13 @@ namespace ManifestReaderTests
                 """);
 
 
-            var ex = Assert.ThrowsExactly<FileNotFoundException>(
+            var ex = Assert.Throws<FileNotFoundException>(
                 () => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null));
 
             ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, "8.0.203", installStatePath));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsIfManifestFromWorkloadSetFromInstallStateIsNotInstalled()
         {
             Initialize("8.0.200");
@@ -747,12 +710,12 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            var ex = Assert.ThrowsExactly<InvalidOperationException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
+            var ex = Assert.Throws<InvalidOperationException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
 
             ex.Message.Should().Be(string.Format(Strings.WorkloadSetHasMissingManifests, "8.0.201"));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesWorkloadManifestFromInstallState()
         {
             Initialize("8.0.200");
@@ -791,7 +754,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.1/8.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsIfManifestFromInstallStateIsNotInstalled()
         {
             Initialize("8.0.200");
@@ -824,12 +787,12 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            var ex = Assert.ThrowsExactly<FileNotFoundException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
+            var ex = Assert.Throws<FileNotFoundException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
 
             ex.Message.Should().Be(string.Format(Strings.ManifestFromInstallStateNotFound, "ios: 12.0.2/8.0.200", installStatePath));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItUsesWorkloadSetAndManifestFromInstallState()
         {
             Initialize("8.0.200");
@@ -871,7 +834,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100", "tizen: 8.0.0/8.0.200");
         }
 
-        [TestMethod]
+        [Fact]
         public void WorkloadManifestFromInstallStateOverridesWorkloadSetFromInstallState()
         {
             Initialize("8.0.200");
@@ -910,7 +873,7 @@ namespace ManifestReaderTests
         }
 
         //  Falls back for manifest not in install state
-        [TestMethod]
+        [Fact]
         public void ItFallsBackForManifestNotInInstallState()
         {
             Initialize("8.0.200");
@@ -944,7 +907,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 12.0.1/8.0.200", "android: 33.0.2/8.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void GlobalJsonOverridesInstallState()
         {
             Initialize("8.0.200");
@@ -993,7 +956,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.2/8.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void GlobalJsonWithoutWorkloadVersionDoesNotOverrideInstallState()
         {
             Initialize("8.0.200");
@@ -1038,7 +1001,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("ios: 11.0.1/8.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldReturnManifestsFromTestHook()
         {
             Initialize();
@@ -1068,7 +1031,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("Android: AndroidContent", "iOS: iOSContent");
         }
 
-        [TestMethod]
+        [Fact]
         public void ManifestFromTestHookShouldOverrideDefault()
         {
             Initialize();
@@ -1098,7 +1061,7 @@ namespace ManifestReaderTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void ItSupportsMultipleTestHookFolders()
         {
             Initialize();
@@ -1141,7 +1104,7 @@ namespace ManifestReaderTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void IfTestHookFolderDoesNotExistItShouldBeIgnored()
         {
             Initialize();
@@ -1164,7 +1127,7 @@ namespace ManifestReaderTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldIgnoreOutdatedManifestIds()
         {
             Initialize();
@@ -1182,7 +1145,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("iOS: iOSContent");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldFallbackWhenFeatureBandHasNoManifests()
         {
             Initialize("6.0.100");
@@ -1213,7 +1176,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("iOS: 4/6.0.100", "Android: 2/5.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldFallbackWhenPreviewFeatureBandHasNoManifests()
         {
             Initialize("6.0.100");
@@ -1244,7 +1207,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("iOS: 3/6.0.100-preview.2", "Android: 2/5.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldRollForwardToNonPrereleaseWhenPreviewFeatureBandHasNoManifests()
         {
             Initialize("6.0.100");
@@ -1275,7 +1238,7 @@ namespace ManifestReaderTests
                 .BeEquivalentTo("iOS: 4/6.0.100-preview.4", "Android: 5/6.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItReturnsManifestsInOrderFromKnownWorkloadManifestsFile()
         {
             //  microsoft.net.workload.mono.toolchain.net6, microsoft.net.workload.mono.toolchain.net7, microsoft.net.workload.emscripten.net6, microsoft.net.workload.emscripten.net7
@@ -1362,10 +1325,10 @@ Microsoft.Net.Workload.Emscripten.net7"
             return installStatePath;
         }
 
-        [TestMethod]
+        [Fact]
         public void ItShouldIgnoreManifestsNotFoundInFallback()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var fakeDotnetRootDirectory = Path.Combine(testDirectory, "dotnet");
 
             // Write 6.0.100 manifests-> ios only
@@ -1386,7 +1349,7 @@ Microsoft.Net.Workload.Emscripten.net7"
                 .BeEquivalentTo("iOS: iOS-6.0.100");
         }
 
-        [TestMethod]
+        [Fact]
         public void WorkloadResolverUsesManifestsFromWorkloadSet()
         {
             Initialize("8.0.200");

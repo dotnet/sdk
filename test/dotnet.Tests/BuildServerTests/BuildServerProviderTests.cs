@@ -14,15 +14,14 @@ using Moq;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
-    [TestClass]
     public class BuildServerProviderTests : SdkTest
     {
-        public BuildServerProviderTests()
+        public BuildServerProviderTests(ITestOutputHelper log) : base(log)
         {
 
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenMSBuildFlagItYieldsMSBuild()
         {
             var provider = new BuildServerProvider(
@@ -36,7 +35,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .Equal(CliStrings.MSBuildServer);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenVBCSCompilerFlagItYieldsVBCSCompiler()
         {
             var provider = new BuildServerProvider(
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .Equal(CliStrings.VBCSCompilerServer);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenRazorFlagAndNoPidDirectoryTheEnumerationIsEmpty()
         {
             var provider = new BuildServerProvider(
@@ -63,7 +62,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNoEnvironmentVariableItUsesTheDefaultPidDirectory()
         {
             var provider = new BuildServerProvider(
@@ -80,7 +79,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                     "build"));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenEnvironmentVariableItUsesItForThePidDirectory()
         {
             IFileSystem fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -96,7 +95,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .Be(pidDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenARazorPidFileItReturnsARazorBuildServer()
         {
             const int ProcessId = 1234;
@@ -135,9 +134,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             razorServer.PidFile.PipeName.Should().Be(PipeName);
         }
 
-        [TestMethod]
-        [DataRow(typeof(UnauthorizedAccessException))]
-        [DataRow(typeof(IOException))]
+        [Theory]
+        [InlineData(typeof(UnauthorizedAccessException))]
+        [InlineData(typeof(IOException))]
         public void GivenAnExceptionAccessingTheRazorPidFileItPrintsAWarning(Type exceptionType)
         {
             const int ProcessId = 1234;

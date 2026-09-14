@@ -13,7 +13,6 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Removes Duplicate Package References.
     /// </summary>
-    [MSBuildMultiThreadableTask]
     public class RemoveDuplicatePackageReferences : TaskBase
     {
         private readonly List<ITaskItem> _packageList = new();

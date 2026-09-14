@@ -6,6 +6,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
 {

@@ -3,8 +3,7 @@
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli.Alias
 {
@@ -136,7 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
                 _aliases = new AliasModel();
                 return;
             }
-            JsonObject parsed = _environmentSettings.Host.FileSystem.ReadObject(_aliasesFilePath);
+            JObject parsed = _environmentSettings.Host.FileSystem.ReadObject(_aliasesFilePath);
             IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases = ToStringListDictionary(parsed, StringComparer.OrdinalIgnoreCase, "CommandAliases");
 
             _aliases = new AliasModel(commandAliases);
@@ -146,19 +145,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
         {
             if (_aliases is AliasModel { CommandAliases: { Count: > 0 } })
             {
-                JsonObject root = new();
-                JsonObject commandAliases = new();
-                foreach (var kvp in _aliases.CommandAliases)
-                {
-                    JsonArray arr = new();
-                    foreach (string item in kvp.Value)
-                    {
-                        arr.Add((JsonNode)JsonValue.Create(item)!);
-                    }
-                    commandAliases[kvp.Key] = arr;
-                }
-                root["CommandAliases"] = commandAliases;
-                _environmentSettings.Host.FileSystem.WriteObject(_aliasesFilePath, root);
+                _environmentSettings.Host.FileSystem.WriteObject(_aliasesFilePath, _aliases);
             }
             else
             {
@@ -167,52 +154,50 @@ namespace Microsoft.TemplateEngine.Cli.Alias
         }
 
         // reads a dictionary whose values can either be string literals, or arrays of strings.
-        private IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(JsonObject token, StringComparer? comparer = null, string? propertyName = null)
+        private IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
             Dictionary<string, IReadOnlyList<string>> result = new(comparer ?? StringComparer.Ordinal);
-
-            if (propertyName == null)
+            JObject? jObj = token as JObject;
+            if (jObj == null || propertyName == null || !jObj.TryGetValue(propertyName, StringComparison.OrdinalIgnoreCase, out JToken? element))
             {
                 return result;
             }
 
-            // Case-insensitive property lookup for compatibility with Newtonsoft.Json behavior
-            JsonNode? element = null;
-            foreach (var prop in token)
-            {
-                if (string.Equals(prop.Key, propertyName, StringComparison.OrdinalIgnoreCase))
-                {
-                    element = prop.Value;
-                    break;
-                }
-            }
-
-            if (element is not JsonObject jObj)
+            jObj = element as JObject;
+            if (jObj == null)
             {
                 return result;
             }
 
-            foreach (KeyValuePair<string, JsonNode?> property in jObj)
+            foreach (JProperty property in jObj.Properties())
             {
                 if (property.Value == null)
                 {
                     continue;
                 }
-                else if (property.Value.GetValueKind() == JsonValueKind.String)
+                else if (property.Value.Type == JTokenType.String)
                 {
-                    result[property.Key] = new List<string>() { property.Value.GetValue<string>() };
+                    result[property.Name] = new List<string>() { property.Value.ToString() };
                 }
-                else if (property.Value is JsonArray arr)
+                else if (property.Value.Type == JTokenType.Array)
                 {
-                    List<string> values = new();
-                    foreach (JsonNode? item in arr)
+                    JArray? arr = property.Value as JArray;
+                    if (arr == null)
                     {
-                        if (item != null && item.GetValueKind() == JsonValueKind.String)
-                        {
-                            values.Add(item.GetValue<string>());
-                        }
+                        result[property.Name] = Array.Empty<string>();
                     }
-                    result[property.Key] = values;
+                    else
+                    {
+                        List<string> values = new();
+                        foreach (JToken item in arr)
+                        {
+                            if (item != null && item.Type == JTokenType.String)
+                            {
+                                values.Add(item.ToString());
+                            }
+                        }
+                        result[property.Name] = values;
+                    }
                 }
             }
 

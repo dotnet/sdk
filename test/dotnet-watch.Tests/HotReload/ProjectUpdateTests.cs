@@ -7,10 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class ProjectUpdateTests : DotNetWatchTestBase
+public class ProjectUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task UpdateDirectoryBuildPropsThenUpdateSource()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -49,7 +48,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("Changed!");
     }
 
-    [TestMethod]
+    [Theory]
     [CombinatorialData]
     public async Task Update(bool isDirectoryProps)
     {
@@ -92,8 +91,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains($"{symbolName} not set");
     }
 
-    [TestMethod]
-    [Ignore("https://github.com/dotnet/msbuild/issues/12001")]
+    [Fact(Skip = "https://github.com/dotnet/msbuild/issues/12001")]
     public async Task DirectoryBuildProps_Add()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -136,7 +134,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task DirectoryBuildProps_Delete()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -176,7 +174,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS not set");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task DefaultItemExcludes_DefaultItemsEnabled()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -208,7 +206,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in excluded file '{appDataFilePath}': Add. Path matches DefaultItemExcludes glob 'AppData/**/*.*' set in '{testAsset.Path}'.");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task DefaultItemExcludes_DefaultItemsDisabled()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -250,7 +248,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
     }
 
-    [TestMethod]
+    [Fact]
     public async Task GlobalUsings()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,15 +7,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAComServerLibrary : SdkTest
     {
+        public GivenThatWeWantToBuildAComServerLibrary(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_copies_the_comhost_to_the_output_directory()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource();
 
@@ -32,8 +33,7 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.pdb",
                 "ComServer.deps.json",
                 "ComServer.comhost.dll",
-                "ComServer.runtimeconfig.json",
-                "ComServer.runtimeconfig.dev.json"
+                "ComServer.runtimeconfig.json"
             });
 
             string runtimeConfigFile = Path.Combine(outputDirectory.FullName, "ComServer.runtimeconfig.json");
@@ -43,11 +43,10 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Be("LatestMinor");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -71,17 +70,16 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.deps.json",
                 "ComServer.comhost.dll",
                 "ComServer.X.manifest",
-                "ComServer.runtimeconfig.json",
-                "ComServer.runtimeconfig.dev.json"
+                "ComServer.runtimeconfig.json"
             });
         }
 
-        [TestMethod]
-        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
-        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
+        [Theory]
+        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
+        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer", rid)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -104,16 +102,14 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.pdb",
                 "ComServer.deps.json",
                 "ComServer.comhost.dll",
-                "ComServer.runtimeconfig.json",
-                "ComServer.runtimeconfig.dev.json"
+                "ComServer.runtimeconfig.json"
             });
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_warns_on_self_contained_build()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -132,11 +128,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1128: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void It_fails_to_find_comhost_for_platforms_without_comhost()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -154,11 +149,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1091: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_embeds_single_typelib_with_default_id()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "dummy1.tlb")))));
@@ -170,11 +164,10 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_fails_when_multiple_typelibs_without_ids_specified()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -192,11 +185,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1171: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_fails_when_multiple_typelibs_with_same_ids_specified()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -214,15 +206,14 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1169: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow("non-integer-id")]
-        [DataRow(ushort.MaxValue + 1)]
-        [DataRow(0)]
-        [DataRow(3.14)]
+        [WindowsOnlyTheory]
+        [InlineData("non-integer-id")]
+        [InlineData(ushort.MaxValue + 1)]
+        [InlineData(0)]
+        [InlineData(3.14)]
         public void It_fails_when_typelib_with_invalid_id_specified(object id)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs", identifier: id.ToString())
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -239,11 +230,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1170: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_embeds_multiple_typelibs_with_distinct_ids()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -259,11 +249,10 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_fails_when_typelib_does_not_exist()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "doesnotexist.tlb")))));
@@ -277,11 +266,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1172: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_fails_when_typelib_is_invalid()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "invalid.tlb")))));
@@ -295,11 +283,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1173: ");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_copies_nuget_package_dependencies()
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServerWithDependencies")
                 .WithSource();
 

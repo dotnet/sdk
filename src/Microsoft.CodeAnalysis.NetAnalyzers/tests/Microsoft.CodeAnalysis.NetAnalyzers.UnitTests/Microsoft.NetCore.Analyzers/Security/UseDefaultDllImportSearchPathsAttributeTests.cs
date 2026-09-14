@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseDefaultDllImportSearchPathsAttribute,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -17,269 +17,246 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     // which will ignore all the configuration about the search algorithm.
     // Fow now, this rule didn't take Known Dlls into consideration.
     // If it is needed in the future, we can recover this rule.
-    [TestClass]
     public class UseDefaultDllImportSearchPathsAttributeTests
     {
         // It will try to retrieve the MessageBox from user32.dll, which will be searched in a default order.
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportAttribute_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllInUpperCase_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.DLL"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.DLL")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_WithoutDllExtension_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathAssemblyDirectory_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_OneValueIsBad_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_BothIsBad_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathLegacyBehavior_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.LegacyBehavior)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.LegacyBehavior)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "LegacyBehavior"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathUseDllDirectoryForDependencies_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UseDllDirectoryForDependencies)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.UseDllDirectoryForDependencies)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UseDllDirectoryForDependencies"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportSearchPathAssemblyDirectory_Assembly_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+[assembly:DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 
-                [assembly:DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(10, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_AssemblyDirectory_ApplicationDirectory_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+[assembly:DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 
-                [assembly:DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.ApplicationDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.ApplicationDirectory)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(11, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "ApplicationDirectory"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_ApplicationDirectory_AssemblyDirectory_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+[assembly:DefaultDllImportSearchPaths(DllImportSearchPath.ApplicationDirectory)]
 
-                [assembly:DefaultDllImportSearchPaths(DllImportSearchPath.ApplicationDirectory)]
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}",
             GetCSharpResultAt(11, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [TestMethod]
-        [DataRow("")]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
+        [Theory]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_DefaultValue_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -288,41 +265,37 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.InteropServices;
 
-                            using System;
-                            using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                            class TestClass
-                            {
-                                [DllImport("user32.dll")]
-                                [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
-                                public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                                public void TestMethod()
-                                {
-                                    MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                                }
-                            }
-                            """
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}"
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"),
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) }
+[*]
+{editorConfigText}
+") }
                 },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -331,41 +304,37 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.InteropServices;
 
-                            using System;
-                            using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                            class TestClass
-                            {
-                                [DllImport("user32.dll")]
-                                [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-                                public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                                public void TestMethod()
-                                {
-                                    MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                                }
-                            }
-                            """
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}"
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "System32"),
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) }
+[*]
+{editorConfigText}
+") }
                 },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -374,83 +343,77 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.InteropServices;
 
-                            using System;
-                            using System.Runtime.InteropServices;
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                            class TestClass
-                            {
-                                [DllImport("user32.dll")]
-                                [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                                public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-                                public void TestMethod()
-                                {
-                                    MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                                }
-                            }
-                            """
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}"
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UserDirectories"),
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) }
+[*]
+{editorConfigText}
+") }
                 },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_NoAttribute_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
         // user32.dll will be searched in UserDirectories, which is specified by DllImportSearchPath and is good.
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportAndDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
-        [DataRow("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
+        [InlineData("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -459,35 +422,33 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System;
-                            using System.Runtime.InteropServices;
+                        @"
+using System;
+using System.Runtime.InteropServices;
 
-                            class TestClass
-                            {
-                                [DllImport("user32.dll")]
-                                [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                                public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                                public void TestMethod()
-                                {
-                                    MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                                }
-                            }
-                            """
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) }
+[*]
+{editorConfigText}
+") }
                 },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
-        [TestMethod]
-        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [Theory]
+        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -496,100 +457,95 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-            """
-                using System;
-                using System.Runtime.InteropServices;
+            @"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) }
+[*]
+{editorConfigText}
+") }
                 },
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
         // In this case, [DefaultDllImportSearchPaths] is applied to the assembly.
         // So, this attribute specifies the paths that are used by default to search for any DLL that provides a function for a platform invoke, in any code in the assembly.
-        [TestMethod]
+        [Fact]
         public async Task Test_DllImportAndAssemblyDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                [assembly:DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+[assembly:DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
 
-                class TestClass
-                {
-                    [DllImport("user32.dll")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""user32.dll"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
         // It will have a compiler warning and recommend to use [DllImport] also.
-        [TestMethod]
+        [Fact]
         public async Task Test_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         // It will have a compiler warning and recommend to use [DllImport] also.
-        [TestMethod]
+        [Fact]
         public async Task Test_AssemblyDefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                [assembly:DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+[assembly:DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
 
-                class TestClass
-                {
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         // Local methods with DllImport and no DllImportSearchPaths should warn
-        [TestMethod]
+        [Fact]
         public async Task Test_LocalMethodWithoutSearchPathsWarns()
         {
             await new VerifyCS.Test
@@ -598,24 +554,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System;
-                            using System.Runtime.InteropServices;
+                        @"
+using System;
+using System.Runtime.InteropServices;
 
 
-                            class TestClass
-                            {
+class TestClass
+{
 
-                                public void TestMethod()
-                                {
-                                    var x = MessageBox((IntPtr)null, "asdf", "asdf", 0);
-                                    return;
+    public void TestMethod()
+    {
+        var x = MessageBox((IntPtr)null, ""asdf"", ""asdf"", 0);
+        return;
 
-                                    [DllImport("user32.dll")]
-                                    static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-                                }
-                            }
-                            """
+        [DllImport(""user32.dll"")]
+        static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+    }
+}"
                     },
                     // // Bug - Should warn on the local method
                     //ExpectedDiagnostics =
@@ -626,71 +581,68 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                     //},
                 },
                 LanguageVersion = LanguageVersion.CSharp9,
-            }.RunAsync(CancellationToken.None);
+            }.RunAsync();
         }
 
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_DllImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DllImport("C:\\Windows\\System32\\user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""C:\\Windows\\System32\\user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
         // [DllImport] is set with an absolute path.
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_DllImportAttributeWithAbsolutePath_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DllImport("C:\\Windows\\System32\\user32.dll")]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""C:\\Windows\\System32\\user32.dll"")]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
-        [TestMethod, OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.InteropServices;
 
-                class TestClass
-                {
-                    [DllImport("C:\\Nonexistent\\user32.dll")]
-                    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-                    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+class TestClass
+{
+    [DllImport(""C:\\Nonexistent\\user32.dll"")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
-                    public void TestMethod()
-                    {
-                        MessageBox(new IntPtr(0), "Hello World!", "Hello Dialog", 0);
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

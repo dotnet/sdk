@@ -1,32 +1,29 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Test.MSTest.Utilities;
+using Microsoft.DotNet.Watch.UnitTests;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
-[TestClass]
-public class StaticWebAssetsManifestTests
+public class StaticWebAssetsManifestTests(ITestOutputHelper testOutput)
 {
-    public TestContext TestContext { get; set; } = default!;
-
     private static MemoryStream CreateStream(string content)
         => new(Encoding.UTF8.GetBytes(content));
 
     private static string GetContentRoot(params string[] segments)
         => (Path.Combine(segments).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar).Replace("\\", "\\\\");
 
-    [TestMethod]
+    [Fact]
     public void TryParse_Empty()
     {
         using var stream = CreateStream("null");
-        var logger = new TestLogger(TestContext);
-        Assert.IsNull(StaticWebAssetsManifest.TryParse(stream, "file.json", logger));
-        Assert.IsTrue(logger.HasError);
+        var logger = new TestLogger(testOutput);
+        Assert.Null(StaticWebAssetsManifest.TryParse(stream, "file.json", logger));
+        Assert.True(logger.HasError);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_MissingContentRoots()
     {
         using var stream = CreateStream("""
@@ -44,12 +41,12 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
-        Assert.IsNull(StaticWebAssetsManifest.TryParse(stream, "file.json", logger));
-        Assert.IsTrue(logger.HasError);
+        var logger = new TestLogger(testOutput);
+        Assert.Null(StaticWebAssetsManifest.TryParse(stream, "file.json", logger));
+        Assert.True(logger.HasError);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_InvalidRootIndex()
     {
         var root = Path.GetTempPath();
@@ -72,20 +69,20 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             "[Warning] Failed to parse 'file.json': Invalid value of ContentRootIndex: 1",
         ], logger.GetAndClearMessages());
 
-        Assert.IsNotNull(manifest);
-        Assert.IsEmpty(manifest.UrlToPathMap);
-        Assert.IsEmpty(manifest.DiscoveryPatterns);
+        Assert.NotNull(manifest);
+        Assert.Empty(manifest.UrlToPathMap);
+        Assert.Empty(manifest.DiscoveryPatterns);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_InvalidCharactersInSubPath()
     {
         var root = Path.GetTempPath();
@@ -108,18 +105,18 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
-        Assert.IsEmpty(logger.GetAndClearMessages());
-        Assert.IsNotNull(manifest);
+        Assert.Empty(logger.GetAndClearMessages());
+        Assert.NotNull(manifest);
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             new("site.css", Path.Join(root, "<>.css")),
         ], manifest.UrlToPathMap.OrderBy(e => e.Key));
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_NoChildren()
     {
         var root = Path.GetTempPath();
@@ -136,15 +133,15 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
-        Assert.IsNotNull(manifest);
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsEmpty(manifest.UrlToPathMap);
-        Assert.IsEmpty(manifest.DiscoveryPatterns);
+        Assert.NotNull(manifest);
+        Assert.False(logger.HasWarning);
+        Assert.Empty(manifest.UrlToPathMap);
+        Assert.Empty(manifest.DiscoveryPatterns);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_TopAsset()
     {
         var root = Path.GetTempPath();
@@ -165,19 +162,19 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             "[Warning] Failed to parse 'file.json': Asset has no URL",
         ], logger.GetAndClearMessages());
 
-        Assert.IsNotNull(manifest);
-        Assert.IsEmpty(manifest.UrlToPathMap);
-        Assert.IsEmpty(manifest.DiscoveryPatterns);
+        Assert.NotNull(manifest);
+        Assert.Empty(manifest.UrlToPathMap);
+        Assert.Empty(manifest.DiscoveryPatterns);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_RootIsNotFullPath()
     {
         using var stream = CreateStream("""
@@ -196,15 +193,15 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
-        Assert.IsTrue(logger.HasWarning);
-        Assert.IsNotNull(manifest);
-        Assert.IsEmpty(manifest.UrlToPathMap);
-        Assert.IsEmpty(manifest.DiscoveryPatterns);
+        Assert.True(logger.HasWarning);
+        Assert.NotNull(manifest);
+        Assert.Empty(manifest.UrlToPathMap);
+        Assert.Empty(manifest.DiscoveryPatterns);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_ValidFile()
     {
         var root = Path.GetTempPath();
@@ -320,8 +317,8 @@ public class StaticWebAssetsManifestTests
 
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", NullLogger.Instance);
 
-        Assert.IsNotNull(manifest);
-        Assert.AreSequenceEqual(
+        Assert.NotNull(manifest);
+        AssertEx.SequenceEqual(
         [
             new("_content/Classlib/css/site.css", Path.Combine(root, "Classlib", "wwwroot", "css", "site.css")),
             new("_content/Classlib2/background.png", Path.Combine(root, "Classlib2", "wwwroot", "background.png")),
@@ -332,10 +329,10 @@ public class StaticWebAssetsManifestTests
             new("css/site.css", Path.Combine(root, "Classlib2", "bundles", "css", "site.css")),
         ], manifest.UrlToPathMap.OrderBy(e => e.Key));
 
-        Assert.IsEmpty(manifest.DiscoveryPatterns);
+        Assert.Empty(manifest.DiscoveryPatterns);
     }
 
-    [TestMethod]
+    [Fact]
     public void TryParse_Patterns()
     {
         var root = Path.GetTempPath();
@@ -365,17 +362,17 @@ public class StaticWebAssetsManifestTests
         }
         """);
 
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var manifest = StaticWebAssetsManifest.TryParse(stream, "file.json", logger);
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsNotNull(manifest);
+        Assert.False(logger.HasWarning);
+        Assert.NotNull(manifest);
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             new("site.css", Path.Combine(root, "css", "site.css")),
         ], manifest.UrlToPathMap.OrderBy(e => e.Key));
 
-        Assert.AreSequenceEqual(
+        AssertEx.SequenceEqual(
         [
             $"{root};**;"
         ], manifest.DiscoveryPatterns.Select(p => $"{p.Directory};{p.Pattern};{p.BaseUrl}"));

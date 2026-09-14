@@ -5,10 +5,9 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
-public class LoggingTests : DotNetWatchTestBase
+public class LoggingTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [TestMethod]
+    [Fact]
     public async Task BinaryLogs()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -19,7 +18,7 @@ public class LoggingTests : DotNetWatchTestBase
         var binLogPath = Path.Combine(logDir, "Test.binlog");
         var binLogPathBase = Path.ChangeExtension(binLogPath, "").TrimEnd('.');
 
-        Assert.IsFalse(Directory.Exists(logDir));
+        Assert.False(Directory.Exists(logDir));
 
         App.SuppressVerboseLogging();
         App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);

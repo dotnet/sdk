@@ -9,14 +9,16 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Restore.Tests
 {
-    [TestClass]
-    [ResourceLock(RestoreTestResources.NuGetCache)]
     public class GivenThatWeWantToRestoreDotNetCliToolReference : SdkTest
     {
         private const string ProjectToolVersion = "1.0.0";
         private const string ExpectedProjectToolRestoreTargetFrameworkMoniker = "netcoreapp2.2";
 
-        [TestMethod]
+        public GivenThatWeWantToRestoreDotNetCliToolReference(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void It_can_restore_with_netcoreapp2_2()
         {
             TestProject toolProject = new()
@@ -27,7 +29,7 @@ namespace Microsoft.NET.Restore.Tests
             };
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var toolProjectInstance = TestAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
+            var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
 
             var packCommand = new PackCommand(Log, Path.Combine(toolProjectInstance.TestRoot, toolProject.Name));
             packCommand.Execute().Should().Pass();
@@ -46,7 +48,7 @@ namespace Microsoft.NET.Restore.Tests
                              version: ProjectToolVersion,
                              nupkgPath: null));
 
-            TestAsset toolReferenceProjectInstance = TestAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
+            TestAsset toolReferenceProjectInstance = _testAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
 
             DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
             DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));

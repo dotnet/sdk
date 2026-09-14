@@ -68,13 +68,6 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
     /// </summary>
-    /// <remarks>
-    /// Controls both NuGet package signature verification (passed to
-    /// <see cref="NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads"/>) and
-    /// MSI Authenticode verification (passed to
-    /// <see cref="Install.WorkloadInstallerFactory.GetWorkloadInstaller"/>).
-    /// Set by <see cref="WorkloadUtilities.ShouldVerifySignatures(bool)"/>.
-    /// </remarks>
     protected bool VerifySignatures
     {
         get;
@@ -125,12 +118,15 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
         else
         {
             IsPackageDownloaderProvided = false;
-            PackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                VerifySignatures,
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
                 nugetLogger,
                 Reporter,
-                RestoreActionConfiguration);
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
         }
     }
 }

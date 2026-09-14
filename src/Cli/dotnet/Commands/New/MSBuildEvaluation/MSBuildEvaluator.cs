@@ -110,6 +110,8 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             projectPath = _projectFullPath;
         }
 
+        Stopwatch watch = new();
+        Stopwatch innerBuildWatch = new();
         bool IsSdkStyleProject = false;
         IReadOnlyList<string>? targetFrameworks = null;
         string? targetFramework = null;
@@ -117,6 +119,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
 
         try
         {
+            watch.Start();
             _logger?.LogDebug("Evaluating project: {0}", projectPath);
             MSBuildProject evaluatedProject = RunEvaluate(projectPath);
 
@@ -161,11 +164,13 @@ internal class MSBuildEvaluator : IIdentifiedComponent
 
             //For multi-target project, we need to do additional evaluation for each target framework.
             Dictionary<string, MSBuildProject?> evaluatedTfmBasedProjects = [];
+            innerBuildWatch.Start();
             foreach (string tfm in targetFrameworks)
             {
                 _logger?.LogDebug("Evaluating project for target framework: {0}", tfm);
                 evaluatedTfmBasedProjects[tfm] = RunEvaluate(projectPath, tfm);
             }
+            innerBuildWatch.Stop();
             _logger?.LogDebug("Project is SDK style, multi-target, evaluation succeeded.");
             return result = MultiTargetEvaluationResult.CreateSuccess(projectPath, evaluatedProject, evaluatedTfmBasedProjects);
 
@@ -177,6 +182,9 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         }
         finally
         {
+            watch.Stop();
+            innerBuildWatch.Stop();
+
             string? targetFrameworksString = null;
 
             if (targetFrameworks != null)
@@ -196,7 +204,13 @@ internal class MSBuildEvaluator : IIdentifiedComponent
                 { "TargetFrameworks", targetFrameworksString ?? "<null>"},
             };
 
-            TelemetryEventEntry.TrackEvent("new/msbuild-eval", properties);
+            Dictionary<string, double> measurements = new()
+            {
+                { "EvaluationTime",  watch.ElapsedMilliseconds },
+                { "InnerEvaluationTime",  innerBuildWatch.ElapsedMilliseconds }
+            };
+
+            TelemetryEventEntry.TrackEvent("new/msbuild-eval", properties, measurements);
         }
     }
 

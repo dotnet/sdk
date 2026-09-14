@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.TemplateEngine.Abstractions;
@@ -20,8 +22,8 @@ internal class OptionalWorkloadProvider : ITemplatePackageProvider
 
     public ITemplatePackageProviderFactory Factory { get; }
 
-    // To avoid warnings about being unused, implement empty add/remove accessors.
-    event Action? ITemplatePackageProvider.TemplatePackagesChanged
+    // To avoid warnings about unused, its implemented via add/remove
+    event Action ITemplatePackageProvider.TemplatePackagesChanged
     {
         add { }
         remove { }
@@ -31,13 +33,12 @@ internal class OptionalWorkloadProvider : ITemplatePackageProvider
     {
         var list = new List<TemplatePackage>();
         var optionalWorkloadLocator = new TemplateLocator.TemplateLocator();
-        var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
-        var sdkDirectory = sdksDirectory?.Parent;
-        var sdkVersion = sdkDirectory?.Name;
-        var dotnetRootPath = sdkDirectory?.Parent?.Parent;
+        var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
+        var sdkVersion = Path.GetFileName(sdkDirectory);
+        var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
         string userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
-        var packages = optionalWorkloadLocator.GetDotnetSdkTemplatePackages(sdkVersion, dotnetRootPath?.FullName, userProfileDir);
+        var packages = optionalWorkloadLocator.GetDotnetSdkTemplatePackages(sdkVersion, dotnetRootPath, userProfileDir);
         var fileSystem = _environmentSettings.Host.FileSystem;
         foreach (var packageInfo in packages)
         {

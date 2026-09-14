@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,21 +9,20 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class CommandObjectTests : SdkTest
     {
-        public CommandObjectTests()
+        public CommandObjectTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenItCannotResolveCommandItThrows()
         {
             Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>()); };
             a.Should().Throw<CommandUnknownException>();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenItCannotResolveCommandButCommandIsInListOfKnownToolsItThrows()
         {
             Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>()); };
@@ -32,7 +31,7 @@ namespace Microsoft.DotNet.Tests
 
         private class ResolveNothingCommandResolverPolicy : ICommandResolverPolicy
         {
-            public CompositeCommandResolver CreateCommandResolver(string sdkRoot = null, string currentWorkingDirectory = null)
+            public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
             {
                 var compositeCommandResolver = new CompositeCommandResolver();
                 compositeCommandResolver.AddCommandResolver(new ResolveNothingCommandResolver());

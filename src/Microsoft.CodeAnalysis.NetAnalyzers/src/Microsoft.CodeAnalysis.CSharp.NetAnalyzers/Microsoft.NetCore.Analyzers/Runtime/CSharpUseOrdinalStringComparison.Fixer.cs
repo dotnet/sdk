@@ -1,8 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Composition;
+using System.Threading;
+using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,40 +24,45 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                    ((ArgumentSyntax)node).Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression);
         }
 
-        protected override void FixArgument(SyntaxNode argument, SyntaxEditor editor)
+        protected override Task<Document> FixArgumentAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode argument)
         {
-            if (((ArgumentSyntax)argument).Expression is not MemberAccessExpressionSyntax memberAccess)
+            if (((ArgumentSyntax)argument)?.Expression is MemberAccessExpressionSyntax memberAccess)
             {
-                return;
+                // preserve the "IgnoreCase" suffix if present
+                bool isIgnoreCase = memberAccess.Name.GetText().ToString().EndsWith(UseOrdinalStringComparisonAnalyzer.IgnoreCaseText, StringComparison.Ordinal);
+                string newOrdinalText = isIgnoreCase ? UseOrdinalStringComparisonAnalyzer.OrdinalIgnoreCaseText : UseOrdinalStringComparisonAnalyzer.OrdinalText;
+                SyntaxNode newIdentifier = generator.IdentifierName(newOrdinalText);
+                MemberAccessExpressionSyntax newMemberAccess = memberAccess.WithName((SimpleNameSyntax)newIdentifier).WithAdditionalAnnotations(Formatter.Annotation);
+                SyntaxNode newRoot = root.ReplaceNode(memberAccess, newMemberAccess);
+                return Task.FromResult(document.WithSyntaxRoot(newRoot));
             }
 
-            // preserve the "IgnoreCase" suffix if present
-            bool isIgnoreCase = memberAccess.Name.GetText().ToString().EndsWith(UseOrdinalStringComparisonAnalyzer.IgnoreCaseText, StringComparison.Ordinal);
-            string newOrdinalText = isIgnoreCase ? UseOrdinalStringComparisonAnalyzer.OrdinalIgnoreCaseText : UseOrdinalStringComparisonAnalyzer.OrdinalText;
-
-            editor.ReplaceNode(
-                memberAccess,
-                (currentMemberAccess, generator) => ((MemberAccessExpressionSyntax)currentMemberAccess)
-                    .WithName((SimpleNameSyntax)generator.IdentifierName(newOrdinalText))
-                    .WithAdditionalAnnotations(Formatter.Annotation));
+            return Task.FromResult(document);
         }
 
         protected override bool IsInIdentifierNameContext(SyntaxNode node)
         {
             return node.IsKind(SyntaxKind.IdentifierName) &&
-                   GetInvocation(node) is not null;
+                   node?.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() != null;
         }
 
-        protected override SyntaxNode? GetInvocation(SyntaxNode identifier)
+        protected override async Task<Document> FixIdentifierNameAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode identifier, CancellationToken cancellationToken)
         {
-            return identifier.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>();
-        }
+            if (identifier?.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is InvocationExpressionSyntax invokeParent)
+            {
+                SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                if (model.GetSymbolInfo((IdentifierNameSyntax)identifier!, cancellationToken).Symbol is IMethodSymbol methodSymbol && CanAddStringComparison(methodSymbol, model))
+                {
+                    // append a new StringComparison.Ordinal argument
+                    SyntaxNode newArg = generator.Argument(CreateOrdinalMemberAccess(generator, model))
+                        .WithAdditionalAnnotations(Formatter.Annotation);
+                    InvocationExpressionSyntax newInvoke = invokeParent.AddArgumentListArguments((ArgumentSyntax)newArg).WithAdditionalAnnotations(Formatter.Annotation);
+                    SyntaxNode newRoot = root.ReplaceNode(invokeParent, newInvoke);
+                    return document.WithSyntaxRoot(newRoot);
+                }
+            }
 
-        protected override SyntaxNode AddArgument(SyntaxNode invocation, SyntaxNode argument)
-        {
-            return ((InvocationExpressionSyntax)invocation)
-                .AddArgumentListArguments((ArgumentSyntax)argument)
-                .WithAdditionalAnnotations(Formatter.Annotation);
+            return document;
         }
     }
 }

@@ -6,18 +6,17 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
-    [TestClass]
     public class GivenDotnetRunRunsVbproj : SdkTest
     {
-        public GivenDotnetRunRunsVbproj()
+        public GivenDotnetRunRunsVbproj(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void ItGivesAnErrorWhenAttemptingToUseALaunchProfileThatDoesNotExistWhenThereIsNoLaunchSettingsFile()
         {
             var testAppName = "VBTestApp";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -35,11 +34,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     """));
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsWhenTryingToUseLaunchProfileSharingTheSameNameWithAnotherProfileButDifferentCapitalization()
         {
             var testAppName = "AppWithDuplicateLaunchProfiles";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var runResult = new DotnetCommand(Log, "run")
@@ -54,11 +53,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(expectedError);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItFailsWithSpecificErrorMessageIfLaunchProfileDoesntExist()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             string invalidLaunchProfileName = "Invalid";
@@ -72,16 +71,14 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(string.Format(ProjectTools.Resources.LaunchProfileDoesNotExist, invalidLaunchProfileName));
         }
 
-        [TestMethod]
-        [DataRow("Second")]
-        [DataRow("sEcoND")] // ItAcceptsLaunchProfileWithAlternativeCasing
+        [Theory]
+        [InlineData("Second")]
+        [InlineData("sEcoND")] // ItAcceptsLaunchProfileWithAlternativeCasing
         public void ItUsesLaunchProfileOfTheSpecifiedName(string launchProfileName)
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
                             .WithSource();
-
-            var launchSettingsPath = Path.Combine(testInstance.Path, "My Project", "launchSettings.json");
 
             new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testInstance.Path)
@@ -91,32 +88,34 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And
                 .HaveStdOutContaining("Second")
                 .And
-                .HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+                .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "My Project", "launchSettings.json");
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
             cmd.Should().Pass()
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
+
+            cmd.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItPrintsUsingLaunchSettingsMessageWhenNotQuiet()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
+            var testInstance = _testAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -127,15 +126,17 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
+
+            cmd.StdErr.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;

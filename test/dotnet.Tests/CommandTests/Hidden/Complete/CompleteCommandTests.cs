@@ -6,14 +6,13 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    [TestClass]
     public class CompleteCommandTests : SdkTest
     {
-        public CompleteCommandTests()
+        public CompleteCommandTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenOnlyDotnetItSuggestsTopLevelCommandsAndOptions()
         {
             var expected = new[] {
@@ -60,7 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenASlashItSuggestsTopLevelOptions()
         {
             var expected = new[] {
@@ -83,8 +82,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         // this test in helix errors accessing the template hive  but this test doesn't work with the ephemeral hive
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void GivenNewCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -105,7 +103,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Contain(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -131,7 +129,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetDeleteCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -155,7 +153,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetLocalsCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -181,7 +179,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetPushCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -216,7 +214,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetVerifyCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -236,7 +234,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetTrustCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -262,7 +260,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetSignCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -292,7 +290,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenNuGetWhyCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -310,7 +308,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenDotnetAddPackWithPosition()
         {
             var expected = new[] {
@@ -322,7 +320,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenDotnetToolInWithPosition()
         {
             var expected = new[] {
@@ -335,20 +333,17 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 
-        [TestMethod]
-        // CurrentDirectory and CliCompletionsTimeout are process-wide and are used by code that cannot participate in a resource lock.
-        [DoNotParallelize]
+        [Fact]
         public void CompletesNugetPackageIds()
         {
-            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
-            var originalTimeout = NuGetPackageDownloader.CliCompletionsTimeout;
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string[] expected = ["Newtonsoft.Json"];
             var reporter = new BufferedReporter();
             var currentDirectory = Directory.GetCurrentDirectory();
             try
             {
-                NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
                 Directory.SetCurrentDirectory(testAsset.Path);
                 CompleteCommand.RunWithReporter(GetArguments("dotnet add package Newt$"), reporter).Should().Be(0);
                 reporter.Lines.Should().Contain(expected);
@@ -356,17 +351,14 @@ namespace Microsoft.DotNet.Tests.Commands
             finally
             {
                 Directory.SetCurrentDirectory(currentDirectory);
-                NuGetPackageDownloader.CliCompletionsTimeout = originalTimeout;
             }
         }
 
-        [TestMethod]
-        // CurrentDirectory and CliCompletionsTimeout are process-wide and are used by code that cannot participate in a resource lock.
-        [DoNotParallelize]
+        [Fact]
         public void CompletesNugetPackageVersions()
         {
-            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
-            var originalTimeout = NuGetPackageDownloader.CliCompletionsTimeout;
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0.1"; // not exhaustive
@@ -374,7 +366,6 @@ namespace Microsoft.DotNet.Tests.Commands
             var currentDirectory = Directory.GetCurrentDirectory();
             try
             {
-                NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
                 Directory.SetCurrentDirectory(testAsset.Path);
                 CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --version $"), reporter).Should().Be(0);
                 reporter.Lines.Should().Contain(knownVersion);
@@ -382,17 +373,14 @@ namespace Microsoft.DotNet.Tests.Commands
             finally
             {
                 Directory.SetCurrentDirectory(currentDirectory);
-                NuGetPackageDownloader.CliCompletionsTimeout = originalTimeout;
             }
         }
 
-        [TestMethod]
-        // CurrentDirectory and CliCompletionsTimeout are process-wide and are used by code that cannot participate in a resource lock.
-        [DoNotParallelize]
+        [Fact]
         public void CompletesNugetPackageVersionsWithStem()
         {
-            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
-            var originalTimeout = NuGetPackageDownloader.CliCompletionsTimeout;
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0"; // not exhaustive
@@ -401,7 +389,6 @@ namespace Microsoft.DotNet.Tests.Commands
             var currentDirectory = Directory.GetCurrentDirectory();
             try
             {
-                NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
                 Directory.SetCurrentDirectory(testAsset.Path);
                 CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --version {knownVersion}$"), reporter).Should().Be(0);
                 reporter.Lines.Should().Contain(expectedVersions);
@@ -412,17 +399,14 @@ namespace Microsoft.DotNet.Tests.Commands
             finally
             {
                 Directory.SetCurrentDirectory(currentDirectory);
-                NuGetPackageDownloader.CliCompletionsTimeout = originalTimeout;
             }
         }
 
-        [TestMethod]
-        // CurrentDirectory and CliCompletionsTimeout are process-wide and are used by code that cannot participate in a resource lock.
-        [DoNotParallelize]
+        [Fact]
         public void CompletesNugetPackageVersionsWithPrereleaseVersionsWhenSpecified()
         {
-            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
-            var originalTimeout = NuGetPackageDownloader.CliCompletionsTimeout;
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Spectre.Console";
             string knownVersion = "0.49.1";
@@ -431,7 +415,6 @@ namespace Microsoft.DotNet.Tests.Commands
             var currentDirectory = Directory.GetCurrentDirectory();
             try
             {
-                NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
                 Directory.SetCurrentDirectory(testAsset.Path);
                 CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --prerelease --version {knownVersion}$"), reporter).Should().Be(0);
                 reporter.Lines.Should().Equal(expectedVersions);
@@ -439,7 +422,6 @@ namespace Microsoft.DotNet.Tests.Commands
             finally
             {
                 Directory.SetCurrentDirectory(currentDirectory);
-                NuGetPackageDownloader.CliCompletionsTimeout = originalTimeout;
             }
         }
 

@@ -105,10 +105,17 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             {
                 NuGetFramework forwardTfm = item.SupportedFrameworkRange.Max;
                 NuGetFramework reverseTfm = item.TargetFrameworkRange.Min;
+#if NET
                 if (packageTfmMapping.TryGetValue(forwardTfm, out HashSet<NuGetFramework>? value))
                 {
                     value.Add(reverseTfm);
                 }
+#else
+                if (packageTfmMapping.ContainsKey(forwardTfm))
+                {
+                    packageTfmMapping[forwardTfm].Add(reverseTfm);
+                }
+#endif
                 else
                 {
                     packageTfmMapping.Add(forwardTfm, [ reverseTfm ]);

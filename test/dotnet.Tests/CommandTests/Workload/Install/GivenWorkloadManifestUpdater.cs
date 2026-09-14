@@ -18,7 +18,6 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
-    [TestClass]
     public class GivenWorkloadManifestUpdater : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -26,13 +25,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         private readonly string _manifestSentinelFileName = ".workloadAdvertisingManifestSentinel";
         private readonly ManifestId[] _installedManifests;
 
-        public GivenWorkloadManifestUpdater()
+        public GivenWorkloadManifestUpdater(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
             _installedManifests = new ManifestId[] { new ManifestId("test-manifest-1"), new ManifestId("test-manifest-2"), new ManifestId("test-manifest-3") };
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenWorkloadManifestUpdateItCanUpdateAdvertisingManifests()
         {
             (var manifestUpdater, var nugetDownloader, _, _) = GetTestUpdater();
@@ -41,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenNoSentinelExists()
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater();
@@ -52,7 +51,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.Exists(sentinelPath).Should().BeTrue();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenDue()
         {
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS) ? "0" : string.Empty;
@@ -69,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.GetLastAccessTime(sentinelPath).Should().BeAfter(createTime);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenAdvertisingManifestUpdateItDoesNotUpdateWhenNotDue()
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath, _) = GetTestUpdater();
@@ -82,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.GetLastAccessTime(sentinelPath).Should().BeBefore(createTime);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenAdvertisingManifestUpdateItHonorsDisablingEnvVar()
         {
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE) ? "true" : string.Empty;
@@ -92,10 +91,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             nugetDownloader.DownloadCallParams.Should().BeEmpty();
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenWorkloadManifestUpdateItCanCalculateUpdates()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -138,10 +137,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void GivenAdvertisedManifestsItCalculatesCorrectUpdates()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var currentFeatureBand = "6.0.300";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -206,9 +205,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates.Select(u => u.ToManifestVersionUpdate()));
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public async Task ItCanFallbackAndAdvertiseCorrectUpdate(bool useOfflineCache)
         {
             //  Currently installed - 6.0.200 workload manifest
@@ -219,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = TestAssetsManager.CreateTestDirectory(identifier: useOfflineCache.ToString()).Path;
+            var testDir = _testAssetsManager.CreateTestDirectory(identifier: useOfflineCache.ToString()).Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var installedManifestDir6_0_200 = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
             Directory.CreateDirectory(installedManifestDir6_0_200);
@@ -284,9 +283,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public async Task ItCanFallbackWithNoUpdates(bool useOfflineCache)
         {
             //  Currently installed - none
@@ -298,7 +297,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
             var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
@@ -319,7 +318,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: true);
+            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
             var offlineCacheDir = "";
             if (useOfflineCache)
@@ -350,51 +349,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
-        [TestMethod]
-        public async Task ItSuppressesMessagesWhenDisplayManifestUpdatesIsFalse()
-        {
-            //  Test that advertising manifest messages are suppressed when displayManifestUpdates is false
-
-            //  Arrange
-            string sdkFeatureBand = "6.0.300";
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
-            var dotnetRoot = Path.Combine(testDir, "dotnet");
-
-            var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
-            Directory.CreateDirectory(emptyInstalledManifestsDir);
-
-            var adManifestDir = Path.Combine(testDir, ".dotnet", "sdk-advertising", sdkFeatureBand);
-            Directory.CreateDirectory(adManifestDir);
-
-            string testManifestName = "test-manifest";
-            Directory.CreateDirectory(Path.Combine(emptyInstalledManifestsDir, testManifestName));
-            File.WriteAllText(Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), GetManifestContent(new ManifestVersion("1.0.0")));
-
-            var workloadManifestProvider = new MockManifestProvider((testManifestName, Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), "1.0.0", "6.0.200"))
-            {
-                SdkFeatureBand = new SdkFeatureBand(sdkFeatureBand)
-            };
-
-            var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
-            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
-            var installationRepo = new MockInstallationRecordRepository();
-            // Create updater with displayManifestUpdates: false (simulating non-diagnostic verbosity)
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: false);
-
-            nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
-            nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.200");
-
-            //  Act
-            await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
-
-            //  Assert - messages should be suppressed
-            _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().NotContain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
-        }
-
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public async Task GivenNoUpdatesAreAvailableAndNoRollbackItGivesAppropriateMessage(bool useOfflineCache)
         {
             //  Currently installed - none
@@ -406,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
             var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.300");
@@ -427,7 +384,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: true);
+            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
             var offlineCacheDir = "";
             if (useOfflineCache)
@@ -458,10 +415,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenWorkloadManifestRollbackItCanCalculateUpdates()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var currentFeatureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -496,10 +453,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates.Select(u => u.ToManifestVersionUpdate()));
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenFromRollbackDefinitionItErrorsOnInstalledExtraneousManifestId()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new (ManifestId, ManifestVersion, ManifestVersion)[] {
@@ -539,10 +496,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string.Join(" ", _reporter.Lines).Should().Contain(rollbackDefPath);
         }
 
-        [TestMethod]
+        [Fact]
         public void GivenFromRollbackDefinitionItErrorsOnExtraneousManifestIdInRollbackDefinition()
         {
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new (ManifestId, ManifestVersion, ManifestVersion)[] {
@@ -581,11 +538,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string.Join(" ", _reporter.Lines).Should().Contain(rollbackDefPath);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GivenWorkloadManifestUpdateItChoosesHighestManifestVersionInCache()
         {
             var manifestId = "mock-manifest";
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -615,13 +572,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installer.ExtractCallParams[0].Item1.Should().Be(Path.Combine(offlineCache, $"{manifestId}.manifest-{featureBand}.3.0.0.nupkg"));
         }
 
-        [TestMethod]
-        [DataRow("build", true)]
-        [DataRow("publish", true)]
-        [DataRow("run", false)]
+        [Theory]
+        [InlineData("build", true)]
+        [InlineData("publish", true)]
+        [InlineData("run", false)]
         public void GivenWorkloadsAreOutOfDateUpdatesAreAdvertisedOnRestoringCommands(string commandName, bool shouldShowUpdateNotification)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
                 .Restore(Log);
             var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
@@ -656,10 +613,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void WorkloadUpdatesForDifferentBandAreNotAdvertised()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .Restore(Log);
             var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
@@ -684,11 +641,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .NotHaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSideBySideUpdateChecks()
         {
             // this test checks that different version bands don't interfere with each other's update check timers
-            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             (var updater1, var downloader1, var sentinelPath1, var resolver1) = GetTestUpdater(testDir: testDir, featureBand: "6.0.100");
             (var updater2, var downloader2, var sentinelPath2, var resolver2) = GetTestUpdater(testDir: testDir, featureBand: "6.0.200");
@@ -730,7 +687,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
         {
-            var testDir = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
+            var testDir = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             var featureBand = "6.0.100";
 

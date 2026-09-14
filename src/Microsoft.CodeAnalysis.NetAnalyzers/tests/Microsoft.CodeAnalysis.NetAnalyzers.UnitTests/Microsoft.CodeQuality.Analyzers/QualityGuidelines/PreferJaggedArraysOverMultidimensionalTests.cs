@@ -1,57 +1,54 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpPreferJaggedArraysOverMultidimensionalFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicPreferJaggedArraysOverMultidimensionalFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    [TestClass]
     public class PreferJaggedArraysOverMultidimensionalTests
     {
-        [TestMethod]
+        [Fact]
         public async Task CSharpSimpleMembersAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Class1
+{
+    public int[,] MultidimensionalArrayField;
+    
+    public int[,] MultidimensionalArrayProperty
+    {
+        get { return null; }
+    }
 
-                public class Class1
-                {
-                    public int[,] MultidimensionalArrayField;
+    public int[,] MethodReturningMultidimensionalArray()
+    {
+        return null;
+    }
 
-                    public int[,] MultidimensionalArrayProperty
-                    {
-                        get { return null; }
-                    }
+    public void MethodWithMultidimensionalArrayParameter(int[,] multidimensionalParameter) { }
 
-                    public int[,] MethodReturningMultidimensionalArray()
-                    {
-                        return null;
-                    }
+    public void MethodWithMultidimensionalArrayCode()
+    {
+        int[,] multiDimVariable = new int[5, 5];
+        multiDimVariable[1, 1] = 3;
+    }
 
-                    public void MethodWithMultidimensionalArrayParameter(int[,] multidimensionalParameter) { }
+    public int[,][] JaggedMultidimensionalField;
+}
 
-                    public void MethodWithMultidimensionalArrayCode()
-                    {
-                        int[,] multiDimVariable = new int[5, 5];
-                        multiDimVariable[1, 1] = 3;
-                    }
-
-                    public int[,][] JaggedMultidimensionalField;
-                }
-
-                public interface IInterface
-                {
-                    int[,] InterfaceMethod(int[,] array);
-                }
-
-                """,
+public interface IInterface
+{
+    int[,] InterfaceMethod(int[,] array);
+}
+",
             GetCSharpDefaultResultAt(4, 19, "MultidimensionalArrayField"),
             GetCSharpDefaultResultAt(6, 19, "MultidimensionalArrayProperty"),
             GetCSharpReturnResultAt(11, 19, "MethodReturningMultidimensionalArray", "int[*,*]"),
@@ -62,40 +59,38 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
             GetCSharpDefaultResultAt(29, 35, "array"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicSimpleMembersAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class Class1
+    Public MultidimensionalArrayField As Integer(,)
 
-                Public Class Class1
-                    Public MultidimensionalArrayField As Integer(,)
+    Public ReadOnly Property MultidimensionalArrayProperty As Integer(,)
+        Get
+            Return Nothing
+        End Get
+    End Property
 
-                    Public ReadOnly Property MultidimensionalArrayProperty As Integer(,)
-                        Get
-                            Return Nothing
-                        End Get
-                    End Property
+    Public Function MethodReturningMultidimensionalArray() As Integer(,)
+        Return Nothing
+    End Function
 
-                    Public Function MethodReturningMultidimensionalArray() As Integer(,)
-                        Return Nothing
-                    End Function
+    Public Sub MethodWithMultidimensionalArrayParameter(multidimensionalParameter As Integer(,))
+    End Sub
 
-                    Public Sub MethodWithMultidimensionalArrayParameter(multidimensionalParameter As Integer(,))
-                    End Sub
+    Public Sub MethodWithMultidimensionalArrayCode()
+        Dim multiDimVariable(5, 5) As Integer
+        multiDimVariable(1, 1) = 3
+    End Sub
 
-                    Public Sub MethodWithMultidimensionalArrayCode()
-                        Dim multiDimVariable(5, 5) As Integer
-                        multiDimVariable(1, 1) = 3
-                    End Sub
+    Public JaggedMultidimensionalField As Integer(,)()
+End Class
 
-                    Public JaggedMultidimensionalField As Integer(,)()
-                End Class
-
-                Public Interface IInterface
-                    Function InterfaceMethod(array As Integer(,)) As Integer(,)
-                End Interface
-
-                """,
+Public Interface IInterface
+    Function InterfaceMethod(array As Integer(,)) As Integer(,)
+End Interface
+",
             GetBasicDefaultResultAt(3, 12, "MultidimensionalArrayField"),
             GetBasicDefaultResultAt(5, 30, "MultidimensionalArrayProperty"),
             GetBasicReturnResultAt(11, 21, "MethodReturningMultidimensionalArray", "Integer(*,*)"),
@@ -106,185 +101,179 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
             GetBasicDefaultResultAt(27, 30, "array"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpNoDiagosticsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class Class1
-                {
-                    public int[][] JaggedArrayField;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Class1
+{
+    public int[][] JaggedArrayField;
+    
+    public int[][] JaggedArrayProperty
+    {
+        get { return null; }
+    }
 
-                    public int[][] JaggedArrayProperty
-                    {
-                        get { return null; }
-                    }
+    public int[][] MethodReturningJaggedArray()
+    {
+        return null;
+    }
 
-                    public int[][] MethodReturningJaggedArray()
-                    {
-                        return null;
-                    }
-
-                    public void MethodWithJaggedArrayParameter(int[][] jaggedParameter) { }
-                }
-                """);
+    public void MethodWithJaggedArrayParameter(int[][] jaggedParameter) { }
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicNoDiangnosticsAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class Class1
-                    Public JaggedArrayField As Integer()()
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class Class1
+    Public JaggedArrayField As Integer()()
 
-                    Public ReadOnly Property JaggedArrayProperty As Integer()()
-                        Get
-                            Return Nothing
-                        End Get
-                    End Property
+    Public ReadOnly Property JaggedArrayProperty As Integer()()
+        Get
+            Return Nothing
+        End Get
+    End Property
 
-                    Public Function MethodReturningJaggedArray() As Integer()()
-                        Return Nothing
-                    End Function
+    Public Function MethodReturningJaggedArray() As Integer()()
+        Return Nothing
+    End Function
 
-                    Public Sub MethodWithJaggedArrayParameter(jaggedParameter As Integer()())
-                    End Sub
-                End Class
-                """);
+    Public Sub MethodWithJaggedArrayParameter(jaggedParameter As Integer()())
+    End Sub
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CSharpOverridenMembersAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Class1
+{
+    public virtual int[,] MultidimensionalArrayProperty
+    {
+        get { return null; }
+    }
 
-                public class Class1
-                {
-                    public virtual int[,] MultidimensionalArrayProperty
-                    {
-                        get { return null; }
-                    }
+    public virtual int[,] MethodReturningMultidimensionalArray()
+    {
+        return null;
+    }
+}
 
-                    public virtual int[,] MethodReturningMultidimensionalArray()
-                    {
-                        return null;
-                    }
-                }
+public class Class2 : Class1
+{
+    public override int[,] MultidimensionalArrayProperty
+    {
+        get { return null; }
+    }
 
-                public class Class2 : Class1
-                {
-                    public override int[,] MultidimensionalArrayProperty
-                    {
-                        get { return null; }
-                    }
-
-                    public override int[,] MethodReturningMultidimensionalArray()
-                    {
-                        return null;
-                    }
-                }
-
-                """,
+    public override int[,] MethodReturningMultidimensionalArray()
+    {
+        return null;
+    }
+}
+",
             GetCSharpDefaultResultAt(4, 27, "MultidimensionalArrayProperty"),
             GetCSharpReturnResultAt(9, 27, "MethodReturningMultidimensionalArray", "int[*,*]"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BasicOverriddenMembersAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class Class1
+    Public Overridable ReadOnly Property MultidimensionalArrayProperty As Integer(,)
+        Get
+            Return Nothing
+        End Get
+    End Property
 
-                Public Class Class1
-                    Public Overridable ReadOnly Property MultidimensionalArrayProperty As Integer(,)
-                        Get
-                            Return Nothing
-                        End Get
-                    End Property
+    Public Overridable Function MethodReturningMultidimensionalArray() As Integer(,)
+        Return Nothing
+    End Function
+End Class
 
-                    Public Overridable Function MethodReturningMultidimensionalArray() As Integer(,)
-                        Return Nothing
-                    End Function
-                End Class
+Public Class Class2
+    Inherits Class1
+    Public Overrides ReadOnly Property MultidimensionalArrayProperty As Integer(,)
+        Get
+            Return Nothing
+        End Get
+    End Property
 
-                Public Class Class2
-                    Inherits Class1
-                    Public Overrides ReadOnly Property MultidimensionalArrayProperty As Integer(,)
-                        Get
-                            Return Nothing
-                        End Get
-                    End Property
-
-                    Public Overrides Function MethodReturningMultidimensionalArray() As Integer(,)
-                        Return Nothing
-                    End Function
-                End Class
-
-                """,
+    Public Overrides Function MethodReturningMultidimensionalArray() As Integer(,)
+        Return Nothing
+    End Function
+End Class
+",
             GetBasicDefaultResultAt(3, 42, "MultidimensionalArrayProperty"),
             GetBasicReturnResultAt(9, 33, "MethodReturningMultidimensionalArray", "Integer(*,*)"));
         }
 
-        [TestMethod, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
         public async Task Method_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public interface IC
-                {
-                    int[,] {|#0:MethodReturningMultidimensionalArray|}(int[,] {|#1:array|});
-                }
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface IC
+{
+    int[,] {|#0:MethodReturningMultidimensionalArray|}(int[,] {|#1:array|});
+}
 
-                public class C : IC
-                {
-                    public int[,] MethodReturningMultidimensionalArray(int[,] array)
-                        => null;
-                }
-                """,
+public class C : IC
+{
+    public int[,] MethodReturningMultidimensionalArray(int[,] array)
+        => null;
+}",
                 VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule).WithLocation(0).WithArguments("MethodReturningMultidimensionalArray", "int[*,*]"),
                 VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(1).WithArguments("array"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Interface IC
-                    Function {|#0:MethodReturningMultidimensionalArray|}(ByVal {|#1:array|} As Integer(,)) As Integer(,)
-                End Interface
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface IC
+    Function {|#0:MethodReturningMultidimensionalArray|}(ByVal {|#1:array|} As Integer(,)) As Integer(,)
+End Interface
 
-                Public Class C
-                    Implements IC
+Public Class C
+    Implements IC
 
-                    Public Function MethodReturningMultidimensionalArray(ByVal array As Integer(,)) As Integer(,) Implements IC.MethodReturningMultidimensionalArray
-                        Return Nothing
-                    End Function
-                End Class
-                """,
+    Public Function MethodReturningMultidimensionalArray(ByVal array As Integer(,)) As Integer(,) Implements IC.MethodReturningMultidimensionalArray
+        Return Nothing
+    End Function
+End Class
+",
                 VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule).WithLocation(0).WithArguments("MethodReturningMultidimensionalArray", "Integer(*,*)"),
                 VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(1).WithArguments("array"));
         }
 
-        [TestMethod, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
         public async Task Property_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public interface IC
-                {
-                    int[,] {|#0:MultidimensionalArrayProperty|} { get; }
-                }
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface IC
+{
+    int[,] {|#0:MultidimensionalArrayProperty|} { get; }
+}
 
-                public class C : IC
-                {
-                    public int[,] MultidimensionalArrayProperty { get; set; }
-                }
-                """,
+public class C : IC
+{
+    public int[,] MultidimensionalArrayProperty { get; set; }
+}",
                 VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(0).WithArguments("MultidimensionalArrayProperty"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Interface IC
-                    ReadOnly Property {|#0:MultidimensionalArrayProperty|} As Integer(,)
-                End Interface
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface IC
+    ReadOnly Property {|#0:MultidimensionalArrayProperty|} As Integer(,)
+End Interface
 
-                Public Class C
-                    Implements IC
+Public Class C
+    Implements IC
 
-                    Public Property MultidimensionalArrayProperty As Integer(,) Implements IC.MultidimensionalArrayProperty
-                End Class
-                """,
+    Public Property MultidimensionalArrayProperty As Integer(,) Implements IC.MultidimensionalArrayProperty
+End Class
+",
                 VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(0).WithArguments("MultidimensionalArrayProperty"));
         }
 

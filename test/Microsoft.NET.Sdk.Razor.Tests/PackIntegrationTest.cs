@@ -5,11 +5,12 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    [TestClass]
     public class PackIntegrationTest : AspNetSdkTest
     {
 
-        [TestMethod]
+        public PackIntegrationTest(ITestOutputHelper log) : base(log) { }
+
+        [Fact]
         public void Pack_NoBuild_Works_IncludesAssembly()
         {
             var testAsset = "RazorClassLibrary";

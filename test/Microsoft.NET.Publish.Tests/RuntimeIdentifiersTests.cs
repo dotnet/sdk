@@ -8,12 +8,14 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class RuntimeIdentifiersTests : SdkTest
     {
+        public RuntimeIdentifiersTests(ITestOutputHelper log) : base(log)
+        {
+        }
+
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [TestMethod]
-        [CoreMSBuildOnly]
+        [CoreMSBuildOnlyFact]
         public void BuildWithRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -37,7 +39,7 @@ namespace Microsoft.NET.Publish.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
 
@@ -71,7 +73,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildWithUseCurrentRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -89,7 +91,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RecordProperties("RuntimeIdentifier");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
@@ -112,11 +114,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [TestMethod]
-        [CoreMSBuildOnly]
-        [DataRow(false)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData(false)]
         //  "No build" scenario doesn't currently work: https://github.com/dotnet/sdk/issues/2956
-        //[DataRow(true)]
+        //[InlineData(true)]
         public void PublishWithRuntimeIdentifier(bool publishNoBuild)
         {
             var testProject = new TestProject()
@@ -140,7 +141,7 @@ namespace Microsoft.NET.Publish.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: publishNoBuild ? "nobuild" : string.Empty);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: publishNoBuild ? "nobuild" : string.Empty);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -182,10 +183,10 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [TestMethod]
-        [DataRow(false, false)] // publish rid overrides rid in project file if publishing
-        [DataRow(true, false)] // publish rid doesnt override global rid
-        [DataRow(true, true)] // publish rid doesnt override global rid, even if global
+        [Theory]
+        [InlineData(false, false)] // publish rid overrides rid in project file if publishing
+        [InlineData(true, false)] // publish rid doesnt override global rid
+        [InlineData(true, true)] // publish rid doesnt override global rid, even if global
         public void PublishRuntimeIdentifierSetsRuntimeIdentifierAndDoesOrDoesntOverrideRID(bool runtimeIdentifierIsGlobal, bool publishRuntimeIdentifierIsGlobal)
         {
             string tfm = ToolsetInfo.CurrentTargetFramework;
@@ -210,7 +211,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             string identifier = $"PublishRuntimeIdentifierOverrides-{publishRuntimeIdentifierIsGlobal}-{runtimeIdentifierIsGlobal}";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
             var publishCommand = new DotnetPublishCommand(Log);
             publishCommand
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -222,11 +223,10 @@ namespace Microsoft.NET.Publish.Tests
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, configuration: "Release", targetFramework: tfm);
             var finalRid = properties["RuntimeIdentifier"];
 
-            Assert.AreEqual(expectedRid, finalRid);
+            Assert.True(finalRid == expectedRid);
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void PublishRuntimeIdentifierOverridesUseCurrentRuntime()
         {
             string tfm = ToolsetInfo.CurrentTargetFramework;
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.RecordProperties("RuntimeIdentifier");
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new DotnetPublishCommand(Log);
             publishCommand
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, MethodBase.GetCurrentMethod().Name))
@@ -254,15 +254,15 @@ namespace Microsoft.NET.Publish.Tests
             var finalRid = properties["RuntimeIdentifier"];
             var ucrRid = properties["NETCoreSdkPortableRuntimeIdentifier"];
 
-            Assert.AreEqual(publishRid, finalRid);
-            Assert.AreNotEqual(ucrRid, finalRid);
+            Assert.True(finalRid == publishRid);
+            Assert.True(ucrRid != finalRid);
         }
 
-        [TestMethod]
-        [DataRow("PublishReadyToRun", false)] // R2R doesn't imply self-contained in 8 and above
-        [DataRow("PublishSingleFile", true)] // single-file implies self-contained
-        [DataRow("PublishTrimmed", true)] // trimming implies self-contained
-        [DataRow("PublishAot", true)] // AOT implies self-contained
+        [Theory]
+        [InlineData("PublishReadyToRun", false)] // R2R doesn't imply self-contained in 8 and above
+        [InlineData("PublishSingleFile", true)] // single-file implies self-contained
+        [InlineData("PublishTrimmed", true)] // trimming implies self-contained
+        [InlineData("PublishAot", true)] // AOT implies self-contained
         public void SomePublishPropertiesInferSelfContained(string property, bool expectedSelfContainedValue)
         {
             // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
@@ -275,7 +275,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RecordProperties("SelfContained");
             testProject.RecordPropertiesBeforeTarget("Publish");
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{property}");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{property}");
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -289,7 +289,7 @@ namespace Microsoft.NET.Publish.Tests
             bool.Parse(properties["SelfContained"]).Should().Be(expectedSelfContainedValue);
         }
 
-        [TestMethod]
+        [Fact]
         public void ImplicitRuntimeIdentifierOptOutCorrectlyOptsOut()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -303,7 +303,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "false";
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -314,7 +314,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("NETSDK1191");
         }
 
-        [TestMethod]
+        [Fact]
         public void DuplicateRuntimeIdentifiers()
         {
             var testProject = new TestProject()
@@ -329,7 +329,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["RuntimeIdentifiers"] = compatibleRid + ";" + compatibleRid;
             testProject.RuntimeIdentifier = compatibleRid;
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Publish.Tests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void PublishSuccessfullyWithRIDRequiringPropertyAndRuntimeIdentifiersNoRuntimeIdentifier()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -353,93 +353,13 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
             testProject.AdditionalProperties["PublishReadyToRun"] = "true";
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
                 .Execute()
                 .Should()
                 .Pass();
-        }
-
-        [TestMethod]
-        public void UseDefaultPublishRuntimeIdentifierFalsePreventsInference()
-        {
-            var testProject = new TestProject()
-            {
-                IsExe = true,
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
-            };
-
-            // PublishSingleFile would normally trigger PublishRuntimeIdentifier inference
-            testProject.AdditionalProperties["PublishSingleFile"] = "true";
-            testProject.AdditionalProperties["UseDefaultPublishRuntimeIdentifier"] = "false";
-            testProject.RecordProperties("PublishRuntimeIdentifier");
-
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
-            new BuildCommand(testAsset)
-                .Execute()
-                .Should()
-                .Pass();
-
-            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: ToolsetInfo.CurrentTargetFramework);
-            properties["PublishRuntimeIdentifier"].Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void PublishRuntimeIdentifierIsAppendedToRuntimeIdentifiersByDefault()
-        {
-            var testProject = new TestProject()
-            {
-                IsExe = true,
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
-            };
-
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
-            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
-
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
-            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
-            {
-                ShouldCompile = false,
-                DependsOnTargets = ""
-            };
-            getValuesCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var rids = getValuesCommand.GetValues();
-            rids.Should().Contain("linux-x64");
-            rids.Should().Contain("win-x64");
-        }
-
-        [TestMethod]
-        public void AppendPublishRuntimeIdentifierToRuntimeIdentifiersFalseOptOut()
-        {
-            var testProject = new TestProject()
-            {
-                IsExe = true,
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
-            };
-
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
-            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
-            testProject.AdditionalProperties["AppendPublishRuntimeIdentifierToRuntimeIdentifiers"] = "false";
-
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
-            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
-            {
-                ShouldCompile = false,
-                DependsOnTargets = ""
-            };
-            getValuesCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var rids = getValuesCommand.GetValues();
-            rids.Should().Equal(["linux-x64"]);
         }
     }
 }

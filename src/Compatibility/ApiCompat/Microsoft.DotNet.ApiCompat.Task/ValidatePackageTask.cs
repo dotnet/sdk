@@ -140,32 +140,28 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            if (PackageTargetPath is null) throw new ArgumentNullException(nameof(PackageTargetPath));
-
             SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine, NoWarn);
             ValidatePackage.Run(logFactory,
-                new ValidatePackageOptions(PackageTargetPath)
-                {
-                    GenerateSuppressionFile = GenerateSuppressionFile,
-                    PreserveUnnecessarySuppressions = PreserveUnnecessarySuppressions,
-                    PermitUnnecessarySuppressions = PermitUnnecessarySuppressions,
-                    SuppressionFiles = SuppressionFiles,
-                    SuppressionOutputFile = SuppressionOutputFile,
-                    NoWarn = NoWarn,
-                    RespectInternals = RespectInternals,
-                    EnableRuleAttributesMustMatch = EnableRuleAttributesMustMatch,
-                    ExcludeAttributesFiles = ExcludeAttributesFiles,
-                    EnableRuleCannotChangeParameterName = EnableRuleCannotChangeParameterName,
-                    RunApiCompat = RunApiCompat,
-                    EnableStrictModeForCompatibleTfms = EnableStrictModeForCompatibleTfms,
-                    EnableStrictModeForCompatibleFrameworksInPackage = EnableStrictModeForCompatibleFrameworksInPackage,
-                    EnableStrictModeForBaselineValidation = EnableStrictModeForBaselineValidation,
-                    BaselinePackagePath = BaselinePackageTargetPath,
-                    RuntimeGraph = RuntimeGraph,
-                    PackageAssemblyReferences = ParsePackageAssemblyReferences(PackageAssemblyReferences),
-                    BaselinePackageAssemblyReferences = ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences),
-                    BaselinePackageFrameworksToIgnore = BaselinePackageFrameworksToIgnore,
-                });
+                GenerateSuppressionFile,
+                PreserveUnnecessarySuppressions,
+                PermitUnnecessarySuppressions,
+                SuppressionFiles,
+                SuppressionOutputFile,
+                NoWarn,
+                RespectInternals,
+                EnableRuleAttributesMustMatch,
+                ExcludeAttributesFiles,
+                EnableRuleCannotChangeParameterName,
+                PackageTargetPath!,
+                RunApiCompat,
+                EnableStrictModeForCompatibleTfms,
+                EnableStrictModeForCompatibleFrameworksInPackage,
+                EnableStrictModeForBaselineValidation,
+                BaselinePackageTargetPath,
+                RuntimeGraph,
+                ParsePackageAssemblyReferences(PackageAssemblyReferences),
+                ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences),
+                BaselinePackageFrameworksToIgnore);
         }
 
         private static Dictionary<NuGetFramework, IEnumerable<string>>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)

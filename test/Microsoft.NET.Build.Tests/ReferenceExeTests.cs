@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,9 +8,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class ReferenceExeTests : SdkTest
     {
+        public ReferenceExeTests(ITestOutputHelper log) : base(log)
+        {
+        }
 
         private string MainProjectTargetFrameworks = "";
 
@@ -111,7 +113,7 @@ public class ReferencedExeProgram
 
         private void RunTest(string buildFailureCode = null, [CallerMemberName] string callingMethod = null)
         {
-            var testProjectInstance = TestAssetsManager.CreateTestProject(MainProject, callingMethod: callingMethod, identifier: MainSelfContained.ToString() + "_" + ReferencedSelfContained.ToString());
+            var testProjectInstance = _testAssetsManager.CreateTestProject(MainProject, callingMethod: callingMethod, identifier: MainSelfContained.ToString() + "_" + ReferencedSelfContained.ToString());
 
             string outputDirectory;
 
@@ -184,9 +186,9 @@ public class ReferencedExeProgram
             }
         }
 
-        [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(true, true)]
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
         public void ReferencedExeCanRun(bool mainSelfContained, bool referencedSelfContained)
         {
             MainSelfContained = mainSelfContained;
@@ -197,7 +199,7 @@ public class ReferencedExeProgram
             RunTest();
         }
 
-        [TestMethod]
+        [Fact]
         public void ReferencedExeWithLowerTargetFrameworkCanRun()
         {
             MainSelfContained = false;
@@ -213,9 +215,9 @@ public class ReferencedExeProgram
 
         //  Having a self-contained and a framework-dependent app in the same folder is not supported (due to the way the host works).
         //  The referenced app will fail to run.  See here for more details: https://github.com/dotnet/sdk/pull/14488#issuecomment-725406998
-        [TestMethod]
-        [DataRow(true, false, "NETSDK1150")]
-        [DataRow(false, true, "NETSDK1151")]
+        [Theory]
+        [InlineData(true, false, "NETSDK1150")]
+        [InlineData(false, true, "NETSDK1151")]
         public void ReferencedExeFailsToBuildOnOlderTargetFrameworks(bool mainSelfContained, bool referencedSelfContained, string expectedFailureCode)
         {
             MainSelfContained = mainSelfContained;
@@ -228,7 +230,7 @@ public class ReferencedExeProgram
             RunTest(expectedFailureCode);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReferencedExeDoesNotFailToBuildWith8PlusTargetFrameworks()
         {
             MainSelfContained = false;
@@ -238,7 +240,7 @@ public class ReferencedExeProgram
             RunTest();
         }
 
-        [TestMethod]
+        [Fact]
         public void ReferencedExeCanRunWhenReferencesExeWithSelfContainedMismatchForDifferentTargetFramework()
         {
             MainSelfContained = true;
@@ -265,7 +267,7 @@ public class ReferencedExeProgram
             RunTest();
         }
 
-        [TestMethod]
+        [Fact]
         public void ReferencedExeFailsToBuildWhenReferencesExeWithSelfContainedMismatchForSameTargetFramework()
         {
             MainSelfContained = true;
@@ -286,9 +288,9 @@ public class ReferencedExeProgram
             RunTest("NETSDK1150");
         }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void ReferencedExeCanRunWhenPublished(bool selfContained)
         {
             MainSelfContained = selfContained;
@@ -301,9 +303,9 @@ public class ReferencedExeProgram
             RunTest();
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ReferencedExeCanRunWhenPublishedWithTrimming(bool referenceExeInCode)
         {
             MainSelfContained = true;
@@ -320,15 +322,11 @@ public class ReferencedExeProgram
                 .Replace("Boolean", referenceExeInCode.ToString()));
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
-        [DataRow("nunit", false)]
-        [DataRow("nunit", true)]
-        [DataRow("mstest", false)]
-        [DataRow("mstest", true)]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [CombinatorialData]
         public void TestProjectCanReferenceExe(
             // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
-            string testTemplateName,
+            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
             bool setSelfContainedProperty)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
@@ -343,7 +341,7 @@ public class ReferencedExeProgram
                 testConsoleProject.SelfContained = "true";
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
+            var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
@@ -368,9 +366,8 @@ public class ReferencedExeProgram
 
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [CombinatorialData]
         public void SelfContainedExecutableCannotBeReferencedByNonSelfContainedMTPTestProject(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -400,7 +397,7 @@ public class ReferencedExeProgram
 
             mtpNotSelfContained.ReferencedProjects.Add(testConsoleProjectSelfContained);
 
-            var testAssetMTP = TestAssetsManager.CreateTestProject(mtpNotSelfContained);
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, "MTPTestProject");
             
@@ -419,9 +416,8 @@ public class ReferencedExeProgram
             result.Should().Fail().And.HaveStdOutContaining("NETSDK1151");
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [CombinatorialData]
         public void MTPNonSelfContainedExecutableCannotBeReferencedBySelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -450,7 +446,7 @@ public class ReferencedExeProgram
 
             testConsoleProjectSelfContained.ReferencedProjects.Add(mtpNotSelfContained);
 
-            var testAssetSelfContained = TestAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
+            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
             
             if (!setIsTestingPlatformApplicationEarly)
             {
@@ -469,19 +465,11 @@ public class ReferencedExeProgram
             result.Should().HaveStdOutContaining("NETSDK1150").And.ExitWith(1);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.0.0.32901")]
-        [DataRow("nunit", false, false)]
-        [DataRow("nunit", false, true)]
-        [DataRow("nunit", true, false)]
-        [DataRow("nunit", true, true)]
-        [DataRow("mstest", false, false)]
-        [DataRow("mstest", false, true)]
-        [DataRow("mstest", true, false)]
-        [DataRow("mstest", true, true)]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [CombinatorialData]
         public void ExeProjectCanReferenceTestProject(
             // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
-            string testTemplateName,
+            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
             bool setSelfContainedProperty,
             bool buildWithSelfContainedFromCommandLine)
         {
@@ -497,7 +485,7 @@ public class ReferencedExeProgram
                 testConsoleProject.SelfContained = "true";
             }
 
-            var testAsset = TestAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
+            var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
@@ -524,9 +512,8 @@ public class ReferencedExeProgram
                 .Pass();
         }
 
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [Theory]
+        [CombinatorialData]
         public void MTPCanBeBuiltAsSelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             var mtpSelfContained = new TestProject("MTPTestProject")
@@ -543,7 +530,7 @@ public class ReferencedExeProgram
                 mtpSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
             }
 
-            var testAssetMTP = TestAssetsManager.CreateTestProject(mtpSelfContained);
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpSelfContained.Name);
 

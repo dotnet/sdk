@@ -1,13 +1,15 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Restore.Tests
 {
-    [TestClass]
     public class RestoreWithOlderNuGet : SdkTest
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        public RestoreWithOlderNuGet(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [WindowsOnlyFact]
         public void ItCanBuildProjectRestoredWithNuGet5_7()
         {
             var testProject = new TestProject()
@@ -17,7 +19,7 @@ namespace Microsoft.NET.Restore.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer.Core", "2.8.26"));
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new NuGetExeRestoreCommand(Log, testAsset.Path, testProject.Name)
             {

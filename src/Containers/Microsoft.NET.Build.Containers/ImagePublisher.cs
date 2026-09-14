@@ -12,7 +12,6 @@ internal static class ImagePublisher
         BuiltImage singleArchImage,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
-        bool noCache,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
         Telemetry telemetry,
         CancellationToken cancellationToken)
@@ -38,12 +37,7 @@ internal static class ImagePublisher
                     destinationImageReference,
                     Log,
                     cancellationToken,
-                    (image, source, destination, token) => destinationImageReference.RemoteRegistry!.PushAsync(
-                        image,
-                        source,
-                        destination,
-                        noCache,
-                        token),
+                    destinationImageReference.RemoteRegistry!.PushAsync,
                     Strings.ContainerBuilder_ImageUploadedToRegistry).ConfigureAwait(false);
                 break;
             default:

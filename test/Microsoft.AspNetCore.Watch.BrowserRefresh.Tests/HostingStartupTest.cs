@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
@@ -7,10 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    [TestClass]
     public class HostingStartupTest
     {
-        [TestMethod]
+        [Fact]
         public async Task ClearSiteDataWorks()
         {
             // Arrange
@@ -22,11 +21,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.AreEqual("\"cache\"", context.Response.Headers["Clear-Site-Data"].ToString());
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("\"cache\"", context.Response.Headers["Clear-Site-Data"]);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetBlazorHotReloadMiddlewareWorks()
         {
             // Arrange
@@ -40,10 +39,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PostBlazorHotReloadMiddlewareWorks()
         {
             var requestDelegate = GetRequestDelegate();
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             await requestDelegate(context);
 
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
             context.Request.Path = "/_framework/blazor-hotreload";
             context.Request.Method = "GET";
@@ -71,10 +70,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             var bodyJson = Encoding.UTF8.GetString(body.ToArray());
 
-            Assert.AreEqual($"[{updateJson}]", bodyJson);
+            Assert.Equal($"[{updateJson}]", bodyJson);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetBlazorHotReloadJsWorks()
         {
             // Arrange
@@ -88,11 +87,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.IsNotEmpty(responseBody.ToArray());
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.NotEmpty(responseBody.ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetAspNetCoreBrowserRefreshWorks()
         {
             // Arrange
@@ -106,11 +105,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.IsNotEmpty(responseBody.ToArray());
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.NotEmpty(responseBody.ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetUnknownUrlWorks()
         {
             // Arrange
@@ -122,10 +121,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetUnknownFrameworkPathWorks()
         {
             // Arrange
@@ -156,7 +155,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status206PartialContent, context.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status206PartialContent, context.Response.StatusCode);
 
 
             // Act - 2
@@ -164,7 +163,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.AreEqual(StatusCodes.Status226IMUsed, context.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status226IMUsed, context.Response.StatusCode);
         }
 
         private static RequestDelegate GetRequestDelegate(Action<IApplicationBuilder>? configureBuilder = null)

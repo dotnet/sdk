@@ -9,11 +9,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {
-    [MSBuildMultiThreadableTask]
-    public class GZipCompress : Task, IMultiThreadableTask
+    public class GZipCompress : Task
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         [Required]
         public ITaskItem[] FilesToCompress { get; set; }
 
@@ -31,35 +28,28 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         {
             CompressedFiles = new ITaskItem[FilesToCompress.Length];
 
-            var outputDirectory = TaskEnvironment.GetAbsolutePath(OutputDirectory);
-            Directory.CreateDirectory(outputDirectory);
-
-            var inputFullPaths = new string[FilesToCompress.Length];
-            for (var i = 0; i < FilesToCompress.Length; i++)
-            {
-                inputFullPaths[i] = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(FilesToCompress[i].ItemSpec));
-            }
+            Directory.CreateDirectory(OutputDirectory);
 
             Parallel.For(0, FilesToCompress.Length, i =>
             {
                 var file = FilesToCompress[i];
-                var inputFullPath = inputFullPaths[i];
+                var inputFullPath = file.GetMetadata("FullPath");
                 var relativePath = file.GetMetadata("RelativePath");
 
-                var targetFileName = BrotliCompress.CalculateTargetPath(inputFullPath, ".gz");
-                var outputRelativePath = Path.Combine(OutputDirectory, targetFileName);
-                var outputFullPath = Path.Combine(outputDirectory.Value, targetFileName);
+                var outputRelativePath = Path.Combine(
+                    OutputDirectory,
+                    BrotliCompress.CalculateTargetPath(inputFullPath, ".gz"));
 
                 var outputItem = new TaskItem(outputRelativePath, file.CloneCustomMetadata());
                 outputItem.SetMetadata("RelativePath", relativePath + ".gz");
                 outputItem.SetMetadata("OriginalItemSpec", file.ItemSpec);
                 CompressedFiles[i] = outputItem;
 
-                if (!File.Exists(outputFullPath))
+                if (!File.Exists(outputRelativePath))
                 {
                     Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because compressed file '{1}' does not exist.", file.ItemSpec, outputRelativePath);
                 }
-                else if (File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputFullPath))
+                else if (File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputRelativePath))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
                     Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", file.ItemSpec, outputRelativePath, file.ItemSpec);
@@ -76,8 +66,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 {
                     try
                     {
-                        using var sourceStream = File.OpenRead(inputFullPath);
-                        using var fileStream = File.Create(outputFullPath);
+                        using var sourceStream = File.OpenRead(file.ItemSpec);
+                        using var fileStream = File.Create(outputRelativePath);
                         using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
 
                         sourceStream.CopyTo(stream);

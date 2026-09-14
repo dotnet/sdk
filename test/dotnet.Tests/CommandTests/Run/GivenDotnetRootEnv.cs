@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,18 +7,16 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
-    [TestClass]
     public class GivenDotnetRootEnv : SdkTest
     {
         private static Version Version6_0 = new(6, 0);
 
-        public GivenDotnetRootEnv()
+        public GivenDotnetRootEnv(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
-        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [WindowsOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ItShouldSetDotnetRootToDirectoryOfMuxer(string targetFramework)
         {
             string expectDotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
@@ -39,8 +37,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void WhenDotnetRootIsSetItShouldSetDotnetRootToDirectoryOfMuxer()
         {
             string expectDotnetRoot = "OVERRIDE VALUE";
@@ -70,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         private string SetupDotnetRootEchoProject([CallerMemberName] string callingMethod = null, string targetFramework = null)
         {
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("TestAppEchoDotnetRoot", callingMethod, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(targetFramework ?? null, false)

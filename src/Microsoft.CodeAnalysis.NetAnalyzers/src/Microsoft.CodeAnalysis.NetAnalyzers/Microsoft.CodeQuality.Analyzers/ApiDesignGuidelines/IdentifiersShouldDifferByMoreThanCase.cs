@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -56,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
                     MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
-                    !item.IsFileLocal);
+                    !item.IsFileLocal());
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -100,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
                     MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
-                    !item.IsFileLocal);
+                    !item.IsFileLocal());
 
                 if (typeMembers.Any())
                 {
@@ -143,12 +142,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             using var membersByName = PooledDictionary<string, PooledHashSet<ISymbol>>.GetInstance(StringComparer.OrdinalIgnoreCase);
             foreach (var member in members)
             {
-                // Ignore constructors, indexers, operators, destructors and extension blocks for name check
+                // Ignore constructors, indexers, operators and destructors for name check
                 if (member.IsConstructor() ||
                     member.IsDestructor() ||
                     member.IsIndexer() ||
                     member.IsUserDefinedOperator() ||
-                    member.IsExtension() ||
                     overloadsToSkip.Contains(member))
                 {
                     continue;

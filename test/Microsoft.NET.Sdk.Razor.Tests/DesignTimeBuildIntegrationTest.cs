@@ -5,10 +5,11 @@
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    [TestClass]
     public class DesignTimeBuildIntegrationTest : AspNetSdkTest
     {
-        [TestMethod]
+        public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log) { }
+
+        [Fact]
         public void DesignTimeBuild_DoesNotRunRazorTargets()
         {
             var testAsset = "RazorSimpleMvc";
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [TestMethod]
+        [Fact]
         public void RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
         {
             var testAsset = "RazorSimpleMvc";
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void RazorGenerateComponentDesignTime_ReturnsRazorComponentWithTargetPath()
         {
             var testAsset = "RazorComponentLibrary";

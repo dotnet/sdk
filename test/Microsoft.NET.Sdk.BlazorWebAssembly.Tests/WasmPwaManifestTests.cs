@@ -8,14 +8,11 @@ using System.Text.RegularExpressions;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    [TestClass]
-    public class WasmPwaManifestTests : AspNetSdkTest
+    public class WasmPwaManifestTests(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
             // Arrange
@@ -42,9 +39,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
-            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
 
             var serviceWorkerAssetsManifest = Path.Combine(buildOutputDirectory, "wwwroot", "service-worker-assets.js");
             // Trim prefix 'self.assetsManifest = ' and suffix ';'
@@ -64,8 +60,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                assetsManifestPath: "service-worker-assets.js");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_HostedAppWithServiceWorker_Works()
         {
             // Arrange
@@ -91,8 +86,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishWithPWA_ProducesAssets()
         {
             // Arrange
@@ -111,7 +105,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var manifestContentsJson = JsonDocument.Parse(manifestContents);
             manifestContentsJson.RootElement.TryGetProperty("assets", out var assets).Should().BeTrue();
-            Assert.AreEqual(JsonValueKind.Array, assets.ValueKind);
+            Assert.Equal(JsonValueKind.Array, assets.ValueKind);
 
             var entries = assets.EnumerateArray().Select(e => e.GetProperty("url").GetString()).OrderBy(e => e).ToArray();
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
@@ -120,8 +114,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange
@@ -149,8 +142,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_UpdatesServiceWorkerVersionHash_WhenSourcesChange()
         {
             // Arrange
@@ -200,8 +192,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             updatedCapture.Should().NotBe(capture);
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.12")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_DeterministicAcrossBuilds_WhenNoSourcesChange()
         {
             // Arrange

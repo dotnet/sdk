@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSTest.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -10,13 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Use same-class serialization because integration-test helpers share fixed asset directories
-         and caches. Tests that mutate the process current directory use DoNotParallelize: a ResourceLock
-         on only the writers cannot protect unrelated tests that implicitly resolve paths against CWD. -->
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <PackageId>testSdkStaticWebAssets</PackageId>
   </PropertyGroup>
 
@@ -40,22 +34,17 @@
       <_Parameter1>DefaultTestBaselinePackageVersion</_Parameter1>
       <_Parameter2>5.0</_Parameter2>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftTypeScriptMSBuildPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftTypeScriptMSBuildPackageVersion)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
-    <PackageReference Include="Microsoft.Css.Parser" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>

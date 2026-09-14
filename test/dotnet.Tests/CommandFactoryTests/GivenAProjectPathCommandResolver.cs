@@ -8,12 +8,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
-    [TestClass]
     public class GivenAProjectPathCommandResolver
     {
         private static readonly string s_testProjectDirectory = Path.Combine(AppContext.BaseDirectory, "testprojectdirectory");
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_is_null()
         {
             var projectPathCommandResolver = SetupPlatformProjectPathCommandResolver(forceGeneric: true);
@@ -30,7 +29,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_ProjectDirectory_is_null()
         {
             var projectPathCommandResolver = SetupPlatformProjectPathCommandResolver(forceGeneric: true);
@@ -47,7 +46,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_does_not_exist_in_ProjectDirectory()
         {
             var projectPathCommandResolver = SetupPlatformProjectPathCommandResolver(forceGeneric: true);
@@ -64,7 +63,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_null_when_CommandName_exists_in_a_subdirectory_of_ProjectDirectory()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -85,7 +84,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_a_CommandSpec_with_CommandName_as_FileName_when_CommandName_exists_in_ProjectDirectory()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.Tests
             commandFile.Should().Be("projectpathtestcommand1");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_escapes_CommandArguments_when_returning_a_CommandSpec()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -130,7 +129,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Be("\"arg with space\"");
         }
 
-        [TestMethod]
+        [Fact]
         public void It_resolves_commands_with_extensions_defined_in_InferredExtensions()
         {
             var extensions = new string[] { ".sh", ".cmd", ".foo", ".exe" };
@@ -159,7 +158,7 @@ namespace Microsoft.DotNet.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_returns_a_CommandSpec_with_Args_as_stringEmpty_when_returning_a_CommandSpec_and_CommandArguments_are_null()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -180,7 +179,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Be(string.Empty);
         }
 
-        [TestMethod]
+        [Fact]
         public void It_prefers_EXE_over_CMD_when_two_command_candidates_exist_and_using_WindowsExePreferredCommandSpecFactory()
         {
             var environment = CommandResolverTestUtils.SetupEnvironmentProviderWhichFindsExtensions(".exe");
@@ -206,8 +205,7 @@ namespace Microsoft.DotNet.Tests
             commandFile.Should().Be("projectpathtestcommand1.exe");
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void It_wraps_command_with_CMD_EXE_when_command_has_CMD_Extension_and_using_WindowsExePreferredCommandSpecFactory()
         {
             var environment = new EnvironmentProvider(new[] { ".cmd" });

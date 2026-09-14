@@ -19,7 +19,6 @@ namespace EndToEnd.Tests.Utilities
     {
         public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public static IEnumerable<object[]> TestData => Versions.Select(version => new object[] { version });
         public static IEnumerable<string> Versions => new[]
         {
             "1.0",
@@ -34,8 +33,7 @@ namespace EndToEnd.Tests.Utilities
             "7.0",
             "8.0",
             "9.0",
-            "10.0",
-            "11.0"
+            "10.0"
         };
 
         public static IEnumerable<string> TargetFrameworkShortFolderVersion
@@ -65,8 +63,6 @@ namespace EndToEnd.Tests.Utilities
         public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public static IEnumerable<object[]> TestData => Versions.Select(version => new object[] { version });
-
         public static IEnumerable<string> Versions =>
             SupportedNetCoreAppVersions.Versions.Except(new List<string>() { "1.0", "1.1", "2.0" });
     }
@@ -75,8 +71,6 @@ namespace EndToEnd.Tests.Utilities
     {
         public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public static IEnumerable<object[]> TestData => Versions.Select(version => new object[] { version });
 
         public static IEnumerable<string> Versions =>
             SupportedAspNetCoreVersions.Versions.Where(v => new Version(v).Major < 3);

@@ -7,23 +7,22 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToCompareFXVersions
     {
-        [TestMethod]
-        [DataRow("2.0.0", "1.0.0", 1)]
-        [DataRow("1.1.0", "1.0.0", 1)]
-        [DataRow("1.0.1", "1.0.0", 1)]
-        [DataRow("1.0.0", "1.0.0-pre", 1)]
-        [DataRow("1.0.0-pre+2", "1.0.0-pre+1", 0)]
-        [DataRow("1.0.0", "2.0.0", -1)]
-        [DataRow("1.0.0", "1.1.0", -1)]
-        [DataRow("1.0.0", "1.0.1", -1)]
-        [DataRow("1.0.0-pre", "1.0.0", -1)]
-        [DataRow("1.0.0-pre+1", "1.0.0-pre+2", 0)]
-        [DataRow("1.2.3", "1.2.3", 0)]
-        [DataRow("1.2.3-pre", "1.2.3-pre", 0)]
-        [DataRow("1.2.3-pre+1", "1.2.3-pre+1", 0)]
+        [Theory]
+        [InlineData("2.0.0", "1.0.0", 1)]
+        [InlineData("1.1.0", "1.0.0", 1)]
+        [InlineData("1.0.1", "1.0.0", 1)]
+        [InlineData("1.0.0", "1.0.0-pre", 1)]
+        [InlineData("1.0.0-pre+2", "1.0.0-pre+1", 0)]
+        [InlineData("1.0.0", "2.0.0", -1)]
+        [InlineData("1.0.0", "1.1.0", -1)]
+        [InlineData("1.0.0", "1.0.1", -1)]
+        [InlineData("1.0.0-pre", "1.0.0", -1)]
+        [InlineData("1.0.0-pre+1", "1.0.0-pre+2", 0)]
+        [InlineData("1.2.3", "1.2.3", 0)]
+        [InlineData("1.2.3-pre", "1.2.3-pre", 0)]
+        [InlineData("1.2.3-pre+1", "1.2.3-pre+1", 0)]
         public void OneFXVersionIsBiggerThanTheOther(string s1, string s2, int expectedResult)
         {
             FXVersion fxVersion1;
@@ -45,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             public bool Same;
         };
 
-        [TestMethod]
+        [Fact]
         public void OrderingMatchesSemVer200Rules()
         {
             TestCase[] orderedCases = new TestCase[]

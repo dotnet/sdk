@@ -8,7 +8,6 @@ using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -127,23 +126,22 @@ internal sealed class ProjectGraphFactory(
 
             var anyError = false;
 
-            var projectInstance = VirtualProjectBuilder.CreateProjectInstanceAsync(
-                BuildService.Instance,
+            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
                 entryPointFilePath,
                 virtualProjectTargetFramework,
-                projectCollection.Wrap(),
+                projectCollection,
                 (path, line, message) =>
                 {
                     anyError = true;
                     logger.LogError("{Path}({Line}): {Message}", path, line, message);
-                }).AsTask().GetAwaiter().GetResult();
+                });
 
             if (anyError)
             {
                 throw new ProjectCreationFailedException();
             }
 
-            return projectInstance.Unwrap();
+            return projectInstance;
         }
 
         return new ProjectInstance(

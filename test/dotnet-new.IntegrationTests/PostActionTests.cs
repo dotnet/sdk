@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
@@ -9,24 +9,25 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class PostActionTests : BaseIntegrationTest
     {
-        private ITestOutputHelper _log => Log;
+        private readonly ITestOutputHelper _log;
 
-        public PostActionTests()
+        public PostActionTests(ITestOutputHelper log) : base(log)
         {
+            _log = log;
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/Basic", "TestAssets.PostActions.RestoreNuGet.Basic")]
-        [DataRow("PostActions/RestoreNuGet/BasicWithFiles", "TestAssets.PostActions.RestoreNuGet.BasicWithFiles")]
-        [DataRow("PostActions/RestoreNuGet/CustomSourcePath", "TestAssets.PostActions.RestoreNuGet.CustomSourcePath")]
-        [DataRow("PostActions/RestoreNuGet/CustomSourcePathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourcePathFiles")]
-        [DataRow("PostActions/RestoreNuGet/CustomTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomTargetPath", "./Custom/Path/")]
-        [DataRow("PostActions/RestoreNuGet/CustomTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles", "./Custom/Path/")]
-        [DataRow("PostActions/RestoreNuGet/CustomSourceTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPath", "./Target/Output/")]
-        [DataRow("PostActions/RestoreNuGet/CustomSourceTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles", "./Target/Output/")]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/Basic", "TestAssets.PostActions.RestoreNuGet.Basic")]
+        [InlineData("PostActions/RestoreNuGet/BasicWithFiles", "TestAssets.PostActions.RestoreNuGet.BasicWithFiles")]
+        [InlineData("PostActions/RestoreNuGet/CustomSourcePath", "TestAssets.PostActions.RestoreNuGet.CustomSourcePath")]
+        [InlineData("PostActions/RestoreNuGet/CustomSourcePathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourcePathFiles")]
+        [InlineData("PostActions/RestoreNuGet/CustomTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomTargetPath", "./Custom/Path/")]
+        [InlineData("PostActions/RestoreNuGet/CustomTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles", "./Custom/Path/")]
+        [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPath", "./Target/Output/")]
+        [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles", "./Target/Output/")]
         public void Restore_Basic(string templatePartLocation, string templateName, string targetSubfolder = "")
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -42,8 +43,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Restore succeeded.")
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'");
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"MyProject.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"Program.cs")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"MyProject.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"Program.cs")));
 
             new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(Path.Combine(workingDirectory, targetSubfolder))
@@ -56,10 +57,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("MyProject");
         }
 
-        [TestMethod]
+        [Fact]
         public void Restore_WithOutputAbsolutePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.RestoreNuGet.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -78,8 +79,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'")
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
 
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, $"MyProject.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, $"Program.cs")));
+            Assert.True(File.Exists(Path.Combine(outputDirectory, $"MyProject.csproj")));
+            Assert.True(File.Exists(Path.Combine(outputDirectory, $"Program.cs")));
 
             new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(outputDirectory)
@@ -92,10 +93,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("MyProject");
         }
 
-        [TestMethod]
+        [Fact]
         public void Restore_WithOutputRelativePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.RestoreNuGet.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -114,8 +115,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'")
                 .And.HaveStdOutContaining(Path.Combine(workingDirectory, outputDirectory, "MyProject.csproj"));
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, outputDirectory, $"MyProject.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, outputDirectory, $"Program.cs")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, outputDirectory, $"MyProject.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, outputDirectory, $"Program.cs")));
 
             new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(Path.Combine(workingDirectory, outputDirectory))
@@ -128,12 +129,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("MyProject");
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/SourceRename", "TestAssets.PostActions.RestoreNuGet.SourceRename")]
-        [DataRow("PostActions/RestoreNuGet/SourceRenameFiles", "TestAssets.PostActions.RestoreNuGet.SourceRenameFiles")]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/SourceRename", "TestAssets.PostActions.RestoreNuGet.SourceRename")]
+        [InlineData("PostActions/RestoreNuGet/SourceRenameFiles", "TestAssets.PostActions.RestoreNuGet.SourceRenameFiles")]
         public void Restore_SourceRenameTest(string templatePartLocation, string templateName)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -149,8 +150,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Restore succeeded.")
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'");
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"MyAwesomeTestProject.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"Program.cs")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"MyAwesomeTestProject.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"Program.cs")));
 
             new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(workingDirectory)
@@ -163,12 +164,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("MyAwesomeTestProject");
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/TwoProjectsPrimaryOutputs", "TestAssets.PostActions.RestoreNuGet.TwoProjectsPrimaryOutputs")]
-        [DataRow("PostActions/RestoreNuGet/TwoProjectsFiles", "TestAssets.PostActions.RestoreNuGet.TwoProjectsFiles")]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/TwoProjectsPrimaryOutputs", "TestAssets.PostActions.RestoreNuGet.TwoProjectsPrimaryOutputs")]
+        [InlineData("PostActions/RestoreNuGet/TwoProjectsFiles", "TestAssets.PostActions.RestoreNuGet.TwoProjectsFiles")]
         public void Restore_RestoreOneProjectFromTwo(string templatePartLocation, string templateName)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -184,8 +185,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Restore succeeded.")
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'");
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"src/TemplateApplication/TemplateApplication.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"test/TemplateApplication.Tests/TemplateApplication.Tests.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"src/TemplateApplication/TemplateApplication.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"test/TemplateApplication.Tests/TemplateApplication.Tests.csproj")));
 
             new DotnetBuildCommand(_log, "src/TemplateApplication", "--no-restore")
                 .WithWorkingDirectory(workingDirectory)
@@ -205,12 +206,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                   .And.HaveStdOutContaining("TemplateApplication.Tests");
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/TwoProjectsWithSourceRenames", "TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames")]
-        [DataRow("PostActions/RestoreNuGet/TwoProjectsWithSourceRenames2", "TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames2")]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/TwoProjectsWithSourceRenames", "TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames")]
+        [InlineData("PostActions/RestoreNuGet/TwoProjectsWithSourceRenames2", "TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames2")]
         public void Restore_SourceRenameTwoProjectsTest(string templatePartLocation, string templateName)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -226,8 +227,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Restore succeeded.")
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'");
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"TemplateApplication.UI/TemplateApplication.UI.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, $"TemplateApplication.Tests/TemplateApplication.Tests.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"TemplateApplication.UI/TemplateApplication.UI.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"TemplateApplication.Tests/TemplateApplication.Tests.csproj")));
 
             new DotnetBuildCommand(_log, "TemplateApplication.UI", "--no-restore")
                 .WithWorkingDirectory(workingDirectory)
@@ -250,15 +251,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                   .And.HaveStdOutContaining("TemplateApplication.Tests");
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/Files_MatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
-        [DataRow("PostActions/RestoreNuGet/Files_MismatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MismatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
-        [DataRow("PostActions/RestoreNuGet/Files_PatternWithFileName", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithFileName", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
-        [DataRow("PostActions/RestoreNuGet/Files_PatternWithGlobstar", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithGlobstar", "Tool.Library/Tool.Library.csproj", "Tool/Tool.csproj;Tool.Test/Tool.Test.csproj")]
-        [DataRow("PostActions/RestoreNuGet/Files_SupportSemicolonDelimitedList", "TestAssets.PostActions.RestoreNuGet.Files_SupportSemicolonDelimitedList", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/Files_MatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_MismatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MismatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithFileName", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithFileName", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithWildcard", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithWildcard", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj", Skip = "https://github.com/dotnet/sdk/issues/49318")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithGlobstar", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithGlobstar", "Tool.Library/Tool.Library.csproj", "Tool/Tool.csproj;Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_SupportSemicolonDelimitedList", "TestAssets.PostActions.RestoreNuGet.Files_SupportSemicolonDelimitedList", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
         public void Restore_FilesTest(string templatePartLocation, string templateName, string expectedRestoredProjects, string unexpectedRestoredProjects)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             expectedRestoredProjects = expectedRestoredProjects.Replace('/', Path.DirectorySeparatorChar);
             unexpectedRestoredProjects = unexpectedRestoredProjects.Replace('/', Path.DirectorySeparatorChar);
             string sourceName = "Tool";
@@ -304,21 +306,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             });
         }
 
-        [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/49318")]
-        public void Restore_FilesTest_PatternWithWildcard()
-        {
-            Restore_FilesTest(
-                "PostActions/RestoreNuGet/Files_PatternWithWildcard",
-                "TestAssets.PostActions.RestoreNuGet.Files_PatternWithWildcard",
-                "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj",
-                "Tool/Tool.csproj");
-        }
-
-        [TestMethod]
+        [Fact]
         public void RunScript_Basic()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RunScript/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string templateName = "TestAssets.PostActions.RunScript.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -348,10 +339,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void RunScript_DoNotRedirect()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/DoNotRedirect", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RunScript/DoNotRedirect", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string templateName = "TestAssets.PostActions.RunScript.DoNotRedirect";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -373,10 +364,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'setup.sh'");
         }
 
-        [TestMethod]
+        [Fact]
         public void RunScript_Redirect()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/Redirect", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RunScript/Redirect", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string templateName = "TestAssets.PostActions.RunScript.Redirect";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -398,10 +389,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Run 'setup.sh'");
         }
 
-        [TestMethod]
+        [Fact]
         public void RunScript_RedirectOnError()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/RedirectOnError", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/RunScript/RedirectOnError", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string templateName = "TestAssets.PostActions.RunScript.RedirectOnError";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -431,12 +422,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [TestMethod]
-        [DataRow("PostActions/AddPackageReference/Basic", "TestAssets.PostActions.AddPackageReference.Basic")]
-        [DataRow("PostActions/AddPackageReference/BasicWithFiles", "TestAssets.PostActions.AddPackageReference.BasicWithFiles")]
+        [Theory]
+        [InlineData("PostActions/AddPackageReference/Basic", "TestAssets.PostActions.AddPackageReference.Basic")]
+        [InlineData("PostActions/AddPackageReference/BasicWithFiles", "TestAssets.PostActions.AddPackageReference.BasicWithFiles")]
         public void AddPackageReference_Basic(string templatePartLocation, string templateName)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -462,10 +453,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddPackageReference_WithOutputAbsolutePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddPackageReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddPackageReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddPackageReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -494,10 +485,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddPackageReference_WithOutputRelativePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddPackageReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddPackageReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddPackageReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -525,10 +516,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectReference_Basic()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -561,10 +552,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                  .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectReference_ExistingProject()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Existing", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Existing", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Existing";
 
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -606,10 +597,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectReference_ExistingProjectWithSymbolFileRename()
         {
-            var templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/ExistingWithRename", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            var templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/ExistingWithRename", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             var expectedTemplateName = "TestAssets.PostActions.AddProjectReference.ExistingWithRename";
 
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -653,10 +644,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectReference_WithOutputAbsolutePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -684,10 +675,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectReference_WithOutputRelativePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -714,12 +705,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr();
         }
 
-        [TestMethod]
-        [DataRow("PostActions/RestoreNuGet/Invalid", "TestAssets.PostActions.RestoreNuGet.Invalid", true)]
-        [DataRow("PostActions/RestoreNuGet/Invalid_ContinueOnError", "TestAssets.PostActions.RestoreNuGet.Invalid.ContinueOnError", false)]
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/Invalid", "TestAssets.PostActions.RestoreNuGet.Invalid", true)]
+        [InlineData("PostActions/RestoreNuGet/Invalid_ContinueOnError", "TestAssets.PostActions.RestoreNuGet.Invalid.ContinueOnError", false)]
         public void ErrorExitCodeOnFailedPostAction(string templatePartLocation, string templateName, bool errorExpected)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -753,12 +744,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().Fail();
         }
 
-        [TestMethod]
-        [DataRow("PostActions/AddProjectToSolution/Basic", "TestAssets.PostActions.AddProjectToSolution.Basic")]
-        [DataRow("PostActions/AddProjectToSolution/BasicWithFiles", "TestAssets.PostActions.AddProjectToSolution.BasicWithFiles")]
+        [Theory]
+        [InlineData("PostActions/AddProjectToSolution/Basic", "TestAssets.PostActions.AddProjectToSolution.Basic")]
+        [InlineData("PostActions/AddProjectToSolution/BasicWithFiles", "TestAssets.PostActions.AddProjectToSolution.BasicWithFiles")]
         public void AddProjectToSolution_Basic(string templatePartLocation, string templateName)
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset(templatePartLocation, testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
@@ -787,10 +778,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx")));
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectToSolution_BasicInSolutionRoot()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/BasicInSolutionRoot", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/BasicInSolutionRoot", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectToSolution.BasicInSolutionRoot";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -823,10 +814,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectToSolution_WithOutputAbsolutePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectToSolution.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -859,10 +850,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectToSolution_WithOutputRelativePath()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectToSolution.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -895,10 +886,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, outputDirectory, "MySolution.slnx")));
         }
 
-        [TestMethod]
+        [Fact]
         public void AddProjectToSolution_PrimaryOutputIndexes()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/BasicWithIndexes", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/BasicWithIndexes", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectToSolution.BasicWithIndexes";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -925,19 +916,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("solution folder: Server")
                 .And.NotHaveStdOutContaining("Manual instructions: Add generated Server project to solution manually to folder 'Server'.");
 
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, "MySolution.slnx")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, "Server/Server.csproj")));
-            Assert.IsTrue(File.Exists(Path.Combine(workingDirectory, "Client/Client.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "MySolution.slnx")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "Server/Server.csproj")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "Client/Client.csproj")));
 
             string solutionFileContents = File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx"));
             Assert.Contains("Server.csproj", solutionFileContents);
             Assert.DoesNotContain("Client.csproj", solutionFileContents);
         }
 
-        [TestMethod]
+        [Fact]
         public void PrintInstructions_Basic()
         {
-            string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/Instructions/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/Instructions/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string templateName = "TestAssets.PostActions.Instructions.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -958,12 +949,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"Actual command: setup.cmd <your project name>");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanCreateTemplate_WithAddProjectReference()
         {
             string workingDirectory = CreateTemporaryFolder();
             string tempSettingsDir = CreateTemporaryFolder("Home");
-            string templateLocation = TestAssetsManager.CopyTestAsset("AddProjectReference", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("AddProjectReference", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             CommandResult cmd = new DotnetNewCommand(Log)
                 .WithCustomHive(tempSettingsDir)
                 .Execute("install", templateLocation);
@@ -979,12 +970,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Successfully added a reference to the project file.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanCreateTemplate_WithAddPackageReference()
         {
             string workingDirectory = CreateTemporaryFolder();
             string tempSettingsDir = CreateTemporaryFolder("Home");
-            string templateLocation = TestAssetsManager.CopyTestAsset("AddPackageReference", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("AddPackageReference", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             CommandResult cmd = new DotnetNewCommand(Log)
                 .WithCustomHive(tempSettingsDir)
                 .Execute("install", templateLocation);
@@ -998,12 +989,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Successfully added a reference to the project file.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanCreateTemplate_WithAddProjectToSolution()
         {
             string workingDirectory = CreateTemporaryFolder();
             string tempSettingsDir = CreateTemporaryFolder("Home");
-            string templateLocation = TestAssetsManager.CopyTestAsset("AddProjectToSolution", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string templateLocation = _testAssetsManager.CopyTestAsset("AddProjectToSolution", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             CommandResult cmd = new DotnetNewCommand(Log)
                 .WithCustomHive(tempSettingsDir)
                 .Execute("install", templateLocation);
@@ -1016,7 +1007,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Successfully added project(s) to a solution file.");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItCanCreateTemplate_WithRestore()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -1032,7 +1023,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Restore succeeded.");
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_Basic()
         {
             const string templateLocation = "PostActions/AddJsonProperty/Basic";
@@ -1054,7 +1045,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_InOtherProjectOfSameSolution()
         {
             const string existingProjectTemplateLocation = "PostActions/AddJsonProperty/WithExistingProject/ExistingProject";
@@ -1107,7 +1098,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_WithSourceNameReplacementInNewJsonProperty()
         {
             const string templateLocation = "PostActions/AddJsonProperty/WithSourceNameChangeInJson";
@@ -1135,12 +1126,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string jsonFileContents = File.ReadAllText(Path.Combine(workingDirectory, "testfile.json"));
 
             JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
-            Assert.IsNotNull(jsonContents);
-            Assert.IsNotNull(jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"]);
-            Assert.AreEqual("${MODULEDIR<../TheProjectName>}", jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"]?.ToString());
+            Assert.NotNull(jsonContents);
+            Assert.True(jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"] != null);
+            Assert.Equal("${MODULEDIR<../TheProjectName>}", jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"]?.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_WithMultipleAddJsonPropertyActions()
         {
             const string templateLocation = "PostActions/AddJsonProperty/WithAddMultipleProperties";
@@ -1166,14 +1157,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string jsonFileContents = File.ReadAllText(Path.Combine(workingDirectory, "testfile.json"));
 
             JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
-            Assert.IsNotNull(jsonContents);
+            Assert.NotNull(jsonContents);
 
-            Assert.IsNotNull(jsonContents["root"]?["prop1"]);
-            Assert.IsNotNull(jsonContents["root"]?["prop1"]?["prop2"]);
-            Assert.AreEqual("bar", jsonContents["root"]?["prop1"]?["prop2"]?.ToString());
+            Assert.NotNull(jsonContents["root"]?["prop1"]);
+            Assert.NotNull(jsonContents["root"]?["prop1"]?["prop2"]);
+            Assert.Equal("bar", jsonContents["root"]?["prop1"]?["prop2"]?.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_FailsWhenJsonFileNotFound()
         {
             const string templateLocation = "PostActions/AddJsonProperty/FailsWhenJsonFileNotFound";
@@ -1196,7 +1187,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("Manual instructions: Modify the JSON file manually.");
         }
 
-        [TestMethod]
+        [Fact]
         public void AddJsonProperty_FailsWhenJsonFileNotFoundInEligableDirectories()
         {
             const string templateLocation = "PostActions/AddJsonProperty/FailsWhenJsonFileNotFound";

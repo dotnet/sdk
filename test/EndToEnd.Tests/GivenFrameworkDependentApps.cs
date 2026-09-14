@@ -1,5 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #nullable disable
 
@@ -9,14 +9,13 @@ using NuGet.Versioning;
 
 namespace EndToEnd.Tests
 {
-    [TestClass]
-    public class GivenFrameworkDependentApps : SdkTest
+    public class GivenFrameworkDependentApps(ITestOutputHelper log) : SdkTest(log)
     {
-        [TestMethod]
-        [DynamicData(nameof(SupportedNetCoreAppVersions.TestData), typeof(SupportedNetCoreAppVersions))]
+        [Theory]
+        [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfNetCore(string minorVersion)
         {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
+            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;
@@ -24,11 +23,11 @@ namespace EndToEnd.Tests
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(SupportedAspNetCoreVersions.TestData), typeof(SupportedAspNetCoreVersions))]
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
+            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;
@@ -36,8 +35,8 @@ namespace EndToEnd.Tests
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(SupportedAspNetCoreAllVersions.TestData), typeof(SupportedAspNetCoreAllVersions))]
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion) => ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
@@ -52,7 +51,7 @@ namespace EndToEnd.Tests
                 MinorVersion = minorVersion,
             };
 
-            var _testInstance = testProjectCreator.Create(TestAssetsManager);
+            var _testInstance = testProjectCreator.Create(_testAssetsManager);
 
             //  Get the resolved version of .NET Core
             new RestoreCommand(_testInstance)

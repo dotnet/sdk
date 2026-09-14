@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -1903,13 +1902,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
                                 // only later versions could narrow, other versions ignored
-                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst))
+                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst) &&
+                                    (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
                                 {
+                                    attributes.SupportedSecond = childAttribute.SupportedFirst;
                                     supportFound = true;
-                                    if (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst)
-                                    {
-                                        attributes.SupportedSecond = childAttribute.SupportedFirst;
-                                    }
                                 }
 
                                 if (childAttribute.UnsupportedFirst != null)
@@ -2014,7 +2011,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             allowList = true;
                         }
-                        else if (DenyList(attributes) || !attributes.IsSet())
+                        else if (DenyList(attributes))
                         {
                             unsupportedList.Add(platform);
                         }

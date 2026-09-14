@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
@@ -7,7 +6,6 @@ using Microsoft.CodeAnalysis.Tools.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
-    [TestClass]
     public class UnnecessaryImportsFormatterTests : CSharpFormatterTests
     {
         internal const string IDE0005 = nameof(IDE0005);
@@ -20,7 +18,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         private protected override ICodeFormatter Formatter => AnalyzerFormatter.CodeStyleFormatter;
 
-        [TestMethod]
+        public UnnecessaryImportsFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
+
+        [Fact]
         public async Task WhenNotFixingCodeSyle_AndHasUnusedImports_NoChange()
         {
             var code =
@@ -35,7 +38,7 @@ internal class C
             await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace, codeStyleSeverity: DiagnosticSeverity.Info);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task WhenIDE0005NotConfigured_AndHasUnusedImports_NoChange()
         {
             var code =
@@ -50,13 +53,13 @@ internal class C
             await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Info);
         }
 
-        [TestMethod]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Info)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Info)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Info)]
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Info)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Info)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Info)]
         public async Task WhenIDE0005SeverityLowerThanFixSeverity_AndHasUnusedImports_NoChange(string key, string severity)
         {
             var code =
@@ -74,13 +77,13 @@ internal class C
             await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Error);
         }
 
-        [TestMethod]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
         public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_ImportRemoved(string key, string severity)
         {
             var testCode =
@@ -103,13 +106,13 @@ internal class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
-        [TestMethod]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
         public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_AndIncludedInDiagnosticsList_ImportRemoved(string key, string severity)
         {
             var testCode =
@@ -132,13 +135,13 @@ internal class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning, diagnostics: new[] { IDE0005 });
         }
 
-        [TestMethod]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
-        [DataRow(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
-        [DataRow(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
+        [Theory]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
         public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_AndNotIncludedInDiagnosticsList_ImportNotRemoved(string key, string severity)
         {
             var testCode =

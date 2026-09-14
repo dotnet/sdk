@@ -3,10 +3,13 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToCrossPublish : SdkTest
     {
-        [TestMethod]
+        public GivenThatWeWantToCrossPublish(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Fact]
         public void There_should_be_no_unresolved_conflicts()
         {
             var testProject = new TestProject()
@@ -19,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Threading", "4.3.0"));
 
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testProjectInstance);
 

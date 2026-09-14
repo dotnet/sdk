@@ -39,7 +39,7 @@ public class EnvironmentProvider(
         {
             if (_searchPaths == null)
             {
-                var searchPaths = new List<string> { SdkPaths.SdkDirectory };
+                var searchPaths = new List<string> { AppContext.BaseDirectory };
 
                 searchPaths.AddRange(Environment
                     .GetEnvironmentVariable("PATH")?

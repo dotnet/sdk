@@ -3,11 +3,6 @@
 
 #nullable disable
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +13,9 @@ using Microsoft.Build.Framework;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
-[TestClass]
 public class ComputeStaticWebAssetsTargetPathsTest
 {
-    [TestMethod]
+    [Fact]
     public void IncludesFingerprintInFileWhenPreferred()
     {
         var errorMessages = new List<string>();
@@ -49,7 +43,7 @@ public class ComputeStaticWebAssetsTargetPathsTest
         asset.GetMetadata("TargetPath").Should().Be(Path.Combine("wwwroot", "candidate.1234asdf.js"));
     }
 
-    [TestMethod]
+    [Fact]
     public void IncludesFingerprintInFileWhenRequired()
     {
         var errorMessages = new List<string>();
@@ -77,7 +71,7 @@ public class ComputeStaticWebAssetsTargetPathsTest
         asset.GetMetadata("TargetPath").Should().Be(Path.Combine("wwwroot", "candidate.1234asdf.js"));
     }
 
-    [TestMethod]
+    [Fact]
     public void DoesNotIncludeFingerprintInFileWhenNotPreferred()
     {
         var errorMessages = new List<string>();

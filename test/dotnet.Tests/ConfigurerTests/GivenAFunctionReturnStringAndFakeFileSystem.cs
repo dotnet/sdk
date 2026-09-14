@@ -8,7 +8,6 @@ using Moq;
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
-    [TestClass]
     public class GivenAFunctionReturnStringAndFakeFileSystem
     {
         private const string DOTNET_USER_PROFILE_FOLDER_PATH = "some path";
@@ -28,13 +27,13 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     _fileSystemMock.Directory);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItReturnsTheFunctionResult()
         {
             _userLevelCacheWriter.RunWithCache("fooKey", () => "foo").Should().Be("foo");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRunsTheFunctionOnlyOnceWhenInvokeTwice()
         {
             var counter = new Counter();
@@ -49,7 +48,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             counter.Count.Should().Be(1);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItKeepsTheCacheInUserProfileWithCacheKey()
         {
             _userLevelCacheWriter.RunWithCache("fooKey", () => "foo");
@@ -58,7 +57,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMock.File.ReadAllText(path).Should().Be("foo");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItKeepsTheCacheInSpecificPath()
         {
             var cacheFilePath = Path.Combine("some path", $"fooCache.dotnetUserLevelCache");
@@ -67,7 +66,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMock.File.ReadAllText(cacheFilePath).Should().Be("foo");
         }
 
-        [TestMethod]
+        [Fact]
         public void ItRunsAndReturnsTheValueIfCacheCreationFailed()
         {
             var mockFile = new Mock<IFile>();

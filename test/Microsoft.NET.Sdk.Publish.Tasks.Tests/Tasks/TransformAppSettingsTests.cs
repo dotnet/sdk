@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,7 +9,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
-    [TestClass]
     public class TransformAppSettingsTests
     {
 
@@ -28,8 +27,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             get { return testData; }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ConnectionStringsData))]
+        [Theory]
+        [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_NoAppSettingsInSourceFolder(ITaskItem[] connectionStringData)
         {
             //Arrange
@@ -53,14 +52,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool result = task.TransformAppSettingsInternal();
 
             //Assert
-            Assert.IsTrue(result);
+            Assert.True(result);
             string appSettingsProductionJson = (Path.Combine(publishDir, "appsettings.production.json"));
-            Assert.IsTrue(File.Exists(appSettingsProductionJson));
+            Assert.True(File.Exists(appSettingsProductionJson));
 
             foreach (var eachValue in connectionStringData)
             {
                 JToken connectionStringValue = JObject.Parse(File.ReadAllText(appSettingsProductionJson))["ConnectionStrings"][eachValue.ItemSpec];
-                Assert.AreEqual(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
+                Assert.Equal(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
             }
 
             if (File.Exists(appSettingsProductionJson))
@@ -75,8 +74,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 
-        [TestMethod]
-        [DynamicData(nameof(ConnectionStringsData))]
+        [Theory]
+        [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_FailsIfPublishDirectoryDoesNotExist(ITaskItem[] connectionStringData)
         {
             //Arrange
@@ -95,11 +94,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool result = task.TransformAppSettingsInternal();
 
             //Assert
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ConnectionStringsData))]
+        [Theory]
+        [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_OverrideSourceAppSettingsName(ITaskItem[] connectionStringData)
         {
             //Arrange
@@ -125,14 +124,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool result = task.TransformAppSettingsInternal();
 
             //Assert
-            Assert.IsTrue(result);
+            Assert.True(result);
             string appSettingsProductionJson = (Path.Combine(publishDir, $"MyCustomAppSettings.production.json"));
-            Assert.IsTrue(File.Exists(appSettingsProductionJson));
+            Assert.True(File.Exists(appSettingsProductionJson));
 
             foreach (var eachValue in connectionStringData)
             {
                 JToken connectionStringValue = JObject.Parse(File.ReadAllText(appSettingsProductionJson))["ConnectionStrings"][eachValue.ItemSpec];
-                Assert.AreEqual(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
+                Assert.Equal(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
             }
 
             if (File.Exists(appSettingsProductionJson))
@@ -146,8 +145,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [TestMethod]
-        [DynamicData(nameof(ConnectionStringsData))]
+        [Theory]
+        [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_OverrideDestinationAppSettingsName(ITaskItem[] connectionStringData)
         {
             //Arrange
@@ -174,14 +173,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool result = task.TransformAppSettingsInternal();
 
             //Assert
-            Assert.IsTrue(result);
+            Assert.True(result);
             string appSettingsProductionJson = (Path.Combine(publishDir, $"NewDestinationAppSettings.json"));
-            Assert.IsTrue(File.Exists(appSettingsProductionJson));
+            Assert.True(File.Exists(appSettingsProductionJson));
 
             foreach (var eachValue in connectionStringData)
             {
                 JToken connectionStringValue = JObject.Parse(File.ReadAllText(appSettingsProductionJson))["ConnectionStrings"][eachValue.ItemSpec];
-                Assert.AreEqual(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
+                Assert.Equal(connectionStringValue.ToString(), eachValue.GetMetadata("Value"));
             }
 
             if (File.Exists(appSettingsProductionJson))

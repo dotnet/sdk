@@ -1,18 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpMovePInvokesToNativeMethodsClassFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicMovePInvokesToNativeMethodsClassFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    [TestClass]
     public class MovePInvokesToNativeMethodsClassTests
     {
         #region Verifiers
@@ -29,259 +28,247 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         #endregion
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ProperlyNamedClassCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                class NativeMethods
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
+class NativeMethods
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class SafeNativeMethods
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
+class SafeNativeMethods
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class UnsafeNativeMethods
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
-                """);
+class UnsafeNativeMethods
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ProperlyNamedClassBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Runtime.InteropServices
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Class NativeMethods
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
+Class NativeMethods
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class SafeNativeMethods
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
+Class SafeNativeMethods
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class UnsafeNativeMethods
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
-                """);
+Class UnsafeNativeMethods
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ImproperlyNamedClassCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                using System.Runtime.InteropServices;
+class FirstClass
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class FirstClass
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
+class SecondClass
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class SecondClass
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
-
-                class ThirdClass
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
-
-                """,
+class ThirdClass
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
+",
             CSharpResult(4, 7),
             CSharpResult(10, 7),
             CSharpResult(16, 7));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ImproperlyNamedClassCSharpWithScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                class [|FirstClass|]
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
+class [|FirstClass|]
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class [|SecondClass|]
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
+class [|SecondClass|]
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
 
-                class [|ThirdClass|]
-                {
-                    [DllImport("user32.dll")]
-                    private static extern void SomeExternMethod();
-                }
-                """);
+class [|ThirdClass|]
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ImproperlyNamedClassBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Imports System.Runtime.InteropServices
+Class FirstClass
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class FirstClass
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
+Class SecondClass
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class SecondClass
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
-
-                Class ThirdClass
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
-
-                """,
+Class ThirdClass
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
+",
             BasicResult(4, 7),
             BasicResult(10, 7),
             BasicResult(16, 7));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ImproperlyNamedClassBasicWithScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Runtime.InteropServices
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Class [|FirstClass|]
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
+Class [|FirstClass|]
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class [|SecondClass|]
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
+Class [|SecondClass|]
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
 
-                Class [|ThirdClass|]
-                    <DllImport("user32.dll")>
-                    Private Shared Sub SomeExternMethod()
-                    End Sub
-                End Class
-                """);
+Class [|ThirdClass|]
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
+");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ClassesInNamespaceCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                using System.Runtime.InteropServices;
+namespace MyNamespace
+{
+    class NativeMethods
+    {
+        [DllImport(""user32.dll"")]
+        private static extern void SomeExternMethod();
+    }
 
-                namespace MyNamespace
-                {
-                    class NativeMethods
-                    {
-                        [DllImport("user32.dll")]
-                        private static extern void SomeExternMethod();
-                    }
-
-                    class SomeClass
-                    {
-                        [DllImport("user32.dll")]
-                        private static extern void SomeExternMethod();
-                    }
-                }
-
-                """,
+    class SomeClass
+    {
+        [DllImport(""user32.dll"")]
+        private static extern void SomeExternMethod();
+    }
+}
+",
             CSharpResult(12, 11));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060ClassesInNamespaceBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Imports System.Runtime.InteropServices
+Namespace MyNamespace
+    Class NativeMethods
+        <DllImport(""user32.dll"")>
+        Private Shared Sub SomeExternMethod()
+        End Sub
+    End Class
 
-                Namespace MyNamespace
-                    Class NativeMethods
-                        <DllImport("user32.dll")>
-                        Private Shared Sub SomeExternMethod()
-                        End Sub
-                    End Class
-
-                    Class SomeClass
-                        <DllImport("user32.dll")>
-                        Private Shared Sub SomeExternMethod()
-                        End Sub
-                    End Class
-                End Namespace
-
-                """,
+    Class SomeClass
+        <DllImport(""user32.dll"")>
+        Private Shared Sub SomeExternMethod()
+        End Sub
+    End Class
+End Namespace
+",
             BasicResult(11, 11));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060NestedClassesCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                using System.Runtime.InteropServices;
-
-                class Outer
-                {
-                    class SomeClass
-                    {
-                        [DllImport("user32.dll")]
-                        private static extern void SomeExternMethod();
-                    }
-                }
-
-                """,
+class Outer
+{
+    class SomeClass
+    {
+        [DllImport(""user32.dll"")]
+        private static extern void SomeExternMethod();
+    }
+}
+",
             CSharpResult(6, 11));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task CA1060NestedClassesBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Imports System.Runtime.InteropServices
-
-                Class Outer
-                    Class SomeClass
-                        <DllImport("user32.dll")>
-                        Private Shared Sub SomeExternMethod()
-                        End Sub
-                    End Class
-                End Class
-
-                """,
+Class Outer
+    Class SomeClass
+        <DllImport(""user32.dll"")>
+        Private Shared Sub SomeExternMethod()
+        End Sub
+    End Class
+End Class
+",
             BasicResult(5, 11));
         }
     }

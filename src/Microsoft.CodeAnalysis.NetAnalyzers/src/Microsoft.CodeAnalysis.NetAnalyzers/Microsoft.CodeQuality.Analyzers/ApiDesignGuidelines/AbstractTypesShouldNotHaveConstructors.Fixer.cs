@@ -1,6 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -19,42 +19,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA1012: Abstract classes should not have public constructors
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class AbstractTypesShouldNotHaveConstructorsFixer : SyntaxEditorBasedCodeFixProvider
+    public sealed class AbstractTypesShouldNotHaveConstructorsFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AbstractTypesShouldNotHaveConstructorsAnalyzer.RuleId);
 
-        public override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode node = root.FindNode(context.Span);
+
             string title = MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHavePublicConstructorsCodeFix;
-            RegisterCodeFix(context, title, title);
-            return Task.CompletedTask;
+            context.RegisterCodeFix(CodeAction.Create(title,
+                                        async ct => await ChangeAccessibilityCodeFixAsync(context.Document, root, node, ct).ConfigureAwait(false),
+                                        equivalenceKey: title),
+                                    context.Diagnostics);
         }
 
-        private static SyntaxNode? GetDeclaration(ISymbol symbol, SyntaxTree tree, CancellationToken cancellationToken)
+        private static SyntaxNode? GetDeclaration(ISymbol symbol, CancellationToken cancellationToken)
         {
-            SyntaxReference? reference = symbol.DeclaringSyntaxReferences.FirstOrDefault(r => r.SyntaxTree == tree);
-            return reference?.GetSyntax(cancellationToken);
+            return (!symbol.DeclaringSyntaxReferences.IsEmpty) ? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) : null;
         }
 
-        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        private static async Task<Document> ChangeAccessibilityCodeFixAsync(Document document, SyntaxNode root, SyntaxNode nodeToFix, CancellationToken cancellationToken)
         {
-            SyntaxNode nodeToFix = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var classSymbol = (INamedTypeSymbol)model.GetDeclaredSymbol(nodeToFix, cancellationToken)!;
+            List<SyntaxNode> instanceConstructors = classSymbol.InstanceConstructors.Where(t => t.DeclaredAccessibility == Accessibility.Public).Select(t => GetDeclaration(t, cancellationToken)).WhereNotNull().ToList();
+            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(document);
+            SyntaxNode newRoot = root.ReplaceNodes(instanceConstructors, (original, rewritten) => generator.WithAccessibility(original, Accessibility.Protected));
+            return document.WithSyntaxRoot(newRoot);
+        }
 
-            if (model.GetDeclaredSymbol(nodeToFix, cancellationToken) is not INamedTypeSymbol classSymbol)
-            {
-                return;
-            }
-
-            // A partial class can declare constructors in another document, which this editor cannot reach.
-            SyntaxTree tree = editor.OriginalRoot.SyntaxTree;
-            foreach (SyntaxNode constructor in classSymbol.InstanceConstructors
-                .Where(c => c.DeclaredAccessibility == Accessibility.Public)
-                .Select(c => GetDeclaration(c, tree, cancellationToken))
-                .WhereNotNull())
-            {
-                editor.SetAccessibility(constructor, Accessibility.Protected);
-            }
+        public override FixAllProvider GetFixAllProvider()
+        {
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

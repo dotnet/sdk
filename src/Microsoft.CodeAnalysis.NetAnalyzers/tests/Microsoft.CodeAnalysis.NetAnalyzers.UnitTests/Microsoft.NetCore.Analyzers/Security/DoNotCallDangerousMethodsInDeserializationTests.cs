@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotCallDangerousMethodsInDeserialization,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,7 +12,6 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [TestClass]
     public class DoNotCallDangerousMethodsInDeserializationTests
     {
 #if NETCOREAPP
@@ -21,28 +20,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private const string NullableSuffixOnNetCoreApp = "";
 #endif
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializingDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
-
-                    [OnDeserializing()]
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 12,
                 19,
@@ -50,25 +47,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "OnDeserializingMethod",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserializing()>
-                        Sub OnDeserializingMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserializing()>
+        Sub OnDeserializingMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 13,
@@ -77,28 +72,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializedDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
-
-                    [OnDeserialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    [OnDeserialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 12,
                 19,
@@ -106,25 +99,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "OnDeserializedMethod",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserialized()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 13,
@@ -133,29 +124,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnMultiAttributesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
-
-                    [OnDeserialized()]
-                    [OnSerialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    [OnDeserialized()]
+    [OnSerialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 19,
@@ -163,26 +152,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "OnDeserializedMethod",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserialized()>
-                        <OnSerialized()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        <OnSerialized()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 13,
@@ -191,36 +178,34 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializedMediateInvocationDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+    [OnDeserialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
 
-                    [OnDeserialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-
-                    private void TestMethod()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    private void TestMethod()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 12,
                 19,
@@ -228,32 +213,30 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "OnDeserializedMethod",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim obj As New TestClass()
+            obj.TestMethod()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserialized()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-
-                        Sub TestMethod()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Sub TestMethod()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 13,
@@ -262,41 +245,39 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializedMultiMediateInvocationsDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+    [OnDeserialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        var obj = new TestClass();
+        var count = 2;
+        obj.TestMethod(count);
+    }
+    
+    private void TestMethod(int count)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
 
-                    [OnDeserialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        var obj = new TestClass();
-                        var count = 2;
-                        obj.TestMethod(count);
-                    }
-
-                    private void TestMethod(int count)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-
-                        if(count != 0)
-                        {
-                            var obj = new TestClass();
-                            obj.TestMethod(--count);
-                        }
-                    }
-                }
-                """,
+        if(count != 0)
+        {
+            var obj = new TestClass();
+            obj.TestMethod(--count);
+        }
+    }
+}",
             GetCSharpResultAt(
                 12,
                 19,
@@ -304,36 +285,34 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "OnDeserializedMethod",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim obj As New TestClass()
+            obj.TestMethod(2)
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
+        Sub TestMethod(ByVal count As Integer)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
 
-                        <OnDeserialized()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim obj As New TestClass()
-                            obj.TestMethod(2)
-                        End Sub
-
-                        Sub TestMethod(ByVal count As Integer)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-
-                            If count <> 0
-                                Dim obj As New TestClass()
-                                count = count - 1
-                                obj.TestMethod(count)
-                            End If
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+            If count <> 0
+                Dim obj As New TestClass()
+                count = count - 1
+                obj.TestMethod(count)
+            End If
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 13,
@@ -342,30 +321,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationImplicitlyDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
-
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    public void OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
-                """,
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
+    
+    public void OnDeserialization(Object sender)
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 17,
@@ -374,30 +351,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationWriteAllBytesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -405,25 +380,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserializationExplictlyImplemented(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserializationExplictlyImplemented(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -432,30 +405,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationWriteAllLinesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var strings = new string[]{"111", "222"};
-                        File.WriteAllLines(path, strings, Encoding.ASCII);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        var strings = new string[]{""111"", ""222""};
+        File.WriteAllLines(path, strings, Encoding.ASCII);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -463,28 +434,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.WriteAllLines(string path, string[] contents, Encoding encoding)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
+Imports System.Text
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-                Imports System.Text
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            Dim strings(9) As String
-                            File.WriteAllLines(path, strings, Encoding.ASCII)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            Dim strings(9) As String
+            File.WriteAllLines(path, strings, Encoding.ASCII)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -493,30 +462,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllLines(path As String, contents As String(), encoding As Encoding)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationWriteAllTextDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var contents = "This is the contents.";
-                        File.WriteAllText(path, contents);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        var contents = ""This is the contents."";
+        File.WriteAllText(path, contents);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -524,28 +491,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.WriteAllText(string path, string contents)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            Dim contents As String
-                            contents = "This is the contents."
-                            File.WriteAllText(path, contents)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            Dim contents As String
+            contents = ""This is the contents.""
+            File.WriteAllText(path, contents)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -554,30 +519,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllText(path As String, contents As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationCopyDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var sourceFileName = "source file";
-                        var destFileName = "dest file";
-                        File.Copy(sourceFileName, destFileName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var sourceFileName = ""source file"";
+        var destFileName = ""dest file"";
+        File.Copy(sourceFileName, destFileName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -585,28 +548,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.Copy(string sourceFileName, string destFileName)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim sourceFileName As String
-                            sourceFileName = "source file"
-                            Dim destFileName As String
-                            destFileName = "dest file"
-                            File.Copy(sourceFileName, destFileName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim sourceFileName As String
+            sourceFileName = ""source file""
+            Dim destFileName As String
+            destFileName = ""dest file""
+            File.Copy(sourceFileName, destFileName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -615,30 +576,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.Copy(sourceFileName As String, destFileName As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationMoveDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var sourceFileName = "source file";
-                        var destFileName = "dest file";
-                        File.Move(sourceFileName, destFileName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var sourceFileName = ""source file"";
+        var destFileName = ""dest file"";
+        File.Move(sourceFileName, destFileName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -646,29 +605,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.Move(string sourceFileName, string destFileName)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim sourceFileName As String
-                            sourceFileName = "source file"
-                            Dim destFileName As String
-                            destFileName = "dest file"
-                            Dim bytes(9) As Byte
-                            File.Move(sourceFileName, destFileName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim sourceFileName As String
+            sourceFileName = ""source file""
+            Dim destFileName As String
+            destFileName = ""dest file""
+            Dim bytes(9) As Byte
+            File.Move(sourceFileName, destFileName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -677,30 +634,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.Move(sourceFileName As String, destFileName As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationAppendAllLinesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var strings = new string[]{"111", "222"};
-                        File.AppendAllLines(path, strings);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        var strings = new string[]{""111"", ""222""};
+        File.AppendAllLines(path, strings);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -708,27 +663,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.AppendAllLines(string path, IEnumerable<string> contents)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            Dim strings(9) As String
-                            File.AppendAllLines("C:\\", strings)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            Dim strings(9) As String
+            File.AppendAllLines(""C:\\"", strings)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -737,30 +690,28 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.AppendAllLines(path As String, contents As IEnumerable(Of String))"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationAppendAllTextDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        var contents = "This is the contents.";
-                        File.AppendAllText(path, contents);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        var contents = ""This is the contents."";
+        File.AppendAllText(path, contents);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -768,27 +719,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.AppendAllText(string path, string contents)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            Dim contents As String
-                            File.AppendAllText(path, contents)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            Dim contents As String
+            File.AppendAllText(path, contents)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -797,29 +746,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.AppendAllText(path As String, contents As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationAppendTextDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        File.AppendText(path);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        File.AppendText(path);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -827,26 +774,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "StreamWriter File.AppendText(string path)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            File.AppendText(path)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            File.AppendText(path)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -855,29 +800,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function File.AppendText(path As String) As StreamWriter"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationDeleteDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        File.Delete(path);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        File.Delete(path);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -885,26 +828,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void File.Delete(string path)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            File.Delete(path)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            File.Delete(path)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -913,29 +854,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.Delete(path As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationDeleteOfDirectoryDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        Directory.Delete(path);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        Directory.Delete(path);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -943,26 +882,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void Directory.Delete(string path)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            Directory.Delete(path)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            Directory.Delete(path)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -971,28 +908,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub Directory.Delete(path As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationDeleteOfFileInfoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        new FileInfo("fileName").Delete();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        new FileInfo(""fileName"").Delete();
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1000,25 +935,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void FileInfo.Delete()"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim fileInfo As New FileInfo("fileName")
-                            fileInfo.Delete()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim fileInfo As New FileInfo(""fileName"")
+            fileInfo.Delete()
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -1027,28 +960,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub FileInfo.Delete()"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationDeleteOfDirectoryInfoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        new DirectoryInfo("path").Delete();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        new DirectoryInfo(""path"").Delete();
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1056,25 +987,23 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void DirectoryInfo.Delete()"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim directoryInfo As new DirectoryInfo("path")
-                            directoryInfo.Delete()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim directoryInfo As new DirectoryInfo(""path"")
+            directoryInfo.Delete()
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 12,
                 20,
@@ -1083,44 +1012,42 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub DirectoryInfo.Delete()"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationDeleteOfLogStoreDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.IO.Log;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.IO.Log;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+namespace System.IO.Log
+{
+    public sealed class LogStore : IDisposable
+    {
+        public static void Delete (string path)
+        {
+        }
+        
+        public void Dispose ()
+        {
+        }
+    }
+}
 
-                namespace System.IO.Log
-                {
-                    public sealed class LogStore : IDisposable
-                    {
-                        public static void Delete (string path)
-                        {
-                        }
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                        public void Dispose ()
-                        {
-                        }
-                    }
-                }
-
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var path = "C:\\";
-                        LogStore.Delete(path);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var path = ""C:\\"";
+        LogStore.Delete(path);
+    }
+}",
             GetCSharpResultAt(
                 28,
                 35,
@@ -1128,38 +1055,36 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "void LogStore.Delete(string path)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.IO.Log
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.IO.Log
-                Imports System.Runtime.Serialization
+Namespace System.IO.Log
+    Public NotInheritable Class LogStore
+        Implements IDisposable
+        Public Shared Sub Delete (path As String)
+        End Sub
+        
+        Public Sub Dispose () Implements IDisposable.Dispose
+        End Sub
+    End Class
+End Namespace
 
-                Namespace System.IO.Log
-                    Public NotInheritable Class LogStore
-                        Implements IDisposable
-                        Public Shared Sub Delete (path As String)
-                        End Sub
-
-                        Public Sub Dispose () Implements IDisposable.Dispose
-                        End Sub
-                    End Class
-                End Namespace
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim path As String
-                            path = "C:\\"
-                            LogStore.Delete(path)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim path As String
+            path = ""C:\\""
+            LogStore.Delete(path)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 24,
                 20,
@@ -1168,29 +1093,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub LogStore.Delete(path As String)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationGetLoadedModulesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var assem = typeof(TestClass).Assembly;
-                        var modules = assem.GetLoadedModules();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var assem = typeof(TestClass).Assembly;
+        var modules = assem.GetLoadedModules();
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1198,26 +1121,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Module[] Assembly.GetLoadedModules()"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim assem As Assembly = GetType(TestClass).Assembly
-                            assem.GetLoadedModules()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim assem As Assembly = GetType(TestClass).Assembly
+            assem.GetLoadedModules()
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1226,31 +1147,29 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.GetLoadedModules() As [Module]()"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationLoadDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var fullName = "sysglobl, Version = 4.0.0.0, Culture = neutral, " +
-                                       "PublicKeyToken=b03f5f7f11d50a3a, processor architecture=MSIL";
-                        var an = new AssemblyName(fullName);
-                        var assem = Assembly.Load(an);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var fullName = ""sysglobl, Version = 4.0.0.0, Culture = neutral, "" +
+                       ""PublicKeyToken=b03f5f7f11d50a3a, processor architecture=MSIL"";
+        var an = new AssemblyName(fullName);
+        var assem = Assembly.Load(an);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1258,29 +1177,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.Load(AssemblyName assemblyRef)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim fullName As String
-                            fullName = "sysglobl, Version = 4.0.0.0, Culture = neutral, _
-                                       PublicKeyToken=b03f5f7f11d50a3a, processor architecture=MSIL"
-                            Dim an As new AssemblyName(fullName)
-                            Assembly.Load(an)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim fullName As String
+            fullName = ""sysglobl, Version = 4.0.0.0, Culture = neutral, _
+                       PublicKeyToken=b03f5f7f11d50a3a, processor architecture=MSIL""
+            Dim an As new AssemblyName(fullName)
+            Assembly.Load(an)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1289,29 +1206,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.Load(assemblyRef As AssemblyName) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationLoadFileDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var fileName = "C:\\test.txt";
-                        var assem = Assembly.LoadFile(fileName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var fileName = ""C:\\test.txt"";
+        var assem = Assembly.LoadFile(fileName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1319,27 +1234,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.LoadFile(string path)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim fileName As String
-                            fileName = "C:\\test.txt"
-                            Assembly.LoadFile(fileName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim fileName As String
+            fileName = ""C:\\test.txt""
+            Assembly.LoadFile(fileName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1348,29 +1261,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.LoadFile(path As String) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationLoadFromDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var assemblyName = "assembly file";
-                        var assem = Assembly.LoadFrom(assemblyName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var assemblyName = ""assembly file"";
+        var assem = Assembly.LoadFrom(assemblyName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1378,27 +1289,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.LoadFrom(string assemblyFile)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim assemblyName As String
-                            assemblyName = "assembly file"
-                            Assembly.LoadFrom(assemblyName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim assemblyName As String
+            assemblyName = ""assembly file""
+            Assembly.LoadFrom(assemblyName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1407,31 +1316,29 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.LoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationLoadModuleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        Assembly assem = typeof(TestClass).Assembly;
-                        var moduleName = "module name";
-                        var rawModule = new byte[] {0x20, 0x20, 0x20};
-                        var module = assem.LoadModule(moduleName, rawModule);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        Assembly assem = typeof(TestClass).Assembly;
+        var moduleName = ""module name"";
+        var rawModule = new byte[] {0x20, 0x20, 0x20};
+        var module = assem.LoadModule(moduleName, rawModule);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1439,29 +1346,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 $"Module Assembly.LoadModule(string moduleName, byte[]{NullableSuffixOnNetCoreApp} rawModule)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim assem As Assembly = GetType(TestClass).Assembly
-                            Dim moduleName As String
-                            moduleName = "module name"
-                            Dim rawModule(9) As Byte
-                            assem.LoadModule(moduleName, rawModule)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim assem As Assembly = GetType(TestClass).Assembly
+            Dim moduleName As String
+            moduleName = ""module name""
+            Dim rawModule(9) As Byte
+            assem.LoadModule(moduleName, rawModule)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1470,56 +1375,52 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.LoadModule(moduleName As String, rawModule As Byte()) As [Module]"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationLoadWithPartialNameDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var partialName = "partial name";
-                        var assem = Assembly.LoadWithPartialName(partialName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var partialName = ""partial name"";
+        var assem = Assembly.LoadWithPartialName(partialName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
                 "TestClass", "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 $"Assembly{NullableSuffixOnNetCoreApp} Assembly.LoadWithPartialName(string partialName)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim partialName As String
-                            partialName = "partial name"
-                            Assembly.LoadWithPartialName(partialName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim partialName As String
+            partialName = ""partial name""
+            Assembly.LoadWithPartialName(partialName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1528,29 +1429,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.LoadWithPartialName(partialName As String) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationReflectionOnlyLoadDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var rawAssembly = new byte[] {0x20, 0x20, 0x20};
-                        var assem = Assembly.ReflectionOnlyLoad(rawAssembly);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var rawAssembly = new byte[] {0x20, 0x20, 0x20};
+        var assem = Assembly.ReflectionOnlyLoad(rawAssembly);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1558,26 +1457,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.ReflectionOnlyLoad(byte[] rawAssembly)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim rawAssembly(9) As Byte
-                            Assembly.ReflectionOnlyLoad(rawAssembly)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim rawAssembly(9) As Byte
+            Assembly.ReflectionOnlyLoad(rawAssembly)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1586,29 +1483,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.ReflectionOnlyLoad(rawAssembly As Byte()) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationReflectionOnlyLoadFromDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var assemblyName = "assembly file";
-                        var assem = Assembly.ReflectionOnlyLoadFrom(assemblyName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var assemblyName = ""assembly file"";
+        var assem = Assembly.ReflectionOnlyLoadFrom(assemblyName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1616,27 +1511,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.ReflectionOnlyLoadFrom(string assemblyFile)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim assemblyName As String
-                            assemblyName = "assembly file"
-                            Assembly.ReflectionOnlyLoadFrom(assemblyName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim assemblyName As String
+            assemblyName = ""assembly file""
+            Assembly.ReflectionOnlyLoadFrom(assemblyName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1645,29 +1538,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.ReflectionOnlyLoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationUnsafeLoadFromDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var assemblyName = "assembly file";
-                        var assem = Assembly.UnsafeLoadFrom(assemblyName);
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        var assemblyName = ""assembly file"";
+        var assem = Assembly.UnsafeLoadFrom(assemblyName);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 35,
@@ -1675,27 +1566,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "System.Runtime.Serialization.IDeserializationCallback.OnDeserialization",
                 "Assembly Assembly.UnsafeLoadFrom(string assemblyFile)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Reflection
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim assemblyName As String
-                            assemblyName = "assembly file"
-                            Assembly.UnsafeLoadFrom(assemblyName)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Public Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim assemblyName As String
+            assemblyName = ""assembly file""
+            Assembly.UnsafeLoadFrom(assemblyName)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 13,
                 20,
@@ -1704,41 +1593,39 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Function Assembly.UnsafeLoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingGenericwithTypeSpecifiedDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+[Serializable()]
+public class TestGenericClass<T>
+{
+    private T memberInGeneric;
 
-                [Serializable()]
-                public class TestGenericClass<T>
-                {
-                    private T memberInGeneric;
+    public void TestGenericMethod()
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}
 
-                    public void TestGenericMethod()
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
+[Serializable()]
+public class TestClass : IDeserializationCallback
+{
+    private TestGenericClass<int> member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private TestGenericClass<int> member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        member.TestGenericMethod();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        member.TestGenericMethod();
+    }
+}",
             GetCSharpResultAt(
                 26,
                 35,
@@ -1747,44 +1634,42 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingInterfaceDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+interface TestInterface
+{
+    void TestInterfaceMethod();
+}
 
-                interface TestInterface
-                {
-                    void TestInterfaceMethod();
-                }
+[Serializable()]
+public class TestInterfaceImplement : TestInterface
+{
+    public void TestInterfaceMethod()
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}
 
-                [Serializable()]
-                public class TestInterfaceImplement : TestInterface
-                {
-                    public void TestInterfaceMethod()
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
+[Serializable()]
+public class TestClass : IDeserializationCallback
+{
+    private TestInterfaceImplement member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private TestInterfaceImplement member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        member.TestInterfaceMethod();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        member.TestInterfaceMethod();
+    }
+}",
             GetCSharpResultAt(
                 29,
                 35,
@@ -1793,39 +1678,37 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestStaticDelegateFieldDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+public delegate void TestDelegate();
 
-                public delegate void TestDelegate();
+[Serializable()]
+public class TestAnotherClass
+{
+    public static TestDelegate staticDelegateField = () =>
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] { 0x20, 0x20, 0x20 };
+        File.WriteAllBytes(path, bytes);
+    };
+}
 
-                [Serializable()]
-                public class TestAnotherClass
-                {
-                    public static TestDelegate staticDelegateField = () =>
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] { 0x20, 0x20, 0x20 };
-                        File.WriteAllBytes(path, bytes);
-                    };
-                }
-
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        TestAnotherClass.staticDelegateField();
-                    }
-                }
-                """,
+[Serializable()]
+public class TestClass : IDeserializationCallback
+{
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        TestAnotherClass.staticDelegateField();
+    }
+}",
             GetCSharpResultAt(
                 24,
                 35,
@@ -1834,41 +1717,39 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestDelegateFieldDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+public delegate void TestDelegate();
 
-                public delegate void TestDelegate();
+[Serializable()]
+public class TestAnotherClass
+{
+    public TestDelegate delegateField;
+}
 
-                [Serializable()]
-                public class TestAnotherClass
-                {
-                    public TestDelegate delegateField;
-                }
-
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        TestAnotherClass testAnotherClass = new TestAnotherClass();
-                        testAnotherClass.delegateField = () =>
-                        {
-                            var path = "C:\\";
-                            var bytes = new byte[] { 0x20, 0x20, 0x20 };
-                            File.WriteAllBytes(path, bytes);
-                        };
-                        testAnotherClass.delegateField();
-                    }
-                }
-                """,
+[Serializable()]
+public class TestClass : IDeserializationCallback 
+{
+    void IDeserializationCallback.OnDeserialization(Object sender) 
+    {
+        TestAnotherClass testAnotherClass = new TestAnotherClass();
+        testAnotherClass.delegateField = () =>
+        {
+            var path = ""C:\\"";
+            var bytes = new byte[] { 0x20, 0x20, 0x20 };
+            File.WriteAllBytes(path, bytes);
+        };
+        testAnotherClass.delegateField();
+    }
+}",
             GetCSharpResultAt(
                 19,
                 35,
@@ -1877,44 +1758,42 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingAbstractClassDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 
-                using System;
-                using System.IO;
-                using System.Reflection;
-                using System.Runtime.Serialization;
-                using System.Text;
+public abstract class TestAbstractClass
+{
+    public abstract void TestAbstractMethod();
+}
 
-                public abstract class TestAbstractClass
-                {
-                    public abstract void TestAbstractMethod();
-                }
+[Serializable()]
+public class TestDerivedClass : TestAbstractClass
+{
+    public override void TestAbstractMethod()
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}
 
-                [Serializable()]
-                public class TestDerivedClass : TestAbstractClass
-                {
-                    public override void TestAbstractMethod()
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
+[Serializable()]
+public class TestClass : IDeserializationCallback
+{
+    private TestDerivedClass member;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private TestDerivedClass member;
-
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        member.TestAbstractMethod();
-                    }
-                }
-                """,
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        member.TestAbstractMethod();
+    }
+}",
             GetCSharpResultAt(
                 29,
                 35,
@@ -1923,27 +1802,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestFinalizeDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
-
-                    ~TestClass()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    ~TestClass()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 11,
                 6,
@@ -1951,24 +1828,22 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Finalize",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        Protected Overrides Sub Finalize()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Protected Overrides Sub Finalize()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 11,
                 33,
@@ -1977,50 +1852,48 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestDisposeDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.InteropServices;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass : IDisposable
+{
+    private string member;
+    bool disposed = false;
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-                [Serializable()]
-                public class TestClass : IDisposable
-                {
-                    private string member;
-                    bool disposed = false;
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
+        }
 
-                    public void Dispose()
-                    {
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+        if (disposing)
+        {
+            byte[] bytes = new byte[] { 0x20, 0x20, 0x20 };
+            File.WriteAllBytes(""C:\\"", bytes);
+        }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
+        disposed = true;
+    }
 
-                        if (disposing)
-                        {
-                            byte[] bytes = new byte[] { 0x20, 0x20, 0x20 };
-                            File.WriteAllBytes("C:\\", bytes);
-                        }
-
-                        disposed = true;
-                    }
-
-                    ~TestClass()
-                    {
-                        Dispose(false);
-                    }
-                }
-                """,
+    ~TestClass()
+    {
+        Dispose(false);
+    }
+}",
             GetCSharpResultAt(
                 13,
                 17,
@@ -2034,40 +1907,38 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Finalize",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDisposable
+        Private member As String
+        Protected disposed As Boolean = False
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDisposable
-                        Private member As String
-                        Protected disposed As Boolean = False
+        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
+            If Not Me.disposed Then
+                If disposing Then
+                    Dim bytes(9) As Byte
+                    File.WriteAllBytes(""C:\\"", bytes)
+                End If
+            End If
+            Me.disposed = True
+        End Sub
 
-                        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
-                            If Not Me.disposed Then
-                                If disposing Then
-                                    Dim bytes(9) As Byte
-                                    File.WriteAllBytes("C:\\", bytes)
-                                End If
-                            End If
-                            Me.disposed = True
-                        End Sub
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Dispose(True)
+            GC.SuppressFinalize(Me)
+        End Sub
 
-                        Public Sub Dispose() Implements IDisposable.Dispose
-                            Dispose(True)
-                            GC.SuppressFinalize(Me)
-                        End Sub
-
-                        Protected Overrides Sub Finalize()
-                            Dispose(False)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Protected Overrides Sub Finalize()
+            Dispose(False)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 23,
                 20,
@@ -2081,37 +1952,35 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestFinalizeWhenSubClassWithSerializableDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+    ~TestClass()
+    {
+    }
+}
 
-                    ~TestClass()
-                    {
-                    }
-                }
+[Serializable()]
+public class SubTestClass : TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class SubTestClass : TestClass
-                {
-                    private string member;
-
-                    ~SubTestClass()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """,
+    ~SubTestClass()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}",
             GetCSharpResultAt(
                 21,
                 6,
@@ -2119,33 +1988,31 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Finalize",
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Protected Overrides Sub Finalize()
+        End Sub
+    End Class
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        Protected Overrides Sub Finalize()
-                        End Sub
-                    End Class
-
-                    <Serializable()> _
-                    Class SubTestClass
-                        Inherits TestClass
-                        Private member As String
-
-                        Protected Overrides Sub Finalize()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+    <Serializable()> _
+    Class SubTestClass 
+        Inherits TestClass
+        Private member As String
+        
+        Protected Overrides Sub Finalize()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(
                 20,
                 33,
@@ -2154,886 +2021,854 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializingNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    [OnDeserializing()]
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                    }
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+    }
+    
+    private void TestMethod()
+    {
+    }
+}");
 
-                    private void TestMethod()
-                    {
-                    }
-                }
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Runtime.Serialization
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserializing()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim obj As New TestClass()
+            obj.TestMethod()
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserializing()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                        End Sub
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializedNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    [OnDeserialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                    }
+    [OnDeserialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+    }
+    
+    private void TestMethod()
+    {
+    }
+}");
 
-                    private void TestMethod()
-                    {
-                    }
-                }
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Runtime.Serialization
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim obj As New TestClass()
+            obj.TestMethod()
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserialized()>
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                        End Sub
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
+[Serializable()]
+public class TestClass : IDeserializationCallback
+{
+    private string member;
 
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                    }
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+    }
+    
+    private void TestMethod()
+    {
+    }
+}");
 
-                    private void TestMethod()
-                    {
-                    }
-                }
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Runtime.Serialization
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim obj As New TestClass()
+            obj.TestMethod()
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                        End Sub
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializingWithoutSerializableNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                public class TestClass
-                {
-                    private string member;
+public class TestClass
+{
+    private string member;
 
-                    [OnDeserializing()]
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserializing()>
-                        Sub OnDeserializingMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+Namespace TestNamespace
+    Class TestClass
+        Private member As String
+        
+        <OnDeserializing()>
+        Sub OnDeserializingMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationWithoutSerializableNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                public class TestClass : IDeserializationCallback
-                {
-                    private string member;
+public class TestClass : IDeserializationCallback
+{
+    private string member;
 
-                    void IDeserializationCallback.OnDeserialization(Object sender)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    void IDeserializationCallback.OnDeserialization(Object sender)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Implements IDeserializationCallback
-                        Private member As String
-
-                        Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+Namespace TestNamespace
+    Class TestClass 
+        Implements IDeserializationCallback
+        Private member As String
+        
+        Sub OnDeserialization(ByVal sender As Object) Implements IDeserializationCallback.OnDeserialization
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializationWithoutIDeserializationCallbackNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    public void OnDeserialization(Object sender)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    public void OnDeserialization(Object sender)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnDeserializedWithEmptyMethodBodyNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    [OnDeserialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                    }
-                }
-                """);
+    [OnDeserialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        <OnDeserialized()>
-                        Sub OnDeserialized(ByVal context As StreamingContext)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        <OnDeserialized()>
+        Sub OnDeserialized(ByVal context As StreamingContext)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestWithoutOnDeserializingAttributesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        Sub OnDeserializingMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Sub OnDeserializingMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestOnSerializedNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    [OnSerialized()]
-                    internal void OnDeserializedMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    [OnSerialized()]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        Sub OnDeserializedMethod(ByVal context As StreamingContext)
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Sub OnDeserializedMethod(ByVal context As StreamingContext)
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestFinalizeNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    ~TestClass()
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                    }
+    ~TestClass()
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+    }
+    
+    private void TestMethod()
+    {
+    }
+}");
 
-                    private void TestMethod()
-                    {
-                    }
-                }
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Sub Finalize()
+            Dim obj As New TestClass()
+            obj.TestMethod()
+        End Sub
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
-
-                        Sub Finalize()
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                        End Sub
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestFinalizeWhenSubClassWithoutSerializableNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    ~TestClass()
-                    {
-                    }
-                }
+    ~TestClass()
+    {
+    }
+}
 
-                public class SubTestClass : TestClass
-                {
-                    private string member;
+public class SubTestClass : TestClass
+{
+    private string member;
 
-                    ~SubTestClass()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                    }
-                }
-                """);
+    ~SubTestClass()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+    }
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Private member As String
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Private member As String
+        
+        Protected Overrides Sub Finalize()
+        End Sub
+    End Class
 
-                        Protected Overrides Sub Finalize()
-                        End Sub
-                    End Class
-
-                    Class SubTestClass
-                        Inherits TestClass
-                        Private member As String
-
-                        Protected Overrides Sub Finalize()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+    Class SubTestClass 
+        Inherits TestClass
+        Private member As String
+        
+        Protected Overrides Sub Finalize()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestDisposeNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass : IDisposable
-                {
-                    private string member;
-                    bool disposed = false;
+[Serializable()]
+public class TestClass : IDisposable
+{
+    private string member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        var obj = new TestClass();
-                        obj.TestMethod();
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        var obj = new TestClass();
+        obj.TestMethod();
+        Dispose(true);
+        GC.SuppressFinalize(this);           
+    }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return; 
+        }
+      
+        if (disposing) 
+        {
+            var obj = new TestClass();
+            obj.TestMethod();
+        }
+      
+        disposed = true;
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
+    private void TestMethod()
+    {
+    }
+}");
 
-                        if (disposing)
-                        {
-                            var obj = new TestClass();
-                            obj.TestMethod();
-                        }
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
 
-                        disposed = true;
-                    }
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClass
+        Implements IDisposable
+        Private member As String
+        Protected disposed As Boolean = False
+        
+        Sub Dispose() Implements IDisposable.Dispose
+            Dim obj As New TestClass()
+            obj.TestMethod()
+            Dispose(True)  
+            GC.SuppressFinalize(Me) 
+        End Sub
 
-                    private void TestMethod()
-                    {
-                    }
-                }
-                """);
+        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
+            If Not Me.disposed Then
+                If disposing Then
+                    Dim obj As New TestClass()
+                    obj.TestMethod()
+                End If
+            End If
+            Me.disposed = True
+        End Sub
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClass
-                        Implements IDisposable
-                        Private member As String
-                        Protected disposed As Boolean = False
-
-                        Sub Dispose() Implements IDisposable.Dispose
-                            Dim obj As New TestClass()
-                            obj.TestMethod()
-                            Dispose(True)
-                            GC.SuppressFinalize(Me)
-                        End Sub
-
-                        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
-                            If Not Me.disposed Then
-                                If disposing Then
-                                    Dim obj As New TestClass()
-                                    obj.TestMethod()
-                                End If
-                            End If
-                            Me.disposed = True
-                        End Sub
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestDisposeWithoutSerializableNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                public class TestClass : IDisposable
-                {
-                    private string member;
-                    bool disposed = false;
+public class TestClass : IDisposable
+{
+    private string member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
-
-                        if (disposing)
-                        {
-                            byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                            File.WriteAllBytes("C:\\", bytes);
-                        }
-
-                        disposed = true;
-                    }
-                }
-                """);
-
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    Class TestClass
-                        Implements IDisposable
-                        Private member As String
-                        Protected disposed As Boolean = False
-
-                        Sub Dispose() Implements IDisposable.Dispose
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                            Dispose(True)
-                            GC.SuppressFinalize(Me)
-                        End Sub
-
-                        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
-                            If Not Me.disposed Then
-                                If disposing Then
-                                    Dim bytes(9) As Byte
-                                    File.WriteAllBytes("C:\\", bytes)
-                                End If
-                            End If
-                            Me.disposed = True
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
         }
 
-        [TestMethod]
+        if (disposing)
+        {
+            byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+            File.WriteAllBytes(""C:\\"", bytes);
+        }
+
+        disposed = true;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
+
+Namespace TestNamespace
+    Class TestClass
+        Implements IDisposable
+        Private member As String
+        Protected disposed As Boolean = False
+        
+        Sub Dispose() Implements IDisposable.Dispose
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+            Dispose(True)
+            GC.SuppressFinalize(Me)
+        End Sub
+
+        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
+            If Not Me.disposed Then
+                If disposing Then
+                    Dim bytes(9) As Byte
+                    File.WriteAllBytes(""C:\\"", bytes)
+                End If
+            End If
+            Me.disposed = True
+        End Sub
+    End Class
+End Namespace");
+        }
+
+        [Fact]
         public async Task TestDisposeNotImplementIDisposableNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                public class TestClass
-                {
-                    private string member;
-                    bool disposed = false;
+public class TestClass
+{
+    private string member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes("C:\\", bytes);
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(""C:\\"", bytes);
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
-
-                        if (disposing)
-                        {
-                            byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                            File.WriteAllBytes("C:\\", bytes);
-                        }
-
-                        disposed = true;
-                    }
-                }
-                """);
-
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
-                Imports System.IO
-                Imports System.Runtime.Serialization
-
-                Namespace TestNamespace
-                    Class TestClass
-                        Private member As String
-                        Protected disposed As Boolean = False
-
-                        Sub Dispose()
-                            Dim bytes(9) As Byte
-                            File.WriteAllBytes("C:\\", bytes)
-                            Dispose(True)
-                            GC.SuppressFinalize(Me)
-                        End Sub
-
-                        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
-                            If Not Me.disposed Then
-                                If disposing Then
-                                    Dim bytes(9) As Byte
-                                    File.WriteAllBytes("C:\\", bytes)
-                                End If
-                            End If
-                            Me.disposed = True
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
         }
 
-        [TestMethod]
+        if (disposing)
+        {
+            byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+            File.WriteAllBytes(""C:\\"", bytes);
+        }
+
+        disposed = true;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.IO
+Imports System.Runtime.Serialization
+
+Namespace TestNamespace
+    Class TestClass
+        Private member As String
+        Protected disposed As Boolean = False
+        
+        Sub Dispose()
+            Dim bytes(9) As Byte
+            File.WriteAllBytes(""C:\\"", bytes)
+            Dispose(True)
+            GC.SuppressFinalize(Me)
+        End Sub
+
+        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
+            If Not Me.disposed Then
+                If disposing Then
+                    Dim bytes(9) As Byte
+                    File.WriteAllBytes(""C:\\"", bytes)
+                End If
+            End If
+            Me.disposed = True
+        End Sub
+    End Class
+End Namespace");
+        }
+
+        [Fact]
         public async Task TestUsingGenericwithTypeSpecifiedNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestGenericClass<T>
-                {
-                    private T memberInGeneric;
+[Serializable()]
+public class TestGenericClass<T>
+{
+    private T memberInGeneric;
 
-                    public void TestGenericMethod()
-                    {
-                    }
-                }
+    public void TestGenericMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                public class TestClass : IDisposable
-                {
-                    private TestGenericClass<int> member;
-                    bool disposed = false;
+[Serializable()]
+public class TestClass : IDisposable
+{
+    private TestGenericClass<int> member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);           
+    }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return; 
+        }
+      
+        if (disposing) 
+        {
+        }
+      
+        disposed = true;
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
-
-                        if (disposing)
-                        {
-                        }
-
-                        disposed = true;
-                    }
-
-                    private void TestMethod()
-                    {
-                        member.TestGenericMethod();
-                    }
-                }
-                """);
+    private void TestMethod()
+    {
+        member.TestGenericMethod();
+    }
+}");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestUsingInterfaceNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                interface TestInterface
-                {
-                    void TestInterfaceMethod();
-                }
+interface TestInterface
+{
+    void TestInterfaceMethod();
+}
 
-                [Serializable()]
-                public class TestInterfaceImplement : TestInterface
-                {
-                    public void TestInterfaceMethod()
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
+[Serializable()]
+public class TestInterfaceImplement : TestInterface
+{
+    public void TestInterfaceMethod()
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}
 
-                [Serializable()]
-                public class TestClass : IDisposable
-                {
-                    private TestInterface member;
-                    bool disposed = false;
+[Serializable()]
+public class TestClass : IDisposable
+{
+    private TestInterface member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
-
-                        if (disposing)
-                        {
-                        }
-
-                        disposed = true;
-                    }
-
-                    private void TestMethod()
-                    {
-                        member.TestInterfaceMethod();
-                    }
-                }
-                """);
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
         }
 
-        [TestMethod]
+        if (disposing)
+        {
+        }
+
+        disposed = true;
+    }
+
+    private void TestMethod()
+    {
+        member.TestInterfaceMethod();
+    }
+}");
+        }
+
+        [Fact]
         public async Task TestUsingAbstractClassNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                public abstract class TestAbstractClass
-                {
-                    public abstract void TestAbstractMethod();
-                }
+public abstract class TestAbstractClass
+{
+    public abstract void TestAbstractMethod();
+}
 
-                [Serializable()]
-                public class TestDerivedClass : TestAbstractClass
-                {
-                    public override void TestAbstractMethod()
-                    {
-                        var path = "C:\\";
-                        var bytes = new byte[] {0x20, 0x20, 0x20};
-                        File.WriteAllBytes(path, bytes);
-                    }
-                }
+[Serializable()]
+public class TestDerivedClass : TestAbstractClass
+{
+    public override void TestAbstractMethod()
+    {
+        var path = ""C:\\"";
+        var bytes = new byte[] {0x20, 0x20, 0x20};
+        File.WriteAllBytes(path, bytes);
+    }
+}
 
-                [Serializable()]
-                public class TestClass : IDisposable
-                {
-                    private TestAbstractClass member;
-                    bool disposed = false;
+[Serializable()]
+public class TestClass : IDisposable
+{
+    private TestAbstractClass member;
+    bool disposed = false;
 
-                    public void Dispose()
-                    {
-                        Dispose(true);
-                        GC.SuppressFinalize(this);
-                    }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-                    protected virtual void Dispose(bool disposing)
-                    {
-                        if (disposed)
-                        {
-                            return;
-                        }
-
-                        if (disposing)
-                        {
-                        }
-
-                        disposed = true;
-                    }
-
-                    private void TestMethod()
-                    {
-                        member.TestAbstractMethod();
-                    }
-                }
-                """);
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
         }
 
-        [TestMethod]
+        if (disposing)
+        {
+        }
+
+        disposed = true;
+    }
+
+    private void TestMethod()
+    {
+        member.TestAbstractMethod();
+    }
+}");
+        }
+
+        [Fact]
         public async Task TestLocalFunctionDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
-                using System;
-                using System.IO;
-                using System.Runtime.Serialization;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        ALocalFunction();
 
-                    [OnDeserializing()]
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
-                        ALocalFunction();
-
-                        void ALocalFunction()
-                        {
-                            File.WriteAllBytes("C:\\", bytes);
-                        }
-                    }
-                }
-                """,
+        void ALocalFunction()
+        {
+            File.WriteAllBytes(""C:\\"", bytes);
+        }
+    }
+}",
             GetCSharpResultAt(
                 12,
                 19,
@@ -3042,30 +2877,29 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestLocalFunctionNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Runtime.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
 
-                [Serializable()]
-                public class TestClass
-                {
-                    private string member;
+[Serializable()]
+public class TestClass
+{
+    private string member;
 
-                    [OnDeserializing()]
-                    internal void OnDeserializingMethod(StreamingContext context)
-                    {
-                        ALocalFunction();
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        ALocalFunction();
 
-                        void ALocalFunction()
-                        {
-                            object o = new Object();
-                        }
-                    }
-                }
-                """);
+        void ALocalFunction()
+        {
+            object o = new Object();
+        }
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

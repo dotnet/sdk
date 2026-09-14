@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
@@ -7,17 +7,16 @@ using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
-    [TestClass]
     public class PackTests : SdkTest
     {
-        public PackTests()
+        public PackTests(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void OutputsPackagesToConfigurationSubdirWhenOutputParameterIsNotPassed()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                                          .WithSource();
 
             var packCommand = new DotnetPackCommand(Log)
@@ -36,10 +35,10 @@ namespace Microsoft.DotNet.Pack.Tests
                                             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OutputsPackagesFlatIntoOutputDirWhenOutputParameterIsPassed()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "bin2"));
@@ -56,10 +55,10 @@ namespace Microsoft.DotNet.Pack.Tests
                                             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SettingVersionSuffixFlag_ShouldStampAssemblyInfoInOutputAssemblyAndPackage()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -83,10 +82,10 @@ namespace Microsoft.DotNet.Pack.Tests
             outputPackage.Should().Exist();
         }
 
-        [TestMethod]
+        [Fact]
         public void HasIncludedFiles()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("EndToEndTestApp")
+            var testInstance = _testAssetsManager.CopyTestAsset("EndToEndTestApp")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -106,10 +105,10 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [TestMethod]
+        [Fact]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
+            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
                     .WithSource();
 
             new DotnetPackCommand(Log)
@@ -140,12 +139,12 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "lib/netstandard1.5/MyLibrary.pdb");
         }
 
-        [TestMethod]
-        [DataRow("TestAppSimple")]
-        [DataRow("FSharpTestAppSimple")]
+        [Theory]
+        [InlineData("TestAppSimple")]
+        [InlineData("FSharpTestAppSimple")]
         public void PackWorksWithLocalProject(string projectName)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset(projectName)
+            var testInstance = _testAssetsManager.CopyTestAsset(projectName)
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -154,10 +153,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItImplicitlyRestoresAProjectWhenPackaging()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -166,10 +165,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().Pass();
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotImplicitlyBuildAProjectWhenPackagingWithTheNoBuildOption()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -184,10 +183,10 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ItDoesNotImplicitlyRestoreAProjectWhenPackagingWithTheNoRestoreOption()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -197,10 +196,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [TestMethod]
+        [Fact]
         public void HasServiceableFlagWhenArgumentPassed()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             var packCommand = new DotnetPackCommand(Log)
@@ -227,13 +226,13 @@ namespace Microsoft.DotNet.Pack.Tests
 
             var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "serviceable");
 
-            Assert.AreEqual("true", node.Value);
+            Assert.Equal("true", node.Value);
         }
 
-        [TestMethod]
+        [Fact]
         public void ItPacksAppWhenRestoringToSpecificPackageDirectory()
         {
-            var rootPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "TestProject");
+            var rootPath = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, "TestProject");
             Directory.CreateDirectory(rootPath);
             var rootDir = new DirectoryInfo(rootPath);
 
@@ -261,10 +260,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().HaveFilesMatching("*.nupkg", SearchOption.AllDirectories);
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPackDoesNotPrintCopyrightInfo()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -279,10 +278,10 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPackAcceptsRuntimeOption()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -293,10 +292,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("NETSDK1083");
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPack_AcceptsVersionOption()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
@@ -322,10 +321,10 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPack_FailsWhenVersionOptionHasNoValue()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
@@ -336,10 +335,10 @@ namespace Microsoft.DotNet.Pack.Tests
             result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPack_AcceptsCustomProperties()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
 
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
@@ -366,12 +365,12 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [TestMethod]
-        [DataRow("Debug")]
-        [DataRow("Release")]
+        [Theory]
+        [InlineData("Debug")]
+        [InlineData("Release")]
         public void DotnetPack_AcceptsConfigurationOption(string configuration)
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "TestingPackWithConfig.nuspec");
 
@@ -395,10 +394,10 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPack_AcceptsOutputOption()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             string outputDirPath = Path.Combine(testInstance.Path, "output");
@@ -419,10 +418,10 @@ namespace Microsoft.DotNet.Pack.Tests
             nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
         }
 
-        [TestMethod]
+        [Fact]
         public void DotnetPack_FailsForNonExistentNuspec()
         {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "NonExistent.nuspec");
 
@@ -431,44 +430,6 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute(nuspecPath);
 
             result.Should().Fail();            
-        }
-
-        [TestMethod]
-        public void DotnetPack_AppliesDefaultExcludesToNuspecByDefault()
-        {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithDefaultExcludes")
-                .WithSource();
-            string nuspecPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.nuspec");
-
-            var result = new DotnetPackCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath);
-
-            result.Should().Pass();
-
-            var nupkgPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.1.0.0.nupkg");
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            zip.Entries.Should().Contain(e => e.FullName == "content/one.txt");
-            zip.Entries.Should().NotContain(e => e.FullName == "content/.dotfile");
-        }
-
-        [TestMethod]
-        public void DotnetPack_AcceptsNoDefaultExcludesOption()
-        {
-            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithDefaultExcludes")
-                .WithSource();
-            string nuspecPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.nuspec");
-
-            var result = new DotnetPackCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--no-default-excludes");
-
-            result.Should().Pass();
-
-            var nupkgPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.1.0.0.nupkg");
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            zip.Entries.Should().Contain(e => e.FullName == "content/one.txt");
-            zip.Entries.Should().Contain(e => e.FullName == "content/.dotfile");
         }
     }
 }

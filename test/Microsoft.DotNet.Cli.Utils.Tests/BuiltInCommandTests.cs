@@ -5,14 +5,13 @@
 
 namespace Microsoft.DotNet.Cli.Utils
 {
-    [TestClass]
     public class BuiltInCommandTests
     {
         /// <summary>
         /// Tests that BuiltInCommand.Execute returns the correct exit code and a
         /// valid StartInfo FileName and Arguments.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestExecute()
         {
             Func<string[], int> testCommand = args => args.Length;
@@ -21,16 +20,16 @@ namespace Microsoft.DotNet.Cli.Utils
             var builtInCommand = new BuiltInCommand("fakeCommand", testCommandArgs, testCommand, new TestBuiltInCommandEnvironment());
             CommandResult result = builtInCommand.Execute();
 
-            Assert.AreEqual(testCommandArgs.Length, result.ExitCode);
-            Assert.AreEqual(new Muxer().MuxerPath, result.StartInfo.FileName);
-            Assert.AreEqual("fakeCommand 1 2", result.StartInfo.Arguments);
+            Assert.Equal(testCommandArgs.Length, result.ExitCode);
+            Assert.Equal(new Muxer().MuxerPath, result.StartInfo.FileName);
+            Assert.Equal("fakeCommand 1 2", result.StartInfo.Arguments);
         }
 
         /// <summary>
         /// Tests that BuiltInCommand.Execute raises the OnOutputLine and OnErrorLine
         /// the correct number of times and with the correct content.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestOnOutputLines()
         {
             const int exitCode = 29;
@@ -61,11 +60,11 @@ namespace Microsoft.DotNet.Cli.Utils
 
                     if (onOutputLineCallCount == 1)
                     {
-                        Assert.AreEqual($"firstsecond", line);
+                        Assert.Equal($"firstsecond", line);
                     }
                     else
                     {
-                        Assert.AreEqual($"third", line);
+                        Assert.Equal($"third", line);
                     }
                 })
                 .OnErrorLine(line =>
@@ -74,18 +73,18 @@ namespace Microsoft.DotNet.Cli.Utils
 
                     if (onErrorLineCallCount == 1)
                     {
-                        Assert.AreEqual($"fourth", line);
+                        Assert.Equal($"fourth", line);
                     }
                     else
                     {
-                        Assert.AreEqual($"fifth", line);
+                        Assert.Equal($"fifth", line);
                     }
                 })
                 .Execute();
 
-            Assert.AreEqual(exitCode, result.ExitCode);
-            Assert.AreEqual(2, onOutputLineCallCount);
-            Assert.AreEqual(2, onErrorLineCallCount);
+            Assert.Equal(exitCode, result.ExitCode);
+            Assert.Equal(2, onOutputLineCallCount);
+            Assert.Equal(2, onErrorLineCallCount);
         }
 
         private class TestBuiltInCommandEnvironment : IBuiltInCommandEnvironment

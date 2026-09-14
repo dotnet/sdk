@@ -9,11 +9,9 @@ using Moq;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
-    [TestClass]
     public class OsxZshEnvironmentPathInstructionTests
     {
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnixOnlyFact]
         public void GivenPathNotSetItPrintsManualInstructions()
         {
             BufferedReporter reporter = new();
@@ -44,9 +42,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     toolsPath.Path));
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [DataRow("/home/user/.dotnet/tools")]
+        [UnixOnlyTheory]
+        [InlineData("/home/user/.dotnet/tools")]
         public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
         {
             BufferedReporter reporter = new();
@@ -70,9 +67,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
         }
 
-        [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [DataRow("~/.dotnet/tools")]
+        [UnixOnlyTheory]
+        [InlineData("~/.dotnet/tools")]
         public void GivenPathSetItPrintsInstruction(string toolsDirectoryOnPath)
         {
             BufferedReporter reporter = new();

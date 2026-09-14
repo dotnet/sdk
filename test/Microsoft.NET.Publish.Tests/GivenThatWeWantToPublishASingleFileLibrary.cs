@@ -1,13 +1,16 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Publish.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPublishASingleFileLibrary : SdkTest
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        public GivenThatWeWantToPublishASingleFileLibrary(ITestOutputHelper log) : base(log)
+        {
+
+        }
+
+        [WindowsOnlyFact]
         // Tests regression on https://github.com/dotnet/sdk/pull/28484
         public void ItPublishesSuccessfullyWithRIDAndPublishSingleFileLibrary()
         {
@@ -30,7 +33,7 @@ namespace Microsoft.NET.Publish.Tests
             string rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             List<string> args = new() { "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={rid}" };
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
             new PublishCommand(testAsset)
                 .Execute(args.ToArray())
                 .Should()
@@ -38,8 +41,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var referencedProjProperties = referencedProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
             var mainProjProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
-            Assert.AreEqual(rid, mainProjProperties["RuntimeIdentifier"]);
-            Assert.AreEqual("", referencedProjProperties["RuntimeIdentifier"]);
+            Assert.True(mainProjProperties["RuntimeIdentifier"] == rid);
+            Assert.True(referencedProjProperties["RuntimeIdentifier"] == "");
         }
     }
 

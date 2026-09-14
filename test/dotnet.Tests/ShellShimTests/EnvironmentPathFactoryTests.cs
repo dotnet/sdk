@@ -7,11 +7,9 @@ using Moq;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
-    [TestClass]
     public class EnvironmentPathFactoryTests
     {
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOsOnlyFact]
         public void GivenFollowingEnvironmentVariableValueItCanReturnOsxZshEnvironmentPathInstruction()
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
@@ -25,8 +23,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             (result is OsxZshEnvironmentPathInstruction).Should().BeTrue();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.OSX)]
+        [MacOsOnlyFact]
         public void GivenFollowingEnvironmentVariableValueItShouldReturnOsxBashEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
@@ -40,8 +37,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             (result is OsxBashEnvironmentPath).Should().BeTrue();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [WindowsOnlyFact]
         public void GivenWindowsItShouldReturnOsxBashEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Loose);
@@ -51,8 +47,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             (result is WindowsEnvironmentPath).Should().BeTrue();
         }
 
-        [TestMethod]
-        [OSCondition(OperatingSystems.Linux)]
+        [LinuxOnlyFact]
         public void GivenLinuxItShouldReturnOsxBashEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Loose);

@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading;
@@ -9,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
@@ -20,8 +18,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
                 DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<string?>(context => context.CodeActionEquivalenceKey, ApplyFixAsync);
+        public override FixAllProvider GetFixAllProvider()
+        {
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
+        }
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -29,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             SyntaxNode enclosingNode = root.FindNode(context.Span, getInnermostNodeForTie: true);
-            SyntaxNode? declaration = generator.GetDeclaration(enclosingNode);
+            SyntaxNode declaration = generator.GetDeclaration(enclosingNode);
             if (declaration == null || !CodeFixSupportsDeclaration(declaration))
             {
                 return;
@@ -37,70 +38,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             foreach (Diagnostic diagnostic in context.Diagnostics)
             {
-                if (GetEquivalenceKey(diagnostic) is not string equivalenceKey)
+                if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
                 {
-                    continue;
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(root, declaration, context.Document, generator, ct).ConfigureAwait(false),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
+                        diagnostic);
                 }
-
-                ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(diagnostic);
-                Document document = context.Document;
-
-                context.RegisterCodeFix(
-                    CodeAction.Create(
-                        GetTitle(equivalenceKey),
-                        cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
-                            document,
-                            diagnostics,
-                            (doc, diag, editor, token) => ApplyFixAsync(doc, diag, editor, equivalenceKey, token),
-                            cancellationToken),
-                        equivalenceKey),
-                    diagnostic);
-            }
-        }
-
-        private static string? GetEquivalenceKey(Diagnostic diagnostic)
-        {
-            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
-            {
-                return nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation);
-            }
-
-            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId
-                && diagnostic.Properties.ContainsKey(DynamicInterfaceCastableImplementationAnalyzer.NonStaticMemberIsMethodKey))
-            {
-                return nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic);
-            }
-
-            return null;
-        }
-
-        private static string GetTitle(string equivalenceKey)
-            => equivalenceKey == nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)
-                ? MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation
-                : MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic;
-
-        private async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey, CancellationToken cancellationToken)
-        {
-            if (GetEquivalenceKey(diagnostic) is not string key
-                || (equivalenceKey is not null && key != equivalenceKey))
-            {
-                return;
-            }
-
-            SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-            SyntaxNode? declaration = SyntaxGenerator.GetGenerator(document).GetDeclaration(enclosingNode);
-            if (declaration is null || !CodeFixSupportsDeclaration(declaration))
-            {
-                return;
-            }
-
-            if (key == nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation))
-            {
-                await ImplementInterfacesOnDynamicCastableImplementationAsync(declaration, document, editor, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, document, editor, cancellationToken).ConfigureAwait(false);
+                else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId
+                    && diagnostic.Properties.ContainsKey(DynamicInterfaceCastableImplementationAnalyzer.NonStaticMemberIsMethodKey))
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
+                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, ct).ConfigureAwait(false),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
+                        diagnostic);
+                }
             }
         }
 
@@ -111,16 +67,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
-        protected abstract Task ImplementInterfacesOnDynamicCastableImplementationAsync(
+        protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+            SyntaxNode root,
             SyntaxNode declaration,
             Document document,
-            SyntaxEditor editor,
+            SyntaxGenerator generator,
             CancellationToken cancellationToken);
 
-        protected abstract Task MakeMemberDeclaredOnImplementationTypeStaticAsync(
+        protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(
             SyntaxNode declaration,
             Document document,
-            SyntaxEditor editor,
             CancellationToken cancellationToken);
     }
 }

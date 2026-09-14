@@ -8,8 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
-[TestClass]
-public class StaticWebAssetUpdateBuilderTests
+public class StaticWebAssetUpdateBuilderTests(ITestOutputHelper testOutput)
 {
     /// <summary>
     /// In-memory model of a project graph used to drive <see cref="StaticWebAssetUpdateBuilder.AddAssets"/>.
@@ -104,11 +103,6 @@ public class StaticWebAssetUpdateBuilderTests
         }
     }
 
-    public TestContext TestContext { get; set; } = default!;
-
-    private static void SequenceEqual<T>(IEnumerable<T> expected, IEnumerable<T> actual, string? message = null)
-        => Assert.AreSequenceEqual(expected, actual, message);
-
     private const string Tfm = "net10.0";
 
     private static readonly string s_root = Path.Combine(Path.GetTempPath(), "StaticWebAssetUpdateBuilderTests");
@@ -139,13 +133,13 @@ public class StaticWebAssetUpdateBuilderTests
             entry => Path.GetFileNameWithoutExtension(entry.Key.ProjectPath),
             entry => entry.Value.Values.Select(Inspect).OrderBy(x => x, StringComparer.Ordinal).ToArray());
 
-        SequenceEqual(
+        AssertEx.SequenceEqual(
             expected.Select(e => e.appName).OrderBy(x => x, StringComparer.Ordinal),
             actual.Keys.OrderBy(x => x, StringComparer.Ordinal));
 
         foreach (var (appName, assets) in expected)
         {
-            SequenceEqual(
+            AssertEx.SequenceEqual(
                 assets.OrderBy(x => x, StringComparer.Ordinal),
                 actual[appName],
                 message: appName);
@@ -153,7 +147,7 @@ public class StaticWebAssetUpdateBuilderTests
     }
 
     private static void AssertRegenerate(StaticWebAssetUpdateBuilder builder, params string[] expectedProjectNames)
-        => SequenceEqual(
+        => AssertEx.SequenceEqual(
             expectedProjectNames.OrderBy(x => x, StringComparer.Ordinal),
             builder.ProjectInstancesToRegenerate.Select(id => Path.GetFileNameWithoutExtension(id.ProjectPath)).OrderBy(x => x, StringComparer.Ordinal));
 
@@ -165,10 +159,10 @@ public class StaticWebAssetUpdateBuilderTests
     /// Only running web applications (WebA, WebB) receive updates.
     /// WebC is excluded because it is not running; Host and Console are excluded because they are not web applications.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void MultipleAppsReferencingSharedRcl()
     {
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var builder = new TestUpdateBuilder(logger);
 
         builder.AddProject("Host", running: true, hasScopedCssTargets: false);
@@ -207,8 +201,8 @@ public class StaticWebAssetUpdateBuilderTests
 
         AssertRegenerate(builder, "Rcl", "WebA", "WebB");
 
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsFalse(logger.HasError);
+        Assert.False(logger.HasWarning);
+        Assert.False(logger.HasError);
     }
 
     /// <summary>
@@ -218,10 +212,10 @@ public class StaticWebAssetUpdateBuilderTests
     /// Each application receives the update for the asset via the RCL it references.
     /// The reported assembly name reflects the containing RCL of each ancestor path.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void SharedLinkedAssetAcrossSeparateRcls()
     {
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var builder = new TestUpdateBuilder(logger);
 
         builder.AddProject("WebX", running: true, hasScopedCssTargets: true, manifest: Manifest());
@@ -249,8 +243,8 @@ public class StaticWebAssetUpdateBuilderTests
         // No scoped CSS involved:
         AssertRegenerate(builder);
 
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsFalse(logger.HasError);
+        Assert.False(logger.HasWarning);
+        Assert.False(logger.HasError);
     }
 
     /// <summary>
@@ -259,10 +253,10 @@ public class StaticWebAssetUpdateBuilderTests
     ///
     /// The update reaches the web application transitively through the intermediate library.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void TransitiveReferenceThroughNonRclLibrary()
     {
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var builder = new TestUpdateBuilder(logger);
 
         builder.AddProject("Web", running: true, hasScopedCssTargets: true, manifest: Manifest(("Rcl.bundle.scp.css", Bundle("Web", "Rcl"))));
@@ -284,18 +278,18 @@ public class StaticWebAssetUpdateBuilderTests
 
         AssertRegenerate(builder, "Rcl", "Web");
 
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsFalse(logger.HasError);
+        Assert.False(logger.HasWarning);
+        Assert.False(logger.HasError);
     }
 
     /// <summary>
     /// A single web application references two RCL projects.
     /// Each RCL contains a static web asset and a scoped CSS file. All four assets are updated.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void SingleAppWithTwoRcls()
     {
-        var logger = new TestLogger(TestContext);
+        var logger = new TestLogger(testOutput);
         var builder = new TestUpdateBuilder(logger);
 
         builder.AddProject("Web", running: true, hasScopedCssTargets: true, manifest: Manifest(
@@ -323,7 +317,7 @@ public class StaticWebAssetUpdateBuilderTests
 
         AssertRegenerate(builder, "Rcl1", "Rcl2", "Web");
 
-        Assert.IsFalse(logger.HasWarning);
-        Assert.IsFalse(logger.HasError);
+        Assert.False(logger.HasWarning);
+        Assert.False(logger.HasError);
     }
 }

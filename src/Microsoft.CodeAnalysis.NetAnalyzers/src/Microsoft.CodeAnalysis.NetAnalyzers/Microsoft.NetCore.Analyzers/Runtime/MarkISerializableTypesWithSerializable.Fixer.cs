@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -10,7 +9,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities.Extensions;
-using Microsoft.CodeAnalysis.NetAnalyzers;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -18,34 +17,40 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA2237: Mark ISerializable types with SerializableAttribute
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = "CA2237 CodeFix provider"), Shared]
-    public sealed class MarkTypesWithSerializableFixer : SyntaxEditorBasedCodeFixProvider
+    public sealed class MarkTypesWithSerializableFixer : CodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(SerializationRulesDiagnosticAnalyzer.RuleCA2237Id);
 
-        public override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            string title = MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle;
-            RegisterCodeFix(context, title, title);
-            return Task.CompletedTask;
-        }
-
-        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
-        {
-            SyntaxNode? node = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
-
+            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode node = root.FindNode(context.Span);
+            node = generator.GetDeclaration(node);
             if (node == null)
             {
                 return;
             }
 
-            SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (!semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute, out INamedTypeSymbol? serializableAttributeType))
-            {
-                return;
-            }
+            string title = MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle;
+            context.RegisterCodeFix(CodeAction.Create(title,
+                                        async ct => await AddSerializableAttributeAsync(context.Document, node, ct).ConfigureAwait(false),
+                                        equivalenceKey: title),
+                                    context.Diagnostics);
+        }
 
-            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(serializableAttributeType));
+        private static async Task<Document> AddSerializableAttributeAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
+        {
+            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(
+                editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
             editor.AddAttribute(node, attr);
+            return editor.GetChangedDocument();
+        }
+
+        public override FixAllProvider GetFixAllProvider()
+        {
+            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

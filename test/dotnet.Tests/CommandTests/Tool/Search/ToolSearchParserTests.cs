@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -7,11 +7,16 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    [TestClass]
     public class ToolSearchParserTests
     {
+        private readonly ITestOutputHelper output;
 
-        [TestMethod]
+        public ToolSearchParserTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
+        [Fact]
         public void DotnetToolSearchShouldThrowWhenNoSearchTerm()
         {
             var result = Parser.Parse("dotnet tool search");
@@ -19,12 +24,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
             a.Should().Throw<CommandParsingException>();
         }
 
-        [TestMethod]
+        [Fact]
         public void ListSearchParserCanGetArguments()
         {
             var result = Parser.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
 
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsType<ToolSearchCommandDefinition>(result.CommandResult.Command);
 
             result.GetValue(definition.SearchTermArgument).Should().Be("mytool");
             result.UnmatchedTokens.Should().BeEmpty();

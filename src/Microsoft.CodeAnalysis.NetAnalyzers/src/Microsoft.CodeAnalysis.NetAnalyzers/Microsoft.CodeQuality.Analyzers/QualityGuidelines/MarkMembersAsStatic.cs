@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -226,14 +225,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // Do not analyze constructors, finalizers, and indexers.
             if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer() || methodSymbol.AssociatedSymbol.IsIndexer())
-            {
-                return false;
-            }
-
-            // Do not analyze operator methods. Regular operators are already required to be static in C#.
-            // C# 14 compound assignment operators (e.g. operator +=) are required to be instance methods
-            // and cannot be made static, so flagging them is a false positive.
-            if (methodSymbol.MethodKind == MethodKind.UserDefinedOperator)
             {
                 return false;
             }

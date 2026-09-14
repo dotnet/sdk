@@ -1,24 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Telemetry;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [TestClass]
-    public class GivenDotnetTestInvocation : SdkTest
+    [Collection(TestConstants.UsesStaticTelemetryState)]
+    public class GivenDotnetTestInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
-
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "-target:VSTest", "-property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetTestInvocation));
 
-        [TestMethod]
-        [DataRow(new string[] { "--disable-build-servers" },
+        [Theory]
+        [InlineData(new string[] { "--disable-build-servers" },
             new string[] {
                 "--property:UseRazorBuildServer=false",
                 "--property:UseSharedCompilation=false",
@@ -30,7 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                TelemetryClient.DisabledForTests = true;
+                Telemetry.Telemetry.DisableForTests();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
                     .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
@@ -44,4 +40,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

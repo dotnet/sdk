@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli
 {
@@ -15,7 +14,7 @@ namespace Microsoft.TemplateEngine.Cli
         private const string ShortNameKey = "shortName";
         private const string AlwaysShowKey = "alwaysShow";
 
-        internal HostSpecificTemplateData(JsonObject? jObject)
+        internal HostSpecificTemplateData(JObject? jObject)
         {
             var symbolsInfo = new Dictionary<string, IReadOnlyDictionary<string, string>>();
 
@@ -25,63 +24,34 @@ namespace Microsoft.TemplateEngine.Cli
                 return;
             }
 
-            JsonNode? usagesNode = GetPropertyCaseInsensitive(jObject, nameof(UsageExamples));
-            if (usagesNode is JsonArray usagesArray)
+            if (jObject.GetValue(nameof(UsageExamples), StringComparison.OrdinalIgnoreCase) is JArray usagesArray)
             {
-                UsageExamples = new List<string>(usagesArray
-                    .Where(v => v != null && v.GetValueKind() == JsonValueKind.String)
-                    .Select(v => v!.GetValue<string>()));
+                UsageExamples = new List<string>(usagesArray.Values<string>().Where(v => v != null).OfType<string>());
             }
 
-            JsonNode? symbolsNode = GetPropertyCaseInsensitive(jObject, nameof(SymbolInfo));
-            if (symbolsNode is JsonObject symbols)
+            if (jObject.GetValue(nameof(SymbolInfo), StringComparison.OrdinalIgnoreCase) is JObject symbols)
             {
-                foreach (var symbolInfo in symbols)
+                foreach (var symbolInfo in symbols.Properties())
                 {
-                    if (symbolInfo.Value is not JsonObject symbol)
+                    if (!(symbolInfo.Value is JObject symbol))
                     {
                         continue;
                     }
 
                     var symbolProperties = new Dictionary<string, string>();
 
-                    foreach (var symbolProperty in symbol)
+                    foreach (var symbolProperty in symbol.Properties())
                     {
-                        if (symbolProperty.Value is null)
-                        {
-                            symbolProperties[symbolProperty.Key] = "";
-                        }
-                        else
-                        {
-                            var kind = symbolProperty.Value.GetValueKind();
-                            symbolProperties[symbolProperty.Key] = kind switch
-                            {
-                                JsonValueKind.String => symbolProperty.Value.GetValue<string>(),
-                                JsonValueKind.True => "true",
-                                JsonValueKind.False => "false",
-                                _ => symbolProperty.Value.ToJsonString()
-                            };
-                        }
+                        symbolProperties[symbolProperty.Name] = symbolProperty.Value.Value<string>() ?? "";
                     }
 
-                    symbolsInfo[symbolInfo.Key] = symbolProperties;
+                    symbolsInfo[symbolInfo.Name] = symbolProperties;
                 }
             }
             SymbolInfo = symbolsInfo;
 
-            JsonNode? isHiddenNode = GetPropertyCaseInsensitive(jObject, nameof(IsHidden));
-            if (isHiddenNode != null)
-            {
-                var kind = isHiddenNode.GetValueKind();
-                if (kind == JsonValueKind.True)
-                {
-                    IsHidden = true;
-                }
-                else if (kind == JsonValueKind.String && bool.TryParse(isHiddenNode.GetValue<string>(), out bool hidden))
-                {
-                    IsHidden = hidden;
-                }
-            }
+            IsHidden = jObject.Value<bool>(nameof(IsHidden));
+
         }
 
         internal HostSpecificTemplateData(
@@ -174,7 +144,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        internal static HostSpecificTemplateData Default { get; } = new HostSpecificTemplateData((JsonObject?)null);
+        internal static HostSpecificTemplateData Default { get; } = new HostSpecificTemplateData((JObject?)null);
 
         internal string DisplayNameForParameter(string parameterName)
         {
@@ -187,50 +157,26 @@ namespace Microsoft.TemplateEngine.Cli
             return parameterName;
         }
 
-        private static JsonNode? GetPropertyCaseInsensitive(JsonObject obj, string key)
-        {
-            if (obj.TryGetPropertyValue(key, out JsonNode? result))
-            {
-                return result;
-            }
-
-            foreach (var kvp in obj)
-            {
-                if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
-                {
-                    return kvp.Value;
-                }
-            }
-
-            return null;
-        }
-
         private class HostSpecificTemplateDataJsonConverter : JsonConverter<HostSpecificTemplateData>
         {
-            public override HostSpecificTemplateData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+            public override HostSpecificTemplateData ReadJson(JsonReader reader, Type objectType, HostSpecificTemplateData? existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
 
-            public override void Write(Utf8JsonWriter writer, HostSpecificTemplateData value, JsonSerializerOptions options)
+            public override void WriteJson(JsonWriter writer, HostSpecificTemplateData? value, JsonSerializer serializer)
             {
+                if (value == null)
+                {
+                    return;
+                }
                 writer.WriteStartObject();
                 if (value.IsHidden)
                 {
-                    writer.WriteBoolean(nameof(IsHidden), value.IsHidden);
+                    writer.WritePropertyName(nameof(IsHidden));
+                    writer.WriteValue(value.IsHidden);
                 }
                 if (value.SymbolInfo.Any())
                 {
                     writer.WritePropertyName(nameof(SymbolInfo));
-                    writer.WriteStartObject();
-                    foreach (var symbol in value.SymbolInfo)
-                    {
-                        writer.WritePropertyName(symbol.Key);
-                        writer.WriteStartObject();
-                        foreach (var prop in symbol.Value)
-                        {
-                            writer.WriteString(prop.Key, prop.Value);
-                        }
-                        writer.WriteEndObject();
-                    }
-                    writer.WriteEndObject();
+                    serializer.Serialize(writer, value.SymbolInfo);
                 }
 
                 if (value.UsageExamples != null && value.UsageExamples.Any(e => !string.IsNullOrWhiteSpace(e)))
@@ -241,7 +187,7 @@ namespace Microsoft.TemplateEngine.Cli
                     {
                         if (!string.IsNullOrWhiteSpace(example))
                         {
-                            writer.WriteStringValue(example);
+                            writer.WriteValue(example);
                         }
                     }
                     writer.WriteEndArray();

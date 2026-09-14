@@ -5,10 +5,9 @@ using System.Collections.Immutable;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
-    [TestClass]
     public class ServerProtocolTest
     {
-        [TestMethod]
+        [Fact]
         public async Task ServerResponse_WriteRead_RoundtripsProperly()
         {
             // Arrange
@@ -19,7 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             await response.WriteAsync(memoryStream, CancellationToken.None);
 
             // Assert
-            Assert.IsGreaterThan(0, memoryStream.Position);
+            Assert.True(memoryStream.Position > 0);
             memoryStream.Position = 0;
             var result = (CompletedServerResponse)await ServerResponse.ReadAsync(memoryStream, CancellationToken.None);
             result.ReturnCode.Should().Be(42);
@@ -28,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             result.ErrorOutput.Should().Be("an error");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ServerRequest_WriteRead_RoundtripsProperly()
         {
             // Arrange
@@ -43,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             await request.WriteAsync(memoryStream, CancellationToken.None);
 
             // Assert
-            Assert.IsGreaterThan(0, memoryStream.Position);
+            Assert.True(memoryStream.Position > 0);
             memoryStream.Position = 0;
             var read = await ServerRequest.ReadAsync(memoryStream, CancellationToken.None);
 
@@ -57,14 +56,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             read.Arguments[1].Value.Should().Be("file");
         }
 
-        [TestMethod]
+        [Fact]
         public void CreateShutdown_CreatesCorrectShutdownRequest()
         {
             // Arrange & Act
             var request = ServerRequest.CreateShutdown();
 
             // Assert
-            Assert.HasCount(2, request.Arguments);
+            Assert.Equal(2, request.Arguments.Count);
 
             var argument1 = request.Arguments[0];
             argument1.Id.Should().Be(RequestArgument.ArgumentId.Shutdown);
@@ -72,12 +71,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             argument1.Value.Should().Be("");
 
             var argument2 = request.Arguments[1];
-            Assert.AreEqual(RequestArgument.ArgumentId.CommandLineArgument, argument2.Id);
-            Assert.AreEqual(1, argument2.ArgumentIndex);
-            Assert.AreEqual("shutdown", argument2.Value);
+            Assert.Equal(RequestArgument.ArgumentId.CommandLineArgument, argument2.Id);
+            Assert.Equal(1, argument2.ArgumentIndex);
+            Assert.Equal("shutdown", argument2.Value);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ShutdownRequest_WriteRead_RoundtripsProperly()
         {
             // Arrange
@@ -92,17 +91,17 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var read = await ServerRequest.ReadAsync(memoryStream, CancellationToken.None);
 
             var argument1 = request.Arguments[0];
-            Assert.AreEqual(RequestArgument.ArgumentId.Shutdown, argument1.Id);
-            Assert.AreEqual(0, argument1.ArgumentIndex);
-            Assert.AreEqual("", argument1.Value);
+            Assert.Equal(RequestArgument.ArgumentId.Shutdown, argument1.Id);
+            Assert.Equal(0, argument1.ArgumentIndex);
+            Assert.Equal("", argument1.Value);
 
             var argument2 = request.Arguments[1];
-            Assert.AreEqual(RequestArgument.ArgumentId.CommandLineArgument, argument2.Id);
-            Assert.AreEqual(1, argument2.ArgumentIndex);
-            Assert.AreEqual("shutdown", argument2.Value);
+            Assert.Equal(RequestArgument.ArgumentId.CommandLineArgument, argument2.Id);
+            Assert.Equal(1, argument2.ArgumentIndex);
+            Assert.Equal("shutdown", argument2.Value);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ShutdownResponse_WriteRead_RoundtripsProperly()
         {
             // Arrange & Act 1
@@ -110,7 +109,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var response = new ShutdownServerResponse(42);
 
             // Assert 1
-            Assert.AreEqual(ServerResponse.ResponseType.Shutdown, response.Type);
+            Assert.Equal(ServerResponse.ResponseType.Shutdown, response.Type);
 
             // Act 2
             await response.WriteAsync(memoryStream, CancellationToken.None);

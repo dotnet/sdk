@@ -9,11 +9,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
-    public class GetAssemblyAttributes : TaskBase, IMultiThreadableTask
+    public class GetAssemblyAttributes : TaskBase
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
         [Required]
         public string PathToTemplateFile { get; set; }
 
@@ -22,9 +19,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            AbsolutePath templatePath = TaskEnvironment.GetAbsolutePath(PathToTemplateFile);
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(templatePath);
-            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(templatePath);
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(Path.GetFullPath(PathToTemplateFile));
+            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(Path.GetFullPath(PathToTemplateFile));
 
             AssemblyAttributes = FormatToAttributes(AssemblyAttributesNameByFieldInFileVersionInfo: new Dictionary<string, string>
             {

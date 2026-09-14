@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -39,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             CancellationToken cancellationToken)
         {
             var formattedDocuments = FormatFiles(solution, formattableDocuments, formatOptions, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, formattedFiles, cancellationToken);
+            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -76,18 +75,18 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 var formatTask = Task.Run(async () =>
                 {
-                    var originalSourceText = await document.GetTextAsync(cancellationToken);
+                    var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
 
-                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
                     if (syntaxTree is null)
                     {
                         return (originalSourceText, null);
                     }
 
                     var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
-                    var optionSet = await document.GetOptionsAsync(cancellationToken);
+                    var optionSet = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
 
-                    return await GetFormattedSourceTextAsync(document, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+                    return await GetFormattedSourceTextAsync(document, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
                 }, cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
@@ -107,8 +106,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var originalSourceText = await document.GetTextAsync(cancellationToken);
-            var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
+            var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
             return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
                 ? (originalSourceText, formattedSourceText)
@@ -141,7 +140,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                var (originalText, formattedText) = await formatTask;
+                var (originalText, formattedText) = await formatTask.ConfigureAwait(false);
                 if (formattedText is null)
                 {
                     continue;
@@ -214,8 +213,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return false;
             }
 
-            var aVersion = await a.GetTextVersionAsync(cancellationToken);
-            var bVersion = await b.GetTextVersionAsync(cancellationToken);
+            var aVersion = await a.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
+            var bVersion = await b.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
 
             return aVersion == bVersion;
         }

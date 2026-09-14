@@ -11,11 +11,8 @@ namespace Microsoft.NET.Build.Tasks;
 /// This task filters an Item list by those items that contain a specific Metadata that is
 /// compatible with a specified Runtime Identifier, according to a given RuntimeIdentifierGraph file.
 /// </summary>
-[MSBuildMultiThreadableTask]
-public class SelectRuntimeIdentifierSpecificItems : TaskBase, IMultiThreadableTask
+public class SelectRuntimeIdentifierSpecificItems : TaskBase
 {
-    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-
     /// <summary>
     /// The target runtime identifier to check compatibility against.
     /// </summary>
@@ -55,8 +52,7 @@ public class SelectRuntimeIdentifierSpecificItems : TaskBase, IMultiThreadableTa
 
         string ridMetadata = RuntimeIdentifierItemMetadata ?? "RuntimeIdentifier";
 
-        AbsolutePath runtimeIdentifierGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeIdentifierGraphPath);
-        RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(runtimeIdentifierGraphPath);
+        RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeIdentifierGraphPath);
 
         var selectedItems = new List<ITaskItem>();
 

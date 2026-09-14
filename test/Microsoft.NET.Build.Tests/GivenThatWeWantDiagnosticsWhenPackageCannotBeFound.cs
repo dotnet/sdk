@@ -5,11 +5,13 @@
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantDiagnosticsWhenPackageCannotBeFound : SdkTest
     {
+        public GivenThatWeWantDiagnosticsWhenPackageCannotBeFound(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
+        [Fact]
         public void It_reports_missing_package_deleted_since_restore()
         {
             var package = GeneratePackageToGoMissing();
@@ -25,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
                 "RestoreAdditionalProjectSources",
                 Path.GetDirectoryName(package.NupkgPath));
 
-            var asset = TestAssetsManager
+            var asset = _testAssetsManager
                 .CreateTestProject(project, project.Name)
                 .Restore(Log, project.Name);
 
@@ -77,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.3",
             };
 
-            var asset = TestAssetsManager
+            var asset = _testAssetsManager
                .CreateTestProject(project, project.Name);
 
             var pack = new PackCommand(

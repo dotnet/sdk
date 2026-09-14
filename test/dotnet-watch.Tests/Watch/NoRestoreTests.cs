@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-[TestClass]
 public class NoRestoreTests
 {
     private static DotNetWatchContext CreateContext(string[] args = null, EnvironmentOptions environmentOptions = null)
@@ -35,7 +34,7 @@ public class NoRestoreTests
         };
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedOnFirstRun()
     {
         var context = CreateContext();
@@ -44,7 +43,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
     {
         var context = CreateContext();
@@ -57,7 +56,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
     {
         var context = CreateContext([], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
@@ -67,7 +66,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent()
     {
         var context = CreateContext(["--no-restore"], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
@@ -77,7 +76,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash1()
     {
         var context = CreateContext(["--", "--no-restore"]);
@@ -87,7 +86,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run", "--no-restore", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash2()
     {
         var context = CreateContext(["--", "--", "--no-restore"]);
@@ -97,7 +96,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run", "--no-restore", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void AddsNoRestoreSwitch()
     {
         var context = CreateContext();
@@ -107,7 +106,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void AddsNoRestoreSwitch_WithAdditionalArguments()
     {
         var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
@@ -117,7 +116,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["run", "--no-restore", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void AddsNoRestoreSwitch_ForTestCommand()
     {
         var context = CreateContext(["test", "--filter SomeFilter"]);
@@ -127,7 +126,7 @@ public class NoRestoreTests
         AssertEx.SequenceEqual(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void DoesNotModifyArgumentsForUnknownCommands()
     {
         var context = CreateContext(["pack"]);

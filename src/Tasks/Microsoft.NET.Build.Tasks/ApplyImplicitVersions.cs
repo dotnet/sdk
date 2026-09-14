@@ -7,7 +7,6 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public sealed class ApplyImplicitVersions : TaskBase
     {
         public string TargetFrameworkVersion { get; set; }

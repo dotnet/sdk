@@ -3,17 +3,16 @@
 
 namespace Microsoft.DotNet.Cli.Workload.Restore.Tests;
 
-[TestClass]
 public class GivenDotnetWorkloadRestore : SdkTest
 {
-    public GivenDotnetWorkloadRestore()
+    public GivenDotnetWorkloadRestore(ITestOutputHelper log) : base(log)
     {
     }
 
     public static string DcProjAssetName = "SolutionWithAppAndDcProj";
     public static string TransitiveReferenceNoWorkloadsAssetName = "ProjectWithEsProjReference";
 
-    [TestMethod]
+    [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
         if (IsRunningInContainer())
@@ -23,7 +22,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            TestAssetsManager
+            _testAssetsManager
                 .CopyTestAsset(DcProjAssetName)
                 .WithSource()
                 .Path;
@@ -36,7 +35,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Pass();
     }
 
-    [TestMethod]
+    [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
         if (IsRunningInContainer())
@@ -46,7 +45,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            TestAssetsManager
+            _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
                 .WithSource()
                 .Path;
@@ -59,7 +58,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Pass();
     }
 
-    [TestMethod]
+    [Fact]
     public void VersionOptionShouldNotConflictWithSkipManifestUpdate()
     {
         if (IsRunningInContainer())
@@ -69,7 +68,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            TestAssetsManager
+            _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
                 .WithSource()
                 .Path;

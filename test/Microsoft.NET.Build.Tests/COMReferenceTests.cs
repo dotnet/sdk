@@ -1,18 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class COMReferenceTests : SdkTest
     {
+        public COMReferenceTests(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [FullMSBuildOnly]
-        [DataRow(true)]
-        [DataRow(false)]
+        [FullMSBuildOnlyTheory()]
+        [InlineData(true)]
+        [InlineData(false)]
         public void COMReferenceBuildsAndRuns(bool embedInteropTypes)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -47,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
                     new XElement("Isolated", "false"),
                     new XElement("EmbedInteropTypes", embedInteropTypes)));
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CreateTestProject(testProject, identifier: embedInteropTypes.ToString())
                 .WithProjectChanges(doc => doc.Root.Add(reference));
 
@@ -59,8 +60,7 @@ namespace Microsoft.NET.Build.Tests
             runCommand.Execute().Should().Pass();
         }
 
-        [TestMethod]
-        [FullMSBuildOnly]
+        [FullMSBuildOnlyFact]
         public void COMReferenceProperlyPublish()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
                     new XElement("Isolated", "false"),
                     new XElement("EmbedInteropTypes", "false")));
 
-            var testAsset = TestAssetsManager
+            var testAsset = _testAssetsManager
                 .CreateTestProject(testProject)
                 .WithProjectChanges(doc => doc.Root.Add(new[] { reference1, reference2 }));
 
@@ -117,8 +117,8 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
 
             // COM References by default adds the 'Interop.' prefix.
-            Assert.IsTrue(outputDirectory.File($"Interop.{vslangProj70ComRef}").Exists);
-            Assert.IsTrue(outputDirectory.File($"Interop.{vslangProj80ComRef}").Exists);
+            Assert.True(outputDirectory.File($"Interop.{vslangProj70ComRef}").Exists);
+            Assert.True(outputDirectory.File($"Interop.{vslangProj80ComRef}").Exists);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute().Should().Pass();
@@ -126,8 +126,8 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory = publishCommand.GetOutputDirectory(targetFramework);
 
             // COM References by default adds the 'Interop.' prefix.
-            Assert.IsTrue(outputDirectory.File($"Interop.{vslangProj70ComRef}").Exists);
-            Assert.IsTrue(outputDirectory.File($"Interop.{vslangProj80ComRef}").Exists);
+            Assert.True(outputDirectory.File($"Interop.{vslangProj70ComRef}").Exists);
+            Assert.True(outputDirectory.File($"Interop.{vslangProj80ComRef}").Exists);
         }
     }
 }

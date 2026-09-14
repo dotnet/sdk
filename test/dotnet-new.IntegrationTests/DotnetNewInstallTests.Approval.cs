@@ -5,10 +5,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [TestClass]
     public partial class DotnetNewInstallTests : BaseIntegrationTest
     {
-        [TestMethod]
+        [Fact]
         public Task CannotInstallPackageAvailableFromBuiltIns()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ItemTemplates@6.0.100")
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstallPackageAvailableFromBuiltInsWithForce()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ItemTemplates@6.0.100", "--force")
@@ -47,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstallMultiplePackageAvailableFromBuiltIns()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ItemTemplates@6.0.100", "Microsoft.DotNet.Web.ItemTemplates@5.0.0")
@@ -66,9 +65,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
-        [DataRow("-i")]
-        [DataRow("--install")]
+        [Theory]
+        [InlineData("-i")]
+        [InlineData("--install")]
         public Task CanShowDeprecationMessage_WhenLegacyCommandIsUsed(string commandName)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ItemTemplates@5.0.0")
@@ -85,7 +84,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [TestMethod]
+        [Fact]
         public Task DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ItemTemplates@5.0.0")
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowWarning_WhenConstraintTemplateIsInstalled()
         {
             string testTemplateLocation = GetTestTemplateLocation("Constraints/RestrictedTemplate");
@@ -121,7 +120,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstallSameSourceTwice_Folder_WhenSourceIsSpecified()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -143,7 +142,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output => output.ScrubAndReplace(basicFSharp, "%TEMPLATE FOLDER%"));
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanInstallSameSourceTwice_RemoteNuGet_WhenSourceIsSpecified()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -164,7 +163,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstallSameSourceTwice_NuGet()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -189,7 +188,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [TestMethod]
+        [Fact]
         public Task CannotInstallSameSourceTwice_Folder()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -221,7 +220,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output => output.ScrubAndReplace(basicFSharp, "%TEMPLATE FOLDER%"));
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -240,7 +239,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output => output.ScrubAndReplace(templateToInstall, "%TEMPLATE FOLDER%"));
         }
 
-        [TestMethod]
+        [Fact]
         public Task CanShowError_WhenGlobalSettingsFileIsCorrupted()
         {
             string homeDirectory = CreateTemporaryFolder();

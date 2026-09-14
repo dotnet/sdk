@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
@@ -9,13 +9,13 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-[TestClass]
-public sealed class RunFileTests_BuildCommands : RunFileTestBase
+public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileTestBase(log)
 {
-    [TestMethod]
+
+    [Fact]
     public void Restore_NonExistentPackage()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, """
             #:package Microsoft.ThisPackageDoesNotExist@1.0.0
@@ -29,10 +29,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
     }
 
-    [TestMethod]
+    [Fact]
     public void NoRestore_01()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -61,10 +61,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Hello from Program");
     }
 
-    [TestMethod]
+    [Fact]
     public void NoRestore_02()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -98,10 +98,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Hello from Program");
     }
 
-    [TestMethod]
+    [Fact]
     public void Restore_StaticGraph_Implicit()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
                 <PropertyGroup>
@@ -122,10 +122,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .Should().Pass();
     }
 
-    [TestMethod]
+    [Fact]
     public void Restore_StaticGraph_Explicit()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, """
             #:property RestoreUseStaticGraphEvaluation=true
@@ -143,10 +143,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdErr(DirectiveError(programFile, 1, FileBasedProgramsResources.StaticGraphRestoreNotSupported));
     }
 
-    [TestMethod]
+    [Fact]
     public void NoBuild_01()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -183,10 +183,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Changed");
     }
 
-    [TestMethod]
+    [Fact]
     public void NoBuild_02()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -224,10 +224,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Changed");
     }
 
-    [TestMethod]
+    [Fact]
     public void RunCommand_Cached()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -260,10 +260,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
     }
 
     /// <seealso href="https://github.com/dotnet/sdk/issues/54551" />
-    [TestMethod]
+    [Fact]
     public void RunCommand_NoBuild()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -295,10 +295,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void RunCommand_NoBuild_NoCache()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -330,10 +330,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_Library()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "lib.cs");
         File.WriteAllText(programFile, """
             #:property OutputType=Library
@@ -358,10 +358,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 "Library"));
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_Library_MultiTarget()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "lib.cs");
         File.WriteAllText(programFile, $"""
             #:property OutputType=Library
@@ -396,10 +396,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 "Library"));
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_Module()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "module.cs");
         File.WriteAllText(programFile, """
             #:property OutputType=Module
@@ -425,10 +425,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 "Module"));
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_WinExe()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "winexe.cs");
         File.WriteAllText(programFile, """
             #:property OutputType=WinExe
@@ -450,10 +450,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Hello WinExe");
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_Exe()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "exe.cs");
         File.WriteAllText(programFile, """
             #:property OutputType=Exe
@@ -475,10 +475,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Hello Exe");
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_Exe_MultiTarget()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "exe.cs");
         File.WriteAllText(programFile, $"""
             #:property OutputType=Exe
@@ -510,10 +510,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOut("Hello Exe");
     }
 
-    [TestMethod]
+    [Fact]
     public void Build_AppContainerExe()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "appcontainerexe.cs");
         File.WriteAllText(programFile, """
             #:property OutputType=AppContainerExe
@@ -538,10 +538,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 "AppContainerExe"));
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -569,10 +569,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void PublishWithCustomTarget()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -597,10 +597,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             ]);
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_WithJson()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, """
             #:sdk Microsoft.NET.Sdk.Web
@@ -628,10 +628,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveFile("config.json"); // the JSON is included as content and hence copied
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_Options()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -653,10 +653,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_PublishDir_IncludesFileName()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyCustomProgram.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -676,10 +676,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_PublishDir_CommandLine()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -696,10 +696,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_PublishDir_PropertyDirective()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         var publishDir = Path.Join(testInstance.Path, "directive-publish");
         File.WriteAllText(programFile, $"""
@@ -719,10 +719,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
-    [TestMethod]
+    [Fact]
     public void Publish_In_SubDir()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var subDir = Directory.CreateDirectory(Path.Combine(testInstance.Path, "subdir"));
 
         var programFile = Path.Join(subDir.FullName, "Program.cs");
@@ -744,10 +744,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
-    [TestMethod]
+    [Fact]
     public void Pack()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
@@ -791,10 +791,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
+    [Fact]
     public void Pack_CustomPath()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
             #:property PackageOutputPath=custom
@@ -832,10 +832,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOutContaining("Hello; EntryPointFilePath set? False");
     }
 
-    [TestMethod]
+    [Fact]
     public void Clean()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -862,31 +862,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         dllFile.Should().NotExist();
     }
 
-    [TestMethod]
-    public void Format()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programFile = Path.Join(testInstance.Path, "app.cs");
-        File.WriteAllText(programFile, """
-            class C   {}
-            """);
-
-        new DotnetCommand(Log, "format", "app.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        File.ReadAllText(programFile).Should().Be("""
-            class C { }
-            """);
-    }
-
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    [UnsupportedOSPlatform("windows")]
+    [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -919,127 +898,12 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .Should().Be(actualMode, artifactsDir);
     }
 
-    [TestMethod]
-    public void ArtifactsPath()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, s_program);
-
-        var globalArtifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
-        if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
-
-        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
-        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
-
-        new DotnetCommand(Log, "build", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().NotBeEmpty();
-        new FileInfo(Path.Join(globalArtifactsDir, "bin", "debug", "Program.dll")).Should().Exist();
-        new DirectoryInfo(Path.Join(globalArtifactsDir, "bin")).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["debug"]);
-        new DirectoryInfo(Path.Join(globalArtifactsDir, "artifacts")).Should().NotExist();
-
-        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
-        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
-    }
-
-    [TestMethod]
-    public void ArtifactsPath_IsAddedAsSourceRoot()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programPath = Path.Join(testInstance.Path, "Program.cs");
-        var sourceRootsPath = Path.Join(testInstance.Path, "source-roots.txt");
-        File.WriteAllText(programPath, s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
-            <Project>
-              <Target Name="_WriteSourceRoots" BeforeTargets="CoreCompile">
-                <WriteLinesToFile File="$(MSBuildThisFileDirectory)source-roots.txt"
-                                  Lines="@(SourceRoot)"
-                                  Overwrite="true" />
-              </Target>
-            </Project>
-            """);
-
-        new DotnetCommand(Log, "build", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        var expectedSourceRoot = VirtualProjectBuilder.GetArtifactsPath(programPath) + Path.DirectorySeparatorChar;
-        File.ReadAllLines(sourceRootsPath).Should().Contain(
-            sourceRoot => sourceRoot.Equals(expectedSourceRoot, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    /// When the surrounding repo uses artifacts layout, file-based apps place their artifacts there.
-    /// </summary>
-    [TestMethod]
-    public void ArtifactsPath_ReusedFromRepo()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, s_program);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <UseArtifactsOutput>true</UseArtifactsOutput>
-              </PropertyGroup>
-            </Project>
-            """);
-
-        var globalArtifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
-        if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
-
-        var localArtifactsDir = Path.Join(testInstance.Path, "artifacts");
-        new DirectoryInfo(localArtifactsDir).Should().NotExist();
-
-        new DotnetCommand(Log, "build", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        // We still put our marker files into the global artifacts directory, but it should not contain any subdirectories.
-        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
-
-        new FileInfo(Path.Join(localArtifactsDir, "bin", "Program.cs", "debug", "Program.dll")).Should().Exist();
-        new DirectoryInfo(Path.Join(localArtifactsDir, "bin", "debug")).Should().NotExist();
-
-        // Publish
-
-        Directory.Delete(Path.Join(localArtifactsDir), recursive: true);
-
-        new DotnetCommand(Log, "publish", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
-        new DirectoryInfo(localArtifactsDir).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["bin", "obj", "publish"]);
-        new FileInfo(Path.Join(localArtifactsDir, "publish", "Program.cs", "release", $"Program{Constants.ExeSuffix}")).Should().Exist();
-
-        // Pack
-
-        Directory.Delete(localArtifactsDir, recursive: true);
-
-        new DotnetCommand(Log, "pack", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass();
-
-        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
-        new DirectoryInfo(localArtifactsDir).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["bin", "obj", "package", "publish"]);
-        new FileInfo(Path.Join(localArtifactsDir, "package", "release", "Program.1.0.0.nupkg")).Should().Exist();
-    }
-
-    [TestMethod, CombinatorialData]
+    [Theory, CombinatorialData]
     public void LaunchProfile(
         bool cscOnly,
         [CombinatorialValues("Properties/launchSettings.json", "Program.run.json")] string relativePath)
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
@@ -1082,48 +946,13 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
-    [TestMethod, CombinatorialData]
-    public void LaunchProfile_MSBuildPropertyExpansion(bool cscOnly)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        if (!cscOnly)
-        {
-            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
-        }
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
-            {
-                "profiles": {
-                    "TestProfile": {
-                        "commandName": "Project",
-                        "commandLineArgs": "\"$(MSBuildProjectDirectory)\""
-                    }
-                }
-            }
-            """);
-
-        string prefix = cscOnly
-            ? CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine
-            : string.Empty;
-
-        new DotnetCommand(Log, "run", "-bl", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut(prefix + $"""
-                echo args:{testInstance.Path}
-                Hello from Program
-                """);
-    }
-
     /// <summary>
     /// <c>Properties/launchSettings.json</c> takes precedence over <c>Program.run.json</c>.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void LaunchProfile_Precedence()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
@@ -1168,10 +997,10 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
     /// <summary>
     /// Each file-based app in a folder can have separate launch profile.
     /// </summary>
-    [TestMethod]
+    [Fact]
     public void LaunchProfile_Multiple()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         var source = s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");

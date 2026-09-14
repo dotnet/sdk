@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,9 +11,9 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -24,26 +23,36 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA2226: Operators should have symmetrical overloads
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : SyntaxEditorBasedCodeFixProvider
+    public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
 
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override FixAllProvider GetFixAllProvider()
         {
-            RegisterCodeFix(context, Generate_missing_operators, nameof(Generate_missing_operators));
-            return Task.CompletedTask;
+            return WellKnownFixAllProviders.BatchFixer;
         }
 
-        protected sealed override async Task ApplyFixAsync(
-            Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var operatorNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators,
+                    c => CreateChangedDocumentAsync(context, c),
+                    nameof(Generate_missing_operators)),
+                context.Diagnostics);
+            return Task.FromResult(true);
+        }
 
-            if (semanticModel.GetDeclaredSymbol(operatorNode, cancellationToken) is not IMethodSymbol containingOperator)
-            {
-                return;
-            }
+        private static async Task<Document> CreateChangedDocumentAsync(
+            CodeFixContext context, CancellationToken cancellationToken)
+        {
+            var document = context.Document;
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var semanticModel = editor.SemanticModel;
+            var root = await semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+            var operatorNode = root.FindNode(context.Diagnostics.First().Location.SourceSpan);
+
+            var containingOperator = (IMethodSymbol)semanticModel.GetDeclaredSymbol(operatorNode, cancellationToken)!;
 
             Debug.Assert(containingOperator.IsUserDefinedOperator());
 
@@ -59,18 +68,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             operatorNode = operatorNode.AncestorsAndSelf().First(a => a.RawKind == newOperator.RawKind);
 
             editor.InsertAfter(operatorNode, newOperator);
+            return editor.GetChangedDocument();
         }
 
         private static IEnumerable<SyntaxNode> GetInvertedStatements(
             SyntaxGenerator generator, IMethodSymbol containingOperator, Compilation compilation)
         {
-            if (GetInvertedStatement(generator, containingOperator, compilation) is SyntaxNode statement)
-            {
-                yield return statement;
-            }
+            yield return GetInvertedStatement(generator, containingOperator, compilation);
         }
 
-        private static SyntaxNode? GetInvertedStatement(
+        private static SyntaxNode GetInvertedStatement(
             SyntaxGenerator generator, IMethodSymbol containingOperator, Compilation compilation)
         {
             if (containingOperator.Name == WellKnownMemberNames.EqualityOperatorName)

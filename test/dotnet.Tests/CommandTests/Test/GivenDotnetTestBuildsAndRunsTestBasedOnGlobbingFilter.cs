@@ -7,17 +7,16 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTestBasedOnGlobbingFilter : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTestBasedOnGlobbingFilter()
+        public GivenDotnetTestBuildsAndRunsTestBasedOnGlobbingFilter(ITestOutputHelper log) : base(log)
         {
         }
 
-        [TestMethod]
+        [Fact]
         public void RunTestProjectWithFilterOfDll_ShouldReturnExitCodeSuccess()
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -32,12 +31,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar));
 
             // Assert that the bin folder hasn't been modified
-            Assert.AreEqual(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -50,10 +49,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [TestMethod]
+        [Fact]
         public void RunTestProjectsWithFilterOfDll_ShouldReturnExitCodeGenericFailure()
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance, "TestProject")
@@ -74,12 +73,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--test-modules", filterExpression);
 
             // Assert that the bin folder hasn't been modified
-            Assert.AreEqual(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -96,10 +95,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
-        [TestMethod]
+        [Fact]
         public void RunTestProjectWithFilterOfDllWithRootDirectory_ShouldReturnExitCodeSuccess()
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -114,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")

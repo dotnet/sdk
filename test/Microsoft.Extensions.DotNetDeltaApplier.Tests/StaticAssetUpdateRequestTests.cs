@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.HotReload.UnitTests;
+using Microsoft.DotNet.HotReload;
 
-[TestClass]
+namespace Microsoft.DotNet.Watch.UnitTests;
+
 public class StaticAssetUpdateRequestTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Roundtrip()
     {
         var initial = new StaticAssetUpdateRequest(
@@ -28,9 +29,9 @@ public class StaticAssetUpdateRequestTests
 
     private static void AssertEqual(StaticAssetUpdateRequest initial, StaticAssetUpdateRequest read)
     {
-        Assert.AreEqual(initial.Update.AssemblyName, read.Update.AssemblyName);
-        Assert.AreEqual(initial.Update.RelativePath, read.Update.RelativePath);
-        Assert.AreEqual(initial.Update.IsApplicationProject, read.Update.IsApplicationProject);
-        Assert.AreSequenceEqual(initial.Update.Contents, read.Update.Contents);
+        Assert.Equal(initial.Update.AssemblyName, read.Update.AssemblyName);
+        Assert.Equal(initial.Update.RelativePath, read.Update.RelativePath);
+        Assert.Equal(initial.Update.IsApplicationProject, read.Update.IsApplicationProject);
+        AssertEx.SequenceEqual(initial.Update.Contents, read.Update.Contents);
     }
 }

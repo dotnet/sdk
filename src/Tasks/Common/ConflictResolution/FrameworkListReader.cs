@@ -9,8 +9,6 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
     class FrameworkListReader
     {
-        private static readonly object s_cacheLock = new();
-
         private IBuildEngine4 _buildEngine;
 
         public FrameworkListReader(IBuildEngine4 buildEngine)
@@ -18,41 +16,44 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             _buildEngine = buildEngine;
         }
 
-        public IEnumerable<ConflictItem> GetConflictItems(AbsolutePath frameworkListPath, Logger log)
+        public IEnumerable<ConflictItem> GetConflictItems(string frameworkListPath, Logger log)
         {
-            if (!Path.IsPathRooted(frameworkListPath.OriginalValue))
+            if (frameworkListPath == null)
             {
-                throw new BuildErrorException(Strings.FrameworkListPathNotRooted, frameworkListPath.OriginalValue);
+                throw new ArgumentNullException(nameof(frameworkListPath));
             }
+
+            if (!Path.IsPathRooted(frameworkListPath))
+            {
+                throw new BuildErrorException(Strings.FrameworkListPathNotRooted, frameworkListPath);
+            }
+
 
             //  Need to include assembly name in the key here, since both Microsoft.NET.Build.Tasks and Microsoft.NET.Build.Extensions.Tasks share this code,
             //  but can't share the types of the ConflictItem objects.
             string? assemblyName = typeof(FrameworkListReader).GetTypeInfo().Assembly.FullName;
 
-            string objectKey = $"{assemblyName}:{nameof(FrameworkListReader)}:{frameworkListPath.OriginalValue}";
+            string objectKey = $"{assemblyName}:{nameof(FrameworkListReader)}:{frameworkListPath}";
 
             IEnumerable<ConflictItem> result;
 
-            lock (s_cacheLock)
+            object existingConflictItems = _buildEngine.GetRegisteredTaskObject(objectKey, RegisteredTaskObjectLifetime.AppDomain);
+
+            if (existingConflictItems == null)
             {
-                object existingConflictItems = _buildEngine.GetRegisteredTaskObject(objectKey, RegisteredTaskObjectLifetime.AppDomain);
+                result = LoadConflictItems(frameworkListPath, log);
 
-                if (existingConflictItems == null)
-                {
-                    result = LoadConflictItems(frameworkListPath, log);
-
-                    _buildEngine.RegisterTaskObject(objectKey, result, RegisteredTaskObjectLifetime.AppDomain, true);
-                }
-                else
-                {
-                    result = (IEnumerable<ConflictItem>)existingConflictItems;
-                }
+                _buildEngine.RegisterTaskObject(objectKey, result, RegisteredTaskObjectLifetime.AppDomain, true);
+            }
+            else
+            {
+                result = (IEnumerable<ConflictItem>)existingConflictItems;
             }
 
             return result;
         }
 
-        private static IEnumerable<ConflictItem> LoadConflictItems(AbsolutePath frameworkListPath, Logger log)
+        private static IEnumerable<ConflictItem> LoadConflictItems(string frameworkListPath, Logger log)
         {
             if (!File.Exists(frameworkListPath))
             {
@@ -78,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 if (string.IsNullOrEmpty(assemblyName))
                 {
                     string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingFrameworkListInvalidValue,
-                        frameworkListPath.OriginalValue,
+                        frameworkListPath,
                         "AssemblyName",
                         assemblyName);
                     log.LogError(errorMessage);
@@ -89,7 +90,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 if (string.IsNullOrEmpty(assemblyVersionString) || !Version.TryParse(assemblyVersionString, out assemblyVersion))
                 {
                     string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingFrameworkListInvalidValue,
-                        frameworkListPath.OriginalValue,
+                        frameworkListPath,
                         "Version",
                         assemblyVersionString);
                     log.LogError(errorMessage);

@@ -7,26 +7,25 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs : SdkTest
     {
+        public GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.15")]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/p:DisableTransitiveProjectReferences=true" });
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.15")]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
         }
 
-        [TestMethod]
-        [RequiresMSBuildVersion("17.15")]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
@@ -58,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
         private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories)
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments, [CallerMemberName] string callingMethod = "")
         {
-            var testAsset = TestAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
+            var testAsset = _testAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
 
             testAsset.Restore(Log, "1");
 
@@ -75,7 +74,6 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
-                "1.runtimeconfig.dev.json",
                  $"1{EnvironmentInfo.ExecutableExtension}"
             };
 
@@ -145,10 +143,10 @@ namespace Microsoft.NET.Build.Tests
             return (testAsset, outputDirectories);
         }
 
-        [TestMethod]
+        [Fact]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
-            var testAsset = TestAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
+            var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
 
             testAsset.Restore(Log, "1");
 
@@ -165,7 +163,6 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
-                "1.runtimeconfig.dev.json",
                 "2.dll",
                 "2.pdb",
                 $"1{EnvironmentInfo.ExecutableExtension}",

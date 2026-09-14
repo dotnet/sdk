@@ -5,21 +5,20 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests;
 
-[TestClass]
 public class CultureAwareTestProject : SdkTest
 {
     private const string TestAppName = "TestAppSimple";
 
-    public CultureAwareTestProject()
+    public CultureAwareTestProject(ITestOutputHelper log) : base(log)
     {
     }
 
-    [DataRow("en-US")]
-    [DataRow("de-DE")]
-    [TestMethod]
+    [InlineData("en-US")]
+    [InlineData("de-DE")]
+    [Theory]
     public void CanRunTestsAgainstProjectInLocale(string locale)
     {
-        var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
+        var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

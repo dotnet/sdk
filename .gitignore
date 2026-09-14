@@ -40,9 +40,6 @@ cmake/
 # Helix payload
 .dotnet.payload
 
-# dotnetup build output
-eng/dotnetup/
-
 # MSBuild Logs
 **/MSBuild_Logs/MSBuild_pid-*.failure.txt
 
@@ -54,13 +51,3 @@ eng/dotnetup/
 
 # Live Unit Testing
 *.lutconfig
-
-###############################################################################
-# Coding agents
-###############################################################################
-
-# Claude Code user-local settings
-.claude/settings.local.json
-# GitHub Copilot CLI user-local settings
-# See https://docs.github.com/copilot/reference/copilot-cli-reference/cli-config-dir-reference#configuration-file-settings
-.github/copilot/settings.local.json

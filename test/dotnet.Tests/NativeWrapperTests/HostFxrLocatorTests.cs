@@ -5,7 +5,6 @@ using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
-[TestClass]
 public class HostFxrLocatorTests
 {
     private static string BuildPath(bool isWindows, params string[] segments)
@@ -14,7 +13,7 @@ public class HostFxrLocatorTests
         return segments.Length == 0 ? root : Path.Combine(root, Path.Combine(segments));
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_WithValidFxrDir_ReturnsPath()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -33,7 +32,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_PicksHighestVersion()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -54,7 +53,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_NullOrEmptyDotnetRoot_ReturnsEmpty()
     {
         string resultNull = HostFxrLocator.ResolveHostFxrPath(
@@ -77,7 +76,7 @@ public class HostFxrLocatorTests
         resultEmpty.Should().BeEmpty();
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_MissingFxrDirectory_ReturnsEmpty()
     {
         string result = HostFxrLocator.ResolveHostFxrPath(
@@ -91,7 +90,7 @@ public class HostFxrLocatorTests
         result.Should().BeEmpty();
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_FxrDirExistsButNoHostfxrFile_ReturnsEmpty()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -109,7 +108,7 @@ public class HostFxrLocatorTests
         result.Should().BeEmpty();
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_OnMacOS_LooksForDylib()
     {
         string dotnetRoot = Path.Combine("/", "usr", "local", "share", "dotnet");
@@ -128,7 +127,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_OnLinux_LooksForSo()
     {
         string dotnetRoot = Path.Combine("/", "usr", "share", "dotnet");
@@ -147,7 +146,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_FindsPrereleaseVersionDirectory()
     {
         string dotnetRoot = Path.Combine("/", "dotnet");
@@ -166,7 +165,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_PicksHighestVersion_IncludingPrerelease()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -186,7 +185,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_PrefersStableOverPrereleaseOfSameCore()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -206,7 +205,7 @@ public class HostFxrLocatorTests
         result.Should().Be(expectedPath);
     }
 
-    [TestMethod]
+    [Fact]
     public void ResolveHostFxrPath_OrdersPrereleaseSegmentsNumerically()
     {
         string dotnetRoot = BuildPath(true, "dotnet");

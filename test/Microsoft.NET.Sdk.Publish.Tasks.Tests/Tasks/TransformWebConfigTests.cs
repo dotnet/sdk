@@ -1,18 +1,17 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
-    [TestClass]
     public class TransformWebConfigTests
     {
 
-        [TestMethod]
-        [DataRow("Web.config")]
-        [DataRow("web.config")]
-        [DataRow("web.Config")]
-        [DataRow("wEb.CoNfIg")]
-        [DataRow("WEB.CONFIG")]
+        [Theory]
+        [InlineData("Web.config")]
+        [InlineData("web.config")]
+        [InlineData("web.Config")]
+        [InlineData("wEb.CoNfIg")]
+        [InlineData("WEB.CONFIG")]
         public void TransformWebConfig_FindWebConfig(string webConfigToSearchFor)
         {
 
@@ -29,7 +28,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
                 var webConfig = transformWebConfigTask.GetWebConfigFileOrDefault(projectFile, "web.config");
 
                 //Assert
-                Assert.AreEqual(Path.Combine(projectFolder, webConfigToSearchFor), webConfig);
+                Assert.Equal(Path.Combine(projectFolder, webConfigToSearchFor), webConfig);
             }
             finally
             {
@@ -40,7 +39,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TransformWebConfig_ReturnDefaultWebConfig()
         {
             string projectFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -57,7 +56,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
                 var webConfig = transformWebConfigTask.GetWebConfigFileOrDefault(projectFile, "web.config");
 
                 //Assert
-                Assert.AreEqual(Path.Combine(projectFolder, "web.config"), webConfig);
+                Assert.Equal(Path.Combine(projectFolder, "web.config"), webConfig);
             }
             finally
             {

@@ -5,13 +5,15 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
-    [TestClass]
     public class GivenThatWeWantToPreserveCompilationContextForBuild : SdkTest
     {
+        public GivenThatWeWantToPreserveCompilationContextForBuild(ITestOutputHelper log) : base(log)
+        {
+        }
 
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void It_supports_copylocal_false_references(bool withoutCopyingRefs)
         {
             var testProject = new TestProject()
@@ -37,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(testReference);
 
-            var testAsset = TestAssetsManager.CreateTestProject(
+            var testAsset = _testAssetsManager.CreateTestProject(
                 testProject,
                 identifier: withoutCopyingRefs.ToString());
 
@@ -73,7 +75,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void It_does_not_treat_nuget_refs_as_copylocal_false()
         {
             var testProject = new TestProject()
@@ -84,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("PreserveCompilationContext", "true");
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
