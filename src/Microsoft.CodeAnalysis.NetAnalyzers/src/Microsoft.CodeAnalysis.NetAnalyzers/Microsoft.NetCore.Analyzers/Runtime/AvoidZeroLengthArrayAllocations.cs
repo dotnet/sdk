@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// Analyzer that looks for empty array allocations and recommends their replacement.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public class AvoidZeroLengthArrayAllocationsAnalyzer : DiagnosticAnalyzer
+    public sealed class AvoidZeroLengthArrayAllocationsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1825";
 
