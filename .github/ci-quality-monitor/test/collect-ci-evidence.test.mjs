@@ -28,6 +28,17 @@ import {
   selectUnprocessedFailures
 } from "../collect-ci-evidence.mjs";
 
+test("timeout evidence excludes identifiers but retains explicit timeout messages", () => {
+  const stackFrame = "at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodInfo.ExecuteInternalAsync(Object[] arguments, CancellationTokenSource timeoutTokenSource)";
+  assert.equal(classifyWorkItem(2, stackFrame).failureType, "unknown-error");
+  assert.deepEqual(summarizeHelixConsole(stackFrame).hangEvidence, []);
+
+  for (const message of ["WORKLOAD TIMED OUT", "Hang timeout expired", "TIMED_OUT", "System.TimeoutException: The operation has timed out."])
+  {
+    assert.equal(classifyWorkItem(2, message).failureType, "timeout");
+  }
+});
+
 test("CiEvidenceCollector owns one Azure client per registered pipeline", () => {
   const pipeline = {
     organization: "dnceng-public", project: "public", definitionId: 101,
