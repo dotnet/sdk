@@ -142,7 +142,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
 
                     AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
-                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
+                    return PlatformManifestReader.LoadConflictItems(manifestPath, log, BuildEngine4);
                 }) ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
