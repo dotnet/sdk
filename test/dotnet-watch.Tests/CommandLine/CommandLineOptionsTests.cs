@@ -127,6 +127,7 @@ public class CommandLineOptionsTests
         AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
     }
 
+    [TestMethod]
     [DataRow("--quiet")]
     [DataRow("--verbose")]
     public void TraceAndOtherLogLevel(string option)
