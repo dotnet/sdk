@@ -92,6 +92,8 @@ internal static class SuccessfulTestResultMessageFieldsId
     public const ushort StandardOutput = 6;
     public const ushort ErrorOutput = 7;
     public const ushort SessionUid = 8;
+    public const ushort RetryAttemptNumber = 9;
+    public const ushort IsSuperseded = 10;
 }
 
 internal static class FailedTestResultMessageFieldsId
@@ -113,6 +115,8 @@ internal static class FailedTestResultMessageFieldsId
     // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
     public const ushort Expected = 10;
     public const ushort Actual = 11;
+    public const ushort RetryAttemptNumber = 12;
+    public const ushort IsSuperseded = 13;
 }
 
 internal static class ExceptionMessageFieldsId

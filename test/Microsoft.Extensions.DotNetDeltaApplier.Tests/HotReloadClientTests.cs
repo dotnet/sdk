@@ -9,26 +9,28 @@ namespace Microsoft.DotNet.HotReload.UnitTests;
 public class HotReloadClientTests
 {
     public TestContext TestContext { get; set; } = null!;
+
     private sealed class Test : IAsyncDisposable
     {
+        public const int ProcessId = 654321;
         public readonly TestLogger Logger;
         public readonly TestLogger AgentLogger;
         public readonly DefaultHotReloadClient Client;
         private readonly CancellationTokenSource _cancellationSource;
         private readonly Task<Task> _listenerTaskFactory;
 
-        public Test(TestContext testContext, TestHotReloadAgent agent)
+        public Test(TestContext testContext, TestHotReloadAgent agent, bool hasRemoteAgent)
         {
             Logger = new TestLogger(testContext);
             AgentLogger = new TestLogger(testContext);
             var clientTransport = new NamedPipeClientTransport(Logger);
-            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", handlesStaticAssetUpdates: true, clientTransport);
+            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", transport: clientTransport, handlesStaticAssetUpdates: true, hasRemoteAgent);
 
             _cancellationSource = new CancellationTokenSource();
 
             Client.InitiateConnection(environmentVariables: [], CancellationToken.None);
             var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
-            var listener = new Listener(agentTransport, agent, log: _ => { });
+            var listener = new Listener(agentTransport, agent, ProcessId, log: _ => { });
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token), testContext.CancellationToken);
         }
 
@@ -58,10 +60,11 @@ public class HotReloadClientTests
             Capabilities = "Baseline AddMethodToExistingType AddStaticFieldToExistingType",
         };
 
-        await using var test = new Test(TestContext, agent);
+        await using var test = new Test(TestContext, agent, hasRemoteAgent: false);
 
-        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        var agentInfo = await test.Client.GetConnectedAgentInfoAsync(CancellationToken.None);
+        Assert.AreEqual(Test.ProcessId, agentInfo.LocalProcessId);
+        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], agentInfo.ManagedCodeUpdateCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: moduleId,
@@ -92,10 +95,11 @@ public class HotReloadClientTests
             ApplyManagedCodeUpdatesImpl = updates => throw new Exception("Bug!")
         };
 
-        await using var test = new Test(TestContext, agent);
+        await using var test = new Test(TestContext, agent, hasRemoteAgent: true);
 
-        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        var agentInfo = await test.Client.GetConnectedAgentInfoAsync(CancellationToken.None);
+        Assert.IsNull(agentInfo.LocalProcessId);
+        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], agentInfo.ManagedCodeUpdateCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: Guid.NewGuid(),
