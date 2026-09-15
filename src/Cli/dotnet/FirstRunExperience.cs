@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -30,9 +31,11 @@ namespace Microsoft.DotNet.Cli;
 ///  library). The one first-run action it cannot perform is workload repair, which needs the NuGet
 ///  engine. When workload repair is still pending, <see cref="Setup"/> defers the whole invocation to
 ///  the managed CLI - before writing any sentinel - so the managed CLI performs the complete first-run
-///  atomically, exactly once. Everything else (global-tools PATH, the first-time-use notice + telemetry
-///  message, the NuGet state migration, and the dev certificate) is AOT-safe and runs in-process on both
-///  paths. Subsequent invocations observe the sentinels and run fully in-process on the AOT fast path.
+///  atomically, exactly once. Localized first-run messages are also deferred because their satellite
+///  assemblies resolve relative to the managed CLI. Everything else (global-tools PATH, the English
+///  first-time-use notice + telemetry message, the NuGet state migration, and the dev certificate) is
+///  AOT-safe and runs in-process on both paths. Subsequent invocations observe the sentinels and run
+///  fully in-process on the AOT fast path.
 ///  </para>
 /// </summary>
 internal static class FirstRunExperience
@@ -90,6 +93,10 @@ internal static class FirstRunExperience
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
 
 #if CLI_AOT
+        CultureInfo uiCulture = UILanguageOverride.GetOverriddenUILanguage() ?? CultureInfo.CurrentUICulture;
+        bool localizedFirstRunPending = isFirstTimeUse
+            && !uiCulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase);
+
         // The NativeAOT binary omits only the NuGet engine needed to repair workloads. When workload
         // repair is still pending we defer this entire invocation to the managed CLI - before mutating
         // any state - so it performs the complete first-run atomically, exactly once. The workload repair
@@ -102,7 +109,7 @@ internal static class FirstRunExperience
         bool workloadRepairPending = isFirstTimeUse
             && !skipWorkloadIntegrityCheck
             && WorkloadInstallDetector.HasInstalledWorkloadsForCurrentBand();
-        if (workloadRepairPending)
+        if (localizedFirstRunPending || workloadRepairPending)
         {
             return false;
         }
