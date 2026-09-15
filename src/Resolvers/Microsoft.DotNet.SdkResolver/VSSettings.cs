@@ -9,7 +9,12 @@ using Microsoft.VisualStudio.Setup.Configuration;
 
 namespace Microsoft.DotNet.DotNetSdkResolver
 {
-    public sealed class VSSettings
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    sealed class VSSettings
     {
         private readonly object _lock = new();
         private readonly string? _settingsFilePath;
@@ -147,4 +152,3 @@ namespace Microsoft.DotNet.DotNetSdkResolver
         }
     }
 }
-

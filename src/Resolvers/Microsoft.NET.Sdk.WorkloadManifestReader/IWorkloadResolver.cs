@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public interface IWorkloadResolver
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    interface IWorkloadResolver
     {
         IEnumerable<WorkloadResolver.PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind);
         IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId);

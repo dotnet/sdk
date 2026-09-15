@@ -3,7 +3,12 @@
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public class SdkResolutionResult
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class SdkResolutionResult
     {
         /// <summary>
         /// Path to .NET Core SDK selected by hostfxr (e.g. C:\Program Files\dotnet\sdk\2.1.300).

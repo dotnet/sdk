@@ -3,5 +3,10 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public record WorkloadRootPath(string? Path, bool Installable);
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    record WorkloadRootPath(string? Path, bool Installable);
 }

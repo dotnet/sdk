@@ -6,7 +6,12 @@ using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class WorkloadManifestReader
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    partial class WorkloadManifestReader
     {
         public static WorkloadManifest ReadWorkloadManifest(string manifestId, Stream manifestStream, Stream? localizationStream, string manifestPath)
         {

@@ -8,7 +8,12 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public static class NETCoreSdkResolverNativeWrapper
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    static class NETCoreSdkResolverNativeWrapper
     {
         public static SdkResolutionResult ResolveSdk(
             string? dotnetExeDirectory,
