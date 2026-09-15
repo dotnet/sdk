@@ -1294,6 +1294,124 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
+        [DataRow("", "", "")]
+        [DataRow(", string first", "", ", \"hello\"")]
+        [DataRow(", string first, string second", "", ", \"hello\", \"world\"")]
+        [DataRow(", int prefix", "int prefix, ", ", 0")]
+        [DataRow(", int prefix, string first", "int prefix, ", ", 0, \"hello\"")]
+        [DataRow(", int prefix, string first, string second", "int prefix, ", ", 0, \"hello\", \"world\"")]
+        [DataRow(", string[] args", "", ", new string[] { \"hello\", \"world\" }")]
+        public async Task FixedArgumentsToGenericParams_OffersFixer_CS(string parameters, string prefix, string arguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type{{parameters}}) {}
+                    void M<T>({{prefix}}params string[] args) {}
+                    void Test()
+                    {
+                        [|M(typeof(C){{arguments}})|];
+                    }
+                }
+                """;
+            string fixedSource = $$"""
+                class C
+                {
+                    void M(System.Type type{{parameters}}) {}
+                    void M<T>({{prefix}}params string[] args) {}
+                    void Test()
+                    {
+                        M<C>({{arguments.TrimStart(',', ' ')}});
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow(", int value", "", ", 1")]
+        [DataRow(", string first, int second", "", ", \"hello\", 1")]
+        [DataRow("", "int prefix, ", "")]
+        [DataRow(", int prefix", "int prefix, int required, ", ", 0")]
+        public async Task FixedArgumentsToGenericParams_NoDiagnostic_CS(string parameters, string prefix, string arguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type{{parameters}}) {}
+                    void M<T>({{prefix}}params string[] args) {}
+                    void Test()
+                    {
+                        M(typeof(C){{arguments}});
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task GenericParamsCompetingOverloadHasIncompatibleReturn_NoDiagnostic_CS()
+        {
+            string source = """
+                class C
+                {
+                    string M(System.Type type, string value) => "";
+                    string M<T>(params string[] args) => "";
+                    object M<T>(string value) => null;
+                    string Test() => M(typeof(C), "hello");
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task IncompatibleReturnTypeWithSelector_OffersFixerForExpressionStatement_CS()
+        {
+            string source = """
+                class C
+                {
+                    int M(System.Type type) => 0;
+                    string M<T>() => "";
+                    void Test()
+                    {
+                        [|M(typeof(C))|];
+                    }
+                }
+                """;
+            string fixedSource = """
+                class C
+                {
+                    int M(System.Type type) => 0;
+                    string M<T>() => "";
+                    void Test()
+                    {
+                        M<C>();
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task IncompatibleReturnTypeWithSelector_NoDiagnosticForConsumedResult_CS()
+        {
+            string source = """
+                class C
+                {
+                    int M(System.Type type) => 0;
+                    string M<T>() => "";
+                    int Test() => M(typeof(C));
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
         public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_CS()
         {
             string source = """
@@ -2622,6 +2740,134 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 """;
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("", "", "")]
+        [DataRow(", first As String", "", ", \"hello\"")]
+        [DataRow(", first As String, second As String", "", ", \"hello\", \"world\"")]
+        [DataRow(", prefix As Integer", "prefix As Integer, ", ", 0")]
+        [DataRow(", prefix As Integer, first As String", "prefix As Integer, ", ", 0, \"hello\"")]
+        [DataRow(", prefix As Integer, first As String, second As String", "prefix As Integer, ", ", 0, \"hello\", \"world\"")]
+        [DataRow(", args As String()", "", ", New String() { \"hello\", \"world\" }")]
+        public async Task FixedArgumentsToGenericParams_OffersFixer_VB(string parameters, string prefix, string arguments)
+        {
+            string source = $$"""
+                Class C
+                    Sub M(type As System.Type{{parameters}}) : End Sub
+                    Sub M(Of T)({{prefix}}ParamArray args As String()) : End Sub
+                    Sub Test()
+                        [|M(GetType(C){{arguments}})|]
+                    End Sub
+                End Class
+                """;
+            string fixedSource = $$"""
+                Class C
+                    Sub M(type As System.Type{{parameters}}) : End Sub
+                    Sub M(Of T)({{prefix}}ParamArray args As String()) : End Sub
+                    Sub Test()
+                        M(Of C)({{arguments.TrimStart(',', ' ')}})
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow(", value As Integer", "", ", 1")]
+        [DataRow(", first As String, second As Integer", "", ", \"hello\", 1")]
+        [DataRow("", "prefix As Integer, ", "")]
+        [DataRow(", prefix As Integer", "prefix As Integer, required As Integer, ", ", 0")]
+        public async Task FixedArgumentsToGenericParams_NoDiagnostic_VB(string parameters, string prefix, string arguments)
+        {
+            string source = $$"""
+                Class C
+                    Sub M(type As System.Type{{parameters}}) : End Sub
+                    Sub M(Of T)({{prefix}}ParamArray args As String()) : End Sub
+                    Sub Test()
+                        M(GetType(C){{arguments}})
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task GenericParamsCompetingOverloadHasIncompatibleReturn_NoDiagnostic_VB()
+        {
+            string source = """
+                Class C
+                    Function M(type As System.Type, value As String) As String
+                        Return ""
+                    End Function
+                    Function M(Of T)(ParamArray args As String()) As String
+                        Return ""
+                    End Function
+                    Function M(Of T)(value As String) As Object
+                        Return Nothing
+                    End Function
+                    Function Test() As String
+                        Return M(GetType(C), "hello")
+                    End Function
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task IncompatibleReturnTypeWithSelector_OffersFixerForExpressionStatement_VB()
+        {
+            string source = """
+                Class C
+                    Function M(type As System.Type) As Integer
+                        Return 0
+                    End Function
+                    Function M(Of T)() As String
+                        Return ""
+                    End Function
+                    Sub Test()
+                        [|M(GetType(C))|]
+                    End Sub
+                End Class
+                """;
+            string fixedSource = """
+                Class C
+                    Function M(type As System.Type) As Integer
+                        Return 0
+                    End Function
+                    Function M(Of T)() As String
+                        Return ""
+                    End Function
+                    Sub Test()
+                        M(Of C)()
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task IncompatibleReturnTypeWithSelector_NoDiagnosticForConsumedResult_VB()
+        {
+            string source = """
+                Class C
+                    Function M(type As System.Type) As Integer
+                        Return 0
+                    End Function
+                    Function M(Of T)() As String
+                        Return ""
+                    End Function
+                    Function Test() As Integer
+                        Return M(GetType(C))
+                    End Function
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [TestMethod]
