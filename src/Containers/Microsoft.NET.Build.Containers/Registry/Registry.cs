@@ -91,7 +91,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider)
     { }
 
     internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
@@ -100,7 +100,7 @@ internal sealed class Registry
 
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
@@ -595,12 +595,23 @@ internal sealed class Registry
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
-        => PushAsync(builtImage, source, destination, pushTags: true, cancellationToken);
+        => PushAsync(builtImage, source, destination, noCache: false, cancellationToken);
 
-    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, CancellationToken cancellationToken)
+    public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool noCache, CancellationToken cancellationToken)
+        => PushAsync(builtImage, source, destination, pushTags: true, noCache, cancellationToken);
+
+    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, bool noCache, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Registry destinationRegistry = destination.RemoteRegistry!;
+
+        bool manifestExists = !noCache &&
+            await _registryAPI.Manifest.ExistsAsync(destination.Repository, builtImage.ManifestDigest, cancellationToken).ConfigureAwait(false);
+
+        if (manifestExists)
+        {
+            _logger.LogInformation(Strings.Registry_ManifestExists, builtImage.ManifestDigest, destination.Repository);
+        }
 
         Func<Descriptor, Task> uploadLayerFunc = async (descriptor) =>
         {
@@ -634,25 +645,28 @@ internal sealed class Registry
             }
         };
 
-        if (SupportsParallelUploads)
+        if (!manifestExists)
         {
-            await Task.WhenAll(builtImage.LayerDescriptors.Select(descriptor => uploadLayerFunc(descriptor))).ConfigureAwait(false);
-        }
-        else
-        {
-            foreach (var descriptor in builtImage.LayerDescriptors)
+            if (SupportsParallelUploads)
             {
-                await uploadLayerFunc(descriptor).ConfigureAwait(false);
+                await Task.WhenAll(builtImage.LayerDescriptors.Select(descriptor => uploadLayerFunc(descriptor))).ConfigureAwait(false);
             }
-        }
+            else
+            {
+                foreach (var descriptor in builtImage.LayerDescriptors)
+                {
+                    await uploadLayerFunc(descriptor).ConfigureAwait(false);
+                }
+            }
 
-        cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
-        {
-            var configDigest = builtImage.ImageDigest!;
-            _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
-            await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation(Strings.Registry_ConfigUploaded);
+            cancellationToken.ThrowIfCancellationRequested();
+            using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
+            {
+                var configDigest = builtImage.ImageDigest!;
+                _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
+                await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation(Strings.Registry_ConfigUploaded);
+            }
         }
 
         // Tags can refer to an image manifest or an image manifest list.
@@ -668,7 +682,7 @@ internal sealed class Registry
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
-        else
+        else if (!manifestExists)
         {
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
             await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);

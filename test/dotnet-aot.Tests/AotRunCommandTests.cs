@@ -16,6 +16,9 @@ namespace Microsoft.DotNet.Cli.Tests;
 /// Tests Native AOT file-based run planning and launch invocation construction.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(NativeEntryPoint))]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.EnvironmentVariables)]
 public class AotRunCommandTests
 {
     /// <summary>Verifies that an explicit no-build invocation reaches the launcher without prevalidating output.</summary>

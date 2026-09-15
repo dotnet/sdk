@@ -51,10 +51,13 @@ internal sealed class WorkloadSearchVersionsCommandDefinition : WorkloadCommandD
 
         Validators.Add(result =>
         {
-            var versionArgument = result.GetValue(WorkloadVersionArgument);
-            if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
+            string[] versionArguments = result.GetValue(WorkloadVersionArgument)?.ToArray() ?? [];
+            bool validManifestVersions = versionArguments.All(version => version.Contains('@'));
+            bool validWorkloadSetVersion = versionArguments is [var version] && WorkloadSetVersion.IsWorkloadSetPackageVersion(version);
+
+            if (!validManifestVersions && !validWorkloadSetVersion)
             {
-                result.AddError(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
+                result.AddError(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArguments)));
             }
         });
     }

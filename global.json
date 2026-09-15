@@ -24,11 +24,11 @@
     }
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26405.103",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26405.103",
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26410.101",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26410.101",
     "Microsoft.Build.NoTargets": "3.7.134",
     "Microsoft.Build.Traversal": "4.1.82",
-    "Microsoft.WixToolset.Sdk": "6.0.3-dotnet.6",
-    "MSTest.Sdk": "4.4.0-preview.26409.6"
+    "Microsoft.WixToolset.Sdk": "6.0.3-dotnet.14",
+    "MSTest.Sdk": "4.4.0-preview.26429.4"
   }
 }

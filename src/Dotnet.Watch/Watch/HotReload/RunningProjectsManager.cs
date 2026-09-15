@@ -149,7 +149,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                 if (updatesToApply.Any() && clients.IsManagedAgentSupported)
                 {
                     await await clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(updatesToApply),
+                        ToManagedCodeUpdates(clients, updatesToApply),
                         applyOperationCancellationToken: processExitedSource.Token,
                         cancellationToken: processCommunicationCancellationToken);
                 }
@@ -304,7 +304,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
                     // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
                     var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(builder.ManagedCodeUpdates),
+                        ToManagedCodeUpdates(runningProject.Clients, builder.ManagedCodeUpdates),
                         applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                         cancellationToken);
 
@@ -474,6 +474,11 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         return relaunchOperations;
     }
 
-    private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(IEnumerable<HotReloadService.Update> updates)
-        => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
+    private static ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> ToManagedCodeUpdates(HotReloadClients clients, IEnumerable<HotReloadService.Update> updates)
+    {
+        var updatesForClient = updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities));
+
+        // The updates are the same for all clients since the debugger isn't attached:
+        return [.. Enumerable.Repeat(updatesForClient.ToImmutableArray(), clients.Clients.Length)];
+    }
 }

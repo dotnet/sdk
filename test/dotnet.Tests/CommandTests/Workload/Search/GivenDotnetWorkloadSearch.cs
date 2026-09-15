@@ -36,6 +36,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 
         [TestMethod]
         [DataRow("--invalidArgument")]
+        [DataRow("-foo bar")]
         [DataRow("notAVersion")]
         [DataRow("1.2")] // too short
         [DataRow("1.2.3.4.5")] // too long
@@ -47,7 +48,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "9.0.100", workloadResolver);
             var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Should().Throw<CommandParsingException>();
+            command.Should().Throw<CommandParsingException>()
+                .WithMessage(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, argument));
         }
 
         [TestMethod]

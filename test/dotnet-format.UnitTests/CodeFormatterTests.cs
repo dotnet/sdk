@@ -723,10 +723,7 @@ Greeter.Greeter() -> void";
             bool noRestore = false,
             bool saveFormattedFiles = false)
         {
-            var currentDirectory = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
-
-            var workspacePath = Path.GetFullPath(workspaceFilePath);
+            var workspacePath = Path.GetFullPath(workspaceFilePath, TestProjectsPathHelper.GetProjectsDirectory());
 
             WorkspaceType workspaceType;
             if (Directory.Exists(workspacePath))
@@ -761,7 +758,6 @@ Greeter.Greeter() -> void";
                 BinaryLogPath: null,
                 TargetFramework: null);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
-            Environment.CurrentDirectory = currentDirectory;
 
             var log = logger.GetLog();
 

@@ -1390,12 +1390,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1475,12 +1472,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>A</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1551,12 +1545,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1626,12 +1617,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -2195,9 +2183,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
+        CSharpCompilerCommand.SdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        CSharpCompilerCommand.NuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -2205,7 +2192,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var nuGetPackageFilePaths = new List<string>();
         bool referenceSpreadInserted = false;
         bool analyzerSpreadInserted = false;
-        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
+        const string NetCoreAppRefPackPath = "/microsoft.netcore.app.ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -2263,23 +2250,23 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             string msbuildArgToVerify = rewritten;
 
             // Use variable SDK path.
-            if (rewritten.Contains(sdkPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.SdkPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(sdkPath, "{SdkPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.SdkPath, "{" + nameof(CSharpCompilerCommand.SdkPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable .NET root path.
-            if (rewritten.Contains(dotNetRootPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.DotNetRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(dotNetRootPath, "{DotNetRootPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.DotNetRootPath, "{" + nameof(CSharpCompilerCommand.DotNetRootPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable NuGet cache path.
-            if (rewritten.Contains(nuGetCachePath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.NuGetCachePath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(nuGetCachePath, "{NuGetCachePath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.NuGetCachePath, "{" + nameof(CSharpCompilerCommand.NuGetCachePath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
                 fromNuGetPackage = true;
             }
