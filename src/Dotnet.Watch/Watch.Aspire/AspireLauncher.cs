@@ -20,7 +20,7 @@ internal abstract class AspireLauncher
         EnvironmentOptions = environmentOptions;
         Console = new PhysicalConsole(environmentOptions.TestFlags);
         Reporter = new ConsoleReporter(Console, environmentOptions.LogMessagePrefix, environmentOptions.SuppressEmojis);
-        LoggerFactory = new LoggerFactory(Reporter, environmentOptions.CliLogLevel ?? globalOptions.LogLevel);
+        LoggerFactory = new LoggerFactory(Reporter, globalOptions.GetEffectiveLogLevel(environmentOptions));
         Logger = LoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
     }
 
