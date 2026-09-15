@@ -64,7 +64,9 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
     [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Build_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}")
+            .WithProjectChanges(project =>
+                project.Descendants().Single(e => e.Name.LocalName == "TargetFramework").Value = DefaultTfm);
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
         FingerprintUserJavascriptAssets(fingerprintUserJavascriptAssets);
 
@@ -81,7 +83,9 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
     [TestMethod]
     public void Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));
+        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions))
+            .WithProjectChanges(project =>
+                project.Descendants().Single(e => e.Name.LocalName == "TargetFramework").Value = DefaultTfm);
         EnableDefaultDocumentAndSpaFallback();
         ReplaceStringInIndexHtml(ProjectDirectory, "main.js", "main#[.{fingerprint}].js");
         FingerprintUserJavascriptAssets(true);
@@ -98,7 +102,9 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
     [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Publish_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}")
+            .WithProjectChanges(project =>
+                project.Descendants().Single(e => e.Name.LocalName == "TargetFramework").Value = DefaultTfm);
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
         FingerprintUserJavascriptAssets(fingerprintUserJavascriptAssets);
 
@@ -117,7 +123,9 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
     [TestMethod]
     public void Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));
+        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions))
+            .WithProjectChanges(project =>
+                project.Descendants().Single(e => e.Name.LocalName == "TargetFramework").Value = DefaultTfm);
         EnableDefaultDocumentAndSpaFallback();
         ReplaceStringInIndexHtml(ProjectDirectory, "main.js", "main#[.{fingerprint}].js");
         FingerprintUserJavascriptAssets(true);

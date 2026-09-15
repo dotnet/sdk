@@ -31,6 +31,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v10.0" DisplayName=".NET 10.0" Alias="net10.0" />
         <!-- NET11TFM add condition for which VS version to light up net11 targeting in -->
         <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v11.0" DisplayName=".NET 11.0" Alias="net11.0" />
+        <!-- NetTFMUpdate: Add a VS version condition when net12.0 support is defined. -->
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v12.0" DisplayName=".NET 12.0" Alias="net12.0" />
     </ItemGroup>
 
     <!-- VS retargeting list: conditional inclusion ensures customers using new SDKs with older VS versions do not see

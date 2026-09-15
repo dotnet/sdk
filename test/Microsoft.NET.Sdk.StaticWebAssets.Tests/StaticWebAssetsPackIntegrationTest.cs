@@ -773,11 +773,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{DefaultTfm};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{DefaultTfm}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
@@ -849,11 +849,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{DefaultTfm};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{DefaultTfm}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
@@ -927,11 +927,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{DefaultTfm};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{DefaultTfm}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>

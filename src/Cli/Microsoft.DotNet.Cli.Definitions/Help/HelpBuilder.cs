@@ -403,7 +403,9 @@ public partial class HelpBuilder
                     displayOptionTitle = parentCommand.Options.Any(x => x.Recursive && !x.Hidden);
                 }
 
-                yield return parentCommand.Name;
+                yield return parentCommand is RootCommand rootCommand
+                    ? rootCommand.HelpName ?? rootCommand.Name
+                    : parentCommand.Name;
 
                 if (parentCommand.Arguments.Any())
                 {
