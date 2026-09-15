@@ -1205,6 +1205,95 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
+        [DataRow("object", "object", "\"hello\"")]
+        [DataRow("object[]", "object[]", "new object[] { \"hello\" }")]
+        public async Task ExpandedParamsToNonParams_NoDiagnostic_CS(string elementType, string parameterType, string arguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    static object M(System.Type type, params {{elementType}}[] args) => M<object>(args);
+                    static object M<T>({{parameterType}} args) => args;
+                    static object Test() => M(typeof(C), {{arguments}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(", \"hello\"")]
+        [DataRow(", \"hello\", \"world\"")]
+        public async Task ExpandedParamsWithDifferentArrayType_NoDiagnostic_CS(string arguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    static object M(System.Type type, params string[] args) => M<object>(args);
+                    static object M<T>(params object[] args) => args;
+                    static object Test() => M(typeof(C){{arguments}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("object", "new object[] { \"hello\" }")]
+        [DataRow("object[]", "new object[] { \"hello\" }")]
+        [DataRow("params object[]", "new object[] { \"hello\" }")]
+        [DataRow("params object[]", "new string[] { \"hello\" }")]
+        public async Task ExplicitParamsArrayIsPreserved_OffersFixer_CS(string parameterType, string argument)
+        {
+            string source = $$"""
+                class C
+                {
+                    static object M(System.Type type, params object[] args) => M<object>(args);
+                    static object M<T>({{parameterType}} args) => args;
+                    static object Test() => [|M(typeof(C), {{argument}})|];
+                }
+                """;
+            string fixedSource = $$"""
+                class C
+                {
+                    static object M(System.Type type, params object[] args) => M<object>(args);
+                    static object M<T>({{parameterType}} args) => args;
+                    static object Test() => M<C>({{argument}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(", \"hello\"")]
+        [DataRow(", \"hello\", \"world\"")]
+        [DataRow(", (object)new string[] { \"hello\" }")]
+        public async Task ExpandedParamsWithSameArrayType_OffersFixer_CS(string arguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    static object M(int prefix, System.Type type, params object[] args) => M<object>(prefix, args);
+                    static object M<T>(int prefix, params object[] args) => args;
+                    static object Test() => [|M(0, typeof(C){{arguments}})|];
+                }
+                """;
+            string fixedSource = $$"""
+                class C
+                {
+                    static object M(int prefix, System.Type type, params object[] args) => M<object>(prefix, args);
+                    static object M<T>(int prefix, params object[] args) => args;
+                    static object Test() => M<C>(0{{arguments}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
         public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_CS()
         {
             string source = """
@@ -2410,6 +2499,125 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         Dim factory = New Factory()
                         Dim value As Object = factory.Create(Of SampleClass)("hello", "world")
                     End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("Object", "Object", "\"hello\"")]
+        [DataRow("Object()", "Object()", "New Object() { \"hello\" }")]
+        public async Task ExpandedParamsToNonParams_NoDiagnostic_VB(string elementType, string parameterType, string arguments)
+        {
+            string source = $$"""
+                Class C
+                    Shared Function M(type As System.Type, ParamArray args As {{elementType}}()) As Object
+                        Return M(Of Object)(args)
+                    End Function
+                    Shared Function M(Of T)(args As {{parameterType}}) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return M(GetType(C), {{arguments}})
+                    End Function
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(", \"hello\"")]
+        [DataRow(", \"hello\", \"world\"")]
+        public async Task ExpandedParamsWithDifferentArrayType_NoDiagnostic_VB(string arguments)
+        {
+            string source = $$"""
+                Class C
+                    Shared Function M(type As System.Type, ParamArray args As String()) As Object
+                        Return M(Of Object)(args)
+                    End Function
+                    Shared Function M(Of T)(ParamArray args As Object()) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return M(GetType(C){{arguments}})
+                    End Function
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("args As Object", "New Object() { \"hello\" }")]
+        [DataRow("args As Object()", "New Object() { \"hello\" }")]
+        [DataRow("ParamArray args As Object()", "New Object() { \"hello\" }")]
+        [DataRow("ParamArray args As Object()", "New String() { \"hello\" }")]
+        public async Task ExplicitParamsArrayIsPreserved_OffersFixer_VB(string parameter, string argument)
+        {
+            string source = $$"""
+                Class C
+                    Shared Function M(type As System.Type, ParamArray args As Object()) As Object
+                        Return M(Of Object)(args)
+                    End Function
+                    Shared Function M(Of T)({{parameter}}) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return [|M(GetType(C), {{argument}})|]
+                    End Function
+                End Class
+                """;
+            string fixedSource = $$"""
+                Class C
+                    Shared Function M(type As System.Type, ParamArray args As Object()) As Object
+                        Return M(Of Object)(args)
+                    End Function
+                    Shared Function M(Of T)({{parameter}}) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return M(Of C)({{argument}})
+                    End Function
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(", \"hello\"")]
+        [DataRow(", \"hello\", \"world\"")]
+        [DataRow(", DirectCast(New String() { \"hello\" }, Object)")]
+        public async Task ExpandedParamsWithSameArrayType_OffersFixer_VB(string arguments)
+        {
+            string source = $$"""
+                Class C
+                    Shared Function M(prefix As Integer, type As System.Type, ParamArray args As Object()) As Object
+                        Return M(Of Object)(prefix, args)
+                    End Function
+                    Shared Function M(Of T)(prefix As Integer, ParamArray args As Object()) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return [|M(0, GetType(C){{arguments}})|]
+                    End Function
+                End Class
+                """;
+            string fixedSource = $$"""
+                Class C
+                    Shared Function M(prefix As Integer, type As System.Type, ParamArray args As Object()) As Object
+                        Return M(Of Object)(prefix, args)
+                    End Function
+                    Shared Function M(Of T)(prefix As Integer, ParamArray args As Object()) As Object
+                        Return args
+                    End Function
+                    Shared Function Test() As Object
+                        Return M(Of C)(0{{arguments}})
+                    End Function
                 End Class
                 """;
 
