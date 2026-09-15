@@ -114,6 +114,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Contain("Microsoft.Testing.Platform");
+        }
+
+        [TestMethod]
         public void MTPCommandDoesNotDuplicateNoBannerOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
