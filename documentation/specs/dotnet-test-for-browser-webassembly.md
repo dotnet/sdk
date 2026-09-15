@@ -73,9 +73,15 @@ The prototype proves that:
 7. The package can capture bounded browser console, page-error,
    request-failure, crash, host-output, and cleanup diagnostics.
 8. The package wraps only SDK-marked test invocations with HTTP bootstrap
-   contract version 1, preserving ordinary run and unmarked host queries.
+   contract version 1 and a unique invocation ID, preserving ordinary run and
+   unmarked host queries.
 9. Unsupported file input/output options fail before host or browser launch,
    rather than treating browser VFS files as physical host artifacts.
+10. SDK-reserved evaluation globals cannot be overridden by differently cased
+    user properties; invocation-specific launcher settings do not collide.
+11. Cancellation delivered to the launcher after browser startup interrupts
+    its completion wait and enters cleanup without waiting for the full test
+    timeout.
 
 The locally packed prototype is approximately 200 MB, varying by build
 configuration. This is a measured prototype size, not a product-size promise
@@ -103,14 +109,19 @@ are relative to `src/Platform/Microsoft.Testing.Platform.Browser/`.
 | Fatal page integration errors and late host/argument wrapping fixes | `microsoft/testfx` commits `50932dcdd` and `760ee9e3b6d5b57bf78caf74cd2f098e17b668bd`: `ChromiumBrowser.cs`, `BrowserLauncherOptions.cs`, `buildMultiTargeting/Microsoft.Testing.Platform.Browser.After.targets` |
 | SDK invocation markers | `dotnet/sdk` commit `72f63c5add8f20c9577de7c6a67c1f2d0a2aef72`: `src/Cli/dotnet/Commands/Test/CliConstants.cs`, `src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs` |
 | Implemented invocation/version gate and unsupported preview options | `microsoft/testfx` commit `89beb277539699e4842674d79d443259e3d6f37a`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.After.targets`, `BrowserLauncherOptions.cs`, `PACKAGE.md` |
+| Reserved evaluation-global markers and unique invocation ID | `dotnet/sdk` commit `03c8d0a7d91f3bf1b6a1170d5a716a4c5471f9e3`: `src/Cli/dotnet/Commands/Test/CliConstants.cs`, `src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs`, `test/dotnet.Tests/CommandTests/Test/GivenDotnetTestBuildsAndRunsTests.cs` |
+| Final real-consumer invocation | Same SDK snapshot: `test/TestAssets/TestProjects/BlazorWasmTestApp/BlazorWasmTestApp.csproj`, `poc/browser-wasm-unit-tests/run-dotnet-test.mjs`, `poc/browser-wasm-unit-tests/run-browser-tests.mjs` |
+| Invocation-specific configuration and linked launcher cancellation | `microsoft/testfx` commit `fc15c640ea620dbd7330eb2e8e35afbc39144cf7`: `buildMultiTargeting/Microsoft.Testing.Platform.Browser.After.targets`, `buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets`, `BrowserRunMonitor.cs`, `Program.cs`, `PACKAGE.md` |
 
-The latest TestFX snapshot above supersedes the earlier implementation
-snapshots where behavior changed. Maintained coverage was reported as 49
-passing unit tests with two Windows-skipped cases, eight passing acceptance
-tests, and successful full packing. These are reported local results, not a
-cross-platform support or cancellation guarantee; non-Windows CI evidence
-remains outstanding. The prototype sources are not part of this
-documentation-only PR.
+The final SDK `03c8d0a7d9` and TestFX `fc15c640` snapshots supersede the earlier
+implementation snapshots where behavior changed. Earlier TestFX `89beb277`
+coverage was reported as 49 passing unit tests with two Windows-skipped cases,
+eight passing acceptance tests, and successful full packing. The final SDK
+contract test, real package execution/discovery/filtering, unsupported-results
+rejection, and standalone clean rebuild were also reported passing. These
+are reported local results, not a cross-platform support guarantee;
+non-Windows CI evidence remains outstanding. The prototype sources are not
+part of this documentation-only PR.
 
 ### Proposed product
 
@@ -245,16 +256,21 @@ The SDK/package preview contract uses these exact MSBuild properties:
 | --- | --- |
 | `DotnetTestInvocation=true` | Marks the SDK's MTP test invocation, not an ordinary run or standalone host query. |
 | `DotnetTestHttpBootstrapVersion=1` | Declares support for the launcher bootstrap contract; it is not the MTP wire-protocol version or browser page API version. |
+| `DotnetTestInvocationId` | A fresh 32-character hexadecimal GUID for each SDK project evaluation, used to isolate launcher configuration filenames. |
 
 These are SDK-supplied invocation properties, not project opt-ins or
-credentials. They must be evaluation-global for the test project instance
-before imports and `ComputeRunArguments` are evaluated. The SDK work starting
-at `72f63c5add` adds the markers; evaluation-global placement is the SDK
-follow-up to that initial execution-time implementation.
+credentials. SDK `03c8d0a7d9` supplies them as reserved evaluation globals
+before imports and `ComputeRunArguments` are evaluated. Its case-insensitive
+property dictionary preserves the reserved values when merging user-supplied
+or collection globals, including mixed-case override attempts. The ID is
+generated with `Guid.NewGuid().ToString("N")`; it is not an authentication token.
+This replaces the execution-time marker assignment in `72f63c5add`.
 
 With `TestingPlatformBrowserEnabled=true` and a browser RID, the package
 validates a marked invocation and rejects a missing bootstrap version or any
-value other than `1` with an actionable MSBuild diagnostic. An absent or false
+value other than `1` with an actionable MSBuild diagnostic. It also rejects
+an absent invocation ID or one that does not match `^[0-9A-Fa-f]{32}$` before
+capturing or replacing the host command. An absent or false
 `DotnetTestInvocation` leaves the framework command unchanged, even if a
 bootstrap version was supplied. An older SDK that supplies neither marker
 does not activate this launcher; the version error is not a universal
@@ -287,13 +303,21 @@ selected and adds no test routes or middleware.
 The invocation gate is implemented, including maintained ordinary-run,
 plain-query, bootstrap-version, and multi-target activation coverage. Late
 framework host providers and quoted, empty, and multiline arguments are also
-covered. Package activation and SDK marker production are separate contracts:
-the TestFX acceptance tests explicitly supply the two properties, so those
-tests alone do not prove that an SDK automatically supplies them.
+covered. Package activation and SDK marker production have separate coverage:
+TestFX acceptance tests explicitly supply the invocation/version/ID properties,
+while the SDK contract regression verifies automatic reserved values despite
+mixed-case overrides. The real consumer uses `dotnet test --project` and an
+explicit `browser-wasm` RID. Its validation harness uses a run-local linked
+redist SDK overlay rather than mutating the shared redist installation.
 
-The launcher settings file remains under the project's intermediate path.
-Concurrent invocations of the same project/output path require separate
-validation; invocation gating is not evidence of per-run file isolation.
+The package writes
+`Microsoft.Testing.Platform.Browser.$(DotnetTestInvocationId).launch` beneath
+the project's intermediate path. Distinct SDK evaluations therefore use
+distinct settings files even for the same project/output path. Maintained
+acceptance coverage creates concurrent queries with different IDs and checks
+that their arguments remain isolated. MSBuild `Clean` removes both the legacy
+fixed-name file and invocation-specific files; this is not a claim of
+per-run deletion or isolation for unrelated build outputs.
 
 ## Host readiness
 
@@ -617,16 +641,20 @@ feature; user extension arguments are not automatically path-translated.
 
 ## Cancellation
 
-Cooperative browser cancellation is not implemented by the prototype. The SDK
-has force-kill paths and the launcher has startup/completion deadlines and
-disposal paths, but their presence does not prove end-to-end cancellation.
-In the inspected TestFX `Program.cs` at `89beb277`, the running-test wait
-uses a separate cancellation source not linked to the Ctrl+C source used for
-startup. Outer cancellation or forced termination must reach every launcher
-phase before preview release; this is separate from cooperative MTP
-cancellation, which may remain out of the preview contract. Force-killing the
-launcher also cannot be assumed to execute its `finally` blocks. Neither
-approach can ask browser MTP to flush a graceful final summary.
+Launcher-wait cancellation is implemented in TestFX `fc15c640`.
+`Program.cs` passes its run cancellation token to `BrowserRunMonitor.WaitAsync`,
+which links that token to the browser-completion, host-exit, and browser-exit
+waits. Cancellation delivered after browser startup exits the completion race
+and enters the existing disposal paths instead of waiting for the configured
+completion timeout. A unit regression exercises cancellation of the monitor's
+long-running waits and requires prompt termination.
+
+This closes the unlinked running-test wait in `89beb277`; it does not add
+cooperative managed MTP cancellation. The SDK retains force-kill paths, and
+the launcher retains startup/completion deadlines and cleanup. Force-killing
+the launcher cannot be assumed to execute its `finally` blocks. Neither
+launcher cancellation nor force-kill asks browser MTP to flush a graceful
+final summary.
 
 A future design may use SDK-to-launcher local control followed by Playwright
 evaluation of a versioned page/MTP cancellation hook. It does not require a
@@ -642,7 +670,8 @@ cooperative cancellation is deferred.
 
 - Existing non-browser projects remain unchanged.
 - Launcher wrapping requires a browser RID, the enabled package, and
-  `DotnetTestInvocation=true` with `DotnetTestHttpBootstrapVersion=1`.
+  `DotnetTestInvocation=true` with `DotnetTestHttpBootstrapVersion=1` and a
+  valid, unique `DotnetTestInvocationId`.
   Ordinary run/plain queries retain the framework host.
 - The package consumes the evaluated project's host instead of requiring one
   SDK-owned host implementation.
@@ -650,8 +679,9 @@ cooperative cancellation is deferred.
   hosts may use console readiness as a compatibility fallback.
 - Framework-owned pages validate browser page API version 1; optional
   capability negotiation is future work.
-- A marked invocation with missing/unsupported bootstrap version fails before
-  launch; an SDK with no invocation marker does not activate wrapping.
+- A marked invocation with missing/unsupported bootstrap version or
+  missing/malformed invocation ID fails before launch; an SDK with no
+  invocation marker does not activate wrapping.
   MTP protocol negotiation remains independent.
 - The package's Playwright and Node payload can be serviced independently of
   the .NET SDK.
@@ -680,14 +710,19 @@ Implemented in the cross-repository prototype:
 - machine-readable launch-info support plus console readiness fallback;
 - SDK-marked invocation/bootstrap-version validation and ordinary-run
   preservation;
+- reserved evaluation-global markers and a fresh invocation ID, with
+  mixed-case override protection;
+- invocation-specific launcher configuration and MSBuild cleanup;
+- linked launcher cancellation during the running-test wait;
 - pre-launch rejection of the file/report/coverage options listed above;
 - private launch-info directories, same-origin URL resolution, fatal page
   integration-error handling, and late host/argument wrapping fixes.
 
 ### Phase 1: shipment and platform validation
 
-The implemented invocation and unsupported-option gates are no longer open
-design tasks. Remaining shipment work is:
+The invocation, configuration-isolation, launcher-wait cancellation, and
+unsupported-option gates are implemented, not open design tasks. Remaining
+shipment work is:
 
 - publish reviewable source and version the optional package;
 - publish the compatible SDK/TestFX version matrix, including the SDK's
@@ -696,13 +731,13 @@ design tasks. Remaining shipment work is:
 - validate offline restore, source-build, VMR, signing, and servicing;
 - obtain non-Windows CI evidence and validate installed-browser discovery and
   enterprise policy behavior across the supported platform matrix;
-- complete the shipment security review and validate the remaining lifecycle
-  and same-output-path concurrency limitations described above.
+- complete the shipment security review and extend lifecycle and concurrency
+  regression evidence across the supported platforms.
 
 Passing local unit/acceptance tests and packing do not establish the whole
-shipment matrix. In particular, the inspected snapshot still needs evidence
-for outer cancellation during running tests and concurrent launcher settings;
-neither is made safe merely by gating invocation.
+shipment matrix. The final snapshots address the previously identified
+evaluation-global placement, shared launcher-settings filename, and unlinked
+completion-wait gaps; broad platform validation remains a shipment concern.
 
 The preview does not require a new application server or changes to the Blazor
 Gateway.
@@ -722,16 +757,19 @@ Gateway.
 
 ### Current prototype coverage
 
-The TestFX `89beb277` snapshot in [Primary-source snapshots](#primary-source-snapshots)
+The TestFX `fc15c640` snapshot in [Primary-source snapshots](#primary-source-snapshots)
 contains `BrowserPackageExecutionTests.cs` under
 `test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/`
 and `BrowserLauncherOptionsTests.cs` under
 `test/UnitTests/Microsoft.Testing.Extensions.UnitTests/`. The browser
 integration tests report inconclusive when Node or a browser is missing; that
-outcome is not execution evidence. The reported maintained runs passed 49 unit
-tests (two Windows-skipped) and all eight acceptance tests, plus full packing.
-The acceptance tests explicitly set the SDK invocation/version properties;
-the SDK's own coverage must prove automatic evaluation-global marker delivery.
+outcome is not execution evidence. The earlier `89beb277` run counts are
+recorded above, not presented as counts for the expanded final suite.
+TestFX tests supply invocation properties explicitly; the SDK
+`ComputeRunArgumentsReceivesReservedDotnetTestInvocationContract` regression
+at `03c8d0a7d9` separately verifies automatic evaluation-global marker and ID
+delivery despite mixed-case override attempts. The final real package and
+standalone consumer checks were reported passing, not rerun for this RFC.
 
 - `dotnet test` runs a test inside `browser-wasm` through the SDK HTTP gateway.
 - `--list-tests` discovers browser tests.
@@ -743,7 +781,11 @@ the SDK's own coverage must prove automatic evaluation-global marker delivery.
 - desktop applications referencing the package remain unaffected.
 - ordinary `dotnet run` and unmarked `ComputeRunArguments` retain the
   framework host; marked queries reject missing or unsupported bootstrap
-  versions and activate only the browser inner target in multi-target builds.
+  versions, missing/malformed invocation IDs, and activate only the browser
+  inner target in multi-target builds.
+- concurrent queries with distinct invocation IDs keep their configuration
+  arguments separate; MSBuild cleanup removes invocation-specific files.
+- cancellation interrupts the linked launcher completion monitor promptly.
 - unsupported config/path/diagnostic/report/coverage options are rejected
   before launch, including single-hyphen and alternate value delimiters.
 - fatal framework-page integration errors fail without waiting for the full
