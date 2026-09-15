@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
-
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     LoadedProjectGraph projectGraph,
