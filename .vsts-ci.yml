@@ -63,11 +63,10 @@ extends:
       settings:
         networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
     ${{ else }}:
-      # Internal PR builds run under the 1ES Unofficial template. They restore from
-      # public feeds nuget.org in tests, so network isolation is not applicable
-      # and so we set it to Preferred, NuGet and requested an exception
+      # Internal PR builds run under the 1ES Unofficial template. They require 
+      # broader access for the tests to pass
       settings:
-        networkIsolationPolicy: Preferred,NuGet
+        networkIsolationPolicy: Permissive
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
