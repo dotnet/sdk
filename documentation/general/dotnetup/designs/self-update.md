@@ -53,6 +53,10 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 # Success Criteria
 
+## Stage A Success Criteria
+
+Stage A reduces initial implementation complexity and scopes bugs to the first set of restrictions. Waiting and transparent re-running of `non-safe` commands are deferred to Stage B; the selected design must preserve the ability to add that behavior without replacing the locking protocol.
+
 - It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.<br><br>
 
 
@@ -64,11 +68,11 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 - `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.<br><br>
 
-- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.<br><br>
+- `non-safe` processes must never execute their command body across a `self update` boundary. In Stage A, a newly started `non-safe` process fails immediately at its gate if a self update is in progress. If its executable was replaced before it passed the gate, it fails and instructs the caller to re-run the command; it must never execute its now-stale command body.<br><br>
+
+- Stage A documentation must warn callers that `dotnetup` commands classified as `non-safe`, including `dotnetup --info`, may fail while a self update is running. Callers are responsible for retrying after the update completes.<br><br>
 
 - `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.<br><br>
-
-- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.<br><br>
 
 - At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.<br><br>
 
@@ -76,7 +80,17 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 - It's ok to ignore a 'rogue' `dotnetup` process and allow them to fail or incur behavioral runtime bugs; e.g. an old `dotnetup` version that does not know about or support any mutex, semaphore, or locks and therefore bypasses the conditional guarantees. This is permissible because `dotnetup` is not yet `stable` or in a fully public `preview`.
 
+## Stage B Success Criteria
+
+Stage B retains the Stage A safety restrictions and replaces its fail-fast behavior for `non-safe` processes with waiting and transparent re-running by default. Concurrent `self update` calls wait in both stages; that serialization is included in Stage A because it is less complex than transparently re-running arbitrary commands.
+
+- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.<br><br>
+
+- A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright by default, so `dotnetup list` and IDE-issued commands do not hard-fail merely because an update is in progress. If the executable was replaced before it passed the gate, it must transparently forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.<br><br>
+
 # Self Update Broad Approach
+
+The approach below applies to both stages unless noted. Stage A uses immediate failure at the `non-safe` gate; Stage B adds bounded waiting and forwarding using the same locks and image-identity check.
 
 ## Windows:
 
@@ -165,7 +179,7 @@ Every acquisition of `A` or `U` either succeeds or throws `IOException` immediat
 | --- | --- | --- |
 | `X_U` | `P` waiting on `U` held by a peer `self update` | generous |
 | `X_A` | `P` waiting on `A` held by `N` | brief |
-| `X_N` | `N` waiting at the gate during a self update | the length of a typical update |
+| `X_N` | `N` waiting at the gate during a self update (Stage B only) | the length of a typical update |
 | `X_V` | `P` waiting for the verification child of step 2.6 | brief |
 
 ###### Lock Acquisition for `P`
@@ -178,7 +192,7 @@ Every acquisition of `A` or `U` either succeeds or throws `IOException` immediat
 
 **1.3 — `N` passes the gate.** The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
 
-`N` acquires `A` shared and holds `A` until `N` exits. If the open throws, `N` backs off and retries for up to `X_N`. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
+`N` acquires `A` shared and holds `A` until `N` exits. In Stage A, if the open fails because `A` is busy, `N` fails immediately, reports that a self update is in progress, and instructs the caller to re-run the command after it completes. In Stage B, `N` instead backs off and retries for up to `X_N`, unless the caller has opted into immediate failure. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
 
 A busy `A` unambiguously means a transaction is in flight, because `A` is only ever held exclusively by `P`; another `N` holding `A` shared does not block this one.
 
@@ -189,13 +203,13 @@ Safety is a property of the command: `CommandBase` classifies every command as `
 The comparison is unconditional. `N` performs the comparison even when the acquisition in step 1.3 succeeded on the first attempt, because a transaction that began before `N` launched and completed before `N` reached the gate replaces the image of `N` without `N` ever observing contention.
 
 - **Identity matches.** No replacement occurred, including the rollback case of step 2.8, because renaming the backup back to the canonical path preserves the original file identity. `N` proceeds to the command body.
-- **Identity differs.** `D/dotnetup.exe` was replaced while `N` waited, so the image of `N` is stale and `N` must not execute the command body of `N`. `N` forwards per step 1.5.
+- **Identity differs.** `D/dotnetup.exe` was replaced before `N` passed the gate, so the image of `N` is stale and `N` must not execute the command body of `N`. In Stage A, `N` fails and instructs the caller to re-run the command. In Stage B, `N` forwards per step 1.5.
 
-**1.5 — `N` forwards to the replaced executable.** `N` starts `D/dotnetup.exe` with the original `args`, `UseShellExecute = false`, and no stream redirection, so the child inherits stdin, stdout, and stderr, the working directory of `N`, and the environment of `N` plus an incremented `DOTNETUP_FORWARD_DEPTH`. `N` retains the shared handle on `A` for the lifetime of the child, waits for the child, and returns the exit code of the child via `SetExitCode`.
+**1.5 — `N` forwards to the replaced executable (Stage B only).** `N` starts `D/dotnetup.exe` with the original `args`, `UseShellExecute = false`, and no stream redirection, so the child inherits stdin, stdout, and stderr, the working directory of `N`, and the environment of `N` plus an incremented `DOTNETUP_FORWARD_DEPTH`. `N` retains the shared handle on `A` for the lifetime of the child, waits for the child, and returns the exit code of the child via `SetExitCode`.
 
 `D/dotnetup.exe` is resolved as the canonical, dotnetup-owned path and is not followed through an unexpected symbolic link or reparse point. Forwarding is capped at a `DOTNETUP_FORWARD_DEPTH` of 2; beyond that `N` fails rather than hopping again. `N` emits a telemetry event for the forward and does not emit a command-completion event, because the child emits one. Forwarding breaks if the replacement executable renamed or removed the command that `N` was invoked with.
 
-Forwarding is deferred to a later implementation. Until forwarding lands, an `N` whose image identity differs fails and instructs the user to re-run the command. `N` never executes the stale command body of `N` in either case.
+Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
 **1.6 — Work permitted before the gate.** Exactly three things may execute before the gate: console encoding and UI language setup, capture of `Environment.ProcessPath` and the image identity, and parsing.
 
