@@ -19,6 +19,7 @@
     <NativeLib>Shared</NativeLib>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
+    <OptimizationPreference>Size</OptimizationPreference>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>

@@ -140,6 +140,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort TestDisplayName = 5;
     public const ushort SessionUid = 6;
     public const ushort Kind = 7;
+    public const ushort InputArtifactPaths = 8;
 }
 
 internal static class TestSessionEventFieldsId

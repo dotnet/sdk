@@ -489,6 +489,11 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <target state="translated">Indica que no se almacenen en caché los paquetes ni las solicitudes HTTP.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">No restaure referencias de proyecto a proyecto y restaure solo el proyecto especificado.</target>
@@ -585,8 +590,8 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Defina la ruta de acceso del proyecto o archivo de solución que se va a probar. Use la ruta de acceso al archivo de proyecto o la ruta de acceso al directorio que contiene el archivo de proyecto. Si no se especifica, el valor predeterminado es el directorio actual.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Defina la ruta de acceso del proyecto o archivo de solución que se va a probar. Use la ruta de acceso al archivo de proyecto o la ruta de acceso al directorio que contiene el archivo de proyecto. Si no se especifica, el valor predeterminado es el directorio actual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

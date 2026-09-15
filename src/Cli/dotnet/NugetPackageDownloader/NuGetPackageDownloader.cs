@@ -4,11 +4,9 @@
 #nullable disable
 
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -351,9 +349,19 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 var permissionList = FileList.Deserialize(workloadUnixFilePermissions);
                 foreach (var fileAndPermission in permissionList.File)
                 {
+                    string fullPath = Path.GetFullPath(Path.Combine(targetFolder.Value, fileAndPermission.Path));
+
+                    // Because packages are assumed fully trusted, this check exists to prevent improperly authored packages
+                    // from accidentally modifying files they may not have intended to modify. It is not intended to police
+                    // the set of capabilities available to the package.
+                    if (!fullPath.StartsWith(Path.GetFullPath(targetFolder.Value) + Path.DirectorySeparatorChar))
+                    {
+                        throw new GracefulException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
+                    }
+
                     _filePermissionSetter
                         .SetPermission(
-                            Path.Combine(targetFolder.Value, fileAndPermission.Path),
+                            fullPath,
                             fileAndPermission.Permission);
                 }
             }

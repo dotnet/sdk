@@ -7,13 +7,10 @@
     Publishes and runs the dotnet-aot tests as a NativeAOT binary.
 
 .DESCRIPTION
-    This script publishes the dotnet-aot.Tests project as a NativeAOT executable
-    and runs the resulting native binary. This verifies that the AOT CLI code
-    (Parser, DotnetRootResolver, NativeEntryPoint) works correctly when compiled
-    ahead-of-time.
-
-    The test project uses xUnit v3 AOT packages (xunit.v3.core.aot) which use
-    source generators for test discovery, replacing runtime reflection.
+    This script publishes the dotnet-aot.Tests project as a NativeAOT executable,
+    publishes the dotnet-aot library and dn host, and runs the resulting native
+    test binary. This verifies both the Native AOT test closure and end-to-end dn
+    integration against a complete SDK installation.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -49,8 +46,11 @@ $ErrorActionPreference = "Stop"
 
 # Resolve paths
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..") | Select-Object -ExpandProperty Path
-$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", "dotnet")
+$dotnetName = if ($IsWindows -or $env:OS -eq "Windows_NT") { "dotnet.exe" } else { "dotnet" }
+$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
+$productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
+$dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -69,8 +69,16 @@ if (-not $RuntimeIdentifier) {
 }
 
 $publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
+$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier)
+$dnPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dn", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
+$aotLibraryName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.dll" }
+                  elseif ($RuntimeIdentifier.StartsWith("osx")) { "libdotnet-aot.dylib" }
+                  else { "libdotnet-aot.so" }
+$dnName = if ($RuntimeIdentifier.StartsWith("win")) { "dn.exe" } else { "dn" }
 $exePath = Join-Path $publishDir $exeName
+$aotLibraryPath = Join-Path $aotPublishDir $aotLibraryName
+$dnPath = Join-Path $dnPublishDir $dnName
 
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
@@ -93,6 +101,26 @@ if (-not $NoBuild) {
         exit $LASTEXITCODE
     }
 
+    & $dotnet publish $productProject `
+        -c $Configuration `
+        -r $RuntimeIdentifier `
+        -p:PublishDir=$aotPublishDir
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: dotnet-aot publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    & $dotnet publish $dnProject `
+        -c $Configuration `
+        -r $RuntimeIdentifier `
+        -p:PublishDir=$dnPublishDir
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: dn publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
     Write-Host ""
     Write-Host "Published: $exePath" -ForegroundColor Green
     $size = (Get-Item $exePath -ErrorAction SilentlyContinue).Length
@@ -102,10 +130,27 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
+$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
+    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
+    Select-Object -First 1 -ExpandProperty FullName
+
 # Run
 if (-not (Test-Path $exePath)) {
     Write-Host "ERROR: Published binary not found at $exePath" -ForegroundColor Red
     Write-Host "Run without -NoBuild to publish first." -ForegroundColor Yellow
+    exit 1
+}
+if (-not (Test-Path $aotLibraryPath)) {
+    Write-Host "ERROR: Published native library not found at $aotLibraryPath" -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path $dnPath)) {
+    Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
+    exit 1
+}
+if (-not $managedTestModule) {
+    Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
 
@@ -123,10 +168,20 @@ if (-not $sdkDirectory) {
     exit 1
 }
 
-$previousTestSdkDirectory = $env:DOTNET_AOT_TEST_SDK_DIRECTORY
-$previousDotnetHostPath = $env:DOTNET_HOST_PATH
-$env:DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
-$env:DOTNET_HOST_PATH = $dotnet
+$environment = @{
+    DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
+    DOTNET_AOT_SDK_DIR = $sdkDirectory
+    DOTNET_AOT_TEST_DN_PATH = $dnPath
+    DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
+    DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
+    DOTNET_HOST_PATH = $dotnet
+    DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
+}
+$previousEnvironment = @{}
+foreach ($entry in $environment.GetEnumerator()) {
+    $previousEnvironment[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key)
+    [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+}
 
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
@@ -144,8 +199,9 @@ try {
     $testExitCode = $LASTEXITCODE
 }
 finally {
-    $env:DOTNET_AOT_TEST_SDK_DIRECTORY = $previousTestSdkDirectory
-    $env:DOTNET_HOST_PATH = $previousDotnetHostPath
+    foreach ($entry in $previousEnvironment.GetEnumerator()) {
+        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+    }
 }
 
 Write-Host ""

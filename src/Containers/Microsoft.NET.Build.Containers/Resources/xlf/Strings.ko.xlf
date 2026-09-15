@@ -399,6 +399,11 @@
         <target state="translated">'{1}'에 '{0}' 계층을 업로드했습니다.</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="Registry_ManifestExists">
+        <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
+        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <note>{0} is the manifest digest, {1} is the repository name</note>
+      </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>
         <target state="translated">'{0}' 레지스트리에 매니페스트를 '{1}' Blob으로 업로드하는 중입니다.</target>

@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
@@ -13,12 +14,15 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, --help, and default usage are served entirely
+///  Validates that --version, --info, --help, default usage, and build-free test-module
+///  orchestration are served entirely
 ///  from AOT, that the full command surface now parses (matching the managed CLI),
 ///  and that commands which require the managed CLI report this via
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.Console)]
 public partial class AotParserTests
 {
     private static Exception? RecordException(Action action)
@@ -308,6 +312,86 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeTestModulesWithoutMatches_IsHandledInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var (exitCode, stdout, _) = InvokeWithCapture(ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--no-progress",
+            ]));
+
+            Assert.AreEqual(1, exitCode);
+            stdout.Should().Contain("No test modules found");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_AcceptsArgumentsAfterDoubleDashInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            ParseResult parseResult = ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--",
+                "--extension-option",
+            ]);
+
+            TestCommandOptions.GetBuildOptions(parseResult).TestApplicationArguments
+                .Should().Contain("--extension-option");
+
+            var (exitCode, _, _) = InvokeWithCapture(parseResult);
+
+            Assert.AreEqual(1, exitCode);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("test --project sample.csproj")]
+    [DataRow("test --test-modules **/*.dll --framework net10.0")]
+    [DataRow("test --test-modules **/*.dll --unknown-option")]
+    public void InvokeUnsupportedTestShape_FallsBackToManaged(string commandLine)
+    {
+        var result = ParseAotTestCommand(commandLine.Split(' ')[1..]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => result.Invoke(Parser.InvocationConfiguration));
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_WithRootDiagnostics_FallsBackToManaged()
+    {
+        var root = new RootCommand();
+        root.Options.Add(CommonOptions.CreateDiagnosticsOption(recursive: false));
+        TestCommandDefinition testCommand = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(testCommand);
+        root.Subcommands.Add(testCommand);
+        ParseResult result = root.Parse([
+            "--diagnostics",
+            "test",
+            "--test-modules", "**/*.dll",
+        ]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(
+            () => result.Invoke(Parser.InvocationConfiguration));
+    }
+
+    [TestMethod]
     public void InvokeExternalToolHelp_RendersFromAotWithoutFallback()
     {
         // Help for the external-tool commands (msbuild/nuget/vstest/format/fsi) now shells out to the
@@ -451,9 +535,19 @@ public partial class AotParserTests
     ///  and Console.SetOut for direct Console.Out writes (used by default usage action).
     /// </summary>
     private static (int exitCode, string stdout, string stderr) InvokeWithCapture(string[] args)
-    {
-        var parseResult = Parser.Parse(args);
+        => InvokeWithCapture(Parser.Parse(args));
 
+    private static ParseResult ParseAotTestCommand(string[] args)
+    {
+        var command = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(command);
+        return command.Parse(args);
+    }
+
+    private static (int exitCode, string stdout, string stderr) InvokeWithCapture(ParseResult parseResult)
+    {
         var bufferedOutput = new BufferedReporter();
         var bufferedError = new BufferedReporter();
         var originalOut = Console.Out;

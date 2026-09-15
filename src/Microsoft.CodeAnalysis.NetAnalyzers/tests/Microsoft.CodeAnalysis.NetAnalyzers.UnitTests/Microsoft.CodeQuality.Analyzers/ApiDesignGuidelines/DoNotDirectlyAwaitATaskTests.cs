@@ -96,86 +96,460 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [TestMethod]
-        [WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
-        public async Task CSharpAsyncDisposableAsync()
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public Task CSharpAsyncDisposable_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.Threading.Tasks;
-
-public class C
-{
-    private static IAsyncDisposable Create() => throw null;
-    private static Task<IAsyncDisposable> CreateAsync() => throw null;
-
-    public async Task M1()
-    {
-        await using var resource = [|Create()|];
-    }
-
-    public async Task M2()
-    {
-        await using var resource = [|await [|CreateAsync()|]|];
-    }
-
-    public async Task M3()
-    {
-        await using (var resource = [|Create()|])
-        {
-        }
-    }
-
-    public async Task M4()
-    {
-        await using (var resource = [|await [|CreateAsync()|]|])
-        {
-        }
-    }
-}
-";
-            var fixedCode = @"
-using System;
-using System.Threading.Tasks;
-
-public class C
-{
-    private static IAsyncDisposable Create() => throw null;
-    private static Task<IAsyncDisposable> CreateAsync() => throw null;
-
-    public async Task M1()
-    {
-        await using var resource = Create().ConfigureAwait(false);
-    }
-
-    public async Task M2()
-    {
-        await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
-    }
-
-    public async Task M3()
-    {
-        await using (var resource = Create().ConfigureAwait(false))
-        {
-        }
-    }
-
-    public async Task M4()
-    {
-        await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
-        {
-        }
-    }
-}
-";
-
-            await new VerifyCS.Test
+            return new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
-                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))),
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static IAsyncDisposable Create() => throw null;
+                        private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = [|Create()|];
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = [|await [|CreateAsync()|]|];
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = [|Create()|])
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = [|await [|CreateAsync()|]|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static IAsyncDisposable Create() => throw null;
+                        private static Task<IAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = Create().ConfigureAwait(false);
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = Create().ConfigureAwait(false))
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
                 LanguageVersion = LanguageVersion.CSharp8,
-                TestCode = code,
-                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        [DataRow("class")]
+        [DataRow("struct")]
+        [DataRow("record")]
+        [DataRow("record class")]
+        [DataRow("record struct")]
+        public Task CSharpAsyncDisposableImplementation_DiagnosticAsync(string implKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        private static MyAsyncDisposable Create() => throw null;
+                        private static Task<MyAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = [|Create()|];
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = [|await [|CreateAsync()|]|];
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = [|Create()|])
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = [|await [|CreateAsync()|]|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = $$"""
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        private static MyAsyncDisposable Create() => throw null;
+                        private static Task<MyAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = Create().ConfigureAwait(false);
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = Create().ConfigureAwait(false))
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public Task CSharpAsyncDisposableInheritingInterface_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncDisposable : IAsyncDisposable
+                    {
+                    }
+
+                    public class C
+                    {
+                        private static IMyAsyncDisposable Create() => throw null;
+                        private static Task<IMyAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = [|Create()|];
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = [|await [|CreateAsync()|]|];
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = [|Create()|])
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = [|await [|CreateAsync()|]|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncDisposable : IAsyncDisposable
+                    {
+                    }
+
+                    public class C
+                    {
+                        private static IMyAsyncDisposable Create() => throw null;
+                        private static Task<IMyAsyncDisposable> CreateAsync() => throw null;
+
+                        public async Task M1()
+                        {
+                            await using var resource = Create().ConfigureAwait(false);
+                        }
+
+                        public async Task M2()
+                        {
+                            await using var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                        }
+
+                        public async Task M3()
+                        {
+                            await using (var resource = Create().ConfigureAwait(false))
+                            {
+                            }
+                        }
+
+                        public async Task M4()
+                        {
+                            await using (var resource = (await CreateAsync().ConfigureAwait(false)).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public Task CSharpAsyncDisposableConstrainedGenericParameter_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static TAsyncDisposable Create<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                        private static Task<TAsyncDisposable> CreateAsync<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+
+                        public async Task M1<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = [|Create<TAsyncDisposable>()|];
+                        }
+
+                        public async Task M2<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = [|await [|CreateAsync<TAsyncDisposable>()|]|];
+                        }
+
+                        public async Task M3<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = [|Create<TAsyncDisposable>()|])
+                            {
+                            }
+                        }
+
+                        public async Task M4<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = [|await [|CreateAsync<TAsyncDisposable>()|]|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static TAsyncDisposable Create<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                        private static Task<TAsyncDisposable> CreateAsync<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                    
+                        public async Task M1<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = Create<TAsyncDisposable>().ConfigureAwait(false);
+                        }
+                    
+                        public async Task M2<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = (await CreateAsync<TAsyncDisposable>().ConfigureAwait(false)).ConfigureAwait(false);
+                        }
+                    
+                        public async Task M3<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = Create<TAsyncDisposable>().ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    
+                        public async Task M4<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = (await CreateAsync<TAsyncDisposable>().ConfigureAwait(false)).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/sdk/issues/4888")]
+        public Task CSharpAsyncDisposableImplementationRefStruct_UsingStatement_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public ref struct MyAsyncDisposableLikeStruct : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        public async Task M()
+                        {
+                            await using (var resource = new MyAsyncDisposableLikeStruct())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp13,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/sdk/issues/4888")]
+        public Task CSharpAsyncDisposableImplementationRefStruct_UsingDeclaration_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public ref struct MyAsyncDisposableLikeStruct : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        public async Task M()
+                        {
+                            await using var resource = new MyAsyncDisposableLikeStruct();
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp13,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpPatternBasedAwaitUsing_UsingStatement_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        public async Task M()
+                        {
+                            await using (var cad = new CustomAsyncDisposable())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpPatternBasedAwaitUsing_UsingDeclaration_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public class C
+                    {
+                        public async Task M()
+                        {
+                            await using var cad = new CustomAsyncDisposable();
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync(CancellationToken.None);
         }
 
@@ -345,9 +719,9 @@ End Class
 Public Class SomeAwaiter
     Implements INotifyCompletion
     Public ReadOnly Property IsCompleted() As Boolean
-	    Get
-		    Throw New NotImplementedException()
-	    End Get
+        Get
+            Throw New NotImplementedException()
+        End Get
     End Property
 
     Public Sub OnCompleted(continuation As Action) Implements INotifyCompletion.OnCompleted
@@ -741,106 +1115,35 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
-        public Task CsharpAwaitIAsyncEnumerable_DiagnosticAsync()
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerable_DiagnosticAsync(bool genericMethod)
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-public class C
-{
-	public async Task Test(IAsyncEnumerable<int> enumerable)
-	{
-		await foreach(var i in [|enumerable|])
-		{
-		}
-	}
-}",
-                FixedCode = @"
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-public class C
-{
-	public async Task Test(IAsyncEnumerable<int> enumerable)
-	{
-		await foreach(var i in enumerable.ConfigureAwait(false))
-		{
-		}
-	}
-}",
-                LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
-        [DataRow("true")]
-        [DataRow("false")]
-        public Task CsharpAwaitIAsyncEnumerable_NoDiagnosticAsync(string continueOnCapturedContext)
-        {
-            return new VerifyCS.Test
-            {
-                TestCode = @$"
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-public class C
-{{
-	public async Task Test(IAsyncEnumerable<int> enumerable)
-	{{
-		await foreach(var i in enumerable.ConfigureAwait({continueOnCapturedContext}))
-		{{
-		}}
-	}}
-}}",
-                LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
-        public Task CsharpForEachEnumerable_NoDiagnosticAsync()
-        {
-            return new VerifyCS.Test
-            {
-                TestCode = @"
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-public class C
-{
-	public void Test(IEnumerable<int> enumerable)
-	{
-		foreach(var i in enumerable)
-		{
-		}
-	}
-}",
-                LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(CancellationToken.None);
-        }
-
-        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
-        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingStatement()
-        {
-            return new VerifyCS.Test
-            {
-                TestCode = """
-                    using System.Runtime.CompilerServices;
+                TestCode = $$"""
+                    using System.Collections.Generic;
                     using System.Threading.Tasks;
 
-                    public struct CustomAsyncDisposable
+                    public class C
                     {
-                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
-                    }
-
-                    public static class Class
-                    {
-                        public static async Task Test()
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
                         {
-                            await using (var cad = new CustomAsyncDisposable())
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
                             {
                             }
                         }
@@ -850,8 +1153,347 @@ public class C
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableImplementation_Concrete_DiagnosticAsync(
+            [CombinatorialValues("class", "struct", "record", "record class", "record struct")] string implKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncEnumerable : IAsyncEnumerable<int>
+                    {
+                        public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test(MyAsyncEnumerable enumerable)
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncEnumerable : IAsyncEnumerable<int>
+                    {
+                        public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test(MyAsyncEnumerable enumerable)
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableInheritingInterface_Concrete_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncEnumerable : IAsyncEnumerable<int>
+                    {
+                    }
+
+                    public class C
+                    {
+                        public async Task Test(IMyAsyncEnumerable enumerable)
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncEnumerable : IAsyncEnumerable<int>
+                    {
+                    }
+
+                    public class C
+                    {
+                        public async Task Test(IMyAsyncEnumerable enumerable)
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableImplementation_Generic_DiagnosticAsync(
+            bool genericMethod,
+            [CombinatorialValues("class", "struct", "record", "record class", "record struct")] string implKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncEnumerable<T> : IAsyncEnumerable<T>
+                    {
+                        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(MyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public {{implKind}} MyAsyncEnumerable<T> : IAsyncEnumerable<T>
+                    {
+                        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(MyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableInheritingInterface_Generic_DiagnosticAsync(bool genericMethod)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncEnumerable<T> : IAsyncEnumerable<T>
+                    {
+                    }
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IMyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public interface IMyAsyncEnumerable<T> : IAsyncEnumerable<T>
+                    {
+                    }
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IMyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableConstrainedGenericParameter_Concrete_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<int>
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<int>
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableConstrainedGenericParameter_Generic_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable, TElement>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<TElement>
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable, TElement>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<TElement>
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableImplementationRefStruct_Concrete_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public ref struct MyAsyncEnumerableLikeStruct : IAsyncEnumerable<int>
+                    {
+                        public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test()
+                        {
+                            await foreach (var i in new MyAsyncEnumerableLikeStruct())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp13
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableImplementationRefStruct_Generic_NoDiagnosticAsync(bool genericMethod)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public ref struct MyAsyncEnumerableLikeStruct<T> : IAsyncEnumerable<T>
+                    {
+                        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
+                    }
+
+                    public class C
+                    {
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}()
+                        {
+                            await foreach (var i in new MyAsyncEnumerableLikeStruct<{{(genericMethod ? "T" : "int")}}>())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp13
+            }.RunAsync(CancellationToken.None);
+        }
+
         [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
-        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingDeclaration()
+        public Task CSharpAwaitPatternBasedAsyncEnumerable_Concrete_NoDiagnosticAsync()
         {
             return new VerifyCS.Test
             {
@@ -859,16 +1501,18 @@ public class C
                     using System.Runtime.CompilerServices;
                     using System.Threading.Tasks;
 
-                    public struct CustomAsyncDisposable
+                    public struct CustomAsyncEnumerable
                     {
-                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                        public ConfiguredCancelableAsyncEnumerable<int>.Enumerator GetAsyncEnumerator() => default;
                     }
 
-                    public static class Class
+                    public class C
                     {
-                        public static async Task Test()
+                        public async Task Test(CustomAsyncEnumerable enumerable)
                         {
-                            await using var cad = new CustomAsyncDisposable();
+                            await foreach (var i in enumerable)
+                            {
+                            }
                         }
                     }
                     """,
@@ -876,12 +1520,13 @@ public class C
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
-        public Task CSharpNoDiagnosticForPatternBasedAwaitForEach()
+        [TestMethod, CombinatorialData]
+        [WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpAwaitPatternBasedAsyncEnumerable_Generic_NoDiagnosticAsync(bool genericMethod)
         {
             return new VerifyCS.Test
             {
-                TestCode = """
+                TestCode = $$"""
                     using System.Runtime.CompilerServices;
                     using System.Threading.Tasks;
 
@@ -890,11 +1535,35 @@ public class C
                         public ConfiguredCancelableAsyncEnumerable<T>.Enumerator GetAsyncEnumerator() => default;
                     }
 
-                    public static class Class
+                    public class C
                     {
-                        public static async Task Test()
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(CustomAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
                         {
-                            await foreach (var i in new CustomAsyncEnumerable<int>())
+                            await foreach (var i in enumerable)
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, CombinatorialData]
+        [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpForEachEnumerable_NoDiagnosticAsync(bool genericMethod)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System.Collections.Generic;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public void Test{{(genericMethod ? "<T>" : "")}}(IEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        {
+                            foreach(var i in enumerable)
                             {
                             }
                         }

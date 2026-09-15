@@ -28,6 +28,7 @@ pr:
     - '*.targets'
     - global.json
     exclude:
+    - .github/workflows/**
     - .github/ISSUE_TEMPLATE/*
     - documentation/*
     - README.md

@@ -106,7 +106,8 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
-            Arguments = [nuspecPath]
+            Arguments = [nuspecPath],
+            NoDefaultExcludes = parseResult.GetValue(definition.NoDefaultExcludesOption)
         };
 
         packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -120,6 +121,9 @@ public class PackCommand(
         var version = parseResult.GetValue(definition.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
+
+        if (parseResult.GetValue(definition.IncludeSymbolsOption))
+            packArgs.Symbols = true;
 
         var configuration = parseResult.GetValue(definition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;

@@ -1,7 +1,7 @@
 # This yml is used by these pipelines:
 # - dotnet-sdk-official-ci
 #   https://dev.azure.com/dnceng/internal/_build?definitionId=286
-#   Triggers: CI batch and weekly schedule (complete CG scan)
+#   Triggers: CI batch
 # - dotnet-sdk-unofficial-ci
 #   https://dev.azure.com/dnceng/internal/_build?definitionId=1472
 #   Triggers: PR
@@ -14,15 +14,6 @@ trigger:
     - release/11.0.1*
     - internal/release/*
     - exp/*
-
-schedules:
-- cron: '0 0 * * 0'
-  displayName: Weekly CodeQL/SDL build
-  branches:
-    include:
-    - main
-  always: true
-
 pr:
   branches:
     include:
@@ -41,12 +32,6 @@ parameters:
   displayName: Force publish stage
   type: boolean
   default: false
-# When true, forces a complete CG scan including test template acquisition for non-scheduled runs.
-- name: forceCompleteCg
-  displayName: Force complete CG scan
-  type: boolean
-  default: false
-
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
@@ -60,17 +45,10 @@ variables:
 - ${{ if or(eq(parameters.forceTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
   - name: runInTestMode
     value: true
-- ${{ if or(eq(parameters.forceCompleteCg, true), eq(variables['Build.Reason'], 'Schedule')) }}:
-  - name: runInCompleteCgMode
-    value: true
 # Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
 - ${{ if and(eq(parameters.forceTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
     value: false
-# Provides TSA variables for automatic bug reporting.
-- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-  - group: DotNet-CLI-SDLValidation-Params
-
 resources:
   repositories:
   - repository: 1esPipelines
@@ -101,15 +79,6 @@ extends:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-      policheck:
-        enabled: true
-      tsa:
-        enabled: true
-      binskim:
-        enabled: true
-      componentgovernance:
-        # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
-        ignoreDirectories: artifacts, .packages
 
     stages:
     ############### BUILD STAGE ###############
@@ -140,20 +109,6 @@ extends:
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             locBranch: release/10.0.3xx
-            # WORKAROUND: BinSkim requires the folder exist prior to scanning.
-            preSteps:
-            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
-              displayName: Create artifacts/bin directory
-            ${{ if and(eq(parameters.forceTestBuild, false), eq(variables['runInCompleteCgMode'], 'true')) }}:
-              additionalWindowsJobParameterSets:
-              # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
-              # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
-              # CG is only run internally, so this job runs only in CG mode.
-              - categoryName: TestTemplatesCG
-                runTests: true
-                testExecutionMode: local
-                testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-                testFilter: FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
 
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -190,7 +145,6 @@ extends:
       - stage: publish
         displayName: Publish
         dependsOn: []
-        condition: ne(variables['runInCompleteCgMode'], 'true')
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
