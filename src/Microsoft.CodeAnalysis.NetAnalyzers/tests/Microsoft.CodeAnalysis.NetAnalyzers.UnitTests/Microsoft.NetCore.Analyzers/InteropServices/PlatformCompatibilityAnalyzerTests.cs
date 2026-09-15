@@ -3747,6 +3747,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                         Console.WriteLine(NameOf(WindowsOnly.Method))
                         Console.WriteLine(NameOf(WindowsOnly.Field))
                         Console.WriteLine(NameOf(WindowsOnly.Prop))
+                        Console.WriteLine(NameOf(WindowsOnly.Prop.Length))
                         Console.WriteLine([|WindowsOnly.Prop|]) ' Actually reading the property still warns
                     End Sub
                 End Class

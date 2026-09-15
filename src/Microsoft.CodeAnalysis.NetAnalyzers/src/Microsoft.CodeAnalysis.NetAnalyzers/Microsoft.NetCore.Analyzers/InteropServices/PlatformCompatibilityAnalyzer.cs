@@ -1421,7 +1421,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         containingSymbol = method.AssociatedSymbol!;
                     }
 
-                    // A guard member sheds the platform requirements of its containing type so that it can be referenced
+                    // MergePlatformAttributes clears a guard member's inherited platform requirements so it can be referenced
                     // from any call site, therefore its body cannot rely on them either. The assembly wide requirements
                     // still hold though, as every call site within the assembly is bound by them
                     if (HasGuardAttribute(containingSymbol) && containingSymbol.ContainingAssembly is { } containingAssembly)
@@ -1847,7 +1847,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                     if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute)
                     {
-                        parentAttributes = new PlatformAttributes(); // The API is for guard, clear parent attributes
+                        // Guard references have no inherited requirements. CheckOperationAttributes restores the
+                        // assembly context when analyzing the guard's body.
+                        parentAttributes = new PlatformAttributes();
                         return;
                     }
 
