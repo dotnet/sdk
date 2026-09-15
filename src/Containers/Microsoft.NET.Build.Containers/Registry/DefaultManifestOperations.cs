@@ -1,25 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using OrasProject.Oras.Exceptions;
+using OrasProject.Oras.Registry.Remote.Exceptions;
+using OrasDescriptor = OrasProject.Oras.Oci.Descriptor;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal class DefaultManifestOperations : IManifestOperations
+internal sealed class DefaultManifestOperations : IManifestOperations
 {
-    private readonly Uri _baseUri;
-    private readonly HttpClient _client;
+    private readonly OrasRepositoryFactory _repositoryFactory;
     private readonly ILogger _logger;
     private readonly string _registryName;
 
-    internal DefaultManifestOperations(Uri baseUri, string registryName, HttpClient client, ILogger logger)
+    internal DefaultManifestOperations(OrasRepositoryFactory repositoryFactory, string registryName, ILogger logger)
     {
-        _baseUri = baseUri;
-        _client = client;
+        _repositoryFactory = repositoryFactory;
         _logger = logger;
         _registryName = registryName;
     }
@@ -27,47 +26,74 @@ internal class DefaultManifestOperations : IManifestOperations
     public async Task<bool> ExistsAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
-        using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        return response.StatusCode switch
+        try
         {
-            HttpStatusCode.OK => true,
-            _ when (int)response.StatusCode >= 500 => await LogAndThrowContainerHttpException<bool>(response, cancellationToken).ConfigureAwait(false),
-            _ => false,
-        };
+            await _repositoryFactory.Create(repositoryName).Manifests.ResolveAsync(reference, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (NotFoundException)
+        {
+            return false;
+        }
+        catch (ResponseException e) when (e.StatusCode is not null && (int)e.StatusCode >= 500)
+        {
+            throw CreateContainerHttpException(Strings.RegistryPullFailed, e);
+        }
+        catch (ResponseException)
+        {
+            return false;
+        }
     }
 
     public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
-        HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        return response.StatusCode switch
+        try
         {
-            HttpStatusCode.OK => response,
-            HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
-            _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
-        };
+            (OrasDescriptor descriptor, Stream stream) = await _repositoryFactory.Create(repositoryName).Manifests.FetchAsync(reference, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = new(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StreamContent(stream),
+            };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.MediaType);
+            response.Content.Headers.ContentLength = descriptor.Size;
+            response.Headers.TryAddWithoutValidation("Docker-Content-Digest", descriptor.Digest);
+            return response;
+        }
+        catch (NotFoundException)
+        {
+            throw new RepositoryNotFoundException(_registryName, repositoryName, reference);
+        }
+        catch (ResponseException e) when (e.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
+        {
+            throw new UnableToAccessRepositoryException(_registryName, repositoryName);
+        }
+        catch (ResponseException e)
+        {
+            throw CreateContainerHttpException(Strings.RegistryPullFailed, e);
+        }
     }
 
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
     {
-        HttpContent manifestUploadContent = new StringContent(manifestJson);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
-
-        HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
-
-        if (!putResponse.IsSuccessStatusCode)
+        byte[] manifestBytes = Encoding.UTF8.GetBytes(manifestJson);
+        OrasDescriptor descriptor = OrasDescriptor.Create(manifestBytes, mediaType);
+        using MemoryStream content = new(manifestBytes, writable: false);
+        try
         {
-            await putResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
-            throw new ContainerHttpException(Resource.FormatString(nameof(Strings.RegistryPushFailed), putResponse.StatusCode), putResponse.RequestMessage?.RequestUri?.ToString(), putResponse.StatusCode);
+            await _repositoryFactory.Create(repositoryName).Manifests.PushAsync(descriptor, content, reference, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ResponseException e) when (e.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
+        {
+            throw new UnableToAccessRepositoryException(_registryName, repositoryName);
+        }
+        catch (ResponseException e)
+        {
+            _logger.LogTrace(e, "ORAS manifest push failed.");
+            throw CreateContainerHttpException(Resource.FormatString(nameof(Strings.RegistryPushFailed), e.StatusCode), e);
         }
     }
 
-    private async Task<T> LogAndThrowContainerHttpException<T>(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        await response.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
-        throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPullFailed)), response.RequestMessage?.RequestUri?.ToString(), response.StatusCode);
-    }
+    private static ContainerHttpException CreateContainerHttpException(string message, ResponseException exception)
+        => new(message, exception.RequestUri?.ToString(), exception.StatusCode);
 }

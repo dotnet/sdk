@@ -8,6 +8,13 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal readonly record struct SourceImageReference(Registry? Registry, string Repository, string? Tag, string? Digest)
 {
+    /// <summary>
+    /// Gets an image source that overrides the remote registry, such as a local container daemon export.
+    /// </summary>
+    internal IImageSource? ImageSource { get; init; }
+
+    internal IImageSource? EffectiveImageSource => ImageSource ?? Registry;
+
     public override string ToString()
     {
         string sourceImageReference = Repository;
