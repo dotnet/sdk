@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Tests
 {
 #pragma warning disable MSTEST0084 // OSCondition cannot represent the minimum Windows version.
     [SupportedOSPlatform("windows5.1.2600")]
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WindowsInstallerTests
     {
