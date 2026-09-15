@@ -510,7 +510,9 @@
       <WorkloadManifestFilesContent Include="%(BuiltinManifests.Identity)" />
     </ItemGroup>
 
-    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
+    <!-- OpenHarmony ships no workloads, so an empty list is expected there. -->
+    <Error Text="No workload manifest content found."
+           Condition="'@(WorkloadManifestFilesContent->Count())' == '0' and '$(OSName)' != 'openharmony'" />
 
     <ItemGroup>
       <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
