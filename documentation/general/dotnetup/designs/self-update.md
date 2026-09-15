@@ -119,7 +119,7 @@ Let `N` be any `non-safe` dotnetup process.
 
 Let `S` be any `safe` dotnetup process: `dotnetup dotnet`, the telemetry drain process, and `P` itself.
 
-Let `V_channel` be the build identity published by the configured dotnetup channel, and let `V_installed` be the build identity of `D/dotnetup.exe`.
+Let `V_channel` be the per-RID build ID published by the configured dotnetup channel, and let `V_installed` be the build ID read from the embedded record in `D/dotnetup.exe`. These are the equality tokens defined by the [build-identity proposal](build-identity.md), not human-readable versions or filesystem file IDs.
 
 Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of Algorithm 1.
 
@@ -201,12 +201,12 @@ A busy `A` unambiguously means a transaction is in flight, because `A` is only e
 
 Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
 
-**1.4 — `N` verifies image identity.** At startup `N` records the file identity of the image of `N` — the volume serial number and file index returned by `GetFileInformationByHandle` on the cached `Environment.ProcessPath`. After the gate succeeds, `N` compares that identity to `D/dotnetup.exe`.
+**1.4 — `N` verifies build identity.** After acquiring `A` shared, `N` compares `DotnetupBuildIdentity.Current`, read from its loaded image, with `V_installed`, read directly from the canonical executable's embedded record while retaining `A`. The [build-identity proposal](build-identity.md) defines the record, automatic build generation, and offline reader. This check launches no child and never uses a pathname lookup to identify the loaded image.
 
-The comparison is unconditional. `N` performs the comparison even when the acquisition in step 1.3 succeeded on the first attempt, because a transaction that began before `N` launched and completed before `N` reached the gate replaces the image of `N` without `N` ever observing contention.
+The comparison is unconditional, even if acquiring `A` succeeded immediately: replacement may have completed before `N` reached the gate. `N` retains `A` through its command body or forwarding so the canonical build cannot change underneath the check. Missing, malformed, duplicate, unsupported, or unreadable records stop the command; unknown identities never compare equal.
 
-- **Identity matches.** No replacement occurred, including the rollback case of step 2.8, because renaming the backup back to the canonical path preserves the original file identity. `N` proceeds to the command body.
-- **Identity differs.** `D/dotnetup.exe` was replaced before `N` passed the gate, so the image of `N` is stale and `N` must not execute the command body of `N`. In Stage A, `N` fails and instructs the caller to re-run the command. In Stage B, `N` forwards per step 1.5.
+- **Identity matches.** The loaded and installed builds agree, including after rollback to the loaded build. `N` proceeds to the command body.
+- **Identity differs.** The loaded build is no longer installed, so `N` must not execute its command body. In Stage A, `N` fails and instructs the caller to re-run the command. In Stage B, `N` forwards per step 1.5.
 
 **1.5 — `N` forwards to the replaced executable (Stage B only).** `N` starts `D/dotnetup.exe` with the original `args`, `UseShellExecute = false`, and no stream redirection, so the child inherits stdin, stdout, and stderr, the working directory of `N`, and the environment of `N` plus an incremented `DOTNETUP_FORWARD_DEPTH`. `N` retains the shared handle on `A` for the lifetime of the child, waits for the child, and returns the exit code of the child via `SetExitCode`.
 
@@ -214,7 +214,7 @@ The comparison is unconditional. `N` performs the comparison even when the acqui
 
 Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
-**1.6 — Work permitted before the gate.** Exactly three things may execute before the gate: console encoding and UI language setup, capture of `Environment.ProcessPath` and the image identity, and parsing.
+**1.6 — Work permitted before the gate.** Exactly three things may execute before the gate: console encoding and UI language setup, capture of `Environment.ProcessPath` and the build ID from the loaded record (not a file lookup), and parsing.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
 
@@ -228,13 +228,15 @@ The first-run telemetry notice is the only pre-gate write. That notice targets t
 
 Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. `P` holds both locks until `P` exits, and `P` performs every step itself; no second process participates in the replacement.
 
-**2.1 — `P` determines whether an update is required.** `P` compares `V_installed` with `V_channel`. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
+**2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded build ID. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
 
 **2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs a best-effort delete of every `D/dotnetup.exe.old.*` backup. Failure to delete a backup belonging to an older transaction is not fatal. Failure to delete `D/dotnetup.exe.new` returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
 
 Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an older process cannot prevent a later transaction from staging.
 
 **2.3 — `P` stages and validates the replacement.** `P` downloads the replacement executable directly to `D/dotnetup.exe.new` and validates the staged file in place. Preview builds validate the published hash as an integrity check and warn explicitly that the artifact is not authenticated. Stable builds validate signed release metadata against the executable. `P` neither executes `D/dotnetup.exe.new` nor renames `D/dotnetup.exe.new` over any path until validation succeeds.
+
+`P` also reads the staged executable's embedded build ID and requires it to equal `V_channel` before replacement.
 
 After validation, `P` flushes the staged file with `FileStream.Flush(flushToDisk: true)` before replacement. This reduces the risk that validated bytes exist only in the system cache, but it does not turn the following replacement into an ACID or power-loss-safe transaction.
 
@@ -265,7 +267,7 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 `--build-identity` is a hidden **option** on the root command, not a subcommand. Like the built-in `--version`, the action of `--build-identity` runs during `ParseResult.Invoke` and returns before any `CommandBase` is constructed, so `--build-identity` never reaches the gate of step 1.3. That is load-bearing rather than incidental: `P` holds both `A` and `U` exclusively while the child runs, so a gated child would block on its own opens and every transaction would fail. If the verification path ever becomes a subcommand, that subcommand must be classified `safe`.
 
-`--build-identity` reads `AssemblyInformationalVersionAttribute` from the loaded assembly, exactly as `Parser.Version` already does, and writes only that identity to stdout. `--build-identity` must never read the identity off disk with `FileVersionInfo` against `Environment.ProcessPath`, which fails once the executable has been renamed. `--build-identity` disables telemetry and spawns no detached child processes.
+`--build-identity` writes only `DotnetupBuildIdentity.Current`, read from the loaded record, to stdout. It does not reopen the executable on disk. This is the same ID used by step 1.4; `Parser.Version` remains the human-readable version. `--build-identity` disables telemetry and spawns no detached child processes. This execution check remains necessary even though the gate reads identities offline.
 
 **2.6 — `P` reports success.** `P` prints a success message including an aka.ms link describing how to install older versions, releases `A` and `U`, and exits.
 
@@ -291,7 +293,7 @@ The two renames are not atomic together: the canonical path is absent between th
 
 If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
 
-Successful rollback restores the original file identity at the canonical path. An `N` that captured that original identity takes the identity-matches branch of step 1.4; an `N` that captured the rejected image's identity instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.8.
+Successful rollback restores the original executable and its build ID at the canonical path. An `N` loaded from that build takes the identity-matches branch of step 1.4; an `N` loaded from the rejected build instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.8.
 
 **2.8 — Deferred cleanup.** `D/dotnetup.exe`, now the replacement, performs best-effort cleanup of `D/dotnetup.exe.old.*` backups on later launches. Cleanup is age-bounded and never follows symbolic links or reparse points outside `D/`. Failure to delete a locked backup is not a transaction failure, because a process started before the transaction may still be executing that image.
 
@@ -321,7 +323,7 @@ Three things differ. Dotnetup stages on the destination volume and uses `File.Re
 
 ## Linux:
 
-Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.8 replaced by a move of the backup back over the canonical path. The image identity of step 1.4 is the device and inode number reported by `stat` rather than the volume serial number and file index.
+Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.7 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same embedded build-ID format and offline reader as Windows, not device/inode identity.
 
 Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replacement, and `D/dotnetup.old.<t>` the backup.
 
@@ -341,7 +343,7 @@ On a supported local Linux filesystem, the same-filesystem move maps to an atomi
 
 Cross-filesystem `File.Move` may degrade to copy/delete behavior which is why it is avoided.
 
-Because the rollback move restores the original inode at the canonical path, an `N` waiting at the gate takes the identity-matches branch of step 1.4 exactly as on Windows.
+The rollback move restores the old executable and its build ID. Step 1.4 permits an `N` loaded from that build to proceed and rejects or forwards one loaded from the rejected build, exactly as on Windows.
 
 #### Unix locking caveats
 
@@ -357,7 +359,7 @@ Windows Restart Manager has no Unix equivalent, so step 1.7 degrades. Linux can 
 
 ## macOS:
 
-macOS follows the Linux replacement flow: the pathname of a running executable may be replaced, `File.CreateHardLink` and a same-filesystem `File.Move` behave as described above, and the image identity is the device and inode number from `stat`. The Unix locking caveats apply, except that `/proc/locks` does not exist, so step 1.7 cannot report a lock holder at all.
+macOS follows the Linux replacement flow: the pathname of a running executable may be replaced, and `File.CreateHardLink` and a same-filesystem `File.Move` behave as described above. Step 1.4 uses the same embedded build-ID format and offline reader as Windows and Linux. The Unix locking caveats apply, except that `/proc/locks` does not exist, so step 1.7 cannot report a lock holder at all.
 
 # Update As a Version Swap Mechanism
 
