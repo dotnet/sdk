@@ -84,6 +84,12 @@ internal sealed class BlazorWasmHotReloadMiddleware
 
     private async Task OnPost(HttpContext context)
     {
+        if (context.Request.ContentType != "application/json")
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
         var update = await JsonSerializer.DeserializeAsync<Update>(context.Request.Body, s_jsonSerializerOptions);
         if (update == null)
         {
