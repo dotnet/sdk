@@ -60,6 +60,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("Solution File", "sln", new[] { "--format", "sln" })]
         [DataRow("Solution File", "sln", new[] { "--format", "slnx" })]
         [DataRow("Solution File", "solution", null)]
+        [DataRow("XML Solution File", "slnx", null)]
+        [DataRow("XML Solution File", "solutionx", null)]
         [DataRow("Solution Filter File", "slnf", new[] { "--parent-solution", "Parent.slnx" })]
         [DataRow("Solution Filter File", "slnf", new[] { "-s", "Parent.slnx" })]
         [DataRow("Solution Filter File", "solutionfilter", new[] { "--parent-solution", "Parent.slnx" })]
