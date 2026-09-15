@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
@@ -137,6 +138,84 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunAllSkippedTestsHonorsStrictPolicyFromExplicitConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string configurationFilePath = Path.Join(testInstance.Path, "strict.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"zero-tests-policy":"strict"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Zero tests ran");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        public void RunNoTestsHonorsIgnoredExitCodeFromExplicitConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string configurationFilePath = Path.Join(testInstance.Path, "ignore.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"ignore-exit-code":"8"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunAllSkippedTestsHonorsStrictPolicyFromDefaultConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root!.Name.Namespace;
+                    project.Root.Add(
+                        new XElement(
+                            ns + "ItemGroup",
+                            new XElement(
+                                ns + "None",
+                                new XAttribute("Update", "TestProject.testconfig.json"),
+                                new XElement(ns + "CopyToOutputDirectory", "PreserveNewest"))));
+                });
+            MakeAllTestsSkipped(testInstance);
+            File.WriteAllText(
+                Path.Join(testInstance.Path, "TestProject.testconfig.json"),
+                """{"commandLineOptions":{"zero-tests-policy":"strict"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Zero tests ran");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
         public void RunAllSkippedTestsHonorsLaunchProfilePolicyAndEnvironmentPrecedence()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -154,6 +233,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                       "commandLineArgs": "--zero-tests-policy strict --ignore-exit-code 8",
                       "environmentVariables": {
                         "TESTINGPLATFORM_EXITCODE_IGNORE": "9"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain($"Test run completed with non-success exit code: {ExitCodes.ZeroTests}");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void RunAllSkippedTestsHonorsCaseInsensitiveLaunchProfileEnvironmentOnWindows()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(
+                Path.Join(propertiesDirectory, "launchSettings.json"),
+                """
+                {
+                  "profiles": {
+                    "TestProject": {
+                      "commandName": "Project",
+                      "commandLineArgs": "--zero-tests-policy strict --ignore-exit-code 8",
+                      "environmentVariables": {
+                        "testingplatform_exitcode_ignore": "9"
                       }
                     }
                   }
