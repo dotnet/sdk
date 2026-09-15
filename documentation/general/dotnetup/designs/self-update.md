@@ -26,6 +26,9 @@ Because replacing the still-running destination with `MoveFileExW` cannot be rel
 
 This avoids the normal interval in which the canonical path is absent between two `File.Move` calls. It is not an ACID or power-loss-safe transaction: `ReplaceFileW` documents partial failure states, and its `REPLACEFILE_WRITE_THROUGH` flag is unsupported. The staged executable must therefore be flushed before replacement, and recovery must account for the documented arrangements of the staged, canonical, and backup paths after failure.
 
+
+### Cross Update Boundary Trade-Offs
+
 Allowing `dotnetup runtime install` to run across either replacement operation remains unsafe because old code may encounter installation state written by a newer manifest format. The activity gate described below excludes those `non-safe` processes while allowing explicitly `safe` processes to continue running.
 
 Existing safe processes may still change behavior if they resolve paths or load external assets after replacement, so every safe process must cache values derived from its loaded image at startup.
@@ -268,17 +271,27 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 **2.7 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` kills the verification child if it is still running and then restores the backup while still holding both locks:
 
+Let `rejectedPath` be `D/dotnetup.exe.old.<t>.rejected`, a transaction-specific sibling path that must not already exist. When the canonical path exists, `P` first renames the rejected executable aside, then renames the original backup back to the canonical path:
+
 ```cs
-File.Replace(
-    sourceFileName: backupPath,             // D/dotnetup.exe.old.<t>
-    destinationFileName: installedPath,     // D/dotnetup.exe
-    destinationBackupFileName: null,
-    ignoreMetadataErrors: false);
+File.Move(
+    sourceFileName: installedPath,
+    destFileName: rejectedPath,
+    overwrite: false);
+
+File.Move(
+    sourceFileName: backupPath,
+    destFileName: installedPath,
+    overwrite: false);
 ```
 
-Rollback uses `File.Replace` rather than a delete followed by a rename because `File.Replace` succeeds against a file that is in use. A verification child that hung and was killed, or any other process that still has the replacement image mapped, therefore does not block the rollback. Rollback restores the original file identity at the canonical path, so an `N` waiting at the gate takes the identity-matches branch of step 1.4 and proceeds normally instead of forwarding.
+Both moves are same-volume renames to unoccupied names; neither copies executable bytes nor overwrites an existing destination. This avoids using the still-running old image as a `File.Replace` replacement source, which has stricter [sharing requirements than the destination](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#parameters). Running processes can continue executing their images after the renames, but handles that deny delete sharing can still prevent a rename.
 
-If the rollback itself fails, `P` reports that dotnetup must be reinstalled, because the transaction cannot be unwound safely.
+The two renames are not atomic together: the canonical path is absent between them, and a crash or power loss can leave it absent. If the canonical path is already absent, `P` skips the first move and attempts only to restore the backup. `P` inspects paths without following unexpected reparse points and never overwrites an unexpected file.
+
+If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
+
+Successful rollback restores the original file identity at the canonical path. An `N` that captured that original identity takes the identity-matches branch of step 1.4; an `N` that captured the rejected image's identity instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.8.
 
 **2.8 — Deferred cleanup.** `D/dotnetup.exe`, now the replacement, performs best-effort cleanup of `D/dotnetup.exe.old.*` backups on later launches. Cleanup is age-bounded and never follows symbolic links or reparse points outside `D/`. Failure to delete a locked backup is not a transaction failure, because a process started before the transaction may still be executing that image.
 
