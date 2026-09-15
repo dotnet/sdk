@@ -46,6 +46,13 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.ExactlyOne
         };
 
+        public readonly Option<string> ResultsDirectoryLayoutOption = new Option<string>("--results-directory-layout")
+        {
+            Description = CommandDefinitionStrings.CmdResultsDirectoryLayoutDescription,
+            HelpName = CommandDefinitionStrings.CmdResultsDirectoryLayoutName,
+            Arity = ArgumentArity.ExactlyOne
+        }.AcceptOnlyFromAmong("flat", "per-module");
+
         public const string ConfigFileOptionName = "--config-file";
 
         public readonly Option<string> ConfigFileOption = new(ConfigFileOptionName)
@@ -86,6 +93,11 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
+
+        public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
+            defaultValue: false,
+            forwardAs: null,
+            description: CommandDefinitionStrings.TestCmdNoLogo);
 
         public readonly Option<bool> NoAnsiOption = new("--no-ansi")
         {
@@ -140,6 +152,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(TestModulesFilterOption);
             Options.Add(TestModulesRootDirectoryOption);
             Options.Add(ResultsDirectoryOption);
+            Options.Add(ResultsDirectoryLayoutOption);
             Options.Add(ConfigFileOption);
             Options.Add(DiagnosticOutputDirectoryOption);
             Options.Add(MaxParallelTestModulesOption);
@@ -152,6 +165,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            Options.Add(NoLogoOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);

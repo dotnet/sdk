@@ -555,6 +555,14 @@ This is equivalent to deleting project.assets.json.</value>
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
   </data>
+  <data name="CmdResultsDirectoryLayoutDescription" xml:space="preserve">
+    <value>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</value>
+  </data>
+  <data name="CmdResultsDirectoryLayoutName" xml:space="preserve">
+    <value>LAYOUT</value>
+  </data>
   <data name="CmdConfigFileDescription" xml:space="preserve">
     <value>Specifies a testconfig.json file.</value>
   </data>
