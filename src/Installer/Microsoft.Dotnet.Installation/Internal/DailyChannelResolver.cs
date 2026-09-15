@@ -148,10 +148,21 @@ internal sealed class DailyChannelResolver : IDisposable
         return _releaseManifest.GetReleasesIndex().FirstOrDefault()?.LatestReleaseVersion?.Major ?? 0;
     }
 
-    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
+    public ReleaseVersion ResolveDotnetupVersion(string rid)
     {
-        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
+        string fileName = BlobFeedUrlBuilder.GetDotnetupFileName(rid);
+        string akaMsUrl = $"https://aka.ms/dotnet/dotnetup/daily/{fileName}";
+        Uri finalUri = TryResolveRedirect(akaMsUrl)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound, $"No daily dotnetup build is available for {rid}.");
+        var version = ExtractVersionFromUrl(finalUri)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, "Dotnetup daily redirect has no concrete version.");
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
+        BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(finalUri, new Uri(location.ArchiveUrl));
+        return version;
+    }
 
+    private Uri? TryResolveRedirect(string akaMsUrl)
+    {
         Uri finalUri;
         string? contentType;
         try
@@ -166,14 +177,14 @@ internal sealed class DailyChannelResolver : IDisposable
             finalUri = response.RequestMessage?.RequestUri
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.NetworkError,
-                    $"Could not determine the redirect target for daily channel '{partialVersion}-daily'.");
+                    $"Could not determine the daily channel redirect target via {akaMsUrl}.");
             contentType = response.Content.Headers.ContentType?.MediaType;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
-                $"Failed to resolve daily channel '{partialVersion}-daily' via {akaMsUrl}: {ex.Message}",
+                $"Failed to resolve daily channel via {akaMsUrl}: {ex.Message}",
                 ex);
         }
 
@@ -184,6 +195,18 @@ internal sealed class DailyChannelResolver : IDisposable
             //  * Content type: the fallback page is text/html rather than a binary archive.
             // Either signal returns null so callers (like the bare 'daily' probe of
             // major+1) can fall back to the next candidate.
+            return null;
+        }
+
+        return finalUri;
+    }
+
+    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
+    {
+        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
+        Uri? finalUri = TryResolveRedirect(akaMsUrl);
+        if (finalUri is null)
+        {
             return null;
         }
 
