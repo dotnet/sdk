@@ -163,7 +163,7 @@ Lock ownership during command execution and cleanup:
 | `S` other than `P` | `A` | — | never acquired; skips the gate |
 | `S` other than `P` | `U` | exclusive | optional cleanup only; one nonblocking attempt |
 
-`A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.8.
+`A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.9.
 
 Because `S` other than `P` holds neither lock outside optional cleanup, a self update can complete underneath it. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
 
@@ -173,7 +173,7 @@ Because `S` other than `P` holds neither lock outside optional cleanup, a self u
 
 Every acquisition of `A` or `U` either succeeds or throws `IOException` immediately; no open blocks in the kernel. "Wait" therefore always denotes a retry loop with jittered backoff bounded by a timeout.
 
-**Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its build-identity check, it may also hold `U` briefly for cleanup under step 2.8.
+**Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its build-identity check, it may also hold `U` briefly for cleanup under step 2.9.
 
 **Rule 2 — no hold-and-wait during acquisition.** `P` never blocks on `A` while holding `U`. If the acquisition of `A` fails, `P` releases `U`, backs off, and retries the pair from step 1.1. An `N` waiting at the gate holds neither lock. An `N` that already holds `A` may try to acquire `U` once for cleanup, but skips cleanup immediately if that attempt fails. Cleanup never acquires or waits for additional locks while holding `U`, and releases `U` before continuing command execution.
 
@@ -235,7 +235,7 @@ Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. `P` ho
 
 **2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded build ID. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
 
-**2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs best-effort deletion of eligible `D/dotnetup.exe.old.*` backups, subject to the canonical-build check and cleanup limits in step 2.8. `P` uses its existing ownership of `U` and `A`; it does not reopen `U` or release either lock for cleanup. Failure to delete a backup belonging to an older transaction is not fatal. Failure to delete `D/dotnetup.exe.new` returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
+**2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs best-effort deletion of eligible `D/dotnetup.exe.old.*` backups, subject to the canonical-build check and cleanup limits in step 2.9. `P` uses its existing ownership of `U` and `A`; it does not reopen `U` or release either lock for cleanup. Failure to delete a backup belonging to an older transaction is not fatal. Failure to delete `D/dotnetup.exe.new` returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
 
 Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an older process cannot prevent a later transaction from staging.
 
@@ -274,9 +274,9 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 `--build-identity` writes only `DotnetupBuildIdentity.Current`, read from the loaded record, to stdout. It does not reopen the executable on disk. This is the same ID used by step 1.4; `Parser.Version` remains the human-readable version. `--build-identity` disables telemetry and spawns no detached child processes. This execution check remains necessary even though the gate reads identities offline.
 
-**2.6 — `P` reports success.** `P` prints a success message including an aka.ms link describing how to install older versions, releases `A` and `U`, and exits.
+**2.7 — `P` reports success.** `P` prints a success message including an aka.ms link describing how to install older versions, releases `A` and `U`, and exits.
 
-**2.7 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` kills the verification child if it is still running and then restores the backup while still holding both locks:
+**2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` kills the verification child if it is still running and then restores the backup while still holding both locks:
 
 Let `rejectedPath` be `D/dotnetup.exe.old.<t>.rejected`, a transaction-specific sibling path that must not already exist. When the canonical path exists, `P` first renames the rejected executable aside, then renames the original backup back to the canonical path:
 
@@ -300,7 +300,7 @@ If the first move fails, the rejected executable remains at the canonical path a
 
 Successful rollback restores the original executable and its build ID at the canonical path. An `N` loaded from that build takes the identity-matches branch of step 1.4; an `N` loaded from the rejected build instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.8.
 
-**2.8 — Deferred cleanup.** On later launches, dotnetup may perform best-effort cleanup of `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the identity-matches branch of step 1.4. It retains `A` throughout cleanup. Safe commands other than `P` may also attempt cleanup without acquiring `A`; the `--build-identity` verification path never performs cleanup.
+**2.9 — Deferred cleanup.** On later launches, dotnetup may perform best-effort cleanup of `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the identity-matches branch of step 1.4. It retains `A` throughout cleanup. Safe commands other than `P` may also attempt cleanup without acquiring `A`; the `--build-identity` verification path never performs cleanup.
 
 Cleanup makes one nonblocking attempt to acquire `U` exclusively. If ownership cannot be established, cleanup is skipped without retrying, reporting contention, or failing the command. No participant opens `U` shared. A successful attempt retains `U` through the canonical-build check, enumeration, and deletion, so no self-update transaction can create or use a backup during cleanup. Cleanup never acquires or waits for additional locks, launches a child, or invokes command logic while holding `U`.
 
@@ -314,9 +314,9 @@ Cleanup applies an age threshold and a finite per-launch work budget to enumerat
 
 The window cannot be closed on Windows while dotnetup is running. The only gapless primitive is `File.Move` with `overwrite: true`, and that fails with `UnauthorizedAccessException` against a path that has concurrent openers. Consumers that launch `dotnetup` programmatically — an IDE extension polling for updates, for example — should retry once on file-not-found rather than treating the first failure as a missing installation. Linux and macOS have no such window, because `rename(2)` over an existing path is atomic and the destination name resolves to either the old or the new inode at every instant.
 
-Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.8 is opportunistic and runs only when its ownership and canonical-build checks permit it.
+Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only when its ownership and canonical-build checks permit it.
 
-A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.8 tolerates that rather than failing, and consumers decide how to surface it to the user.
+A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.9 tolerates that rather than failing, and consumers decide how to surface it to the user.
 
 `FileStream` lock ownership is handle-based rather than thread-affine, so `A` and `U` may be held across an `await` and the entire transaction, download included, may be asynchronous. This is why `P` does not use the thread-affine `ScopedMutex`.
 
@@ -334,11 +334,11 @@ Three things differ. Dotnetup stages on the destination volume and uses `File.Re
 
 ## Linux:
 
-Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.7 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same embedded build-ID format and offline reader as Windows, not device/inode identity.
+Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.8 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same embedded build-ID format and offline reader as Windows, not device/inode identity.
 
 Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replacement, and `D/dotnetup.old.<t>` the backup.
 
-`P` stages and validates `D/dotnetup.new` per step 2.3, sets the expected executable mode, and flushes `D/dotnetup.new` to disk. `P` refuses to update through an unexpected symbolic link and operates only on the canonical, dotnetup-owned install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --build-identity` per step 2.6; otherwise `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.8 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
+`P` stages and validates `D/dotnetup.new` per step 2.3, sets the expected executable mode, and flushes `D/dotnetup.new` to disk. `P` refuses to update through an unexpected symbolic link and operates only on the canonical, dotnetup-owned install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --build-identity` per step 2.6; otherwise `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
 
 Like the selected Windows `File.Replace` operation, the Linux move is a single namespace replacement rather than a pair of renames, so it has no normal window in which no executable exists at the canonical path.
 
