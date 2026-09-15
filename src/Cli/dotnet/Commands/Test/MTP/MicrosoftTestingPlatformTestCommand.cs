@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 #if !CLI_AOT
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -25,8 +26,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand
 {
+    private const string CommandLineOptionsConfigurationPropertyName = "commandLineOptions";
     private const string IgnoreExitCodeOptionName = "--ignore-exit-code";
     private const string MinimumExpectedTestsOptionName = "--minimum-expected-tests";
+    private const string TestConfigurationFileSuffix = ".testconfig.json";
     private const string TestingPlatformExitCodeIgnoreEnvironmentVariable = "TESTINGPLATFORM_EXITCODE_IGNORE";
     private const string ZeroTestsPolicyOptionName = "--zero-tests-policy";
     private const string ZeroTestsPolicyStrictArgument = "strict";
@@ -42,13 +45,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool forwardedMinimumExpectedTests = HasForwardedOption(
             buildOptions.TestApplicationArguments,
             MinimumExpectedTestsOptionName);
-        var fallbackTestApplicationPolicy = new TestApplicationPolicy(
-            IsStrictZeroTestsPolicy(buildOptions.TestApplicationArguments),
-            GetEffectiveIgnoredExitCodes(
-                buildOptions.TestApplicationArguments,
-                buildOptions.EnvironmentVariables.TryGetValue(TestingPlatformExitCodeIgnoreEnvironmentVariable, out string? value)
-                    ? value
-                    : Environment.GetEnvironmentVariable(TestingPlatformExitCodeIgnoreEnvironmentVariable)));
+        TestApplicationPolicy fallbackTestApplicationPolicy =
+            GetEffectiveTestApplicationPolicy(module: null, buildOptions);
 
         bool collectTestMap = parseResult.HasOption(definition.CollectTestMapOption) || forwardedCollectTestMap;
         bool affectedTests = parseResult.HasOption(definition.AffectedTestsOption) || forwardedAffectedTests;
@@ -626,10 +624,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     internal static string? GetEffectiveIgnoredExitCodes(
         IReadOnlyList<string> arguments,
-        string? environmentValue)
+        string? environmentValue,
+        string? configurationValue = null)
         => !string.IsNullOrEmpty(environmentValue)
             ? environmentValue
-            : GetForwardedOptionValue(arguments, IgnoreExitCodeOptionName);
+            : GetForwardedOptionValue(arguments, IgnoreExitCodeOptionName) ?? configurationValue;
 
     internal static int ApplyExitCodeIgnorePolicy(int exitCode, string? ignoredExitCodes)
     {
@@ -655,19 +654,23 @@ internal partial class MicrosoftTestingPlatformTestCommand
     }
 
     internal static TestApplicationPolicy GetEffectiveTestApplicationPolicy(
-        TestModule module,
+        TestModule? module,
         BuildOptions buildOptions)
     {
         var parsedArguments = new List<string>();
-        AddParsedArguments(module.RunProperties.Arguments, parsedArguments);
+        if (module is not null)
+        {
+            AddParsedArguments(module.RunProperties.Arguments, parsedArguments);
+        }
+
         parsedArguments.AddRange(buildOptions.TestApplicationArguments);
-        ProjectLaunchProfile? launchProfile = module.LaunchSettings as ProjectLaunchProfile;
+        ProjectLaunchProfile? launchProfile = module?.LaunchSettings as ProjectLaunchProfile;
         if (launchProfile is not null && !buildOptions.NoLaunchProfileArguments)
         {
             AddParsedArguments(launchProfile.CommandLineArgs, parsedArguments);
         }
 
-        string workingDirectory = string.IsNullOrEmpty(module.RunProperties.WorkingDirectory)
+        string workingDirectory = string.IsNullOrEmpty(module?.RunProperties.WorkingDirectory)
             ? Directory.GetCurrentDirectory()
             : module.RunProperties.WorkingDirectory;
         var expandedArguments = new List<string>();
@@ -680,24 +683,215 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 : parsedArguments;
 
         string? environmentValue = Environment.GetEnvironmentVariable(TestingPlatformExitCodeIgnoreEnvironmentVariable);
-        if (launchProfile is not null &&
-            launchProfile.EnvironmentVariables.TryGetValue(
-                TestingPlatformExitCodeIgnoreEnvironmentVariable,
-                out string? launchProfileValue))
+        if (launchProfile is not null)
         {
-            environmentValue = launchProfileValue;
+            environmentValue = ApplyEnvironmentVariableOverrides(
+                environmentValue,
+                launchProfile.EnvironmentVariables);
         }
 
-        if (module.EnvironmentVariables.TryGetValue(
-            TestingPlatformExitCodeIgnoreEnvironmentVariable,
-            out string? moduleValue))
-        {
-            environmentValue = moduleValue;
-        }
+        environmentValue = ApplyEnvironmentVariableOverrides(
+            environmentValue,
+            module?.EnvironmentVariables ?? buildOptions.EnvironmentVariables);
+
+        TestApplicationPolicy configurationPolicy =
+            GetConfigurationFilePolicy(module, buildOptions, effectiveArguments, workingDirectory);
+        string? commandLineZeroTestsPolicy =
+            GetForwardedOptionValue(effectiveArguments, ZeroTestsPolicyOptionName);
 
         return new TestApplicationPolicy(
-            IsStrictZeroTestsPolicy(effectiveArguments),
-            GetEffectiveIgnoredExitCodes(effectiveArguments, environmentValue));
+            commandLineZeroTestsPolicy is null
+                ? configurationPolicy.FailOnAllSkippedTests
+                : string.Equals(
+                    commandLineZeroTestsPolicy,
+                    ZeroTestsPolicyStrictArgument,
+                    StringComparison.OrdinalIgnoreCase),
+            GetEffectiveIgnoredExitCodes(
+                effectiveArguments,
+                environmentValue,
+                configurationPolicy.IgnoredExitCodes));
+    }
+
+    private static string? ApplyEnvironmentVariableOverrides(
+        string? currentValue,
+        IEnumerable<KeyValuePair<string, string>> environmentVariables)
+    {
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        foreach ((string name, string value) in environmentVariables)
+        {
+            if (string.Equals(name, TestingPlatformExitCodeIgnoreEnvironmentVariable, comparison))
+            {
+                currentValue = value;
+            }
+        }
+
+        return currentValue;
+    }
+
+    private static TestApplicationPolicy GetConfigurationFilePolicy(
+        TestModule? module,
+        BuildOptions buildOptions,
+        IReadOnlyList<string> effectiveArguments,
+        string workingDirectory)
+    {
+        int forwardedConfigurationFileCount = effectiveArguments.Count(argument =>
+            IsOption(
+                argument,
+                TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName,
+                allowValue: true));
+        int configurationFileCount =
+            forwardedConfigurationFileCount + (buildOptions.PathOptions.ConfigFilePath is null ? 0 : 1);
+        if (configurationFileCount > 1)
+        {
+            return default;
+        }
+
+        string? configurationFilePath = forwardedConfigurationFileCount == 1
+            ? GetForwardedOptionValue(
+                effectiveArguments,
+                TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName)
+            : buildOptions.PathOptions.ConfigFilePath;
+        if (configurationFilePath is not null && !Path.IsPathFullyQualified(configurationFilePath))
+        {
+            configurationFilePath = Path.GetFullPath(configurationFilePath, workingDirectory);
+        }
+
+        if (configurationFilePath is null && module is not null && !string.IsNullOrEmpty(module.TargetPath))
+        {
+            configurationFilePath = Path.ChangeExtension(
+                Path.GetFullPath(module.TargetPath, workingDirectory),
+                TestConfigurationFileSuffix);
+        }
+
+        if (configurationFilePath is null || !File.Exists(configurationFilePath))
+        {
+            return default;
+        }
+
+        try
+        {
+            using FileStream stream = File.OpenRead(configurationFilePath);
+            using JsonDocument document = JsonDocument.Parse(
+                stream,
+                new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                });
+
+            if (document.RootElement.ValueKind != JsonValueKind.Object ||
+                HasDuplicatePropertyNames(document.RootElement) ||
+                !TryGetProperty(
+                    document.RootElement,
+                    CommandLineOptionsConfigurationPropertyName,
+                    out JsonElement commandLineOptions) ||
+                commandLineOptions.ValueKind != JsonValueKind.Object)
+            {
+                return default;
+            }
+
+            string? zeroTestsPolicy =
+                GetConfigurationOptionValue(commandLineOptions, ZeroTestsPolicyOptionName);
+            return new TestApplicationPolicy(
+                string.Equals(
+                    zeroTestsPolicy,
+                    ZeroTestsPolicyStrictArgument,
+                    StringComparison.OrdinalIgnoreCase),
+                GetConfigurationOptionValue(commandLineOptions, IgnoreExitCodeOptionName));
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException)
+        {
+            // The test application reports configuration errors. Ignore this source so the SDK does not
+            // replace that diagnostic with a synthesized aggregate verdict.
+            Logger.LogTrace($"Failed to reconstruct test policy from '{configurationFilePath}': {exception}");
+            return default;
+        }
+    }
+
+    private static string? GetConfigurationOptionValue(
+        JsonElement commandLineOptions,
+        string canonicalOption)
+    {
+        if (!TryGetProperty(commandLineOptions, canonicalOption[2..], out JsonElement value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            JsonElement.ArrayEnumerator values = value.EnumerateArray();
+            if (!values.MoveNext())
+            {
+                return null;
+            }
+
+            JsonElement singleValue = values.Current;
+            return values.MoveNext() ? null : GetConfigurationScalarValue(singleValue);
+        }
+
+        return GetConfigurationScalarValue(value);
+    }
+
+    private static string? GetConfigurationScalarValue(JsonElement value)
+        => value.ValueKind switch
+        {
+            JsonValueKind.Number or JsonValueKind.String or JsonValueKind.True or JsonValueKind.False
+                => value.ToString(),
+            _ => null,
+        };
+
+    private static bool TryGetProperty(
+        JsonElement element,
+        string propertyName,
+        out JsonElement value)
+    {
+        foreach (JsonProperty property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool HasDuplicatePropertyNames(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                if (HasDuplicatePropertyNames(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var propertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (JsonProperty property in element.EnumerateObject())
+        {
+            if (!propertyNames.Add(property.Name) || HasDuplicatePropertyNames(property.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void AddParsedArguments(string? arguments, List<string> parsedArguments)
