@@ -13,13 +13,11 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
-#pragma warning disable MSTEST0084 // OSCondition cannot represent the minimum Windows version.
-    [SupportedOSPlatform("windows5.1.2600")]
+    [SupportedOSPlatform("windows")]
     [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WindowsInstallerTests
     {
-#pragma warning restore MSTEST0084
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");
         public TestContext TestContext { get; set; } = null!;
 
@@ -173,6 +171,12 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"system.web.mvc.dll", 0)]
         public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
+            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
+            {
+                Assert.Inconclusive("Authenticode verification requires Windows 5.1.2600 or later.");
+                return;
+            }
+
             int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
             Assert.AreEqual(expectedStatus, status);
         }
@@ -193,6 +197,12 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"tampered.msi", 0)]
         public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
         {
+            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
+            {
+                Assert.Inconclusive("Certificate chain verification requires Windows 5.1.2600 or later.");
+                return;
+            }
+
             int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
 
             Assert.AreEqual(expectedResult, result);
