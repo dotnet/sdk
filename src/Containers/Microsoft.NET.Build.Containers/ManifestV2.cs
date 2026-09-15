@@ -54,6 +54,13 @@ public class ManifestV2
     public required List<ManifestLayer> Layers { get; init; }
 
     /// <summary>
+    /// Arbitrary metadata for this OCI image manifest.
+    /// </summary>
+    [JsonPropertyName("annotations")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? Annotations { get; init; }
+
+    /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
     public string GetDigest() => KnownDigest ??= DigestUtils.ComputeSha256Digest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
