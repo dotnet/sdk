@@ -38,12 +38,21 @@ namespace Microsoft.NetCore.Analyzers.Usage
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterCompilationStartAction(context => context.RegisterOperationAction(AnalyzeInvocation, OperationKind.Invocation));
+            context.RegisterCompilationStartAction(context =>
+            {
+                var typeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+                if (!typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemType, out var systemType))
+                {
+                    return;
+                }
+
+                context.RegisterOperationAction(context => AnalyzeInvocation(context, systemType), OperationKind.Invocation);
+            });
         }
 
-        private void AnalyzeInvocation(OperationAnalysisContext context)
+        private void AnalyzeInvocation(OperationAnalysisContext context, INamedTypeSymbol systemType)
         {
-            if (!RuntimeTypeInvocationContext.TryGetContext((IInvocationOperation)context.Operation, out var invocationContext))
+            if (!RuntimeTypeInvocationContext.TryGetContext((IInvocationOperation)context.Operation, systemType, out var invocationContext))
             {
                 return;
             }
@@ -65,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
             // A generic overload is applicable iff:
             //   1. The arity is the same as the type parameters of the original invocation
-            //   2. The parameters count is the same as the other arguments of the original invocation
+            //   2. The parameter count accepts the other arguments, including expansion into a params parameter.
             //   3. It is not the same as the containing symbol containing the original invocation
             //      This is to prevent cases where the generic method forwards to a non generic one, e.g. Foo<T>() calls Foo(typeof(T)).
             //      Without this condition we would create an infinite loop as we would replace Foo(typeof(T)) with Foo<T>().
@@ -153,10 +162,14 @@ namespace Microsoft.NetCore.Analyzers.Usage
             }
 
             public static bool TryGetContext(IInvocationOperation invocation, [NotNullWhen(true)] out RuntimeTypeInvocationContext? invocationContext)
+                => TryGetContext(invocation,
+                    invocation.SemanticModel?.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemType),
+                    out invocationContext);
+
+            public static bool TryGetContext(IInvocationOperation invocation, INamedTypeSymbol? systemType, [NotNullWhen(true)] out RuntimeTypeInvocationContext? invocationContext)
             {
                 invocationContext = default;
 
-                var systemType = invocation.SemanticModel?.Compilation.GetTypeByMetadataName("System.Type");
                 if (systemType is null)
                 {
                     return false;
