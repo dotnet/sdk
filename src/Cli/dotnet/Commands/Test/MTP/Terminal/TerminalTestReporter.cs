@@ -53,10 +53,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     private readonly bool _showActiveTests;
 
-    private int _handshakeFailuresCount;
-
-    private readonly object _handshakeFailuresLock = new();
-    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
+    private readonly ConcurrentQueue<HandshakeFailureRecord> _handshakeFailures = new();
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
@@ -70,7 +67,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private volatile bool _wasCancelled;
 
-    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+    public bool HasHandshakeFailure => !_handshakeFailures.IsEmpty;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
@@ -224,11 +221,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
-        lock (_handshakeFailuresLock)
-        {
-            _handshakeFailures.Clear();
-        }
-        _handshakeFailuresCount = 0;
+        _handshakeFailures.Clear();
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -375,7 +368,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In addition, failing to handshake is also considered as an error.
         // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
         // So, this line cannot be double-counting handshake failures twice.
-        int error = failedAssembliesWithoutFailedTests + _handshakeFailuresCount;
+        int error = failedAssembliesWithoutFailedTests + _handshakeFailures.Count;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -634,15 +627,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // diagnostic output before the summary — the user sees the actionable failure context
         // (assembly, exit code, stdout, stderr) at the end of the run rather than having to scroll
         // back. See https://github.com/dotnet/sdk/issues/51608.
-        HandshakeFailureRecord[] failures;
-        lock (_handshakeFailuresLock)
+        HandshakeFailureRecord[] failures = _handshakeFailures.ToArray();
+        if (failures.Length == 0)
         {
-            if (_handshakeFailures.Count == 0)
-            {
-                return;
-            }
-
-            failures = _handshakeFailures.ToArray();
+            return;
         }
 
         terminal.AppendLine();
@@ -1133,11 +1121,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        Interlocked.Increment(ref _handshakeFailuresCount);
-        lock (_handshakeFailuresLock)
-        {
-            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
-        }
+        _handshakeFailures.Enqueue(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
