@@ -21,6 +21,33 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private static string EnvironmentVariableReference(string name)
             => $"%{name}%";
 
+        [TestMethod]
+        public void ComputeRunArgumentsReceivesDotnetTestInvocationContract()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
+                .WithSource();
+            string contractFile = Path.Combine(testInstance.Path, "dotnet-test-invocation-contract.txt");
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Directory.Build.targets"),
+                """
+                <Project>
+                  <Target Name="RecordDotnetTestInvocationContract" BeforeTargets="ComputeRunArguments">
+                    <WriteLinesToFile
+                      File="$(MSBuildProjectDirectory)\dotnet-test-invocation-contract.txt"
+                      Lines="$(DotnetTestInvocation)|$(DotnetTestHttpBootstrapVersion)"
+                      Overwrite="true" />
+                  </Target>
+                </Project>
+                """);
+
+            new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+
+            File.ReadAllText(contractFile).Trim().Should().Be("true|1");
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]

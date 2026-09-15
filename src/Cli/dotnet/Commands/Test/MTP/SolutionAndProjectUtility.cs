@@ -645,6 +645,12 @@ internal static class SolutionAndProjectUtility
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
+            // Launch extensions can hook ComputeRunArguments without changing
+            // ordinary dotnet run or design-time queries. Keep the HTTP bootstrap contract version
+            // separate from the MTP protocol version so launchers can fail before starting a host.
+            project.SetProperty(ProjectProperties.DotnetTestInvocation, "true");
+            project.SetProperty(ProjectProperties.DotnetTestHttpBootstrapVersion, "1");
+
             // Every project of the run shares the same build session, which serializes the requests
             // internally: the MSBuild build APIs cannot be called in parallel, even for different
             // projects ("The operation cannot be completed because a build is already in progress.").
