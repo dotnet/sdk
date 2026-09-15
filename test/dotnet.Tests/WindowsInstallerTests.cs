@@ -13,7 +13,7 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows5.1.2600")]
     [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WindowsInstallerTests
@@ -35,7 +35,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void MultipleProcessesCanWriteToTheLog()
         {
             var logFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -61,7 +60,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void InstallMessageDispatcherProcessesMessages()
         {
             string pipeName = Guid.NewGuid().ToString();
@@ -87,7 +85,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void InstallRequestMessageCreateThrowsForNullPayload()
         {
             Action action = () => InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
@@ -96,7 +93,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void InstallResponseMessageCreateThrowsForNullPayload()
         {
             Action action = () => InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
@@ -105,7 +101,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow("1033,1041,1049", UpgradeAttributes.MigrateFeatures, 1041, false)]
         [DataRow(null, UpgradeAttributes.LanguagesExclusive, 3082, false)]
         [DataRow("1033,1041,1049", UpgradeAttributes.LanguagesExclusive, 1033, true)]
@@ -122,7 +117,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.639", true)]
         [DataRow("72.13.638", UpgradeAttributes.VersionMaxInclusive, "72.13.638", false)]
         public void RelatedProductExcludesMaxVersion(string maxVersion, UpgradeAttributes attributes, string installedVersionValue,
@@ -141,7 +135,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.638", true)]
         [DataRow("72.13.638", UpgradeAttributes.VersionMinInclusive, "72.13.638", false)]
         public void RelatedProductExcludesMinVersion(string minVersion, UpgradeAttributes attributes, string installedVersionValue,
@@ -160,7 +153,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         // This verifies E_TRUST_BAD_DIGEST (file was modified after being signed)
         [DataRow(@"tampered.msi", -2146869232)]
         [DataRow(@"dual_signed.dll", 0)]
@@ -171,18 +163,11 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"system.web.mvc.dll", 0)]
         public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
-            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
-            {
-                Assert.Inconclusive("Authenticode verification requires Windows 5.1.2600 or later.");
-                return;
-            }
-
             int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
             Assert.AreEqual(expectedStatus, status);
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow(@"dotnet_realsigned.exe", 0)]
         // Valid SHA1 signature, but no longer considered a trusted root certificate, should return CERT_E_UNTRUSTEDROOT.
         [DataRow(@"system.web.mvc.dll", -2146762487)]
@@ -197,12 +182,6 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"tampered.msi", 0)]
         public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
         {
-            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
-            {
-                Assert.Inconclusive("Certificate chain verification requires Windows 5.1.2600 or later.");
-                return;
-            }
-
             int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
 
             Assert.AreEqual(expectedResult, result);
@@ -214,7 +193,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void CreatePipeSecurity_ShouldNotGrantAccessToAuthenticatedUsers()
         {
             SecurityIdentifier ownerSid = WindowsIdentity.GetCurrent().Owner;
@@ -231,7 +209,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateLogFilePath_ShouldRejectSystemPaths()
         {
             string maliciousPath = @"C:\Windows\System32\evil.log";
@@ -241,7 +218,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateLogFilePath_ShouldAcceptUserProfileTempPath()
         {
             // Use a fake server temp that differs from the user's profile temp,
@@ -255,7 +231,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateLogFilePath_ShouldRejectTraversalAttack()
         {
             string traversalPath = Path.Combine(Path.GetTempPath(), @"..\..\Windows\System32\evil.log");
@@ -269,7 +244,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidatePackagePath_ShouldRejectTraversalAttack()
         {
             string cacheRoot = @"C:\ProgramData\dotnet\workloads";
@@ -279,7 +253,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidatePackagePath_ShouldRejectSiblingPrefixAttack()
         {
             string cacheRoot = @"C:\ProgramData\dotnet\workloads";
@@ -289,7 +262,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidatePackagePath_ShouldAcceptValidCachePath()
         {
             string cacheRoot = @"C:\ProgramData\dotnet\workloads";
@@ -299,7 +271,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow(@"..\..\evil")]
         [DataRow(@"good\evil")]
         [DataRow("good/evil")]
@@ -311,7 +282,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow("Microsoft.NET.Workload.Mono.ToolChain")]
         [DataRow("8.0.100")]
         public void ValidatePathComponent_ShouldAcceptValidComponent(string input)
@@ -320,7 +290,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         [DataRow(@"C:\ProgramData\dotnet\workloads\..\..\..\..\Windows\System32\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
         [DataRow(@"C:\ProgramData\dotnet\workloadsEvil\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
         [DataRow(@"C:\ProgramData\dotnet\workloads\pack\1.0\manifest.json", @"C:\ProgramData\dotnet\workloads", true)]
@@ -333,7 +302,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldAcceptPathUnderServerTemp()
         {
             string serverTemp = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
@@ -352,7 +320,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldAcceptPathUnderTrustedClientTemp()
         {
             string fakeServerTemp = @"C:\fake-server-temp";
@@ -372,7 +339,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldRejectPathOutsideAllowedRoots()
         {
             string fakeServerTemp = @"C:\fake-server-temp";
@@ -391,7 +357,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldRejectTraversalAttack()
         {
             string serverTemp = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
@@ -410,7 +375,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldRejectSiblingPrefix()
         {
             string fakeServerTemp = @"C:\fake-server-temp";
@@ -429,7 +393,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateManifestPath_ShouldRejectNullOrEmpty()
         {
             Assert.IsFalse(WindowsUtils.ValidateManifestPath(null));
@@ -438,7 +401,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateLogFilePath_ShouldRejectSiblingPrefixAttack()
         {
             string serverTemp = @"C:\Temp";
@@ -450,7 +412,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ValidateLogFilePath_ShouldAcceptTrustedClientTemp()
         {
             string fakeServerTemp = @"C:\fake-server-temp";

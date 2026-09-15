@@ -7,7 +7,6 @@ using Microsoft.DotNet.MsiInstallerTests.Framework;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class VSWorkloadTests : VMTestBase
     {

@@ -1,0 +1,3 @@
+# MSTEST0084 cannot represent SupportedOSPlatform attributes with a minimum version.
+[WindowsInstallerTests.cs]
+dotnet_diagnostic.MSTEST0084.severity = none
