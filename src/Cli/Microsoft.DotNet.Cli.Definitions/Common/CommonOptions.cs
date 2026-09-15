@@ -293,7 +293,8 @@ internal static class CommonOptions
         new Option<bool>("--no-self-contained")
         {
             Description = CommandDefinitionStrings.FrameworkDependentOptionDescription,
-            Arity = ArgumentArity.Zero
+            Arity = ArgumentArity.Zero,
+            Hidden = true
         }
         .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 

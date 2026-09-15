@@ -61,7 +61,6 @@ _testhost() {
                         '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
-                        '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
                         '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
@@ -747,7 +746,6 @@ _testhost() {
                         '--no-build[Do not build the project before publishing. Implies --no-restore.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
-                        '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
                         '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
@@ -918,7 +916,6 @@ _testhost() {
                         '--no-cache[Skip up to date checks and always build the program before running.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
-                        '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \

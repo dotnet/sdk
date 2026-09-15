@@ -1029,7 +1029,7 @@ public class CliSchemaTests : SdkTest
     },
     "--no-self-contained": {
       "description": "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.",
-      "hidden": false,
+      "hidden": true,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
       "defaultValue": false,
