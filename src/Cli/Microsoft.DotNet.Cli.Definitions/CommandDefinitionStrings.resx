@@ -1121,6 +1121,10 @@ The default is to publish a framework-dependent application.</value>
   <data name="TestCmdNoLogo" xml:space="preserve">
     <value>Run test(s), without displaying Microsoft Testplatform banner</value>
   </data>
+  <data name="TestCmdMTPNoLogo" xml:space="preserve">
+    <value>Run test(s), without displaying Microsoft.Testing.Platform banner</value>
+    <comment>{Locked="Microsoft.Testing.Platform"}</comment>
+  </data>
   <data name="TestCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>

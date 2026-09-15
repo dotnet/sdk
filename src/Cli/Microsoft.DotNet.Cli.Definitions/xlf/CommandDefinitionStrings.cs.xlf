@@ -1962,6 +1962,11 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
         <target state="translated">Zakáže kontrolu aktualizací balíčků šablony při vytváření instance šablony.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Spustit testy bez zobrazení nápisu Microsoft Testplatform</target>

@@ -1962,6 +1962,11 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">Deshabilita la comprobación de las actualizaciones del paquete de plantillas al crear una plantilla de forma instantánea.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Ejecutar pruebas, sin mostrar la pancarta de Microsoft Testplatform</target>
