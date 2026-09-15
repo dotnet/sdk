@@ -59,6 +59,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
     public sealed partial class UseConcreteTypeAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1859";
+        internal const string TargetTypeNullableAnnotationsKey = nameof(TargetTypeNullableAnnotationsKey);
+        internal const string TargetTypeDocumentationIdKey = nameof(TargetTypeDocumentationIdKey);
 
         internal static readonly DiagnosticDescriptor UseConcreteTypeForMethodReturn = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -364,7 +366,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 var fromTypeName = GetTypeName(fromType);
                 var toTypeName = GetTypeName(toType);
-                var diagnostic = affectedSymbol.CreateDiagnostic(desc, affectedSymbol.Name, fromTypeName, toTypeName);
+                var properties = ImmutableDictionary<string, string?>.Empty.Add(
+                    TargetTypeDocumentationIdKey,
+                    DocumentationCommentId.CreateReferenceId(toType)).Add(
+                    TargetTypeNullableAnnotationsKey,
+                    GetNullableAnnotations(toType));
+                var diagnostic = affectedSymbol.CreateDiagnostic(desc, properties, affectedSymbol.Name, fromTypeName, toTypeName);
                 reportDiag(diagnostic);
             }
 
@@ -402,6 +409,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+
+            static string GetNullableAnnotations(ITypeSymbol type)
+            {
+                var annotation = (char)('0' + (int)type.NullableAnnotation);
+                return type switch
+                {
+                    IArrayTypeSymbol array => annotation + GetNullableAnnotations(array.ElementType),
+                    INamedTypeSymbol named => annotation + string.Concat(named.TypeArguments.Select(GetNullableAnnotations)),
+                    IPointerTypeSymbol pointer => annotation + GetNullableAnnotations(pointer.PointedAtType),
+                    _ => annotation.ToString(),
+                };
+            }
         }
     }
 }
