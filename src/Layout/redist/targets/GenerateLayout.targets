@@ -298,6 +298,20 @@
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/$(SdkTargetFramework);TargetFramework=$(SdkTargetFramework)" />
   </Target>
 
+  <Target Name="PublishProjectData">
+    <!-- Keep the package's targets beside its task assembly and schema, with a stable build entry point. -->
+    <WriteLinesToFile
+      File="$(OutputPath)/ProjectData/build/Microsoft.NET.ProjectData.targets"
+      Lines="&lt;Project&gt;&lt;Import Project=&quot;../tasks/$(SdkTargetFramework)/Microsoft.NET.ProjectData.targets&quot; /&gt;&lt;/Project&gt;"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
+    <MSBuild
+      Targets="Publish"
+      Projects="$(MSBuildProjectDirectory)/tools/tool_projectdata.csproj"
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/ProjectData/tasks/$(SdkTargetFramework)" />
+  </Target>
+
   <Target Name="GenerateCliRuntimeConfigurationFiles" DependsOnTargets="PublishTargetExtensions">
     <ItemGroup>
       <BundledTools Include="MSBuild;
@@ -666,6 +680,7 @@
                             PublishFSharp;
                             GeneratePackagePruneData;
                             PublishContainersSdk;
+                            PublishProjectData;
                             GenerateCliRuntimeConfigurationFiles;
                             PublishDotnetAot;
                             CreateMSBuildAppHost;
