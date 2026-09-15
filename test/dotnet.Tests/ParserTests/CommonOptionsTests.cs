@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tests.ParserTests;
 public class CommonOptionsTests
 {
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    [DoNotParallelize]
     public void ConfigurationDefaultsToEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -36,7 +36,7 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    [DoNotParallelize]
     public void ExplicitConfigurationOverridesEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -64,7 +64,7 @@ public class CommonOptionsTests
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("\t")]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    [DoNotParallelize]
     public void EmptyOrWhitespaceConfigurationEnvironmentVariableIsIgnored(string configuration)
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
