@@ -55,7 +55,7 @@ internal sealed class BlazorWasmHotReloadMiddleware
     public BlazorWasmHotReloadMiddleware(RequestDelegate next, ILogger<BlazorWasmHotReloadMiddleware> logger, IConfiguration configuration)
     {
         _logger = logger;
-        _allowedOrigins = ParseServerUrls(configuration[WebHostDefaults.ServerUrlsKey]);
+        _allowedOrigins = ParseServerUrls(logger, configuration[WebHostDefaults.ServerUrlsKey]);
         logger.LogDebug($"Middleware loaded. Allowed origins: {string.Join(";", _allowedOrigins.Select(a => a.ToString()))}");
     }
 
@@ -130,7 +130,7 @@ internal sealed class BlazorWasmHotReloadMiddleware
         }
     }
 
-    internal static IReadOnlyList<BindingAddress> ParseServerUrls(string? urls)
+    internal static IReadOnlyList<BindingAddress> ParseServerUrls(ILogger<BlazorWasmHotReloadMiddleware> logger, string? urls)
     {
         var result = new List<BindingAddress>();
         if (string.IsNullOrWhiteSpace(urls))
@@ -138,22 +138,17 @@ internal sealed class BlazorWasmHotReloadMiddleware
             return result;
         }
 
-        foreach (var value in urls.Split(s_urlSeparators, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var value in urls.Split(s_urlSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var trimmed = value.Trim();
-            if (trimmed.Length == 0)
-            {
-                continue;
-            }
-
             BindingAddress address;
             try
             {
-                address = BindingAddress.Parse(trimmed);
+                address = BindingAddress.Parse(value);
             }
             catch (FormatException)
             {
                 // Ignore invalid URLs.
+                logger.LogDebug($"Invalid binding address '{value}'");
                 continue;
             }
 
