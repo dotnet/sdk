@@ -377,7 +377,9 @@ The manifest will be signed just like the .NET artifacts manifests, with a detac
 #### Locking Rationale
 
 **Why two lock files instead of a mutex such as `ModifyInstallationStates`.**
-A named mutex has exactly one owner, so it cannot represent "N `non-safe` processes are alive"; holding it proves only that nobody is inside a critical section at that instant, which does not cover a `dotnetup sdk install` that is downloading an archive. It also has no fail-if-held semantics, so a contending process blocks rather than reacting, and it is thread-affine, so it cannot be held across an `await`. Handle-based `FileShare` locks give all three properties, and the OS closes the handles if a process is killed, so there is no abandoned-state ambiguity to reason about.
+A named mutex has one owning thread rather than shared ownership, so holding a single mutex for the lifetime of each `non-safe` command would serialize those commands. Mutexes do support nonblocking acquisition through [`WaitOne(0)`](https://learn.microsoft.com/dotnet/api/system.threading.waithandle.waitone?view=net-10.0#system-threading-waithandle-waitone(system-int32))
+
+The real reason is a file lock can implement concurrent shared ownership that can survive an `await` without requiring release on the acquiring thread, where mutexes cannot.
 
 **Why `N` acquires only the activity lock.**
 `P` holds `A` exclusively for the entire transaction, so `A` alone is a continuous signal that a transaction is in flight. An `N` that has acquired `A` shared and retained it excludes `P` completely: if `P` is mid-transaction the acquire by `N` fails, and if `P` is between steps 1.1 and 1.2 the acquire by `N` succeeds, after which step 1.2 fails and `P` releases `U` and backs off. There is no interleaving in which both proceed, and because `N` performs a single acquisition there is no window in which `N` holds nothing after having passed a check.
