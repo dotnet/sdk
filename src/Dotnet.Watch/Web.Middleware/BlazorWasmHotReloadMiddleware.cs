@@ -102,7 +102,7 @@ internal sealed class BlazorWasmHotReloadMiddleware
 
         _logger.LogDebug($"WASM middleware request {context.Request.Method} from {origin}");
 
-        if (_allowedOrigins.Count > 0 && !IsAllowedOrigin(origin, _allowedOrigins))
+        if (!IsAllowedOrigin(origin, _allowedOrigins))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
@@ -146,18 +146,28 @@ internal sealed class BlazorWasmHotReloadMiddleware
                 continue;
             }
 
+            BindingAddress address;
             try
             {
-                var address = BindingAddress.Parse(trimmed);
-                if (!address.IsUnixPipe)
-                {
-                    result.Add(address);
-                }
+                address = BindingAddress.Parse(trimmed);
             }
             catch (FormatException)
             {
                 // Ignore invalid URLs.
+                continue;
             }
+
+            if (address.IsUnixPipe)
+            {
+                continue;
+            }
+
+            if (IsWildcardHost(address.Host))
+            {
+                address = BindingAddress.Parse($"{address.Scheme}://localhost:{address.Port}");
+            }
+
+            result.Add(address);
         }
 
         return result;
@@ -166,15 +176,22 @@ internal sealed class BlazorWasmHotReloadMiddleware
     internal static bool IsAllowedOrigin(StringValues originHeader, IReadOnlyList<BindingAddress> allowedAddresses)
     {
         if (originHeader.Count != 1 ||
-            !Uri.TryCreate(originHeader[0], UriKind.Absolute, out var originUri) ||
-            (originUri.Scheme != Uri.UriSchemeHttp && originUri.Scheme != Uri.UriSchemeHttps))
+            !Uri.TryCreate(originHeader[0], UriKind.Absolute, out var requestOrigin) ||
+            (requestOrigin.Scheme != Uri.UriSchemeHttp && requestOrigin.Scheme != Uri.UriSchemeHttps))
         {
             return false;
         }
 
-        foreach (var address in allowedAddresses)
+        foreach (var allowedAddress in allowedAddresses)
         {
-            if (IsOriginMatch(originUri, address))
+            if (!string.Equals(allowedAddress.Scheme, requestOrigin.Scheme, StringComparison.OrdinalIgnoreCase) ||
+                allowedAddress.Port != requestOrigin.Port)
+            {
+                continue;
+            }
+
+            if (string.Equals(allowedAddress.Host, requestOrigin.Host, StringComparison.OrdinalIgnoreCase) ||
+                (IsLoopbackHost(allowedAddress.Host) && IsLoopbackHost(requestOrigin.Host)))
             {
                 return true;
             }
@@ -183,34 +200,10 @@ internal sealed class BlazorWasmHotReloadMiddleware
         return false;
     }
 
-    private static bool IsOriginMatch(Uri originUri, BindingAddress address)
-    {
-        if (!string.Equals(address.Scheme, originUri.Scheme, StringComparison.OrdinalIgnoreCase) ||
-            address.Port != originUri.Port)
-        {
-            return false;
-        }
-
-        var configuredHost = TrimBrackets(address.Host);
-        if (IsWildcardHost(configuredHost))
-        {
-            return true;
-        }
-
-        var originHost = TrimBrackets(originUri.Host);
-        return string.Equals(configuredHost, originHost, StringComparison.OrdinalIgnoreCase) ||
-            (IsLoopbackHost(configuredHost) && IsLoopbackHost(originHost));
-    }
-
     private static bool IsWildcardHost(string host)
-        => host is "*" or "+" or "0.0.0.0" or "::";
+        => host is "*" or "+" or "0.0.0.0" or "[::]";
 
     private static bool IsLoopbackHost(string host)
         => host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
-           host is "127.0.0.1" or "::1";
-
-    private static string TrimBrackets(string host)
-        => host.Length >= 2 && host[0] == '[' && host[^1] == ']'
-            ? host[1..^1]
-            : host;
+           host is "127.0.0.1" or "[::1]";
 }

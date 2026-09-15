@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
+            context.Request.Headers.Origin = "http://localhost:5000";
             context.Request.ContentType = "application/json";
             var update = new BlazorWasmHotReloadMiddleware.Update
             {
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
+            context.Request.Headers.Origin = "http://localhost:5000";
             context.Request.ContentType = "application/json";
             context.Request.Body = GetJson(updates[0]);
 
@@ -105,6 +107,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             context = new DefaultHttpContext();
             context.Request.Method = "post";
+            context.Request.Headers.Origin = "http://localhost:5000";
             context.Request.ContentType = "application/json";
             context.Request.Body = GetJson(updates[1]);
             await _middleware.InvokeAsync(context);
@@ -141,6 +144,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
+            context.Request.Headers.Origin = "http://localhost:5000";
             context.Request.ContentType = "application/json";
             context.Request.Body = GetJson(update);
             await _middleware.InvokeAsync(context);
@@ -179,6 +183,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             context = new DefaultHttpContext();
             context.Request.Method = "post";
+            context.Request.Headers.Origin = "http://localhost:5000";
             context.Request.ContentType = "application/json";
             context.Request.Body = GetJson(newUpdate);
             await _middleware.InvokeAsync(context);
@@ -288,15 +293,22 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [DataRow("http://localhost:5000;https://localhost:5001", "https://localhost:5001", true)]
         [DataRow("http://localhost:5000", "http://127.0.0.1:5000", true)]
         [DataRow("http://127.0.0.1:5000", "http://localhost:5000", true)]
-        [DataRow("http://*:5000", "http://contoso.example:5000", true)]
-        [DataRow("http://+:5000", "http://contoso.example:5000", true)]
-        [DataRow("http://0.0.0.0:5000", "http://contoso.example:5000", true)]
         [DataRow("http://[::1]:5000", "http://localhost:5000", true)]
         [DataRow("http://localhost:5000", "http://evil.example:5000", false)]
         [DataRow("http://localhost:5000", "https://localhost:5000", false)]
+        [DataRow("http://x:5000", "https://x:5000", false)]
         [DataRow("http://localhost:5000", "http://localhost:5001", false)]
+        [DataRow("http://x:5000", "http://x:5001", false)]
         [DataRow("http://localhost:5000", "", false)]
-        [DataRow("http://contoso.example:5000", "http://localhost:5000", false)]
+        [DataRow("http://x:5000", "http://localhost:5000", false)]
+        [DataRow("http://y:5000", "http://x:5000", false)]
+        [DataRow("http://*:5000", "http://contoso.example:5000", false)] // wildcards in --urls are skipped
+        [DataRow("http://+:5000", "http://contoso.example:5000", false)] // wildcards in --urls are skipped
+        [DataRow("http://0.0.0.0:5000", "http://contoso.example:5000", false)] // wildcards in --urls are skipped
+        [DataRow("http://[::]:5000", "http://contoso.example:5000", false)] // wildcards in --urls are skipped
+        [DataRow("http://*:5000", "http://127.0.0.1:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("http://*:5000", "http://[::1]:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("http://*:5000", "http://localhost:5000", true)] // wildcards in --urls allow loopback
         public void IsAllowedOrigin_MatchesConfiguredServerUrls(string urls, string origin, bool allowed)
         {
             var addresses = BlazorWasmHotReloadMiddleware.ParseServerUrls(urls);
