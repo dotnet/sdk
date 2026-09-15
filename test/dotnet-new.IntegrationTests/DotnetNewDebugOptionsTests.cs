@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     public class DotnetNewDebugOptionsTests : BaseIntegrationTest
     {
         private ITestOutputHelper _log => Log;
+        private static string SdkVersionUnderTest => SdkTestContext.Current.ToolsetUnderTest?.SdkVersion
+            ?? throw new InvalidOperationException("The SDK under test is not configured.");
 
         public DotnetNewDebugOptionsTests()
         {
@@ -19,7 +21,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanShowBasicInfoWithDebugReinit()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            string cacheFilePath = Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json");
+            string cacheFilePath = Path.Combine(home, "dotnetcli", SdkVersionUnderTest, "templatecache.json");
 
             CommandResult commandResult = new DotnetNewCommand(_log)
                 .WithCustomHive(home)
@@ -43,7 +45,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanShowBasicInfoWithDebugRebuildCache()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            string cacheFilePath = Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json");
+            string cacheFilePath = Path.Combine(home, "dotnetcli", SdkVersionUnderTest, "templatecache.json");
 
             CommandResult commandResult = new DotnetNewCommand(_log)
                 .WithCustomHive(home)
@@ -118,7 +120,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.HasCount(2, createdCacheEntries);
             Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
-            Assert.IsTrue(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
+            Assert.IsTrue(File.Exists(Path.Combine(home, "dotnetcli", SdkVersionUnderTest, "templatecache.json")));
         }
 
         [TestMethod]

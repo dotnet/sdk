@@ -33,6 +33,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.1.0.60101")]
+        [RequiresSpecificFramework(ToolsetInfo.CurrentTargetFramework)]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
