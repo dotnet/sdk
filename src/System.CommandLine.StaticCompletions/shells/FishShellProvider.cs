@@ -18,6 +18,9 @@ public class FishShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
+    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
+        names.Where(n => n.StartsWith('-'));
+
     public string GenerateCompletions(Command command)
     {
         var safeName = command.Name.MakeSafeFunctionName();
@@ -128,7 +131,7 @@ public class FishShellProvider : IShellProvider
             // Single-value options (arity exactly 1): skip the next token
             var singleValueNames = valueOptions
                 .Where(o => o.Arity.MaximumNumberOfValues == 1)
-                .SelectMany(o => o.Names())
+                .SelectMany(o => SanitizeOptionNames(o.Names()))
                 .ToArray();
             if (singleValueNames.Length > 0)
             {
@@ -145,7 +148,7 @@ public class FishShellProvider : IShellProvider
                 .GroupBy(o => o.Arity.MaximumNumberOfValues);
             foreach (var group in multiValueByArity)
             {
-                var names = string.Join(" ", group.SelectMany(o => o.Names()));
+                var names = string.Join(" ", group.SelectMany(o => SanitizeOptionNames(o.Names())));
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
                 WriteMultiValueSkipLoop(writer, group.Key);
@@ -257,7 +260,7 @@ public class FishShellProvider : IShellProvider
 
             foreach (var option in valueOptions)
             {
-                var names = string.Join(" ", option.Names());
+                var names = string.Join(" ", SanitizeOptionNames(option.Names()));
                 var maxValues = option.Arity.MaximumNumberOfValues;
                 bool isBounded = maxValues < UnboundedArityThreshold;
 
@@ -327,11 +330,11 @@ public class FishShellProvider : IShellProvider
                 WriteCandidate(writer, sub.Name, SanitizeDescription(sub.Description));
             }
 
-            // Option completions - emit all aliases so both -h and --help are completable
+            // Option completions - emit all supported aliases so both -h and --help are completable
             foreach (var option in cmd.HierarchicalOptions().Where(o => !o.Hidden))
             {
                 var desc = SanitizeDescription(option.Description);
-                foreach (var name in option.Names())
+                foreach (var name in SanitizeOptionNames(option.Names()))
                 {
                     WriteCandidate(writer, name, desc);
                 }
