@@ -252,6 +252,16 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     var parameter = method.Parameters[i < method.Parameters.Length ? i : method.Parameters.Length - 1];
                     var argumentType = OtherArguments[i].Value.WalkDownConversion().Type;
                     var parameterType = parameter.Type;
+                    // Reusing expanded argument syntax must synthesize the same array, not pass an
+                    // element directly or change the array's runtime type.
+                    if (OtherArguments[i].ArgumentKind == ArgumentKind.ParamArray &&
+                        (i != method.Parameters.Length - 1 ||
+                         !parameter.IsParams ||
+                         !SymbolEqualityComparer.Default.Equals(argumentType, parameterType)))
+                    {
+                        return false;
+                    }
+
                     // Preserve both forms of a params argument: an explicit array binds to the array parameter,
                     // while each expanded argument must be compatible with its element type.
                     if (parameter.IsParams &&
