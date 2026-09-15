@@ -680,6 +680,24 @@ public partial class NativeEntryPointTests
         });
     }
 
+    [TestMethod]
+    [DataRow("new --help", false)]
+    [DataRow("new -h", false)]
+    [DataRow("new create --help", false)]
+    [DataRow("new create -h", false)]
+    [DataRow("new console --help", true)]
+    [DataRow("new install --help", true)]
+    [DataRow("build --help", true)]
+    public void ShouldAttemptAotExecution_SkipsOnlyGenericNewHelp(string commandLine, bool expected)
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            Assert.AreEqual(expected, NativeEntryPoint.ShouldAttemptAotExecution(commandLine.Split(' ')));
+        });
+    }
+
 
     [TestMethod]
     public void ExecuteCore_SetsHostfxrPathInAppContext()
