@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -26,19 +27,7 @@ internal static class EnvironmentVariables
         public const string SuppressBrowserRefresh = "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH";
     }
 
-    public static LogLevel? CliLogLevel
-    {
-        get
-        {
-            var value = Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE");
-            return string.Equals(value, "trace", StringComparison.OrdinalIgnoreCase)
-                ? LogLevel.Trace
-                : ParseBool(value)
-                ? LogLevel.Debug
-                : null;
-        }
-    }
-
+    public static bool CliContextVerbose => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");
     public static bool RestartOnRudeEdit => ReadBool("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
@@ -60,6 +49,13 @@ internal static class EnvironmentVariables
     public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";
 
     public static string? BrowserWebSocketHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+
+    /// <summary>
+    /// A list of additional domains, other than localhost and <see cref="BrowserWebSocketHostName"/>,
+    /// allowed as origins of connections to the broser refresh web socket.
+    /// Use when the browser opens the app on a custom domain.
+    /// </summary>
+    public static ImmutableArray<string> DotNetWatchWebSocketAllowedOrigins => ReadList("DOTNET_WATCH_AUTO_RELOAD_WS_ORIGINS", separators: [';', ',']);
 
     /// <summary>
     /// Port used for browser WebSocket communication. Defaults to 0 (auto-assign) if not specified.
@@ -97,6 +93,11 @@ internal static class EnvironmentVariables
 
     private static int? ReadInt(string variableName)
         => Environment.GetEnvironmentVariable(variableName) is var value && int.TryParse(value, out var intValue) ? intValue : null;
+
+    private static ImmutableArray<string> ReadList(string variableName, char[] separators)
+        => Environment.GetEnvironmentVariable(variableName) is { } value
+            ? [.. value.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]
+            : [];
 
     private static bool ParseBool(string? value)
         => value == "1" || bool.TryParse(value, out var boolValue) && boolValue;

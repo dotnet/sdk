@@ -18,6 +18,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
@@ -77,6 +78,19 @@ internal static class WorkloadCommandParser
         def.ElevateCommand.SetAction(parseResult => new WorkloadElevateCommand(parseResult).Execute());
         def.ConfigCommand.SetAction(parseResult => new WorkloadConfigCommand(parseResult).Execute());
         def.HistoryCommand.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
+    }
+
+    /// <summary>
+    /// Builds the <see cref="PackageSourceLocation"/> described by the <c>--configfile</c> and <c>--source</c>
+    /// options, or <see langword="null"/> if neither was specified.
+    /// </summary>
+    public static PackageSourceLocation? ToPackageSourceLocation(this ParseResult parseResult, Option<string> configOption, Option<string[]> sourceOption)
+    {
+        var configFile = parseResult.GetValue(configOption);
+        var sources = parseResult.GetValue(sourceOption);
+
+        return string.IsNullOrEmpty(configFile) && (sources is null || sources.Length == 0) ? null :
+            new PackageSourceLocation(string.IsNullOrEmpty(configFile) ? null : new FilePath(configFile), sourceFeedOverrides: sources);
     }
 
     public static RestoreActionConfig ToRestoreActionConfig(this NuGetRestoreOptions options, ParseResult parseResult)
