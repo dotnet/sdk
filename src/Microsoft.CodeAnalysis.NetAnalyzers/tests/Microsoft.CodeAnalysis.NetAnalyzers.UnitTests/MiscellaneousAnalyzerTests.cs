@@ -25,20 +25,35 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
         }
 
-        [TestMethod]
-        public void TestGlobalizationAnalyzersSubclassAbstractGlobalizationDiagnosticAnalyzer()
+        private static AnalyzerFileReference[] GetShippedAnalyzerFileReferences()
         {
             // <repo_root>\artifacts\bin\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests\Debug\netcoreapp3.1\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.dll
             var testsAssemblyPath = typeof(MiscellaneousAnalyzerTests).Assembly.Location;
-
             var directory = Path.GetDirectoryName(testsAssemblyPath);
+            var assemblyNames = new[] { "Microsoft.CodeAnalysis.NetAnalyzers.dll", "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll", "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" };
+            var analyzerFileReferences = new AnalyzerFileReference[assemblyNames.Length];
 
-            foreach (var assembly in new[] { "Microsoft.CodeAnalysis.NetAnalyzers.dll", "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll", "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" })
+            for (int i = 0; i < assemblyNames.Length; i++)
             {
-                var path = Path.Combine(directory, assembly);
+                var path = Path.Combine(directory, assemblyNames[i]);
                 Assert.IsTrue(File.Exists(path), $"File {path} doesn't exist.");
+
                 var analyzerFileReference = new AnalyzerFileReference(path, AnalyzerAssemblyLoader.Instance);
                 analyzerFileReference.AnalyzerLoadFailed += AnalyzerFileReference_AnalyzerLoadFailed;
+                analyzerFileReferences[i] = analyzerFileReference;
+            }
+
+            return analyzerFileReferences;
+        }
+
+        private static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)
+            => throw e.Exception ?? new NotSupportedException(e.Message);
+
+        [TestMethod]
+        public void TestGlobalizationAnalyzersSubclassAbstractGlobalizationDiagnosticAnalyzer()
+        {
+            foreach (var analyzerFileReference in GetShippedAnalyzerFileReferences())
+            {
                 var analyzers = analyzerFileReference.GetAnalyzersForAllLanguages();
                 foreach (var analyzer in analyzers)
                 {
@@ -61,28 +76,12 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                     }
                 }
             }
-
-            static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)
-            => throw e.Exception ?? new NotSupportedException(e.Message);
         }
 
         [TestMethod]
         public void CA1825IsDiscoveredExactlyOncePerLanguageFromShippedAssemblies()
         {
-            var testsAssemblyPath = typeof(MiscellaneousAnalyzerTests).Assembly.Location;
-            var directory = Path.GetDirectoryName(testsAssemblyPath);
-            var assemblyNames = new[] { "Microsoft.CodeAnalysis.NetAnalyzers.dll", "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll", "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" };
-            var analyzerFileReferences = new AnalyzerFileReference[assemblyNames.Length];
-
-            for (int i = 0; i < assemblyNames.Length; i++)
-            {
-                var path = Path.Combine(directory, assemblyNames[i]);
-                Assert.IsTrue(File.Exists(path), $"File {path} doesn't exist.");
-
-                var analyzerFileReference = new AnalyzerFileReference(path, AnalyzerAssemblyLoader.Instance);
-                analyzerFileReference.AnalyzerLoadFailed += AnalyzerFileReference_AnalyzerLoadFailed;
-                analyzerFileReferences[i] = analyzerFileReference;
-            }
+            var analyzerFileReferences = GetShippedAnalyzerFileReferences();
 
             foreach (var language in new[] { LanguageNames.CSharp, LanguageNames.VisualBasic })
             {
@@ -95,9 +94,6 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                 Assert.AreEqual("Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsAnalyzer", ca1825Analyzers[0].GetType().FullName);
                 Assert.AreEqual("Microsoft.CodeAnalysis.NetAnalyzers", ca1825Analyzers[0].GetType().Assembly.GetName().Name);
             }
-
-            static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)
-            => throw e.Exception ?? new NotSupportedException(e.Message);
         }
 
         private static bool IsSubClassOfGlobalizationAnalyzer(Type analyzerType)
