@@ -21,6 +21,7 @@ internal abstract class InstallCommand : CommandBase
     public Verbosity Verbosity { get; }
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
+    public bool DryRun { get; }
     public IEnvShellProvider? ShellProvider { get; }
     public bool MigrateFromSystem { get; }
     public virtual bool UpdateGlobalJson => false;
@@ -39,6 +40,7 @@ internal abstract class InstallCommand : CommandBase
         Verbosity = parseResult.GetValue(CommonOptions.VerbosityOption);
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
+        DryRun = parseResult.GetValue(CommonOptions.DryRunOption);
         ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
         MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 

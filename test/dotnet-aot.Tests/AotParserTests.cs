@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
@@ -19,18 +21,6 @@ namespace Microsoft.DotNet.Cli.Tests;
 [TestClass]
 public partial class AotParserTests
 {
-    // File-based app detection (GetFileBasedAppEntryPointToken -> VirtualProjectBuilder.IsValidEntryPointPath)
-    // pulls in the Microsoft.Build assembly, which cannot be loaded into a NativeAOT image, so the call
-    // always throws under AOT. Skip the affected tests when running AOT-compiled (no dynamic code support),
-    // while still exercising them in the managed test run. Tracked by https://github.com/dotnet/sdk/issues/54806.
-    private static void SkipIfFileBasedAppDetectionUnavailableUnderAot()
-    {
-        if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-        {
-            Assert.Inconclusive("https://github.com/dotnet/sdk/issues/54806 - GetFileBasedAppEntryPointToken requires Microsoft.Build, which cannot be loaded under NativeAOT.");
-        }
-    }
-
     private static Exception? RecordException(Action action)
     {
         try
@@ -82,14 +72,13 @@ public partial class AotParserTests
         Assert.IsEmpty(result.Errors);
     }
 
+    /// <summary>Verifies that an existing C# file is detected as an implicit file-based application.</summary>
     [TestMethod]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
         // path as an unmatched root argument, so the shared detection (reused from the managed CLI)
-        // identifies it so NativeEntryPoint can defer to the managed run pipeline.
+        // identifies it for external resolution and the narrow native run gate.
         var csFile = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
         File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
         try
@@ -104,20 +93,50 @@ public partial class AotParserTests
         }
     }
 
+    /// <summary>Verifies that shorthand reparsing preserves run options, environment variables, and application arguments.</summary>
+    [TestMethod]
+    public void ParseFileBasedAppAsRunPreservesOptionsAndApplicationArguments()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(path, "Console.WriteLine(42);");
+        try
+        {
+            ParseResult? runParseResult = Parser.Parse([
+                path,
+                "--no-build",
+                "--no-launch-profile",
+                "-e", "TEST_SHORTHAND=value",
+                "--", "arg one", "--flag",
+            ]).TryParseFileBasedAppAsRun();
+
+            Assert.IsNotNull(runParseResult);
+            var definition = (RunCommandDefinition)runParseResult.CommandResult.Command;
+            Assert.AreEqual(path, runParseResult.GetValue(definition.FileOption));
+            Assert.IsTrue(runParseResult.HasOption(definition.NoBuildOption));
+            Assert.IsTrue(runParseResult.HasOption(definition.NoLaunchProfileOption));
+            IReadOnlyDictionary<string, string>? environmentVariables = runParseResult.GetValue(definition.EnvOption);
+            Assert.IsNotNull(environmentVariables);
+            Assert.AreEqual("value", environmentVariables["TEST_SHORTHAND"]);
+            Assert.AreSequenceEqual(["arg one", "--flag"], runParseResult.GetValue(definition.ApplicationArguments));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    /// <summary>Verifies that a built-in command is not treated as a file-based application.</summary>
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForBuiltInCommand()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         var result = Parser.Parse(["build"]);
         Assert.IsNull(result.GetFileBasedAppEntryPointToken());
     }
 
+    /// <summary>Verifies that a nonexistent C# path is not treated as a file-based application.</summary>
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForNonExistentFile()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         // IsValidEntryPointPath requires the file to exist, so a bogus *.cs argument is not
         // treated as a file-based app (it would resolve as an external `dotnet-<name>` command).
         var result = Parser.Parse([$"does-not-exist-{Guid.NewGuid():N}.cs"]);
@@ -231,6 +250,32 @@ public partial class AotParserTests
         var exception = RecordException(() => Parser.Invoke(result));
 
         Assert.IsNull(exception);
+    }
+
+    /// <summary>Verifies that run help renders directly from the Native AOT command tree.</summary>
+    [TestMethod]
+    public void InvokeRunHelp_RendersFromAotWithoutFallback()
+    {
+        var result = Parser.Parse(["run", "--help"]);
+        var exception = RecordException(() => Parser.Invoke(result));
+
+        Assert.IsNull(exception);
+    }
+
+    /// <summary>Verifies that unsupported run options retain managed fallback.</summary>
+    [TestMethod]
+    public void InvokeUnsupportedRunShape_FallsBackToManaged()
+    {
+        var result = Parser.Parse([
+            "run",
+            "--file", "Program.cs",
+            "--no-build",
+            "--no-launch-profile",
+            "--configuration", "Release",
+        ]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }
 
     [TestMethod]

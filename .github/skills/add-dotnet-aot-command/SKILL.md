@@ -44,6 +44,12 @@ Dispatch: `dotnet-aot/NativeEntryPoint.cs` (`dotnet_execute`) is P/Invoked by th
 - `DOTNET_CLI_ENABLEAOT=true`: parse in-process, run `FirstRunExperience.Setup`, and if
   `parseResult.CanBeInvoked()` run the command **in-process**. A command still needing the managed CLI
   throws `CommandNotAvailableInAotException` to fall through.
+- `run` has an intentionally narrow AOT path: launch-only reuse through explicit `--file`,
+  positional discovery, or implicit shorthand. `--no-build` can use prior synthetic output;
+  build-enabled and no-build runs can use unchanged validated replayed/MSBuild `RunProperties`.
+  Project profiles decorate cached launches, while no-build Executable profiles can bypass cache.
+  Positional discovery defers when the current directory contains a project; shorthand first
+  preserves external resolution. Stale, ambiguous, or build-required shapes defer.
 - Otherwise / on fall-through: host `{sdkDir}/dotnet.dll` via hostfxr (same source, JIT-compiled).
 
 Types already available (do **not** re-add their sources): `Microsoft.DotNet.Cli.Utils`,
@@ -65,7 +71,7 @@ but inside that process the BCL "where am I" APIs do **not** point there:
 So deriving an SDK-relative path (`MSBuild.dll`, `Sdks/`, `DotnetTools/`, targets) from
 `AppContext.BaseDirectory` or a dll path is **wrong** in the AOT bubble. Instead:
 
-- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.Utils`), which resolves the
+- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.CoreUtils`), which resolves the
   `Microsoft.DotNet.Sdk.Root` AppContext value -> SDK assembly directory -> `AppContext.BaseDirectory`
   (once, cached).
 - `NativeEntryPoint.ExecuteCore` resolves the SDK directory once (host `sdk_dir`, else self-locating the
@@ -150,12 +156,19 @@ steps** so they can reproduce it.
 src\Cli\dn\run-dn.ps1 -Command "--info"                    # through the AOT binary
 src\Cli\dn\run-dn.ps1 -Command "--info" -Mode Compare      # AOT vs managed diff (parity)
 src\Cli\dn\run-dn.ps1 -Command "workload --info" -NoBuild  # reuse the assembled layout
+src\Cli\dn\run-dn.ps1 -Command "run --file C:\tmp\app.cs --no-build --no-launch-profile" -NoBuild
+src\Cli\dn\run-dn.ps1 -Command "run C:\tmp\app.cs --no-build --no-launch-profile" -NoBuild
+src\Cli\dn\run-dn.ps1 -Command "C:\tmp\app.cs --no-build --no-launch-profile" -NoBuild
+src\Cli\dn\run-dn.ps1 -Command "run --file C:\tmp\app.cs --no-build --launch-profile MyProfile" -NoBuild
 ```
 
-- `DOTNET_CLI_ENABLEAOT=true` runs in-process in `dotnet-aot.dll`; unset, `dn` hosts the copied
-  `dotnet.dll`. `-Mode Compare` diffs the captured output (`artifacts/log/dn-aot.txt`, `dn-managed.txt`).
+- `DOTNET_CLI_ENABLEAOT=true` runs in-process in the platform-specific `dotnet-aot` native library;
+  `DOTNET_CLI_ENABLEAOT=false` makes `dn` host the copied `dotnet.dll`. `-Mode Compare` diffs the
+  captured output (`artifacts/log/dn-aot.txt`, `dn-managed.txt`).
 - `dn` finds the .NET root from `DOTNET_ROOT` (set to `.dotnet`); the publish dir isn't a full SDK.
 - The AOT path runs `FirstRunExperience.Setup` first; if it can't complete, it defers to the managed CLI.
+- For focused integration tests against an assembled harness, set
+  `DOTNET_AOT_TEST_DN_PATH` to the full `dn` executable path.
 - `Commit` and workloads reflect the `DOTNET_ROOT` layout - both paths read the same root, so they agree.
 
 The VS Code tasks `publish-and-copy-dn-aot` + `copy-all-deps` do the same build/assemble.

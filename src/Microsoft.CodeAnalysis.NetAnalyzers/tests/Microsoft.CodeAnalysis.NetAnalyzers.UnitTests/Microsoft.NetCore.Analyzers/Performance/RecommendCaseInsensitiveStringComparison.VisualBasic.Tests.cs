@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -389,6 +389,42 @@ End Class";
             };
 
             await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedDiagnostics_VisualBasic_FixAllRewritesBoth()
+        {
+            string originalCode = @"Imports System
+Class C
+    Private Sub M()
+        Dim a As String = ""aBc""
+        Dim b As String = ""bc""
+        Dim c As String = ""c""
+        Dim result = a.ToLower().StartsWith(If(b.ToLower().IndexOf(c) > 0, ""x"", ""y""))
+    End Sub
+End Class
+";
+            string fixedCode = @"Imports System
+Class C
+    Private Sub M()
+        Dim a As String = ""aBc""
+        Dim b As String = ""bc""
+        Dim c As String = ""c""
+        Dim result = a.StartsWith(If(b.IndexOf(c, StringComparison.CurrentCultureIgnoreCase) > 0, ""x"", ""y""), StringComparison.CurrentCultureIgnoreCase)
+    End Sub
+End Class
+";
+            await new VerifyVB.Test
+            {
+                TestCode = originalCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(RecommendCaseInsensitiveStringComparisonAnalyzer.RecommendCaseInsensitiveStringComparisonRule).WithSpan(7, 22, 7, 86).WithArguments("Public Overloads Function StartsWith(value As String) As Boolean"),
+                    VerifyVB.Diagnostic(RecommendCaseInsensitiveStringComparisonAnalyzer.RecommendCaseInsensitiveStringComparisonRule).WithSpan(7, 48, 7, 70).WithArguments("Public Overloads Function IndexOf(value As String) As Integer")
+                }
+            }.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyFixVisualBasicAsync(string originalSource, string fixedSource)

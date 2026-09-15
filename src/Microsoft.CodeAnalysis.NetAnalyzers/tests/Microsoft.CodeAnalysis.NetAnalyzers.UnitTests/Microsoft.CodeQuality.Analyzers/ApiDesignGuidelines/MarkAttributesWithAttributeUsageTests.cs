@@ -144,6 +144,84 @@ End Class
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(objectName);
 
+        [TestMethod]
+        public async Task CSharp_TwoAttributeClasses_FixAllAppliesTheSelectedTargetToBothAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class C : Attribute
+{
+}
+
+class D : Attribute
+{
+}
+",
+                ExpectedDiagnostics =
+                {
+                    GetCA1018CSharpResultAt(4, 7, "C"),
+                    GetCA1018CSharpResultAt(8, 7, "D"),
+                },
+                CodeActionIndex = 10,
+                CodeActionEquivalenceKey = "AttributeTargets.Method",
+                FixedCode = @"
+using System;
+
+[AttributeUsage(AttributeTargets.Method)]
+class C : Attribute
+{
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+class D : Attribute
+{
+}
+",
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Basic_TwoAttributeClasses_FixAllAppliesTheSelectedTargetToBothAsync()
+        {
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System
+
+Class C
+    Inherits Attribute
+End Class
+
+Class D
+    Inherits Attribute
+End Class
+",
+                ExpectedDiagnostics =
+                {
+                    GetCA1018BasicResultAt(4, 7, "C"),
+                    GetCA1018BasicResultAt(8, 7, "D"),
+                },
+                CodeActionIndex = 10,
+                CodeActionEquivalenceKey = "AttributeTargets.Method",
+                FixedCode = @"
+Imports System
+
+<AttributeUsage(AttributeTargets.Method)>
+Class C
+    Inherits Attribute
+End Class
+
+<AttributeUsage(AttributeTargets.Method)>
+Class D
+    Inherits Attribute
+End Class
+",
+            }.RunAsync(CancellationToken.None);
+        }
+
         private static DiagnosticResult GetCA1018BasicResultAt(int line, int column, string objectName)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()

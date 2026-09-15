@@ -855,8 +855,8 @@ public static class Program
                 IsExe = true,
             };
 
-            var identifer = (selfContained == null ? "null" : selfContained.ToString()) + (useAppHost == null ? "null" : useAppHost.ToString());
-            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: identifer);
+            var identifier = (selfContained == null ? "null" : selfContained.ToString()) + (useAppHost == null ? "null" : useAppHost.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var projectDirectory = Path.Combine(testProjectInstance.Path, testProject.Name);
             var publishProfilesDirectory = Path.Combine(projectDirectory, "Properties", "PublishProfiles");
@@ -1138,7 +1138,7 @@ public static class Program
             if (appRelativeDotNet != null)
                 testProject.AdditionalProperties.Add("AppHostRelativeDotNet", appRelativeDotNet);
 
-            // Identifer based on test inputs to create test assets that are unique for each test case
+            // Identifier based on test inputs to create test assets that are unique for each test case
             string assetIdentifier = $"{searchLocation}{appRelativeDotNet}{expectedLocation}";
             var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: assetIdentifier);
 

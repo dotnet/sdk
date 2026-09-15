@@ -314,5 +314,57 @@ End Class";
 
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            string source = @"
+using System;
+
+public class C
+{
+    public bool M(string x, string y)
+    {
+        return [|string.Compare(([|string.Compare(x, y) == 0|]).ToString(), y) == 0|];
+    }
+}
+";
+            string fixedSource = @"
+using System;
+
+public class C
+{
+    public bool M(string x, string y)
+    {
+        return string.Equals((string.Equals(x, y)).ToString(), y);
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            string source = @"
+Imports System
+
+Public Class C
+    Public Function M(x As String, y As String) As Boolean
+        Return [|String.Compare(([|String.Compare(x, y) = 0|]).ToString(), y) = 0|]
+    End Function
+End Class
+";
+            string fixedSource = @"
+Imports System
+
+Public Class C
+    Public Function M(x As String, y As String) As Boolean
+        Return String.Equals((String.Equals(x, y)).ToString(), y)
+    End Function
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }

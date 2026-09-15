@@ -193,6 +193,30 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             return assemblyInfoList;
         }
 
+        /// <summary>
+        /// Produces one partition per schedulable public class candidate in the assembly, rather
+        /// than grouping classes together up to a method-count limit. Type discovery uses the same
+        /// heuristic as <see cref="Schedule(string, bool, bool)"/>, which may include public classes
+        /// with no directly-declared test methods (to account for inherited tests). If the assembly
+        /// contains no schedulable types, a single unpartitioned representation is returned.
+        /// </summary>
+        public IEnumerable<AssemblyPartitionInfo> PartitionByClass(string assemblyPath)
+        {
+            var typeInfoList = GetTypeInfoList(assemblyPath);
+            if (typeInfoList.Count == 0)
+            {
+                return new[] { CreateAssemblyInfo(assemblyPath) };
+            }
+
+            var assemblyName = Path.GetFileName(assemblyPath);
+            return typeInfoList
+                .Select(typeInfo => new AssemblyPartitionInfo(
+                    assemblyPath,
+                    displayName: $"{assemblyName}.{typeInfo.FullName}",
+                    classListArgumentString: $"{typeInfo.FullName}."))
+                .ToList();
+        }
+
         public AssemblyPartitionInfo CreateAssemblyInfo(string assemblyPath)
         {
             return new AssemblyPartitionInfo(assemblyPath);

@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -110,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return null;
             }
 
-            if (ICollectionExpressionOperationWrapper.IsInstance(operation))
+            if (operation is ICollectionExpressionOperation)
             {
                 return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression;
             }
@@ -235,7 +234,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (method.Name == nameof(Stopwatch.GetTimestamp) &&
                     method.IsStatic &&
                     method.Parameters.IsEmpty &&
-                    method.ContainingType?.ToDisplayString() == "System.Diagnostics.Stopwatch")
+                    SymbolEqualityComparer.Default.Equals(
+                        method.ContainingType,
+                        WellKnownTypeProvider.GetOrCreate(invocationOperation.SemanticModel!.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsStopwatch)))
                 {
                     return true;
                 }

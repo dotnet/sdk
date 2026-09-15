@@ -7,7 +7,6 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 using NuGet.CommandLine.XPlat;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
@@ -30,16 +29,13 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
             throw new ArgumentException($"'{entryPointFilePath}' is not a fully qualified path.", paramName: nameof(entryPointFilePath));
         }
 
-        var builder = new VirtualProjectBuilder(entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
 
-        builder.CreateProjectInstance(
-            projectCollection,
-            ErrorReporters.IgnoringReporter,
-            project: out _,
-            out var projectRootElement,
-            evaluatedDirectives: out _);
+        var result = builder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            ErrorReporters.IgnoringReporter).AsTask().GetAwaiter().GetResult();
 
-        return projectRootElement;
+        return result.ProjectRootElement.Unwrap();
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]

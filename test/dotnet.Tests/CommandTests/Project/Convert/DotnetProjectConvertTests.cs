@@ -1725,8 +1725,8 @@ public sealed class DotnetProjectConvertTests : SdkTest
             [
                 (7, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", RunFileTests_General.s_includeExcludeDefaultKnownExtensions)),
                 (8, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:exclude", RunFileTests_General.s_includeExcludeDefaultKnownExtensions)),
-                (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "A.cs"))),
-                (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "|.cs"))),
+                (1, string.Format(FileBasedProgramsResources.IncludedFileNotFound, Path.Join(testInstance.Path, "A.cs"))),
+                (1, string.Format(FileBasedProgramsResources.IncludedFileNotFound, Path.Join(testInstance.Path, "|.cs"))),
             ]);
     }
 
@@ -2442,19 +2442,17 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_InvalidPropertyName()
+    [DataRow("123Name", "Name cannot begin with the '1' character, hexadecimal value 0x31.")]
+    [DataRow("Prefix:Name", "The ':' character, hexadecimal value 0x3A, cannot be included in a name.")]
+    public void Directives_InvalidPropertyName(string propertyName, string errorMessage)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:property 123Name=Value
-                """,
+            inputCSharp: $"#:property {propertyName}=Value",
             expectedErrors:
             [
-                (1, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, """
-                    Name cannot begin with the '1' character, hexadecimal value 0x31.
-                    """)),
+                (1, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, errorMessage)),
             ]);
     }
 
@@ -3038,6 +3036,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         out ImmutableArray<SimpleDiagnostic>.Builder? actualDiagnostics)
     {
         var builder = new VirtualProjectBuilder(
+            BuildService.Instance,
             entryPointFileFullPath: filePath,
             targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(inputCSharp, Encoding.UTF8));
@@ -3047,12 +3046,10 @@ public sealed class DotnetProjectConvertTests : SdkTest
         ImmutableArray<CSharpDirective> directives;
         if (evaluateDirectives)
         {
-            builder.CreateProjectInstance(
-                new ProjectCollection(),
-                errorReporter,
-                project: out _,
-                projectRootElement: out _,
-                out directives);
+            var result = builder.CreateProjectInstanceAsync(
+                new ProjectCollection().Wrap(),
+                errorReporter).AsTask().GetAwaiter().GetResult();
+            directives = result.EvaluatedDirectives;
         }
         else
         {

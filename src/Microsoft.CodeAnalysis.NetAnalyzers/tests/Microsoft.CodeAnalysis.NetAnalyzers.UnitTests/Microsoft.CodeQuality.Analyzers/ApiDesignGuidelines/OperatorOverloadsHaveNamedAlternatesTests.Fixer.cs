@@ -241,6 +241,40 @@ public class C
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task BothOperatorsOnOneType_FixAllAddsEveryAlternate_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
+    public static C operator -(C left, C right) { return new C(); }
+}
+",
+                new[]
+                {
+                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(4, 30, 4, 31).WithArguments("Add", "op_Addition"),
+                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(5, 30, 5, 31).WithArguments("Subtract", "op_Subtraction"),
+                },
+@"
+public class C
+{
+    public static C operator +(C left, C right) { return new C(); }
+    public static C operator -(C left, C right) { return new C(); }
+
+    public static C Add(C left, C right)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static C Subtract(C left, C right)
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
+        }
+
         #endregion
 
         #region VB tests
@@ -477,6 +511,44 @@ Public Class C
 End Class
 ",
             }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task BothOperatorsOnOneType_FixAllAddsEveryAlternate_BasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
+    Public Shared Operator -(left As C, right As C) As C
+        Return New C()
+    End Operator
+End Class
+",
+                new[]
+                {
+                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(3, 28, 3, 29).WithArguments("Add", "op_Addition"),
+                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule).WithSpan(6, 28, 6, 29).WithArguments("Subtract", "op_Subtraction"),
+                },
+@"
+Public Class C
+    Public Shared Operator +(left As C, right As C) As C
+        Return New C()
+    End Operator
+    Public Shared Operator -(left As C, right As C) As C
+        Return New C()
+    End Operator
+
+    Public Shared Function Add(left As C, right As C) As C
+        Throw New System.NotImplementedException()
+    End Function
+
+    Public Shared Function Subtract(left As C, right As C) As C
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
         }
 
         #endregion

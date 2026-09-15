@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyStringComparisonFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicSpecifyStringComparisonFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {

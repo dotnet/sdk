@@ -396,75 +396,30 @@ public class RunCommand
     {
         var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
 
-        var commandArgs = (NoLaunchProfileArguments || ApplicationArgs is not [])
-            ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs)
-            : launchSettings.CommandLineArgs ?? "";
+        string commandArgs = CommonRunHelpers.CombineRunArguments(
+            baseArguments: null,
+            ApplicationArgs,
+            NoLaunchProfileArguments ? null : launchSettings.CommandLineArgs);
 
         var commandSpec = new CommandSpec(launchSettings.ExecutablePath, commandArgs);
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
-        SetEnvironmentVariables(command, launchSettings, EnvironmentVariables);
+        CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            launchSettings,
+            EnvironmentVariables,
+            (name, value) => command.EnvironmentVariable(name, value));
 
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings, IReadOnlyDictionary<string, string> environmentVariables)
-    {
-        // Handle Project-specific settings
-        if (launchSettings is ProjectLaunchProfile projectSettings)
-        {
-            if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
-            {
-                command.EnvironmentVariable("ASPNETCORE_URLS", projectSettings.ApplicationUrl);
-            }
-        }
-
-        if (launchSettings != null)
-        {
-            command.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-            foreach (var entry in launchSettings.EnvironmentVariables)
-            {
-                command.EnvironmentVariable(entry.Key, entry.Value);
-            }
-        }
-
-        // Env variables specified on command line (or, for opted-in projects, the final
-        // @(RuntimeEnvironmentVariable) item group after ComputeRunArguments) override those
-        // specified in the launch profile:
-        foreach (var (name, value) in environmentVariables)
-        {
-            command.EnvironmentVariable(name, value);
-        }
-    }
-
     internal LaunchProfileParseResult ReadLaunchProfileSettings()
-    {
-        if (NoLaunchProfile)
-        {
-            return LaunchProfileParseResult.Success(model: null);
-        }
-
-        var launchSettingsPath = ReadCodeFromStdin
-            ? null
-            : LaunchSettings.TryFindLaunchSettingsFile(
-                projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
-                launchProfile: LaunchProfile,
-                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
-
-        if (launchSettingsPath is null)
-        {
-            return LaunchProfileParseResult.Success(model: null);
-        }
-
-        if (!RunCommandVerbosity.IsQuiet())
-        {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
-        }
-
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
-    }
+        => CommonRunHelpers.ReadLaunchProfile(
+            ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
+            LaunchProfile,
+            NoLaunchProfile,
+            reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
+            static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
     {
@@ -589,6 +544,7 @@ public class RunCommand
             bool hasRuntimeEnvironmentVariableSupport;
             try
             {
+                using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
                 hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
@@ -608,7 +564,10 @@ public class RunCommand
             }
         }
 
-        SetEnvironmentVariables(command, launchSettings, runtimeEnvironmentVariables);
+        CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            launchSettings,
+            runtimeEnvironmentVariables,
+            (name, value) => command.EnvironmentVariable(name, value));
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
@@ -677,7 +636,7 @@ public class RunCommand
         static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
             var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
-            var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
+            var exePath = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath).AppHost;
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec);
 
@@ -760,7 +719,7 @@ public class RunCommand
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
-            ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
+            ? CommonRunHelpers.TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
 
         // Check if the project file actually exists when it's specified as a direct file path
@@ -781,23 +740,6 @@ public class RunCommand
         }
 
         return projectFilePath;
-
-        static string? TryFindSingleProjectInDirectory(string directory)
-        {
-            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
-
-            if (projectFiles.Length == 0)
-            {
-                return null;
-            }
-
-            if (projectFiles.Length > 1)
-            {
-                throw new GracefulException(CliCommandStrings.RunCommandExceptionMultipleProjects, directory);
-            }
-
-            return projectFiles[0];
-        }
 
         static string? TryFindEntryPointFilePath(bool readCodeFromStdin, ref string[] args)
         {
@@ -974,14 +916,11 @@ public class RunCommand
             out ImmutableArray<string> loggerArgs,
             out ImmutableArray<string> nonLoggerArgs)
         {
-            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
-            if (applicationArgumentsAfterDoubleDash is null)
-            {
-                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
-                return;
-            }
-
-            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            if (!CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+                parseResult,
+                applicationArguments,
+                out int countBeforeDoubleDash,
+                out string[] applicationArgumentsAfterDoubleDash))
             {
                 // This hopefully should not happen, but if it does, we don't want to break users.
                 Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
@@ -992,35 +931,6 @@ public class RunCommand
 
             LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
             nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
-        }
-
-        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
-        {
-            for (var i = 0; i < parseResult.Tokens.Count; i++)
-            {
-                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
-                {
-                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
-                }
-            }
-
-            return null;
-        }
-
-        static bool TryCountApplicationArgumentsBeforeDoubleDash(
-            IReadOnlyList<string> applicationArguments,
-            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
-            out int countBeforeDoubleDash)
-        {
-            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
-
-            if (countBeforeDoubleDash < 0)
-            {
-                countBeforeDoubleDash = 0;
-                return false;
-            }
-
-            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
         }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)

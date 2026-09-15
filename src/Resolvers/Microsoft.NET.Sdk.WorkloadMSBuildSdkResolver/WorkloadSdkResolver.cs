@@ -75,8 +75,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         private string? GetSdkDirectory(SdkResolverContext context)
         {
 #if NET
-            var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
-            return sdkDirectory;
+            return SdkPaths.SdkDirectory;
 
 #else
             string dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory();
@@ -117,4 +116,3 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         }
     }
 }
-

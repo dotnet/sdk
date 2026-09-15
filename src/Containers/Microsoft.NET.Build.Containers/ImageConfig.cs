@@ -35,6 +35,9 @@ internal sealed class ImageConfig
     /// </summary>
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
 
+    internal string Architecture => _architecture;
+    internal string OS => _os;
+
     public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
     public HashSet<Port> Ports => _exposedPorts;
 
@@ -67,8 +70,17 @@ internal sealed class ImageConfig
     internal string[]? GetEntrypoint() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private string[]? GetCmd() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private List<HistoryEntry> GetHistory() => _config["history"]?.AsArray().Select(node => node.Deserialize<HistoryEntry>()!).ToList() ?? new List<HistoryEntry>();
-    private string GetOs() => _config["os"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'os' property.");
-    private string GetArchitecture() => _config["architecture"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'architecture' property.");
+    private string GetOs()
+    {
+        string? os = _config["os"]?.ToString();
+        return !string.IsNullOrEmpty(os) ? os : throw new ArgumentException("Base image configuration should contain a non-empty 'os' property.");
+    }
+
+    private string GetArchitecture()
+    {
+        string? architecture = _config["architecture"]?.ToString();
+        return !string.IsNullOrEmpty(architecture) ? architecture : throw new ArgumentException("Base image configuration should contain a non-empty 'architecture' property.");
+    }
 
     /// <summary>
     /// Builds in additional configuration and returns updated image configuration in JSON format as string.

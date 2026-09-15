@@ -234,6 +234,84 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            const string testCode = """
+                using System;
+
+                public class Test
+                {
+                    public void Run(Span<int> a, Span<int> b)
+                    {
+                        if ({|#0:({|#1:a == null|} ? a : b) == null|}) {}
+                    }
+                }
+                """;
+
+            const string fixedCode = """
+                using System;
+
+                public class Test
+                {
+                    public void Run(Span<int> a, Span<int> b)
+                    {
+                        if ((a.IsEmpty ? a : b).IsEmpty) {}
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(0),
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(1),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_VisualBasicAsync()
+        {
+            const string testCode = """
+                Imports System
+
+                Public Class Test
+                    <Obsolete>
+                    Public Sub Run(a As Span(Of Int32), b As Span(Of Int32))
+                        If {|#0:If({|#1:a = Nothing|}, a, b) = Nothing|} Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            const string fixedCode = """
+                Imports System
+
+                Public Class Test
+                    <Obsolete>
+                    Public Sub Run(a As Span(Of Int32), b As Span(Of Int32))
+                        If If(a.IsEmpty, a, b).IsEmpty Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(0),
+                    new DiagnosticResult(DoNotCompareSpanToNullAnalyzer.DoNotCompareSpanToNullRule).WithLocation(1),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
         private static async Task VerifyNoDiagnosticVisualBasicAsync(string code)
         {
             var spanCode = string.Format(CultureInfo.InvariantCulture, VbClass, "Span(Of Int32)", code);

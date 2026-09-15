@@ -103,5 +103,61 @@ End Class";
 
             await VerifyVB.VerifyCodeFixAsync(original, expected);
         }
+
+        [TestMethod]
+        public async Task TestCSharpFixAllAsync()
+        {
+            var original = @"
+using System;
+
+class [|FirstException|] : Exception
+{
+}
+
+class [|SecondException|] : Exception
+{
+}";
+
+            var expected = @"
+using System;
+
+public class FirstException : Exception
+{
+}
+
+public class SecondException : Exception
+{
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(original, expected);
+        }
+
+        [TestMethod]
+        public async Task TestVBasicFixAllAsync()
+        {
+            var original = @"
+Imports System
+
+Class [|FirstException|]
+   Inherits Exception
+End Class
+
+Class [|SecondException|]
+   Inherits Exception
+End Class";
+
+            var expected = @"
+Imports System
+
+Public Class FirstException
+   Inherits Exception
+End Class
+
+Public Class SecondException
+   Inherits Exception
+End Class";
+
+            await VerifyVB.VerifyCodeFixAsync(original, expected);
+        }
     }
 }

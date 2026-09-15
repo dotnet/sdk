@@ -866,6 +866,58 @@ class C
 }");
         }
 
+        [TestMethod]
+        public async Task Fixer_CSharp_MultipleLiterals_FixAllReplacesEveryLiteralAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x, int y)
+    {
+        if (x < 0) throw new ArgumentNullException([|""x""|]);
+        if (y < 0) throw new ArgumentNullException([|""y""|]);
+    }
+}",
+@"
+using System;
+class C
+{
+    void M(int x, int y)
+    {
+        if (x < 0) throw new ArgumentNullException(nameof(x));
+        if (y < 0) throw new ArgumentNullException(nameof(y));
+    }
+}");
+        }
+
+        [TestMethod]
+        public async Task Fixer_Basic_MultipleLiterals_FixAllReplacesEveryLiteralAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Class C
+    Sub M(x As Integer)
+        Throw New ArgumentNullException([|""x""|])
+    End Sub
+
+    Sub N(y As Integer)
+        Throw New ArgumentNullException([|""y""|])
+    End Sub
+End Class",
+@"
+Imports System
+Class C
+    Sub M(x As Integer)
+        Throw New ArgumentNullException(NameOf(x))
+    End Sub
+
+    Sub N(y As Integer)
+        Throw New ArgumentNullException(NameOf(y))
+    End Sub
+End Class");
+        }
+
         #endregion
     }
 }

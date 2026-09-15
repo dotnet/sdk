@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpCallGCSuppressFinalizeCorrectlyFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicCallGCSuppressFinalizeCorrectlyFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {

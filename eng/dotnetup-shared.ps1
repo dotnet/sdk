@@ -51,7 +51,7 @@ function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [str
     $prevEAP = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
-        & $psExe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath -InstallDir $InstallDir
+        & $psExe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath -InstallDir $InstallDir -Quality daily
     }
     finally {
         $ErrorActionPreference = $prevEAP

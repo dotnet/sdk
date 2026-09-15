@@ -198,6 +198,10 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 details[InstallerConstants.InteractiveModeKey] = "true";
             }
+            if (args.Prerelease)
+            {
+                details[InstallerConstants.PrereleaseModeKey] = "true";
+            }
 
             // In future we might want give user ability to pick IManagerSourceProvider by Name or GUID
             var managedSourceProvider = _templatePackageManager.GetBuiltInManagedProvider(InstallationScope.Global);

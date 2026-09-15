@@ -1,18 +1,18 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Downloads the latest dotnetup daily build and installs it locally.
+    Downloads the latest dotnetup preview build and installs it locally.
 
 .DESCRIPTION
     Downloads dotnetup from the public aka.ms shortlinks (e.g.
-    https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe), verifies the
+    https://aka.ms/dotnet/dotnetup/preview/dotnetup-win-x64.exe), verifies the
     SHA-512 checksum, and installs the binary to a local directory.
 
 .PARAMETER InstallDir
     Directory to install dotnetup into. Defaults to ~/.dotnetup.
 
 .PARAMETER Quality
-    Build quality to install. Defaults to 'daily'.
+    Build quality to install. Defaults to 'preview'. Use 'daily' for the latest daily build.
 
 .PARAMETER RuntimeId
     Override automatic OS/architecture detection with an explicit RID
@@ -23,11 +23,14 @@
 
 .EXAMPLE
     ./get-dotnetup.ps1 -RuntimeId linux-musl-x64 -InstallDir /opt/dotnetup
+
+.EXAMPLE
+    ./get-dotnetup.ps1 -Quality daily
 #>
 [CmdletBinding()]
 param(
     [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
-    [string]$Quality = "daily",
+    [string]$Quality = "preview",
     [string]$RuntimeId
 )
 

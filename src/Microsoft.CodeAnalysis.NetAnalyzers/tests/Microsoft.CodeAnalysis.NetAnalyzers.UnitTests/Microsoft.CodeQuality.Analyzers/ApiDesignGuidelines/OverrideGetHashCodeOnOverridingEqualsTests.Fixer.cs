@@ -160,5 +160,105 @@ Class C
 End Class
 ");
         }
+
+        [TestMethod]
+        public async Task CSharp_NestedTypes_FixAllOverridesGetHashCodeOnBothAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class {|CS0659:C|}
+{
+    public override bool Equals(object obj) => true;
+
+    class {|CS0659:Nested|}
+    {
+        public override bool Equals(object obj) => true;
+    }
+}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+class C
+{
+    public override bool Equals(object obj) => true;
+
+    class Nested
+    {
+        public override bool Equals(object obj) => true;
+
+        public override int GetHashCode()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                    },
+                },
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var compilationOptions = solution.GetProject(projectId).CompilationOptions;
+                        compilationOptions = compilationOptions.WithGeneralDiagnosticOption(ReportDiagnostic.Error);
+                        return solution.WithProjectCompilationOptions(projectId, compilationOptions);
+                    },
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Basic_NestedTypes_FixAllOverridesGetHashCodeOnBothAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Class [|C|]
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+
+    Class [|Nested|]
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
+    End Class
+End Class
+",
+@"
+Class C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+
+    Class Nested
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
+
+        Public Overrides Function GetHashCode() As Integer
+            Throw New System.NotImplementedException()
+        End Function
+    End Class
+
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
+End Class
+");
+        }
     }
 }

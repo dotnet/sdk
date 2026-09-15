@@ -72,7 +72,7 @@ Essentially, we could remove `global.json` lookup from the chain of consideratio
 
 ## Versions
 
-Runtime versions don't have a feature band. The version parsing handled by the [`Microsoft.Deployment.DotNet.Releases`](https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases) library (see [`ChannelVersionResolver`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ChannelVersionResolver.cs)), however, should account for this. Minimal changes are expected.
+Runtime versions don't have a feature band. The version parsing handled by the [`Microsoft.Deployment.DotNet.Releases`](https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases) library (see [`ChannelVersionResolver`](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ChannelVersionResolver.cs)), however, should account for this. Minimal changes are expected.
 
 ## Muxer Handling
 
@@ -80,7 +80,7 @@ The .NET Runtime archives also include `dotnet.exe`. The host replacement logic 
 
 ## Runtime Component Selection
 
-There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
+There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
 
 The component is specified using the `<component>@<version>` syntax described above:
 
@@ -114,7 +114,7 @@ The .NET SDK install may include the .NET Runtime.
 2. Explicit user actions (install commands) are tracked in the manifest
 3. Uninstall operations should not break other installed components
 
-What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
+What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
 Consider performance (folder check vs muxer invocation) vs accuracy (folder faking via rename) in this decision.
 

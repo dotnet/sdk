@@ -148,5 +148,35 @@ public static class C
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
+
+        [TestMethod]
+        public async Task CA1052FixesNestedStaticHolderTypesInOnePassCSharpAsync()
+        {
+            const string Code = @"
+public class [|C|]
+{
+    public static void SomeMethod() { }
+
+    public class [|D|]
+    {
+        public static void SomeOtherMethod() { }
+    }
+}
+";
+
+            const string FixedCode = @"
+public static class C
+{
+    public static void SomeMethod() { }
+
+    public static class D
+    {
+        public static void SomeOtherMethod() { }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
+        }
     }
 }

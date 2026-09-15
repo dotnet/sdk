@@ -22,6 +22,7 @@ internal static class InitCommandParser
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
         command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.DryRunOption);
 
         command.SetAction(parseResult => new InitCommand(parseResult).Execute());
 

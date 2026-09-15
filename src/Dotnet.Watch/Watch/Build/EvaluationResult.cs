@@ -183,13 +183,9 @@ internal sealed class EvaluationResult(
             {
                 staticWebAssetManifestsBuilder.Add(projectInstance.GetId(), manifest);
 
-                // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
-                foreach (var (relativeUrl, filePath) in manifest.UrlToPathMap)
+                foreach (var (filePath, relativeUrl) in manifest.GetFilesToWatch())
                 {
-                    if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
-                    {
-                        AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
-                    }
+                    AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
                 }
             }
 

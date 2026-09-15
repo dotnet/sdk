@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -154,12 +154,12 @@ End Class
         [DataRow("_concurrent.Count > (0)", "!_concurrent.IsEmpty")]
         [DataRow("(_concurrent.Count) > (0)", "!_concurrent.IsEmpty")]
         [DataRow("((_concurrent).Count) > (0)", "!(_concurrent).IsEmpty")]
-        public Task CSharpTestFixOnParenthesesAsync(string condition, string expectedFix)
+        public async Task CSharpTestFixOnParenthesesAsync(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, csSnippet, condition);
             string fix = string.Format(CultureInfo.InvariantCulture, csSnippet, expectedFix);
 
-            return VerifyCS.VerifyCodeFixAsync(
+            await VerifyCS.VerifyCodeFixAsync(
                  input,
                  VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(5, 34, 5, 34 + condition.Length),
                  fix);
@@ -171,12 +171,12 @@ End Class
         [DataRow("(_concurrent.Count) > (0)", "Not _concurrent.IsEmpty")]
         // TODO: Reduce suggested fix to avoid special casing here.
         [DataRow("((_concurrent).Count) > (0)", "Not (_concurrent).IsEmpty")]
-        public Task BasicTestFixOnParenthesesAsync(string condition, string expectedFix)
+        public async Task BasicTestFixOnParenthesesAsync(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, vbSnippet, condition);
             string fix = string.Format(CultureInfo.InvariantCulture, vbSnippet, expectedFix);
 
-            return VerifyVB.VerifyCodeFixAsync(
+            await VerifyVB.VerifyCodeFixAsync(
                  input,
                  VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(6, 20, 6, 20 + condition.Length),
                  fix);
@@ -193,8 +193,8 @@ End Class
         [DataRow("0.Equals(queue.Count)", false)]
         [DataRow("queue.Count().Equals(0)", false)]
         [DataRow("0.Equals(queue.Count())", false)]
-        public Task CSharpTestExpressionAsArgumentAsync(string expression, bool negate)
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharpTestExpressionAsArgumentAsync(string expression, bool negate)
+            => await VerifyCS.VerifyCodeFixAsync(
     $@"using System;
 using System.Linq;
 
@@ -220,8 +220,8 @@ public class Test
         [DataRow("(uint)_concurrent.Count == 0", false)]
         [DataRow("((uint)_concurrent.Count).Equals(0)", false)]
         [DataRow("0.Equals((uint)_concurrent.Count)", false)]
-        public Task CSharpTestCastExpressionAsync(string expression, bool negate)
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharpTestCastExpressionAsync(string expression, bool negate)
+            => await VerifyCS.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, csSnippet, expression),
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 34),
@@ -233,8 +233,8 @@ public class Test
         [DataRow("CType(_concurrent.Count, UInteger) = 0", false)]
         [DataRow("CType(_concurrent.Count, UInteger).Equals(0)", false)]
         [DataRow("0.Equals(CType(_concurrent.Count, UInteger))", false)]
-        public Task BasicTestCastExpressionAsync(string expression, bool negate)
-            => VerifyVB.VerifyCodeFixAsync(
+        public async Task BasicTestCastExpressionAsync(string expression, bool negate)
+            => await VerifyVB.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, expression),
 #pragma warning disable RS0030 // Do not use banned APIs
                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(6, 20),
@@ -252,8 +252,8 @@ public class Test
         [DataRow("0.Equals(queue.Count)", false)]
         [DataRow("queue.Count().Equals(0)", false)]
         [DataRow("0.Equals(queue.Count())", false)]
-        public Task BasicTestExpressionAsArgumentAsync(string expression, bool negate)
-            => VerifyVB.VerifyCodeFixAsync(
+        public async Task BasicTestExpressionAsArgumentAsync(string expression, bool negate)
+            => await VerifyVB.VerifyCodeFixAsync(
     $@"Imports System
 Imports System.Linq
 
@@ -283,8 +283,8 @@ End Class");
         [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
         [DataRow(false)]
         [DataRow(true)]
-        public Task CSharpTestIsEmptyGetter_NoDiagnosisAsync(bool useThis)
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharpTestIsEmptyGetter_NoDiagnosisAsync(bool useThis)
+            => await VerifyCS.VerifyAnalyzerAsync(
 $@"class MyIntList
 {{
     private System.Collections.Generic.List<int> _list;
@@ -300,8 +300,8 @@ $@"class MyIntList
         [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
         [DataRow(false)]
         [DataRow(true)]
-        public Task BasicTestIsEmptyGetter_NoDiagnosisAsync(bool useMe)
-            => VerifyVB.VerifyAnalyzerAsync(
+        public async Task BasicTestIsEmptyGetter_NoDiagnosisAsync(bool useMe)
+            => await VerifyVB.VerifyAnalyzerAsync(
 $@"Class MyIntList
     Private _list As System.Collections.Generic.List(Of Integer)
     Public ReadOnly Property IsEmpty As Boolean
@@ -317,8 +317,8 @@ $@"Class MyIntList
 End Class");
 
         [TestMethod]
-        public Task CSharpTestIsEmptyGetter_AsLambda_NoDiagnosisAsync()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharpTestIsEmptyGetter_AsLambda_NoDiagnosisAsync()
+            => await VerifyCS.VerifyAnalyzerAsync(
 @"class MyIntList
 {
     private System.Collections.Generic.List<int> _list;
@@ -328,8 +328,8 @@ End Class");
 }");
 
         [TestMethod]
-        public Task CSharpTestIsEmptyGetter_WithLinq_NoDiagnosisAsync()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharpTestIsEmptyGetter_WithLinq_NoDiagnosisAsync()
+            => await VerifyCS.VerifyAnalyzerAsync(
 @"using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -349,8 +349,8 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(7, 28).
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public Task BasicTestIsEmptyGetter_WithLinq_NoDiagnosisAsync(bool useMe)
-            => VerifyVB.VerifyAnalyzerAsync(
+        public async Task BasicTestIsEmptyGetter_WithLinq_NoDiagnosisAsync(bool useMe)
+            => await VerifyVB.VerifyAnalyzerAsync(
 $@"Imports System.Collections
 Imports System.Collections.Generic
 Imports System.Linq
@@ -377,8 +377,8 @@ VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(9, 20).
 #pragma warning restore RS0030 // Do not use banned APIs
 
         [TestMethod]
-        public Task CSharpTestIsEmptyGetter_NoThis_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharpTestIsEmptyGetter_NoThis_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
 @"class MyStringIntDictionary
 {
     private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
@@ -396,8 +396,8 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 28),
 }");
 
         [TestMethod]
-        public Task BasicTestIsEmptyGetter_NoThis_FixedAsync()
-            => VerifyVB.VerifyCodeFixAsync(
+        public async Task BasicTestIsEmptyGetter_NoThis_FixedAsync()
+            => await VerifyVB.VerifyCodeFixAsync(
 @"Class MyStringIntDictionary
     Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
     Public ReadOnly Property IsEmpty As Boolean
@@ -419,8 +419,8 @@ VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 20),
 End Class");
 
         [TestMethod]
-        public Task CSharpTestWhitespaceTriviaAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharpTestWhitespaceTriviaAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
 $@"class C
 {{
     private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
@@ -440,12 +440,50 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
 }");
 
         [TestMethod]
+        public async Task CSharpTest_NestedCount_FixAllRewritesBothAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
+@"class C
+{
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> Pick(bool condition) => _dictionary;
+    public bool Test() => {|CA1836:Pick({|CA1836:_dictionary.Count == 0|}).Count == 0|};
+}",
+@"class C
+{
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> Pick(bool condition) => _dictionary;
+    public bool Test() => Pick(_dictionary.IsEmpty).IsEmpty;
+}");
+
+        [TestMethod]
+        public async Task BasicTest_NestedCount_FixAllRewritesBothAsync()
+            => await VerifyVB.VerifyCodeFixAsync(
+@"Class C
+    Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+    Private Function Pick(condition As Boolean) As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+        Return _dictionary
+    End Function
+    Public Function Test() As Boolean
+        Return {|CA1836:Pick({|CA1836:_dictionary.Count = 0|}).Count = 0|}
+    End Function
+End Class",
+@"Class C
+    Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+    Private Function Pick(condition As Boolean) As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+        Return _dictionary
+    End Function
+    Public Function Test() As Boolean
+        Return Pick(_dictionary.IsEmpty).IsEmpty
+    End Function
+End Class");
+
+        [TestMethod]
         [DataRow("System.ReadOnlyMemory")]
         [DataRow("System.ReadOnlySpan")]
         [DataRow("System.Memory")]
         [DataRow("System.Span")]
-        public Task CSharpTest_DisallowedTypesForCA1836_NoDiagnosisAsync(string type)
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharpTest_DisallowedTypesForCA1836_NoDiagnosisAsync(string type)
+            => await VerifyCS.VerifyAnalyzerAsync(
 $@"class C
 {{
     private {type}<T> GetData_Generic<T>() => default;
@@ -467,7 +505,7 @@ $@"class C
 
         [TestMethod]
         [DynamicData(nameof(BinaryExpressionTestDataSource))]
-        public Task PropertyOnBinaryOperationAsync(bool noDiagnosis, int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
+        public async Task PropertyOnBinaryOperationAsync(bool noDiagnosis, int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
         {
             string testSource = isRightSideExpression ?
                 SourceProvider.GetTargetPropertyBinaryExpressionCode(literal, @operator, SourceProvider.MemberName) :
@@ -477,18 +515,18 @@ $@"class C
 
             if (noDiagnosis)
             {
-                return VerifyAsync(testSource, extensionsSource: null);
+                await VerifyAsync(testSource, extensionsSource: null);
             }
             else
             {
                 string fixedSource = SourceProvider.GetCodeWithExpression(SourceProvider.GetFixedIsEmptyPropertyCode(shouldNegate));
-                return VerifyAsync(methodName: null, testSource, fixedSource, extensionsSource: null);
+                await VerifyAsync(methodName: null, testSource, fixedSource, extensionsSource: null);
             }
         }
 
         [TestMethod]
-        public Task PropertyEqualsZero_FixedAsync()
-            => VerifyAsync(
+        public async Task PropertyEqualsZero_FixedAsync()
+            => await VerifyAsync(
                 methodName: null,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetEqualsTargetPropertyInvocationCode(0, SourceProvider.MemberName)),
@@ -497,8 +535,8 @@ $@"class C
                 extensionsSource: null);
 
         [TestMethod]
-        public Task ZeroEqualsProperty_FixedAsync()
-            => VerifyAsync(
+        public async Task ZeroEqualsProperty_FixedAsync()
+            => await VerifyAsync(
                 methodName: null,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetTargetPropertyEqualsInvocationCode(0, SourceProvider.MemberName)),
@@ -524,7 +562,7 @@ $@"class C
         /// </summary>
         [TestMethod]
         [DynamicData(nameof(DiagnosisOnlyTestData))]
-        public Task LinqMethodOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
+        public async Task LinqMethodOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
         {
             string testSource = SourceProvider.GetCodeWithExpression(
                 isRightSideExpression ?
@@ -536,12 +574,12 @@ $@"class C
                 SourceProvider.GetFixedIsEmptyPropertyCode(shouldNegate),
                 additionalNamspaces: SourceProvider.ExtensionsNamespace);
 
-            return VerifyAsync(methodName: null, testSource, fixedSource, extensionsSource: null);
+            await VerifyAsync(methodName: null, testSource, fixedSource, extensionsSource: null);
         }
 
         [TestMethod]
-        public Task LinqCountEqualsZero_FixedAsync()
-            => VerifyAsync(
+        public async Task LinqCountEqualsZero_FixedAsync()
+            => await VerifyAsync(
                 methodName: null,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetEqualsTargetExpressionInvocationCode(0, withPredicate: false, "Count"),
@@ -552,8 +590,8 @@ $@"class C
                 extensionsSource: null);
 
         [TestMethod]
-        public Task ZeroEqualsLinqCount_FixedAsync()
-            => VerifyAsync(
+        public async Task ZeroEqualsLinqCount_FixedAsync()
+            => await VerifyAsync(
                 methodName: null,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetTargetExpressionEqualsInvocationCode(0, withPredicate: false, "Count"),

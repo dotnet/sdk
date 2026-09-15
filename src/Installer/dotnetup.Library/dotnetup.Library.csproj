@@ -5,7 +5,7 @@
     <!-- This project contains the code for the dotnetup application.
          It's built as a library because we want the same code to be referenced by unit
          tests, as well as compiled into the NativeAOT executable.
-         
+
          The best way to do this ended up being to keep all the code in a library project
          which would be referenced by the tests and also by a project that compiles into
          a NativeAOT executable and only has an entry point shim to call the library code. -->
@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\TelemetryDiskLogger.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
@@ -68,6 +69,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>

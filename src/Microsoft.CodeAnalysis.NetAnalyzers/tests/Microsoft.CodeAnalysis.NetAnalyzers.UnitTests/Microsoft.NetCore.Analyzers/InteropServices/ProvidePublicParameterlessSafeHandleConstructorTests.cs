@@ -241,5 +241,105 @@ class Containing
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
+
+        [TestMethod]
+        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_FixAll_CSAsync()
+        {
+            string source = @"
+using Microsoft.Win32.SafeHandles;
+
+class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    private [|FooHandle|]() : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}
+
+class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    private [|BarHandle|]() : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+            string fixedSource = @"
+using Microsoft.Win32.SafeHandles;
+
+class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    public FooHandle() : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}
+
+class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+{
+    public BarHandle() : base(true)
+    {
+    }
+
+    protected override bool ReleaseHandle() => true;
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_FixAll_VBAsync()
+        {
+            string source = @"
+Imports Microsoft.Win32.SafeHandles
+Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Private Sub [|New|]()
+        MyBase.New(True)
+    End Sub
+
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+End Class
+
+Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Private Sub [|New|]()
+        MyBase.New(True)
+    End Sub
+
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+End Class";
+            string fixedSource = @"
+Imports Microsoft.Win32.SafeHandles
+Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Public Sub New()
+        MyBase.New(True)
+    End Sub
+
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+End Class
+
+Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+
+    Public Sub New()
+        MyBase.New(True)
+    End Sub
+
+    Protected Overrides Function ReleaseHandle() As Boolean
+        Return True
+    End Function
+End Class";
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }

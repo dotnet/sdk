@@ -170,5 +170,51 @@ End Class
 ";
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
+
+        [TestMethod]
+        public async Task CSharp_MultipleFields_FixAllRewritesEveryFieldAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+class C
+{
+    internal static readonly int f1 = 1;
+    internal static readonly int f2 = 2;
+}
+",
+                new[]
+                {
+                    VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 34, 4, 36).WithArguments("f1"),
+                    VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 34, 5, 36).WithArguments("f2"),
+                },
+                @"
+class C
+{
+    internal const int f1 = 1;
+    internal const int f2 = 2;
+}
+");
+        }
+
+        [TestMethod]
+        public async Task Basic_MultipleFields_FixAllRewritesEveryFieldAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Class C
+    Friend Shared ReadOnly f1 As Integer = 1
+    Friend Shared ReadOnly f2 As Integer = 2
+End Class
+",
+                new[]
+                {
+                    VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(3, 28, 3, 30).WithArguments("f1"),
+                    VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 28, 4, 30).WithArguments("f2"),
+                },
+                @"
+Class C
+    Friend Const f1 As Integer = 1
+    Friend Const f2 As Integer = 2
+End Class
+");
+        }
     }
 }

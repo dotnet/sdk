@@ -175,6 +175,44 @@ End Class");
         }
 
         [TestMethod]
+        public async Task ArgumentException_NamedArgumentsOutOfOrder_CSharp_WarnsAndCodeFixesWithNameOfAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.ArgumentException(paramName: ""first is incorrect"", message: ""first"");
+                    }
+                }",
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentException"), @"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.ArgumentException(""first is incorrect"", nameof(first));
+                    }
+                }");
+        }
+
+        [TestMethod]
+        public async Task ArgumentException_NamedArgumentsOutOfOrder_Basic_WarnsAndCodeFixesWithNameOfAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class [MyClass]
+    Public Sub Test(first As String)
+        Throw New System.ArgumentException(paramName:=""first is incorrect"", message:=""first"")
+    End Sub
+End Class",
+                GetBasicIncorrectMessageExpectedResult(4, 15, "Test", "first", "message", "ArgumentException"), @"
+Public Class [MyClass]
+    Public Sub Test(first As String)
+        Throw New System.ArgumentException(""first is incorrect"", NameOf(first))
+    End Sub
+End Class");
+        }
+
+        [TestMethod]
         public async Task ArgumentException_ParameterWithNameofAsMessage_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1137,6 +1175,51 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 GetCSharpIncorrectParameterNameExpectedResult(6, 49, "Test", "not name", "paramName", "ArgumentNullException"));
         }
 
+        [TestMethod]
+        public async Task NestedIncorrectMessage_CSharp_FixAllSwapsBoth()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    public void M(string first, string second)
+    {
+        throw new System.ArgumentException(""first"", new System.ArgumentException(""second"", ""x"").Message);
+    }
+}",
+                new[]
+                {
+                    GetCSharpIncorrectMessageExpectedResult(6, 15, "M", "first", "message", "ArgumentException"),
+                    GetCSharpIncorrectMessageExpectedResult(6, 53, "M", "second", "message", "ArgumentException")
+                }, @"
+public class C
+{
+    public void M(string first, string second)
+    {
+        throw new System.ArgumentException(new System.ArgumentException(""x"", nameof(second)).Message, nameof(first));
+    }
+}");
+        }
+
+        [TestMethod]
+        public async Task NestedIncorrectMessage_Basic_FixAllSwapsBoth()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class C
+    Public Sub M(first As String, second As String)
+        Throw New System.ArgumentException(""first"", New System.ArgumentException(""second"", ""x"").Message)
+    End Sub
+End Class",
+                new[]
+                {
+                    GetBasicIncorrectMessageExpectedResult(4, 15, "M", "first", "message", "ArgumentException"),
+                    GetBasicIncorrectMessageExpectedResult(4, 53, "M", "second", "message", "ArgumentException")
+                }, @"
+Public Class C
+    Public Sub M(first As String, second As String)
+        Throw New System.ArgumentException(New System.ArgumentException(""x"", NameOf(second)).Message, NameOf(first))
+    End Sub
+End Class");
+        }
         private static DiagnosticResult GetCSharpNoArgumentsExpectedResult(int line, int column, string typeName) =>
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleNoArguments)

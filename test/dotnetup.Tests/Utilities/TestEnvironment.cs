@@ -23,7 +23,7 @@ internal class TestEnvironment : IDisposable
     /// Creates a test environment with isolated temporary directories.
     /// </summary>
     /// <param name="configureEnvironment">
-    /// When true, sets <c>DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH</c> and <c>DOTNET_TESTHOOK_MANIFEST_PATH</c>,
+    /// When true, sets <c>DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH</c> and <c>DOTNET_TESTHOOK_MANIFEST_PATH</c>,
     /// and changes the current directory to the temp root to avoid picking up the repository's global.json.
     /// These are restored on Dispose.
     /// </param>
@@ -57,9 +57,8 @@ internal class TestEnvironment : IDisposable
                 Console.WriteLine($"Warning: Could not get current directory: {ex.Message}. Using temp directory as fallback.");
             }
 
-            // Set default install path and manifest path as environment variables
-            // so tests are fully isolated from each other and from the real installation.
-            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", InstallPath);
+            // Set default paths so tests do not use the real installation or manifest.
+            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH", InstallPath);
             Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", ManifestPath);
 
             // Change current directory to the temp directory to avoid global.json in repository root
@@ -82,7 +81,7 @@ internal class TestEnvironment : IDisposable
             }
 
             // Clear the environment variables we set
-            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", null);
+            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH", null);
             Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", null);
         }
 

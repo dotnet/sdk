@@ -35,6 +35,17 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    /// <summary>
+    /// Hidden test hook: preview the <c>dotnetup init</c> form and the settings it would apply
+    /// without installing anything or changing the environment.
+    /// </summary>
+    public static readonly Option<bool> DryRunOption = new("--dry-run")
+    {
+        Description = "Preview the init form and chosen settings without installing or changing the environment.",
+        Arity = ArgumentArity.ZeroOrOne,
+        Hidden = true,
+    };
+
     public static readonly Option<Verbosity> VerbosityOption = new("--verbosity", "-v")
     {
         Description = "Set the output verbosity level (normal, detailed)",

@@ -82,6 +82,8 @@ public class TelemetryClient : ITelemetryClient
     }
 
     public static string? CurrentSessionId { get; private set; } = null;
+    internal static bool IsInitialized { get; private set; }
+    internal static TelemetryClient? Instance { get; private set; }
     public static bool DisabledForTests
     {
         get => field;
@@ -92,6 +94,8 @@ public class TelemetryClient : ITelemetryClient
             if (field)
             {
                 CurrentSessionId = null;
+                IsInitialized = false;
+                Instance = null;
             }
         }
     } = false;
@@ -173,6 +177,9 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
+        Instance = this;
+        IsInitialized = true;
+
         environmentProvider ??= new EnvironmentProvider();
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
             // When building in the official CI pipeline, this makes the complier enable telemetry by default. Otherwise, it is disabled.
@@ -191,7 +198,11 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
-        CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
+        var initialSessionId = !string.IsNullOrEmpty(sessionId)
+            ? sessionId
+            : environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+
+        CurrentSessionId ??= !string.IsNullOrEmpty(initialSessionId) ? initialSessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
 
@@ -200,7 +211,7 @@ public class TelemetryClient : ITelemetryClient
     /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
     /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
-    private static ActivityContext? GetParentActivityContext()
+    internal static ActivityContext? GetParentActivityContext()
     {
         // Runtime properties take precedence — they are set by the AOT bridge when it
         // falls back to the managed CLI so that the managed spans become children of the
@@ -267,9 +278,18 @@ public class TelemetryClient : ITelemetryClient
 
     public static void WriteLogIfNecessary()
     {
-        if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
+        if (string.IsNullOrWhiteSpace(s_diskLogPath))
         {
-            TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
+            return;
+        }
+
+        Activity[] activities = [.. s_activities];
+        if (activities.Length > 0 && TelemetryDiskLogger.WriteLog(s_diskLogPath, activities))
+        {
+            foreach (Activity activity in activities)
+            {
+                s_activities.Remove(activity);
+            }
         }
     }
 
@@ -294,6 +314,11 @@ public class TelemetryClient : ITelemetryClient
         }
 
         TrackEventTask(eventName, properties);
+    }
+
+    internal void WaitForPendingEvents()
+    {
+        _trackEventTask?.GetAwaiter().GetResult();
     }
 
     private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)

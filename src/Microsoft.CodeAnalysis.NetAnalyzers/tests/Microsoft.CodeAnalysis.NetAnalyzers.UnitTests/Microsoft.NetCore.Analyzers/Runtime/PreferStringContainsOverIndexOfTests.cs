@@ -1247,5 +1247,61 @@ End Class
         }
 
         #endregion
+
+        [TestMethod]
+        public async Task NestedIndexOfComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            string source = @"
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private void TestMethod(string str)
+        {
+            if ([|str.IndexOf(([|str.IndexOf(""a"", System.StringComparison.Ordinal) != -1|]).ToString(), System.StringComparison.Ordinal) != -1|])
+            {
+            }
+        }
+    }
+}";
+            string fixedSource = @"
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private void TestMethod(string str)
+        {
+            if (str.Contains((str.Contains(""a"")).ToString()))
+            {
+            }
+        }
+    }
+}";
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedIndexOfComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            string source = @"
+Namespace TestNamespace
+    Class TestClass
+        Private Sub TestMethod(Str As String)
+            If [|Str.IndexOf(([|Str.IndexOf(""a"", System.StringComparison.Ordinal) <> -1|]).ToString(), System.StringComparison.Ordinal) <> -1|] Then
+            End If
+        End Sub
+    End Class
+End Namespace";
+            string fixedSource = @"
+Namespace TestNamespace
+    Class TestClass
+        Private Sub TestMethod(Str As String)
+            If Str.Contains((Str.Contains(""a"")).ToString()) Then
+            End If
+        End Sub
+    End Class
+End Namespace";
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }

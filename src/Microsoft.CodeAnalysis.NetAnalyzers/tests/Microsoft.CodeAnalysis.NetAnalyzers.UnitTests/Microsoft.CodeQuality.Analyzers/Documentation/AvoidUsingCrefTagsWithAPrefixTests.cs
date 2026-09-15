@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Documentation.CSharpAvoidUsingCrefTagsWithAPrefixAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.Documentation.CSharpAvoidUsingCrefTagsWithAPrefixFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.Documentation.BasicAvoidUsingCrefTagsWithAPrefixAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.Documentation.BasicAvoidUsingCrefTagsWithAPrefixFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Documentation.UnitTests
 {

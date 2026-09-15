@@ -631,7 +631,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the xml documentation (if enabled) -->
       <ResolvedFileToPublish Include="@(FinalDocFile)"
-                              Condition="'$(PublishDocumentationFile)' == 'true'">
+                              Condition="'$(PublishDocumentationFile)' == 'true' and
+                                         '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
         <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
@@ -1297,6 +1298,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
                  ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
+
+    <NETSdkWarning Condition="'$(IncludeAllContentForSelfExtract)' == 'true'"
+                   ResourceName="IncludeAllContentForSelfExtractIsLegacy" />
 
     <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"

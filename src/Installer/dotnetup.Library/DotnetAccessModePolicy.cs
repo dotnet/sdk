@@ -18,11 +18,11 @@ internal static class DotnetAccessModePolicy
         accessMode is DotnetAccessMode.Everywhere;
 
     /// <summary>
-    /// Returns true when the chosen mode shadows the system PATH and the user should therefore
-    /// be offered migration of existing system-level .NET installs into dotnetup-managed installs.
+    /// Returns true when the mode shadows the system dotnet and migration should therefore be
+    /// selected by default to preserve the installed SDKs and runtimes.
     /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(DotnetAccessMode accessMode) =>
-        accessMode != DotnetAccessMode.None;
+    public static bool ShouldMigrateSystemInstallsByDefault(DotnetAccessMode accessMode) =>
+        accessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
 
     /// <summary>
     /// Returns true when the mode can only be applied on Windows. <see cref="DotnetAccessMode.Everywhere"/>

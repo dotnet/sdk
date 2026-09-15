@@ -12,7 +12,7 @@ using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
@@ -48,6 +48,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         return false;
     }
 
+#if !CLI_AOT
     internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
@@ -137,4 +138,5 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             yield return arg;
         }
     }
+#endif
 }

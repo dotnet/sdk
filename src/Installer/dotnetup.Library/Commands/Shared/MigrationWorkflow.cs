@@ -48,21 +48,20 @@ internal static class MigrationWorkflow
 
     /// <summary>
     /// Reduces the system-installed components to a deduplicated set of channel-level migration
-    /// selections, skipping anything that is already tracked in the manifest or in the existing
-    /// request set for the target install root.
+    /// selections, skipping anything that is already tracked in the manifest for the target install
+    /// root. Pending install requests are filtered separately because the user can change them.
     /// </summary>
     internal static List<MigrationSelection> BuildMigrationSelections(
         List<DotnetInstall> systemInstalls,
         DotnetInstallRoot installRoot,
-        string? manifestPath = null,
-        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null)
+        string? manifestPath = null)
     {
         if (systemInstalls.Count == 0)
         {
             return [];
         }
 
-        var trackedChannels = GetTrackedMigrationChannels(installRoot, manifestPath, existingRequests);
+        var trackedChannels = GetTrackedMigrationChannels(installRoot, manifestPath);
         var deduped = new List<MigrationSelection>();
         var seenChannels = new HashSet<(InstallComponent Component, string Channel)>();
 
@@ -88,6 +87,36 @@ internal static class MigrationWorkflow
         }
 
         return deduped;
+    }
+
+    /// <summary>
+    /// Removes migration candidates already covered by the pending install specifications.
+    /// Candidate discovery remains independent so this filter can be reapplied when a selection changes.
+    /// </summary>
+    internal static List<MigrationSelection> FilterMigrationSelections(
+        IReadOnlyCollection<MigrationSelection> migrations,
+        IReadOnlyCollection<MinimalInstallSpec> installSpecs)
+    {
+        var requestedChannels = installSpecs
+            .Where(spec => spec.VersionOrChannel is not null)
+            .Select(spec => (spec.Component, Channel: GetTrackedMigrationChannelName(spec.Component, spec.VersionOrChannel!)))
+            .ToHashSet();
+
+        return migrations
+            .Where(migration => !requestedChannels.Contains((
+                migration.Component,
+                GetTrackedMigrationChannelName(migration.Component, migration.Channel.Name))))
+            .ToList();
+    }
+
+    internal static List<MigrationSelection> FilterMigrationSelections(
+        IReadOnlyCollection<MigrationSelection> migrations,
+        IReadOnlyCollection<ResolvedInstallRequest> requests)
+    {
+        var installSpecs = requests
+            .Select(request => new MinimalInstallSpec(request.Request.Component, request.Request.Channel.Name))
+            .ToList();
+        return FilterMigrationSelections(migrations, installSpecs);
     }
 
     /// <summary>
@@ -212,13 +241,11 @@ internal static class MigrationWorkflow
     }
 
     /// <summary>
-    /// Returns the install-spec channels already represented in the manifest or the
-    /// current request set for the target install root.
+    /// Returns the install-spec channels already represented in the manifest for the target install root.
     /// </summary>
     private static HashSet<(InstallComponent Component, string Channel)> GetTrackedMigrationChannels(
         DotnetInstallRoot installRoot,
-        string? manifestPath,
-        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null)
+        string? manifestPath)
     {
         var trackedChannels = new HashSet<(InstallComponent Component, string Channel)>();
 
@@ -232,14 +259,6 @@ internal static class MigrationWorkflow
             foreach (var installSpec in root?.InstallSpecs ?? [])
             {
                 trackedChannels.Add((installSpec.Component, GetTrackedMigrationChannelName(installSpec.Component, installSpec.VersionOrChannel)));
-            }
-        }
-
-        if (existingRequests is not null)
-        {
-            foreach (var request in existingRequests)
-            {
-                trackedChannels.Add((request.Request.Component, GetTrackedMigrationChannelName(request.Request.Component, request.Request.Channel.Name)));
             }
         }
 

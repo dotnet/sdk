@@ -13,6 +13,14 @@ internal sealed class TestNodeResultsState(long id)
     private readonly TestDetailState _summaryDetail = new(id, stopwatch: null, text: string.Empty);
     private readonly ConcurrentDictionary<string, TestDetailState> _testNodeProgressStates = new();
     private readonly ConcurrentDictionary<string, byte> _completed = new();
+    private int _cachedFullTestsCount;
+    private CultureInfo? _cachedFullTestsCulture;
+    private CultureInfo? _cachedFullTestsUICulture;
+    private string _cachedFullTestsText = string.Empty;
+    private int _cachedMoreTestsCount;
+    private CultureInfo? _cachedMoreTestsCulture;
+    private CultureInfo? _cachedMoreTestsUICulture;
+    private string _cachedMoreTestsText = string.Empty;
 
     public int Count => _testNodeProgressStates.Count;
 
@@ -57,9 +65,9 @@ internal sealed class TestNodeResultsState(long id)
             _summaryDetail.Text =
                 itemsToTake == 0
                     // Note: If itemsToTake is 0, then we only show two lines, the project summary and the number of running tests.
-                    ? string.Format(CultureInfo.CurrentCulture, CliCommandStrings.ActiveTestsRunning_FullTestsCount, sortedDetails.Count)
+                    ? GetFullTestsCountText(sortedDetails.Count)
                     // If itemsToTake is larger, then we show the project summary, active tests, and the number of active tests that are not shown.
-                    : $"... {string.Format(CultureInfo.CurrentCulture, CliCommandStrings.ActiveTestsRunning_MoreTestsCount, sortedDetails.Count - itemsToTake)}";
+                    : GetMoreTestsCountText(sortedDetails.Count - itemsToTake);
             sortedDetails = [.. sortedDetails.Take(itemsToTake)];
         }
 
@@ -72,5 +80,39 @@ internal sealed class TestNodeResultsState(long id)
         {
             yield return _summaryDetail;
         }
+    }
+
+    private string GetFullTestsCountText(int count)
+    {
+        CultureInfo culture = CultureInfo.CurrentCulture;
+        CultureInfo uiCulture = CultureInfo.CurrentUICulture;
+        if (_cachedFullTestsCount != count
+            || !ReferenceEquals(_cachedFullTestsCulture, culture)
+            || !ReferenceEquals(_cachedFullTestsUICulture, uiCulture))
+        {
+            _cachedFullTestsText = string.Format(culture, CliCommandStrings.ActiveTestsRunning_FullTestsCount, count);
+            _cachedFullTestsCount = count;
+            _cachedFullTestsCulture = culture;
+            _cachedFullTestsUICulture = uiCulture;
+        }
+
+        return _cachedFullTestsText;
+    }
+
+    private string GetMoreTestsCountText(int count)
+    {
+        CultureInfo culture = CultureInfo.CurrentCulture;
+        CultureInfo uiCulture = CultureInfo.CurrentUICulture;
+        if (_cachedMoreTestsCount != count
+            || !ReferenceEquals(_cachedMoreTestsCulture, culture)
+            || !ReferenceEquals(_cachedMoreTestsUICulture, uiCulture))
+        {
+            _cachedMoreTestsText = $"... {string.Format(culture, CliCommandStrings.ActiveTestsRunning_MoreTestsCount, count)}";
+            _cachedMoreTestsCount = count;
+            _cachedMoreTestsCulture = culture;
+            _cachedMoreTestsUICulture = uiCulture;
+        }
+
+        return _cachedMoreTestsText;
     }
 }

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Configurer;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -120,11 +122,22 @@ internal static class DotnetupPaths
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
 
     /// <summary>
-    /// Gets the path to the telemetry offline storage directory. The Azure
-    /// Monitor exporter uses this as its retry queue for telemetry that does
-    /// not drain over the network before the process exits.
+    /// Resolves the telemetry offline storage directory shared with the .NET SDK.
+    /// The SDK's environment override takes precedence over its default profile directory.
     /// </summary>
-    public static string TelemetryStorageDirectory => Path.Combine(DataDirectory, TelemetryStorageServiceFolderName);
+    internal static string ResolveTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
+    {
+        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
+        if (!string.IsNullOrWhiteSpace(environmentStoragePath))
+        {
+            return environmentStoragePath;
+        }
+
+        var profileFolder = new CliFolderPathCalculatorCore(getEnvironmentVariable).GetDotnetUserProfileFolderPath();
+        return !string.IsNullOrEmpty(profileFolder)
+            ? Path.Combine(profileFolder, TelemetryStorageServiceFolderName)
+            : throw new InvalidOperationException("Could not determine the .NET SDK telemetry storage directory.");
+    }
 
     /// <summary>
     /// Gets the path to the dotnetup telemetry disk log, or <see langword="null"/>
@@ -153,7 +166,8 @@ internal static class DotnetupPaths
 
     /// <summary>
     /// Gets the default dotnet install path managed by dotnetup.
-    /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
+    /// This is the dotnet subdirectory of the dotnetup data directory
+    /// (e.g. %LOCALAPPDATA%\dotnetup\dotnet on Windows).
     /// </summary>
     /// <remarks>
     /// Can be overridden via DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH environment variable.
@@ -168,13 +182,7 @@ internal static class DotnetupPaths
                 return overridePath;
             }
 
-            var baseDir = GetBaseDirectory();
-            if (string.IsNullOrEmpty(baseDir))
-            {
-                throw new InvalidOperationException("Could not determine the local application data directory.");
-            }
-
-            return Path.Combine(baseDir, "dotnet");
+            return Path.Combine(DataDirectory, "dotnet");
         }
     }
 

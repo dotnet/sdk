@@ -501,7 +501,6 @@ namespace Z
     }
 }
 ",
-                NumberOfFixAllIterations = 2,
                 FixedCode = @"
 namespace Z
 {
@@ -520,6 +519,40 @@ namespace Z
         }
     }
 }
+"
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task IdentifyConstArrays_ParamsArrays_VisualBasic()
+        {
+            await new VerifyVB.Test()
+            {
+                TestCode = @"
+Namespace Z
+    Public Class A
+        Public Sub B()
+            C({|CA1861:New Boolean() { True, False }|}, {|CA1861:New Boolean() { False, True }|})
+        End Sub
+
+        Private Sub C(ParamArray booleans As Boolean()())
+        End Sub
+    End Class
+End Namespace
+",
+                FixedCode = @"
+Namespace Z
+    Public Class A
+        Private Shared ReadOnly booleanArray As Boolean() = New Boolean() { True, False }
+        Private Shared ReadOnly booleanArray0 As Boolean() = New Boolean() { False, True }
+        Public Sub B()
+            C(booleanArray, booleanArray0)
+        End Sub
+
+        Private Sub C(ParamArray booleans As Boolean()())
+        End Sub
+    End Class
+End Namespace
 "
             }.RunAsync(CancellationToken.None);
         }

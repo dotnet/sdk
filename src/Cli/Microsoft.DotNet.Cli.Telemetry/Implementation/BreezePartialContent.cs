@@ -51,7 +51,7 @@ internal static class BreezePartialContent
         var retriableIndices = new HashSet<int>();
         foreach (var error in errors)
         {
-            if (s_retriableStatusCodes.Contains(error.StatusCode))
+            if (IsRetriableStatusCode(error.StatusCode))
             {
                 retriableIndices.Add(error.Index);
             }
@@ -86,4 +86,7 @@ internal static class BreezePartialContent
 
         return stream.Length == 0 ? null : stream.ToArray();
     }
+
+    internal static bool IsRetriableStatusCode(int statusCode)
+        => s_retriableStatusCodes.Contains(statusCode);
 }

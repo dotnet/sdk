@@ -159,6 +159,46 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task NestedKeysContains_FixAllRewritesBoth_CSAsync()
+        {
+            const string declaration = @"var dictionary = new Dictionary<string, string>();";
+            string testCode = CreateCSSource(declaration, @"bool nested = {|#0:dictionary.Keys.Contains({|#1:dictionary.Keys.Contains(""inner"")|} ? ""a"" : ""b"")|};");
+            string fixedCode = CreateCSSource(declaration, @"bool nested = dictionary.ContainsKey(dictionary.ContainsKey(""inner"") ? ""a"" : ""b"");");
+
+            await new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(ContainsKeyRule).WithLocation(0).WithArguments("Dictionary"),
+                    VerifyCS.Diagnostic(ContainsKeyRule).WithLocation(1).WithArguments("Dictionary"),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedKeysContains_FixAllRewritesBoth_VBAsync()
+        {
+            const string declaration = "Dim dictionary = New Dictionary(Of String, String)()";
+            string testCode = CreateVBSource(declaration, @"Dim nested = {|#0:dictionary.Keys.Contains(If({|#1:dictionary.Keys.Contains(""inner"")|}, ""a"", ""b""))|}");
+            string fixedCode = CreateVBSource(declaration, @"Dim nested = dictionary.ContainsKey(If(dictionary.ContainsKey(""inner""), ""a"", ""b""))");
+
+            await new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(ContainsKeyRule).WithLocation(0).WithArguments("Dictionary"),
+                    VerifyVB.Diagnostic(ContainsKeyRule).WithLocation(1).WithArguments("Dictionary"),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         [DynamicData(nameof(DictionaryKeysExpressions))]
         public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {

@@ -57,6 +57,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
             DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy => ErrorCategory.User,
             DotnetInstallErrorCode.NoUserInstallableArtifact => ErrorCategory.User,
+            DotnetInstallErrorCode.InvalidModeSelection => ErrorCategory.Product,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

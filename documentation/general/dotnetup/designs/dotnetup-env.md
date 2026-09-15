@@ -63,8 +63,9 @@ Modes:
 - `none` — Don't modify your environment; use `dotnetup dotnet` to invoke.
 - `shell` — Wire dotnetup into your shell's profile file (only shells that load
   profiles see the user dotnet).
-- `everywhere` — Wire dotnetup into your shell profile **and** your user-level
-  PATH/DOTNET_ROOT so cmd.exe, IDEs, and shortcuts also see it.
+- `everywhere` — Wire dotnetup into your shell profile, put the managed dotnet on the
+  Windows system `PATH`, and set user-level `DOTNET_ROOT` so cmd.exe, IDEs, shortcuts,
+  and framework-dependent apphosts also see it.
 
 `DotnetAccessMode` enum renames 1:1: `None` / `Shell` / `Everywhere`. JSON serialization
 follows.
@@ -96,17 +97,16 @@ system/user env-var `PATH` says, which on a typical box is the admin-installed
 `C:\Program Files\dotnet\`.
 
 To make `cmd.exe` (and GUI apps, IDE shortcuts launched from Start menu, etc.) see
-the user dotnet, the user picks `Everywhere` mode. That mode prepends the user dotnet path
-to the Windows env-var `PATH` (registry-level, user scope) and removes the Program
-Files dotnet path from the system PATH, **in addition to** writing the shell profile.
+the user dotnet, the user picks `Everywhere` mode. That mode inserts the user dotnet path
+in the Windows system `PATH` immediately before the Program Files dotnet path and sets
+user-level `DOTNET_ROOT`, **in addition to** writing the shell profile.
 
 Later, a system .NET SDK or runtime installer runs (for example, via a Visual Studio
-update). Its installer adds the Program Files dotnet path back to the system PATH,
-which means the effective PATH will list the Program Files dotnet path, and it will
-take precedence over the user dotnet install.
+update). If its installer rewrites the system `PATH` and removes or reorders dotnetup's
+entry, the Program Files dotnet path can take precedence again.
 
-The fix: rerun `dotnetup env set everywhere`.  This will once again remove the Program Files
-dotnet path from the system PATH. Because `env set` is idempotent, this works whether
+The fix: rerun `dotnetup env set everywhere`. This restores the dotnetup entry immediately
+before the Program Files dotnet entry. Because `env set` is idempotent, this works whether
 the mode was already applied or not.
 
 The mode the user picked is stored in `dotnetup.config.json` and is shown by
@@ -122,7 +122,7 @@ writes `DOTNET_ROOT` and (in the "everywhere" mode) edits the Windows env-var re
 ```
 DotnetAccessMode.None       // dotnetup doesn't wire anything; user invokes via `dotnetup dotnet`
 DotnetAccessMode.Shell      // write to the shell's profile file only
-DotnetAccessMode.Everywhere // shell profile + Windows user env-var PATH/DOTNET_ROOT
+DotnetAccessMode.Everywhere // shell profile + Windows system PATH + user DOTNET_ROOT
 ```
 
 Why these names:
@@ -143,8 +143,8 @@ Help text writes itself:
 
 - `none` — Don't modify your environment; use `dotnetup dotnet` to invoke.
 - `shell` — Wire dotnetup into your shell's profile file.
-- `everywhere` — Wire dotnetup into your shell profile **and** your user-level
-  PATH/DOTNET_ROOT so cmd.exe, IDEs, and shortcuts also see it.
+- `everywhere` — Wire dotnetup into your shell profile, put the managed dotnet on the
+  Windows system `PATH`, and set user-level `DOTNET_ROOT`.
 
 ### Renamed `DotnetAccessMode` enum
 
@@ -354,19 +354,20 @@ the parts you list."*
 
 ### Composition table (what actually gets written)
 
-| `env` | `dotnetupOnPath` | Unix profile (`env script` wires) | Windows user `PATH` | Windows profile (`env script` wires) |
-| --- | --- | --- | --- | --- |
-| none | true | dotnetup only | dotnetup | dotnetup only |
-| none | false | (block removed) | — | (block removed) |
-| shell | true | dotnetup + dotnet | dotnetup | dotnetup + dotnet |
-| shell | false | dotnet only | — | dotnet only |
-| everywhere | true | dotnetup + dotnet | dotnetup + dotnet env vars | dotnetup + dotnet |
-| everywhere | false | n/a (`everywhere` is Windows-only) | dotnet env vars | dotnet only |
+| `env` | `dotnetupOnPath` | Unix profile (`env script` wires) | Windows user `PATH` | Windows system `PATH` / user `DOTNET_ROOT` | Windows profile (`env script` wires) |
+| --- | --- | --- | --- | --- | --- |
+| none | true | dotnetup only | dotnetup | — | dotnetup only |
+| none | false | (block removed) | — | — | (block removed) |
+| shell | true | dotnetup + dotnet | dotnetup | — | dotnetup + dotnet |
+| shell | false | dotnet only | — | — | dotnet only |
+| everywhere | true | n/a (`everywhere` is Windows-only) | dotnetup | managed dotnet / managed root | dotnetup + dotnet |
+| everywhere | false | n/a (`everywhere` is Windows-only) | — | managed dotnet / managed root | dotnet only |
 
 The Unix and Windows profile columns are driven by the same `env script` arguments
 (identical wherever both platforms support the mode; `everywhere` is Windows-only). The Windows
-user `PATH` column is the extra Windows-only piece (and, for `everywhere`, is also where the
-dotnet env-var wiring lives).
+user `PATH` column controls whether dotnetup itself is discoverable. In `everywhere`, the
+managed dotnet is instead inserted into the system `PATH`, while `DOTNET_ROOT` is set at
+user scope.
 
 ### Open questions
 
@@ -413,4 +414,3 @@ Alternative command shapes considered and rejected:
 | `dotnetup config set env <mode>` / `dotnetup config apply`      | git-style; lower-level feel; not the dotnetup CLI's style.         |
 | `dotnetup enable <mode>` / `disable` / `refresh` / `status`     | `enable`/`disable` overload heavily with channel install verbs.    |
 | `dotnetup path set <mode>` / `path show`                        | `path` is narrower than what we do (DOTNET_ROOT, profile script).  |
-

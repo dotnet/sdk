@@ -119,4 +119,8 @@ internal sealed record TestModule(
     LaunchProfile? LaunchSettings,
     string TargetPath,
     string? DotnetRootArchVariableName,
-    IReadOnlyDictionary<string, string> EnvironmentVariables);
+    IReadOnlyDictionary<string, string> EnvironmentVariables,
+    bool UseArtifactsOutput = false,
+    string? ArtifactsPath = null,
+    string? ArtifactsProjectName = null,
+    string? ArtifactsPivots = null);

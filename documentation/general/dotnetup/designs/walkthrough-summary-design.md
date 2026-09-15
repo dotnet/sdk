@@ -110,8 +110,9 @@ Lines:
 - **System installs to migrate** — Up to 3 candidates in an indented bullet
   list, reusing `InitWorkflows.FormatMigrationDisplayItems`. If more candidates
   exist, append `... and N more`. Omit this section entirely when there are no
-  migration candidates or when the recommended mode does not migrate system
-  installs (Isolation mode).
+  migration candidates. Migration is independent of the selected access mode.
+  Candidates covered by the selected install channel are omitted, and the list
+  updates when the channel changes.
 
 ### Coloring
 
@@ -200,16 +201,12 @@ flowchart TD
 - **Summary-first, single confirmation.** The most common path (accept the
   recommended setup) becomes one keystroke, while customization remains fully
   available.
-- **`init` always shows the summary.** Even when configured, so the user can see
-  current settings and the recommended defaults side by side before changing
-  anything.
-- **Configured value shown in a distinct color.** Yellow (the existing
-  `Warning` theme color) vs the magenta default, so "what you have" reads
-  differently from "what we recommend".
+- **`init` always shows the summary.** When configured, the stored access mode
+  is selected by default so accepting the form without edits preserves it. The
+  stored dotnetup PATH setting is also preserved even though it is not shown in
+  the form.
 - **Proceed migrates everything listed.** The summary already shows the
   migration candidates, so the confirmation covers them; a separate prompt would
   defeat the single-confirmation goal.
-- **Override overwrites saved config.** In configured mode, choosing the
-  defaults replaces the saved `PathPreference` with the recommended one and
-  installs/migrates accordingly.
-
+- **Explicit edits update saved config.** Changing the access mode replaces the
+  stored value; accepting without edits keeps the existing configuration.

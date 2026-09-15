@@ -12,6 +12,7 @@ using Test.Utilities;
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>;
+    using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>;
 
     [TestClass]
     public abstract class DoNotUseCountWhenAnyCanBeUsedTests : DoNotUseCountWhenAnyCanBeUsedTestsBase
@@ -1726,5 +1727,65 @@ End Namespace
                       false),
                   new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827))
         { }
+    }
+
+    [TestClass]
+    public class DoNotUseCountWhenAnyCanBeUsedNestedFixAllTests
+    {
+        [TestMethod]
+        public async Task NestedCountComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            string source = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public bool M(IEnumerable<int> a, IEnumerable<int> b)
+    {
+        return {|CA1827:a.Where(x => {|CA1827:b.Count() != 0|}).Count() != 0|};
+    }
+}
+";
+            string fixedSource = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public bool M(IEnumerable<int> a, IEnumerable<int> b)
+    {
+        return a.Where(x => b.Any()).Any();
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedCountComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            string source = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(a As IEnumerable(Of Integer), b As IEnumerable(Of Integer)) As Boolean
+        Return {|CA1827:a.Where(Function(x) {|CA1827:b.Count() <> 0|}).Count() <> 0|}
+    End Function
+End Class
+";
+            string fixedSource = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(a As IEnumerable(Of Integer), b As IEnumerable(Of Integer)) As Boolean
+        Return a.Where(Function(x) b.Any()).Any()
+    End Function
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }

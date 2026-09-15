@@ -72,18 +72,16 @@ public class MigrationWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    public void BuildMigrationSelections_DeduplicatesChannelsAndSkipsExistingSpecs()
+    public void FilterMigrationSelections_ExcludesPendingInstallSpecs()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
 
-        List<DotnetInstall> systemInstalls =
+        List<MigrationWorkflow.MigrationSelection> candidates =
         [
-            new DotnetInstall(installRoot, new ReleaseVersion("10.0.101"), InstallComponent.SDK),
-            new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            new DotnetInstall(installRoot, new ReleaseVersion("10.0.4"), InstallComponent.Runtime),
-            new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
-            new DotnetInstall(installRoot, new ReleaseVersion("9.0.5"), InstallComponent.ASPNETCore),
+            CreateMigration(InstallComponent.SDK, "10.0.1xx", "10.0.101"),
+            CreateMigration(InstallComponent.Runtime, "10.0", "10.0.4"),
+            CreateMigration(InstallComponent.ASPNETCore, "9.0", "9.0.5"),
         ];
 
         List<ResolvedInstallRequest> existingRequests =
@@ -97,7 +95,7 @@ public class MigrationWorkflowTests : IDisposable
                 new ReleaseVersion("10.0.5")),
         ];
 
-        var result = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+        var result = MigrationWorkflow.FilterMigrationSelections(candidates, existingRequests);
 
         result.Should().HaveCount(2);
         result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "10.0.1xx");
@@ -105,15 +103,15 @@ public class MigrationWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    public void BuildMigrationSelections_UsesInstallSpecChannelsForExistingRequests()
+    public void FilterMigrationSelections_UsesInstallSpecChannels()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
 
-        List<DotnetInstall> systemInstalls =
+        List<MigrationWorkflow.MigrationSelection> candidates =
         [
-            new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            new DotnetInstall(installRoot, new ReleaseVersion("9.0.306"), InstallComponent.SDK),
+            CreateMigration(InstallComponent.SDK, "10.0.1xx", "10.0.100"),
+            CreateMigration(InstallComponent.SDK, "9.0.3xx", "9.0.306"),
         ];
 
         List<ResolvedInstallRequest> existingRequests =
@@ -127,7 +125,7 @@ public class MigrationWorkflowTests : IDisposable
                 new ReleaseVersion("10.0.100")),
         ];
 
-        var result = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+        var result = MigrationWorkflow.FilterMigrationSelections(candidates, existingRequests);
 
         result.Should().HaveCount(2);
         result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "10.0.1xx");
@@ -276,11 +274,23 @@ public class MigrationWorkflowTests : IDisposable
             new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
         ];
 
-        var toMigrate = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+        var toMigrate = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot);
         var result = MigrationWorkflow.MergeInstallRequests(existingRequests, toMigrate, installRoot);
 
         result.Should().HaveCount(2);
         result.Should().ContainSingle(r => r.Request.Component == InstallComponent.SDK && r.Request.Channel.Name == "10.0.1xx");
         result.Should().ContainSingle(r => r.Request.Component == InstallComponent.Runtime && r.Request.Channel.Name == "10.0" && r.ResolvedVersion.ToString() == "10.0.4");
+    }
+
+    private static MigrationWorkflow.MigrationSelection CreateMigration(
+        InstallComponent component,
+        string channel,
+        string version)
+    {
+        return new MigrationWorkflow.MigrationSelection(
+            component,
+            new UpdateChannel(channel),
+            new ReleaseVersion(version),
+            InstallerUtilities.GetDefaultInstallArchitecture());
     }
 }

@@ -360,6 +360,80 @@ class C
                 DiagnosticResult.CompilerError("CS7036").WithSpan(9, 14, 9, 18));
         }
 
+        [TestMethod]
+        public async Task CS_TwoFillCallsInOneMethod_FixAllRewritesBothAsync()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    void M(Span<byte> first, Span<int> second)
+    {
+        [|first.Fill(0)|];
+        [|second.Fill(default)|];
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    void M(Span<byte> first, Span<int> second)
+    {
+        first.Clear();
+        second.Clear();
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [TestMethod]
+        public async Task CS_FillOnTheResultOfAnotherFilledSpan_FixAllRewritesBothAsync()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    Span<int> Get(Span<int> span) => span;
+
+    void M(Span<int> span)
+    {
+        [|Get(Wrap(span)).Fill(0)|];
+    }
+
+    Span<int> Wrap(Span<int> span)
+    {
+        [|span.Fill(0)|];
+        return span;
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    Span<int> Get(Span<int> span) => span;
+
+    void M(Span<int> span)
+    {
+        Get(Wrap(span)).Clear();
+    }
+
+    Span<int> Wrap(Span<int> span)
+    {
+        span.Clear();
+        return span;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
         private static Task VerifyCSCodeFixAsync(string source, string corrected)
         {
             var test = new VerifyCS.Test

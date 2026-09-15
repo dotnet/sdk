@@ -91,6 +91,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.tvossimulator-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.wasi-wasm" />
     <!-- Windows runtime packages don't need MSI wrappers - they're included in the SDK, not installed as workloads -->
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAsMsi="true" />

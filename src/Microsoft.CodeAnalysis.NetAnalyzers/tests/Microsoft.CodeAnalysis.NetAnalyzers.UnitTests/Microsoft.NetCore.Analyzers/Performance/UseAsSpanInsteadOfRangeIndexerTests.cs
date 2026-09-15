@@ -842,6 +842,34 @@ public class TestClass
 }");
         }
 
+        [TestMethod]
+        public async Task CS_NestedRangeIndexer_FixAllRewritesBothAsync()
+        {
+            await TestCSAsync(@"
+using System;
+
+public class TestClass
+{
+    private static int TestMethod2(ReadOnlySpan<int> input) => input.Length;
+
+    public int TestMethod(int[] input)
+    {
+        return TestMethod2({|CA1832:input[TestMethod2({|CA1832:input[1..2]|})..5]|});
+    }
+}", @"
+using System;
+
+public class TestClass
+{
+    private static int TestMethod2(ReadOnlySpan<int> input) => input.Length;
+
+    public int TestMethod(int[] input)
+    {
+        return TestMethod2(input.AsSpan()[TestMethod2(input.AsSpan()[1..2])..5]);
+    }
+}");
+        }
+
         private static Task TestCSAsync(string source, string corrected, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test

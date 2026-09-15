@@ -772,14 +772,17 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             if (stableVersions.Any())
             {
                 var results = stableVersions.OrderByDescending(r => r.package.Identity.Version);
-                return numberOfResults > 0 /* 0 indicates 'all' */ ? results.Take(numberOfResults) : results;
+                return TakeRequestedResults(results, numberOfResults);
             }
         }
 
         IEnumerable<(PackageSource, IPackageSearchMetadata)> latestVersions = accumulativeSearchResults
             .OrderByDescending(r => r.package.Identity.Version);
-        return latestVersions.Take(numberOfResults);
+        return TakeRequestedResults(latestVersions, numberOfResults);
     }
+
+    private static IEnumerable<T> TakeRequestedResults<T>(IEnumerable<T> results, int numberOfResults)
+        => numberOfResults > 0 ? results.Take(numberOfResults) : results;
 
     public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
@@ -925,6 +928,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             _verboseLogger.LogWarning(e.ToString());
             foundPackages = Enumerable.Empty<PackageSearchMetadata>();
+        }
+        catch (FatalProtocolException e)
+        {
+            throw new NuGetPackageInstallerException($"{string.Format(CliStrings.FailedToLoadNuGetSource, source.Source)}: {e.Message}", e);
         }
 
         return (source, foundPackages);

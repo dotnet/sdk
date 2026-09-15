@@ -55,7 +55,7 @@ public class EnvironmentProvider(
     /// Splits a PATH string into individual entries and processes them.
     /// Trims quotes, removes empty entries, and expands tilde-slash notation.
     /// </summary>
-    public IEnumerable<string> SplitPaths(string pathString)
+    internal IEnumerable<string> SplitPaths(string pathString)
     {
         return pathString
             .Split(s_pathSeparator)

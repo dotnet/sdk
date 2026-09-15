@@ -445,5 +445,141 @@ End Class
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
             }.RunAsync(CancellationToken.None);
         }
+
+        [TestMethod]
+        public async Task CA1311_NestedToLower_FixAllRewritesBoth_CSharpAsync_SpecifyCurrentCulture()
+        {
+            const string source = @"
+using System.Globalization;
+
+class C
+{
+    void M()
+    {
+        var a = ""test"";
+        a.[|ToLower|]().[|ToLower|]();
+    }
+}
+";
+
+            const string fixedSource = @"
+using System.Globalization;
+
+class C
+{
+    void M()
+    {
+        var a = ""test"";
+        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture);
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestState = { Sources = { source } },
+                FixedState = { Sources = { fixedSource } },
+                CodeActionIndex = 0,
+                CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1311_NestedToLower_FixAllRewritesBoth_CSharpAsync_UseInvariantVersion()
+        {
+            const string source = @"
+class C
+{
+    void M()
+    {
+        var a = ""test"";
+        a.[|ToLower|]().[|ToLower|]();
+    }
+}
+";
+
+            const string fixedSource = @"
+class C
+{
+    void M()
+    {
+        var a = ""test"";
+        a.ToLowerInvariant().ToLowerInvariant();
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestState = { Sources = { source } },
+                FixedState = { Sources = { fixedSource } },
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1311_NestedToLower_FixAllRewritesBoth_BasicAsync_SpecifyCurrentCulture()
+        {
+            const string source = @"
+Imports System.Globalization
+
+Class C
+    Sub M()
+        Dim a = ""test""
+        a.[|ToLower|]().[|ToLower|]()
+    End Sub
+End Class
+";
+
+            const string fixedSource = @"
+Imports System.Globalization
+
+Class C
+    Sub M()
+        Dim a = ""test""
+        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture)
+    End Sub
+End Class
+";
+
+            await new VerifyVB.Test
+            {
+                TestState = { Sources = { source } },
+                FixedState = { Sources = { fixedSource } },
+                CodeActionIndex = 0,
+                CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1311_NestedToLower_FixAllRewritesBoth_BasicAsync_UseInvariantVersion()
+        {
+            const string source = @"
+Class C
+    Sub M()
+        Dim a = ""test""
+        a.[|ToLower|]().[|ToLower|]()
+    End Sub
+End Class
+";
+
+            const string fixedSource = @"
+Class C
+    Sub M()
+        Dim a = ""test""
+        a.ToLowerInvariant().ToLowerInvariant()
+    End Sub
+End Class
+";
+
+            await new VerifyVB.Test
+            {
+                TestState = { Sources = { source } },
+                FixedState = { Sources = { fixedSource } },
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
+            }.RunAsync(CancellationToken.None);
+        }
     }
 }

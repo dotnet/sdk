@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Optional] Arguments: a string of arguments to be passed to the test runner
         /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
         ///   used for partitioning tests into Helix shards
+        /// - [Optional] PartitionByClass: when set to "true", bypasses the method-count scheduler and creates
+        ///   one Helix work item per schedulable public test-class candidate discovered in the assembly
         /// The two required parameters will be automatically created if TestProject.Identity is set to the path of the test csproj file
         /// </summary>
         [Required]
@@ -208,27 +210,39 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var methodLimit = BaseMethodLimit;
-            if (testProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            // When PartitionByClass is "true", bypass the method-count scheduler and create one
+            // Helix work item per test class. The MethodLimitMultiplier metadata only affects
+            // method-count scheduling, so it is intentionally read only in the else branch.
+            testProject.TryGetMetadata("PartitionByClass", out string partitionByClassMetadata);
+            IEnumerable<AssemblyPartitionInfo> assemblyPartitionInfos;
+            if (string.Equals(partitionByClassMetadata, "true", StringComparison.OrdinalIgnoreCase))
             {
-                if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                assemblyPartitionInfos = new AssemblyScheduler().PartitionByClass(targetPath);
+            }
+            else
+            {
+                var methodLimit = BaseMethodLimit;
+                if (testProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
                 {
-                    methodLimit *= multiplier;
+                    if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                    {
+                        methodLimit *= multiplier;
+                    }
+                    else
+                    {
+                        Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
+                    }
                 }
-                else
-                {
-                    Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
-                }
+
+                assemblyPartitionInfos = new AssemblyScheduler(methodLimit: methodLimit).Schedule(targetPath);
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
-            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
+            string formattedArguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
                 string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
 
@@ -322,7 +336,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 else
                 {
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
+                              $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {formattedArguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");

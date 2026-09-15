@@ -46,7 +46,7 @@ partial class Program
 
         // Marshal argv to native platform strings (UTF-16 on Windows, UTF-8 on Unix)
         // to match hostfxr's char_t definition used by PlatformStringMarshaller
-        // in dotnet-aot.dll.
+        // in the dotnet-aot native library.
         nint* nativeArgv = stackalloc nint[args.Length];
         try
         {
@@ -137,8 +137,8 @@ partial class Program
     /// </summary>
     private static string AotLibraryFileName =>
         OperatingSystem.IsWindows() ? "dotnet-aot.dll"
-        : OperatingSystem.IsMacOS() ? "dotnet-aot.dylib"
-        : "dotnet-aot.so";
+        : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
+        : "libdotnet-aot.so";
 
     /// <summary>
     ///  Marshals a string to a native platform string (UTF-16 on Windows, UTF-8 on Unix)

@@ -2373,6 +2373,180 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
+
+        [TestMethod]
+        public async Task TwoGuards_FixAllRewritesBoth_CS()
+        {
+            string source = """
+                using System.Collections.Generic;
+
+                class C
+                {
+                    private readonly Dictionary<string, string> MyDictionary = new Dictionary<string, string>();
+
+                    void M()
+                    {
+                        if ({|CA1853:MyDictionary.ContainsKey("First")|})
+                            MyDictionary.Remove("First");
+
+                        if ({|CA1853:MyDictionary.ContainsKey("Second")|})
+                        {
+                            MyDictionary.Remove("Second");
+                        }
+                        else
+                        {
+                            System.Console.WriteLine();
+                        }
+                    }
+                }
+                """;
+
+            string fixedSource = """
+                using System.Collections.Generic;
+
+                class C
+                {
+                    private readonly Dictionary<string, string> MyDictionary = new Dictionary<string, string>();
+
+                    void M()
+                    {
+                        MyDictionary.Remove("First");
+
+                        if (!MyDictionary.Remove("Second"))
+                        {
+                            System.Console.WriteLine();
+                        }
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task TwoGuards_FixAllRewritesBoth_VB()
+        {
+            string source = """
+                Imports System.Collections.Generic
+
+                Public Class C
+                    Private ReadOnly MyDictionary As New Dictionary(Of String, String)()
+
+                    Public Sub M()
+                        If {|CA1853:MyDictionary.ContainsKey("First")|} Then
+                            MyDictionary.Remove("First")
+                        End If
+
+                        If {|CA1853:MyDictionary.ContainsKey("Second")|} Then
+                            MyDictionary.Remove("Second")
+                        Else
+                            System.Console.WriteLine()
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            string fixedSource = """
+                Imports System.Collections.Generic
+
+                Public Class C
+                    Private ReadOnly MyDictionary As New Dictionary(Of String, String)()
+
+                    Public Sub M()
+                        MyDictionary.Remove("First")
+
+                        If Not MyDictionary.Remove("Second") Then
+                            System.Console.WriteLine()
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedGuardInElseBranch_FixAllRewritesBoth_CS()
+        {
+            string source = """
+                using System.Collections.Generic;
+
+                class C
+                {
+                    private readonly Dictionary<string, string> MyDictionary = new Dictionary<string, string>();
+
+                    void M()
+                    {
+                        if ({|CA1853:MyDictionary.ContainsKey("First")|})
+                        {
+                            MyDictionary.Remove("First");
+                        }
+                        else
+                        {
+                            if ({|CA1853:MyDictionary.ContainsKey("Second")|})
+                                MyDictionary.Remove("Second");
+                        }
+                    }
+                }
+                """;
+
+            string fixedSource = """
+                using System.Collections.Generic;
+
+                class C
+                {
+                    private readonly Dictionary<string, string> MyDictionary = new Dictionary<string, string>();
+
+                    void M()
+                    {
+                        if (!MyDictionary.Remove("First"))
+                        {
+                            MyDictionary.Remove("Second");
+                        }
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedGuardInElseBranch_FixAllRewritesBoth_VB()
+        {
+            string source = """
+                Imports System.Collections.Generic
+
+                Public Class C
+                    Private ReadOnly MyDictionary As New Dictionary(Of String, String)()
+
+                    Public Sub M()
+                        If {|CA1853:MyDictionary.ContainsKey("First")|} Then
+                            MyDictionary.Remove("First")
+                        Else
+                            If {|CA1853:MyDictionary.ContainsKey("Second")|} Then
+                                MyDictionary.Remove("Second")
+                            End If
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            string fixedSource = """
+                Imports System.Collections.Generic
+
+                Public Class C
+                    Private ReadOnly MyDictionary As New Dictionary(Of String, String)()
+
+                    Public Sub M()
+                        If Not MyDictionary.Remove("First") Then
+                            MyDictionary.Remove("Second")
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
         #endregion
 
         #region Helpers

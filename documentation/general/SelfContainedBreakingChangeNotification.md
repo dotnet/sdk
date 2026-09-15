@@ -23,7 +23,7 @@ Both `SelfContained` and `RuntimeIdentifier` will flow to a referenced project i
 
 - The `IsRidAgnostic` property is set to `false`
 - The `OutputType` is `Exe` or `WinExe`
-- Either the `RuntimeIdentifer` or `RuntimeIdentifiers` property is non-empty
+- Either the `RuntimeIdentifier` or `RuntimeIdentifiers` property is non-empty
 
 ## Type of breaking change
 

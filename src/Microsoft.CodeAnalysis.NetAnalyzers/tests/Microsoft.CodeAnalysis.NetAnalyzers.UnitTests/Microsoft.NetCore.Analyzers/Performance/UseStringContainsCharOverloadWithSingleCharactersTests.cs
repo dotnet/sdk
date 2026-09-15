@@ -198,6 +198,49 @@ End Class"
             await test.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task CSharp_TwoLiteralsUnderOneExpression_FixAllRewritesBothAsync()
+        {
+            var violatingSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return input.Contains([|""a""|]).ToString().Contains([|""b""|]);
+    }
+}";
+
+            var fixedSourceCode = @"using System;
+public class TestClass
+{
+    public bool TestMethod(string input)
+    {
+        return input.Contains('a').ToString().Contains('b');
+    }
+}";
+            await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
+        }
+
+        [TestMethod]
+        public async Task VB_TwoLiteralsUnderOneExpression_FixAllRewritesBothAsync()
+        {
+            var test = new VerifyVB.Test()
+            {
+                TestCode = @"Public Class Program
+    Public Sub M(input As String)
+        Dim a = input.Contains([|""t""|]).ToString().Contains([|value:=""r""|])
+    End Sub
+End Class",
+                ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard21,
+                FixedCode = @"Public Class Program
+    Public Sub M(input As String)
+        Dim a = input.Contains(""t""c).ToString().Contains(value:=""r""c)
+    End Sub
+End Class"
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
         private static async Task VerifyCSCodeFixWithGivenReferenceAssembliesAsync(string source, ReferenceAssemblies referenceAssemblies, string fixedSource)
         {
             await new VerifyCS.Test()

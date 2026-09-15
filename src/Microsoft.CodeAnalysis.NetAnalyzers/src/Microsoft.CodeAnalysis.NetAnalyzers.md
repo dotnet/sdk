@@ -2367,7 +2367,7 @@ A type that implements System.IDisposable inherits from a type that also impleme
 |Category|Usage|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|True|
+|CodeFix|False|
 ---
 
 ## [CA2216](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2216): Disposable types should declare finalizer
