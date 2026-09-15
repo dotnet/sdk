@@ -25,6 +25,8 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
     private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
     private readonly WorkloadInfoHelper _workloadListHelper;
 
+    internal bool IsInteractive { get; }
+
     public WorkloadListCommand(
         ParseResult parseResult,
         IReporter reporter = null,
@@ -39,10 +41,11 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
     ) : base(parseResult, reporter, tempDirPath, nugetPackageDownloader)
     {
         _machineReadableOption = parseResult.GetValue(Definition.MachineReadableOption);
+        IsInteractive = parseResult.GetValue(Definition.RestoreOptions.InteractiveOption);
 
         var resolvedReporter = _machineReadableOption ? NullReporter.Instance : Reporter;
         _workloadListHelper = new WorkloadInfoHelper(
-            parseResult.HasOption(Definition.RestoreOptions.InteractiveOption),
+            IsInteractive,
             Verbosity,
             parseResult.GetValue(Definition.VersionOption) ?? null,
             VerifySignatures,
