@@ -94,9 +94,7 @@ internal sealed class EvaluationResult(
 
         // Capture the snapshot of original project instances after Restore target has been run.
         // These instances can be used to evaluate additional targets (e.g. deployment) if needed.
-        var restoredProjectInstances = projectGraph.Graph.ProjectNodes.ToDictionary(
-            keySelector: node => node.ProjectInstance.GetId(),
-            elementSelector: node => node.ProjectInstance.DeepCopy());
+        var restoredProjectInstances = projectGraph.GetProjectInstanceMap(deepCopy: true);
 
         // Update the project instances of the graph with design-time build results.
         // The properties and items set by DTB will be used by the Workspace to create Roslyn representation of projects.

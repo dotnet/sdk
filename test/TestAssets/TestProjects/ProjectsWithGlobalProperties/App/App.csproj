@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Library\Library.csproj"
+                      AdditionalProperties="X=One"
+                      Private="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest"
+                      TargetPath="One\Library.dll" />
+    <ProjectReference Include="..\Library\Library.csproj"
+                      AdditionalProperties="X=Two"
+                      Private="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest"
+                      TargetPath="Two\Library.dll" />
+  </ItemGroup>
+</Project>

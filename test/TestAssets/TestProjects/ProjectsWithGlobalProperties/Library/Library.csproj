@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <DefineConstants Condition="'$(X)' == 'One'">One</DefineConstants>
+    <DefineConstants Condition="'$(X)' == 'Two'">Two</DefineConstants>
+    <IntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\$(X)\</IntermediateOutputPath>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)\$(X)\</OutputPath>
+  </PropertyGroup>
+</Project>
