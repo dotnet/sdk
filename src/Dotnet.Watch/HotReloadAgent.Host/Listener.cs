@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class Listener(Transport transport, IHotReloadAgent agent, Action<string> log)
+internal sealed class Listener(Transport transport, IHotReloadAgent agent, int processId, Action<string> log)
 {
     /// <summary>
     /// Messages to the client sent after the initial <see cref="ClientInitializationResponse"/> is sent
@@ -72,7 +72,8 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
     {
         agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-        await transport.SendAsync(new ClientInitializationResponse(agent.Capabilities), cancellationToken).ConfigureAwait(false);
+        var response = new ClientInitializationResponse(processId, capabilities: agent.Capabilities);
+        await transport.SendAsync(response, cancellationToken).ConfigureAwait(false);
 
         // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
 
