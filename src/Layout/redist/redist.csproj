@@ -125,6 +125,13 @@
     </Content>
   </ItemGroup>
 
+  <!-- OpenHarmony runtime defaults for the SDK's own processes (JIT W^X, ICU), baked into the
+       redist runtimeconfig which GenerateCliRuntimeConfigurationFiles copies to every tool. -->
+  <ItemGroup Condition="'$(OSName)' == 'openharmony'">
+    <RuntimeHostConfigurationOption Include="System.Runtime.EnableWriteXorExecute" Value="false" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
   <!-- We will reference newer analyzer packages that what can be referenced by the SDK we build with
        To break the cycle we remove all analyzers before this compiles. -->
   <Target Name="RemoveAnalyzers" BeforeTargets="CoreCompile">

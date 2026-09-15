@@ -25,6 +25,11 @@
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- OpenHarmonyEnvironmentDefaultsTests asserts the platform-gated child-process defaults. -->
+    <SupportedPlatform Include="openharmony" />
+  </ItemGroup>
+
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
