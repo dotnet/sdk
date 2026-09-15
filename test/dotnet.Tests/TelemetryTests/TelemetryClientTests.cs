@@ -2,18 +2,96 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
+using System.Diagnostics;
+using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Moq;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
 [TestClass]
 public class TelemetryClientTests : SdkTest
 {
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+    [TestMethod]
+    [DataRow(0, false)]
+    [DataRow(1, false)]
+    [DataRow(127, false)]
+    [DataRow(-1, false)]
+    [DataRow(1, true)]
+    [DoNotParallelize]
+    public void ShutdownUsesExitCodeAndRestoresDrainSetting(int exitCode, bool throwOnShutdown)
+    {
+        const string drainBudgetName = "Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds";
+        FieldInfo tracerField = typeof(TelemetryClient).GetField("s_tracerProvider", BindingFlags.Static | BindingFlags.NonPublic)!;
+        FieldInfo meterField = typeof(TelemetryClient).GetField("s_metricsProvider", BindingFlags.Static | BindingFlags.NonPublic)!;
+        bool boundedExport = (bool)typeof(TelemetryClient).GetField("s_isCIEnvironment", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!
+            || (bool)typeof(TelemetryClient).GetField("s_enableOtlpExporter", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+        int boundedTimeout = (int)typeof(TelemetryClient).GetField("s_shutdownTimeoutMs", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+        object? previousTracer = tracerField.GetValue(null);
+        object? previousMeter = meterField.GetValue(null);
+        object? previousBudget = AppContext.GetData(drainBudgetName);
+        var processor = new ShutdownRecordingProcessor(throwOnShutdown);
+        using var provider = Sdk.CreateTracerProviderBuilder().AddProcessor(processor).Build();
+        try
+        {
+            tracerField.SetValue(null, provider);
+            meterField.SetValue(null, null);
+            AppContext.SetData(drainBudgetName, 17);
+            Action shutdown = () => TelemetryClient.FlushProviders(exitCode);
+            shutdown.Should().NotThrow();
+            processor.Timeout.Should().Be(boundedExport ? boundedTimeout : exitCode == 0 ? Timeout.Infinite : 300);
+            processor.DrainBudget.Should().Be(boundedExport || exitCode == 0 ? 17 : 300);
+            AppContext.GetData(drainBudgetName).Should().Be(17);
+        }
+        finally
+        {
+            tracerField.SetValue(null, previousTracer);
+            meterField.SetValue(null, previousMeter);
+            AppContext.SetData(drainBudgetName, previousBudget);
+        }
+    }
+
+    private sealed class ShutdownRecordingProcessor(bool throwOnShutdown) : BaseProcessor<Activity>
+    {
+        internal int? Timeout { get; private set; }
+        internal object? DrainBudget { get; private set; }
+
+        protected override bool OnShutdown(int timeoutMilliseconds)
+        {
+            Timeout = timeoutMilliseconds;
+            DrainBudget = AppContext.GetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds");
+            if (throwOnShutdown)
+            {
+                throw new InvalidOperationException("Test shutdown failure");
+            }
+            return true;
+        }
+    }
+#endif
+
+    [TestMethod]
+    [DataRow(null, 5_000)]
+    [DataRow("", 5_000)]
+    [DataRow("invalid", 5_000)]
+    [DataRow("0", 5_000)]
+    [DataRow("-1", 5_000)]
+    [DataRow("100", 100)]
+    [DataRow("5000", 5_000)]
+    [DataRow("20000", 20_000)]
+    [DataRow("2147483647", int.MaxValue)]
+    [DataRow("2147483648", 5_000)]
+    public void ShutdownTimeoutUsesPositiveOverrideOrFiveSecondDefault(string? value, int expected)
+    {
+        TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
+    }
+
     public static IEnumerable<object[]> CommandsWithExitCode =>
     [
         [new[] { "--help" }, "0"],
