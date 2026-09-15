@@ -117,7 +117,7 @@ Let `P` be the `dotnetup self update` process that Algorithm 2 outlines.
 
 Let `N` be any `non-safe` dotnetup process.
 
-Let `S` be any `safe` dotnetup process: `dotnetup dotnet`, the telemetry drain process, and `P` itself.
+Let `S` be any `safe` dotnetup process other than `P`: `dotnetup dotnet` and the telemetry drain process. `self update` is classified `safe` as well, but `P` follows Algorithm 1 rather than the gate.
 
 Let `V_channel` be the per-RID build ID published by the configured dotnetup channel, and let `V_installed` be the build ID read from the embedded record in `D/dotnetup.exe`. These are the equality tokens defined by the [build-identity proposal](build-identity.md), not human-readable versions or filesystem file IDs.
 
@@ -160,12 +160,12 @@ Lock ownership during command execution and cleanup:
 | `N` | `U` | exclusive | optional cleanup only, after passing the gate and build-identity check; one nonblocking attempt |
 | `P` | `U` | exclusive | start of the transaction until `P` exits |
 | `P` | `A` | exclusive | start of the transaction until `P` exits |
-| `S` other than `P` | `A` | — | never acquired; skips the gate |
-| `S` other than `P` | `U` | exclusive | optional cleanup only; one nonblocking attempt |
+| `S` | `A` | — | never acquired; skips the gate |
+| `S` | `U` | exclusive | optional cleanup only; one nonblocking attempt |
 
 `A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.9.
 
-Because `S` other than `P` holds neither lock outside optional cleanup, a self update can complete underneath it. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
+Because `S` holds neither lock outside optional cleanup, a self update can complete underneath it. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
 
 `install`, `uninstall`, `update`, and the other manifest-mutating commands continue to use the `ModifyInstallationStates` mutex for their own critical sections. `P` does not acquire `ModifyInstallationStates`, and no modification to that logic is necessary.
 
@@ -189,6 +189,16 @@ Every acquisition of `A` or `U` either succeeds or throws `IOException` immediat
 Cleanup does not use these retry timeouts: it makes one nonblocking attempt to acquire `U` and skips cleanup if ownership cannot be established.
 
 ###### Lock Acquisition for `P`
+
+**1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the build ID read from the canonical executable. If the two are equal, `P` exits successfully without acquiring `U` or `A`.
+
+This check is advisory. It decides only whether acquiring locks is worthwhile, and it is never the basis for replacing or deleting an executable. A read error, a network failure, or an observation of the step 2.4 replacement window does not distinguish the outcome: `P` falls through to step 1.1 and lets step 2.1 decide authoritatively under both locks. `P` may reuse the resolved `V_channel` in step 2.1 rather than resolving it a second time.
+
+Reading the canonical build ID without holding `U` is acceptable here and is not in step 2.9, because the two reads gate different actions. Step 2.9 uses the value to delete backups, which is irreversible, so it reads under `U`. Step 1.0 uses the value only to decide whether to continue, and `File.Replace` is rename-based, so the canonical name always resolves to a complete executable rather than a partially written one.
+
+Step 1.0 exists because the common invocation is a poll that finds nothing to do. Without it, every such poll takes `A` exclusively, excludes every `N` on the machine for the duration of the channel lookup, and can fail with `DotnetupBusyWithAnotherCommand` having accomplished nothing. A `self update` run with no network connectivity likewise fails without blocking any other command.
+
+The check is placed before both locks rather than between steps 1.1 and 1.2 deliberately. Resolving `V_channel` is a network operation, so performing it while holding `U` would stretch the interval between acquiring `U` and acquiring `A` from two file opens to a network round trip. More `N` processes would accumulate in that interval, `P` would fail step 1.2 more often and restart the pair under rule 2, and the longer hold on `U` would cause the single nonblocking cleanup attempt of step 2.9 to be skipped more often.
 
 **1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` or cleanup holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required after acquiring both locks. `P` does not fail immediately for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithUpdateOrCleanup` and reports that another update or cleanup holds the lock, with best-effort holder details from step 1.7.
 
@@ -234,6 +244,8 @@ The first-run telemetry notice is the only pre-gate write. That notice targets t
 Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. `P` holds both locks until `P` exits, and `P` performs every step itself; no second process participates in the replacement.
 
 **2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded build ID. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
+
+Step 2.1 is the authoritative check and is performed even when step 1.0 already reported an available update, because a peer `self update` can complete a transaction between step 1.0 and step 1.2. Reading `V_installed` from the canonical executable rather than from the loaded image of `P` is what lets `P` observe that peer's work and exit successfully instead of repeating it.
 
 **2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs best-effort deletion of eligible `D/dotnetup.exe.old.*` backups, subject to the canonical-build check and cleanup limits in step 2.9. `P` uses its existing ownership of `U` and `A`; it does not reopen `U` or release either lock for cleanup. Failure to delete a backup belonging to an older transaction is not fatal. Failure to delete `D/dotnetup.exe.new` returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
 
