@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.NetCore.Analyzers.Usage;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 {
@@ -34,10 +33,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var typeArgumentsSyntax = invocationContext.TypeArguments.Select(t => SyntaxFactory.ParseTypeName(t.ToDisplayString()));
-            var otherArgumentsSyntax = invocationContext.OtherArguments
-                .Where(a => a.ArgumentKind != ArgumentKind.DefaultValue)
-                .Select(a => a.Syntax)
-                .OfType<ArgumentSyntax>();
+            // Filter the source argument list rather than the normalized operations so every expanded params
+            // argument remains in the replacement invocation.
+            var otherArgumentsSyntax = invocationSyntax.ArgumentList.Arguments
+                .Where(a => !invocationContext.IsTypeOfArgumentSyntax(a));
             var methodNameSyntax =
                 SyntaxFactory.GenericName(
                     SyntaxFactory.Identifier(invocationContext.Method.Name),
