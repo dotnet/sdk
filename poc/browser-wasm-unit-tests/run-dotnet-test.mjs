@@ -15,7 +15,6 @@ const projectPath = path.join(
   "BlazorWasmTestApp",
   "BlazorWasmTestApp.csproj",
 );
-const dotnetPath = resolveDotnetPath(repoRoot);
 const browserPackageSource = process.env.MTP_BROWSER_PACKAGE_SOURCE;
 const requestedBrowserPackageVersion =
   process.env.MTP_BROWSER_PACKAGE_VERSION;
@@ -34,11 +33,6 @@ const unsupportedLifecycleOption =
     ? "--no-restore"
     : undefined);
 
-if (dotnetPath === "dotnet") {
-  console.warn(
-    "The repo redist/bootstrap SDK is unavailable; using the SDK selected from PATH/global.json.",
-  );
-}
 if (!browserPackageSource) {
   throw new Error(
     "Set MTP_BROWSER_PACKAGE_SOURCE to the folder containing Microsoft.Testing.Platform.Browser.nupkg.",
@@ -87,13 +81,13 @@ const intermediateOutputPath = ensureTrailingSeparator(
 );
 const outputPath = ensureTrailingSeparator(path.join(runRoot, "bin"));
 const keepRunOutputs = process.env.MTP_BROWSER_KEEP_RUN_OUTPUTS === "1";
+const dotnetCommand = resolveDotnetCommand(repoRoot, runRoot);
 const cacheLeasePath = path.join(
   restorePackagesPath,
   `.lease-${process.pid}-${Date.now()}`,
 );
 
 const commonProperties = [
-  projectPath,
   "-p:BrowserWasmUseMtpPackage=true",
   `-p:BrowserWasmMtpPackageSource=${browserPackageSource}`,
   `-p:BrowserWasmMtpPackageVersion=${browserPackage.version}`,
@@ -125,7 +119,11 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 }
 
 try {
-  const restoreExitCode = await runDotnet(["restore", ...commonProperties]);
+  const restoreExitCode = await runDotnet([
+    "restore",
+    projectPath,
+    ...commonProperties,
+  ]);
   if (restoreExitCode !== 0) {
     throw new Error(`dotnet restore failed with exit code ${restoreExitCode}.`);
   }
@@ -138,6 +136,8 @@ try {
 
   process.exitCode = await runDotnet([
     "test",
+    "--project",
+    projectPath,
     ...commonProperties,
     "--no-restore",
     ...forwardedArguments,
@@ -146,13 +146,151 @@ try {
   await cleanup();
 }
 
-function resolveDotnetPath(root) {
+function resolveDotnetCommand(root, workingDirectory) {
   const executable = process.platform === "win32" ? "dotnet.exe" : "dotnet";
+  const bootstrap = path.join(root, ".dotnet", executable);
+  const redist = path.join(
+    root,
+    "artifacts",
+    "bin",
+    "redist",
+    "Debug",
+    "dotnet",
+    executable,
+  );
+  const builtCli = path.join(
+    root,
+    "artifacts",
+    "bin",
+    "dotnet",
+    "Debug",
+    "net11.0",
+    "dotnet.dll",
+  );
+  const redistSdkRoot = path.join(
+    root,
+    "artifacts",
+    "bin",
+    "redist",
+    "Debug",
+    "dotnet",
+    "sdk",
+  );
+  if (
+    fs.existsSync(redist)
+    && fs.existsSync(builtCli)
+    && fs.existsSync(redistSdkRoot)
+  ) {
+    const sdkDirectories = fs
+      .readdirSync(redistSdkRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+    if (sdkDirectories.length !== 1) {
+      throw new Error(
+        `Expected exactly one built SDK in '${redistSdkRoot}', but found ${sdkDirectories.length}.`,
+      );
+    }
+    const sdkVersion = sdkDirectories[0];
+
+    const localSdkRoot = createRunLocalSdk(
+      path.dirname(redist),
+      path.join(redistSdkRoot, sdkVersion),
+      sdkVersion,
+      workingDirectory,
+      builtCli,
+    );
+
+    fs.mkdirSync(workingDirectory, { recursive: true });
+    fs.writeFileSync(
+      path.join(workingDirectory, "global.json"),
+      `${JSON.stringify(
+        {
+          sdk: {
+            version: sdkVersion,
+            rollForward: "disable",
+            paths: [localSdkRoot],
+          },
+          test: {
+            runner: "Microsoft.Testing.Platform",
+          },
+        },
+        undefined,
+        2,
+      )}\n`,
+    );
+
+    return {
+      executable: redist,
+      prefix: [],
+      workingDirectory,
+    };
+  }
+
   const candidates = [
-    path.join(root, "artifacts", "bin", "redist", "Debug", "dotnet", executable),
-    path.join(root, ".dotnet", executable),
+    redist,
+    bootstrap,
   ];
-  return candidates.find(fs.existsSync) ?? "dotnet";
+  const fallback = candidates.find(fs.existsSync) ?? "dotnet";
+  console.warn(
+    "The built SDK/CLI is unavailable; using the SDK selected from the repository global.json.",
+  );
+  return {
+    executable: fallback,
+    prefix: [],
+    workingDirectory: root,
+  };
+}
+
+function createRunLocalSdk(
+  sourceDotnetRoot,
+  sourceSdkDirectory,
+  sdkVersion,
+  runDirectory,
+  builtCli,
+) {
+  const localDotnetRoot = path.join(runDirectory, "dotnet");
+  const localSdkDirectory = path.join(localDotnetRoot, "sdk", sdkVersion);
+  fs.mkdirSync(localSdkDirectory, { recursive: true });
+
+  for (const entry of fs.readdirSync(sourceDotnetRoot, {
+    withFileTypes: true,
+  })) {
+    if (entry.name.toLowerCase() === "sdk") {
+      continue;
+    }
+
+    const source = path.join(sourceDotnetRoot, entry.name);
+    const destination = path.join(localDotnetRoot, entry.name);
+    if (entry.isDirectory()) {
+      fs.symlinkSync(
+        source,
+        destination,
+        process.platform === "win32" ? "junction" : "dir",
+      );
+    } else {
+      fs.linkSync(source, destination);
+    }
+  }
+
+  for (const entry of fs.readdirSync(sourceSdkDirectory, {
+    withFileTypes: true,
+  })) {
+    const source = path.join(sourceSdkDirectory, entry.name);
+    const destination = path.join(localSdkDirectory, entry.name);
+    if (entry.name.toLowerCase() === "dotnet.dll") {
+      fs.copyFileSync(builtCli, destination);
+    } else if (entry.isDirectory()) {
+      fs.symlinkSync(
+        source,
+        destination,
+        process.platform === "win32" ? "junction" : "dir",
+      );
+    } else {
+      fs.linkSync(source, destination);
+    }
+  }
+
+  return localDotnetRoot;
 }
 
 function findBrowserPackage(source, requestedVersion) {
@@ -193,8 +331,8 @@ function findBrowserPackage(source, requestedVersion) {
 }
 
 async function runDotnet(args) {
-  const child = spawn(dotnetPath, args, {
-    cwd: repoRoot,
+  const child = spawn(dotnetCommand.executable, [...dotnetCommand.prefix, ...args], {
+    cwd: dotnetCommand.workingDirectory,
     env: {
       ...process.env,
       DOTNET_CLI_TELEMETRY_OPTOUT: "1",

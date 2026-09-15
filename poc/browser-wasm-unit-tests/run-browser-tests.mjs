@@ -69,6 +69,14 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 
 try {
   if (!skipBuild) {
+    for (const directory of [
+      projectExtensionsPath,
+      intermediateOutputPath,
+      outputPath,
+    ]) {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+
     await runProcess(
       dotnetPath,
       ["build", projectPath, "-c", "Debug", ...standaloneProperties],

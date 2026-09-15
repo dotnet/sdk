@@ -4,6 +4,7 @@
   <PropertyGroup>
     <CurrentTargetFramework Condition="'$(CurrentTargetFramework)' == ''">net$(NETCoreAppMaximumVersion)</CurrentTargetFramework>
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
@@ -37,4 +38,5 @@
       <TestingPlatformBrowserHostArguments>$(_TestingPlatformBrowserComputedHostArguments) --urls http://127.0.0.1:0</TestingPlatformBrowserHostArguments>
     </PropertyGroup>
   </Target>
+
 </Project>

@@ -177,41 +177,28 @@ internal static class SolutionAndProjectUtility
     {
         Debug.Assert(projectFilePath is not null);
 
-        Dictionary<string, string>? globalProperties = null;
-        var capacity = 0;
+        // These reserved properties identify project evaluations owned by dotnet test and
+        // version the browser HTTP bootstrap independently from the MTP protocol.
+        var globalProperties = new Dictionary<string, string>(6, StringComparer.OrdinalIgnoreCase)
+        {
+            { ProjectProperties.DotnetTestInvocation, "true" },
+            { ProjectProperties.DotnetTestInvocationId, Guid.NewGuid().ToString("N") },
+            { ProjectProperties.DotnetTestHttpBootstrapVersion, "1" },
+        };
 
         if (tfm is not null)
         {
-            capacity++;
+            globalProperties.Add(ProjectProperties.TargetFramework, tfm);
         }
 
         if (configuration is not null)
         {
-            capacity++;
+            globalProperties.Add(ProjectProperties.Configuration, configuration);
         }
 
         if (platform is not null)
         {
-            capacity++;
-        }
-
-        if (capacity > 0)
-        {
-            globalProperties = new Dictionary<string, string>(capacity);
-            if (tfm is not null)
-            {
-                globalProperties.Add(ProjectProperties.TargetFramework, tfm);
-            }
-
-            if (configuration is not null)
-            {
-                globalProperties.Add(ProjectProperties.Configuration, configuration);
-            }
-
-            if (platform is not null)
-            {
-                globalProperties.Add(ProjectProperties.Platform, platform);
-            }
+            globalProperties.Add(ProjectProperties.Platform, platform);
         }
 
         // Properties that apply to this project only - for example the device and runtime identifier
@@ -222,7 +209,7 @@ internal static class SolutionAndProjectUtility
         {
             foreach (var property in additionalGlobalProperties)
             {
-                if (!(globalProperties ??= new Dictionary<string, string>()).ContainsKey(property.Key))
+                if (!globalProperties.ContainsKey(property.Key))
                 {
                     globalProperties.Add(property.Key, property.Value);
                 }
@@ -234,7 +221,7 @@ internal static class SolutionAndProjectUtility
         // the collection is passed in ProjectOptions below.
         foreach (var property in collection.GlobalProperties)
         {
-            if (!(globalProperties ??= new Dictionary<string, string>()).ContainsKey(property.Key))
+            if (!globalProperties.ContainsKey(property.Key))
             {
                 globalProperties.Add(property.Key, property.Value);
             }
@@ -644,12 +631,6 @@ internal static class SolutionAndProjectUtility
             {
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
-
-            // Launch extensions can hook ComputeRunArguments without changing
-            // ordinary dotnet run or design-time queries. Keep the HTTP bootstrap contract version
-            // separate from the MTP protocol version so launchers can fail before starting a host.
-            project.SetProperty(ProjectProperties.DotnetTestInvocation, "true");
-            project.SetProperty(ProjectProperties.DotnetTestHttpBootstrapVersion, "1");
 
             // Every project of the run shares the same build session, which serializes the requests
             // internally: the MSBuild build APIs cannot be called in parallel, even for different

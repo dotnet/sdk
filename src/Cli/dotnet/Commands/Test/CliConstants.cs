@@ -151,6 +151,7 @@ internal static class ProjectProperties
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
     internal const string DotnetTestInvocation = "DotnetTestInvocation";
+    internal const string DotnetTestInvocationId = "DotnetTestInvocationId";
     internal const string DotnetTestHttpBootstrapVersion = "DotnetTestHttpBootstrapVersion";
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";

@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             => $"%{name}%";
 
         [TestMethod]
-        public void ComputeRunArgumentsReceivesDotnetTestInvocationContract()
+        public void ComputeRunArgumentsReceivesReservedDotnetTestInvocationContract()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
                 .WithSource();
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   <Target Name="RecordDotnetTestInvocationContract" BeforeTargets="ComputeRunArguments">
                     <WriteLinesToFile
                       File="$(MSBuildProjectDirectory)\dotnet-test-invocation-contract.txt"
-                      Lines="$(DotnetTestInvocation)|$(DotnetTestHttpBootstrapVersion)"
+                      Lines="$(DotnetTestInvocation)|$(DotnetTestHttpBootstrapVersion)|$(DotnetTestInvocationId)"
                       Overwrite="true" />
                   </Target>
                 </Project>
@@ -42,10 +42,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
+                .Execute(
+                    "-p:dotnettestinvocation=false",
+                    "-p:DOTNETTESTINVOCATIONID=user-value",
+                    "-p:dotnettesthttpbootstrapversion=99")
                 .Should().Pass();
 
-            File.ReadAllText(contractFile).Trim().Should().Be("true|1");
+            string[] contract = File.ReadAllText(contractFile).Trim().Split('|');
+            contract.Should().HaveCount(3);
+            contract[..2].Should().Equal("true", "1");
+            Guid.TryParseExact(contract[2], "N", out _).Should().BeTrue();
         }
 
         [DataRow(TestingConstants.Debug)]
