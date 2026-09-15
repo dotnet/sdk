@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Moq;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -119,7 +120,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateUpdateCommand($"-g {_packageId} --ignore-failed-sources");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.Delete(Path.Combine(_tempDirectory, "nuget.config"));
         }
 
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var packageId = "does.not.exist";
             var command = CreateUpdateCommand($"-g {packageId}");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -141,7 +142,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var command = CreateUpdateCommand($"-g {_packageId}");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
                 .Be(HigherPackageVersion);
@@ -151,11 +152,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallItCanUpdateThePackageVersion()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             var command = CreateUpdateCommand($"-g {_packageId}");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
                 .Be(HigherPackageVersion);
@@ -164,10 +165,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerVersionInstallationItCanUpdateAllThePackageVersion()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
-            CreateInstallCommand($"-g {_packageId2} --version {LowerPackageVersion}", _packageId2.ToString()).Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
+            CreateInstallCommand($"-g {_packageId2} --version {LowerPackageVersion}", _packageId2.ToString()).Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-            CreateUpdateCommand($"--all -g -v:d").Execute();
+            CreateUpdateCommand($"--all -g -v:d").Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
                 .Be(HigherPackageVersion);
@@ -176,9 +177,38 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
+        public void GivenAPackageIsRemovedAfterUpdateAllTakesItsSnapshotItIsNotReinstalled()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}")
+                .Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+            var uninstaller = new ToolPackageUninstallerMock(_fileSystem, _store);
+            var staleStoreQuery = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
+            staleStoreQuery
+                .Setup(query => query.EnumeratePackageVersions(_packageId))
+                .Returns(() =>
+                {
+                    IToolPackage installedPackage = _store.EnumeratePackageVersions(_packageId).Single();
+                    uninstaller.Uninstall(installedPackage.PackageDirectory);
+                    return [];
+                });
+
+            var command = new ToolUpdateGlobalOrToolPathCommand(
+                Parser.Parse("dotnet tool update --all -g"),
+                (_, _, _) => (_store, staleStoreQuery.Object, _toolPackageDownloader, uninstaller),
+                (_, _) => GetMockedShellShimRepository(),
+                _reporter,
+                _store);
+
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
+
+            _store.EnumeratePackageVersions(_packageId).Should().BeEmpty();
+        }
+
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallFromRedirectorItCanUpdateThePackageVersion()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
 
@@ -194,7 +224,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                  toolUpdateGlobalOrToolPathCommand,
                  new ToolUpdateLocalCommand(result));
 
-            toolUpdateCommand.Execute();
+            toolUpdateCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
                 .Be(HigherPackageVersion);
@@ -203,12 +233,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallItCanPrintSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -218,12 +248,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenUpdateAllItCanPrintSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g --all --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -234,11 +264,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
         {
             var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -248,27 +278,27 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
         {
-            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                   string.Format(CliCommandStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
         }
 
-       [TestMethod]
+        [TestMethod]
         public void GivenAnExistedHigherversionInstallationWithDowngradeFlagWhenUpdateToLowerVersionItSucceeds()
         {
-            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal --allow-downgrade");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -278,12 +308,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallWithWildCardVersionItCanPrintSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version 1.0.5-* --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -293,12 +323,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallWithPrereleaseVersionItCanPrintSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --prerelease  --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolUpdateUpdateSucceeded,
@@ -308,12 +338,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedHigherVersionInstallationWhenCallWithLowerVersionItThrowsAndRollsBack()
         {
-            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion}");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -328,12 +358,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedSameVersionInstallationWhenCallItCanPrintSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolAlreadyInstalled,
@@ -343,12 +373,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedSameVersionInstallationWhenCallWithPrereleaseItUsesAPrereleaseSuccessMessage()
         {
-            CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 CliCommandStrings.ToolAlreadyInstalled,
@@ -358,7 +388,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionWhenReinstallThrowsIthasTheFirstLineIndicateUpdateFailure()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
@@ -376,7 +406,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 (_, _) => GetMockedShellShimRepository(),
                 _reporter);
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None).GetAwaiter().GetResult();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(
                 string.Format(CliCommandStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
                 string.Format(CliCommandStrings.InvalidToolConfiguration, "Simulated error"));
@@ -385,7 +415,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAnExistedLowerversionWhenReinstallThrowsItRollsBack()
         {
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
@@ -398,12 +428,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         fileSystem: _fileSystem,
                         reporter: _reporter,
                         feeds: _mockFeeds,
-                        downloadCallback:  () => throw new ToolConfigurationException("Simulated error")),
+                        downloadCallback: () => throw new ToolConfigurationException("Simulated error")),
                     new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _reporter);
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
                 .Be(LowerPackageVersion);
@@ -422,7 +452,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var mockPackage = _mockFeeds[0].Packages.Single(p => p.PackageId == _packageId.ToString() && p.Version == HigherPackageVersion);
             mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/{toolTargetRuntimeIdentifier}/{mockPackage.ToolCommandName}{extension}"] = tokenToIdentifyPackagedShim;
 
-            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Clear();
 
             string options = $"-g {_packageId}";
@@ -434,7 +464,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 (_, _) => GetMockedShellShimRepository(),
                 _reporter);
 
-            command.Execute();
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             _fileSystem.File.ReadAllText(ExpectedCommandPath()).Should().Be(tokenToIdentifyPackagedShim);
 
@@ -492,4 +522,3 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
-

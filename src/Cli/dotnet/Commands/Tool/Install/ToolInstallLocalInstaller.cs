@@ -23,7 +23,11 @@ internal sealed class ToolInstallLocalInstaller(
     private readonly IToolPackageDownloader _toolPackageDownloader = toolPackageDownloader
         ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader(runtimeJsonPathForTests: runtimeJsonPathForTests).downloader;
 
-    public IToolPackage Install(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
+    public async Task<IToolPackage> InstallAsync(
+        FilePath manifestFile,
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
         {
@@ -47,7 +51,7 @@ internal sealed class ToolInstallLocalInstaller(
             //  more level up and miss the root repo folder if the manifest file is not under a .config folder.
             var rootConfigDirectory = manifestFile.GetDirectoryPath();
 
-            IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackage(
+            IToolPackage toolDownloadedPackage = await _toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(
                         nugetConfig: configFile,
                         sourceFeedOverrides: sourceFeedOverrides,
@@ -55,10 +59,11 @@ internal sealed class ToolInstallLocalInstaller(
                         rootConfigDirectory: rootConfigDirectory),
                     packageId,
                     verbosity: verbosity,
-                    versionRange,
-                    TargetFrameworkToInstall,
-                    restoreActionConfig: restoreActionConfig
-                    );
+                    versionRange: versionRange,
+                    targetFramework: TargetFrameworkToInstall,
+                    restoreActionConfig: restoreActionConfig,
+                    cancellationToken: cancellationToken
+                    ).ConfigureAwait(false);
 
             return toolDownloadedPackage;
         }

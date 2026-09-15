@@ -231,7 +231,8 @@ public class WorkloadUpdateTests
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping? packageSourceMapping = null)
+            PackageSourceMapping? packageSourceMapping = null,
+            CancellationToken cancellationToken = default)
         {
             Downloads++;
             LastPackageId = packageId;
@@ -240,7 +241,10 @@ public class WorkloadUpdateTests
             return Task.FromResult(path);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(
+            string packagePath,
+            DirectoryPath targetFolder,
+            CancellationToken cancellationToken = default)
         {
             Extractions++;
             string dataDirectory = useMsiLayout
@@ -277,11 +281,13 @@ public class WorkloadUpdateTests
         public Task<NuGetVersion> GetBestPackageVersionAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation = null) => throw new NotSupportedException();
+            PackageSourceLocation? packageSourceLocation = null,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation = null) => throw new NotSupportedException();
+            PackageSourceLocation? packageSourceLocation = null,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var toolInstallCommand = new Cli.Commands.Tool.Install.ToolInstallCommand(result);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);

@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -47,12 +47,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
                 var parseResult = Parser.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
                 Directory.SetCurrentDirectory("/tmp/folder/sub");
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
                 parseResult = Parser.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
                 new ToolRunCommand(Parser.Parse($"tool run dotnetsay")).Execute().Should().Be(0);
             }
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption);

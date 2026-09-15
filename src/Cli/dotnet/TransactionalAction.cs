@@ -111,4 +111,62 @@ public sealed class TransactionalAction
             commit: commit,
             rollback: rollback);
     }
+
+    public static async Task<T> RunAsync<T>(
+        Func<Task<T>> action,
+        Action commit = null,
+        Action rollback = null,
+        Transaction transaction = null)
+    {
+        if (action == null)
+        {
+            throw new ArgumentNullException(nameof(action));
+        }
+
+        try
+        {
+            Transaction currentTransaction = transaction ?? Transaction.Current;
+            using var scope = currentTransaction == null
+                ? new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero,
+                    TransactionScopeAsyncFlowOption.Enabled)
+                : new TransactionScope(
+                    currentTransaction,
+                    TimeSpan.Zero,
+                    TransactionScopeAsyncFlowOption.Enabled);
+
+            Transaction.Current.EnlistVolatile(
+                new EnlistmentNotification(commit, rollback),
+                EnlistmentOptions.None);
+
+            T result = await action().ConfigureAwait(false);
+            scope.Complete();
+            return result;
+        }
+        catch (TransactionAbortedException ex)
+        {
+            Reporter.Verbose.WriteLine(string.Format("TransactionAbortedException Message: {0}", ex.Message));
+            Reporter.Verbose.WriteLine(
+                $"Inner Exception Message: {ex?.InnerException?.Message + "---" + ex?.InnerException}");
+            throw;
+        }
+    }
+
+    public static Task RunAsync(
+        Func<Task> action,
+        Action commit = null,
+        Action rollback = null,
+        Transaction transaction = null)
+    {
+        return RunAsync<object>(
+            action: async () =>
+            {
+                await action().ConfigureAwait(false);
+                return null;
+            },
+            commit: commit,
+            rollback: rollback,
+            transaction: transaction);
+    }
 }

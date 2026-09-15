@@ -77,13 +77,15 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _allowPackageDowngrade = parseResult.GetValue(Definition.AllowPackageDowngradeOption);
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
             foreach (var (manifestPackage, _) in ((IToolManifestInspector)_toolManifestFinder).Inspect())
             {
-                ExecuteInstallCommand(manifestPackage.PackageId, versionRange: null);
+                await ExecuteInstallCommandAsync(manifestPackage.PackageId, versionRange: null, cancellationToken).ConfigureAwait(false);
             }
 
             return 0;
@@ -98,10 +100,10 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(packageId, versionRange);
+        return await ExecuteInstallCommandAsync(packageId, versionRange, cancellationToken).ConfigureAwait(false);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private async Task<int> ExecuteInstallCommandAsync(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)
     {
         FilePath manifestFile = GetManifestFilePath();
 
@@ -118,11 +120,13 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
         if (!existingPackageWithPackageId.Any())
         {
-            return InstallNewTool(manifestFile, packageId, versionRange);
+            return await InstallNewToolAsync(manifestFile, packageId, versionRange, cancellationToken).ConfigureAwait(false);
         }
 
         var existingPackage = existingPackageWithPackageId.Single();
-        var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange);
+        var toolDownloadedPackage = await _toolLocalPackageInstaller
+            .InstallAsync(manifestFile, packageId, versionRange, cancellationToken)
+            .ConfigureAwait(false);
 
         InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
@@ -179,10 +183,15 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         return 0;
     }
 
-    public int InstallNewTool(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
+    public async Task<int> InstallNewToolAsync(
+        FilePath manifestFile,
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken = default)
     {
-        IToolPackage toolDownloadedPackage =
-            _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange);
+        IToolPackage toolDownloadedPackage = await _toolLocalPackageInstaller
+            .InstallAsync(manifestFile, packageId, versionRange, cancellationToken)
+            .ConfigureAwait(false);
 
         _toolManifestEditor.Add(
             manifestFile,

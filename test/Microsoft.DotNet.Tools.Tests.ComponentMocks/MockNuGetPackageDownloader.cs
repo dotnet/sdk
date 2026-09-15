@@ -60,8 +60,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
             if (!ShouldFindPackage(packageId, packageSourceLocation))
@@ -86,8 +88,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(path);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(
+            string packagePath,
+            DirectoryPath targetFolder,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ExtractCallParams.Add((packagePath, targetFolder));
             if (_manifestDownload)
             {
@@ -129,14 +135,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(_packageVersions.Max());
         }
 
-        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            PackageSourceLocation packageSourceLocation = null,
+            CancellationToken cancellationToken = default)
         {
-            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
+            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation, cancellationToken)).version;
         }
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange,PackageSourceLocation packageSourceLocation = null)
+            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
                 return Task.FromException<(NuGetVersion version, PackageSource source)>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
