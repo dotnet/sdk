@@ -630,6 +630,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
                 ["-ignore-exit-code:8"],
                 environmentValue: "").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                [],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: "10",
+                configurationValue: "8").Should().Be("10");
         }
 
         [TestMethod]
