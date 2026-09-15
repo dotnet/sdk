@@ -7,7 +7,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Process-wide proxy-aware <see cref="HttpClient"/> shared between
-/// <see cref="DotnetArchiveDownloader"/> (archive downloads) and
+/// <see cref="DotnetDownloader"/> (archive downloads) and
 /// <see cref="SignedReleaseManifestLoader"/> (manifest + signature downloads).
 ///
 /// Lifetime: never disposed. <see cref="HttpClient"/> is thread-safe for sends; reusing a

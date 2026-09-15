@@ -444,7 +444,7 @@ does two things:
    evaluated without any HTTP or manifest probe.
 2. Honors an IT-managed opt-out that blocks the fallback entirely with a
    `UnsignedDownloadBlockedByPolicy` error (defense-in-depth check inside
-   `DotnetArchiveDownloader.ResolveBlobFeedEntry`).
+  `DotnetDownloader.ResolveBlobFeedEntry`).
 
 ### Enabling the IT opt-out
 
@@ -484,4 +484,4 @@ The check is centralized in
 The warning is emitted from `InstallExecutor.ExecuteInstalls` and
 `UpdateWorkflow.InstallVersion` before any progress UI is created; the policy block check
 runs immediately before any blob-feed probe in
-`DotnetArchiveDownloader.ResolveBlobFeedEntry`.
+`DotnetDownloader.ResolveBlobFeedEntry`.

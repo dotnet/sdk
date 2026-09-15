@@ -16,14 +16,14 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Tests for DotnetArchiveDownloader, focusing on hash verification and HTTP client configuration.
+/// Tests for DotnetDownloader, focusing on hash verification and HTTP client configuration.
 /// </summary>
 [TestClass]
-public class DotnetArchiveDownloaderTests
+public class DotnetDownloaderTests
 {
     private readonly ITestOutputHelper _log;
 
-    public DotnetArchiveDownloaderTests(TestContext testContext)
+    public DotnetDownloaderTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
     }
@@ -40,10 +40,10 @@ public class DotnetArchiveDownloaderTests
     {
         // The default constructor creates its own HttpClient via CreateDefaultHttpClient().
         // Verify that the handler does NOT have AutomaticDecompression set.
-        var downloader = new DotnetArchiveDownloader();
+        var downloader = new DotnetDownloader();
 
         // Use reflection to access the private _httpClient field
-        var httpClientField = typeof(DotnetArchiveDownloader)
+        var httpClientField = typeof(DotnetDownloader)
             .GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance);
         httpClientField.Should().NotBeNull("should have _httpClient field");
 
@@ -103,7 +103,7 @@ public class DotnetArchiveDownloaderTests
         var expectedBytes = sha512.ComputeHash(content);
         var expectedHash = BitConverter.ToString(expectedBytes).Replace("-", "").ToLowerInvariant();
 
-        var actualHash = DotnetArchiveDownloader.ComputeFileHash(filePath);
+        var actualHash = DotnetDownloader.ComputeFileHash(filePath);
 
         _log.WriteLine($"Expected: {expectedHash}");
         _log.WriteLine($"Actual:   {actualHash}");
@@ -136,7 +136,7 @@ public class DotnetArchiveDownloaderTests
         var expectedHash = BitConverter.ToString(sha512.ComputeHash(tarGzBytes)).Replace("-", "").ToLowerInvariant();
 
         // ComputeFileHash should produce the same hash (raw bytes, NOT decompressed)
-        var actualHash = DotnetArchiveDownloader.ComputeFileHash(tarGzPath);
+        var actualHash = DotnetDownloader.ComputeFileHash(tarGzPath);
 
         _log.WriteLine($"tar.gz size: {tarGzBytes.Length} bytes");
         _log.WriteLine($"Expected (raw tar.gz hash): {expectedHash}");
@@ -161,7 +161,7 @@ public class DotnetArchiveDownloaderTests
         var wrongHash = "0000000000000000000000000000000000000000000000000000000000000000" +
                         "0000000000000000000000000000000000000000000000000000000000000000";
 
-        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, wrongHash));
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => DotnetDownloader.VerifyFileHash(filePath, wrongHash));
         ex.Message.Should().Contain("File hash mismatch");
         _log.WriteLine($"Exception: {ex.Message}");
     }
@@ -174,10 +174,10 @@ public class DotnetArchiveDownloaderTests
         var content = new byte[] { 1, 2, 3, 4, 5 };
         File.WriteAllBytes(filePath, content);
 
-        var correctHash = DotnetArchiveDownloader.ComputeFileHash(filePath);
+        var correctHash = DotnetDownloader.ComputeFileHash(filePath);
 
         // Should not throw
-        DotnetArchiveDownloader.VerifyFileHash(filePath, correctHash);
+        DotnetDownloader.VerifyFileHash(filePath, correctHash);
     }
 
     [TestMethod]
@@ -187,7 +187,7 @@ public class DotnetArchiveDownloaderTests
         var filePath = Path.Combine(testEnv.TempRoot, "test.bin");
         File.WriteAllBytes(filePath, new byte[] { 1 });
 
-        Assert.ThrowsExactly<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, ""));
-        Assert.ThrowsExactly<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, null!));
+        Assert.ThrowsExactly<ArgumentException>(() => DotnetDownloader.VerifyFileHash(filePath, ""));
+        Assert.ThrowsExactly<ArgumentException>(() => DotnetDownloader.VerifyFileHash(filePath, null!));
     }
 }
