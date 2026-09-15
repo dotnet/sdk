@@ -293,6 +293,44 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+        public void RunAllSkippedTestsHonorsCaseSensitiveLaunchProfileEnvironmentOnUnix()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(
+                Path.Join(propertiesDirectory, "launchSettings.json"),
+                """
+                {
+                  "profiles": {
+                    "TestProject": {
+                      "commandName": "Project",
+                      "commandLineArgs": "--zero-tests-policy strict",
+                      "environmentVariables": {
+                        "testingplatform_exitcode_ignore": "9"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("TESTINGPLATFORM_EXITCODE_IGNORE", "8")
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
         public void RunMinimumExpectedTestsViolationHonorsIgnoreExitCodePolicy()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
