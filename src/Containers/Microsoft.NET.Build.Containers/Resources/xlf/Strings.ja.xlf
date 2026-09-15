@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: マルチアーキテクチャ イメージを WSLC に読み込むことができません。単一プラットフォーム イメージを公開するか、マルチアーキテクチャ イメージをレジストリに公開してください。</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,17 +206,17 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">ベアラー領域 '{0}' は、許可されていないスキーム '{1}' を使用しています。受け入れられるのは 'https' のみです (レジストリが安全でないものとして構成されている場合は 'http' も許可されます)</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">ベアラー領域 '{0}' は '{1}' に解決されます。これはプライベート、ループバック、リンクローカル、または未指定の IP リテラル アドレスです</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">ベアラー領域 '{0}' は有効な絶対 URI ではありません</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="InvalidRegistryAuthResponse">
         <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
-        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <target state="translated">CONTAINER1019: レジストリ '{0}' が無効な認証応答を返しました: {1}</target>
         <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="Registry_ManifestExists">
         <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
-        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <target state="translated">マニフェスト '{0}' はリポジトリ '{1}' に既に存在します。レイヤーと構成のアップロードをスキップしています。</target>
         <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">

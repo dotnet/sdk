@@ -25,7 +25,7 @@
   "symbols/Framework/choices/net471/description": ".NET framework 4.7.1",
   "symbols/Framework/choices/net47/description": ".NET Framework 4.7",
   "symbols/Framework/choices/net462/description": ".NET Framework 4.6.2",
-  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "symbols/skipRestore/description": "如果已指定，则在创建时跳过项目的自动还原。",
   "symbols/skipRestore/displayName": "跳过还原",
   "symbols/langVersion/description": "在创建的项目文件中设置 LangVersion 属性",
   "symbols/langVersion/displayName": "语言版本",

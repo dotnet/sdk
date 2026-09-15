@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_NoDirectoryVerifier">
         <source>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</source>
-        <target state="new">No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</target>
+        <target state="translated">未配置目录验证程序。请将 VerificationEngine.DirectoryVerifier 设置为测试框架的 Verifier.VerifyDirectory (例如 VerifyXunit.Verifier.VerifyDirectory 或 VerifyMSTest.Verifier.VerifyDirectory)，或通过 TemplateVerifierOptions.WithCustomDirectoryVerifier 提供自定义验证程序。</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">
