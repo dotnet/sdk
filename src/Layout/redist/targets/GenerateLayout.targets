@@ -10,11 +10,25 @@
       <PortableRuntimeIdentifierGraphTargetFile>$(OutputPath)PortableRuntimeIdentifierGraph.json</PortableRuntimeIdentifierGraphTargetFile>
     </PropertyGroup>
 
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
+    <!--
+      The RID graph normally comes from the Microsoft.NETCore.Platforms package. Allow replacing
+      it for target platforms whose RIDs are not in the shipped graph yet:
+        * $(RidGraphOverrideRuntimeJson) -> replaces runtime.json
+        * $(RidGraphOverridePortableJson) -> replaces PortableRuntimeIdentifierGraph.json
+      The package is still restored for its other assets.
+    -->
+    <PropertyGroup>
+      <RuntimeJsonSourceFile Condition="'$(RidGraphOverrideRuntimeJson)' != ''">$(RidGraphOverrideRuntimeJson)</RuntimeJsonSourceFile>
+      <RuntimeJsonSourceFile Condition="'$(RuntimeJsonSourceFile)' == ''">$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json</RuntimeJsonSourceFile>
+      <PortableRuntimeJsonSourceFile Condition="'$(RidGraphOverridePortableJson)' != ''">$(RidGraphOverridePortableJson)</PortableRuntimeJsonSourceFile>
+      <PortableRuntimeJsonSourceFile Condition="'$(PortableRuntimeJsonSourceFile)' == ''">$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json</PortableRuntimeJsonSourceFile>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(RuntimeJsonSourceFile)"
           DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true" />
 
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
+    <Copy SourceFiles="$(PortableRuntimeJsonSourceFile)"
           DestinationFiles="$(PortableRuntimeIdentifierGraphTargetFile)"
           SkipUnchangedFiles="true" />
   </Target>
