@@ -207,6 +207,25 @@ public class InitFormRendererTests
     }
 
     [TestMethod]
+    public void BrowseForm_AlignsValuesUsingTerminalCellWidth()
+    {
+        InitFormModel model = CreateDefaultModel();
+        FormField[] fields =
+        [
+            new("項目", [new FieldChoice("one", "First value.")], defaultIndex: 0),
+            new("Field", [new FieldChoice("two", "Second value.")], defaultIndex: 0),
+        ];
+        var state = new InitFormState(fields);
+
+        string[] lines = Lines(RenderForm(model, state, width: 120, height: 100, out _));
+        string cjkLine = lines.Single(line => line.Contains("one", StringComparison.Ordinal));
+        string latinLine = lines.Single(line => line.Contains("two", StringComparison.Ordinal));
+
+        cjkLine[..cjkLine.IndexOf("one", StringComparison.Ordinal)].GetCellWidth()
+            .Should().Be(latinLine[..latinLine.IndexOf("two", StringComparison.Ordinal)].GetCellWidth());
+    }
+
+    [TestMethod]
     public void ExpandedChannel_HidesUnrelatedFieldsWhenConstrained()
     {
         const int height = 8;
@@ -244,7 +263,7 @@ public class InitFormRendererTests
         string[] lines = Lines(output);
 
         lines.Should().Contain(line =>
-            line.Contains("Shell", StringComparison.Ordinal)
+            line.Contains("shell", StringComparison.Ordinal)
             && line.Contains("Configure your shell profile", StringComparison.Ordinal));
         output.Should().Contain("Only applications launched from the shell");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
@@ -330,8 +349,7 @@ public class InitFormRendererTests
         var migration = new MigrationWorkflow.MigrationSelection(
             InstallComponent.SDK,
             new UpdateChannel("8.0"),
-            new ReleaseVersion("8.0.100"),
-            InstallerUtilities.GetDefaultInstallArchitecture());
+            new ReleaseVersion("8.0.100"));
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
