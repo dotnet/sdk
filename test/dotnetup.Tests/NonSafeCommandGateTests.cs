@@ -9,7 +9,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateGateTests
+public class NonSafeCommandGateTests
 {
     [TestMethod]
     public void MatchingCommandsShareTheGateAndExcludeUpdates()
@@ -18,8 +18,8 @@ public class SelfUpdateGateTests
         try
         {
             var paths = CreateExecutable(directory.FullName);
-            using var first = SelfUpdateGate.Enter(paths, new string('a', 64));
-            using var second = SelfUpdateGate.Enter(paths, new string('a', 64));
+            using var first = NonSafeCommandGate.Enter(paths, new string('a', 64));
+            using var second = NonSafeCommandGate.Enter(paths, new string('a', 64));
             using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
             Assert.IsNull(update);
         }
@@ -37,7 +37,7 @@ public class SelfUpdateGateTests
         {
             var paths = CreateExecutable(directory.FullName);
             using var updater = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateGate.Enter(paths, new string('a', 64)));
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, new string('a', 64)));
             Assert.AreEqual(DotnetInstallErrorCode.DotnetupUpdateInProgress, exception.ErrorCode);
             Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateInProgress, exception.Message);
         }
@@ -54,7 +54,7 @@ public class SelfUpdateGateTests
         try
         {
             var paths = CreateExecutable(directory.FullName);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateGate.Enter(paths, new string('b', 64)));
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, new string('b', 64)));
             Assert.AreEqual(DotnetInstallErrorCode.DotnetupExecutableChanged, exception.ErrorCode);
             using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
             Assert.IsNotNull(update);
