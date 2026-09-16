@@ -64,6 +64,7 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string TasksTelemetryAggregatedEventName = "build/tasks";
     internal const string MSBuildTaskSubclassedTelemetryAggregatedEventName = "build/tasks/msbuild-subclassed";
     internal const string TasksDetailsTelemetryEventName = "build/tasks/details";
+    internal const string MSBuildTaskSubclassedTelemetryAggregatedEventName = "build/tasks/msbuild-subclassed";
 
     internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
     internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
