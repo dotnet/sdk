@@ -3,11 +3,18 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
@@ -40,9 +47,16 @@ internal sealed class BlazorWasmHotReloadMiddleware
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public BlazorWasmHotReloadMiddleware(RequestDelegate next, ILogger<BlazorWasmHotReloadMiddleware> logger)
+    private static readonly char[] s_urlSeparators = [';', ','];
+
+    private readonly IReadOnlyList<BindingAddress> _allowedOrigins;
+    private readonly ILogger<BlazorWasmHotReloadMiddleware> _logger;
+
+    public BlazorWasmHotReloadMiddleware(RequestDelegate next, ILogger<BlazorWasmHotReloadMiddleware> logger, IConfiguration configuration)
     {
-        logger.LogDebug("Middleware loaded");
+        _logger = logger;
+        _allowedOrigins = ParseServerUrls(logger, configuration[WebHostDefaults.ServerUrlsKey]);
+        logger.LogDebug($"Middleware loaded. Allowed origins: {string.Join(";", _allowedOrigins.Select(a => a.ToString()))}");
     }
 
     internal List<Update> Updates { get; } = [];
@@ -84,6 +98,22 @@ internal sealed class BlazorWasmHotReloadMiddleware
 
     private async Task OnPost(HttpContext context)
     {
+        var origin = context.Request.Headers[HeaderNames.Origin];
+
+        _logger.LogDebug($"WASM middleware request {context.Request.Method} from {origin}");
+
+        if (!IsAllowedOrigin(origin, _allowedOrigins))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        if (context.Request.ContentType != "application/json")
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
         var update = await JsonSerializer.DeserializeAsync<Update>(context.Request.Body, s_jsonSerializerOptions);
         if (update == null)
         {
@@ -99,4 +129,76 @@ internal sealed class BlazorWasmHotReloadMiddleware
             Updates.Add(update);
         }
     }
+
+    internal static IReadOnlyList<BindingAddress> ParseServerUrls(ILogger<BlazorWasmHotReloadMiddleware> logger, string? urls)
+    {
+        var result = new List<BindingAddress>();
+        if (string.IsNullOrWhiteSpace(urls))
+        {
+            return result;
+        }
+
+        foreach (var value in urls.Split(s_urlSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            BindingAddress address;
+            try
+            {
+                address = BindingAddress.Parse(value);
+            }
+            catch (FormatException)
+            {
+                // Ignore invalid URLs.
+                logger.LogDebug($"Invalid binding address '{value}'");
+                continue;
+            }
+
+            if (address.IsUnixPipe)
+            {
+                continue;
+            }
+
+            if (IsWildcardHost(address.Host))
+            {
+                address = BindingAddress.Parse($"{address.Scheme}://localhost:{address.Port}");
+            }
+
+            result.Add(address);
+        }
+
+        return result;
+    }
+
+    internal static bool IsAllowedOrigin(StringValues originHeader, IReadOnlyList<BindingAddress> allowedAddresses)
+    {
+        if (originHeader.Count != 1 ||
+            !Uri.TryCreate(originHeader[0], UriKind.Absolute, out var requestOrigin) ||
+            (requestOrigin.Scheme != Uri.UriSchemeHttp && requestOrigin.Scheme != Uri.UriSchemeHttps))
+        {
+            return false;
+        }
+
+        foreach (var allowedAddress in allowedAddresses)
+        {
+            if (!string.Equals(allowedAddress.Scheme, requestOrigin.Scheme, StringComparison.OrdinalIgnoreCase) ||
+                allowedAddress.Port != requestOrigin.Port)
+            {
+                continue;
+            }
+
+            if (string.Equals(allowedAddress.Host, requestOrigin.Host, StringComparison.OrdinalIgnoreCase) ||
+                (IsLoopbackHost(allowedAddress.Host) && IsLoopbackHost(requestOrigin.Host)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsWildcardHost(string host)
+        => host is "*" or "+" or "0.0.0.0" or "[::]";
+
+    private static bool IsLoopbackHost(string host)
+        => host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+           host is "127.0.0.1" or "[::1]";
 }
