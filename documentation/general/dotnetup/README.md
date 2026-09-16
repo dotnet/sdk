@@ -152,12 +152,14 @@ Run `dotnetup init` again to change the setup.
 - [Table of contents](toc.yml)
 - [Core concepts](concepts/how-dotnetup-works.md)
 - [Release channels](channels/preview.md)
+- [Environment variables](reference/environment-variables.md)
 - [CLI reference](reference/dotnetup.md)
 - [Scenarios](usecases/install-with-global-json.md)
 
 ## Maintainer documentation
 
 - [Design notes](designs/)
+- [Contributor environment variables](developer-environment-variables.md)
 - [How dotnetup is included in the SDK](dotnetup_in_sdk.md)
 - [Release engineering](releasing.md)
 - [Signature verification](signature-verification.md)

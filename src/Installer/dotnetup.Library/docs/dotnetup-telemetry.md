@@ -49,11 +49,15 @@ are not included because they may contain user-provided input.
 For more details on crash exception telemetry, see the
 [.NET CLI telemetry documentation](https://aka.ms/dotnet-cli-telemetry).
 
-### Related Environment Variables
+## Environment Variables
 
-- **`DOTNET_CLI_TELEMETRY_STORAGE_PATH`**: Overrides the directory used to persist telemetry locally before it is uploaded.
-- **`DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS`**: Overrides the bounded `dotnetup` telemetry flush timeout to a custom limit.
-- **`DOTNETUP_TELEMETRY_FORCE_LOCAL_DELIVERY`**: Uses local persist-and-detached-drain delivery even when CI is detected. Intended for diagnostics and end-to-end validation.
+For supported controls, including the telemetry storage path, CI shutdown
+timeout, and force-local-delivery mode, see the
+[dotnetup environment-variable reference](../../../../documentation/general/dotnetup/reference/environment-variables.md).
+
+Telemetry diagnostics, exporter overrides, and test hooks are documented
+separately in the
+[dotnetup contributor environment-variable reference](../../../../documentation/general/dotnetup/developer-environment-variables.md).
 
 ## CI and LLM Agent Detection
 
