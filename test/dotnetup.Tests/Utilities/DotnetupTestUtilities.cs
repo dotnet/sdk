@@ -228,6 +228,17 @@ internal static class DotnetupTestUtilities
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
     {
+        string? explicitPath = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
+        if (!string.IsNullOrEmpty(explicitPath))
+        {
+            if (!File.Exists(explicitPath))
+            {
+                throw new FileNotFoundException("DOTNETUP_TEST_EXECUTABLE must point to an existing executable.", explicitPath);
+            }
+
+            return Path.GetFullPath(explicitPath);
+        }
+
 #if DEBUG
         string configuration = "Debug";
         string fallbackConfiguration = "Release";
