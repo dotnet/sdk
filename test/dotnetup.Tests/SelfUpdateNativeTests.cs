@@ -68,7 +68,8 @@ public class SelfUpdateNativeTests : SdkTest
 
         AssertNativeLocksAvailable(files.Paths);
         Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
-        Assert.IsNull(files.CreateWorkflow((release, destination) => Assert.Fail("Current release must not download again.")).Execute());
+        Assert.IsNull(files.CreateWorkflow((release, destination) => Assert.Fail("Current release must not download again."))
+            .Execute(lease => Assert.Fail("A no-op must not transfer a lock lease.")));
     }
 
     [TestMethod]
@@ -85,7 +86,7 @@ public class SelfUpdateNativeTests : SdkTest
         var workflow = new SelfUpdateWorkflow(candidate.Paths, native.OriginalIdentity, () => release,
             (download, destination) => File.WriteAllBytes(destination, candidateBytes));
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupVerificationFailed, exception.ErrorCode);
         Assert.IsNotNull(exception.InnerException);
@@ -114,7 +115,7 @@ public class SelfUpdateNativeTests : SdkTest
                 .WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken);
             Assert.AreEqual("native-ready", ready);
             Assert.IsFalse(oldProcess.HasExited);
-            Assert.AreEqual(files.Release.Version.ToString(), files.CreateWorkflow().Execute());
+            Assert.AreEqual(files.Release.Version.ToString(), SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(files.CreateWorkflow()));
             Assert.IsFalse(oldProcess.HasExited, "Replacement must not terminate an existing safe dotnet invocation.");
             Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
             Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
@@ -138,19 +139,20 @@ public class SelfUpdateNativeTests : SdkTest
         using var finishDownload = new ManualResetEventSlim();
         using var contended = new ManualResetEventSlim();
         var downloadCount = 0;
-        var first = Task.Run(() => files.CreateWorkflow((release, destination) =>
+        var first = Task.Run(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(files.CreateWorkflow((release, destination) =>
         {
             Interlocked.Increment(ref downloadCount);
             downloading.Set();
             Assert.IsTrue(finishDownload.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
             files.CopyReplacement(release, destination);
-        }).Execute(), TestContext.CancellationToken);
+        })), TestContext.CancellationToken);
         Task<string?>? second = null;
         try
         {
             Assert.IsTrue(downloading.Wait(TimeSpan.FromSeconds(20), TestContext.CancellationToken));
             var coordinator = new SelfUpdateCoordinator(new NativeSelfUpdateContentionPolicy(contended));
-            second = Task.Run(() => files.CreateWorkflow((release, destination) => Assert.Fail("The serialized second workflow must not download."), coordinator).Execute(), TestContext.CancellationToken);
+            second = Task.Run(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(
+                files.CreateWorkflow((release, destination) => Assert.Fail("The serialized second workflow must not download."), coordinator)), TestContext.CancellationToken);
             Assert.IsTrue(contended.Wait(TimeSpan.FromSeconds(20), TestContext.CancellationToken), "The second workflow must contend before replacement completes.");
             finishDownload.Set();
             Assert.AreEqual(files.Release.Version.ToString(), await first.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));

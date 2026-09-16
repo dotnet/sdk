@@ -29,7 +29,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         var downloader = CreateDownloader(files, http);
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
 
-        Assert.AreEqual(files.Release.Version.ToString(), CreateWorkflow(files, downloader).Execute());
+        Assert.AreEqual(files.Release.Version.ToString(), SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(CreateWorkflow(files, downloader)));
 
         AssertPinnedRequests(handler);
         AssertInstalledReplacement(files);
@@ -52,7 +52,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         var downloader = CreateDownloader(files, http);
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => CreateWorkflow(files, downloader).Execute());
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(CreateWorkflow(files, downloader)));
 
         Assert.AreEqual(DotnetInstallErrorCode.HashMismatch, exception.ErrorCode);
         AssertPinnedRequests(handler);
@@ -74,7 +74,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         Assert.AreNotEqual(files.OriginalIdentity, handler.PublishedBuildId);
         Assert.AreNotEqual(files.ReplacementIdentity, handler.PublishedBuildId);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => CreateWorkflow(files, downloader).Execute());
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(CreateWorkflow(files, downloader)));
 
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
         AssertPinnedRequests(handler);
@@ -100,7 +100,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
             handler.DailyFinalUri = movedDailyUri;
         });
 
-        Assert.AreEqual(files.Release.Version.ToString(), workflow.Execute());
+        Assert.AreEqual(files.Release.Version.ToString(), SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
         Assert.AreEqual(movedDailyUri, handler.DailyFinalUri);
         AssertPinnedRequests(handler);
@@ -123,7 +123,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var workflow = CreateWorkflow(files, downloader, () => UnsignedSourcePolicy.OverrideForTesting = () => true);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
         Assert.AreEqual(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy, exception.ErrorCode);
         Assert.AreSequenceEqual(new[] { NativeSelfUpdateDownloadHandler.DailyUri, handler.ChecksumUri, handler.BuildIdUri }, handler.Requests);

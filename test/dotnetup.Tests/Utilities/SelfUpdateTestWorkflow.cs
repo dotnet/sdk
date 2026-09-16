@@ -18,6 +18,21 @@ internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
 
     public int VerificationCount { get; private set; }
 
+    public string? Execute() => ExecuteAndReleaseLocks(this);
+
+    public static string? ExecuteAndReleaseLocks(SelfUpdateWorkflow workflow)
+    {
+        IDisposable? locks = null;
+        try
+        {
+            return workflow.Execute(lease => locks = lease);
+        }
+        finally
+        {
+            locks?.Dispose();
+        }
+    }
+
     protected override void Verify(string installedPath, string expectedIdentity)
     {
         VerificationCount++;

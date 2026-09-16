@@ -16,6 +16,41 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class SelfUpdateWorkflowTests : SdkTest
 {
     [TestMethod]
+    public void MissingLeaseOwnerIsRejectedBeforeResolvingRelease()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
+            () => throw new InvalidOperationException("Release resolution must not run without a lease owner."),
+            (release, destination) => Assert.Fail("Download must not run without a lease owner."));
+
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(() => workflow.Execute(null!));
+
+        Assert.AreEqual("retainUntilExit", exception.ParamName);
+        Assert.IsFalse(File.Exists(files.Paths.UpdateLockPath));
+        Assert.IsFalse(File.Exists(files.Paths.ActivityLockPath));
+    }
+
+    [TestMethod]
+    public void FailedLeaseHandoffReleasesBothLocksBeforeDownload()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var failure = new InvalidOperationException("Injected lease handoff failure.");
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
+            () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
+            (release, destination) => Assert.Fail("Download must not run after a failed lease handoff."),
+            CreateImmediateWorkflowCoordinator());
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => workflow.Execute(lease =>
+        {
+            AssertWorkflowLocksHeld(files.Paths);
+            throw failure;
+        }));
+
+        Assert.AreSame(failure, exception);
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void AlreadyCurrentWithActivityOccupiedDoesNotAcquireUpdate(bool occupyUpdate)

@@ -24,8 +24,9 @@ internal class SelfUpdateWorkflow
         _coordinator = coordinator ?? new SelfUpdateCoordinator();
     }
 
-    public string? Execute(Action<IDisposable>? retainUntilExit = null)
+    public string? Execute(Action<IDisposable> retainUntilExit)
     {
+        ArgumentNullException.ThrowIfNull(retainUntilExit);
         SelfUpdateLockLease? locks = null;
         try
         {
@@ -48,11 +49,8 @@ internal class SelfUpdateWorkflow
             }
 
             locks = AcquireLocks();
-            if (retainUntilExit is not null)
-            {
-                retainUntilExit(locks);
-                locks = null;
-            }
+            retainUntilExit(locks);
+            locks = null;
 
             _paths.Validate();
             var originalIdentity = SelfUpdatePaths.ReadIdentity(_paths.InstalledPath);
