@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppHostDotNetSearch>AppRelative</AppHostDotNetSearch>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../src/Installer/Microsoft.Dotnet.Installation/Internal/BuildIdentity/DotnetupBuildIdentityReader.cs" Link="DotnetupBuildIdentityReader.cs" />
+  </ItemGroup>
+</Project>
