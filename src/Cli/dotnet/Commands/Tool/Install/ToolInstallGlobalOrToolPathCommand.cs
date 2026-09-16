@@ -139,9 +139,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute() => ExecuteAsync().GetAwaiter().GetResult();
+    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-    private async Task<int> ExecuteAsync()
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
@@ -153,7 +153,10 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
             foreach (var toolId in toolIds)
             {
-                await ExecuteInstallCommandAsync(new PackageId(toolId.Id.ToString()), versionRange: null);
+                await ExecuteInstallCommandAsync(
+                    new PackageId(toolId.Id.ToString()),
+                    versionRange: null,
+                    cancellationToken);
             }
             return 0;
         }
@@ -166,11 +169,19 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return await ExecuteInstallCommandAsync(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
+        return await ExecuteInstallCommandAsync(
+            new PackageId(_packageIdentityWithRange.Value.Id),
+            versionRange,
+            cancellationToken);
     }
 
-    private async Task<int> ExecuteInstallCommandAsync(PackageId packageId, VersionRange? versionRange)
+    private async Task<int> ExecuteInstallCommandAsync(
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
         _activity?.SetTag("tool.package.id", packageId);
@@ -198,7 +209,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
         if (oldPackage != null)
         {
-            NuGetVersion nugetVersion = await GetBestMatchNugetVersionAsync(packageId, versionRange, toolPackageDownloader);
+            NuGetVersion nugetVersion = await GetBestMatchNugetVersionAsync(
+                packageId,
+                versionRange,
+                toolPackageDownloader,
+                cancellationToken);
             _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
             _activity?.SetTag("tool.package.id", packageId);
             _activity?.SetTag("tool.package.version", nugetVersion);
@@ -270,7 +285,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return 0;
     }
 
-    private async Task<NuGetVersion> GetBestMatchNugetVersionAsync(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
+    private async Task<NuGetVersion> GetBestMatchNugetVersionAsync(
+        PackageId packageId,
+        VersionRange? versionRange,
+        IToolPackageDownloader toolPackageDownloader,
+        CancellationToken cancellationToken)
     {
         var (version, _) = await toolPackageDownloader.GetNuGetVersionAsync(
             packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
@@ -278,7 +297,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             versionRange: versionRange,
             verbosity: _verbosity,
             restoreActionConfig: restoreActionConfig,
-            cancellationToken: CancellationToken.None);
+            cancellationToken: cancellationToken);
         return version;
     }
 

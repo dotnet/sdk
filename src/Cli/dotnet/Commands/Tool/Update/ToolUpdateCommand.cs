@@ -112,6 +112,9 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
     }
 
     public override int Execute()
+        => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -133,7 +136,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return _toolUpdateGlobalOrToolPathCommand.Execute();
+            return await _toolUpdateGlobalOrToolPathCommand.ExecuteAsync(cancellationToken);
         }
         else
         {
