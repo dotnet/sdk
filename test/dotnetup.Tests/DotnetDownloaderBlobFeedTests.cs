@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -10,9 +11,14 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
+using Spectre.Console;
+using Strings = Microsoft.Dotnet.Installation.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -38,6 +44,67 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     private const string DotnetupUrl = "https://ci.dot.net/public/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe";
     private const string DotnetupChecksumUrl = "https://ci.dot.net/public-checksums/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe.sha512";
     private const string DotnetupDailyUrl = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SelfUpdateCommandWarnsBeforeUnsignedDownload(bool noProgress)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        string artifactName = $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : "")}";
+        string artifactUrl = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/{artifactName}";
+        string dailyUrl = $"https://aka.ms/dotnet/dotnetup/daily/{artifactName}";
+        string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/{artifactName}.sha512";
+        string warning = Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning;
+        string? outputAtDownloadStart = null;
+        using var handler = new RecordingHandler(new()
+        {
+            [dailyUrl] = (HttpStatusCode.OK, ""),
+            [checksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
+            [artifactUrl + ".buildid"] = (HttpStatusCode.OK, SelfUpdateTestFiles.ReplacementIdentity),
+            [artifactUrl] = (HttpStatusCode.OK, "Deliberate hash mismatch to stop before executable replacement."),
+        }, new(), new() { [dailyUrl] = artifactUrl })
+        {
+            OnRequest = url =>
+            {
+                if (url == artifactUrl)
+                {
+                    outputAtDownloadStart = output.ToString();
+                }
+            },
+        };
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var originalConsole = AnsiConsole.Console;
+        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
+        try
+        {
+            UnsignedSourcePolicy.OverrideForTesting = () => false;
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                ColorSystem = ColorSystemSupport.NoColors,
+                Interactive = InteractionSupport.No,
+                Out = new AnsiConsoleOutput(output),
+            });
+            AnsiConsole.Profile.Width = int.MaxValue;
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            var result = Parser.Parse(noProgress ? ["self", "update", "--no-progress"] : ["self", "update"]);
+
+            new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(1);
+
+            outputAtDownloadStart.Should().NotBeNull().And.Contain(warning);
+            output.ToString().Split(warning, StringSplitOptions.None).Should().HaveCount(2);
+            SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath).Should().Be(SelfUpdateTestFiles.OriginalIdentity);
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
+        }
+    }
 
     [TestMethod]
     public void ResolveDotnetupDownload_DownloadsPinnedBuildToExactPathAndRevalidatesCache()
@@ -838,10 +905,13 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             _redirects = redirects;
         }
 
+        public Action<string>? OnRequest { get; init; }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string url = request.RequestUri!.ToString();
             _history.Add(url);
+            OnRequest?.Invoke(url);
 
             if (_responses.TryGetValue(url, out var entry))
             {

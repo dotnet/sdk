@@ -13,6 +13,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result, "self/update")
 {
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
+
+    internal SelfUpdateCommand(ParseResult result, Func<DotnetDownloader> createDownloader) : this(result)
+    {
+        ArgumentNullException.ThrowIfNull(createDownloader);
+        _createDownloader = createDownloader;
+    }
 
     protected override bool SafeDuringSelfUpdate => true;
 
@@ -20,7 +27,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     {
         var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
-        var downloader = new DotnetDownloader();
+        var downloader = _createDownloader();
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedIdentity,
             () => downloader.ResolveDotnetupDownload(rid),
