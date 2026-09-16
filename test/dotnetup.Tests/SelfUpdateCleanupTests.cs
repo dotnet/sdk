@@ -12,7 +12,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class SelfUpdateCleanupTests : SdkTest
 {
+    private const int ExpiredBackupAgeDays = 8;
     private const string Identity = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    private const int RetainedBackupAgeDays = 6;
     private DirectoryInfo _directory = null!;
     private string _installedPath = null!;
     private string _lockPath = null!;
@@ -34,8 +36,8 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void DeletesOldBackupsButKeepsFreshAndFutureBackups(bool ownsUpdateLock)
     {
-        var old = CreateBackup(TimeSpan.FromDays(2));
-        var fresh = CreateBackup(TimeSpan.FromHours(12));
+        var old = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var fresh = CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
         var future = CreateBackup(TimeSpan.FromDays(-2));
 
         RunCleanup(ownsUpdateLock);
@@ -51,8 +53,8 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void DeletesOldRejectedBackupsButKeepsFreshRejectedBackups(bool ownsUpdateLock)
     {
-        var old = CreateBackup(TimeSpan.FromDays(2), ".rejected");
-        var fresh = CreateBackup(TimeSpan.FromHours(12), ".rejected");
+        var old = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
+        var fresh = CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays), ".rejected");
 
         RunCleanup(ownsUpdateLock);
 
@@ -63,7 +65,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [TestMethod]
     public void BusyUpdateLockSkipsCleanup()
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         using (var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath))
         {
             Assert.IsNotNull(updateLock);
@@ -83,7 +85,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void MissingCanonicalPreservesBackups(bool ownsUpdateLock)
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         File.Delete(_installedPath);
 
         RunCleanup(ownsUpdateLock);
@@ -104,7 +106,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow("duplicate", true)]
     public void InvalidCanonicalPreservesBackups(string kind, bool ownsUpdateLock)
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         var record = CreateRecord();
         var bytes = kind switch
         {
@@ -133,7 +135,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF", true)]
     public void DifferentOrMalformedLoadedIdentityPreservesBackups(string loadedIdentity, bool ownsUpdateLock)
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
         RunCleanup(ownsUpdateLock, loadedIdentity: loadedIdentity);
 
@@ -146,7 +148,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void UnreadableCanonicalPreservesBackups(bool ownsUpdateLock)
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         using var canonical = new FileStream(_installedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
         RunCleanup(ownsUpdateLock);
@@ -180,10 +182,10 @@ public class SelfUpdateCleanupTests : SdkTest
         {
             var path = Path.Combine(_directory.FullName, name);
             File.WriteAllText(path, "preserve");
-            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
         }
 
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         RunCleanup(ownsUpdateLock);
 
         Assert.IsFalse(File.Exists(backup));
@@ -203,8 +205,8 @@ public class SelfUpdateCleanupTests : SdkTest
         File.WriteAllBytes(installedPath, CreateRecord());
         var backup = installedPath + ".old." + Guid.NewGuid().ToString("N");
         File.WriteAllText(backup, "old");
-        File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-2));
-        var otherBackup = CreateBackup(TimeSpan.FromDays(2));
+        File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+        var otherBackup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
         SelfUpdateCleanup.TryRun(installedPath, Identity);
 
@@ -220,7 +222,7 @@ public class SelfUpdateCleanupTests : SdkTest
     {
         for (var count = 0; count < 80; count++)
         {
-            CreateBackup(TimeSpan.FromDays(2));
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         }
 
         RunCleanup(ownsUpdateLock);
@@ -231,15 +233,15 @@ public class SelfUpdateCleanupTests : SdkTest
     }
 
     [TestMethod]
-    public void FreshEntriesAlsoConsumeEnumerationBudget()
+    public void FreshMatchingEntriesAlsoConsumeEnumerationBudget()
     {
         for (var count = 0; count < 80; count++)
         {
-            CreateBackup(TimeSpan.FromDays(2));
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         }
 
         File.WriteAllBytes(_lockPath, []);
-        var firstEntries = _directory.EnumerateFileSystemInfos().Take(32).ToArray();
+        var firstEntries = _directory.EnumerateFileSystemInfos("dotnetup.exe.old.*").Take(32).ToArray();
         foreach (var entry in firstEntries)
         {
             File.SetLastWriteTimeUtc(entry.FullName, DateTime.UtcNow);
@@ -251,14 +253,29 @@ public class SelfUpdateCleanupTests : SdkTest
     }
 
     [TestMethod]
+    public void UnrelatedEntriesDoNotConsumeEnumerationBudget()
+    {
+        for (var count = 0; count < 80; count++)
+        {
+            File.WriteAllText(Path.Combine(_directory.FullName, $"unrelated-{count}"), "preserve");
+        }
+
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+
+        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+
+        Assert.IsFalse(File.Exists(backup));
+    }
+
+    [TestMethod]
     public void SkipsDirectoriesAndDoesNotRecurse()
     {
         var backupDirectory = Directory.CreateDirectory(_installedPath + ".old." + Guid.NewGuid().ToString("N"));
         var nestedBackup = Path.Combine(backupDirectory.FullName, "dotnetup.exe.old." + Guid.NewGuid().ToString("N"));
         File.WriteAllText(nestedBackup, "preserve");
-        File.SetLastWriteTimeUtc(nestedBackup, DateTime.UtcNow.AddDays(-2));
-        backupDirectory.LastWriteTimeUtc = DateTime.UtcNow.AddDays(-2);
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        File.SetLastWriteTimeUtc(nestedBackup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+        backupDirectory.LastWriteTimeUtc = DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays);
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
         SelfUpdateCleanup.TryRun(_installedPath, Identity);
 
@@ -269,8 +286,8 @@ public class SelfUpdateCleanupTests : SdkTest
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void SkipsLockedBackupsAndContinuesOnWindows()
     {
-        var locked = CreateBackup(TimeSpan.FromDays(2));
-        var other = CreateBackup(TimeSpan.FromDays(2));
+        var locked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var other = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         using var handle = new FileStream(locked, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         SelfUpdateCleanup.TryRun(_installedPath, Identity);
@@ -283,7 +300,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [TestMethod]
     public void LockOpenFailureIsSwallowed()
     {
-        var backup = CreateBackup(TimeSpan.FromDays(2));
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         Directory.CreateDirectory(_lockPath);
 
         SelfUpdateCleanup.TryRun(_installedPath, Identity);
@@ -312,10 +329,10 @@ public class SelfUpdateCleanupTests : SdkTest
         {
             var target = Path.Combine(outside.FullName, "target");
             File.WriteAllText(target, "preserve");
-            File.SetLastWriteTimeUtc(target, DateTime.UtcNow.AddDays(-2));
+            File.SetLastWriteTimeUtc(target, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
             CreateSymbolicLink(fileLink, target, isDirectory: false);
             CreateSymbolicLink(directoryLink, outside.FullName, isDirectory: true);
-            var backup = CreateBackup(TimeSpan.FromDays(2));
+            var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
             SelfUpdateCleanup.TryRun(_installedPath, Identity);
 
@@ -347,7 +364,7 @@ public class SelfUpdateCleanupTests : SdkTest
         var link = Path.Combine(_directory.FullName, "link");
         try
         {
-            var backup = CreateBackup(TimeSpan.FromDays(2));
+            var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
             var installedPath = _installedPath;
             if (kind is "canonical" or "lock")
             {
@@ -366,7 +383,7 @@ public class SelfUpdateCleanupTests : SdkTest
                 File.WriteAllBytes(target, CreateRecord());
                 backup = target + ".old." + Guid.NewGuid().ToString("N");
                 File.WriteAllText(backup, "preserve");
-                File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-2));
+                File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
                 CreateSymbolicLink(link, outside.FullName, isDirectory: true);
                 installedPath = kind == "ancestor" ? Path.Combine(link, "nested", "dotnetup.exe") : Path.Combine(link, "dotnetup.exe");
             }

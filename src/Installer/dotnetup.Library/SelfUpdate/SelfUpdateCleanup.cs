@@ -11,7 +11,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// </summary>
 internal static class SelfUpdateCleanup
 {
+    private const int BackupRetentionDays = 7;
     private const int EntryBudget = 32;
+    private const string RejectedSuffix = ".rejected";
+    private const string TransactionIdFormat = "N";
 
     public static void TryRun(string installedPath, string loadedIdentity)
     {
@@ -46,22 +49,25 @@ internal static class SelfUpdateCleanup
     {
         try
         {
+            // Normalize independently because callers that already own the update lock bypass TryRun.
             installedPath = Path.GetFullPath(installedPath);
             var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
+            // TryRun validates before acquiring the lock; repeat because the filesystem objects may have changed meanwhile.
             if (!IsPlainDirectoryPath(directory) || !IsPlainFile(installedPath))
             {
                 return;
             }
 
-            using var canonical = new FileStream(installedPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
-            if (!string.Equals(DotnetupBuildIdentityReader.Read(canonical), loadedIdentity, StringComparison.Ordinal))
+            using var installedExecutable = new FileStream(installedPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            // A process loaded before a later update must not delete that update's recovery artifacts.
+            if (!string.Equals(DotnetupBuildIdentityReader.Read(installedExecutable), loadedIdentity, StringComparison.Ordinal))
             {
                 return;
             }
 
-            var cutoff = DateTime.UtcNow.AddDays(-1);
+            var cutoff = DateTime.UtcNow.AddDays(-BackupRetentionDays);
             var prefix = Path.GetFileName(installedPath) + ".old.";
-            using var entries = directory.EnumerateFileSystemInfos("*", new EnumerationOptions
+            using var entries = directory.EnumerateFileSystemInfos(prefix + "*", new EnumerationOptions
             {
                 RecurseSubdirectories = false,
                 AttributesToSkip = 0,
@@ -105,12 +111,13 @@ internal static class SelfUpdateCleanup
         }
 
         var transaction = name.AsSpan(prefix.Length);
-        if (transaction.EndsWith(".rejected", StringComparison.Ordinal))
+        if (transaction.EndsWith(RejectedSuffix, StringComparison.Ordinal))
         {
-            transaction = transaction[..^9];
+            transaction = transaction[..^RejectedSuffix.Length];
         }
 
-        return transaction.Length == 32 && Guid.TryParseExact(transaction, "N", out _);
+        // The "N" format accepts exactly 32 hexadecimal digits without separators.
+        return Guid.TryParseExact(transaction, TransactionIdFormat, out _);
     }
 
     private static bool IsPlainDirectoryPath(DirectoryInfo directory)

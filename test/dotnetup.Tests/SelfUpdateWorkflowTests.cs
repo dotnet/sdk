@@ -513,8 +513,8 @@ public class SelfUpdateWorkflowTests : SdkTest
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         File.WriteAllText(files.BackupPath, "aged backup");
         File.WriteAllText(files.BackupPath + ".rejected", "aged rejected executable");
-        File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-2));
-        File.SetLastWriteTimeUtc(files.BackupPath + ".rejected", DateTime.UtcNow.AddDays(-2));
+        File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
+        File.SetLastWriteTimeUtc(files.BackupPath + ".rejected", DateTime.UtcNow.AddDays(-8));
         var loadedIdentity = staleLoadedIdentity ? new string('c', 64) : SelfUpdateTestFiles.OriginalIdentity;
         var workflow = new SelfUpdateTestWorkflow(files.Paths, loadedIdentity,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
