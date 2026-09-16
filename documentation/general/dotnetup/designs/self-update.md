@@ -204,9 +204,9 @@ Step 1.0 exists because the common invocation is a poll that finds nothing to do
 
 The check is placed before both locks rather than between steps 1.1 and 1.2 deliberately. Resolving `V_channel` is a network operation, so performing it while holding `U` would stretch the interval between acquiring `U` and acquiring `A` from two file opens to a network round trip. More `N` processes would accumulate in that interval, `P` would fail step 1.2 more often and restart the pair under rule 2, and the longer hold on `U` would cause the single nonblocking cleanup attempt of step 2.9 to be skipped more often.
 
-**1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` or cleanup holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required after acquiring both locks. `P` does not fail immediately for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithUpdateOrCleanup` and reports that another update or cleanup holds the lock, with best-effort holder details from step 1.7.
+**1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` or cleanup holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required after acquiring both locks. `P` does not fail immediately for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithUpdateOrCleanup` and reports that another update or cleanup is busy, with guidance to retry after it completes. Holder identification is deferred under step 1.7.
 
-**1.2 — `P` acquires `A` exclusively.** A busy `A` means at least one `N` is running. Per rule 2, `P` releases `U`, backs off, and retries the pair from step 1.1 for up to `X_A`. On expiry of `X_A`, `P` fails with `DotnetupBusyWithAnotherCommand` and reports the locking PID per step 1.7.
+**1.2 — `P` acquires `A` exclusively.** A busy `A` means at least one `N` is running. Per rule 2, `P` releases `U`, backs off, and retries the pair from step 1.1 for up to `X_A`. On expiry of `X_A`, `P` fails with `DotnetupBusyWithAnotherCommand` and reports that another dotnetup command is running, with guidance to retry after it completes.
 
 ###### Lock Acquisition for `N`
 
@@ -241,7 +241,9 @@ The first-run telemetry notice and its sentinel are not pre-gate work. [CommandB
 
 ###### Common to `P` and `N`
 
-**1.7 — Reporting the lock holder.** [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) uses Windows Restart Manager for best-effort process-name/PID details on required lock failures. Optional cleanup does not report contention. The helper verifies process start time before reporting a PID and does not expose command lines or full paths. Missing details, unsupported platforms, or a process exiting during inspection do not change the lock result; there is no Unix holder lookup.
+**1.7 — Reporting contention; holder identification deferred.** [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs) and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) report the contention category and retry guidance using localized messages and distinct error codes. They do not query operating-system process information or append process names/PIDs. Optional cleanup skips contention silently.
+
+Best-effort identification of processes using the lock file is deferred to a separate implementation improvement, not a Stage A prerequisite or a requirement for Stage B waiting/forwarding. A future implementation must remain diagnostic-only: missing or stale holder details must not affect lock acquisition, timeout, or recovery decisions. No Restart Manager interop or PID registry is needed in the current implementation.
 
 ##### Algorithm 2 — The update transaction
 
@@ -387,7 +389,7 @@ The reason `FileShare.Delete` is never requested does not carry to Unix either. 
 
 `flock` over NFS is historically unreliable. A `D/` on a network filesystem can silently degrade the gate.
 
-The current diagnostic helper returns no holder details on Unix. It does not parse Linux `/proc/locks` or add a native locking layer.
+Holder identification is deferred on all platforms. Dotnetup does not parse Linux `/proc/locks` or add a native locking layer.
 
 ## macOS:
 
@@ -423,8 +425,8 @@ handle without deleting the permanent lock file. Commands remain synchronous.
 acquires `U` before a single attempt at `A`, releases `U` before retrying a busy `A`,
 and uses separate cumulative contention budgets, currently one minute for `U` and
 two seconds for `A`. The gate and workflow map failures to `DotnetInstallException`;
-`CommandBase` records failure telemetry and the exit code. Windows holder diagnostics
-are report-only and cannot change the acquisition result.
+`CommandBase` records failure telemetry and the exit code. Contention messages identify
+the category and advise retrying; process-name/PID reporting is deferred.
 
 Source integration is not feed deployment. [Publishing.props](../../../../eng/Publishing.props)
 generates and registers the final binary's `.buildid` sidecar, but live daily
@@ -438,7 +440,7 @@ sidecar. Their availability at the public daily target is not asserted here.
 | [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs), [Program](../../../../src/Installer/dotnetup.Library/Program.cs) | Capture loaded-image values, create native invocation context, and flush telemetry before disposing leases. |
 | [Parser](../../../../src/Installer/dotnetup.Library/Parser.cs), [BuildIdentityAction](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs), [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs) | Register the hidden identity action and public self-update command; identity never constructs a command or starts telemetry. |
 | [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs), [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs), [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs) | Default commands to unsafe, gate before command work, retain leases, and restrict startup cleanup to admitted unsafe commands. |
-| [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs), [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) | Runtime sharing leases, cumulative contention accounting and bounded backoff, ordered acquisition with separate budgets, and best-effort Windows holder reporting. |
+| [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs) | Runtime sharing leases, cumulative contention accounting and bounded backoff, and ordered acquisition with separate budgets. |
 | [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs), [SelfUpdateDownloadProgress](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateDownloadProgress.cs), [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) | Host eligibility, daily resolution, progress/warning output, transaction sequencing, and verification-failure recovery. |
 | [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs), [ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs) | Pin release metadata, enforce unsigned policy, validate network/cache bytes, and commit the download to staging. |
 | [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs) | Sibling paths, basic pathname and absence checks, and managed file opens using ordinary runtime permissions. |

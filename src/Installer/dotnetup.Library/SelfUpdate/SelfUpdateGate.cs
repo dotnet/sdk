@@ -16,7 +16,7 @@ internal static class SelfUpdateGate
             paths.Validate();
             lease = ScopedLockFile.TryAcquireShared(paths.ActivityLockPath)
                 ?? throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupUpdateInProgress,
-                    Strings.SelfUpdateInProgress + " " + SelfUpdateLockDiagnostics.Describe(paths.ActivityLockPath));
+                    Strings.SelfUpdateInProgress);
             if (!string.Equals(loadedIdentity, SelfUpdatePaths.ReadIdentity(paths.InstalledPath), StringComparison.Ordinal))
             {
                 throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupExecutableChanged,

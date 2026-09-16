@@ -39,6 +39,7 @@ public class SelfUpdateGateTests
             using var updater = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
             var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateGate.Enter(paths, new string('a', 64)));
             Assert.AreEqual(DotnetInstallErrorCode.DotnetupUpdateInProgress, exception.ErrorCode);
+            Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateInProgress, exception.Message);
         }
         finally
         {

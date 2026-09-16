@@ -260,6 +260,9 @@ public class SelfUpdateWorkflowTests : SdkTest
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
 
         Assert.AreEqual(expectedCode, exception.ErrorCode);
+        Assert.AreEqual(occupyUpdate
+            ? Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateBusyUpdate
+            : Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateBusyCommand, exception.Message);
         var timeout = Assert.IsInstanceOfType<SelfUpdateLockTimeoutException>(exception.InnerException);
         Assert.AreEqual(occupyUpdate ? SelfUpdateLockKind.Update : SelfUpdateLockKind.Activity, timeout.LockKind);
         Assert.AreEqual(0, workflow.VerificationCount);

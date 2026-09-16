@@ -96,8 +96,7 @@ internal class SelfUpdateWorkflow
             throw new DotnetInstallException(updateBusy
                     ? DotnetInstallErrorCode.DotnetupBusyWithUpdateOrCleanup
                     : DotnetInstallErrorCode.DotnetupBusyWithAnotherCommand,
-                (updateBusy ? Strings.SelfUpdateBusyUpdate : Strings.SelfUpdateBusyCommand) + " " +
-                SelfUpdateLockDiagnostics.Describe(exception.LockPath ?? (updateBusy ? _paths.UpdateLockPath : _paths.ActivityLockPath)), exception);
+                updateBusy ? Strings.SelfUpdateBusyUpdate : Strings.SelfUpdateBusyCommand, exception);
         }
     }
 
