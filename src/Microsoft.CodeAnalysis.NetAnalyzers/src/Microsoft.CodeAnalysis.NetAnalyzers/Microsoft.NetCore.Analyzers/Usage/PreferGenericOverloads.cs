@@ -263,11 +263,28 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 for (int i = 0; i < OtherArguments.Length; i++)
                 {
                     var parameter = method.Parameters[i < method.Parameters.Length ? i : method.Parameters.Length - 1];
-                    var argumentType = OtherArguments[i].Value.WalkDownConversion().Type;
+                    var argument = OtherArguments[i];
+                    // Omitted arguments remain omitted in the replacement, so their defaults must agree.
+                    if (argument.ArgumentKind == ArgumentKind.DefaultValue)
+                    {
+                        if (parameter.IsParams ||
+                            !parameter.IsOptional ||
+                            !parameter.HasExplicitDefaultValue ||
+                            !SymbolEqualityComparer.Default.Equals(argument.Parameter?.Type, parameter.Type) ||
+                            !argument.Value.ConstantValue.HasValue ||
+                            !AreDefaultValuesEqual(argument.Value.ConstantValue.Value, parameter.ExplicitDefaultValue))
+                        {
+                            return false;
+                        }
+
+                        continue;
+                    }
+
+                    var argumentType = argument.Value.WalkDownConversion().Type;
                     var parameterType = parameter.Type;
                     // Reusing expanded argument syntax must synthesize the same array, not pass an
                     // element directly or change the array's runtime type.
-                    if (OtherArguments[i].ArgumentKind == ArgumentKind.ParamArray &&
+                    if (argument.ArgumentKind == ArgumentKind.ParamArray &&
                         (i != method.Parameters.Length - 1 ||
                          !parameter.IsParams ||
                          !SymbolEqualityComparer.Default.Equals(argumentType, parameterType)))
@@ -291,6 +308,18 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 }
 
                 return true;
+            }
+
+            private static bool AreDefaultValuesEqual(object? value, object? other)
+            {
+                // Numeric equality hides signed zero and decimal scale, both observable by the callee.
+                return (value, other) switch
+                {
+                    (float left, float right) => System.BitConverter.GetBytes(left).SequenceEqual(System.BitConverter.GetBytes(right)),
+                    (double left, double right) => System.BitConverter.DoubleToInt64Bits(left) == System.BitConverter.DoubleToInt64Bits(right),
+                    (decimal left, decimal right) => decimal.GetBits(left).SequenceEqual(decimal.GetBits(right)),
+                    _ => Equals(value, other),
+                };
             }
         }
 

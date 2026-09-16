@@ -33,10 +33,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var typeArgumentsSyntax = invocationContext.TypeArguments.Select(t => SyntaxFactory.ParseTypeName(t.ToDisplayString()));
-            // Filter the source argument list rather than the normalized operations so every expanded params
-            // argument remains in the replacement invocation.
-            var otherArgumentsSyntax = invocationSyntax.ArgumentList.Arguments
-                .Where(a => !invocationContext.IsTypeOfArgumentSyntax(a));
+            // Remove selectors from the source list so expanded arguments and separator trivia survive.
+            var argumentList = invocationSyntax.ArgumentList.RemoveNodes(
+                invocationSyntax.ArgumentList.Arguments.Where(invocationContext.IsTypeOfArgumentSyntax),
+                SyntaxRemoveOptions.KeepExteriorTrivia | SyntaxRemoveOptions.AddElasticMarker)!;
             var methodNameSyntax =
                 SyntaxFactory.GenericName(
                     SyntaxFactory.Identifier(invocationContext.Method.Name),
@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
             return invocationSyntax
                 .WithExpression(modifiedInvocationExpression)
-                .WithArgumentList(SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(otherArgumentsSyntax)))
+                .WithArgumentList(argumentList)
                 .WithTriviaFrom(invocationSyntax);
         }
     }
