@@ -99,6 +99,10 @@ Stage B retains the Stage A safety restrictions and replaces its fail-fast behav
 
 The approach below applies to both stages unless noted. Stage A uses immediate failure at the `non-safe` gate; Stage B adds bounded waiting and forwarding using the same locks and image-identity check.
 
+## Self-update target
+
+`self update` targets the direct NativeAOT `dotnetup` executable that started the current process. Its path is captured from the loaded process at startup, and [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs) derives the canonical executable, locks, staging file, and backups from that location. The command does not resolve a separate expected user-wide or system-wide installation path. Therefore, independently installed copies update themselves in place; a managed development host is not treated as an installed copy and rejects self-update.
+
 ## Windows:
 
 #### Stage A Update Logic
@@ -231,17 +235,17 @@ The comparison is unconditional, even if acquiring `A` succeeded immediately: re
 
 Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
-**1.6 — Work permitted before the gate.** Native startup captures the executable path and the build ID from the loaded record, configures language and console output, and parses arguments. Command constructors must not access installation state or start network work. [Program](../../../../src/Installer/dotnetup.Library/Program.cs) creates a [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) only for the NativeAOT host with a captured executable path. Managed development/test hosts do not receive an invocation; `self update` rejects them rather than treating the managed `dotnet` host as the executable to replace.
+**1.6 — Work permitted before the gate.** Startup captures the executable path and the build ID from the loaded record. Except for the identity action and telemetry drainer, [Program](../../../../src/Installer/dotnetup.Library/Program.cs) starts root telemetry before language and console setup, shows the first-run notice, and parses arguments. Command constructors must not access installation state or start network work. Program creates a [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) when [DotnetupProcessInfo.IsDirectExecution](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs) identifies a directly launched dotnetup executable. The telemetry drainer reuses the same check: the entry assembly must be dotnetup and the captured executable must not be the `dotnet` host. Renamed executables are supported. Execution through `dotnet` and test hosts remains invocation-free and rejects self-update. This check identifies the host, not NativeAOT packaging; a managed dotnetup apphost can pass it, but self-update still requires the executable's embedded identity record.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
 
 `N` must not perform cleanup before passing both the gate and the build-identity check, or on a path that fails or forwards instead of executing its command body.
 
-The first-run telemetry notice and its sentinel are not pre-gate work. [CommandBase.Execute](../../../../src/Installer/dotnetup.Library/CommandBase.cs) enters the gate before option telemetry or the command body. Telemetry starts after admission, or in error handling after a gate rejection; failure reporting may therefore write telemetry, but a rejected command never runs its body or cleanup. Parser-only actions have no command gate; the identity action is also telemetry-free. Acquired invocation leases survive command completion, root telemetry completion, and synchronous `FlushTelemetry`, and are disposed only as `Main` returns.
+Root telemetry, the first-run telemetry notice, and its sentinel are permitted before the gate. [CommandBase.Execute](../../../../src/Installer/dotnetup.Library/CommandBase.cs) enters the gate before option telemetry or the command body. Program owns the root and catches startup failures, including encoding-scope creation and disposal failures; SelfUpdateInvocation owns coordination and leases only. A rejected command may write telemetry and the notice sentinel, but never runs its body or cleanup. Parser-only actions have no command gate; the identity action also skips telemetry, console setup, and the notice. Program preserves the parser's action precedence when identity and other arguments are combined. Acquired invocation leases survive command completion, root telemetry completion, and synchronous `FlushTelemetry`, and are disposed only as `Main` returns.
 
 ###### Common to `P` and `N`
 
-**1.7 — Reporting contention; holder identification deferred.** [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs) and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) report the contention category and retry guidance using localized messages and distinct error codes. They do not query operating-system process information or append process names/PIDs. Optional cleanup skips contention silently.
+**1.7 — Reporting contention; holder identification deferred.** [NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs) and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) report the contention category and retry guidance using localized messages and distinct error codes. They do not query operating-system process information or append process names/PIDs. Optional cleanup skips contention silently.
 
 Best-effort identification of processes using the lock file is deferred to a separate implementation improvement, not a Stage A prerequisite or a requirement for Stage B waiting/forwarding. A future implementation must remain diagnostic-only: missing or stale holder details must not affect lock acquisition, timeout, or recovery decisions. No Restart Manager interop or PID registry is needed in the current implementation.
 
@@ -404,13 +408,14 @@ Version/channel selection, downgrade commands, and `self install` are future des
 ## Stage A Status
 
 Stage A source integration is complete: command registration, the telemetry-free
-identity option, NativeAOT invocation lifetime, fail-fast gating, coordinated update,
+identity option, direct-execution invocation lifetime, fail-fast gating, coordinated update,
 verified staging, replacement, child verification, rollback, and conservative cleanup
 are connected. [Program](../../../../src/Installer/dotnetup.Library/Program.cs),
 [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs), and
 [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs)
-define the production entry path. Managed development hosts remain invocation-free
-and reject self-update.
+define the production entry path. Execution through `dotnet` and test hosts remains
+invocation-free and rejects self-update. The shared direct-execution check does not
+prove native packaging; use a published NativeAOT executable for self-update.
 
 The [identity tooling](../../../../src/Installer/BuildIdentity/README.md) derives the
 embedded equality token from the full Arcade product version and RID. It does not
@@ -437,9 +442,9 @@ sidecar. Their availability at the public daily target is not asserted here.
 
 | Source | Responsibility |
 | --- | --- |
-| [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs), [Program](../../../../src/Installer/dotnetup.Library/Program.cs) | Capture loaded-image values, create native invocation context, and flush telemetry before disposing leases. |
+| [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs), [Program](../../../../src/Installer/dotnetup.Library/Program.cs) | Capture loaded-image values, share direct-execution detection, own early root telemetry and startup error handling, and flush telemetry before disposing invocation leases. |
 | [Parser](../../../../src/Installer/dotnetup.Library/Parser.cs), [BuildIdentityAction](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs), [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs) | Register the hidden identity action and public self-update command; identity never constructs a command or starts telemetry. |
-| [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs), [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs), [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs) | Default commands to unsafe, gate before command work, retain leases, and restrict startup cleanup to admitted unsafe commands. |
+| [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs), [NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs), [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs) | Default commands to unsafe, gate before command work, retain leases, and restrict startup cleanup to admitted unsafe commands. |
 | [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs) | Runtime sharing leases, cumulative contention accounting and bounded backoff, and ordered acquisition with separate budgets. |
 | [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs), [SelfUpdateDownloadProgress](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateDownloadProgress.cs), [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) | Host eligibility, daily resolution, progress/warning output, transaction sequencing, and verification-failure recovery. |
 | [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs), [ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs) | Pin release metadata, enforce unsigned policy, validate network/cache bytes, and commit the download to staging. |
