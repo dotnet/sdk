@@ -148,4 +148,22 @@
       DestinationFiles="@(WorkloadPackContent->'$(RedistLayoutPath)\packs\%(RecursiveDir)%(Filename)%(Extension)')" />
 
   </Target>
+
+  <!-- Cross-build test runtimes are restored to a target-architecture sidecar so the
+       host .dotnet remains runnable. Copy the sidecar into the test redist layout. -->
+  <Target Name="OverlayCrossArchTestRuntimes"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)'">
+    <PropertyGroup>
+      <_CrossArchTestRuntimeSidecar>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'test-runtimes', '$(TargetArchitecture)'))</_CrossArchTestRuntimeSidecar>
+    </PropertyGroup>
+    <ItemGroup Condition="Exists('$(_CrossArchTestRuntimeSidecar)')">
+      <_CrossArchTestRuntimeFile Include="$(_CrossArchTestRuntimeSidecar)shared\**\*" />
+    </ItemGroup>
+    <Copy Condition="'@(_CrossArchTestRuntimeFile)' != ''"
+          SourceFiles="@(_CrossArchTestRuntimeFile)"
+          DestinationFiles="@(_CrossArchTestRuntimeFile->'$(RedistLayoutPath)shared\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="false" />
+  </Target>
 </Project>
