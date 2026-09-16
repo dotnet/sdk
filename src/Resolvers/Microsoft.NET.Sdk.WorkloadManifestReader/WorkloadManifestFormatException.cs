@@ -19,12 +19,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public WorkloadManifestCompositionException(string message, Exception inner) : base(message, inner) { }
     }
 
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    abstract class WorkloadManifestException : Exception
+    abstract partial class WorkloadManifestException : Exception
     {
         protected WorkloadManifestException() { }
         protected WorkloadManifestException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }

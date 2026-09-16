@@ -9,12 +9,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     using WorkloadManifestProviderImplementation = IWorkloadManifestProvider;
 #endif
 
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    class TempDirectoryWorkloadManifestProvider : WorkloadManifestProviderImplementation
+    partial class TempDirectoryWorkloadManifestProvider : WorkloadManifestProviderImplementation
     {
         private readonly string _manifestsPath;
         private readonly string _sdkVersionBand;

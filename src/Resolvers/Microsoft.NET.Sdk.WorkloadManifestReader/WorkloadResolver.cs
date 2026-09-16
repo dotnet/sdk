@@ -21,12 +21,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </remarks>
 #if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
     public
-#elif INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
 #endif
-    class WorkloadResolver
+    partial class WorkloadResolver
 #if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
         : IWorkloadResolver
 #endif

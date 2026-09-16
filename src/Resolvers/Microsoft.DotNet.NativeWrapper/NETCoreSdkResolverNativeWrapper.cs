@@ -5,12 +5,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    static class NETCoreSdkResolverNativeWrapper
+    static partial class NETCoreSdkResolverNativeWrapper
     {
         public static SdkResolutionResult ResolveSdk(
             string? dotnetExeDirectory,

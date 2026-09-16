@@ -3,12 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    class ReadableWorkloadManifest
+    partial class ReadableWorkloadManifest
     {
         public string ManifestId { get; }
 

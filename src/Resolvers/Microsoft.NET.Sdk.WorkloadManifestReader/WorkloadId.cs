@@ -9,12 +9,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
 #if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
     public
-#elif INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
 #endif
-    readonly struct WorkloadId
+    readonly partial struct WorkloadId
 #if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
         : IComparable<WorkloadId>, IEquatable<WorkloadId>
 #endif

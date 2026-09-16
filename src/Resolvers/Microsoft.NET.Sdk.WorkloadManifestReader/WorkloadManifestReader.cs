@@ -7,11 +7,6 @@ using FXVersion = Microsoft.DotNet.MSBuildSdkResolver.FXVersion;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
     partial class WorkloadManifestReader
     {
         public static WorkloadManifest ReadWorkloadManifest(string manifestId, System.IO.Stream manifestStream, string manifestPath)

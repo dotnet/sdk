@@ -4,12 +4,7 @@
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     //  TODO: Do we need this class, or the existing version information anymore now that workload manifest are side by side?
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    class ManifestVersionUpdate : IEquatable<ManifestVersionUpdate>, IComparable<ManifestVersionUpdate>
+    partial class ManifestVersionUpdate : IEquatable<ManifestVersionUpdate>, IComparable<ManifestVersionUpdate>
     {
         public ManifestVersionUpdate(ManifestId manifestId, ManifestVersion? newVersion, string? newFeatureBand)
         {

@@ -7,12 +7,7 @@ namespace Microsoft.DotNet.NativeWrapper
     /// An instance of this exception is thrown when hostfxr fails to be loaded
     /// by the native bundler due to problems finding its path.
     /// </summary>
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    class HostFxrResolutionException : Exception
+    partial class HostFxrResolutionException : Exception
     {
         internal HostFxrResolutionException()
             : base()
@@ -28,12 +23,7 @@ namespace Microsoft.DotNet.NativeWrapper
     /// <summary>
     /// The path specified by HOSTFXR_PATH points to a file which could not be loaded.
     /// </summary>
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    sealed class HostFxrNotFoundException : HostFxrResolutionException
+    sealed partial class HostFxrNotFoundException : HostFxrResolutionException
     {
         public HostFxrNotFoundException(string message)
             : base(message)
@@ -45,12 +35,7 @@ namespace Microsoft.DotNet.NativeWrapper
     /// Runtime property HOSTFXR_PATH was not set or empty. This property should have been
     /// set by the muxer. 
     /// </summary>
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    sealed class HostFxrRuntimePropertyNotSetException : HostFxrResolutionException
+    sealed partial class HostFxrRuntimePropertyNotSetException : HostFxrResolutionException
     {
         public HostFxrRuntimePropertyNotSetException()
             : base()

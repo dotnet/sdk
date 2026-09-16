@@ -4,12 +4,7 @@
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
 #if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    interface IWorkloadResolver
+    partial interface IWorkloadResolver
     {
         IEnumerable<WorkloadResolver.PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind);
         IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId);

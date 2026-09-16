@@ -64,12 +64,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// This abstracts out the process of locating and loading a set of manifests to be loaded into a
     /// workload manifest resolver and resolved into a single coherent model.
     /// </summary>
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    interface IWorkloadManifestProvider
+    partial interface IWorkloadManifestProvider
     {
         void RefreshWorkloadManifests();
         IEnumerable<ReadableWorkloadManifest> GetManifests();
@@ -84,12 +79,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     }
 #endif
 
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    record WorkloadVersion
+    partial record WorkloadVersion
     {
         public enum Type
         {

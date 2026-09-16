@@ -3,12 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
+    partial struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
     {
         private string _id;
 

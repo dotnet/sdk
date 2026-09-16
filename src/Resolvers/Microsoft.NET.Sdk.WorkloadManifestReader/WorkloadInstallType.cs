@@ -23,12 +23,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         Msi = 1
     }
 
-#if INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
-#endif
-    static class WorkloadInstallType
+    static partial class WorkloadInstallType
     {
         /// <summary>
         /// Determines the <see cref="InstallType"/> associated with a specific SDK version.

@@ -10,10 +10,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
 #if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
     public
-#elif INTERNALIZE_SHARED_TYPES
-    internal
-#else
-    public
 #endif
     partial class SdkDirectoryWorkloadManifestProvider
     {
