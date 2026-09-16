@@ -396,6 +396,86 @@ Or open a new terminal.</target>
         <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SelfCommandDescription">
+        <source>Manage the dotnetup executable.</source>
+        <target state="new">Manage the dotnetup executable.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateAccessFailed">
+        <source>Dotnetup could not safely access the self-update files. Check the installation directory's permissions and try again.</source>
+        <target state="new">Dotnetup could not safely access the self-update files. Check the installation directory's permissions and try again.</target>
+        <note>{Locked="Dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateAlreadyUpToDate">
+        <source>Dotnetup is already up to date.</source>
+        <target state="new">Dotnetup is already up to date.</target>
+        <note>{Locked="Dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateBusyCommand">
+        <source>Dotnetup is busy with another command. Try self-update again after that command completes.</source>
+        <target state="new">Dotnetup is busy with another command. Try self-update again after that command completes.</target>
+        <note>{Locked="Dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateBusyUpdate">
+        <source>Dotnetup is busy with another self-update or cleanup. Try again after it completes.</source>
+        <target state="new">Dotnetup is busy with another self-update or cleanup. Try again after it completes.</target>
+        <note>{Locked="Dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateCommandDescription">
+        <source>Update dotnetup to the latest daily release.</source>
+        <target state="new">Update dotnetup to the latest daily release.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateDownloading">
+        <source>Downloading dotnetup</source>
+        <target state="new">Downloading dotnetup</target>
+        <note>{Locked="dotnetup"} Download progress task description.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateExecutableChanged">
+        <source>The dotnetup executable has changed. Run the command again to use the updated executable.</source>
+        <target state="new">The dotnetup executable has changed. Run the command again to use the updated executable.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateIdentityUnavailable">
+        <source>The dotnetup executable's build identity could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">The dotnetup executable's build identity could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateInProgress">
+        <source>A dotnetup self-update is in progress. Run the command again after the update completes.</source>
+        <target state="new">A dotnetup self-update is in progress. Run the command again after the update completes.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateReleaseIdentityMissing">
+        <source>The dotnetup release does not include a valid build identity. The executable was not updated.</source>
+        <target state="new">The dotnetup release does not include a valid build identity. The executable was not updated.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateRollbackFailed">
+        <source>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateStagedIdentityMismatch">
+        <source>The downloaded dotnetup executable's build identity does not match the release. The executable was not updated.</source>
+        <target state="new">The downloaded dotnetup executable's build identity does not match the release. The executable was not updated.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateSucceeded">
+        <source>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</source>
+        <target state="new">Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</target>
+        <note>{Locked="Dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup version.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateUnsupportedHost">
+        <source>Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</source>
+        <target state="new">Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</target>
+        <note>{Locked="dotnetup"} Managed development hosts cannot update themselves.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateVerificationFailed">
+        <source>The updated dotnetup executable failed verification.</source>
+        <target state="new">The updated dotnetup executable failed verification.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>

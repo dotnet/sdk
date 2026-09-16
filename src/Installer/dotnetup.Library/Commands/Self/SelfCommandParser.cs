@@ -1,0 +1,20 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
+
+/// <summary>Registers executable maintenance separately from SDK and runtime updates.</summary>
+internal static class SelfCommandParser
+{
+    public static Command GetCommand()
+    {
+        var command = new Command("self", Strings.SelfCommandDescription);
+        var update = new Command("update", Strings.SelfUpdateCommandDescription);
+        update.Options.Add(CommonOptions.NoProgressOption);
+        update.SetAction(result => new SelfUpdateCommand(result).Execute());
+        command.Subcommands.Add(update);
+        return command;
+    }
+}
