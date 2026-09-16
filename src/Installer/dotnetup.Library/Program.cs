@@ -40,6 +40,8 @@ public class DotnetupProgram
 
         try
         {
+            // The identity action must skip telemetry and normal startup, but the parser still
+            // decides which action wins when it is combined with help or command arguments.
             if (args.Contains("--build-identity", StringComparer.Ordinal))
             {
                 var parseResult = Parser.Parse(args);
@@ -50,6 +52,8 @@ public class DotnetupProgram
                 }
             }
 
+            // Start the root before language and console setup so startup failures are recorded,
+            // including failures creating or disposing the encoding restorer.
             rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
             processExitCode = ExecuteCommand(args, createEncodingRestorer, ref invocation);
             return processExitCode;
@@ -83,6 +87,7 @@ public class DotnetupProgram
             }
             finally
             {
+                // Keep invocation locks held through root completion and synchronous telemetry flush.
                 invocation?.Dispose();
             }
         }
@@ -90,11 +95,21 @@ public class DotnetupProgram
 
     private static int ExecuteCommand(string[] args, Func<IDisposable> createEncodingRestorer, ref SelfUpdateInvocation? invocation)
     {
+        // Apply the user's UI language before normal command output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG,
+        // and on Linux, where dotnetup runs invariant, detects the OS locale the runtime cannot).
         DotnetupUILanguage.Setup();
+
+        // Handle --debug using the standard .NET SDK pattern.
+        // This is DEBUG-only and removes the flag before parsing command arguments.
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Capture the console encoding before changing it, using the SDK CLI's AutomaticEncodingRestorer
+        // supplied by Main. Dispose here so restoration failures reach InvokeCommand's error handling.
         using var encodingRestorer = createEncodingRestorer();
         ConfigureConsoleEncoding();
         ConfigureConsoleOutput();
+
+        // Show the telemetry notice before the gate, including when the command will be rejected.
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
         if (DotnetupProcessInfo.IsDirectExecution && DotnetupProcessInfo.ExecutablePath is { } executablePath)
         {
