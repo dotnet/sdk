@@ -27,7 +27,7 @@
   </Target>
 
   <Target Name="ForwardDotnetupIdentityMetadata" BeforeTargets="AssignProjectConfiguration" DependsOnTargets="ResolveDotnetupIdentityMetadata"
-          Condition="'$(MSBuildProjectName)' == 'dotnetup' or '$(MSBuildProjectName)' == 'dotnetup.Library'">
+      Condition="'$(DesignTimeBuild)' != 'true' and ('$(MSBuildProjectName)' == 'dotnetup' or '$(MSBuildProjectName)' == 'dotnetup.Library')">
     <ItemGroup>
       <ProjectReference Update="..\dotnetup.Library\dotnetup.Library.csproj;..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj">
         <AdditionalProperties>%(ProjectReference.AdditionalProperties);DotnetupIdentityVersion=$(DotnetupIdentityVersion);DotnetupIdentityRid=$(DotnetupIdentityRid)</AdditionalProperties>
