@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [DataRow("http://*:5000", "http://localhost:5000", true)] // wildcards in --urls allow loopback
         public void IsAllowedOrigin_MatchesConfiguredServerUrls(string urls, string origin, bool allowed)
         {
-            var addresses = BlazorWasmHotReloadMiddleware.ParseServerUrls(urls);
+            var addresses = BlazorWasmHotReloadMiddleware.ParseServerUrls(_logger, urls);
             var originHeader = origin.Length == 0 ? StringValues.Empty : new StringValues(origin);
 
             Assert.AreEqual(allowed, BlazorWasmHotReloadMiddleware.IsAllowedOrigin(originHeader, addresses));
