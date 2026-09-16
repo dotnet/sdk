@@ -5,8 +5,6 @@
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)\dotnet-MsiInstallation.Tests.runsettings</RunSettingsFilePath>
     <!-- Every test class shares one Hyper-V VM and persisted snapshot graph, so class-level locking would still serialize the assembly. -->
     <MSTestParallelizeScope>None</MSTestParallelizeScope>
-    <!-- This Windows-only project is not built as a test application on other operating systems. -->
-    <NoWarn>$(NoWarn);MSTEST0084</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
