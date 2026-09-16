@@ -158,6 +158,7 @@ Run `dotnetup init` again to change the setup.
 ## Maintainer documentation
 
 - [Design notes](designs/)
+- [Uninstall and relationship-based list proposal](designs/dotnetup-uninstall.md)
 - [How dotnetup is included in the SDK](dotnetup_in_sdk.md)
 - [Release engineering](releasing.md)
 - [Signature verification](signature-verification.md)
