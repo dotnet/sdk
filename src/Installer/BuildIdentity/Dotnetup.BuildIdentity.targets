@@ -1,0 +1,54 @@
+<Project>
+  <PropertyGroup>
+    <_DotnetupIdentityToolProject>$(MSBuildThisFileDirectory)Dotnetup.BuildIdentity.csproj</_DotnetupIdentityToolProject>
+    <_DotnetupIdentityTool>$(ArtifactsBinDir)Dotnetup.BuildIdentity\$(Configuration)\$(SdkTargetFramework)\Dotnetup.BuildIdentity.dll</_DotnetupIdentityTool>
+    <_DotnetupIdentitySource>$(IntermediateOutputPath)DotnetupBuildIdentity.g.cs</_DotnetupIdentitySource>
+  </PropertyGroup>
+
+  <Target Name="ResolveDotnetupIdentityMetadata">
+    <PropertyGroup>
+      <DotnetupIdentityVersion Condition="'$(DotnetupIdentityVersion)' == ''">$(Version)</DotnetupIdentityVersion>
+      <DotnetupIdentityRid Condition="'$(DotnetupIdentityRid)' == ''">$(RuntimeIdentifier)</DotnetupIdentityRid>
+      <DotnetupIdentityRid Condition="'$(DotnetupIdentityRid)' == ''">$(TargetRid)</DotnetupIdentityRid>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="BuildDotnetupIdentityTool" Returns="$(DotnetupIdentityTaskAssembly)">
+    <MSBuild Projects="$(_DotnetupIdentityToolProject)" Targets="Restore;Build"
+             RemoveProperties="NoBuild;RuntimeIdentifier;PublishAot;SelfContained;_IsPublishing;DotnetupIdentityRid;DotnetupIdentityVersion"
+             Properties="ArtifactsDir=$(ArtifactsDir);Configuration=$(Configuration);TargetFramework=$(SdkTargetFramework);NoBuild=false" />
+    <GetFileHash Files="$(_DotnetupIdentityTool)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_DotnetupIdentityToolHash" />
+    </GetFileHash>
+    <PropertyGroup>
+      <DotnetupIdentityTaskAssembly>$(IntermediateOutputPath)identity-task\%(_DotnetupIdentityToolHash.FileHash)\Dotnetup.BuildIdentity.dll</DotnetupIdentityTaskAssembly>
+    </PropertyGroup>
+    <Copy SourceFiles="$(_DotnetupIdentityTool)" DestinationFiles="$(DotnetupIdentityTaskAssembly)" SkipUnchangedFiles="true" Condition="!Exists('$(DotnetupIdentityTaskAssembly)')" />
+  </Target>
+
+  <Target Name="ForwardDotnetupIdentityMetadata" BeforeTargets="AssignProjectConfiguration" DependsOnTargets="ResolveDotnetupIdentityMetadata"
+          Condition="'$(MSBuildProjectName)' == 'dotnetup' or '$(MSBuildProjectName)' == 'dotnetup.Library'">
+    <ItemGroup>
+      <ProjectReference Update="..\dotnetup.Library\dotnetup.Library.csproj;..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);DotnetupIdentityVersion=$(DotnetupIdentityVersion);DotnetupIdentityRid=$(DotnetupIdentityRid)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateDotnetupBuildIdentity" BeforeTargets="CoreCompile"
+      DependsOnTargets="ResolveDotnetupIdentityMetadata;BuildDotnetupIdentityTool"
+          Condition="'$(MSBuildProjectName)' == 'Microsoft.Dotnet.Installation'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Dotnetup.BuildIdentity.proj" Targets="Execute"
+             Properties="IdentityTaskAssembly=$(DotnetupIdentityTaskAssembly);IdentityOperation=generate;IdentityVersion=$(DotnetupIdentityVersion);IdentityRid=$(DotnetupIdentityRid);IdentitySource=$(_DotnetupIdentitySource)" />
+    <ItemGroup>
+      <Compile Include="$(_DotnetupIdentitySource)" />
+      <FileWrites Include="$(_DotnetupIdentitySource)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ValidateDotnetupBuildIdentity" DependsOnTargets="BuildDotnetupIdentityTool"
+          Condition="'$(MSBuildProjectName)' == 'dotnetup' and '$(PublishAot)' == 'true' and '$(RuntimeIdentifier)' != ''">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Dotnetup.BuildIdentity.proj" Targets="Execute"
+             Properties="IdentityTaskAssembly=$(DotnetupIdentityTaskAssembly);IdentityOperation=validate;IdentityVersion=$(Version);IdentityRid=$(RuntimeIdentifier);IdentityArtifact=$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)" />
+  </Target>
+</Project>

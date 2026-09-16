@@ -59,4 +59,6 @@
     <!-- Required for SignedCms / Rfc3161TimestampToken used by Internal/Signing/SignatureVerifier. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
+  <Import Project="..\BuildIdentity\Dotnetup.BuildIdentity.props" />
+  <Import Project="..\BuildIdentity\Dotnetup.BuildIdentity.targets" />
 </Project>

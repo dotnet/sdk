@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BuildIdentityTask.cs;BuildIdentityMetadata.cs" />
+    <Compile Include="..\Microsoft.Dotnet.Installation\Internal\BuildIdentity\DotnetupBuildIdentityReader.cs" Link="DotnetupBuildIdentityReader.cs" />
+    <Reference Include="Microsoft.Build.Framework" HintPath="$(MSBuildBinPath)\Microsoft.Build.Framework.dll" Private="false" />
+    <Reference Include="Microsoft.Build.Utilities.Core" HintPath="$(MSBuildBinPath)\Microsoft.Build.Utilities.Core.dll" Private="false" />
+  </ItemGroup>
+</Project>
