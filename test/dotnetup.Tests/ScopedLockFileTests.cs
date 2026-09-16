@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class ScopedLockFileTests : SdkTest
 {
     [TestMethod]
-    public void SharedOpenCreatesPermanentEmptyFileAndCoexists()
+    public void SharedOpenCreatesPermanentEmptyFileCoexistsAndDeniesExclusive()
     {
         var directory = Directory.CreateTempSubdirectory("scoped-lock-");
         try
@@ -22,7 +22,7 @@ public class ScopedLockFileTests : SdkTest
                 Assert.IsNotNull(first);
                 Assert.IsNotNull(second);
                 using var exclusive = ScopedLockFile.TryAcquireExclusive(path);
-                Assert.IsNull(exclusive);
+                Assert.IsNull(exclusive, "An exclusive lock must not be acquired while shared locks are held.");
             }
 
             Assert.IsTrue(File.Exists(path));
@@ -52,7 +52,7 @@ public class ScopedLockFileTests : SdkTest
             lease.Dispose();
             lease.Dispose();
             using var reacquired = ScopedLockFile.TryAcquireShared(path);
-            Assert.IsNotNull(reacquired);
+            Assert.IsNotNull(reacquired, "The existing permanent lock file must remain reusable after releasing its lock.");
             Assert.AreEqual(0L, new FileInfo(path).Length);
         }
         finally
