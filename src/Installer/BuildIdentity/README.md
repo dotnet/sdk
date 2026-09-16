@@ -83,10 +83,22 @@ version/RID equality, metadata changes, missing metadata, malformed and duplicat
 records, short reads, and write-only-on-change generation. The test build verifies
 that the loaded ID matches the single record in the owning managed assembly.
 Final NativeAOT publishing and post-signing validation still require the platform's
-native toolchain; managed tests alone do not prove that final artifact path. The
-[self-update review guide](../../../documentation/general/dotnetup/designs/self-update.md#environment-and-validation-boundaries)
-records the bounded Windows/Linux x64 native validation status and the unverified
-macOS boundary. The [native fixture](../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
+native toolchain; managed tests alone do not prove that final artifact path.
+The [native fixture](../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
 requires two NativeAOT executables with different full versions, supplied through
 `DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT`; changing source alone
 does not change their identity.
+
+[Live self-update E2E tests](../../../test/dotnetup.Tests/SelfUpdateEndToEndTests.cs)
+exercise the actual `self update --no-progress` command on private executable copies
+on Windows and Linux. The replacement test uses the configured native test executable
+(`DOTNETUP_TEST_EXECUTABLE`, or the normal test executable lookup) and requires its
+identity to differ from the current daily. Its version may be newer: self-update
+compares identities, not version ordering. The other test downloads and hash-verifies
+daily before invoking it. Both check that a subsequent update becomes a no-op with
+unchanged identity and bytes, allowing at most three successful attempts if daily
+changes during the test. Command failures are not retried.
+
+These tests require a reachable daily release with the self-update command, embedded
+identity, checksum, and `.buildid` sidecar. Missing metadata or an unsupported daily
+binary fails the test rather than being treated as a release race or a successful no-op.

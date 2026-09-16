@@ -341,9 +341,11 @@ internal static class DotnetupTestUtilities
         string[] args,
         bool captureOutput = false,
         string? workingDirectory = null,
-        Dictionary<string, string>? environmentVariables = null)
+        Dictionary<string, string>? environmentVariables = null,
+        string? executablePath = null,
+        TimeSpan? timeout = null)
     {
-        string dotnetupPath = GetDotnetupExecutablePath();
+        string dotnetupPath = executablePath ?? GetDotnetupExecutablePath();
 
         using var process = new Process();
         process.StartInfo.FileName = dotnetupPath;
@@ -395,6 +397,17 @@ internal static class DotnetupTestUtilities
         {
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+        }
+
+        if (timeout is { } limit && !process.WaitForExit((int)limit.TotalMilliseconds))
+        {
+            process.Kill(entireProcessTree: true);
+            if (process.WaitForExit(10_000))
+            {
+                process.WaitForExit();
+            }
+
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} timed out after {limit}. Output:\n{outputBuilder}");
         }
 
         process.WaitForExit();
