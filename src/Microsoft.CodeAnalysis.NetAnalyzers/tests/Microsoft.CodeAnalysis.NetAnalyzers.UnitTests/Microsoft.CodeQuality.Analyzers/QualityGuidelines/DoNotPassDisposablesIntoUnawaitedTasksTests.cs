@@ -643,7 +643,7 @@ End Class
         }
 
         [TestMethod]
-        public async Task FieldArgumentAwaitedElsewhereBeforeDispose_NoDiagnosticAsync()
+        public async Task NonLocalArgumentsAwaitedElsewhereBeforeDispose_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -653,21 +653,67 @@ using System.Threading.Tasks;
 public class C
 {
     private StreamReader _field = null;
+    private StreamReader DisposableProperty => null;
+    private StreamReader GetDisposable() => null;
 
     public async Task M(CancellationToken ct)
     {
         CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        Task t = Local(_field, cts.Token);
+        Task fieldTask = ConsumeAsync(_field, cts.Token);
+        Task propertyTask = ConsumeAsync(DisposableProperty, cts.Token);
+        Task methodTask = ConsumeAsync(GetDisposable(), cts.Token);
         await Task.Yield();
-        await t;
+        await fieldTask;
+        await propertyTask;
+        await methodTask;
         cts.Dispose();
 
-        async Task Local(StreamReader r, CancellationToken token)
+        async Task ConsumeAsync(StreamReader disposable, CancellationToken token)
         {
             await Task.Yield();
         }
     }
 }
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Private _field As StreamReader = Nothing
+
+    Private ReadOnly Property DisposableProperty As StreamReader
+        Get
+            Return Nothing
+        End Get
+    End Property
+
+    Private Function GetDisposable() As StreamReader
+        Return Nothing
+    End Function
+
+    Public Async Function M(ByVal ct As CancellationToken) As Task
+        Dim cts As CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(ct)
+        Dim fieldTask As Task = ConsumeAsync(_field, cts.Token)
+        Dim propertyTask As Task = ConsumeAsync(DisposableProperty, cts.Token)
+        Dim methodTask As Task = ConsumeAsync(GetDisposable(), cts.Token)
+        Await Task.Yield()
+        Await fieldTask
+        Await propertyTask
+        Await methodTask
+        cts.Dispose()
+    End Function
+
+    ' Visual Basic does not support local functions.
+    Private Shared Async Function ConsumeAsync(
+        ByVal disposable As StreamReader,
+        ByVal token As CancellationToken) As Task
+
+        Await Task.Yield()
+    End Function
+End Class
 ");
         }
 
