@@ -8,11 +8,10 @@ working cross-repository proof of concept. It is not a package availability
 announcement, supported preview, or commitment to the experimental property
 names and implementation details below.
 
-**The current SDK experiment changes no production SDK code.** Its six files
-live under `poc/browser-wasm-unit-tests`. The runner explicitly supplies an
-experimental MSBuild invocation marker; the product SDK does not define
-reserved browser invocation, bootstrap-version, or invocation-ID properties.
-Earlier experimental implementations of those contracts are superseded.
+**The current SDK experiment changes no production SDK code.** Its four files
+live under `poc/browser-wasm-unit-tests`. The README's direct PowerShell recipe
+explicitly supplies `DotnetTestInvocation=true`; this is an experimental
+package activation marker, not a reserved product SDK property.
 
 ## Decision summary
 
@@ -43,13 +42,14 @@ not an implemented public API or a prerequisite for this model.
 
 The current snapshots are:
 
-- **SDK:** `5aefe6efec7fe1d01ea4e015b32c5e2b0e4573b4`.
-  The experiment consists only of `.gitignore`, `BrowserWasmTestApp.csproj`,
-  `BrowserWasmTests.cs`, `README.md`, `package.json`, and `run.mjs` under
-  `poc/browser-wasm-unit-tests`.
-- **TestFX:** `62f9561ce310fe8344fb2d88784452ab79648833`.
-  This simplification removes 1,623 net lines from the preceding experiment.
-  It replaces, rather than retains, the older launcher contracts.
+- **SDK:** `f0ed2c30ac480554b22964997ac6eac0ad9ae845`.
+  The experiment consists only of `BrowserWasmTestApp.csproj`,
+  `BrowserWasmTests.cs`, `Directory.Packages.props`, and `README.md` under
+  `poc/browser-wasm-unit-tests`: four files and 120 added lines.
+- **TestFX:** `e6d8e4e0ccbdacb56db71313fcff328c73182b08`, following
+  `d0eefc044`. The final fixtures use only `EnableMSTestRunner=true` to
+  enable the runner and assert `IsTestingPlatformApplication=true`.
+  Build-only host assets are attributed to the consuming project.
 
 TestFX source is identified by commit and path because the cited experiment
 is local/unpublished. SDK experiment paths are also snapshot citations, not
@@ -59,8 +59,8 @@ at the commit above.
 
 | Behavior | Inspected primary source |
 | --- | --- |
-| Pure-managed consumer and exact SDK invocation | SDK `poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj`, `BrowserWasmTests.cs`, `run.mjs`, `package.json` |
-| No SDK-reserved browser markers | SDK `src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs`; marker arguments are in PoC `run.mjs` instead |
+| Pure-managed consumer, package versions and exact SDK invocation | SDK `poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj`, `BrowserWasmTests.cs`, `Directory.Packages.props`, `README.md` |
+| Explicit experimental activation | SDK `src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs`; the invocation marker is supplied by the PoC README recipe instead |
 | Optional package, private Playwright dependency and bundled driver layout | TestFX package `Microsoft.Testing.Platform.Browser.csproj` |
 | Evaluated host wrapping and Static Web Assets registration | Package `buildMultiTargeting/Microsoft.Testing.Platform.Browser.props` and `Microsoft.Testing.Platform.Browser.targets` |
 | URI-encoded launch options, SDK response-file expansion and bootstrap validation | Package `BrowserLauncherOptions.cs` |
@@ -77,18 +77,16 @@ For these simplified snapshots, the implementation owner reports:
 
 | Validation | Result |
 | --- | --- |
-| TestFX focused unit cases | 10/10 passed |
-| TestFX browser package acceptance tests | 5/5 passed |
-| TestFX full pack | Passed |
-| SDK PoC execution | 1 passed, 1 skipped |
-| SDK PoC discovery | 2 discovered |
+| TestFX browser package acceptance tests | 6/6 passed |
+| SDK PoC execution | 1 passed |
+| SDK PoC discovery | 1 discovered |
 
 These are reported local implementation results, not tests rerun by this
 documentation-only PR or a cross-platform support guarantee. The TestFX
-acceptance fixture has three tests, including an intentional failure; the
-SDK PoC has two. Their discovery counts are not interchangeable.
-Earlier 2-pass/1-skip SDK results, larger suite counts, unsupported-results
-rejection, Blazor runs, and reserved-property tests describe superseded code.
+acceptance fixture has three tests, including an intentional failure and an
+ignored test; the SDK PoC has one passing browser assertion and no ignored
+test. Their discovery counts are not interchangeable. Earlier validation
+counts are not evidence for this final snapshot.
 
 ## Existing product foundation
 
@@ -116,7 +114,7 @@ No app-authored interop or JavaScript protocol adapter is involved.
 
 ## Project shape and reproduction
 
-The canonical application contains a project and C# tests. This excerpt
+The canonical application contains a project and one C# test. This excerpt
 matches the SDK PoC's meaningful build settings, including the explicit
 native-build and trimming exclusions:
 
@@ -128,65 +126,86 @@ native-build and trimming exclusions:
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableMSTestRunner>true</EnableMSTestRunner>
-    <EnableMicrosoftTestingPlatform>true</EnableMicrosoftTestingPlatform>
     <WasmBuildNative>false</WasmBuildNative>
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="MSTest" Version="$(MSTestVersion)" />
-    <PackageVersion Include="Microsoft.Testing.Platform.Browser"
-                    Version="$(BrowserWasmMtpPackageVersion)" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="Microsoft.Testing.Platform.Browser" />
   </ItemGroup>
 </Project>
 ```
 
+Package versions are separate from project references, in the local
+`Directory.Packages.props`:
+
+```xml
+<Project>
+  <ItemGroup>
+    <PackageVersion Include="MSTest" Version="$(MSTestVersion)" />
+    <PackageVersion Include="Microsoft.Testing.Platform.Browser"
+                    Version="$(BrowserWasmMtpPackageVersion)" />
+  </ItemGroup>
+</Project>
+```
+
 This is a repository-context sample: `SdkTargetFramework`, `MSTestVersion`,
 and central package management come from repository configuration;
-`BrowserWasmMtpPackageVersion` comes from the runner. A standalone project
+`BrowserWasmMtpPackageVersion` is passed by the README recipe. A standalone project
 must select compatible framework/package versions and its package-management
 configuration explicitly. The example is not evidence for trimmed or
 native-relinked builds.
 
-The PoC's `RunsInsideBrowserWasm` test asserts `OperatingSystem.IsBrowser()`;
-`SkipsInsideBrowserWasm` is ignored. Neither provides a custom Main, HTML,
-JavaScript, or an application-to-launcher bridge.
+The only PoC test, `RunsInsideBrowserWasm`, asserts
+`OperatingSystem.IsBrowser()`. It provides no custom Main, HTML, JavaScript,
+or application-to-launcher bridge. Current TestFX acceptance explicitly
+checks that `EnableMSTestRunner=true` results in
+`IsTestingPlatformApplication=true` for both browser and desktop fixtures;
+no additional runner-enablement property is needed.
 
 ### Run the inspected experiment
 
 Use an SDK checkout containing the cited PoC commit and a complete Debug
 redist SDK, plus a locally packed TestFX browser package from the cited
-snapshot. Select an installed Chromium-family browser explicitly. From
-the SDK checkout root:
+snapshot. Select an installed Chromium-family browser explicitly. Run the
+[direct PowerShell recipe in the pinned PoC README](https://github.com/dotnet/sdk/blob/f0ed2c30ac480554b22964997ac6eac0ad9ae845/poc/browser-wasm-unit-tests/README.md)
+from the SDK checkout root, replacing its package-source and browser paths
+and package version with the actual local values.
+
+The recipe:
+
+1. Resolves the project and built Debug redist executable and requires exactly
+   one SDK directory in that redist.
+2. Creates temporary run state outside the repository's `global.json`, with
+   a `global.json` pinned to that SDK version/root, `rollForward=disable`,
+   and the `Microsoft.Testing.Platform` test runner.
+3. Sets `NUGET_PACKAGES` to the temporary package directory and isolates
+   project extensions, intermediate output and build output under the run
+   directory. Setting only a restore path is insufficient: `NuGetPackageRoot`
+   can otherwise resolve a stale package from the shared cache.
+4. Sets `DOTNET_CLI_USE_MSBUILD_SERVER=0` so test evaluation observes package
+   imports generated by the preceding restore.
+5. Supplies `DotnetTestInvocation=true`, the local package version/source and
+   `TestingPlatformBrowserExecutable`, then explicitly restores before test.
+
+With the variables and property array established by that recipe, the core
+commands are:
 
 ```powershell
-$env:MTP_BROWSER_PACKAGE_SOURCE = "C:\path\to\testfx\artifacts\packages\Debug\Shipping"
-$env:MTP_BROWSER_EXECUTABLE = "C:\path\to\installed\chromium\chrome.exe"
-Set-Location .\poc\browser-wasm-unit-tests
-npm test
-npm run list
+& $dotnet restore $project @properties
+& $dotnet test --project $project --no-restore @properties
 ```
 
-Replace the paths with actual local paths. If the package directory contains
-multiple browser package versions, set `MTP_BROWSER_PACKAGE_VERSION` to the
-exact version to use. The package does not acquire the browser. `npm` here
-invokes a small Node harness; it is not an alternative test engine or a
-standalone Playwright runner.
+Check that restore succeeded before interpreting the test result. Add
+`--list-tests` to the test command for discovery. The explicit restore makes
+the experimental package imports available before `dotnet test` evaluates
+`ComputeRunArguments`; `--no-restore` applies only to that subsequent command.
 
-`run.mjs` verifies that the Debug redist contains one selected SDK, creates
-temporary run state outside the repository's `global.json`, selects MTP in a
-run-local `global.json`, and restores into isolated package/obj/bin paths.
-It verifies the restored package's SHA-512 against the selected local nupkg,
-then invokes normal `dotnet test --project` with `--no-restore` after that
-successful restore. It does not patch or mutate the redist SDK.
-
-The harness rejects forwarded MSBuild property arguments, `--no-build`,
-`--no-restore`, and a `--` test-application argument separator. These are
-harness restrictions, **not** an MTP option denylist in the browser package.
-Normal completion cleans the temporary directory. Process-targeted
-interruption is a known harness limitation; it does not implement another
-process-tree manager.
+The README's `finally` block restores the previous environment values and
+working directory and removes temporary run state. It does not mutate the
+redist SDK or add a process supervisor. The package does not acquire the
+browser. This direct invocation recipe is reproduction guidance, not a
+product launch or file-option policy.
 
 ## Current experimental contracts
 
@@ -197,15 +216,11 @@ The package's `_ConfigureTestingPlatformBrowserRun` target runs after
 `browser-`, and `DotnetTestInvocation` equals `true`.
 
 The PoC explicitly passes `-p:DotnetTestInvocation=true`. That is the only
-invocation marker consumed by the simplified package. The runner also still
-passes `DotnetTestHttpBootstrapVersion=1` and a generated
-`DotnetTestInvocationId` for legacy compatibility; this package neither
-requires nor validates them. They are tolerated, unused experimental values,
-not evidence of product SDK support, reserved globals, capability negotiation,
-or invocation-specific configuration files.
+invocation marker supplied by the recipe and consumed by the package.
+It is not a reserved product SDK global or a negotiated product capability.
 
 The package's `PACKAGE.md` shorthand about the SDK setting the marker must
-be read in this PoC context: it is supplied explicitly by `run.mjs`.
+be read in this PoC context: it is supplied explicitly by the README recipe.
 Bare product `dotnet test` does not acquire browser wrapping solely from
 installing this package. A future supported activation mechanism needs an
 explicit SDK/TestFX decision; the PoC does not commit that design.
@@ -242,8 +257,11 @@ the command line.
 host tokenizer, shell command composition, alternate config-file/base64
 format, host override, or invocation-config Clean target. The package uses
 `AfterTargets="ComputeRunArguments"`, not `CustomAfterDirectoryBuildTargets`.
-General late-target composition beyond the tested WebAssembly host remains
-unproven.
+A project target that also runs after `ComputeRunArguments` can subsequently
+replace the wrapper; that composition is explicitly unsupported by the PoC.
+TestFX `PACKAGE.md` proposes SDK-owned launcher selection for a preview,
+rather than additional package target-ordering machinery. That is future
+product design, not a current SDK implementation.
 
 ### Host assets are Static Web Assets
 
@@ -251,15 +269,19 @@ When enabled and `WasmMainJSPath` is unset, the package selects its boot module
 and, if unset, its HTML page. It copies both into an intermediate directory,
 registers them with `DefineStaticWebAssets` and
 `DefineStaticWebAssetEndpoints`, and records the copied assets in
-`FileWrites`.
+`FileWrites`. `SourceId="$(PackageId)"` attributes these computed assets to
+the consuming project, not to the browser package's identity.
 
 That registration is necessary for the tested WasmAppHost serving path:
 setting `WasmMainJSPath`/`WasmMainHTMLPath` alone is not enough to expose the
 page and module and resulted in 404s during the experiment. Do not remove
 the Static Web Assets integration as redundant property wiring.
 
-The current assets are registered for build. This does not establish
-published-layout support. If a project has already selected a
+The current assets are registered with `AssetKind="Build"`. Acceptance checks
+their consumer identity in the build manifest and their absence from the
+publish manifest and published output. This intentionally excludes the test
+host assets from publication; it is not published-layout browser test support.
+If a project has already selected a
 `WasmMainJSPath`, the package does not take ownership of its page; no public
 framework-page adapter or generated-assets opt-out contract is supplied.
 
@@ -386,9 +408,9 @@ real cancellation behavior need validation before a supported preview.
 
 Graceful SDK-to-managed-MTP cancellation is not implemented. Forceful
 cleanup cannot guarantee managed `finally` execution or artifact flushing.
-The Node PoC harness also has the process-targeted interruption limitation
-described above; normal console cancellation and arbitrary process signals
-must not be presented as identical guarantees.
+Normal console cancellation and arbitrary process signals must not be
+presented as identical guarantees; the reproduction recipe adds no
+independent process-tree manager.
 
 Browser VFS files are not physical host artifacts. There is no artifact
 export or host-input transfer. Unlike the earlier experiment, **the current
@@ -422,16 +444,17 @@ The current maintained coverage includes:
 | --- | --- |
 | Pure-managed package execution | No app HTML/JS/wwwroot; pass, intentional failure, skip, filter and discovery through the SDK HTTP gateway |
 | Nonactivation | Unmarked browser `ComputeRunArguments` and desktop execution remain unwrapped |
+| Runner activation | Browser and desktop fixtures evaluate `IsTestingPlatformApplication=true` with only `EnableMSTestRunner=true` |
+| Asset ownership and publication | Consumer `SourceId`, build-only page/module assets, and exclusion from publish manifest/output |
 | Package layout | Private Playwright/Node payload, dynamic-import boot module/private bindings, no removed `.After.targets` |
 | Argument handling | URI round-trip, newlines/special characters, SDK bootstrap response-file expansion, invalid bootstrap rejection |
 | Readiness and diagnostics | Exact HTTP `App url:` parsing, rejection of non-loopback URL, diagnostic redaction and output bounds |
 | Cancellation | Linked run-monitor cancellation stops its wait promptly; this unit case is not an end-to-end process cleanup test |
 
 The reported counts are in [Reported validation](#reported-validation).
-Removed reserved-global/version/ID gates, config isolation, custom host
-composition, option denylist and framework API tests are not current
-coverage. Broader concurrency, late-target composition, `--no-build`,
-published layouts, trimming/native modes and non-Windows execution must be
+Custom host composition, option denylist and framework API tests are not
+current coverage. Broader concurrency, late-target composition, `--no-build`,
+published-layout execution, trimming/native modes and non-Windows execution must be
 validated or explicitly excluded from a supported preview.
 
 ## Minimum experiment and credible preview
@@ -439,7 +462,8 @@ validated or explicitly excluded from a supported preview.
 The minimum experiment is the current narrow path: pure C# application,
 generated MTP Main, package assets, evaluated WasmAppHost, explicitly selected
 Chromium, private runtime boot/completion and existing authenticated HTTP.
-The SDK change is only a reproduction harness and sample.
+The SDK change is only a sample, local package-version file and reproduction
+documentation.
 
 A credible preview would additionally require:
 
