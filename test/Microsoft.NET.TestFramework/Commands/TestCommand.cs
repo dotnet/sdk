@@ -188,10 +188,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     command.OnOutputLine(CommandOutputHandler);
                 }
 
-                if (StandardOutputEncoding is not null)
-                {
-                    command.StandardOutputEncoding(StandardOutputEncoding);
-                }
+                command.StandardOutputEncoding(StandardOutputEncoding ?? Encoding.UTF8);
             }
 
             string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
