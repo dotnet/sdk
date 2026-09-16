@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -20,8 +19,8 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
-        var executablePath = DotnetupProcessInfo.ExecutablePath;
-        var loadedIdentity = DotnetupProcessInfo.BuildIdentity;
+        _ = DotnetupProcessInfo.ExecutablePath;
+        _ = DotnetupProcessInfo.BuildIdentity;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
@@ -29,49 +28,38 @@ public class DotnetupProgram
             return drainExitCode;
         }
 
-        // Apply the user's UI language before any output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG, and
-        // on Linux—where dotnetup runs invariant—detects the OS locale the runtime cannot).
-        DotnetupUILanguage.Setup();
-        // Handle --debug flag using the standard .NET SDK pattern
-        // This is DEBUG-only and removes the --debug flag from args
-        DotnetupDebugHelper.HandleDebugSwitch(ref args);
-
-        // Capture current console encoding so it can be restored on exit.
-        // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
-        using AutomaticEncodingRestorer encodingRestorer = new();
-        ConfigureConsoleEncoding();
-        ConfigureConsoleOutput();
-
-        using var invocation = !RuntimeFeature.IsDynamicCodeSupported && executablePath is not null
-            ? new SelfUpdateInvocation(executablePath, loadedIdentity)
-            : null;
-        return InvokeCommand(args, invocation);
+        return InvokeCommand(args, static () => new AutomaticEncodingRestorer());
     }
 
-    private static int InvokeCommand(string[] args, SelfUpdateInvocation? invocation)
+    internal static int InvokeCommand(string[] args, Func<IDisposable> createEncodingRestorer)
     {
         TrackedOperation? rootOperation = null;
+        SelfUpdateInvocation? invocation = null;
         int processExitCode = 1;
         bool identityInvocation = false;
 
         try
         {
-            var parseResult = Parser.Parse(args);
-            identityInvocation = ReferenceEquals(parseResult.Action, Parser.BuildIdentityOption.Action);
-            if (invocation is null && !identityInvocation)
+            if (args.Contains("--build-identity", StringComparer.Ordinal))
             {
-                rootOperation = StartTelemetry(null);
+                var parseResult = Parser.Parse(args);
+                identityInvocation = ReferenceEquals(parseResult.Action, Parser.BuildIdentityOption.Action);
+                if (identityInvocation)
+                {
+                    return Parser.Invoke(parseResult);
+                }
             }
 
-            processExitCode = Parser.Invoke(parseResult);
-
+            rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+            processExitCode = ExecuteCommand(args, createEncodingRestorer, ref invocation);
             return processExitCode;
         }
         catch (Exception ex)
         {
+            processExitCode = 1;
             if (!identityInvocation)
             {
-                rootOperation ??= StartTelemetry(invocation);
+                rootOperation ??= DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
                 DotnetupTelemetry.Instance.RecordException(rootOperation, ex);
             }
 
@@ -84,27 +72,36 @@ public class DotnetupProgram
         }
         finally
         {
-            if (!identityInvocation)
+            try
             {
-                rootOperation ??= StartTelemetry(invocation);
-                TagRootForExitCode(rootOperation, processExitCode);
-                rootOperation.Dispose();
-                FlushTelemetry(processExitCode);
+                if (rootOperation is not null)
+                {
+                    TagRootForExitCode(rootOperation, processExitCode);
+                    rootOperation.Dispose();
+                    FlushTelemetry(processExitCode);
+                }
+            }
+            finally
+            {
+                invocation?.Dispose();
             }
         }
     }
 
-    private static TrackedOperation StartTelemetry(SelfUpdateInvocation? invocation)
+    private static int ExecuteCommand(string[] args, Func<IDisposable> createEncodingRestorer, ref SelfUpdateInvocation? invocation)
     {
-        if (invocation is not null)
+        DotnetupUILanguage.Setup();
+        DotnetupDebugHelper.HandleDebugSwitch(ref args);
+        using var encodingRestorer = createEncodingRestorer();
+        ConfigureConsoleEncoding();
+        ConfigureConsoleOutput();
+        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+        if (DotnetupProcessInfo.IsDirectExecution && DotnetupProcessInfo.ExecutablePath is { } executablePath)
         {
-            invocation.StartTelemetry();
-            return invocation.RootOperation!;
+            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.BuildIdentity);
         }
 
-        var operation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
-        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
-        return operation;
+        return Parser.Invoke(args);
     }
 
     /// <summary>

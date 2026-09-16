@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
@@ -27,13 +26,12 @@ internal sealed class SelfUpdateInvocation : IDisposable
     public static SelfUpdateInvocation? Current => s_current;
     public SelfUpdatePaths Paths { get; }
     public string LoadedIdentity { get; }
-    public TrackedOperation? RootOperation { get; private set; }
 
     public void EnterCommand(bool safe)
     {
         if (!safe && !_passedGate)
         {
-            Retain(SelfUpdateGate.Enter(Paths, LoadedIdentity));
+            Retain(NonSafeCommandGate.Enter(Paths, LoadedIdentity));
             _passedGate = true;
         }
 
@@ -42,16 +40,6 @@ internal sealed class SelfUpdateInvocation : IDisposable
             SelfUpdateCleanup.TryRun(Paths.InstalledPath, LoadedIdentity);
         }
 
-        StartTelemetry();
-    }
-
-    public void StartTelemetry()
-    {
-        if (RootOperation is null)
-        {
-            RootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
-            FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
-        }
     }
 
     public void Retain(IDisposable lease) => _leases.Add(lease);

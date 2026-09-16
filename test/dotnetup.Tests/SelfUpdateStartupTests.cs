@@ -44,7 +44,6 @@ public class SelfUpdateStartupTests : SdkTest
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
 
             Assert.AreEqual(1, command.Execute());
-            using var rootOperation = invocation.RootOperation;
             Assert.IsFalse(resolver.IsValueCreated);
         }
     }
@@ -136,14 +135,13 @@ public class SelfUpdateStartupTests : SdkTest
             activities.Clear();
             DotnetupTelemetry.Instance.IsShellStartupCommand = false;
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
             var parsed = Parser.Parse(args);
             Assert.IsEmpty(parsed.Errors, string.Join(' ', args));
-            Assert.IsNull(invocation.RootOperation);
+            Assert.IsNotNull(rootOperation.Activity);
             Assert.IsEmpty(activities);
 
             Assert.AreEqual(1, Parser.Invoke(parsed), string.Join(' ', args));
-            using var rootOperation = invocation.RootOperation;
-            Assert.IsNotNull(rootOperation);
             Assert.ContainsSingle(activities);
             Assert.AreEqual(nameof(DotnetInstallErrorCode.DotnetupUpdateInProgress), activities[0].GetTagItem("error.type"), string.Join(' ', args));
             Assert.IsFalse(DotnetupTelemetry.Instance.IsShellStartupCommand);
@@ -187,10 +185,9 @@ public class SelfUpdateStartupTests : SdkTest
             root.Options.Add(new Option<bool>("--flag"));
             var command = new SelfUpdateStartupCommand(root.Parse(["--flag"]));
             activities.Clear();
+            using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
             Assert.AreEqual(1, command.Execute());
-            using var rootOperation = invocation.RootOperation;
-            Assert.IsNotNull(rootOperation);
             Assert.IsFalse(command.Ran);
             Assert.ContainsSingle(activities);
             var commandActivity = activities[0];
@@ -219,10 +216,11 @@ public class SelfUpdateStartupTests : SdkTest
         try
         {
             telemetry.IsShellStartupCommand = false;
+            var previousActivity = Activity.Current;
             _ = new EnvScriptCommand(Parser.Parse(["env", "script", "--shell", "pwsh"]));
 
             Assert.IsFalse(telemetry.IsShellStartupCommand);
-            Assert.IsNull(invocation.RootOperation);
+            Assert.AreSame(previousActivity, Activity.Current);
         }
         finally
         {
@@ -237,10 +235,9 @@ public class SelfUpdateStartupTests : SdkTest
         var previous = SelfUpdateInvocation.Current;
         using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
+        using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         Assert.AreEqual(0, command.Execute());
-        using var rootOperation = invocation.RootOperation;
-        Assert.IsNotNull(rootOperation);
         Assert.IsTrue(command.Ran);
         Assert.AreSame(invocation, SelfUpdateInvocation.Current);
         using (var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath))
@@ -270,8 +267,6 @@ public class SelfUpdateStartupTests : SdkTest
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
 
         Assert.AreEqual(1, command.Execute());
-        using var rootOperation = invocation.RootOperation;
-        Assert.IsNotNull(rootOperation);
         Assert.IsFalse(command.Ran);
     }
 
@@ -283,10 +278,156 @@ public class SelfUpdateStartupTests : SdkTest
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
 
         Assert.AreEqual(1, command.Execute());
-        using var rootOperation = invocation.RootOperation;
-        Assert.IsNotNull(rootOperation);
         Assert.IsFalse(command.Ran);
         using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNotNull(update);
+    }
+
+    [TestMethod]
+    public async Task ProgramRecordsEncodingSetupAndDisposalFailuresOnEarlyRoot()
+    {
+        if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
+        {
+            await SelfUpdateStartupTelemetryProcess.RunAsync(
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramRecordsEncodingSetupAndDisposalFailuresOnEarlyRoot)).ConfigureAwait(false);
+            return;
+        }
+
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == Constants.Telemetry.BootstrapperSourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => activities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+        foreach (var failDuringDisposal in new[] { false, true })
+        {
+            activities.Clear();
+            Activity? root = null;
+            var disposed = false;
+            var failure = new InvalidOperationException("Injected encoding setup or disposal failure.");
+            var exitCode = DotnetupProgram.InvokeCommand(["--version"], () =>
+            {
+                root = Activity.Current;
+                Assert.IsNotNull(root);
+                Assert.AreEqual("dotnetup", root.OperationName);
+                if (!failDuringDisposal)
+                {
+                    throw failure;
+                }
+
+                return new StartupEncodingScope(() =>
+                {
+                    disposed = true;
+                    Assert.AreSame(root, Activity.Current);
+                    throw failure;
+                });
+            });
+
+            Assert.AreEqual(1, exitCode);
+            Assert.AreEqual(failDuringDisposal, disposed);
+            Assert.ContainsSingle(activities);
+            Assert.AreSame(root, activities[0]);
+            Assert.AreEqual(ActivityStatusCode.Error, activities[0].Status);
+            Assert.AreEqual(1, activities[0].GetTagItem(TelemetryTagNames.ExitCode));
+            Assert.IsNotNull(activities[0].GetTagItem("error.type"));
+            Assert.AreNotEqual("ParseError", activities[0].GetTagItem("error.type"));
+        }
+    }
+
+    [TestMethod]
+    public async Task ProgramIdentityOptionSkipsNormalSetupAndTelemetry()
+    {
+        if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
+        {
+            await SelfUpdateStartupTelemetryProcess.RunAsync(
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramIdentityOptionSkipsNormalSetupAndTelemetry)).ConfigureAwait(false);
+            return;
+        }
+
+        var started = 0;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == Constants.Telemetry.BootstrapperSourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStarted = _ => started++,
+        };
+        ActivitySource.AddActivityListener(listener);
+        string[][] invocations = [["--build-identity"], ["--build-identity", "--interactive", "false"]];
+        foreach (var args in invocations)
+        {
+            var setupCalled = false;
+            Assert.AreEqual(0, DotnetupProgram.InvokeCommand(args, () =>
+            {
+                setupCalled = true;
+                return new StartupEncodingScope(() => { });
+            }));
+            Assert.IsFalse(setupCalled);
+        }
+
+        Assert.AreEqual(0, started);
+    }
+
+    [TestMethod]
+    public async Task ProgramShowsFirstRunNoticeBeforeGateRejection()
+    {
+        if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
+        {
+            await SelfUpdateStartupTelemetryProcess.RunAsync(
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramShowsFirstRunNoticeBeforeGateRejection)).ConfigureAwait(false);
+            return;
+        }
+
+        using var files = new SelfUpdateTestFiles();
+        using var updater = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        var previousNoLogo = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+        var previousError = Console.Error;
+        using var output = new StringWriter();
+        DotnetupPaths.SetTestDataDirectoryOverride(Path.Combine(files.Paths.DirectoryPath, "notice-data"));
+        try
+        {
+            Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "0");
+            Console.SetError(output);
+            Assert.IsFalse(File.Exists(DotnetupPaths.TelemetrySentinelPath));
+
+            Assert.AreEqual(1, DotnetupProgram.InvokeCommand(["list"], () => new StartupEncodingScope(() => { })));
+
+            Assert.IsTrue(File.Exists(DotnetupPaths.TelemetrySentinelPath));
+            Assert.Contains(Microsoft.DotNet.Tools.Bootstrapper.Strings.TelemetryNotice, output.ToString());
+            using var competing = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+            Assert.IsNull(competing);
+        }
+        finally
+        {
+            Console.SetError(previousError);
+            Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousNoLogo);
+            DotnetupPaths.ClearTestDataDirectoryOverride();
+        }
+    }
+
+    [TestMethod]
+    public async Task ProgramRespectsParserPrecedenceForIdentityLikeArguments()
+    {
+        if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
+        {
+            await SelfUpdateStartupTelemetryProcess.RunAsync(
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramRespectsParserPrecedenceForIdentityLikeArguments)).ConfigureAwait(false);
+            return;
+        }
+
+        string[][] invocations = [["--help", "--build-identity"], ["--build-identity", "--help"], ["dotnet", "--build-identity"], ["self", "update", "--build-identity"]];
+        foreach (var args in invocations)
+        {
+            var isIdentityAction = ReferenceEquals(Parser.Parse(args).Action, Parser.BuildIdentityOption.Action);
+            var setupCalled = false;
+            Assert.AreEqual(isIdentityAction ? 0 : 1, DotnetupProgram.InvokeCommand(args, () =>
+            {
+                setupCalled = true;
+                throw new InvalidOperationException("Injected setup failure before command dispatch.");
+            }));
+            Assert.AreEqual(!isIdentityAction, setupCalled, string.Join(' ', args));
+        }
     }
 }

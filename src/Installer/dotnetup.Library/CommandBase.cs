@@ -52,7 +52,6 @@ public abstract class CommandBase
         catch (Exception ex)
         {
             _exitCode = 1;
-            SelfUpdateInvocation.Current?.StartTelemetry();
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
