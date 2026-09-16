@@ -259,9 +259,13 @@ Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an o
 
 `P` also reads the staged executable's embedded build ID and requires it to equal `V_channel` before replacement.
 
-After identity validation and, on Unix, setting executable permissions, [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) flushes the staged file with `FileStream.Flush(flushToDisk: true)` before replacement. This reduces the risk that validated bytes exist only in the system cache, but it does not turn the following replacement into an ACID or power-loss-safe transaction.
+Permissions use ordinary runtime filesystem behavior, as SDK/runtime extraction does in [DotnetArchiveExtractor](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetArchiveExtractor.cs). On Windows, new staging files inherit their directory's permissions, and `File.Replace` preserves the installed executable's ACL. On Unix, archive extraction preserves archive modes; the raw dotnetup download has no archive mode, so `SelfUpdateWorkflow` copies the installed executable's mode with `File.GetUnixFileMode` and `File.SetUnixFileMode` rather than assigning a new fixed mode. Self-update does not add an owner whitelist, reject group-writable installs, or rewrite directory permissions.
+
+After identity validation and permission setup, [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) flushes the staged file with `FileStream.Flush(flushToDisk: true)` before replacement. This reduces the risk that validated bytes exist only in the system cache, but it does not turn the following replacement into an ACID or power-loss-safe transaction.
 
 Both staging paths are inside `D/` to keep the eventual replacement on the destination volume. Unvalidated bytes remain under `.new.download`; hash-validated bytes become `.new`, and only a staged executable with the expected embedded ID can proceed to replacement. Step 2.2 clears both stale staging names when an update is needed. These protections require a trusted installation directory and stable paths; staging names alone are not a security boundary.
+
+[SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs) performs basic pathname checks for directories, devices, and links/reparse points before opening files with `FileStream`. These checks are not atomic with subsequent operations. Directory handles are not pinned, ownership and hard-link counts are not inspected, and hostile concurrent path substitution is outside this model. The update locks coordinate participating dotnetup processes, not arbitrary filesystem writers.
 
 The state of the file system after step 2.3:
 
@@ -332,7 +336,7 @@ Cleanup checks at most 32 directory entries, accepts only transaction-GUID backu
 
 **The canonical path may be briefly unavailable during step 2.4.** Windows measurements observed file-not-found during `File.Replace`. The [implementation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) uses one forward replacement call instead of deliberately splitting it into moves, but neither that code nor the [ReplaceFileW contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#return-value) guarantees gapless concurrent opens. Measurement timing is not a platform guarantee.
 
-Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem `renameat` provides atomic namespace replacement on supported local filesystems, not power-loss durability; macOS behavior remains unverified in this implementation handoff.
+Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem moves use the runtime's rename behavior on supported local filesystems, not a power-loss-durable transaction; macOS behavior remains unverified in this implementation handoff.
 
 Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only when its ownership and canonical-build checks permit it.
 
@@ -358,16 +362,16 @@ Linux permits the pathname of a running executable to be replaced while the proc
 
 Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replacement, and `D/dotnetup.old.<t>` the backup.
 
-`P` stages and validates `D/dotnetup.new` per step 2.3, sets the expected executable mode, and flushes `D/dotnetup.new` to disk. `P` refuses to update through an unexpected symbolic link and operates only on the canonical, dotnetup-owned install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --build-identity` per step 2.6; otherwise `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
+`P` stages and validates `D/dotnetup.new` per step 2.3, preserves the installed executable's Unix mode, and flushes `D/dotnetup.new` to disk. `P` rejects unexpected symbolic links observed during pathname validation and operates on the canonical install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --build-identity` per step 2.6; otherwise `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
 
-The Unix forward switch uses `renameat` in a pinned directory, not a managed move that could fall back to copy/delete. Its same-filesystem namespace atomicity is distinct from the Windows `File.Replace` behavior above.
+The Unix forward switch uses the same managed `File.CreateHardLink` and `File.Move` APIs available to the rest of the installer. No dotnetup-specific `libc` imports or platform-specific native metadata layouts are needed.
 
 A same-directory hard link preserves the old inode before replacement. Both the backup and the staged path must be on the same mounted filesystem as the installed executable.
-The implemented operations are [SelfUpdateFile.CreateBackupUnix and MoveUnix](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs), using `linkat` and `renameat` against the pinned directory. Rollback verifies the backup and any occupied canonical identity before restoring it.
+The implemented operations are in [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs). Rollback verifies the backup and any occupied canonical identity before restoring it with `File.Move(backupPath, installedPath, overwrite: true)`.
 
 On a supported local Linux filesystem, new openers observe either the complete old inode or the complete new inode, while already-running processes continue using the old inode. The implementation flushes the staged file but does not perform a containing-directory durability sync or claim persistence across power loss.
 
-Cross-filesystem `File.Move` may degrade to copy/delete behavior which is why it is avoided.
+Cross-filesystem `File.Move` may degrade to copy/delete behavior. Keeping all transaction files as siblings in a stable directory avoids that scenario; this is a layout requirement, not a custom native rename guarantee.
 
 The rollback move restores the old executable and its build ID. Step 1.4 permits an `N` loaded from that build to proceed and rejects or forwards one loaded from the rejected build, exactly as on Windows.
 
@@ -385,7 +389,7 @@ The current diagnostic helper returns no holder details on Unix. It does not par
 
 ## macOS:
 
-The macOS implementation selects the same `linkat`/`renameat` flow with platform-specific file flags and metadata handling in [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs). It uses the same embedded build-ID reader and runtime file-sharing locks. macOS execution, APFS behavior, code-signing, and quarantine interactions remain unverified; Linux results are not proof of macOS behavior.
+The macOS implementation selects the same managed hard-link/move flow in [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs). It uses the same embedded build-ID reader and runtime file-sharing locks, and preserves the installed Unix mode. macOS execution, APFS behavior, code-signing, and quarantine interactions remain unverified; Linux results are not proof of macOS behavior.
 
 # Update As a Version Swap Mechanism
 
@@ -435,17 +439,18 @@ sidecar. Their availability at the public daily target is not asserted here.
 | [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs), [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) | Runtime sharing leases, cumulative contention accounting and bounded backoff, ordered acquisition with separate budgets, and best-effort Windows holder reporting. |
 | [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs), [SelfUpdateDownloadProgress](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateDownloadProgress.cs), [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) | Host eligibility, daily resolution, progress/warning output, transaction sequencing, and verification-failure recovery. |
 | [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs), [ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs) | Pin release metadata, enforce unsigned policy, validate network/cache bytes, and commit the download to staging. |
-| [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs), [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs), [SelfUpdateDirectory](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDirectory.cs) | Sibling paths, ownership/regular-file checks, no-follow opens, and directory handle lifetime. |
+| [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs), [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs) | Sibling paths, basic pathname checks, and managed file opens using ordinary runtime permissions. |
 | [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs), [SelfUpdateReplacementState](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacementState.cs), [SelfUpdateVerifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) | Flushed same-volume replacement, identity-bound recovery, and bounded canonical execution verification with drained pipes. |
 | [SelfUpdateCleanup](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs), [identity tooling](../../../../src/Installer/BuildIdentity/README.md) | Conservative aged-backup deletion and the shared build/runtime identity contract. |
 
 ### Environment and Validation Boundaries
 
 - Use a published NativeAOT executable, not the managed library or an ordinary
-    managed apphost. The install location must pass ownership and writable-permission
-    checks, contain no unexpected links/reparse points, and support same-filesystem
-    replacement and working runtime locks. Broadly writable shared temporary
-    directories can fail these checks; see [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs).
+    managed apphost. The caller needs filesystem permission to replace files in the
+    installation directory. Keep that directory trusted and stable, without unexpected
+    links/reparse points, and use same-filesystem replacement and working runtime locks.
+    Self-update relies on ordinary runtime permission enforcement rather than a custom
+    ownership policy; see [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs).
 - Native publishing requires the target platform's linker and SDK/development
     libraries. The Windows handoff resolved the missing libraries using task-local
     official Windows SDK libraries and produced two native versions; native linking

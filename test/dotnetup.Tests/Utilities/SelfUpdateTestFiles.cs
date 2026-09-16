@@ -4,8 +4,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.NET.TestFramework;
@@ -27,15 +25,6 @@ internal sealed class SelfUpdateTestFiles : IDisposable
             : Directory.CreateTempSubdirectory("selfupdate-test-");
         Paths = new SelfUpdatePaths(Path.Combine(_directory.FullName, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
         BackupPath = Paths.CreateBackupPath();
-        if (OperatingSystem.IsWindows())
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            var security = new DirectorySecurity();
-            security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-            security.AddAccessRule(new FileSystemAccessRule(identity.User!, FileSystemRights.FullControl,
-                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
-            _directory.SetAccessControl(security);
-        }
 
         if (executable)
         {
@@ -50,17 +39,6 @@ internal sealed class SelfUpdateTestFiles : IDisposable
             WriteIdentity(Paths.InstalledPath, OriginalIdentity, append: true);
             WriteIdentity(Paths.StagedPath, ReplacementIdentity, append: true);
             File.WriteAllText(Paths.InstalledPath + ".mode", mode);
-            if (OperatingSystem.IsWindows())
-            {
-                using var identity = WindowsIdentity.GetCurrent();
-                foreach (var file in _directory.EnumerateFiles())
-                {
-                    var security = new FileSecurity();
-                    security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-                    security.AddAccessRule(new FileSystemAccessRule(identity.User!, FileSystemRights.FullControl, AccessControlType.Allow));
-                    file.SetAccessControl(security);
-                }
-            }
         }
         else
         {

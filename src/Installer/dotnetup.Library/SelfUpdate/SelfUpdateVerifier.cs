@@ -29,7 +29,6 @@ internal static class SelfUpdateVerifier
             }
 
             var paths = new SelfUpdatePaths(installedPath);
-            using var directory = SelfUpdateFile.PinDirectory(paths.DirectoryPath);
             paths.Validate();
             VerifyAsync(paths.InstalledPath, expectedIdentity, timeout).GetAwaiter().GetResult();
         }

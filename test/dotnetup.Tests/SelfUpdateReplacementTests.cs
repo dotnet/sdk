@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.IO.Compression;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
@@ -118,15 +122,16 @@ public class SelfUpdateReplacementTests : SdkTest
     }
 
     [TestMethod]
-    public void HardLinkedStageCannotMutateAnotherArtifact()
+    public void HardLinkedStagePreservesLinkedFileContents()
     {
         using var files = new SelfUpdateTestFiles();
-        File.Delete(files.Paths.StagedPath);
-        File.CreateHardLink(files.Paths.StagedPath, files.Paths.InstalledPath);
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
-        Assert.IsFalse(File.Exists(files.BackupPath));
+        var linkedPath = Path.Combine(files.Paths.DirectoryPath, "linked-executable");
+        var replacementBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        File.CreateHardLink(linkedPath, files.Paths.StagedPath);
+        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        Assert.AreSequenceEqual(replacementBytes, File.ReadAllBytes(linkedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
     }
 
     [TestMethod]
@@ -244,27 +249,44 @@ public class SelfUpdateReplacementTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void WindowsDirectoryLeasePreventsParentReplacement()
+    [SupportedOSPlatform("windows")]
+    public void WindowsReplacementPreservesNormalInheritedPermissions()
     {
         using var files = new SelfUpdateTestFiles();
-        var movedPath = files.Paths.DirectoryPath + "-moved";
-        try
+        var directory = new DirectoryInfo(files.Paths.DirectoryPath);
+        var permissions = directory.GetAccessControl();
+        permissions.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
+            FileSystemRights.Modify, InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+            PropagationFlags.None, AccessControlType.Allow));
+        directory.SetAccessControl(permissions);
+        var originalPermissions = new FileInfo(files.Paths.InstalledPath).GetAccessControl()
+            .GetSecurityDescriptorSddlForm(AccessControlSections.Access);
+        var directoryPermissions = directory.GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access);
+        using var archiveBytes = new MemoryStream();
+        using (var archive = new ZipArchive(archiveBytes, ZipArchiveMode.Create, leaveOpen: true))
         {
-            using (var lease = SelfUpdateFile.PinDirectory(files.Paths.DirectoryPath))
-            {
-                Assert.ThrowsExactly<IOException>(() => Directory.Move(files.Paths.DirectoryPath, movedPath));
-                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-            }
+            using var content = archive.CreateEntry("sdk-file").Open();
+            content.WriteByte(1);
+        }
 
-            Directory.Move(files.Paths.DirectoryPath, movedPath);
-        }
-        finally
+        archiveBytes.Position = 0;
+        var extractedPath = Path.Combine(files.Paths.DirectoryPath, "sdk-file");
+        using (var archive = new ZipArchive(archiveBytes, ZipArchiveMode.Read))
         {
-            if (Directory.Exists(movedPath))
-            {
-                Directory.Move(movedPath, files.Paths.DirectoryPath);
-            }
+            archive.GetEntry("sdk-file")!.ExtractToFile(extractedPath);
         }
+
+        Assert.AreEqual(new FileInfo(extractedPath).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access),
+            new FileInfo(files.Paths.StagedPath).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+
+        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+
+        Assert.AreEqual(originalPermissions, new FileInfo(files.Paths.InstalledPath).GetAccessControl()
+            .GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+        Assert.AreEqual(directoryPermissions, directory.GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        Assert.AreEqual(originalPermissions, new FileInfo(files.Paths.InstalledPath).GetAccessControl()
+            .GetSecurityDescriptorSddlForm(AccessControlSections.Access));
     }
 
     [TestMethod]

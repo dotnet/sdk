@@ -25,7 +25,6 @@ internal static class SelfUpdateReplacement
         SelfUpdateReplacementState? transaction = null;
         try
         {
-            using var directory = SelfUpdateFile.PinDirectory(paths.DirectoryPath);
             paths.Validate();
             paths.ValidateBackupPath(backupPath);
             SelfUpdateFile.RequireAbsent(backupPath);
@@ -46,8 +45,8 @@ internal static class SelfUpdateReplacement
             }
             else
             {
-                SelfUpdateFile.CreateBackupUnix(directory, paths.InstalledPath, backupPath);
-                SelfUpdateFile.MoveUnix(directory, paths.StagedPath, paths.InstalledPath);
+                File.CreateHardLink(backupPath, paths.InstalledPath);
+                File.Move(paths.StagedPath, paths.InstalledPath, overwrite: true);
             }
         }
         catch (Exception exception) when (IsFileFailure(exception))
@@ -79,7 +78,6 @@ internal static class SelfUpdateReplacement
         ArgumentNullException.ThrowIfNull(paths);
         try
         {
-            using var directory = SelfUpdateFile.PinDirectory(paths.DirectoryPath);
             paths.ValidateLocation();
             paths.ValidateBackupPath(backupPath);
             RequireIdentity(backupPath, originalIdentity);
@@ -113,7 +111,7 @@ internal static class SelfUpdateReplacement
             }
             else
             {
-                SelfUpdateFile.MoveUnix(directory, backupPath, paths.InstalledPath);
+                File.Move(backupPath, paths.InstalledPath, overwrite: true);
             }
 
             RequireIdentity(paths.InstalledPath, originalIdentity);

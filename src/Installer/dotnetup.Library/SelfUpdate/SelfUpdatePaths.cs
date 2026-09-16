@@ -47,9 +47,7 @@ internal sealed class SelfUpdatePaths
             throw new IOException("Self-update requires the canonical dotnetup executable name.");
         }
 
-        using var directory = SelfUpdateFile.PinDirectory(DirectoryPath);
         ValidateDirectory(DirectoryPath);
-        SelfUpdateFile.ValidateOwnedDirectory(DirectoryPath);
     }
 
     internal void ValidateBackupPath(string backupPath)

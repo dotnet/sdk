@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -119,6 +120,51 @@ public class SelfUpdateWorkflowTests : SdkTest
         Assert.HasCount(1, retainedBackups);
         Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(retainedBackups[0]));
         AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    [UnsupportedOSPlatform("windows")]
+    [DataRow(448, false)]
+    [DataRow(448, true)]
+    [DataRow(493, false)]
+    [DataRow(493, true)]
+    [DataRow(509, false)]
+    [DataRow(509, true)]
+    public void UnixUpdateAndRollbackPreserveInstalledExecutableMode(int mode, bool failVerification)
+    {
+        using var files = new SelfUpdateTestFiles();
+        var originalMode = (UnixFileMode)mode;
+        File.SetUnixFileMode(files.Paths.InstalledPath, originalMode);
+        var directoryMode = File.GetUnixFileMode(files.Paths.DirectoryPath);
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
+            () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
+            (release, destination) => SelfUpdateTestFiles.WriteIdentity(destination, release.BuildId!), CreateImmediateWorkflowCoordinator())
+        {
+            VerifyAction = (path, identity) =>
+            {
+                Assert.AreEqual(originalMode, File.GetUnixFileMode(path));
+                if (failVerification)
+                {
+                    throw new IOException("Injected verification failure.");
+                }
+            },
+        };
+
+        if (failVerification)
+        {
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
+            Assert.AreEqual(DotnetInstallErrorCode.DotnetupVerificationFailed, exception.ErrorCode);
+        }
+        else
+        {
+            Assert.IsNotNull(workflow.Execute());
+        }
+
+        Assert.AreEqual(originalMode, File.GetUnixFileMode(files.Paths.InstalledPath));
+        Assert.AreEqual(directoryMode, File.GetUnixFileMode(files.Paths.DirectoryPath));
+        Assert.AreEqual(failVerification ? SelfUpdateTestFiles.OriginalIdentity : SelfUpdateTestFiles.ReplacementIdentity,
+            SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
     }
 
     [TestMethod]

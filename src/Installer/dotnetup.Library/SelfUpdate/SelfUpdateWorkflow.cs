@@ -54,7 +54,6 @@ internal class SelfUpdateWorkflow
                 locks = null;
             }
 
-            using var directory = SelfUpdateFile.PinDirectory(_paths.DirectoryPath);
             _paths.Validate();
             var originalIdentity = SelfUpdatePaths.ReadIdentity(_paths.InstalledPath);
             if (originalIdentity == release.BuildId)
@@ -115,8 +114,7 @@ internal class SelfUpdateWorkflow
 
         if (!OperatingSystem.IsWindows())
         {
-            File.SetUnixFileMode(_paths.StagedPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            File.SetUnixFileMode(_paths.StagedPath, File.GetUnixFileMode(_paths.InstalledPath));
         }
     }
 
