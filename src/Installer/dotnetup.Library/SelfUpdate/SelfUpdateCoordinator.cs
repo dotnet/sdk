@@ -11,6 +11,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// </summary>
 internal sealed class SelfUpdateCoordinator
 {
+    private static readonly TimeSpan s_defaultUpdateTimeout = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan s_defaultActivityTimeout = TimeSpan.FromSeconds(2);
     private readonly LockFileRetryPolicy _updateRetryPolicy;
     private readonly LockFileRetryPolicy _activityRetryPolicy;
 
@@ -18,8 +20,8 @@ internal sealed class SelfUpdateCoordinator
         LockFileRetryPolicy? updateRetryPolicy = null,
         LockFileRetryPolicy? activityRetryPolicy = null)
     {
-        _updateRetryPolicy = updateRetryPolicy ?? new LockFileRetryPolicy(TimeSpan.FromMinutes(2));
-        _activityRetryPolicy = activityRetryPolicy ?? new LockFileRetryPolicy(TimeSpan.FromSeconds(2));
+        _updateRetryPolicy = updateRetryPolicy ?? new LockFileRetryPolicy(s_defaultUpdateTimeout);
+        _activityRetryPolicy = activityRetryPolicy ?? new LockFileRetryPolicy(s_defaultActivityTimeout);
     }
 
     public SelfUpdateLockLease Acquire(string updateLockPath, string activityLockPath, CancellationToken cancellationToken = default)
@@ -39,7 +41,7 @@ internal sealed class SelfUpdateCoordinator
             var updateLock = ScopedLockFile.TryAcquireExclusive(updateLockPath);
             if (updateLock is null)
             {
-                WaitAfterContention(_updateRetryPolicy, updateStart, ref updateContention, updateAttempt++,
+                WaitForRetry(_updateRetryPolicy, updateStart, ref updateContention, updateAttempt++,
                     SelfUpdateLockKind.Update, updateLockPath, cancellationToken);
                 continue;
             }
@@ -72,12 +74,12 @@ internal sealed class SelfUpdateCoordinator
                 }
             }
 
-            WaitAfterContention(_activityRetryPolicy, activityStart, ref activityContention, activityAttempt++,
+            WaitForRetry(_activityRetryPolicy, activityStart, ref activityContention, activityAttempt++,
                 SelfUpdateLockKind.Activity, activityLockPath, cancellationToken);
         }
     }
 
-    private static void WaitAfterContention(
+    private static void WaitForRetry(
         LockFileRetryPolicy policy,
         long attemptStart,
         ref TimeSpan contention,
@@ -86,18 +88,11 @@ internal sealed class SelfUpdateCoordinator
         string lockPath,
         CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        contention += policy.GetElapsedTime(attemptStart);
-        if (contention >= policy.Timeout)
+        try
         {
-            throw new SelfUpdateLockTimeoutException(lockKind, lockPath);
+            policy.WaitAfterContention(attemptStart, ref contention, attempt, cancellationToken);
         }
-
-        var waitStart = policy.GetTimestamp();
-        policy.WaitBeforeRetry(attempt, policy.Timeout - contention, cancellationToken);
-        contention += policy.GetElapsedTime(waitStart);
-        cancellationToken.ThrowIfCancellationRequested();
-        if (contention >= policy.Timeout)
+        catch (TimeoutException)
         {
             throw new SelfUpdateLockTimeoutException(lockKind, lockPath);
         }

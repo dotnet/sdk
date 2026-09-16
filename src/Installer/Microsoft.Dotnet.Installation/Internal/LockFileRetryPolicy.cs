@@ -11,6 +11,11 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// </summary>
 internal class LockFileRetryPolicy
 {
+    private const int InitialDelayMilliseconds = 25;
+    private const int MaximumDelayMilliseconds = 250;
+    private const int MaximumBackoffExponent = 4;
+    private const double MinimumJitterFactor = 0.5;
+
     public LockFileRetryPolicy(TimeSpan timeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(timeout, TimeSpan.Zero);
@@ -23,11 +28,36 @@ internal class LockFileRetryPolicy
 
     public virtual TimeSpan GetElapsedTime(long startingTimestamp) => Stopwatch.GetElapsedTime(startingTimestamp);
 
+    public void WaitAfterContention(
+        long attemptStart,
+        ref TimeSpan contention,
+        int attempt,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        contention += GetElapsedTime(attemptStart);
+        if (contention >= Timeout)
+        {
+            throw new TimeoutException();
+        }
+
+        var waitStart = GetTimestamp();
+        WaitBeforeRetry(attempt, Timeout - contention, cancellationToken);
+        contention += GetElapsedTime(waitStart);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (contention >= Timeout)
+        {
+            throw new TimeoutException();
+        }
+    }
+
     public virtual void WaitBeforeRetry(int attempt, TimeSpan remaining, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var maximumMilliseconds = Math.Min(250, 25 * (1 << Math.Clamp(attempt, 0, 4)));
-        var milliseconds = maximumMilliseconds * (0.5 + (Random.Shared.NextDouble() * 0.5));
+        var maximumMilliseconds = Math.Min(MaximumDelayMilliseconds,
+            InitialDelayMilliseconds * (1 << Math.Clamp(attempt, 0, MaximumBackoffExponent)));
+        var milliseconds = maximumMilliseconds *
+            (MinimumJitterFactor + (Random.Shared.NextDouble() * (1 - MinimumJitterFactor)));
         var delay = TimeSpan.FromMilliseconds(Math.Min(milliseconds, remaining.TotalMilliseconds));
         if (cancellationToken.WaitHandle.WaitOne(delay))
         {
