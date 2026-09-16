@@ -1015,6 +1015,124 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
+        [DataRow("params string[] values")]
+        [DataRow("string value = \"different\"")]
+        [DataRow("string value = null")]
+        public async Task OmittedDefaultValue_NoDiagnostic_CS(string parameter)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type, string value = "fallback") {}
+                    void M<T>({{parameter}}) {}
+                    void Test() => M(typeof(C));
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("float", "0.0f", "-0.0f")]
+        [DataRow("double", "0.0", "-0.0")]
+        [DataRow("decimal", "1.0m", "1.00m")]
+        public async Task OmittedDefaultRepresentation_NoDiagnostic_CS(string type, string originalDefault, string candidateDefault)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type, {{type}} value = {{originalDefault}}) {}
+                    void M<T>({{type}} value = {{candidateDefault}}) {}
+                    void Test() => M(typeof(C));
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("\"fallback\"", "\"fallback\"", "")]
+        [DataRow("null", "null", "")]
+        [DataRow("\"fallback\"", "\"different\"", ", \"supplied\"")]
+        public async Task OptionalDefaultValueIsPreserved_OffersFixer_CS(string originalDefault, string defaultValue, string argument)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type, string value = {{originalDefault}}) {}
+                    void M<T>(string value = {{defaultValue}}) {}
+                    void Test() => [|M(typeof(C){{argument}})|];
+                }
+                """;
+            string fixedSource = $$"""
+                class C
+                {
+                    void M(System.Type type, string value = {{originalDefault}}) {}
+                    void M<T>(string value = {{defaultValue}}) {}
+                    void Test() => M<C>({{argument.TrimStart(',', ' ')}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task SeparatorTriviaIsPreserved_OffersFixer_CS()
+        {
+            string source = """
+                class C
+                {
+                    void M(System.Type type, params string[] args) {}
+                    void M<T>(params string[] args) {}
+                    void Test()
+                    {
+                        [|M(typeof(C), "hello", // explanation
+                            "world")|];
+                    }
+                }
+                """;
+            string fixedSource = """
+                class C
+                {
+                    void M(System.Type type, params string[] args) {}
+                    void M<T>(params string[] args) {}
+                    void Test()
+                    {
+                        M<C>("hello", // explanation
+                            "world");
+                    }
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("/* selector */ typeof(C), \"hello\"", "/* selector */  \"hello\"")]
+        [DataRow("value: \"hello\", type: typeof(C) /* selector */", "value: \"hello\"  /* selector */")]
+        public async Task SelectorTriviaIsPreserved_OffersFixer_CS(string arguments, string remainingArguments)
+        {
+            string source = $$"""
+                class C
+                {
+                    void M(System.Type type, string value) {}
+                    void M<T>(string value) {}
+                    void Test() => [|M({{arguments}})|];
+                }
+                """;
+            string fixedSource = $$"""
+                class C
+                {
+                    void M(System.Type type, string value) {}
+                    void M<T>(string value) {}
+                    void Test() => M<C>({{remainingArguments}});
+                }
+                """;
+
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
         public async Task StaticMethods_OffersFixer_CS()
         {
             string source = """
@@ -2474,6 +2592,126 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 
                     Sub Test()
                         M(Of C)(0, 5)
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        [DataRow("ParamArray values As String()")]
+        [DataRow("Optional value As String = \"different\"")]
+        [DataRow("Optional value As String = Nothing")]
+        public async Task OmittedDefaultValue_NoDiagnostic_VB(string parameter)
+        {
+            string source = $$"""
+                Class C
+                    Sub M(type As System.Type, Optional value As String = "fallback") : End Sub
+                    Sub M(Of T)({{parameter}}) : End Sub
+                    Sub Test()
+                        M(GetType(C))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("Single", "0.0F", "-0.0F")]
+        [DataRow("Double", "0.0R", "-0.0R")]
+        [DataRow("Decimal", "1.0D", "1.00D")]
+        public async Task OmittedDefaultRepresentation_NoDiagnostic_VB(string type, string originalDefault, string candidateDefault)
+        {
+            string source = $$"""
+                Class C
+                    Sub M(type As System.Type, Optional value As {{type}} = {{originalDefault}}) : End Sub
+                    Sub M(Of T)(Optional value As {{type}} = {{candidateDefault}}) : End Sub
+                    Sub Test()
+                        M(GetType(C))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        [DataRow("\"fallback\"", "\"fallback\"", "")]
+        [DataRow("Nothing", "Nothing", "")]
+        [DataRow("\"fallback\"", "\"different\"", ", \"supplied\"")]
+        public async Task OptionalDefaultValueIsPreserved_OffersFixer_VB(string originalDefault, string defaultValue, string argument)
+        {
+            string source = $$"""
+                Class C
+                    Sub M(type As System.Type, Optional value As String = {{originalDefault}}) : End Sub
+                    Sub M(Of T)(Optional value As String = {{defaultValue}}) : End Sub
+                    Sub Test()
+                        [|M(GetType(C){{argument}})|]
+                    End Sub
+                End Class
+                """;
+            string fixedSource = $$"""
+                Class C
+                    Sub M(type As System.Type, Optional value As String = {{originalDefault}}) : End Sub
+                    Sub M(Of T)(Optional value As String = {{defaultValue}}) : End Sub
+                    Sub Test()
+                        M(Of C)({{argument.TrimStart(',', ' ')}})
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task SeparatorTriviaIsPreserved_OffersFixer_VB()
+        {
+            string source = """
+                Class C
+                    Sub M(type As System.Type, ParamArray args As String()) : End Sub
+                    Sub M(Of T)(ParamArray args As String()) : End Sub
+                    Sub Test()
+                        [|M(GetType(C), "hello", ' explanation
+                            "world")|]
+                    End Sub
+                End Class
+                """;
+            string fixedSource = """
+                Class C
+                    Sub M(type As System.Type, ParamArray args As String()) : End Sub
+                    Sub M(Of T)(ParamArray args As String()) : End Sub
+                    Sub Test()
+                        M(Of C)("hello", ' explanation
+                            "world")
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task SelectorTriviaIsPreserved_OffersFixer_VB()
+        {
+            string source = """
+                Class C
+                    Sub M(type As System.Type, value As String) : End Sub
+                    Sub M(Of T)(value As String) : End Sub
+                    Sub Test()
+                        [|M(GetType(C), ' selector
+                            "hello")|]
+                    End Sub
+                End Class
+                """;
+            string fixedSource = """
+                Class C
+                    Sub M(type As System.Type, value As String) : End Sub
+                    Sub M(Of T)(value As String) : End Sub
+                    Sub Test()
+                        M(Of C)( ' selector
+                            "hello")
                     End Sub
                 End Class
                 """;
