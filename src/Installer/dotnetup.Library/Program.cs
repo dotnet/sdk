@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -18,6 +20,8 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        var executablePath = DotnetupProcessInfo.ExecutablePath;
+        var loadedIdentity = DotnetupProcessInfo.BuildIdentity;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
@@ -32,31 +36,44 @@ public class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
-        // Start root activity for the entire process. Disposed explicitly in
-        // the finally block below (no `using` here) so the completion event is
-        // emitted before FlushTelemetry shuts down the providers.
-        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
-
         // Capture current console encoding so it can be restored on exit.
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
         using AutomaticEncodingRestorer encodingRestorer = new();
         ConfigureConsoleEncoding();
         ConfigureConsoleOutput();
 
-        // Show first-run telemetry notice if needed
-        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+        using var invocation = !RuntimeFeature.IsDynamicCodeSupported && executablePath is not null
+            ? new SelfUpdateInvocation(executablePath, loadedIdentity)
+            : null;
+        return InvokeCommand(args, invocation);
+    }
 
+    private static int InvokeCommand(string[] args, SelfUpdateInvocation? invocation)
+    {
+        TrackedOperation? rootOperation = null;
         int processExitCode = 1;
+        bool identityInvocation = false;
 
         try
         {
-            processExitCode = InvokeParser(args);
+            var parseResult = Parser.Parse(args);
+            identityInvocation = ReferenceEquals(parseResult.Action, Parser.BuildIdentityOption.Action);
+            if (invocation is null && !identityInvocation)
+            {
+                rootOperation = StartTelemetry(null);
+            }
+
+            processExitCode = Parser.Invoke(parseResult);
 
             return processExitCode;
         }
         catch (Exception ex)
         {
-            DotnetupTelemetry.Instance.RecordException(rootOp, ex);
+            if (!identityInvocation)
+            {
+                rootOperation ??= StartTelemetry(invocation);
+                DotnetupTelemetry.Instance.RecordException(rootOperation, ex);
+            }
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -67,10 +84,27 @@ public class DotnetupProgram
         }
         finally
         {
-            TagRootForExitCode(rootOp, processExitCode);
-            rootOp.Dispose(); // emit root event before flush
-            FlushTelemetry(processExitCode);
+            if (!identityInvocation)
+            {
+                rootOperation ??= StartTelemetry(invocation);
+                TagRootForExitCode(rootOperation, processExitCode);
+                rootOperation.Dispose();
+                FlushTelemetry(processExitCode);
+            }
         }
+    }
+
+    private static TrackedOperation StartTelemetry(SelfUpdateInvocation? invocation)
+    {
+        if (invocation is not null)
+        {
+            invocation.StartTelemetry();
+            return invocation.RootOperation!;
+        }
+
+        var operation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+        return operation;
     }
 
     /// <summary>
@@ -92,11 +126,6 @@ public class DotnetupProgram
 
         rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
         rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-    }
-
-    private static int InvokeParser(string[] args)
-    {
-        return Parser.Invoke(args);
     }
 
     private static void FlushTelemetry(int exitCode)

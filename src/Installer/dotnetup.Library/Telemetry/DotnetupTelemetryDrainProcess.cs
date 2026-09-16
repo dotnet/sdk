@@ -64,7 +64,7 @@ internal static class DotnetupTelemetryDrainProcess
     {
         try
         {
-            var executablePath = Environment.ProcessPath;
+            var executablePath = DotnetupProcessInfo.ExecutablePath;
 
             // The native executable may have been renamed after download. Do not relaunch a
             // framework-dependent `dotnet exec` host because it would also need the managed DLL.

@@ -6,6 +6,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -19,23 +20,27 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
-    private readonly TrackedOperation _operation;
+    private readonly string _commandName;
+    private TrackedOperation? _trackedOperation;
+    private TrackedOperation _operation => _trackedOperation ??= DotnetupTelemetry.Instance.StartTrackedCommand(_commandName);
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult, string commandName)
     {
         ParseResult = parseResult;
-        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
+        _commandName = commandName;
     }
+
+    protected virtual bool SafeDuringSelfUpdate => false;
 
     public int Execute()
     {
         _exitCode = 1;
 
-        RecordOptionUsage();
-
         try
         {
+            SelfUpdateInvocation.Current?.EnterCommand(SafeDuringSelfUpdate);
+            RecordOptionUsage();
             // Default success exit code; ExecuteCore can overwrite via
             // SetExitCode() (e.g. DotnetCommand forwarding a child process
             // exit code) or throw to signal failure (which leaves _exitCode
@@ -47,6 +52,7 @@ public abstract class CommandBase
         catch (Exception ex)
         {
             _exitCode = 1;
+            SelfUpdateInvocation.Current?.StartTelemetry();
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG

@@ -220,7 +220,7 @@ internal static class ShellProviderHelpers
 
     internal static string GetDotnetupExecutablePathOrThrow()
     {
-        return Environment.ProcessPath
+        return DotnetupProcessInfo.ExecutablePath
             ?? throw new DotnetInstallException(
                 DotnetInstallErrorCode.ContextResolutionFailed,
                 "Unable to determine the full path to the running dotnetup executable.");
