@@ -5,8 +5,8 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Rejects busy or stale invocations before installation state can be accessed.</summary>
-internal static class SelfUpdateGate
+/// <summary>Rejects busy or stale non-safe invocations before installation state can be accessed.</summary>
+internal static class NonSafeCommandGate
 {
     public static ScopedLockFile Enter(SelfUpdatePaths paths, string loadedIdentity)
     {
