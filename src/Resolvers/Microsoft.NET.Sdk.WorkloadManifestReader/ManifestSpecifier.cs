@@ -13,6 +13,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 #if !NET
 namespace System.Runtime.CompilerServices
 {
-    class IsExternalInit { }
+    internal class IsExternalInit { }
 }
 #endif
