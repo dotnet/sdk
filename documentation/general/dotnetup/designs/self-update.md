@@ -292,7 +292,9 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 **2.7 — `P` reports success.** `P` prints the installed version and the existing [dotnetup installation link](https://aka.ms/dotnet/dotnetup) for installing older versions. Acquired locks remain held through root telemetry completion and flush, then are released as `Main` returns.
 
-**2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` kills the verification child if it is still running and then restores the backup while still holding both locks:
+**2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` attempts to terminate the verification child if it is still running, then attempts to restore the backup while still holding both locks. A failed kill or termination wait does not suppress rollback. [SelfUpdateVerifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) preserves that failure in the exception chain, and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains it when reporting verification or rollback failure. Restoring the canonical path does not establish that the verification child exited; file sharing may permit rollback while it remains alive. The original updater process stays alive throughout recovery.
+
+[Workflow tests](../../../../test/dotnetup.Tests/SelfUpdateWorkflowTests.cs) inject a reported kill error or termination timeout through the existing verification hook and exercise real file rollback and lock retention. This tests the recovery policy without launching an unkillable process; it does not test an operating-system termination failure itself.
 
 Let `rejectedPath` be `D/dotnetup.exe.old.<t>.rejected`, a transaction-specific sibling path that must not already exist. When the canonical path exists, `P` first renames the rejected executable aside, then renames the original backup back to the canonical path:
 

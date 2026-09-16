@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -275,6 +276,57 @@ public class SelfUpdateWorkflowTests : SdkTest
             Assert.HasCount(1, rejected);
             Assert.AreSequenceEqual(replacementBytes, File.ReadAllBytes(rejected[0]));
             Assert.IsFalse(File.Exists(rejected[0][..^".rejected".Length]));
+        }
+
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ReportedVerificationChildTerminationFailureStillRollsBack(bool terminationTimedOut)
+    {
+        using var files = new SelfUpdateTestFiles();
+        var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
+        var replacementBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        var verificationFailure = new IOException("Injected verification timeout.");
+        Exception terminationFailure = terminationTimedOut
+            ? new OperationCanceledException("Injected termination wait timeout.")
+            : new Win32Exception(5, "Injected process termination failure.");
+        var failures = new AggregateException(verificationFailure, terminationFailure);
+        var reportedFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallFailed,
+            "Injected verifier failure.", new IOException("The verification child could not be terminated within five seconds.", failures));
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
+            () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
+            (download, path) => File.WriteAllBytes(path, replacementBytes), CreateImmediateWorkflowCoordinator())
+        {
+            VerifyAction = (path, identity) =>
+            {
+                AssertWorkflowLocksHeld(files.Paths);
+                Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(path));
+                throw reportedFailure;
+            },
+        };
+
+        IDisposable? retained = null;
+        try
+        {
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute(lease => retained = lease));
+
+            Assert.AreEqual(DotnetInstallErrorCode.DotnetupVerificationFailed, exception.ErrorCode);
+            Assert.AreSame(reportedFailure, exception.InnerException);
+            var preservedFailures = Assert.IsInstanceOfType<AggregateException>(exception.InnerException!.InnerException!.InnerException);
+            Assert.AreSame(verificationFailure, preservedFailures.InnerExceptions[0]);
+            Assert.AreSame(terminationFailure, preservedFailures.InnerExceptions[1]);
+            Assert.AreEqual(1, workflow.VerificationCount);
+            Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
+            Assert.IsFalse(File.Exists(files.Paths.StagedPath));
+            Assert.IsNotNull(retained);
+            AssertWorkflowLocksHeld(files.Paths);
+        }
+        finally
+        {
+            retained?.Dispose();
         }
 
         AssertWorkflowLocksAvailable(files.Paths);
