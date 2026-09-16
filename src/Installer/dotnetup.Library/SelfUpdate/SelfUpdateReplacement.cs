@@ -15,8 +15,12 @@ internal static class SelfUpdateReplacement
     private static readonly ConditionalWeakTable<SelfUpdatePaths, SelfUpdateReplacementState> s_transactions = new();
 
     public static void Replace(SelfUpdatePaths paths, string backupPath)
+        => Replace(paths, backupPath, static (source, destination, backup) => File.Replace(source, destination, backup, ignoreMetadataErrors: false));
+
+    internal static void Replace(SelfUpdatePaths paths, string backupPath, Action<string, string, string> replaceFile)
     {
         ArgumentNullException.ThrowIfNull(paths);
+        ArgumentNullException.ThrowIfNull(replaceFile);
         var mutationStarted = false;
         SelfUpdateReplacementState? transaction = null;
         try
@@ -38,7 +42,7 @@ internal static class SelfUpdateReplacement
             mutationStarted = true;
             if (OperatingSystem.IsWindows())
             {
-                File.Replace(paths.StagedPath, paths.InstalledPath, backupPath, ignoreMetadataErrors: false);
+                replaceFile(paths.StagedPath, paths.InstalledPath, backupPath);
             }
             else
             {

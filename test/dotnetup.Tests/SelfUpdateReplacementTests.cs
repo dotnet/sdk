@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
@@ -275,6 +276,148 @@ public class SelfUpdateReplacementTests : SdkTest
         Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(87)]
+    [DataRow(1175)]
+    [DataRow(1176)]
+    [DataRow(1177)]
+    public void WindowsReplacementRecoversDocumentedFailureStates(int nativeError)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
+        var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        var failure = new IOException("Injected ReplaceFileW failure.", unchecked((int)0x80070000) | nativeError);
+        var replacementCalls = 0;
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+            (source, destination, backup) =>
+            {
+                replacementCalls++;
+                Assert.AreEqual(files.Paths.StagedPath, source);
+                Assert.AreEqual(files.Paths.InstalledPath, destination);
+                Assert.AreEqual(files.BackupPath, backup);
+                AssertReplacementLocksHeld(files.Paths);
+                if (nativeError == 1177)
+                {
+                    File.Move(destination, backup);
+                    File.SetAttributes(source, File.GetAttributes(backup));
+                    Assert.IsFalse(File.Exists(destination));
+                }
+
+                throw failure;
+            }));
+
+        Assert.AreEqual(1, replacementCalls);
+        Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
+        Assert.AreSame(failure, exception.InnerException);
+        Assert.AreEqual(unchecked((int)0x80070000) | nativeError, exception.InnerException!.HResult);
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
+        Assert.AreSequenceEqual(stagedBytes, File.ReadAllBytes(files.Paths.StagedPath));
+        Assert.IsFalse(File.Exists(files.BackupPath));
+        Assert.IsFalse(File.Exists(files.BackupPath + ".rejected"));
+        AssertReplacementLocksHeld(files.Paths);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WindowsReplacementExceptionAfterSwitchRollsBackKnownCandidate()
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
+        var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        var failure = new IOException("Injected failure after the canonical name switched.");
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+            (source, destination, backup) =>
+            {
+                File.Replace(source, destination, backup, ignoreMetadataErrors: false);
+                throw failure;
+            }));
+
+        Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
+        Assert.AreSame(failure, exception.InnerException);
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
+        Assert.AreSequenceEqual(stagedBytes, File.ReadAllBytes(files.BackupPath + ".rejected"));
+        Assert.IsFalse(File.Exists(files.BackupPath));
+        Assert.IsFalse(File.Exists(files.Paths.StagedPath));
+        AssertReplacementLocksHeld(files.Paths);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow("backup-locked")]
+    [DataRow("unknown-canonical")]
+    [DataRow("wrong-backup")]
+    public void WindowsPartialReplacementRecoveryFailurePreservesArtifacts(string obstruction)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
+        var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        var failure = new IOException("Injected partial replacement failure.", unchecked((int)0x80070499));
+        var unexpectedIdentity = new string('c', 64);
+        FileStream? blockedBackup = null;
+        try
+        {
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+                (source, destination, backup) =>
+                {
+                    File.Move(destination, backup);
+                    if (obstruction == "backup-locked")
+                    {
+                        blockedBackup = new FileStream(backup, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    }
+                    else
+                    {
+                        SelfUpdateTestFiles.WriteIdentity(obstruction == "unknown-canonical" ? destination : backup, unexpectedIdentity);
+                    }
+
+                    throw failure;
+                }));
+
+            Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
+            Assert.Contains("reinstall", exception.Message);
+            Assert.Contains(files.BackupPath, exception.Message);
+            var failures = Assert.IsInstanceOfType<AggregateException>(exception.InnerException);
+            Assert.HasCount(2, failures.InnerExceptions);
+            Assert.AreSame(failure, failures.InnerExceptions[0]);
+            Assert.IsInstanceOfType<DotnetInstallException>(failures.InnerExceptions[1]);
+            Assert.AreSequenceEqual(stagedBytes, File.ReadAllBytes(files.Paths.StagedPath));
+            Assert.AreEqual(obstruction == "unknown-canonical", File.Exists(files.Paths.InstalledPath));
+            if (obstruction == "unknown-canonical")
+            {
+                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+            }
+
+            if (obstruction == "wrong-backup")
+            {
+                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+            }
+            else
+            {
+                Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.BackupPath));
+            }
+
+            Assert.IsFalse(File.Exists(files.BackupPath + ".rejected"));
+            AssertReplacementLocksHeld(files.Paths);
+        }
+        finally
+        {
+            blockedBackup?.Dispose();
+        }
+    }
+
+    private static void AssertReplacementLocksHeld(SelfUpdatePaths paths)
+    {
+        using var update = ScopedLockFile.TryAcquireExclusive(paths.UpdateLockPath);
+        using var activity = ScopedLockFile.TryAcquireShared(paths.ActivityLockPath);
+        Assert.IsNull(update);
+        Assert.IsNull(activity);
     }
 
     [TestMethod]
