@@ -3,6 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
+#if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
 #if INTERNALIZE_SHARED_TYPES
     internal
 #else
@@ -53,4 +54,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         IWorkloadManifestProvider GetWorkloadManifestProvider();
     }
+#endif
 }

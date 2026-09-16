@@ -7,3 +7,23 @@ Microsoft.DotNet.TemplateLocator.TemplateLocator
 Microsoft.DotNet.TemplateLocator.TemplateLocator.GetDotnetSdkTemplatePackages(string? sdkVersion, string? dotnetRootPath, string? userProfileDir) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo!>!
 Microsoft.DotNet.TemplateLocator.TemplateLocator.TemplateLocator() -> void
 Microsoft.DotNet.TemplateLocator.TemplateLocator.TryGetDotnetSdkVersionUsedInVs(string! vsVersion, out string? sdkVersion) -> bool
+Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider
+Microsoft.NET.Sdk.WorkloadManifestReader.SdkDirectoryWorkloadManifestProvider
+Microsoft.NET.Sdk.WorkloadManifestReader.SdkDirectoryWorkloadManifestProvider.SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, string? userProfileDir, string? globalJsonPath) -> void
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId.WorkloadId() -> void
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId.WorkloadId(string! id) -> void
+override Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId.Equals(object? obj) -> bool
+override Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId.GetHashCode() -> int
+override Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId.ToString() -> string!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestInfo
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestInfo.Id.get -> string!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestInfo.Version.get -> string!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.GetAvailableWorkloads() -> System.Collections.Generic.IEnumerable<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.WorkloadInfo!>!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.GetExtendedWorkloads(System.Collections.Generic.IEnumerable<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId>! workloadIds) -> System.Collections.Generic.IEnumerable<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.WorkloadInfo!>!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.GetInstalledManifests() -> System.Collections.Generic.IEnumerable<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestInfo!>!
+static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.Create(Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider! manifestProvider, string! dotnetRootPath, string! sdkVersion, string? userProfileDir, System.Func<string!, string?>? getEnvironmentVariable = null) -> Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver!
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.WorkloadInfo
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.WorkloadInfo.Description.get -> string?
+Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver.WorkloadInfo.Id.get -> Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId

@@ -5,6 +5,13 @@ using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli;
 using Microsoft.NET.Sdk.Localization;
 using FXVersion = Microsoft.DotNet.MSBuildSdkResolver.FXVersion;
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+using WorkloadManifestProviderImplementation = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProviderImplementation;
+using WorkloadVersionInfo = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProviderImplementation.WorkloadVersionInfo;
+#else
+using WorkloadManifestProviderImplementation = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
+using WorkloadVersionInfo = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider.WorkloadVersionInfo;
+#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -12,17 +19,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// This very specifically exposes only the functionality needed right now by the MSBuild workload resolver
     /// and by the template engine. More general APIs will be added later.
     /// </remarks>
-#if INTERNALIZE_SHARED_TYPES
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#elif INTERNALIZE_SHARED_TYPES
     internal
 #else
     public
 #endif
-    class WorkloadResolver : IWorkloadResolver
+    class WorkloadResolver
+#if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        : IWorkloadResolver
+#endif
     {
         private readonly Dictionary<string, (WorkloadManifest manifest, WorkloadManifestInfo info)> _manifests = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<WorkloadId, (WorkloadDefinition workload, WorkloadManifest manifest)> _workloads = new();
         private readonly Dictionary<WorkloadPackId, (WorkloadPack pack, WorkloadManifest manifest)> _packs = new();
-        private IWorkloadManifestProvider _manifestProvider;
+        private WorkloadManifestProviderImplementation _manifestProvider;
         private string[] _currentRuntimeIdentifiers;
         private readonly WorkloadRootPath[] _dotnetRootPaths;
         private bool _initializedManifests = false;
@@ -32,6 +44,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir, Func<string, string?>? getEnvironmentVariable = null)
         {
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+            if (manifestProvider is not WorkloadManifestProviderImplementation manifestProviderImplementation)
+            {
+                throw new ArgumentException($"'{nameof(manifestProvider)}' is not a supported workload manifest provider.", nameof(manifestProvider));
+            }
+#else
+            WorkloadManifestProviderImplementation manifestProviderImplementation = manifestProvider;
+#endif
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
                 File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
@@ -53,9 +73,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = packRootEnvironmentVariable!.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
             }
 
-            return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);
+            return new WorkloadResolver(manifestProviderImplementation, workloadRootPaths, currentRuntimeIdentifiers);
         }
 
+#if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
         public static WorkloadResolver CreateForTests(IWorkloadManifestProvider manifestProvider, string dotNetRoot, bool userLocal = false, string? userProfileDir = null, string[]? currentRuntimeIdentifiers = null)
         {
             if (userLocal && userProfileDir is null)
@@ -74,11 +95,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
             return new WorkloadResolver(manifestProvider, dotNetRootPaths, currentRuntimeIdentifiers);
         }
+#endif
 
         /// <summary>
         /// Creates a resolver by composing all the manifests from the provider.
         /// </summary>
-        private WorkloadResolver(IWorkloadManifestProvider manifestProvider, WorkloadRootPath[] dotnetRootPaths, string[] currentRuntimeIdentifiers)
+        private WorkloadResolver(WorkloadManifestProviderImplementation manifestProvider, WorkloadRootPath[] dotnetRootPaths, string[] currentRuntimeIdentifiers)
             : this(dotnetRootPaths, currentRuntimeIdentifiers, manifestProvider.GetSdkFeatureBand())
         {
             _manifestProvider = manifestProvider;
@@ -104,7 +126,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _manifestProvider = new EmptyWorkloadManifestProvider(sdkFeatureBand);
         }
 
-        public void RefreshWorkloadManifests()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        void RefreshWorkloadManifests()
         {
             if (_manifestProvider == null)
             {
@@ -117,9 +144,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
         }
 
-        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadVersionInfo GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
-        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
+        private void LoadManifestsFromProvider(WorkloadManifestProviderImplementation manifestProvider)
         {
             foreach (var readableManifest in manifestProvider.GetManifests())
             {
@@ -238,7 +270,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Used by MSBuild resolver to scan SDK packs for AutoImport.props files to be imported.
         /// Used by template engine to find templates to be added to hive.
         /// </remarks>
-        public IEnumerable<PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        IEnumerable<PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind)
         {
             InitializeManifests();
             foreach ((var pack, _) in _packs.Values)
@@ -388,9 +425,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return installedPacks;
         }
 
-        public IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId)
         {
-            if (string.IsNullOrEmpty(workloadId))
+            if (string.IsNullOrEmpty(workloadId.ToString()))
             {
                 throw new ArgumentException($"'{nameof(workloadId)}' cannot be null or empty", nameof(workloadId));
             }
@@ -448,7 +490,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     }
 
                     // the workload's ID may not match the value we looked up if it's a redirect
-                    if (baseWorkloadId != baseWorkload.Id && !dedup.Add(baseWorkload.Id))
+                    if (!baseWorkloadId.Equals(baseWorkload.Id) && !dedup.Add(baseWorkload.Id))
                     {
                         continue;
                     }
@@ -490,7 +532,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <remarks>
         /// Used by the MSBuild SDK resolver to look up which versions of the SDK packs to import.
         /// </remarks>
-        public PackInfo? TryGetPackInfo(WorkloadPackId packId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        PackInfo? TryGetPackInfo(WorkloadPackId packId)
         {
             if (string.IsNullOrEmpty(packId))
             {
@@ -515,7 +562,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <remarks>
         /// Used by the MSBuild workload resolver to emit actionable errors
         /// </remarks>
-        public ISet<WorkloadInfo>? GetWorkloadSuggestionForMissingPacks(IList<WorkloadPackId> packIds, out ISet<WorkloadPackId> unsatisfiablePacks)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        ISet<WorkloadInfo>? GetWorkloadSuggestionForMissingPacks(IList<WorkloadPackId> packIds, out ISet<WorkloadPackId> unsatisfiablePacks)
         {
             InitializeManifests();
             var requestedPacks = new HashSet<WorkloadPackId>(packIds);
@@ -573,7 +625,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <param name="advertisingManifestResolver">A resolver that composes the advertising manifests with the installed manifests that do not have corresponding advertising manifests</param>
         /// <param name="existingWorkloads">The IDs of all of the installed workloads</param>
         /// <returns></returns>
-        public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads)
         {
             InitializeManifests();
             foreach (var workloadId in installedWorkloads)
@@ -625,13 +682,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </remarks>
         /// <exception>KeyNotFoundException</exception>
         /// <exception>ArgumentNullException</exception>
-        public WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId)
         {
             InitializeManifests();
             return _workloads[workloadId].manifest;
         }
 
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal WorkloadResolver CreateOverlayResolver(WorkloadManifestProviderImplementation overlayManifestProvider)
+#else
         public WorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider)
+#endif
         {
             InitializeManifests();
 
@@ -655,17 +721,31 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return overlayResolver;
         }
 
-        public string GetSdkFeatureBand()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string GetSdkFeatureBand()
         {
             return _manifestProvider?.GetSdkFeatureBand() ?? throw new Exception("Cannot get SDK feature band from ManifestProvider");
         }
 
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal WorkloadManifestProviderImplementation GetWorkloadManifestProvider()
+#else
         public IWorkloadManifestProvider GetWorkloadManifestProvider()
+#endif
         {
             return _manifestProvider;
         }
 
-        public class PackInfo
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        class PackInfo
         {
             public PackInfo(WorkloadPackId id, string version, WorkloadPackKind kind, string path, string resolvedPackageId)
             {
@@ -706,7 +786,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public class WorkloadInfo
         {
-            public WorkloadInfo(WorkloadId id, string? description)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+            internal
+#else
+            public
+#endif
+            WorkloadInfo(WorkloadId id, string? description)
             {
                 Id = id;
                 Description = description;
@@ -716,7 +801,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public string? Description { get; }
         }
 
-        public WorkloadInfo GetWorkloadInfo(WorkloadId workloadId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadInfo GetWorkloadInfo(WorkloadId workloadId)
         {
             InitializeManifests();
             if (_workloads.TryGetValue(workloadId) is not (WorkloadDefinition workload, _))
@@ -726,7 +816,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return new WorkloadInfo(workload.Id, workload.Description);
         }
 
-        public bool IsPlatformIncompatibleWorkload(WorkloadId workloadId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        bool IsPlatformIncompatibleWorkload(WorkloadId workloadId)
         {
             InitializeManifests();
             if (_workloads.TryGetValue(workloadId) is not (WorkloadDefinition workload, WorkloadManifest manifest))
@@ -743,7 +838,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         private bool IsWorkloadImplicitlyAbstract(WorkloadDefinition workload, WorkloadManifest manifest) => !GetPacksInWorkload(workload, manifest).Any();
 
-        public string GetManifestVersion(string manifestId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string GetManifestVersion(string manifestId)
         {
             InitializeManifests();
             if (_manifests.TryGetValue(manifestId, out var value))
@@ -754,7 +854,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
 
-        public string GetManifestFeatureBand(string manifestId)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string GetManifestFeatureBand(string manifestId)
         {
             InitializeManifests();
             if (_manifests.TryGetValue(manifestId, out var value))
@@ -771,7 +876,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return _manifests.Select(t => t.Value.info);
         }
 
-        private class EmptyWorkloadManifestProvider : IWorkloadManifestProvider
+        private class EmptyWorkloadManifestProvider : WorkloadManifestProviderImplementation
         {
             string _sdkFeatureBand;
 
@@ -784,7 +889,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(_sdkFeatureBand + ".2");
+            public WorkloadVersionInfo GetWorkloadVersion() => new(_sdkFeatureBand + ".2");
         }
     }
 
