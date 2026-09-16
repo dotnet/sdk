@@ -1221,10 +1221,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
+            // DEBUG_* environment variables should be set for app host process:
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.AppHost ({tfm})] Setting environment variables (3)");
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // check that Aspire server output is logged via dotnet-watch reporter:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+
+            // environment variables should be set for all resource processes:
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.MigrationService ({tfm})] Setting environment variables");
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.ApiService ({tfm})] Setting environment variables");
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Setting environment variables");
 
             // wait until after all DCP sessions have started:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
