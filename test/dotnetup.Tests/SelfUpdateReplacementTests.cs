@@ -77,11 +77,11 @@ public class SelfUpdateReplacementTests : SdkTest
     public void ReplacePreservesOriginalAndRollbackRestoresIt()
     {
         using var files = new SelfUpdateTestFiles();
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
         Assert.IsFalse(File.Exists(files.Paths.StagedPath));
-        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        files.Replacement.Rollback();
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         if (OperatingSystem.IsWindows())
         {
@@ -90,11 +90,56 @@ public class SelfUpdateReplacementTests : SdkTest
     }
 
     [TestMethod]
+    public void TransactionsSharingPathsKeepIndependentRecoveryState()
+    {
+        using var files = new SelfUpdateTestFiles();
+        files.Replacement.Replace();
+        var nextIdentity = new string('c', 64);
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.StagedPath, nextIdentity);
+        var secondBackup = files.Paths.CreateBackupPath();
+        var second = new SelfUpdateReplacement(files.Paths, secondBackup, SelfUpdateTestFiles.ReplacementIdentity);
+
+        second.Replace();
+        Assert.AreEqual(nextIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        second.Rollback();
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        files.Replacement.Rollback();
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+    }
+
+    [TestMethod]
+    public void DifferentTransactionCannotUseAnotherInstancesRecordedCandidate()
+    {
+        using var files = new SelfUpdateTestFiles();
+        files.Replacement.Replace();
+        var unrecorded = new SelfUpdateReplacement(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+
+        Assert.ThrowsExactly<DotnetInstallException>(() => unrecorded.Rollback());
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        files.Replacement.Rollback();
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+    }
+
+    [TestMethod]
+    public void ReplacementRejectsChangedOriginalBeforeMutation()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var unexpectedIdentity = new string('c', 64);
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, unexpectedIdentity);
+
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
+        Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.IsFalse(File.Exists(files.BackupPath));
+    }
+
+    [TestMethod]
     public void MissingCanonicalCanBeRecoveredFromVerifiedBackup()
     {
         using var files = new SelfUpdateTestFiles();
         File.Move(files.Paths.InstalledPath, files.BackupPath);
-        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        files.Replacement.Rollback();
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
     }
@@ -104,7 +149,7 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         File.WriteAllText(files.BackupPath, "recoverable");
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
         Assert.AreEqual("recoverable", File.ReadAllText(files.BackupPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
@@ -116,7 +161,7 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         File.WriteAllText(files.Paths.StagedPath, "not an identity");
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.IsFalse(File.Exists(files.BackupPath));
     }
@@ -128,7 +173,7 @@ public class SelfUpdateReplacementTests : SdkTest
         var linkedPath = Path.Combine(files.Paths.DirectoryPath, "linked-executable");
         var replacementBytes = File.ReadAllBytes(files.Paths.StagedPath);
         File.CreateHardLink(linkedPath, files.Paths.StagedPath);
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         Assert.AreSequenceEqual(replacementBytes, File.ReadAllBytes(linkedPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
@@ -138,14 +183,14 @@ public class SelfUpdateReplacementTests : SdkTest
     public void RollbackRefusesUnexpectedCanonicalAndWrongBackup()
     {
         using var files = new SelfUpdateTestFiles();
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, new string('c', 64));
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
         Assert.AreEqual(new string('c', 64), SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
         SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity);
         SelfUpdateTestFiles.WriteIdentity(files.BackupPath, new string('c', 64));
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(new string('c', 64), SelfUpdatePaths.ReadIdentity(files.BackupPath));
     }
@@ -156,7 +201,7 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         File.Copy(files.Paths.InstalledPath, files.BackupPath);
         File.Move(files.Paths.StagedPath, files.Paths.InstalledPath, overwrite: true);
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
     }
@@ -168,7 +213,7 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         File.Delete(files.Paths.StagedPath);
         _ = File.CreateSymbolicLink(files.Paths.StagedPath, files.Paths.InstalledPath);
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
         var linkedDirectory = files.Paths.DirectoryPath + "-link";
         try
@@ -221,7 +266,7 @@ public class SelfUpdateReplacementTests : SdkTest
         else
         {
             Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(junction));
-            Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
+            Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         }
 
         Assert.AreEqual("untouched", File.ReadAllText(marker));
@@ -242,7 +287,8 @@ public class SelfUpdateReplacementTests : SdkTest
     public void UnsafeBackupNameIsRejected()
     {
         using var files = new SelfUpdateTestFiles();
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.Paths.StagedPath));
+        var replacement = new SelfUpdateReplacement(files.Paths, files.Paths.StagedPath, SelfUpdateTestFiles.OriginalIdentity);
+        Assert.ThrowsExactly<DotnetInstallException>(() => replacement.Replace());
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
     }
@@ -279,12 +325,12 @@ public class SelfUpdateReplacementTests : SdkTest
         Assert.AreEqual(new FileInfo(extractedPath).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access),
             new FileInfo(files.Paths.StagedPath).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access));
 
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
 
         Assert.AreEqual(originalPermissions, new FileInfo(files.Paths.InstalledPath).GetAccessControl()
             .GetSecurityDescriptorSddlForm(AccessControlSections.Access));
         Assert.AreEqual(directoryPermissions, directory.GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access));
-        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        files.Replacement.Rollback();
         Assert.AreEqual(originalPermissions, new FileInfo(files.Paths.InstalledPath).GetAccessControl()
             .GetSecurityDescriptorSddlForm(AccessControlSections.Access));
     }
@@ -295,7 +341,7 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         using var locked = new FileStream(files.Paths.InstalledPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
     }
@@ -315,7 +361,7 @@ public class SelfUpdateReplacementTests : SdkTest
         var failure = new IOException("Injected ReplaceFileW failure.", unchecked((int)0x80070000) | nativeError);
         var replacementCalls = 0;
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace(
             (source, destination, backup) =>
             {
                 replacementCalls++;
@@ -354,7 +400,7 @@ public class SelfUpdateReplacementTests : SdkTest
         var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
         var failure = new IOException("Injected failure after the canonical name switched.");
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace(
             (source, destination, backup) =>
             {
                 File.Replace(source, destination, backup, ignoreMetadataErrors: false);
@@ -386,7 +432,7 @@ public class SelfUpdateReplacementTests : SdkTest
         FileStream? blockedBackup = null;
         try
         {
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Replace(files.Paths, files.BackupPath,
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace(
                 (source, destination, backup) =>
                 {
                     File.Move(destination, backup);
@@ -447,16 +493,16 @@ public class SelfUpdateReplacementTests : SdkTest
     public void WindowsRollbackFirstMoveFailureLeavesCanonicalAndBackup()
     {
         using var files = new SelfUpdateTestFiles();
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         using (var locked = new FileStream(files.Paths.InstalledPath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+            Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
             Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
             Assert.IsFalse(File.Exists(files.BackupPath + ".rejected"));
         }
 
-        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        files.Replacement.Rollback();
     }
 
     [TestMethod]
@@ -464,16 +510,16 @@ public class SelfUpdateReplacementTests : SdkTest
     public void WindowsRollbackSecondMoveFailurePreservesBothRecoveryFiles()
     {
         using var files = new SelfUpdateTestFiles();
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         using (var locked = new FileStream(files.BackupPath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+            Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
             Assert.IsFalse(File.Exists(files.Paths.InstalledPath));
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
             Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath + ".rejected"));
         }
 
-        SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+        files.Replacement.Rollback();
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
     }
 
@@ -482,9 +528,9 @@ public class SelfUpdateReplacementTests : SdkTest
     public void WindowsRollbackOccupiedRejectedPathPreservesEverything()
     {
         using var files = new SelfUpdateTestFiles();
-        SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+        files.Replacement.Replace();
         File.WriteAllText(files.BackupPath + ".rejected", "recoverable");
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity));
+        Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
         Assert.AreEqual("recoverable", File.ReadAllText(files.BackupPath + ".rejected"));
         Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
         Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
@@ -504,9 +550,9 @@ public class SelfUpdateReplacementTests : SdkTest
         try
         {
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, await process.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
-            SelfUpdateReplacement.Replace(files.Paths, files.BackupPath);
+            files.Replacement.Replace();
             SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity, TimeSpan.FromSeconds(20));
-            SelfUpdateReplacement.Rollback(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
+            files.Replacement.Rollback();
             SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(20));
             process.StandardInput.Close();
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, await process.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));

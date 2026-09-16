@@ -5,7 +5,7 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Names and validates sibling artifacts in a canonical dotnetup installation.</summary>
+/// <summary>Names and opens self-update artifacts with consistent path validation and sharing.</summary>
 internal sealed class SelfUpdatePaths
 {
     public SelfUpdatePaths(string installedPath)
@@ -29,13 +29,50 @@ internal sealed class SelfUpdatePaths
     public void Validate()
     {
         ValidateLocation();
-        using var executable = SelfUpdateFile.Open(InstalledPath);
+        using var executable = OpenFile(InstalledPath);
     }
 
     public static string ReadIdentity(string path)
     {
-        using var stream = SelfUpdateFile.Open(path);
+        using var stream = OpenFile(path);
         return DotnetupBuildIdentityReader.Read(stream);
+    }
+
+    public static FileStream OpenFile(string path, FileAccess access = FileAccess.Read)
+    {
+        path = Path.GetFullPath(path);
+        ValidateDirectory(Path.GetDirectoryName(path)!);
+        if ((File.GetAttributes(path) & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
+        {
+            throw new IOException($"Self-update requires a file without links or reparse points: '{path}'.");
+        }
+
+        return new FileStream(path, FileMode.Open, access, FileShare.Read | FileShare.Delete);
+    }
+
+    public static bool Exists(string path)
+    {
+        try
+        {
+            _ = File.GetAttributes(path);
+            return true;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+    }
+
+    public static void RequireAbsent(string path)
+    {
+        if (Exists(path))
+        {
+            throw new IOException($"Self-update will not overwrite an occupied recovery path: '{path}'.");
+        }
     }
 
     internal void ValidateLocation()

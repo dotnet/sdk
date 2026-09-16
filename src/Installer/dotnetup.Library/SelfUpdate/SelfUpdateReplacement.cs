@@ -1,124 +1,127 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Replaces and restores executables while the caller holds both update locks. Recovery never deletes artifacts.</summary>
 /// <remarks>
-/// Reuse the same paths instance for rollback so an occupied canonical path can be checked against the recorded replacement.
+/// One instance owns the paths and identity evidence for one update, including partial-failure recovery.
 /// A missing canonical path can also be recovered without that evidence if the backup matches the original identity.
 /// </remarks>
-internal static class SelfUpdateReplacement
+internal sealed class SelfUpdateReplacement
 {
-    private static readonly ConditionalWeakTable<SelfUpdatePaths, SelfUpdateReplacementState> s_transactions = new();
+    private readonly SelfUpdatePaths _paths;
+    private readonly string _backupPath;
+    private readonly string _originalIdentity;
+    private string? _replacementIdentity;
 
-    public static void Replace(SelfUpdatePaths paths, string backupPath)
-        => Replace(paths, backupPath, static (source, destination, backup) => File.Replace(source, destination, backup, ignoreMetadataErrors: false));
-
-    internal static void Replace(SelfUpdatePaths paths, string backupPath, Action<string, string, string> replaceFile)
+    public SelfUpdateReplacement(SelfUpdatePaths paths, string backupPath, string originalIdentity)
     {
         ArgumentNullException.ThrowIfNull(paths);
+        ArgumentException.ThrowIfNullOrEmpty(backupPath);
+        ArgumentException.ThrowIfNullOrEmpty(originalIdentity);
+        _paths = paths;
+        _backupPath = backupPath;
+        _originalIdentity = originalIdentity;
+    }
+
+    public void Replace()
+        => Replace(static (source, destination, backup) => File.Replace(source, destination, backup, ignoreMetadataErrors: false));
+
+    internal void Replace(Action<string, string, string> replaceFile)
+    {
         ArgumentNullException.ThrowIfNull(replaceFile);
         var mutationStarted = false;
-        SelfUpdateReplacementState? transaction = null;
         try
         {
-            paths.Validate();
-            paths.ValidateBackupPath(backupPath);
-            SelfUpdateFile.RequireAbsent(backupPath);
-            var originalIdentity = SelfUpdatePaths.ReadIdentity(paths.InstalledPath);
-            var replacementIdentity = SelfUpdatePaths.ReadIdentity(paths.StagedPath);
-            using (var staged = SelfUpdateFile.Open(paths.StagedPath, FileAccess.ReadWrite))
+            _paths.Validate();
+            _paths.ValidateBackupPath(_backupPath);
+            SelfUpdatePaths.RequireAbsent(_backupPath);
+            RequireIdentity(_paths.InstalledPath, _originalIdentity);
+            var replacementIdentity = SelfUpdatePaths.ReadIdentity(_paths.StagedPath);
+            using (var staged = SelfUpdatePaths.OpenFile(_paths.StagedPath, FileAccess.ReadWrite))
             {
                 staged.Flush(flushToDisk: true);
             }
 
-            transaction = new SelfUpdateReplacementState(backupPath, originalIdentity, replacementIdentity);
-            _ = s_transactions.Remove(paths);
-            s_transactions.Add(paths, transaction);
+            _replacementIdentity = replacementIdentity;
             mutationStarted = true;
             if (OperatingSystem.IsWindows())
             {
-                replaceFile(paths.StagedPath, paths.InstalledPath, backupPath);
+                replaceFile(_paths.StagedPath, _paths.InstalledPath, _backupPath);
             }
             else
             {
-                File.CreateHardLink(backupPath, paths.InstalledPath);
-                File.Move(paths.StagedPath, paths.InstalledPath, overwrite: true);
+                File.CreateHardLink(_backupPath, _paths.InstalledPath);
+                File.Move(_paths.StagedPath, _paths.InstalledPath, overwrite: true);
             }
         }
         catch (Exception exception) when (IsFileFailure(exception))
         {
-            if (mutationStarted && transaction is not null)
+            if (mutationStarted)
             {
                 try
                 {
-                    if (SelfUpdateFile.Exists(backupPath))
+                    if (SelfUpdatePaths.Exists(_backupPath))
                     {
-                        Rollback(paths, backupPath, transaction.OriginalIdentity);
+                        Rollback();
                     }
 
-                    RequireIdentity(paths.InstalledPath, transaction.OriginalIdentity);
+                    RequireIdentity(_paths.InstalledPath, _originalIdentity);
                 }
                 catch (Exception recoveryException) when (IsFileFailure(recoveryException) || recoveryException is DotnetInstallException)
                 {
-                    throw Failure(paths, backupPath, "Replacement and recovery failed; reinstall dotnetup.",
+                    throw Failure("Replacement and recovery failed; reinstall dotnetup.",
                         new AggregateException(exception, recoveryException));
                 }
             }
 
-            throw Failure(paths, backupPath, "Replacement failed; the original executable and any recovery artifacts were retained.", exception);
+            throw Failure("Replacement failed; the original executable and any recovery artifacts were retained.", exception);
         }
     }
 
-    public static void Rollback(SelfUpdatePaths paths, string backupPath, string originalIdentity)
+    public void Rollback()
     {
-        ArgumentNullException.ThrowIfNull(paths);
         try
         {
-            paths.ValidateLocation();
-            paths.ValidateBackupPath(backupPath);
-            RequireIdentity(backupPath, originalIdentity);
-            if (SelfUpdateFile.Exists(paths.InstalledPath))
+            _paths.ValidateLocation();
+            _paths.ValidateBackupPath(_backupPath);
+            RequireIdentity(_backupPath, _originalIdentity);
+            if (SelfUpdatePaths.Exists(_paths.InstalledPath))
             {
-                var canonicalIdentity = SelfUpdatePaths.ReadIdentity(paths.InstalledPath);
-                if (string.Equals(canonicalIdentity, originalIdentity, StringComparison.Ordinal))
+                var canonicalIdentity = SelfUpdatePaths.ReadIdentity(_paths.InstalledPath);
+                if (string.Equals(canonicalIdentity, _originalIdentity, StringComparison.Ordinal))
                 {
                     return;
                 }
 
-                if (!s_transactions.TryGetValue(paths, out var transaction) ||
-                    !string.Equals(transaction.BackupPath, backupPath, StringComparison.Ordinal) ||
-                    !string.Equals(transaction.OriginalIdentity, originalIdentity, StringComparison.Ordinal) ||
-                    !string.Equals(transaction.ReplacementIdentity, canonicalIdentity, StringComparison.Ordinal))
+                if (!string.Equals(_replacementIdentity, canonicalIdentity, StringComparison.Ordinal))
                 {
                     throw new IOException("The canonical executable is not the known replacement; rollback will not overwrite it.");
                 }
 
                 if (OperatingSystem.IsWindows())
                 {
-                    var rejectedPath = backupPath + ".rejected";
-                    SelfUpdateFile.RequireAbsent(rejectedPath);
-                    File.Move(paths.InstalledPath, rejectedPath, overwrite: false);
+                    var rejectedPath = _backupPath + ".rejected";
+                    SelfUpdatePaths.RequireAbsent(rejectedPath);
+                    File.Move(_paths.InstalledPath, rejectedPath, overwrite: false);
                 }
             }
 
             if (OperatingSystem.IsWindows())
             {
-                File.Move(backupPath, paths.InstalledPath, overwrite: false);
+                File.Move(_backupPath, _paths.InstalledPath, overwrite: false);
             }
             else
             {
-                File.Move(backupPath, paths.InstalledPath, overwrite: true);
+                File.Move(_backupPath, _paths.InstalledPath, overwrite: true);
             }
 
-            RequireIdentity(paths.InstalledPath, originalIdentity);
+            RequireIdentity(_paths.InstalledPath, _originalIdentity);
         }
         catch (Exception exception) when (IsFileFailure(exception))
         {
-            throw Failure(paths, backupPath, "Rollback failed; recovery artifacts were retained. Reinstall dotnetup if the canonical executable is unavailable.", exception);
+            throw Failure("Rollback failed; recovery artifacts were retained. Reinstall dotnetup if the canonical executable is unavailable.", exception);
         }
     }
 
@@ -133,7 +136,7 @@ internal static class SelfUpdateReplacement
     private static bool IsFileFailure(Exception exception) =>
         exception is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException or NotSupportedException;
 
-    private static DotnetInstallException Failure(SelfUpdatePaths paths, string backupPath, string message, Exception exception) =>
+    private DotnetInstallException Failure(string message, Exception exception) =>
         new(DotnetInstallErrorCode.InstallFailed,
-            $"{message} Installed: '{paths.InstalledPath}'. Staged: '{paths.StagedPath}'. Backup: '{backupPath}'. Rejected: '{backupPath}.rejected'.", exception);
+            $"{message} Installed: '{_paths.InstalledPath}'. Staged: '{_paths.StagedPath}'. Backup: '{_backupPath}'. Rejected: '{_backupPath}.rejected'.", exception);
 }

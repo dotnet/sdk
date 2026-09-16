@@ -62,9 +62,9 @@ internal class SelfUpdateWorkflow
             }
 
             StageRelease(release);
-            var backupPath = _paths.CreateBackupPath();
-            SelfUpdateReplacement.Replace(_paths, backupPath);
-            VerifyOrRestore(release.BuildId, backupPath, originalIdentity);
+            var replacement = new SelfUpdateReplacement(_paths, _paths.CreateBackupPath(), originalIdentity);
+            replacement.Replace();
+            VerifyOrRestore(release.BuildId, replacement);
             return release.Version.ToString();
         }
         catch (InvalidDataException exception)
@@ -118,7 +118,7 @@ internal class SelfUpdateWorkflow
         }
     }
 
-    private void VerifyOrRestore(string expectedIdentity, string backupPath, string originalIdentity)
+    private void VerifyOrRestore(string expectedIdentity, SelfUpdateReplacement replacement)
     {
         try
         {
@@ -128,7 +128,7 @@ internal class SelfUpdateWorkflow
         {
             try
             {
-                SelfUpdateReplacement.Rollback(_paths, backupPath, originalIdentity);
+                replacement.Rollback();
             }
             catch (Exception rollbackFailure)
             {
@@ -143,9 +143,9 @@ internal class SelfUpdateWorkflow
 
     private static void ClearStagingFile(string path)
     {
-        if (SelfUpdateFile.Exists(path))
+        if (SelfUpdatePaths.Exists(path))
         {
-            using (SelfUpdateFile.Open(path, FileAccess.ReadWrite))
+            using (SelfUpdatePaths.OpenFile(path, FileAccess.ReadWrite))
             {
             }
 

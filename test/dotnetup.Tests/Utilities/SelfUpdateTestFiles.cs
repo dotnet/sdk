@@ -25,6 +25,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
             : Directory.CreateTempSubdirectory("selfupdate-test-");
         Paths = new SelfUpdatePaths(Path.Combine(_directory.FullName, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
         BackupPath = Paths.CreateBackupPath();
+        Replacement = new SelfUpdateReplacement(Paths, BackupPath, OriginalIdentity);
 
         if (executable)
         {
@@ -49,6 +50,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
 
     public SelfUpdatePaths Paths { get; }
     public string BackupPath { get; }
+    public SelfUpdateReplacement Replacement { get; }
 
     public static void WriteIdentity(string path, string identity, bool append = false)
     {
