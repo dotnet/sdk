@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -68,7 +67,7 @@ internal static class DotnetupTelemetryDrainProcess
 
             // The native executable may have been renamed after download. Do not relaunch a
             // framework-dependent `dotnet exec` host because it would also need the managed DLL.
-            if (!CanRelaunchAsDrainer(executablePath, Assembly.GetEntryAssembly()?.GetName().Name))
+            if (!DotnetupProcessInfo.IsDirectExecution)
             {
                 return;
             }
@@ -94,11 +93,4 @@ internal static class DotnetupTelemetryDrainProcess
         }
     }
 
-    internal static bool CanRelaunchAsDrainer(string? executablePath, string? entryAssemblyName)
-        => !string.IsNullOrEmpty(executablePath)
-            && string.Equals(entryAssemblyName, "dotnetup", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(
-                Path.GetFileNameWithoutExtension(executablePath),
-                "dotnet",
-                StringComparison.OrdinalIgnoreCase);
 }
