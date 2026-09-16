@@ -382,6 +382,45 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
+        [TestMethod]
+        public void TestProjectTemplate_WithCentralPackageManagement_OmitsInlinePackageVersions()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // Enable Central Package Management above the generated project. With CPM active,
+            // the template's post-actions run `dotnet add package --no-restore`, which must not
+            // pin a Version attribute on the PackageReference (that would produce NETSDK1071/NU1008).
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().NotContain("Include=\"NUnit\" Version=");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
         {
             var fsproj = Path.Combine(outputDirectory, $"{projectName}.fsproj");
