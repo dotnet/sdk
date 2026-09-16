@@ -110,7 +110,7 @@ Implemented internal APIs:
 	records spanning buffers, and rejects missing, duplicate, truncated, malformed,
 	or unsupported records. It leaves the stream open; the caller owns secure file
 	opening. Non-seekable streams are supported; seekable streams must start at zero.
-- [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs)
+- [NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs)
 	compares the cached loaded ID with the securely opened canonical executable's ID
 	while holding the activity lock. Missing or invalid identity never becomes an
 	`unknown` equality fallback. Stage A rejects a mismatch before the command body.
