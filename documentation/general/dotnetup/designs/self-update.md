@@ -175,7 +175,7 @@ Because `S` holds neither lock, a self update can complete underneath it. `S` mu
 
 ##### Algorithm 1 — Lock acquisition and the `non-safe` gate
 
-[ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs) uses runtime `FileStream` sharing: an acquisition returns a lease, returns null for recognized contention, or propagates another I/O failure. Contention is retried by the coordinator with bounded backoff; there is no additional native `flock` or lock-enforcement probe. These guarantees assume functioning runtime locks on a supported local filesystem, not bounded I/O latency on every filesystem.
+[ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs) uses runtime `FileStream` sharing: an acquisition returns a lease, returns null for recognized contention, or propagates another I/O failure. The coordinator orchestrates retries using [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs) for cumulative contention accounting and bounded backoff; there is no additional native `flock` or lock-enforcement probe. These guarantees assume functioning runtime locks on a supported local filesystem, not bounded I/O latency on every filesystem.
 
 **Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its build-identity check, it may also hold `U` briefly for cleanup under step 2.9.
 
@@ -185,7 +185,7 @@ Because `S` holds neither lock, a self update can complete underneath it. `S` mu
 
 | Timeout | Applies to | Magnitude |
 | --- | --- | --- |
-| `X_U` | `P` waiting on `U` held by a peer `self update` or cleanup | two minutes of cumulative contention |
+| `X_U` | `P` waiting on `U` held by a peer `self update` or cleanup | one minute of cumulative contention |
 | `X_A` | `P` waiting on `A` held by `N` | two seconds of cumulative contention |
 | `X_N` | `N` waiting at the gate during a self update (Stage B only) | the length of a typical update |
 | `X_V` | `P` waiting for the verification child of step 2.6 | 15 seconds |
@@ -415,7 +415,7 @@ Only contention returns null; other I/O failures propagate. Disposal closes the
 handle without deleting the permanent lock file. Commands remain synchronous.
 [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs)
 acquires `U` before a single attempt at `A`, releases `U` before retrying a busy `A`,
-and uses separate cumulative contention budgets, currently two minutes for `U` and
+and uses separate cumulative contention budgets, currently one minute for `U` and
 two seconds for `A`. The gate and workflow map failures to `DotnetInstallException`;
 `CommandBase` records failure telemetry and the exit code. Windows holder diagnostics
 are report-only and cannot change the acquisition result.
@@ -432,7 +432,7 @@ sidecar. Their availability at the public daily target is not asserted here.
 | [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs), [Program](../../../../src/Installer/dotnetup.Library/Program.cs) | Capture loaded-image values, create native invocation context, and flush telemetry before disposing leases. |
 | [Parser](../../../../src/Installer/dotnetup.Library/Parser.cs), [BuildIdentityAction](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs), [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs) | Register the hidden identity action and public self-update command; identity never constructs a command or starts telemetry. |
 | [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs), [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs), [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs) | Default commands to unsafe, gate before command work, retain leases, and restrict startup cleanup to admitted unsafe commands. |
-| [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs), [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) | Runtime sharing leases, ordered acquisition with separate budgets, and best-effort Windows holder reporting. |
+| [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [LockFileRetryPolicy](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/LockFileRetryPolicy.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs), [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) | Runtime sharing leases, cumulative contention accounting and bounded backoff, ordered acquisition with separate budgets, and best-effort Windows holder reporting. |
 | [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs), [SelfUpdateDownloadProgress](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateDownloadProgress.cs), [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) | Host eligibility, daily resolution, progress/warning output, transaction sequencing, and verification-failure recovery. |
 | [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs), [ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs) | Pin release metadata, enforce unsigned policy, validate network/cache bytes, and commit the download to staging. |
 | [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs), [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs), [SelfUpdateDirectory](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDirectory.cs) | Sibling paths, ownership/regular-file checks, no-follow opens, and directory handle lifetime. |
