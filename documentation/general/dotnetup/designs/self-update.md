@@ -1,8 +1,12 @@
-# Add `Self Update` Command
+# Self Update
 
-`dotnetup self update` updates `dotnetup` itself.
+`dotnetup self update [--no-progress]` updates the published NativeAOT `dotnetup`
+executable in place. Stage A is implemented; waiting and transparent forwarding of
+ordinary commands remain Stage B work. See [Stage A Status](#stage-a-status) and
+the [review guide](#review-guide) for the source map and environment boundaries.
 
-The update should be in-place and appear to happen seamlessly from the perspective of a CLI.
+The current command resolves the daily release for the selected RID. It does not
+accept a channel or version argument. See [command usage](../reference/dotnetup.md#self-update).
 
 `dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 
@@ -24,7 +28,7 @@ Because replacing the still-running destination with `MoveFileExW` cannot be rel
 
 `File.Replace(stagedPath, installedPath, backupPath)` maps to the Windows `ReplaceFileW` API. It combines replacement of the canonical path and creation of a backup in one operating-system call. Windows permits this operation while the old executable image is running when existing handles allow delete sharing; the running process continues executing the old image while future launches resolve the replacement.
 
-This avoids the normal interval in which the canonical path is absent between two `File.Move` calls. It is not an ACID or power-loss-safe transaction: `ReplaceFileW` documents partial failure states, and its `REPLACEFILE_WRITE_THROUGH` flag is unsupported. The staged executable must therefore be flushed before replacement, and recovery must account for the documented arrangements of the staged, canonical, and backup paths after failure.
+This avoids deliberately splitting the forward replacement into two `File.Move` calls; it does not guarantee an uninterrupted canonical name. Windows measurements observed a brief file-not-found interval even within `File.Replace`, so consumers must retry transient launch failures. It is not an ACID or power-loss-safe transaction: `ReplaceFileW` documents partial failure states, and its `REPLACEFILE_WRITE_THROUGH` flag is unsupported. The staged executable is flushed before replacement, and recovery accounts for the staged, canonical, and backup paths after failure. See [replacement properties](#properties-of-algorithms-1-and-2).
 
 
 ### Cross Update Boundary Trade-Offs
@@ -60,10 +64,10 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 Stage A reduces initial implementation complexity and scopes bugs to the first set of restrictions. Waiting and transparent re-running of `non-safe` commands are deferred to Stage B; the selected design must preserve the ability to add that behavior without replacing the locking protocol.
 
-- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.<br><br>
+- Abrupt termination or power loss may leave the canonical executable unavailable. Consumers must be able to re-acquire it using the [installation scripts](https://aka.ms/dotnet/dotnetup). The protocol does not promise crash-atomic or power-loss-atomic recovery.<br><br>
 
 
-- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.<br><br>
+- Recovery is designed to retain identifiable backups and avoid overwriting unknown files. Self-update does not migrate SDK/runtime installation state. Reinstallation is the fallback when recovery cannot establish a runnable canonical executable; these rules are not a guarantee against arbitrary filesystem damage after power loss.<br><br>
 
 - Multiple `dotnetup` processes in general must be able to execute at the same time.<br><br>
 
@@ -97,7 +101,7 @@ The approach below applies to both stages unless noted. Stage A uses immediate f
 
 ## Windows:
 
-#### Final Proposed Update Logic:
+#### Stage A Update Logic
 
 ##### Definitions
 
@@ -105,7 +109,7 @@ Let `D/` be the directory containing the installed dotnetup executable, and let 
 
 Let `t` be the transaction identifier: a random value unique to a single execution of `dotnetup self update`.
 
-Let `D/dotnetup.exe.new` be the staged replacement and `D/dotnetup.exe.old.<t>` the backup of the executable being replaced. Both are siblings of `D/dotnetup.exe`, so both are guaranteed to be on the same volume as `D/dotnetup.exe`.
+Let `D/dotnetup.exe.new.download` be the download temporary file, `D/dotnetup.exe.new` the hash-validated staged replacement, and `D/dotnetup.exe.old.<t>` the backup of the executable being replaced. All are siblings of `D/dotnetup.exe` on the same volume. [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs) derives these paths from the captured executable path.
 
 Let `A` be the activity lock, the file `D/dotnetup.activity.lock`.
 
@@ -117,9 +121,9 @@ Let `P` be the `dotnetup self update` process that Algorithm 2 outlines.
 
 Let `N` be any `non-safe` dotnetup process.
 
-Let `S` be any `safe` dotnetup process other than `P`: `dotnetup dotnet` and the telemetry drain process. `self update` is classified `safe` as well, but `P` follows Algorithm 1 rather than the gate.
+Let `S` be any `safe` dotnetup process other than `P`: `dotnetup dotnet` and the telemetry drain process. `self update` is classified `safe` as well, but `P` follows the update-lock acquisition protocol rather than the ordinary command gate. Parser-only actions such as help, version, and the hidden identity option do not execute a command body and do not use that gate.
 
-Let `V_channel` be the per-RID build ID published by the configured dotnetup channel, and let `V_installed` be the build ID read from the embedded record in `D/dotnetup.exe`. These are the equality tokens defined by the [build-identity proposal](build-identity.md), not human-readable versions or filesystem file IDs.
+Let `V_channel` be the per-RID build ID resolved from the daily release, and let `V_installed` be the build ID read from the embedded record in `D/dotnetup.exe`. These are the equality tokens defined by the [build-identity contract](build-identity.md), not human-readable versions or filesystem file IDs.
 
 Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of Algorithm 1.
 
@@ -156,22 +160,22 @@ Lock ownership during command execution and cleanup:
 
 | Participant | Lock | Mode | Held for |
 | --- | --- | --- | --- |
-| `N` | `A` | shared | from just after parse until `N` exits |
+| `N` | `A` | shared | from the post-parse gate through command completion and telemetry flush |
 | `N` | `U` | exclusive | optional cleanup only, after passing the gate and build-identity check; one nonblocking attempt |
-| `P` | `U` | exclusive | start of the transaction until `P` exits |
-| `P` | `A` | exclusive | start of the transaction until `P` exits |
+| `P` | `U` | exclusive | acquired transaction through verification/recovery and telemetry flush |
+| `P` | `A` | exclusive | acquired transaction through verification/recovery and telemetry flush |
 | `S` | `A` | — | never acquired; skips the gate |
-| `S` | `U` | exclusive | optional cleanup only; one nonblocking attempt |
+| `S` | `U` | none | current safe commands do not perform cleanup |
 
 `A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.9.
 
-Because `S` holds neither lock outside optional cleanup, a self update can complete underneath it. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
+Because `S` holds neither lock, a self update can complete underneath it. `S` must cache image-derived values at startup, particularly the executable path and loaded build ID. Capturing a path does not identify the loaded image: the ID comes from the loaded record, never by reopening that path. See [Program](../../../../src/Installer/dotnetup.Library/Program.cs) and the [loaded-record contract](build-identity.md#access-and-update-gate).
 
 `install`, `uninstall`, `update`, and the other manifest-mutating commands continue to use the `ModifyInstallationStates` mutex for their own critical sections. `P` does not acquire `ModifyInstallationStates`, and no modification to that logic is necessary.
 
 ##### Algorithm 1 — Lock acquisition and the `non-safe` gate
 
-Every acquisition of `A` or `U` either succeeds or throws `IOException` immediately; no open blocks in the kernel. "Wait" therefore always denotes a retry loop with jittered backoff bounded by a timeout.
+[ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs) uses runtime `FileStream` sharing: an acquisition returns a lease, returns null for recognized contention, or propagates another I/O failure. Contention is retried by the coordinator with bounded backoff; there is no additional native `flock` or lock-enforcement probe. These guarantees assume functioning runtime locks on a supported local filesystem, not bounded I/O latency on every filesystem.
 
 **Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its build-identity check, it may also hold `U` briefly for cleanup under step 2.9.
 
@@ -181,10 +185,10 @@ Every acquisition of `A` or `U` either succeeds or throws `IOException` immediat
 
 | Timeout | Applies to | Magnitude |
 | --- | --- | --- |
-| `X_U` | `P` waiting on `U` held by a peer `self update` or cleanup | generous |
-| `X_A` | `P` waiting on `A` held by `N` | brief |
+| `X_U` | `P` waiting on `U` held by a peer `self update` or cleanup | two minutes of cumulative contention |
+| `X_A` | `P` waiting on `A` held by `N` | two seconds of cumulative contention |
 | `X_N` | `N` waiting at the gate during a self update (Stage B only) | the length of a typical update |
-| `X_V` | `P` waiting for the verification child of step 2.6 | brief |
+| `X_V` | `P` waiting for the verification child of step 2.6 | 15 seconds |
 
 Cleanup does not use these retry timeouts: it makes one nonblocking attempt to acquire `U` and skips cleanup if ownership cannot be established.
 
@@ -192,9 +196,9 @@ Cleanup does not use these retry timeouts: it makes one nonblocking attempt to a
 
 **1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the build ID read from the canonical executable. If the two are equal, `P` exits successfully without acquiring `U` or `A`.
 
-This check is advisory. It decides only whether acquiring locks is worthwhile, and it is never the basis for replacing or deleting an executable. A read error, a network failure, or an observation of the step 2.4 replacement window does not distinguish the outcome: `P` falls through to step 1.1 and lets step 2.1 decide authoritatively under both locks. `P` may reuse the resolved `V_channel` in step 2.1 rather than resolving it a second time.
+The canonical identity read is advisory: it is never the basis for replacing or deleting an executable. A failed read, including an observation of the step 2.4 replacement window, falls through to step 1.1 and the authoritative check under both locks. Release resolution is different: a network or release-metadata failure stops the command before either lock is acquired. The resolved release, including `V_channel`, is pinned for the rest of the transaction. See [SelfUpdateWorkflow.Execute](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs).
 
-Reading the canonical build ID without holding `U` is acceptable here and is not in step 2.9, because the two reads gate different actions. Step 2.9 uses the value to delete backups, which is irreversible, so it reads under `U`. Step 1.0 uses the value only to decide whether to continue, and `File.Replace` is rename-based, so the canonical name always resolves to a complete executable rather than a partially written one.
+Reading the canonical build ID without holding `U` is acceptable here and is not in step 2.9, because the two reads gate different actions. Step 2.9 uses the value to delete backups, which is irreversible, so it reads under `U`. Step 1.0 uses the value only to decide whether to continue; a transiently absent or unreadable canonical path cannot authorize replacement or cleanup.
 
 Step 1.0 exists because the common invocation is a poll that finds nothing to do. Without it, every such poll takes `A` exclusively, excludes every `N` on the machine for the duration of the channel lookup, and can fail with `DotnetupBusyWithAnotherCommand` having accomplished nothing. A `self update` run with no network connectivity likewise fails without blocking any other command.
 
@@ -214,7 +218,7 @@ A busy `A` unambiguously means a transaction is in flight, because `A` is only e
 
 Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
 
-**1.4 — `N` verifies build identity.** After acquiring `A` shared, `N` compares `DotnetupBuildIdentity.Current`, read from its loaded image, with `V_installed`, read directly from the canonical executable's embedded record while retaining `A`. The [build-identity proposal](build-identity.md) defines the record, automatic build generation, and offline reader. This check launches no child and never uses a pathname lookup to identify the loaded image.
+**1.4 — `N` verifies build identity.** After acquiring `A` shared, `N` compares its cached `DotnetupBuildIdentity.Current`, read from its loaded image, with `V_installed`, read directly from the canonical executable's embedded record while retaining `A`. The [build-identity contract](build-identity.md) defines the record, automatic build generation, and offline reader. This check launches no child and never uses a pathname lookup to identify the loaded image.
 
 The comparison is unconditional, even if acquiring `A` succeeded immediately: replacement may have completed before `N` reached the gate. `N` retains `A` through its command body or forwarding so the canonical build cannot change underneath the check. Missing, malformed, duplicate, unsupported, or unreadable records stop the command; unknown identities never compare equal.
 
@@ -227,37 +231,37 @@ The comparison is unconditional, even if acquiring `A` succeeded immediately: re
 
 Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
-**1.6 — Work permitted before the gate.** Exactly three things may execute before the gate: console encoding and UI language setup, capture of `Environment.ProcessPath` and the build ID from the loaded record (not a file lookup), and parsing.
+**1.6 — Work permitted before the gate.** Native startup captures the executable path and the build ID from the loaded record, configures language and console output, and parses arguments. Command constructors must not access installation state or start network work. [Program](../../../../src/Installer/dotnetup.Library/Program.cs) creates a [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) only for the NativeAOT host with a captured executable path. Managed development/test hosts do not receive an invocation; `self update` rejects them rather than treating the managed `dotnet` host as the executable to replace.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
 
 `N` must not perform cleanup before passing both the gate and the build-identity check, or on a path that fails or forwards instead of executing its command body.
 
-The first-run telemetry notice is the only pre-gate write. That notice targets the telemetry directory rather than `D/`, and its sentinel keeps the notice idempotent across a forward. An `N` blocked at the gate has therefore touched no installation state and can forward or fail cleanly.
+The first-run telemetry notice and its sentinel are not pre-gate work. [CommandBase.Execute](../../../../src/Installer/dotnetup.Library/CommandBase.cs) enters the gate before option telemetry or the command body. Telemetry starts after admission, or in error handling after a gate rejection; failure reporting may therefore write telemetry, but a rejected command never runs its body or cleanup. Parser-only actions have no command gate; the identity action is also telemetry-free. Acquired invocation leases survive command completion, root telemetry completion, and synchronous `FlushTelemetry`, and are disposed only as `Main` returns.
 
 ###### Common to `P` and `N`
 
-**1.7 — Reporting the lock holder.** When a required acquisition fails, dotnetup queries Windows Restart Manager to report the locking process and PID on a best-effort basis. Optional cleanup skips this reporting when it cannot acquire `U`. This requires a `FileLockDetector`-style helper such as [commit `7fcc618e03f`](https://github.com/dotnet/sdk/commit/7fcc618e03f1520f688fa86bc7ade67aa417e380) via `RmRegisterResources`/`RmGetList` integration. The reported process may exit before the report is produced, and failure to identify the reported process does not change the outcome of the acquisition.
+**1.7 — Reporting the lock holder.** [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) uses Windows Restart Manager for best-effort process-name/PID details on required lock failures. Optional cleanup does not report contention. The helper verifies process start time before reporting a PID and does not expose command lines or full paths. Missing details, unsupported platforms, or a process exiting during inspection do not change the lock result; there is no Unix holder lookup.
 
 ##### Algorithm 2 — The update transaction
 
-Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. `P` holds both locks until `P` exits, and `P` performs every step itself; no second process participates in the replacement.
+Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) transfers acquired leases to the invocation, which retains them through telemetry flush on success or failure. `P` performs replacement and recovery itself; the only replacement-related child is the verification process.
 
-**2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded build ID. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
+**2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded build ID. If the two identities are equal, the command reports no update needed and exits successfully; the invocation releases acquired locks after telemetry flush.
 
 Step 2.1 is the authoritative check and is performed even when step 1.0 already reported an available update, because a peer `self update` can complete a transaction between step 1.0 and step 1.2. Reading `V_installed` from the canonical executable rather than from the loaded image of `P` is what lets `P` observe that peer's work and exit successfully instead of repeating it.
 
-**2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs best-effort deletion of eligible `D/dotnetup.exe.old.*` backups, subject to the canonical-build check and cleanup limits in step 2.9. `P` uses its existing ownership of `U` and `A`; it does not reopen `U` or release either lock for cleanup. Failure to delete a backup belonging to an older transaction is not fatal. Failure to delete `D/dotnetup.exe.new` returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
+**2.2 — `P` clears stale artifacts.** `P` validates and removes `D/dotnetup.exe.new` and `D/dotnetup.exe.new.download` if present, and performs best-effort deletion of eligible backups subject to step 2.9. `P` uses its existing ownership of `U` and `A`; it does not reopen or release either lock for cleanup. Backup deletion failures are nonfatal. Unsafe or inaccessible staging files stop the update; the workflow maps I/O/access failures to `InstallFailed` rather than ignoring them.
 
 Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an older process cannot prevent a later transaction from staging.
 
-**2.3 — `P` stages and validates the replacement.** `P` downloads the replacement executable directly to `D/dotnetup.exe.new` and validates the staged file in place. Preview builds validate the published hash as an integrity check and warn explicitly that the artifact is not authenticated. Stable builds validate signed release metadata against the executable. `P` neither executes `D/dotnetup.exe.new` nor renames `D/dotnetup.exe.new` over any path until validation succeeds.
+**2.3 — `P` stages and validates the replacement.** The shared [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs) writes network bytes or copied cache bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`. Committing the download is not replacement of the installed executable. Current daily builds are unsigned: the command emits the existing unsigned-source warning and honors the unsigned-download policy, including cache hits. Signed stable self-update metadata is future work, not the current delivery path. Neither staging path is executed.
 
 `P` also reads the staged executable's embedded build ID and requires it to equal `V_channel` before replacement.
 
-After validation, `P` flushes the staged file with `FileStream.Flush(flushToDisk: true)` before replacement. This reduces the risk that validated bytes exist only in the system cache, but it does not turn the following replacement into an ACID or power-loss-safe transaction.
+After identity validation and, on Unix, setting executable permissions, [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) flushes the staged file with `FileStream.Flush(flushToDisk: true)` before replacement. This reduces the risk that validated bytes exist only in the system cache, but it does not turn the following replacement into an ACID or power-loss-safe transaction.
 
-`D/dotnetup.exe.new` is staged inside `D/` because `ReplaceFileW` requires the replacement, replaced, and backup files to reside on the same volume. Unvalidated bytes sitting briefly in `D/` are not reachable: nothing resolves the `.new` suffix, and step 2.2 removes a stale `D/dotnetup.exe.new` at the start of every transaction.
+Both staging paths are inside `D/` to keep the eventual replacement on the destination volume. Unvalidated bytes remain under `.new.download`; hash-validated bytes become `.new`, and only a staged executable with the expected embedded ID can proceed to replacement. Step 2.2 clears both stale staging names when an update is needed. These protections require a trusted installation directory and stable paths; staging names alone are not a security boundary.
 
 The state of the file system after step 2.3:
 
@@ -278,7 +282,7 @@ File.Replace(
 
 On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving the installed executable to `D/dotnetup.exe.old.<t>` and assigning `D/dotnetup.exe` to the staged replacement. `P` continues executing its already-loaded old image. A process launched after the call succeeds resolves the replacement image, while there is no deliberate canonical-path gap between two managed calls.
 
-**2.5 — `P` handles replacement failure.** `ReplaceFileW` is a single API call, not an ACID transaction. In addition to failures that leave all original names intact, Windows documents partial failures in which the old executable has moved to the backup name or the replacement has inherited metadata without taking the canonical name. If `File.Replace` throws, `P` retains both locks, classifies the native error, inspects the current transaction's three paths without following reparse points, and restores `D/dotnetup.exe.old.<t>` to the canonical path when that is both necessary and safe. If it cannot establish a runnable canonical executable, it reports that dotnetup must be reinstalled.
+**2.5 — `P` handles replacement failure.** `ReplaceFileW` is a single API call, not an ACID transaction. In addition to failures that leave all original names intact, Windows documents partial failures. [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) records original/replacement identities and the backup path before mutation, then inspects the actual paths after failure without following reparse points. It attempts rollback when a verified backup exists and requires the original identity at the canonical path afterward. Recovery never overwrites an unknown canonical executable or deletes recovery artifacts. An unrecoverable failure reports the paths and directs the caller to reinstall.
 
 **2.6 — `P` verifies the replacement.** `P` runs `D/dotnetup.exe --build-identity`, waits synchronously for up to `X_V`, and treats the replacement as valid only if the child exits with status `0` and reports exactly `V_channel`.
 
@@ -286,7 +290,7 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 `--build-identity` writes only `DotnetupBuildIdentity.Current`, read from the loaded record, to stdout. It does not reopen the executable on disk. This is the same ID used by step 1.4; `Parser.Version` remains the human-readable version. `--build-identity` disables telemetry and spawns no detached child processes. This execution check remains necessary even though the gate reads identities offline.
 
-**2.7 — `P` reports success.** `P` prints a success message including an aka.ms link describing how to install older versions, releases `A` and `U`, and exits.
+**2.7 — `P` reports success.** `P` prints the installed version and the existing [dotnetup installation link](https://aka.ms/dotnet/dotnetup) for installing older versions. Acquired locks remain held through root telemetry completion and flush, then are released as `Main` returns.
 
 **2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `P` kills the verification child if it is still running and then restores the backup while still holding both locks:
 
@@ -310,21 +314,21 @@ The two renames are not atomic together: the canonical path is absent between th
 
 If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
 
-Successful rollback restores the original executable and its build ID at the canonical path. An `N` loaded from that build takes the identity-matches branch of step 1.4; an `N` loaded from the rejected build instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.8.
+Successful rollback restores the original executable and its build ID at the canonical path. An `N` loaded from that build takes the identity-matches branch of step 1.4; an `N` loaded from the rejected build instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.9.
 
-**2.9 — Deferred cleanup.** On later launches, dotnetup may perform best-effort cleanup of `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the identity-matches branch of step 1.4. It retains `A` throughout cleanup. Safe commands other than `P` may also attempt cleanup without acquiring `A`; the `--build-identity` verification path never performs cleanup.
+**2.9 — Deferred cleanup.** On later launches, [SelfUpdateCleanup](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs) may remove `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the identity-matches branch of step 1.4, retaining `A` throughout cleanup. Current safe commands perform no optional cleanup; `P` performs it only within the locked transaction, and `--build-identity` never performs cleanup.
 
 Cleanup makes one nonblocking attempt to acquire `U` exclusively. If ownership cannot be established, cleanup is skipped without retrying, reporting contention, or failing the command. No participant opens `U` shared. A successful attempt retains `U` through the canonical-build check, enumeration, and deletion, so no self-update transaction can create or use a backup during cleanup. Cleanup never acquires or waits for additional locks, launches a child, or invokes command logic while holding `U`.
 
 Before deleting backups, cleanup reads the canonical executable's embedded build ID under `U` and requires it to match the cleanup process's loaded build ID. If the canonical executable is absent, its record is invalid or unreadable, or the IDs differ, cleanup leaves the backups untouched. This conservative check preserves recovery artifacts when the canonical build cannot be confirmed; acquiring `U` alone does not prove that an earlier transaction completed successfully. The same check applies to backup deletion in step 2.2.
 
-Cleanup applies an age threshold and a finite per-launch work budget to enumeration and deletion, skips failed deletions rather than retrying them, and never follows symbolic links or reparse points outside `D/`. It releases `U` as soon as cleanup finishes or is skipped, including on failure, before continuing command execution. The exception is step 2.2, where `P` retains its existing locks for the transaction. Failure to delete a locked backup is not a command or transaction failure, because a process started before the transaction may still be executing that image. These rules also apply to Unix cleanup, subject to the Unix locking caveats below; cleanup must be skipped if lock enforcement cannot be established.
+Cleanup checks at most 32 directory entries, accepts only transaction-GUID backup names (optionally ending in `.rejected`), and requires a last-write time at least one day old. It skips failed deletions rather than retrying them and rejects symbolic links or reparse points. It releases `U` as soon as cleanup finishes or is skipped, including on failure, before continuing command execution. The exception is step 2.2, where `P` retains its existing locks for the transaction. Failure to delete a locked backup is not a command or transaction failure, because a process started before the transaction may still be executing that image. These rules also apply to Unix cleanup, subject to the runtime locking compatibility boundary below; cleanup skips failed lock acquisition but does not independently probe lock enforcement.
 
 ##### Properties of Algorithms 1 and 2
 
-**The canonical path briefly does not exist during step 2.4.** `File.Replace` moves the destination aside before moving the source into place, so for roughly one millisecond `D/dotnetup.exe` cannot be opened and a process launching it observes a file-not-found error. Measured on Windows across five runs, the window is 0.8 ms to 1.3 ms; a pair of separate renames measures 1.0 ms to 1.6 ms, so the choice of primitive does not remove it.
+**The canonical path may be briefly unavailable during step 2.4.** Windows measurements observed file-not-found during `File.Replace`. The [implementation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) uses one forward replacement call instead of deliberately splitting it into moves, but neither that code nor the [ReplaceFileW contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#return-value) guarantees gapless concurrent opens. Measurement timing is not a platform guarantee.
 
-The window cannot be closed on Windows while dotnetup is running. The only gapless primitive is `File.Move` with `overwrite: true`, and that fails with `UnauthorizedAccessException` against a path that has concurrent openers. Consumers that launch `dotnetup` programmatically — an IDE extension polling for updates, for example — should retry once on file-not-found rather than treating the first failure as a missing installation. Linux and macOS have no such window, because `rename(2)` over an existing path is atomic and the destination name resolves to either the old or the new inode at every instant.
+Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem `renameat` provides atomic namespace replacement on supported local filesystems, not power-loss durability; macOS behavior remains unverified in this implementation handoff.
 
 Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only when its ownership and canonical-build checks permit it.
 
@@ -332,7 +336,7 @@ A dependent application — a long-running VS Code window, for example — may h
 
 `FileStream` lock ownership is handle-based rather than thread-affine, so `A` and `U` may be held across an `await` and the entire transaction, download included, may be asynchronous. This is why `P` does not use the thread-affine `ScopedMutex`.
 
-After a crash, `pkill`, or power loss at any step, running the get-dotnetup scripts restores `D/dotnetup.exe` at the canonical location.
+After a crash, forced termination, or power loss, use the [get-dotnetup scripts](https://aka.ms/dotnet/dotnetup) to reinstall when the canonical executable is unavailable. Recovery still requires a writable, functioning filesystem; the protocol does not guarantee automatic recovery from every interruption.
 
 #### Comparisons
 
@@ -340,7 +344,7 @@ After a crash, `pkill`, or power loss at any step, running the get-dotnetup scri
 
 `Aspire CLI` - Aspire's archive self-update [extracts to a temporary directory, best-effort deletes older backups, renames the running executable to `aspire.exe.old.<unix-timestamp>`, copies the extracted executable to the canonical path, runs `aspire.exe --version`, and on any failure deletes the canonical path and moves the backup back](https://github.com/microsoft/aspire/blob/main/src/Aspire.Cli/Commands/UpdateCommand.cs). Dotnetup adopts Aspire's verification-and-rollback shape but uses `File.Replace` for the Windows switch rather than a rename followed by a copy.
 
-Three things differ. Dotnetup stages on the destination volume and uses `File.Replace`, avoiding both a cross-volume copy and the normal canonical-path gap between separate operations. Dotnetup requires the verification child to report exactly `V_channel`, where Aspire requires only exit status `0` and prints whatever version is returned, so a binary that runs but is the wrong build passes Aspire's check. And Aspire takes no cross-process lock, so concurrent self-updates race over the canonical path and the backups, and nothing stops another Aspire command from running across the replacement — the two problems `U` and `A` exist to solve.
+Three things differ. Dotnetup stages on the destination volume and uses `File.Replace`, avoiding a cross-volume copy or deliberately split forward moves without promising a gapless canonical path. Dotnetup requires the verification child to report exactly `V_channel`, where Aspire requires only exit status `0` and prints whatever version is returned, so a binary that runs but is the wrong build passes Aspire's check. And Aspire takes no cross-process lock, so concurrent self-updates race over the canonical path and the backups, and nothing stops another Aspire command from running across the replacement — the two problems `U` and `A` exist to solve.
 
 `VS Code` - VS Code's installed Windows updater combines a singleton main process, an [in-process update state machine](https://github.com/microsoft/vscode/blob/main/src/vs/platform/update/electron-main/abstractUpdateService.ts), native application/setup/updating/ready mutexes, staged versioned files, and [Inno Setup](https://github.com/microsoft/vscode/blob/main/build/win32/code.iss). This serializes Windows installers and blocks application startup during the final switch. The statement does not apply uniformly to every distribution: macOS delegates to Electron's updater, while ordinary Linux packages generally delegate installation to the package manager or download page. Dotnetup does not require VS Code's UI state machine or installer framework, but it adopts the narrower invariant that only one self-update transaction may modify its executable at a time.
 
@@ -352,17 +356,12 @@ Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replac
 
 `P` stages and validates `D/dotnetup.new` per step 2.3, sets the expected executable mode, and flushes `D/dotnetup.new` to disk. `P` refuses to update through an unexpected symbolic link and operates only on the canonical, dotnetup-owned install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --build-identity` per step 2.6; otherwise `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
 
-Like the selected Windows `File.Replace` operation, the Linux move is a single namespace replacement rather than a pair of renames, so it has no normal window in which no executable exists at the canonical path.
+The Unix forward switch uses `renameat` in a pinned directory, not a managed move that could fall back to copy/delete. Its same-filesystem namespace atomicity is distinct from the Windows `File.Replace` behavior above.
 
 A same-directory hard link preserves the old inode before replacement. Both the backup and the staged path must be on the same mounted filesystem as the installed executable.
-```cs
-File.CreateHardLink(backupPath, installedPath);
-File.Move(stagedPath, installedPath, overwrite: true);
+The implemented operations are [SelfUpdateFile.CreateBackupUnix and MoveUnix](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs), using `linkat` and `renameat` against the pinned directory. Rollback verifies the backup and any occupied canonical identity before restoring it.
 
-File.Move(backupPath, installedPath, overwrite: true); // upon failure
-```
-
-On a supported local Linux filesystem, the same-filesystem move maps to an atomic namespace replacement: new openers observe either the complete old inode or the complete new inode, while already-running processes continue using the old inode. This does not by itself guarantee persistence across power loss. The implementation flushes the staged file before replacement and, where strict durability is required, synchronizes the containing directory after replacement.
+On a supported local Linux filesystem, new openers observe either the complete old inode or the complete new inode, while already-running processes continue using the old inode. The implementation flushes the staged file but does not perform a containing-directory durability sync or claim persistence across power loss.
 
 Cross-filesystem `File.Move` may degrade to copy/delete behavior which is why it is avoided.
 
@@ -372,31 +371,126 @@ The rollback move restores the old executable and its build ID. Step 1.4 permits
 
 `A` and `U` do not carry the same weight on Unix as on Windows, and Algorithm 1 is correspondingly weaker there.
 
-`FileShare` is mandatory on Windows and enforced by the kernel at `CreateFile`. On Unix, .NET implements `FileShare` with advisory `flock`, which binds only cooperating processes and can be disabled outright by the `System.IO.DisableFileLocking` AppContext switch or the `DOTNET_SYSTEM_IO_DISABLEFILELOCKING` environment variable. An environment variable can therefore turn the entire gate into a no-op. An implementation that wants the guarantee should take the `flock` explicitly rather than relying on the implicit behavior of `FileStream`.
+`FileShare` is mandatory on Windows and enforced by the kernel at `CreateFile`. On Unix, .NET implements `FileShare` with advisory `flock`, which binds only cooperating processes and can be disabled outright by the `System.IO.DisableFileLocking` AppContext switch or the `DOTNET_SYSTEM_IO_DISABLEFILELOCKING` environment variable. Dotnetup accepts the same locking compatibility as the .NET runtime: it uses `FileStream` sharing directly, does not take an additional native `flock`, and does not detect or compensate for disabled or ineffective runtime locking. The concurrency guarantees assume working runtime locking and cooperating processes.
 
 The reason `FileShare.Delete` is never requested does not carry to Unix either. Unlinking an open file is always permitted on Unix, so the hazard the rule exists to prevent — deleting a lock file and recreating it, leaving two processes holding "exclusive" access to different inodes — cannot be prevented by share mode. The mitigation is that `A` and `U` live in a directory owned by the current user and dotnetup never deletes them.
 
 `flock` over NFS is historically unreliable. A `D/` on a network filesystem can silently degrade the gate.
 
-Windows Restart Manager has no Unix equivalent, so step 1.7 degrades. Linux can parse `/proc/locks`, which lists `FLOCK` holders with PID; macOS has no comparable interface.
+The current diagnostic helper returns no holder details on Unix. It does not parse Linux `/proc/locks` or add a native locking layer.
 
 ## macOS:
 
-macOS follows the Linux replacement flow: the pathname of a running executable may be replaced, and `File.CreateHardLink` and a same-filesystem `File.Move` behave as described above. Step 1.4 uses the same embedded build-ID format and offline reader as Windows and Linux. The Unix locking caveats apply, except that `/proc/locks` does not exist, so step 1.7 cannot report a lock holder at all.
+The macOS implementation selects the same `linkat`/`renameat` flow with platform-specific file flags and metadata handling in [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs). It uses the same embedded build-ID reader and runtime file-sharing locks. macOS execution, APFS behavior, code-signing, and quarantine interactions remain unverified; Linux results are not proof of macOS behavior.
 
 # Update As a Version Swap Mechanism
 
-Once the releases-index and releases.json files are available, the version to download can be repointed as `dotnetup self install <channel or version>` and use the same semantics as an `update`.
+Version/channel selection, downgrade commands, and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts only daily `self update` and its `--no-progress` option. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for older versions.
 
 # Implementation
 
-DotnetArchiveDownloader -> rename -> DotnetDownloader
+## Stage A Status
 
-DotnetArchiveDownloader in V1 (preview) can use `ResolveBlobFeedEntry` and use the same unsigned warning and only update off daily channels since that`s what exists. We can show progress and download using everything else we already do.
+Stage A source integration is complete: command registration, the telemetry-free
+identity option, NativeAOT invocation lifetime, fail-fast gating, coordinated update,
+verified staging, replacement, child verification, rollback, and conservative cleanup
+are connected. [Program](../../../../src/Installer/dotnetup.Library/Program.cs),
+[CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs), and
+[SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs)
+define the production entry path. Managed development hosts remain invocation-free
+and reject self-update.
+
+The [identity tooling](../../../../src/Installer/BuildIdentity/README.md) derives the
+embedded equality token from the full Arcade product version and RID. It does not
+fingerprint sources or toolchains. Releases with the same version and RID compare
+equal, including local rebuilds using the same development version.
+
+[ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs)
+returns an acquired disposable lease from `TryAcquireShared` or `TryAcquireExclusive`.
+Only contention returns null; other I/O failures propagate. Disposal closes the
+handle without deleting the permanent lock file. Commands remain synchronous.
+[SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs)
+acquires `U` before a single attempt at `A`, releases `U` before retrying a busy `A`,
+and uses separate cumulative contention budgets, currently two minutes for `U` and
+two seconds for `A`. The gate and workflow map failures to `DotnetInstallException`;
+`CommandBase` records failure telemetry and the exit code. Windows holder diagnostics
+are report-only and cannot change the acquisition result.
+
+Source integration is not feed deployment. [Publishing.props](../../../../eng/Publishing.props)
+generates and registers the final binary's `.buildid` sidecar, but live daily
+self-update requires a release that deploys the binary, checksum, and matching
+sidecar. Their availability at the public daily target is not asserted here.
+
+## Review Guide
+
+| Source | Responsibility |
+| --- | --- |
+| [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs), [Program](../../../../src/Installer/dotnetup.Library/Program.cs) | Capture loaded-image values, create native invocation context, and flush telemetry before disposing leases. |
+| [Parser](../../../../src/Installer/dotnetup.Library/Parser.cs), [BuildIdentityAction](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs), [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs) | Register the hidden identity action and public self-update command; identity never constructs a command or starts telemetry. |
+| [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs), [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs), [CommandBase](../../../../src/Installer/dotnetup.Library/CommandBase.cs) | Default commands to unsafe, gate before command work, retain leases, and restrict startup cleanup to admitted unsafe commands. |
+| [ScopedLockFile](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ScopedLockFile.cs), [SelfUpdateCoordinator](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCoordinator.cs), [SelfUpdateLockDiagnostics](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateLockDiagnostics.cs) | Runtime sharing leases, ordered acquisition with separate budgets, and best-effort Windows holder reporting. |
+| [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs), [SelfUpdateDownloadProgress](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateDownloadProgress.cs), [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) | Host eligibility, daily resolution, progress/warning output, transaction sequencing, and verification-failure recovery. |
+| [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs), [ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs) | Pin release metadata, enforce unsigned policy, validate network/cache bytes, and commit the download to staging. |
+| [SelfUpdatePaths](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs), [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs), [SelfUpdateDirectory](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDirectory.cs) | Sibling paths, ownership/regular-file checks, no-follow opens, and directory handle lifetime. |
+| [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs), [SelfUpdateReplacementState](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacementState.cs), [SelfUpdateVerifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) | Flushed same-volume replacement, identity-bound recovery, and bounded canonical execution verification with drained pipes. |
+| [SelfUpdateCleanup](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs), [identity tooling](../../../../src/Installer/BuildIdentity/README.md) | Conservative aged-backup deletion and the shared build/runtime identity contract. |
+
+### Environment and Validation Boundaries
+
+- Use a published NativeAOT executable, not the managed library or an ordinary
+    managed apphost. The install location must pass ownership and writable-permission
+    checks, contain no unexpected links/reparse points, and support same-filesystem
+    replacement and working runtime locks. Broadly writable shared temporary
+    directories can fail these checks; see [SelfUpdateFile](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateFile.cs).
+- Native publishing requires the target platform's linker and SDK/development
+    libraries. The Windows handoff resolved the missing libraries using task-local
+    official Windows SDK libraries and produced two native versions; native linking
+    is not an outstanding source-integration blocker. These are environment inputs,
+    not a new machine-wide repository configuration. See the
+    [native project](../../../../src/Installer/dotnetup/dotnetup.csproj).
+- Reported implementation validation exercised Windows x64 and Linux x64 native
+    binaries, including distinct version-derived identities. This is bounded local
+    validation, not proof of every RID, filesystem, or live release transaction.
+    The reproducible [native test cases](../../../../test/dotnetup.Tests/SelfUpdateNativeTests.cs)
+    currently gate their native scenarios to Windows; Linux validation used separate
+    native probes. macOS remains unverified.
+- The [native fixture](../../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
+    requires `DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT` pointing to
+    native binaries built with distinct full versions. Same-version/RID rebuilds
+    deliberately have equal IDs. Managed reader tests alone do not establish native
+    record retention or executable replacement behavior.
+- Stage B waiting/forwarding, signed stable self-update, arbitrary version/channel
+    selection, and a power-loss-atomic transaction are not implemented contracts.
+
+## Shared Downloads
+
+[DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs)
+extends the existing archive pipeline. `DownloadArchiveWithVerification` remains the
+`IArchiveDownloader` adapter and retains archive-extension handling.
+
+`ResolveDotnetupDownload(string rid)` resolves the daily shortlink once through
+`DailyChannelResolver`, requires the HTTPS `ci.dot.net/public/dotnetup/<version>/dotnetup-<rid>[.exe]`
+layout, and fetches the checksum from the corresponding `public-checksums` path. The build-ID
+sidecar is the concrete artifact URL plus `.buildid`: exactly 64 lowercase hexadecimal
+characters, optionally followed by LF or CRLF, with no BOM. Neither metadata request resolves
+another daily shortlink. Missing or malformed metadata fails resolution.
+
+[ResolvedDownload](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ResolvedDownload.cs)
+carries `DownloadUri`, `ExpectedHash` (SHA-512), `Rid`, `Version`, `BuildId`, and `IsUnsigned`.
+`DownloadWithVerification(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)`
+returns the exact destination path without appending an executable extension. Network bytes
+and copied cache bytes are hash-checked before committing to that path. Dotnetup uses the exact
+published hash, not the archive pipeline's legacy alternate-hash allowlist.
+
+Preview self-update is daily-only and unsigned. Policy is checked before resolution and before
+delivery, including cache hits. [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs)
+emits the existing unsigned-source warning and honors `--no-progress`.
+[SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs)
+requires the staged executable's embedded ID to match `BuildId` before replacement.
 
 # Release Stable VS Preview
 
-ResolveManifestEntry will resolve an index of dotnetup releases similar to the .NET release manifest.
+Future signed self-update would resolve an index of dotnetup releases similar to the .NET release manifest. This is not the current daily resolver.
 The manifest will be signed just like the .NET artifacts manifests, with a detached signature, which will be downloaded as well and be used to validate dotnetup's own executable. We could only have an index but supporting multiple versions or allowing a downgrade/revert will only be possible if we maintain separate indexes. Whether we have a `daily` `preview` `stable` keyed index or a `major.minor` keyed index is not part of this spec.
 
 #### Locking Rationale
@@ -416,7 +510,7 @@ The real reason is a file lock can implement concurrent shared ownership that ca
 
 **Why optional cleanup introduces no circular wait.** An `N` waiting at the gate holds neither lock. An `N` that already holds `A` never waits for `U`: if `P` owns `U`, cleanup is skipped immediately. If cleanup owns `U`, it performs its bounded work without acquiring additional locks and releases `U` before continuing the command. `P` also releases `U` before retrying a failed acquisition of `A`. Neither participant waits for a lock held by the other while retaining its own. The immediate-skip rule for cleanup, rather than a claim that only `P` can hold two locks, is essential to this reasoning.
 
-**Why the update lock is limited to updates and cleanup.** `U` protects update artifacts, not ordinary command execution. Contention on `U` may mean a peer update or cleanup, and `P` retries either case within `X_U` rather than failing immediately. Once `P` owns `U`, contention on `A` means a `non-safe` command is running and is handled separately by `X_A`. Cleanup is the short-lived exception allowing `N` or a safe command to own `U`; no command holds `U` shared or needs it merely to pass the gate. Diagnostics must not identify every owner of `U` as an updater.
+**Why the update lock is limited to updates and cleanup.** `U` protects update artifacts, not ordinary command execution. Contention on `U` may mean a peer update or cleanup, and `P` retries either case within `X_U` rather than failing immediately. Once `P` owns `U`, contention on `A` means a `non-safe` command is running and is handled separately by `X_A`. Cleanup is the short-lived exception allowing an admitted `N` to own `U`; current safe commands do not perform optional cleanup. No command holds `U` shared or needs it merely to pass the gate. Diagnostics must not identify every owner of `U` as an updater.
 
 **Why forwarding instead of resuming.** A process that waited at the gate is still executing the old image. Resuming would run pre-update code against post-update state — for example a manifest written in a format the old code does not understand. Forwarding is only legal at the gate precisely because nothing has been mutated and nothing has been written to the console yet.
 
@@ -442,4 +536,4 @@ MoveFileExW(
 
 This is a single move of the replacement onto the canonical path, but it does not create the backup; preserving the old executable requires a separate copy, hard link, or rename. `MOVEFILE_WRITE_THROUGH` asks Windows not to return until the move has completed on disk. It improves durability after a successful return, but Microsoft does not document it as an ACID transaction or as an all-or-nothing guarantee across process termination or power loss. Transactional NTFS provided transactional moves, but Microsoft recommends against taking a dependency on TxF because it may not remain available.
 
-The selected `File.Replace` design avoids the temporary process and handoff, creates the backup as part of the same Windows call, and removes the normal canonical-path gap. It still requires a flushed staged file and explicit handling of `ReplaceFileW`'s documented partial failure states.
+The selected `File.Replace` design avoids the temporary process and handoff and creates the backup as part of the same Windows call. It avoids deliberately split forward moves, not all possible canonical-path gaps. It still requires a flushed staged file and explicit handling of `ReplaceFileW`'s documented partial failure states, without promising power-loss atomicity.

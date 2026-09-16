@@ -17,6 +17,7 @@ ms.date: 08/07/2026
 dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
+dotnetup self update [--no-progress]
 ```
 
 ## Description
@@ -39,6 +40,7 @@ exists, it can start first-use onboarding.
 | [`init`](dotnetup-init.md) | Run interactive setup. |
 | [`env`](dotnetup-env.md) | Manage environment configuration. |
 | [`dotnet`](dotnetup-dotnet.md) | Run the dotnetup-managed `dotnet`. |
+| [`self update`](#self-update) | Update the dotnetup executable itself from the daily release. |
 
 ## Options
 
@@ -55,6 +57,42 @@ exists, it can start first-use onboarding.
 | --- | --- |
 | `--format <text\|json>` | Select text or JSON output. The default is `text`. |
 | `--no-list [<true\|false>]` | Omit tracked specifications and installations. Without this option, `--info` verifies installations. |
+
+## Self update
+
+Update the published NativeAOT dotnetup executable in place:
+
+```console
+dotnetup self update
+dotnetup self update --no-progress
+```
+
+`--no-progress` disables progress display, not warnings or the result message.
+The command resolves the daily build for the selected runtime identifier and
+reports success without replacing the executable when the installed build ID
+already matches. It does not accept arbitrary channel or version arguments.
+See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
+and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
+
+Daily self-update checks the published SHA-512 hash and embedded build ID but is
+unsigned, emits an unsigned-source warning, and respects the unsigned-download
+policy. The selected release must publish the executable, checksum, and matching
+`.buildid` sidecar. Publishing support exists in source; availability at the live
+daily target depends on a release deploying these artifacts. See the
+[download contract](../designs/self-update.md#shared-downloads).
+
+The executable must be in a trusted, writable installation directory. Managed
+development hosts reject self-update. Other update callers wait for the current
+update within a bounded timeout, but ordinary commands, including `--info`, fail
+if the activity gate is busy or their loaded build is stale. Retry those commands
+after the update completes. Automation should also retry transient file-not-found
+launch failures during Windows replacement before concluding that dotnetup is
+missing. See [coordination and recovery](../designs/self-update.md#properties-of-algorithms-1-and-2).
+
+Self-update does not update managed SDK/runtime installations; use
+[`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
+reinstallation after unrecoverable interruption, use the existing
+[installation guidance](https://aka.ms/dotnet/dotnetup).
 
 ## Examples
 

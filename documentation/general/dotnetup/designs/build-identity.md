@@ -1,32 +1,45 @@
 # Dotnetup Build Identity
 
-`dotnetup --build-identity` must be added to support `self update` for a replacement mechanism to cheaply detect `dotnetup` artifact versions.
+`dotnetup --build-identity` is the implemented, hidden root option used by
+[self-update verification](self-update.md#stage-a-status). It reports the loaded
+executable's identity without entering the command gate or starting telemetry.
 
 ## Contract
 
-Every dotnetup executable should contain one immutable, versioned identity record. Running code reads its own record from memory; an offline reader reads the same format from an executable file without executing it.
+Every published dotnetup executable must contain exactly one immutable, versioned
+identity record. Native publish validation enforces this contract. Running code
+reads its own record from memory; the host tooling and offline runtime reader use
+the same format without executing an artifact.
 
 The build ID is 256 bits represented as 64 lowercase hexadecimal characters. It is an equality token, not a sortable version, a filesystem file ID, or an authentication mechanism.
 
-This is distinct from the existing human-readable version exposed by [Parser.Version](../../../../src/Installer/dotnetup.Library/Parser.cs) and the [versioned artifact paths](../../../../eng/Publishing.props). Release metadata records both the version and the build ID for each RID.
+This is distinct from the human-readable version exposed by [Parser.Version](../../../../src/Installer/dotnetup.Library/Parser.cs). The [publishing targets](../../../../eng/Publishing.props) pair each RID's binary and `.buildid` sidecar under the full version's artifact path. Generating and registering that metadata does not establish that a release has deployed it to the live daily feed.
 
 ## Automatic ID Policy
 
-Compute `SHA256` over a canonical, versioned build-input manifest, prefixed with the domain separator `dotnetup-build-id-v1`.
+Use the existing Arcade `$(Version)` property, including its complete prerelease/build
+suffix, and the artifact's RID. The shared version settings live in
+[Directory.Build.props](../../../../src/Installer/Directory.Build.props); the same
+version is returned by `ReturnDotnetupVersion` for the published artifact path.
+For example, an official preview build can be `0.2.0-preview.1.26465.7`, while a
+local development build can be `0.2.0-dev`.
 
-The proposed input collector must describe the complete dotnetup artifact build, not just the project containing the generated record:
+To retain the fixed 64-character payload, [BuildIdentityMetadata](../../../../src/Installer/BuildIdentity/BuildIdentityMetadata.cs)
+computes lowercase SHA-256 over the UTF-8
+bytes of `dotnetup-version-id-v1\n{Version}\n{RID}`, with literal LF separators and
+no terminal newline. This is just an encoding of version metadata, not a content
+fingerprint. Missing or whitespace-containing metadata fails generation.
 
-- Content hashes of effective source files, generated sources other than this record, and resources across the executable and its project dependencies. Local and untracked files included by MSBuild count, so an uncommitted edit changes the ID.
+The same version and RID always produce the same ID. Source edits, compiler options,
+dependencies, configuration, signing, renaming, and checkout paths do not independently
+change it. There is no input collector, two-pass build, or post-link record stamping.
+Distinct released builds for the same RID must have distinct versions; local rebuilds
+under the same `-dev` version intentionally compare equal. Tests needing different
+builds must supply different versions. The published hash/signature still validates
+the executable bytes independently of this equality token.
 
-- Content identities of resolved managed dependencies, native libraries, generators, analyzers, and compiler/linker toolchains. Restore must complete before collecting resolved inputs; package names or version strings alone do not identify locally modified dependencies.
-
-- Effective build settings affecting compilation or native publishing, including TFM, RID, configuration, defines, optimization, trimming, globalization, version attributes, and native compiler/linker options.
-
-Use structured serialization with a fixed schema, ordered fields and entries, invariant encoding, and stable logical paths. Exclude timestamps, machine-specific checkout/output paths, this generated record, and outputs derived from it. The record version and fingerprint-policy version are separate: changing input collection changes the policy prefix, not necessarily the binary layout.
-
-Identical effective inputs produce the same ID, including after a clean rebuild; changed inputs produce a different ID, subject to SHA-256 collision resistance. Signing or renaming the same artifact does not allocate a new ID. A missing required input must fail identity generation rather than produce an incomplete fingerprint. Complete input collection is an implementation requirement, not a property established by the prototype.
-
-No developer bumps the ID. Normal build/publish computes the manifest, updates the record only when its contents change, and carries the resulting ID through artifact validation and release metadata. CI uses the same policy as local builds. A reproducibility test must check that equivalent builds in different checkout paths produce the same ID.
+No developer bumps a separate ID. The normal Arcade versioning process drives it,
+and generation rewrites the record only when its contents change.
 
 ## Record Format
 
@@ -40,35 +53,77 @@ The record occupies 96 consecutive bytes, with no alignment requirement or fixed
 | 24 | 64 | Lowercase hexadecimal build ID |
 | 88 | 8 | ASCII `END-ID\0\0` |
 
-Generate a C# UTF-8 byte literal exposed through a `ReadOnlySpan<byte>` accessor in one owning assembly. The runtime accessor must reference the complete record so NativeAOT retains it as program data.
+The generator emits a C# UTF-8 byte literal exposed through a non-inlined
+`ReadOnlySpan<byte>` accessor in the Installation assembly. The runtime accessor
+reads the complete record. [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs)
+and [BuildIdentityAction](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs)
+provide live production references, so the record is rooted without the former
+`IdentityRoots.xml` descriptor; that descriptor and its project item have been removed.
 
 ## Build Integration
 
-Use one proposed dotnetup-specific targets import, explicitly imported by [dotnetup.Library](../../../../src/Installer/dotnetup.Library/dotnetup.Library.csproj) and [dotnetup](../../../../src/Installer/dotnetup/dotnetup.csproj), with targets conditioned on their owning project.
+The [identity targets](../../../../src/Installer/BuildIdentity/Dotnetup.BuildIdentity.targets)
+are imported by the executable, command library, and Installation library. The
+Installation library owns the generated record and the offline reader.
 
-| Target (proposed) | Owner and timing | Responsibility |
+| Target | Owner and timing | Responsibility |
 | --- | --- | --- |
-| `CollectDotnetupIdentityInputs` | Artifact build orchestration, after restore and other input generation, before the library compiles | Collect the evaluated artifact graph and effective build inputs into the canonical manifest. Pass the same artifact context to referenced projects. |
-| `GenerateDotnetupBuildIdentity` | Library, before `CoreCompile`, dependent on input collection | Hash the manifest and generate one record/accessor under `$(IntermediateOutputPath)`. Include that source in `Compile`. |
-| `ValidateDotnetupBuildIdentity` | Executable, after native publishing | Read the published executable offline; require exactly one valid record matching the expected manifest ID. |
+| `ResolveDotnetupIdentityMetadata` | Before generation or reference forwarding | Read the final Arcade `Version` and the RID (`RuntimeIdentifier`, falling back to `TargetRid` for standalone library builds). |
+| `ForwardDotnetupIdentityMetadata` | Executable and command library, before reference configuration | Pass the selected version and RID to the record-owning library. |
+| `GenerateDotnetupBuildIdentity` | Installation library, before `CoreCompile` | Generate one record/accessor under `$(IntermediateOutputPath)` and include it in `Compile`. |
+| `ValidateDotnetupBuildIdentity` | Executable, after native publishing | Read the executable offline; require exactly one valid record matching the version and RID. |
 
-The generated source must be included even when generation is incrementally skipped. Collect content changes on every relevant build, but write the manifest/source only when changed; avoid a timestamp-only cache that misses restored or same-timestamp edits. Intermediate files and project build contexts must distinguish artifact configurations/RIDs so concurrent builds cannot overwrite each other's identities. Standalone library/test builds need an automatically collected library context; an executable publish must not reuse that context as its artifact identity.
+Generated source is always included and is written only when changed. Referenced
+artifact builds isolate intermediate and assembly outputs by configuration and RID.
+Standalone library/test builds use the shared Arcade version and target RID; they do
+not need a separate identity policy.
 
-The existing executable already enables `PublishAot` and invokes `Publish` from `PublishOnBuild`. Make `ValidateDotnetupBuildIdentity` an explicit dependency of its existing `CreateRidSuffixedDotnetupCopy` target so validation occurs before the distributable copy. Only validate when this build produces or reuses a native artifact. A `--no-build` publish must validate the reused artifact against its matching saved input manifest, or fail if that manifest is unavailable.
+The executable's `CreateRidSuffixedDotnetupCopy` depends on identity validation. A
+`--no-build` publish validates the reused native artifact against the selected version
+and RID; there is no saved manifest prerequisite. Generation and validation run as
+host MSBuild tooling, never by executing a cross-compiled artifact.
 
-Implement collection/generation and offline validation as host-runnable build tooling, not by invoking the cross-compiled executable. Keep fingerprint logic out of long MSBuild property expressions. Reuse the production record parser in validation. Validate the final distributable again after stripping/signing, then extract its ID automatically into per-RID release metadata; reject an inconsistent record.
+[Publishing.props](../../../../eng/Publishing.props) validates the final distributable
+again after signing/stripping, generates a sidecar containing the matching ID plus
+LF, and registers it for `<concrete artifact URL>.buildid`. The existing `.sha512`
+sidecar remains the integrity check. A release must deploy all three artifacts
+before the live daily resolver can use them; this document does not assert that
+the current public daily target already includes a sidecar.
+
+The separate [host task project](../../../../src/Installer/BuildIdentity/Dotnetup.BuildIdentity.csproj)
+is still required. It source-links the production reader without referencing the
+record-owning Installation project, avoiding a generation dependency cycle. The
+[task host](../../../../src/Installer/BuildIdentity/Dotnetup.BuildIdentity.proj) loads
+an immutable, content-addressed shadow copy so reused Windows MSBuild nodes do not
+lock compiler outputs. This host tooling can validate any target RID without
+running the target executable. See the [tooling guide](../../../../src/Installer/BuildIdentity/README.md#why-separate-build-files-remain).
 
 ## Access and Update Gate
 
-Proposed runtime APIs:
+Implemented internal APIs:
 
-```csharp
-string loadedId = DotnetupBuildIdentity.Current;
-using FileStream executable = File.OpenRead(installedPath);
-string installedId = DotnetupBuildIdentityReader.Read(executable);
-bool sameBuild = string.Equals(loadedId, installedId, StringComparison.Ordinal);
-```
+- [DotnetupBuildIdentity.Current](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/BuildIdentity/DotnetupBuildIdentity.cs)
+	reads only the generated record in the loaded image. It does not reopen
+	`Environment.ProcessPath` or read configuration.
+- [DotnetupBuildIdentityReader.Read(Stream)](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/BuildIdentity/DotnetupBuildIdentityReader.cs)
+	scans from the start through EOF with bounded memory, handles short reads and
+	records spanning buffers, and rejects missing, duplicate, truncated, malformed,
+	or unsupported records. It leaves the stream open; the caller owns secure file
+	opening. Non-seekable streams are supported; seekable streams must start at zero.
+- [SelfUpdateGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateGate.cs)
+	compares the cached loaded ID with the securely opened canonical executable's ID
+	while holding the activity lock. Missing or invalid identity never becomes an
+	`unknown` equality fallback. Stage A rejects a mismatch before the command body.
 
-`Current` reads only the generated record in the loaded image. It does not reopen `Environment.ProcessPath` or read configuration. `Read` scans one opened regular file using bounded memory and handles records spanning buffer boundaries. It scans to EOF to detect duplicates and rejects missing, duplicate, truncated, malformed, or unsupported records. Never accept an `unknown` fallback. New releases must retain the v1 record/read contract while older cooperating clients require it.
+New releases must retain the v1 record/read contract while older cooperating
+clients require it. Because IDs encode version/RID rather than file contents,
+two local rebuilds with identical metadata cannot be distinguished by this gate.
 
-`--build-identity` reports `Current`, with no telemetry or gate, for the updater's existing post-replacement execution check. Offline equality checks do not replace that check: a valid record alone does not prove the executable can start. Before replacement, the updater also requires the validated staged file's ID to match the channel's per-RID build ID. Both the record and its claimed release association remain subject to the separate hash/signature policy.
+The [root option action](../../../../src/Installer/dotnetup.Library/BuildIdentityAction.cs)
+reports the cached loaded ID plus a newline. [Program](../../../../src/Installer/dotnetup.Library/Program.cs)
+bypasses telemetry startup, first-run notice, and flush for that action, so the
+verification child can run while both update locks remain held. Offline equality
+checks do not replace this execution check: a valid record alone does not prove
+the executable can start. Before replacement, the workflow also requires the
+hash-validated staged file's ID to match the pinned daily release ID. Identity is
+not authentication; current daily self-update remains unsigned.
