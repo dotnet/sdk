@@ -108,6 +108,10 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
             var payloadType = (RequestType)await _pipeClient.ReadByteAsync(cancellationToken);
             switch (payloadType)
             {
+                case RequestType.SetEnvironmentVariables:
+                    await SetEnvironmentVariablesAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+
                 case RequestType.ManagedCodeUpdate:
                     await ReadAndApplyManagedCodeUpdateAsync(cancellationToken);
                     break;
@@ -124,6 +128,31 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
                     throw new InvalidOperationException($"Unexpected payload type: {payloadType}");
             }
         }
+    }
+
+    private async Task SetEnvironmentVariablesAsync(CancellationToken cancellationToken)
+    {
+        Debug.Assert(_pipeClient != null);
+
+        var environmentVariableCount = await _pipeClient.ReadInt32Async(cancellationToken).ConfigureAwait(false);
+
+        log($"Setting environment variables ({environmentVariableCount})");
+
+        for (var i = 0; i < environmentVariableCount; i++)
+        {
+            var name = await _pipeClient.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            var value = await _pipeClient.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+            catch (Exception e)
+            {
+                log($"Unable to set environment variable '{name}': {e.Message}");
+            }
+        }
+
+        await SendResponseAsync(new SetEnvironmentVariablesResponse(), cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask ReadAndApplyManagedCodeUpdateAsync(CancellationToken cancellationToken)
