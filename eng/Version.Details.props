@@ -81,6 +81,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.12.0-1.26453.118</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>11.0.0-rc.1.26453.118</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-rc.1.26453.118</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftNETProjectDataTasksPackageVersion>5.12.0-1.26466.107</MicrosoftNETProjectDataTasksPackageVersion>
     <MicrosoftNETRuntimeEmscriptenInternalPackageVersion>11.0.0-rc.1.26453.118</MicrosoftNETRuntimeEmscriptenInternalPackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>11.1.0-preview.26453.118</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-rc.1.26453.118</MicrosoftNETSdkWindowsDesktopPackageVersion>
@@ -136,8 +137,6 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesPackageVersion>11.0.0-rc.1.26453.118</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>11.0.0-rc.1.26453.118</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-rc.1.26453.118</SystemWindowsExtensionsPackageVersion>
-    <!-- dotnet-roslyn dependencies -->
-    <MicrosoftNETProjectDataTasksPackageVersion>5.12.0-1.26460.21</MicrosoftNETProjectDataTasksPackageVersion>
     <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>2.4.0</MicrosoftTestingPlatformPackageVersion>
     <MicrosoftTestingPlatformInternalDotnetTestPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestPackageVersion>
@@ -222,6 +221,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
+    <MicrosoftNETProjectDataTasksVersion>$(MicrosoftNETProjectDataTasksPackageVersion)</MicrosoftNETProjectDataTasksVersion>
     <MicrosoftNETRuntimeEmscriptenInternalVersion>$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
@@ -277,8 +277,6 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesVersion>$(SystemTextEncodingCodePagesPackageVersion)</SystemTextEncodingCodePagesVersion>
     <SystemTextJsonVersion>$(SystemTextJsonPackageVersion)</SystemTextJsonVersion>
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
-    <!-- dotnet-roslyn dependencies -->
-    <MicrosoftNETProjectDataTasksVersion>$(MicrosoftNETProjectDataTasksPackageVersion)</MicrosoftNETProjectDataTasksVersion>
     <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MicrosoftTestingPlatformInternalDotnetTestVersion>$(MicrosoftTestingPlatformInternalDotnetTestPackageVersion)</MicrosoftTestingPlatformInternalDotnetTestVersion>
