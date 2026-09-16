@@ -51,6 +51,8 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     public SelfUpdatePaths Paths { get; }
     public string BackupPath { get; }
     public SelfUpdateReplacement Replacement { get; }
+    public static string DotnetHostPath => ResolveDotnetHostPath();
+    public static string ProcessAssemblyPath => Path.Combine(s_assetOutput.Value, "SelfUpdateProcess.dll");
 
     public static void WriteIdentity(string path, string identity, bool append = false)
     {
@@ -64,11 +66,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     {
         var repoRoot = Path.GetFullPath(typeof(SelfUpdateTestFiles).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(attribute => attribute.Key == "RepoRoot").Value!);
-        var dotnetPath = Environment.ProcessPath!;
-        if (!string.Equals(Path.GetFileNameWithoutExtension(dotnetPath), "dotnet", StringComparison.OrdinalIgnoreCase))
-        {
-            dotnetPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
-        }
+        var dotnetPath = ResolveDotnetHostPath();
         var buildDirectory = Path.Combine(Environment.GetEnvironmentVariable("ArtifactsDir") ?? Path.GetTempPath(), "selfupdate-process-" + Guid.NewGuid().ToString("N"));
         var output = Path.Combine(buildDirectory, "out");
         var framework = new FrameworkName(typeof(SelfUpdateTestFiles).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName);
@@ -104,5 +102,13 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         }
 
         return output;
+    }
+
+    private static string ResolveDotnetHostPath()
+    {
+        var processPath = Environment.ProcessPath!;
+        return string.Equals(Path.GetFileNameWithoutExtension(processPath), "dotnet", StringComparison.OrdinalIgnoreCase)
+            ? processPath
+            : Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
     }
 }

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
@@ -31,17 +32,23 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
         _files = new SelfUpdateTestFiles();
         try
         {
-            ReplacementPath = Path.Combine(Paths.DirectoryPath, "replacement.exe");
+            ReplacementPath = Path.Combine(Paths.DirectoryPath, "replacement" + DotnetupUtilities.ExeSuffix);
             File.Copy(original, Paths.InstalledPath, overwrite: true);
             File.Copy(replacement, ReplacementPath);
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(Paths.InstalledPath, File.GetUnixFileMode(original));
+                File.SetUnixFileMode(ReplacementPath, File.GetUnixFileMode(replacement));
+            }
+
             File.Delete(Paths.StagedPath);
             OriginalIdentity = SelfUpdatePaths.ReadIdentity(Paths.InstalledPath);
             ReplacementIdentity = SelfUpdatePaths.ReadIdentity(ReplacementPath);
             Assert.AreNotEqual(OriginalIdentity, ReplacementIdentity, "Publish the two binaries with different release versions.");
-            var version = FileVersionInfo.GetVersionInfo(ReplacementPath).ProductVersion;
-            Assert.IsNotNull(version);
-            Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup.exe"), new string('0', 128),
-                "win-x64", ReleaseVersion.Parse(version.Split('+')[0]), ReplacementIdentity);
+            var version = GetExecutableVersion(ReplacementPath);
+            var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+            Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup"), new string('0', 128),
+                rid, ReleaseVersion.Parse(version.Split('+')[0]), ReplacementIdentity);
         }
         catch
         {
@@ -67,7 +74,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
         File.Copy(ReplacementPath, destination);
     }
 
-    public Process Start(string[] arguments, bool enableTelemetry = false)
+    public Process Start(string[] arguments, bool enableTelemetry = false, string? dotnetRoot = null)
     {
         var start = new ProcessStartInfo(Paths.InstalledPath)
         {
@@ -85,7 +92,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
         start.Environment["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(StateDirectory, "data");
         start.Environment["DOTNET_CLI_HOME"] = Path.Combine(StateDirectory, "home");
-        start.Environment["DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH"] = Paths.DirectoryPath;
+        start.Environment["DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH"] = dotnetRoot ?? Paths.DirectoryPath;
         start.Environment["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
         start.Environment["DOTNET_NOLOGO"] = "1";
         start.Environment["NO_COLOR"] = "1";
@@ -144,11 +151,44 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
     public void Dispose() => _files.Dispose();
 
+    private static string GetExecutableVersion(string path)
+    {
+        var start = new ProcessStartInfo(path)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        start.ArgumentList.Add("--version");
+        start.Environment[Constants.Telemetry.TelemetryOptOutEnvVar] = "1";
+        start.Environment["DOTNET_NOLOGO"] = "1";
+        start.Environment["NO_COLOR"] = "1";
+        using var process = Process.Start(start);
+        Assert.IsNotNull(process);
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        Assert.IsTrue(process.WaitForExit(20_000), "Native dotnetup --version timed out.");
+        Assert.AreEqual(0, process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
+        Assert.AreEqual(string.Empty, stderr.GetAwaiter().GetResult());
+        var version = stdout.GetAwaiter().GetResult().Trim();
+        Assert.IsFalse(string.IsNullOrEmpty(version), "Native dotnetup --version returned no version.");
+        return version;
+    }
+
     private static void AssertNative(string path)
     {
         using var stream = File.OpenRead(path);
-        using var reader = new PEReader(stream);
-        Assert.IsNull(reader.PEHeaders.CorHeader, "These tests require NativeAOT executables, not managed assemblies.");
-        Assert.AreEqual(0, reader.PEHeaders.PEHeader!.CorHeaderTableDirectory.Size);
+        if (OperatingSystem.IsWindows())
+        {
+            using var reader = new PEReader(stream);
+            Assert.IsNull(reader.PEHeaders.CorHeader, "These tests require NativeAOT executables, not managed assemblies.");
+            Assert.AreEqual(0, reader.PEHeaders.PEHeader!.CorHeaderTableDirectory.Size);
+            return;
+        }
+
+        Span<byte> elfMagic = stackalloc byte[4];
+        stream.ReadExactly(elfMagic);
+        Assert.IsTrue(elfMagic.SequenceEqual("\u007fELF"u8), "Linux native tests require an ELF executable.");
     }
 }

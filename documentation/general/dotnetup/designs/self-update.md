@@ -472,8 +472,9 @@ sidecar. Their availability at the public daily target is not asserted here.
     binaries, including distinct version-derived identities. This is bounded local
     validation, not proof of every RID, filesystem, or live release transaction.
     The reproducible [native test cases](../../../../test/dotnetup.Tests/SelfUpdateNativeTests.cs)
-    currently gate their native scenarios to Windows; Linux validation used separate
-    native probes. macOS remains unverified.
+    support Windows x64 and Linux x64 artifacts for platform-neutral command, locking,
+    replacement, and serialization scenarios. Windows-specific recovery cases remain
+    gated to Windows. macOS remains unverified.
 - The [native fixture](../../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
     requires `DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT` pointing to
     native binaries built with distinct full versions. Same-version/RID rebuilds

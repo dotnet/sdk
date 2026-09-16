@@ -5,7 +5,7 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Stages and verifies one pinned release while coordinating replacement and recovery.</summary>
+/// <summary>Stages and verifies one  release while coordinating replacement and recovery.</summary>
 internal class SelfUpdateWorkflow
 {
     private readonly SelfUpdatePaths _paths;

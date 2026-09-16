@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class SelfUpdateNativeTests : SdkTest
 {
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public void NativeHelpRegistersSelfUpdateAndHidesBuildIdentity()
     {
         using var files = new NativeSelfUpdateFiles();
@@ -22,7 +22,7 @@ public class SelfUpdateNativeTests : SdkTest
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public void NativeIdentityBypassesBusyLocksWithoutTelemetryWrites()
     {
         using var files = new NativeSelfUpdateFiles();
@@ -37,7 +37,7 @@ public class SelfUpdateNativeTests : SdkTest
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public void NativeWorkflowVerifiesCanonicalAndRetainsBothLocksUntilCallerExit()
     {
         using var files = new NativeSelfUpdateFiles();
@@ -57,7 +57,7 @@ public class SelfUpdateNativeTests : SdkTest
             Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
             Assert.Contains("update", files.Run(["--info"], succeeds: false));
             Assert.IsFalse(File.Exists(files.Paths.StagedPath));
-            var backups = Directory.GetFiles(files.Paths.DirectoryPath, "dotnetup.exe.old.*");
+            var backups = Directory.GetFiles(files.Paths.DirectoryPath, Path.GetFileName(files.Paths.InstalledPath) + ".old.*");
             Assert.HasCount(1, backups);
             Assert.AreEqual(files.OriginalIdentity, SelfUpdatePaths.ReadIdentity(backups[0]));
         }
@@ -101,19 +101,19 @@ public class SelfUpdateNativeTests : SdkTest
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public async Task NativeReplacementAllowsOldSafeDotnetChildToRemainRunning()
     {
         using var files = new NativeSelfUpdateFiles();
-        File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
-            Path.Combine(files.Paths.DirectoryPath, "dotnet.exe"));
-        using var oldProcess = files.Start(["dotnet", "/d", "/q", "/c", "echo native-ready& set /p nativeInput=& exit /b 0"]);
+        var dotnetRoot = Path.GetDirectoryName(SelfUpdateTestFiles.DotnetHostPath)!;
+        using var oldProcess = files.Start(
+            ["dotnet", SelfUpdateTestFiles.ProcessAssemblyPath, "--wait"], dotnetRoot: dotnetRoot);
         var stderr = oldProcess.StandardError.ReadToEndAsync(TestContext.CancellationToken);
         try
         {
             var ready = await oldProcess.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask()
                 .WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken);
-            Assert.AreEqual("native-ready", ready);
+            Assert.AreEqual("ready", ready);
             Assert.IsFalse(oldProcess.HasExited);
             Assert.AreEqual(files.Release.Version.ToString(), SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(files.CreateWorkflow()));
             Assert.IsFalse(oldProcess.HasExited, "Replacement must not terminate an existing safe dotnet invocation.");
@@ -131,7 +131,7 @@ public class SelfUpdateNativeTests : SdkTest
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public async Task NativeConcurrentWorkflowsSerializeIntoSuccessAndNoOp()
     {
         using var files = new NativeSelfUpdateFiles();

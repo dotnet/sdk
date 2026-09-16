@@ -5,6 +5,13 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Dotnet.Installation.Internal;
 
+if (args is ["--wait"])
+{
+    Console.WriteLine("ready");
+    _ = Console.ReadLine();
+    return 0;
+}
+
 var executable = Environment.ProcessPath!;
 string identity;
 using (var stream = File.OpenRead(executable))
