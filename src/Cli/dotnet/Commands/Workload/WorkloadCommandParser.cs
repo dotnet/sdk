@@ -28,20 +28,20 @@ internal static class WorkloadCommandParser
     public static void ConfigureCommand(WorkloadCommandDefinition def)
         => ConfigureCommand(
             def,
-            parseResult => new WorkloadUpdateCommand(parseResult).Execute(),
+            (parseResult, cancellationToken) => Task.FromResult(new WorkloadUpdateCommand(parseResult).Execute(cancellationToken)),
             new MSBuildServer());
 
     internal static void ConfigureCommand(
         WorkloadCommandDefinition def,
-        Func<ParseResult, int> executeUpdate,
+        Func<ParseResult, CancellationToken, Task<int>> executeUpdate,
         IBuildServer msbuildServer)
     {
         def.SetAction(parseResult => parseResult.HandleMissingCommand());
         def.InfoOption.Action = new ShowWorkloadsInfoAction();
         def.VersionOption.Action = new ShowWorkloadsVersionOption();
 
-        def.InstallCommand.SetAction(parseResult => new WorkloadInstallCommand(parseResult).Execute());
-        def.UpdateCommand.SetAction(parseResult =>
+        def.InstallCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadInstallCommand(parseResult).Execute(cancellationToken)));
+        def.UpdateCommand.SetAction(async (parseResult, cancellationToken) =>
         {
             bool shouldShutdown =
                 !parseResult.GetValue(def.UpdateCommand.PrintDownloadLinkOnlyOption) &&
@@ -51,7 +51,7 @@ internal static class WorkloadCommandParser
 
             try
             {
-                return executeUpdate(parseResult);
+                return await executeUpdate(parseResult, cancellationToken);
             }
             finally
             {
@@ -68,16 +68,16 @@ internal static class WorkloadCommandParser
                 }
             }
         });
-        def.ListCommand.SetAction(parseResult => new WorkloadListCommand(parseResult).Execute());
-        def.SearchCommand.SetAction(parseResult => new WorkloadSearchCommand(parseResult).Execute());
-        def.SearchCommand.VersionCommand.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
-        def.UninstallCommand.SetAction(parseResult => new WorkloadUninstallCommand(parseResult).Execute());
-        def.RepairCommand.SetAction(parseResult => new WorkloadRepairCommand(parseResult).Execute());
-        def.RestoreCommand.SetAction(parseResult => new WorkloadRestoreCommand(parseResult).Execute());
-        def.CleanCommand.SetAction(parseResult => new WorkloadCleanCommand(parseResult).Execute());
-        def.ElevateCommand.SetAction(parseResult => new WorkloadElevateCommand(parseResult).Execute());
-        def.ConfigCommand.SetAction(parseResult => new WorkloadConfigCommand(parseResult).Execute());
-        def.HistoryCommand.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
+        def.ListCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadListCommand(parseResult).Execute(cancellationToken)));
+        def.SearchCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadSearchCommand(parseResult).Execute(cancellationToken)));
+        def.SearchCommand.VersionCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadSearchVersionsCommand(parseResult).Execute(cancellationToken)));
+        def.UninstallCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadUninstallCommand(parseResult).Execute(cancellationToken)));
+        def.RepairCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadRepairCommand(parseResult).Execute(cancellationToken)));
+        def.RestoreCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadRestoreCommand(parseResult).Execute(cancellationToken)));
+        def.CleanCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadCleanCommand(parseResult).Execute(cancellationToken)));
+        def.ElevateCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadElevateCommand(parseResult).Execute(cancellationToken)));
+        def.ConfigCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadConfigCommand(parseResult).Execute(cancellationToken)));
+        def.HistoryCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new WorkloadHistoryCommand(parseResult).Execute(cancellationToken)));
     }
 
     /// <summary>

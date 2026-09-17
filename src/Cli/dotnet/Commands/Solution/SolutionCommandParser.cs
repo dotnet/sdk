@@ -21,10 +21,10 @@ internal static class SolutionCommandParser
         // 'sln add' requires MSBuild, so it falls back to the managed CLI.
         command.AddCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
 #else
-        command.AddCommand.SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
+        command.AddCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionAddCommand(parseResult).Execute(cancellationToken)));
 #endif
-        command.ListCommand.SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
-        command.MigrateCommand.SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
-        command.RemoveCommand.SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
+        command.ListCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionListCommand(parseResult).Execute(cancellationToken)));
+        command.MigrateCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionMigrateCommand(parseResult).Execute(cancellationToken)));
+        command.RemoveCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionRemoveCommand(parseResult).Execute(cancellationToken)));
     }
 }

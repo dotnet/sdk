@@ -15,6 +15,6 @@ internal static class AddCommandParser
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
-        command.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceAddCommand(parseResult).Execute(cancellationToken)));
     }
 }

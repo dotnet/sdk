@@ -17,15 +17,15 @@ internal static class ReferenceCommandParser
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.AddCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        command.AddCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceAddCommand(parseResult).Execute(cancellationToken)));
         command.AddCommand.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-        command.ListCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
+        command.ListCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceListCommand(parseResult).Execute(cancellationToken)));
 
         var projectPathArgument = command.RemoveCommand.ProjectPathArgument;
         projectPathArgument.CompletionSources.Add(CliCompletion.ProjectReferencesFromProjectFile);
         projectPathArgument.IsDynamic = true;
 
-        command.RemoveCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
+        command.RemoveCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceRemoveCommand(parseResult).Execute(cancellationToken)));
     }
 }

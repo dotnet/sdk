@@ -20,10 +20,12 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         for (string? line; (line = Console.ReadLine()) != null;)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;

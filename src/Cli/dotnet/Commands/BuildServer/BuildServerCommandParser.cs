@@ -12,6 +12,6 @@ internal static class BuildServerCommandParser
     public static void ConfigureCommand(BuildServerCommandDefinition command)
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
-        command.ShutdownCommand.SetAction(parseResult => new BuildServerShutdownCommand(parseResult).Execute());
+        command.ShutdownCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new BuildServerShutdownCommand(parseResult).Execute(cancellationToken)));
     }
 }

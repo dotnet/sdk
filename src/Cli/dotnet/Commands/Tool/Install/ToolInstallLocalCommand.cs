@@ -77,7 +77,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _allowPackageDowngrade = parseResult.GetValue(Definition.AllowPackageDowngradeOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {

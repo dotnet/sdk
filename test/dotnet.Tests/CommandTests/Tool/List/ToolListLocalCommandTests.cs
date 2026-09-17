@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenManifestInspectorItPrintsTheTable()
         {
-            _defaultToolListLocalCommand.Execute();
+            _defaultToolListLocalCommand.Execute(CancellationToken.None);
             _reporter.Lines.Count.Should().Be(4);
             _reporter.Lines.Should().Contain(l => l.Contains("package.id"));
             _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             new ToolListLocalCommand(
                 Parser.Parse("dotnet tool list --format json"),
                 _toolManifestInspector,
-                _reporter).Execute();
+                _reporter).Execute(CancellationToken.None);
             _reporter.Lines.Count.Should().Be(1);
 
             var versionedData = JsonSerializer.Deserialize<VersionedDataContract<LocalToolListJsonContract[]>>(_reporter.Lines[0]);
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var command = new ToolListCommand(result: _parseResult,
                 toolListLocalCommand: _defaultToolListLocalCommand);
-            _defaultToolListLocalCommand.Execute();
+            _defaultToolListLocalCommand.Execute(CancellationToken.None);
             _reporter.Lines.Count.Should().Be(4);
             _reporter.Lines.Should().Contain(l => l.Contains("package.id"));
             _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenPackageIdArgumentItPrintsTheCorrectPackageInfo()
         {
-            CreateCommandWithArg("package.id").Execute().Should().Be(0);
+            CreateCommandWithArg("package.id").Execute(CancellationToken.None).Should().Be(0);
             _reporter.Lines.Count.Should().Be(3);
             _reporter.Lines.Should().Contain(l => l.Contains("package.id"));
             _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenNotInstalledPackageItPrintsEmpty()
         {
-            CreateCommandWithArg("not-installed-package").Execute().Should().Be(1);
+            CreateCommandWithArg("not-installed-package").Execute(CancellationToken.None).Should().Be(1);
             _reporter.Lines.Count.Should().Be(2);
         }
 

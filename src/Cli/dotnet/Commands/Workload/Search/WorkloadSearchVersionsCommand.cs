@@ -84,7 +84,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
             );
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_workloadVersion.Count() == 0)
         {

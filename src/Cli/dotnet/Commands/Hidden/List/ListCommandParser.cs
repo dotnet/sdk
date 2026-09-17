@@ -14,7 +14,7 @@ internal static class ListCommandParser
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.PackageCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
-        command.ReferenceCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
+        command.PackageCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new PackageListCommand(parseResult).Execute(cancellationToken)));
+        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceListCommand(parseResult).Execute(cancellationToken)));
     }
 }

@@ -467,7 +467,7 @@ public static class Parser
             }
             else if (command is MSBuildCommandDefinition)
             {
-                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
+                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute(CancellationToken.None);
                 context.Output.WriteLine();
                 additionalOption(context);
             }

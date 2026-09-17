@@ -21,7 +21,7 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
         _displaySolutionFolders = parseResult.GetValue(Definition.SolutionFolderOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         try

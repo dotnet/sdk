@@ -11,6 +11,6 @@ internal sealed class RunApiCommandParser
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static void ConfigureCommand(RunApiCommandDefinition command)
     {
-        command.SetAction(parseResult => new RunApiCommand(parseResult).Execute());
+        command.SetAction((parseResult, cancellationToken) => Task.FromResult(new RunApiCommand(parseResult).Execute(cancellationToken)));
     }
 }

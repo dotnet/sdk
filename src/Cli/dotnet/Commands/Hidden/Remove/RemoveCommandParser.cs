@@ -14,7 +14,7 @@ internal static class RemoveCommandParser
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.PackageCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
-        command.ReferenceCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
+        command.PackageCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new PackageRemoveCommand(parseResult).Execute(cancellationToken)));
+        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceRemoveCommand(parseResult).Execute(cancellationToken)));
     }
 }

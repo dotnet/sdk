@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 internal sealed class PackageSearchCommand(ParseResult parseResult)
     : CommandBase<PackageSearchCommandDefinition>(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var args = new List<string>
         {

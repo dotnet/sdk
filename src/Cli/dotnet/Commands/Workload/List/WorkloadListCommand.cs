@@ -64,7 +64,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
             packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         IEnumerable<WorkloadId> installedList = _workloadListHelper.InstalledSdkWorkloadIds;
 

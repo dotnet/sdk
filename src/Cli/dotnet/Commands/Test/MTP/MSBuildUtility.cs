@@ -149,7 +149,7 @@ internal static class MSBuildUtility
             NoCache = true,
         };
 
-        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute();
+        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute(CancellationToken.None);
         if (buildExitCode != 0)
         {
             return ([], buildExitCode);
@@ -321,7 +321,7 @@ internal static class MSBuildUtility
                 }
             }
 
-            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute(CancellationToken.None);
         }
         finally
         {

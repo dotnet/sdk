@@ -13,6 +13,6 @@ internal sealed class ProjectCommandParser
     public static void ConfigureCommand(ProjectCommandDefinition command)
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
-        command.ConvertCommand.SetAction(parseResult => new ProjectConvertCommand(parseResult).Execute());
+        command.ConvertCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ProjectConvertCommand(parseResult).Execute(cancellationToken)));
     }
 }

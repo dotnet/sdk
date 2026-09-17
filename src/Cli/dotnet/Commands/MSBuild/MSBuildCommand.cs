@@ -42,10 +42,10 @@ public class MSBuildCommand(
             msbuildPath: msbuildPath);
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 }
