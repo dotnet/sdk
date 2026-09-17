@@ -39,6 +39,20 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup Condition="('$(TargetFramework)' == '$(SdkTargetFramework)' or $(TargetFramework.StartsWith('$(SdkTargetFramework)-'))) and
+                            $([MSBuild]::VersionLessThan('$(BundledNETCoreAppTargetFrameworkVersion)', '12.0'))">
+    <!-- NetTFMUpdate: The net11 stage-0 SDK has no net12 pruning data. Remove after the bootstrap update. -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+  </PropertyGroup>
+
+  <!-- NetTFMUpdate: Arcade creates Core pack entries, but watch and its tests also need ASP.NET Core. -->
+  <ItemGroup Condition="'$(EnableKnownPackItemsForUnknownTargetFramework)' == 'true'">
+    <KnownFrameworkReference
+        Include="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '$(TargetingPackBaselineTargetFramework)'))"
+        TargetFramework="$(TargetingPackCurrentTargetFramework)"
+        Condition="'@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->AnyHaveMetadataValue('TargetFramework', '$(TargetingPackCurrentTargetFramework)'))' != 'true'" />
+  </ItemGroup>
+
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
   <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
