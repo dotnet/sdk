@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tests.ParserTests;
 public class CommonOptionsTests
 {
     [TestMethod]
-    [DoNotParallelize]
+    [DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
     public void ConfigurationDefaultsToEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -36,7 +36,7 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
+    [DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
     public void ExplicitConfigurationOverridesEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -64,7 +64,7 @@ public class CommonOptionsTests
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("\t")]
-    [DoNotParallelize]
+    [DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
     public void EmptyOrWhitespaceConfigurationEnvironmentVariableIsIgnored(string configuration)
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
