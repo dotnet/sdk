@@ -1211,14 +1211,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
-        public async Task SpanParameter_RefReadOnlyVariableDeclaration_NoDiagnostic()
+        public async Task SpanParameter_RefReadOnlyVariableDeclaration_ProducesDiagnostic()
         {
-            await VerifyAnalyzerAsync("""
+            await VerifyFixerAsync("""
                 using System;
 
                 class C
                 {
-                    private void M(Span<int> data)
+                    private void M(Span<int> [|data|])
+                    {
+                        ref readonly int firstElement = ref data[0];
+                        Console.WriteLine(firstElement);
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data)
                     {
                         ref readonly int firstElement = ref data[0];
                         Console.WriteLine(firstElement);

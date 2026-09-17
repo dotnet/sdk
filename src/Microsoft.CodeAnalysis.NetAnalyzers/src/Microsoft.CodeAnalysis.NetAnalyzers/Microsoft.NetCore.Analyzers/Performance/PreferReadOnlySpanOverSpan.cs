@@ -286,8 +286,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             // GetValueUsageInfo covers writable ref locals only through an initializer.
-            if (propRef.Parent is IVariableDeclaratorOperation { Symbol.RefKind: not RefKind.None } ||
-                propRef.Parent is IVariableInitializerOperation { Parent: IVariableDeclaratorOperation { Symbol.RefKind: RefKind.RefReadOnly } })
+            if (propRef.Parent is IVariableDeclaratorOperation { Symbol.RefKind: RefKind.Ref })
             {
                 return false;
             }
