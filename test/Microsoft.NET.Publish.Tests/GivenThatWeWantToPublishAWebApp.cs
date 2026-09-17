@@ -46,11 +46,8 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        // This test is for netcoreapp2 and no longer working on ubuntu 2404
-        //  Disabled for OSX due to //  https://github.com/dotnet/sdk/issues/49665, should be re-enabled
-        //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";

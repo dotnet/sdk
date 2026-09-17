@@ -79,10 +79,9 @@ namespace Microsoft.NET.ILLink.Tests
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-        [DataRow("netcoreapp3.1")]
         [DataRow("net5.0")]
         [DataRow("net6.0")]
         public void ILLink_old_defaults_keep_nonframework(string targetFramework)

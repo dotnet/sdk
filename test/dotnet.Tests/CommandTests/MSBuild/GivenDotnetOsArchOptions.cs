@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
+
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
@@ -202,6 +203,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
         }
+
+        [TestMethod]
+        public void RuntimeIdentifierChainUsesProductVersionWhenInstalled()
+        {
+            string sdkPath = TestAssetsManager.CreateTestDirectory().Path;
+            string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
+            CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
+
+            TargetPlatformOptions.GetRuntimeIdentifierChainPath(sdkPath, "10.0.100").Should().Be(expectedPath);
+        }
+
+        [TestMethod]
+        public void RuntimeIdentifierChainUsesLatestSdkWhenProductVersionHasNoChainFile()
+        {
+            string sdkPath = TestAssetsManager.CreateTestDirectory().Path;
+            CreateRuntimeIdentifierChainFile(sdkPath, "10.0.100");
+            string expectedPath = CreateRuntimeIdentifierChainFile(sdkPath, "10.0.200");
+            Directory.CreateDirectory(Path.Combine(sdkPath, "10.0.200-ci"));
+
+            TargetPlatformOptions.GetRuntimeIdentifierChainPath(sdkPath, "10.0.200-ci").Should().Be(expectedPath);
+        }
+
+        private static string CreateRuntimeIdentifierChainFile(string sdkPath, string sdkVersion)
+        {
+            string sdkVersionPath = Path.Combine(sdkPath, sdkVersion);
+            Directory.CreateDirectory(sdkVersionPath);
+            string ridFilePath = Path.Combine(sdkVersionPath, "NETCoreSdkRuntimeIdentifierChain.txt");
+            File.WriteAllText(ridFilePath, "test-x64");
+            return ridFilePath;
+        }
     }
 }
-
