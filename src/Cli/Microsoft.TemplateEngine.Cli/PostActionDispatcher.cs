@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Cli
         /// If the user cancelled post action with <see cref="IPostAction.ContinueOnError"/> set to true, the result will be <see cref="PostActionExecutionStatus.Cancelled"></see> anyway.<br />
         /// Note that <see cref="PostActionExecutionStatus"/> is a flags enum, and can contain multiple status if multiple post actions failed with different reason.
         /// </returns>
-        internal PostActionExecutionStatus Process(ITemplateCreationResult creationResult, bool isDryRun, AllowRunScripts canRunScripts, CancellationToken cancellationToken = default)
+        internal PostActionExecutionStatus Process(ITemplateCreationResult creationResult, bool isDryRun, AllowRunScripts canRunScripts, CancellationToken cancellationToken)
         {
             _ = creationResult ?? throw new ArgumentNullException(nameof(creationResult));
             _ = creationResult.CreationEffects ?? throw new ArgumentNullException(nameof(creationResult.CreationEffects));

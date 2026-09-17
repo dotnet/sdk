@@ -25,7 +25,7 @@ internal static class AotTestCommand
         }
     }
 
-    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken = default)
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
     {
         if (parseResult.CommandResult.Command is not TestCommandDefinition.MicrosoftTestingPlatform definition
             || string.IsNullOrWhiteSpace(parseResult.GetValue(definition.TestModulesFilterOption))

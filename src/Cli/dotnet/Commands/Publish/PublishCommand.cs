@@ -82,7 +82,7 @@ public class PublishCommand : RestoringCommand
         );
     }
 
-    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 

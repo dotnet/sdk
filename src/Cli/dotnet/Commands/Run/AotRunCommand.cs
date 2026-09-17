@@ -35,24 +35,24 @@ internal static class AotRunCommand
     /// <param name="parseResult">The parsed run invocation.</param>
     /// <param name="cancellationToken">Token observed while launching the invocation.</param>
     /// <returns>The launched process exit code.</returns>
-    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken = default)
-        => Execute(parseResult, Launch, cancellationToken: cancellationToken);
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
+        => Execute(parseResult, Launch, cancellationToken);
 
     /// <summary>
     /// Plans and executes an eligible file-based application using an injected launcher.
     /// </summary>
     /// <param name="parseResult">The parsed run invocation.</param>
     /// <param name="launch">Launches the committed invocation.</param>
-    /// <param name="currentDirectory">The current directory used for discovery and relative paths.</param>
     /// <param name="cancellationToken">Token observed while launching the invocation.</param>
+    /// <param name="currentDirectory">The current directory used for discovery and relative paths.</param>
     /// <returns>The launcher exit code.</returns>
     /// <exception cref="CommandNotAvailableInAotException">The invocation cannot be handled safely by the Native AOT path.</exception>
     /// <exception cref="GracefulException">Managed project discovery reports a user-facing input error.</exception>
     internal static int Execute(
         ParseResult parseResult,
         Func<AotRunInvocation, int> launch,
-        string? currentDirectory = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken,
+        string? currentDirectory = null)
     {
         currentDirectory ??= Environment.CurrentDirectory;
         var definition = (RunCommandDefinition)parseResult.CommandResult.Command;

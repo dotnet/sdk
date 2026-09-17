@@ -48,7 +48,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
         );
     }
 
-    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
         return FromParseResult(parseResult).Execute(cancellationToken);

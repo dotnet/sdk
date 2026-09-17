@@ -134,7 +134,7 @@ public class PackCommand(
         return 0;
     }
 
-    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 

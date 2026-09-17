@@ -22,7 +22,9 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
             WriteHelpOptions(context);
             Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
-            Run(context.ParseResult, isHelp: true);
+            // This help-rendering path is invoked synchronously from System.CommandLine's HelpBuilder
+            // override, so no cancellation token flows in here; see DotnetHelpBuilder.Write in Parser.cs.
+            Run(context.ParseResult, isHelp: true, CancellationToken.None);
 
             if (_commandLineOptionNameToModuleNames.IsEmpty)
             {

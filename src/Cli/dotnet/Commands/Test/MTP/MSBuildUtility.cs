@@ -36,7 +36,7 @@ internal static class MSBuildUtility
         string solutionFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
@@ -89,7 +89,7 @@ internal static class MSBuildUtility
         string projectFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
@@ -114,7 +114,7 @@ internal static class MSBuildUtility
 
         if (deviceSelection is not null)
         {
-            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession, cancellationToken: cancellationToken);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession, cancellationToken);
         }
 
         int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions, cancellationToken);
@@ -140,7 +140,7 @@ internal static class MSBuildUtility
         string entryPointFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
         string fullEntryPointFilePath = Path.GetFullPath(entryPointFilePath);
@@ -191,9 +191,9 @@ internal static class MSBuildUtility
         BuildOptions buildOptions,
         SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
         MSBuildSession buildSession,
+        CancellationToken cancellationToken,
         string? configuration = null,
-        string? platform = null,
-        CancellationToken cancellationToken = default)
+        string? platform = null)
     {
         var allGroups = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
@@ -277,7 +277,7 @@ internal static class MSBuildUtility
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions, CancellationToken cancellationToken = default)
+    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions, CancellationToken cancellationToken)
     {
         if (buildOptions.HasNoBuild)
         {
@@ -341,7 +341,7 @@ internal static class MSBuildUtility
         BuildOptions buildOptions,
         IReadOnlyDictionary<string, string> globalProperties,
         MSBuildSession buildSession,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var solutionProjects = projects.ToArray();
@@ -432,9 +432,9 @@ internal static class MSBuildUtility
                     buildOptions,
                     deviceSelection,
                     buildSession,
+                    cancellationToken,
                     project.Configuration,
-                    project.Platform,
-                    cancellationToken);
+                    project.Platform);
                 if (exitCode != 0)
                 {
                     return (allProjects, exitCode);
