@@ -37,18 +37,57 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
+    public async Task<ManifestResponse> GetAsync(string repositoryPath, string tagOrDigest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
-        HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        return response.StatusCode switch
+
+        string? requestedDigest = null;
+        if (!ContainerHelpers.IsValidImageTag(tagOrDigest))
         {
-            HttpStatusCode.OK => response,
-            HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
-            _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
-        };
+            DigestUtils.ValidateSupportedDigestFormat(tagOrDigest, out _, out _);
+            requestedDigest = tagOrDigest;
+        }
+
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryPath}/manifests/{tagOrDigest}")).AcceptManifestFormats();
+        using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (response.StatusCode is not HttpStatusCode.OK)
+        {
+            return response.StatusCode switch
+            {
+                HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryPath, tagOrDigest),
+                HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryPath),
+                _ => await LogAndThrowContainerHttpException<ManifestResponse>(response, cancellationToken).ConfigureAwait(false)
+            };
+        }
+
+        ReadOnlyMemory<byte> manifestBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        // SAFETY: The OCI Distribution Specification requires this header and requires a client
+        // that uses it to verify that it matches the returned manifest. Some registries omit it,
+        // so tag requests accept a missing header.
+        // See https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
+        string? dockerContentDigest =
+            response.Headers.TryGetValues("Docker-Content-Digest", out var dockerContentDigestValues)
+                ? dockerContentDigestValues.FirstOrDefault()
+                : null;
+
+        if (requestedDigest is not null)
+        {
+            DigestUtils.ValidateDigestContent(requestedDigest, manifestBytes.Span);
+        }
+
+        if (dockerContentDigest is not null)
+        {
+            DigestUtils.ValidateDigestContent(dockerContentDigest, manifestBytes.Span);
+        }
+
+        string? verifiedDigest = requestedDigest ?? dockerContentDigest;
+        return new ManifestResponse(
+            Content: manifestBytes,
+            VerifiedDigest: verifiedDigest,
+            MediaType: response.Content.Headers.ContentType?.MediaType
+        );
     }
 
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
