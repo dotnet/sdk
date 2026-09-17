@@ -127,7 +127,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                 new FirstPartyNuGetPackageSigningVerifier(),
                 nugetLogger,
                 restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures);
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
         }
 
         /// <summary>
