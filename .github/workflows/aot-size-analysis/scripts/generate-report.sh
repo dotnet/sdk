@@ -117,15 +117,16 @@ fi
 
 report_file="${temp_dir}/size-report.md"
 details_file="${temp_dir}/size-details.md"
-treemap_dir="${temp_dir}/nativeaot-size-treemaps"
-html_report_file="${treemap_dir}/index.html"
-mkdir -p "$treemap_dir"
+interactive_report_dir="${temp_dir}/nativeaot-size-report"
+html_report_file="${interactive_report_dir}/index.html"
+mkdir -p "$interactive_report_dir"
 : > "$details_file"
 
 # Pass 1: run sizoscope-cli for each platform, collect summary data
 declare -A platform_totals
 has_any_diff=false
 has_any_treemap=false
+has_any_detail_report=false
 
 for platform in $platforms; do
   start_group "Analyzing ${platform}"
@@ -154,7 +155,7 @@ for platform in $platforms; do
       "$((elapsed_ns / 1000000000))" "$(((elapsed_ns / 1000000) % 1000))" \
       "${total_size:-unknown}" "$detail_line_count"
 
-    treemap_file="${treemap_dir}/${platform}.svg"
+    treemap_file="${interactive_report_dir}/${platform}.svg"
     if pwsh -NoLogo -NoProfile -File "$(dirname "$0")/generate-treemap.ps1" \
         -InputPath "$diff_file" \
         -OutputPath "$treemap_file" \
@@ -162,6 +163,29 @@ for platform in $platforms; do
       has_any_treemap=true
     else
       emit_warning "Treemap generation failed for ${platform}."
+    fi
+
+    pr_scan=$(find "${temp_dir}/pr/${platform}" -name "dotnet-aot.scan.dgml.xml" -type f -print -quit)
+    if [ -n "$pr_scan" ]; then
+      detail_report_file="${interactive_report_dir}/${platform}-details.html"
+      generic_csv_file="${interactive_report_dir}/${platform}-generic-instantiations.csv"
+      single_dependency_csv_file="${interactive_report_dir}/${platform}-single-dependency.csv"
+      if dotnet run \
+          --project "$(dirname "$0")/mstat-report/mstat-report.csproj" \
+          --configuration Release \
+          --no-restore \
+          -- \
+          "$pr_mstat" \
+          "$pr_scan" \
+          "$detail_report_file" \
+          "$generic_csv_file" \
+          "$single_dependency_csv_file"; then
+        has_any_detail_report=true
+      else
+        emit_warning "Detailed MSTAT report generation failed for ${platform}."
+      fi
+    else
+      emit_warning "No scan dependency graph was found for ${platform}; skipping the detailed report."
     fi
 
     # Accumulate per-platform details
@@ -191,7 +215,7 @@ if [ "$has_any_diff" = false ]; then
   exit 0
 fi
 
-if [ "$has_any_treemap" = true ]; then
+if [ "$has_any_treemap" = true ] || [ "$has_any_detail_report" = true ]; then
   {
     cat <<EOF
 <!DOCTYPE html>
@@ -220,16 +244,22 @@ EOF
     done
     printf '  </tbody></table>\n'
     for platform in $platforms; do
-      treemap_file="${treemap_dir}/${platform}.svg"
+      treemap_file="${interactive_report_dir}/${platform}.svg"
+      detail_report_file="${interactive_report_dir}/${platform}-details.html"
       diff_file="${temp_dir}/${platform}-diff.md"
-      if [ ! -s "$treemap_file" ]; then
+      if [ ! -s "$treemap_file" ] && [ ! -s "$detail_report_file" ]; then
         continue
       fi
 
       escaped_platform=$(printf '%s' "$platform" | escape_html)
-      escaped_file_name=$(printf '%s' "${platform}.svg" | escape_html)
       printf '  <details open><summary>%s</summary>\n' "$escaped_platform"
-      printf '    <object data="%s" type="image/svg+xml" aria-label="%s NativeAOT size diff"></object>\n' "$escaped_file_name" "$escaped_platform"
+      if [ -s "$detail_report_file" ]; then
+        printf '    <p><a href="%s-details.html">Explore members, generic instantiations, and retention paths</a> · <a href="%s-generic-instantiations.csv">Generic CSV</a> · <a href="%s-single-dependency.csv">Single-dependency CSV</a></p>\n' "$escaped_platform" "$escaped_platform" "$escaped_platform"
+      fi
+      if [ -s "$treemap_file" ]; then
+        escaped_file_name=$(printf '%s' "${platform}.svg" | escape_html)
+        printf '    <object data="%s" type="image/svg+xml" aria-label="%s NativeAOT size diff"></object>\n' "$escaped_file_name" "$escaped_platform"
+      fi
       printf '    <details><summary>Text size diff</summary><pre>'
       escape_html < "$diff_file"
       printf '</pre></details>\n'
@@ -242,14 +272,19 @@ EOF
   } > "$html_report_file"
 fi
 
+has_visualizations=false
+if [ "$has_any_treemap" = true ] || [ "$has_any_detail_report" = true ]; then
+  has_visualizations=true
+fi
+
 # Pass 2: assemble the final report with summary table first
 {
   echo "## 📊 NativeAOT Size Analysis"
   echo ""
   echo "Comparing [PR build](${pr_build_url}) against [baseline build](${baseline_build_url})."
   echo ""
-  if [ "$has_any_treemap" = true ]; then
-    echo "The interactive HTML report embeds a hoverable SVG treemap for each platform. Download the \`nativeaot-size-report\` artifact from the [workflow run](${workflow_run_url})."
+  if [ "$has_visualizations" = true ]; then
+    echo "Download the \`nativeaot-size-report\` artifact from the [workflow run](${workflow_run_url}) for hoverable size-diff treemaps and a member-level explorer with generic-instantiation and retention-path data."
     echo ""
   fi
   echo "| Platform | Size Difference |"
@@ -265,5 +300,5 @@ fi
 
 emit_output_value "has_report" "true"
 emit_output_value "report_file" "$report_file"
-emit_output_value "has_treemaps" "$has_any_treemap"
-emit_output_value "treemap_dir" "$treemap_dir"
+emit_output_value "has_visualizations" "$has_visualizations"
+emit_output_value "interactive_report_dir" "$interactive_report_dir"

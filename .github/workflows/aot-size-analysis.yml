@@ -5,14 +5,15 @@
 # 2. Downloads the same artifact from the most recent build on the PR's base branch
 # 3. Runs sizoscope-cli to diff the .mstat files and produce a size impact report
 # 4. Generates hoverable SVG treemaps of assembly-level size changes
-# 5. Posts or updates a PR comment summarizing the size impact per platform
+# 5. Generates a member-level explorer with generic and retention-path data
+# 6. Posts or updates a PR comment summarizing the size impact per platform
 #
 # Triggers:
 # - workflow_dispatch: for external/automated invocation (e.g., from AzDO pipeline callback)
 # - issue_comment: `/aot-size` slash command on a PR
 #
 # Prerequisites:
-# - The PR pipeline must publish _AotSizeAnalysis artifacts (dotnet-aot.mstat, dotnet-aot.scan.dgml)
+# - The PR pipeline must publish _AotSizeAnalysis artifacts with a full scan dependency graph
 # - The sizoscope-cli dotnet tool must be available on the feeds configured by the nuget.config in this repo
 #
 name: NativeAOT Size Analysis
@@ -203,9 +204,11 @@ jobs:
             .github/workflows/aot-size-analysis/scripts
             NuGet.config
 
-      - name: Test SVG treemap generator
+      - name: Test size report generators
         shell: pwsh
-        run: ./.github/workflows/aot-size-analysis/scripts/generate-treemap.tests.ps1
+        run: |
+          ./.github/workflows/aot-size-analysis/scripts/generate-treemap.tests.ps1
+          dotnet run --project ./.github/workflows/aot-size-analysis/scripts/mstat-report/mstat-report.csproj --configuration Release -- --self-test
 
       - name: Find PR and baseline builds
         id: builds
@@ -255,11 +258,11 @@ jobs:
           --output-file "$GITHUB_OUTPUT"
 
       - name: Upload interactive size report
-        if: steps.report.outputs.has_treemaps == 'true'
+        if: steps.report.outputs.has_visualizations == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nativeaot-size-report
-          path: ${{ steps.report.outputs.treemap_dir }}
+          path: ${{ steps.report.outputs.interactive_report_dir }}
           retention-days: 14
 
       - name: Upload size report
