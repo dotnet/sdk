@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Extensions;
@@ -15,6 +16,6 @@ internal static class AddCommandParser
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
-        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ReferenceAddCommand(parseResult).Execute(cancellationToken)));
+        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => new ReferenceAddCommand(parseResult).Execute(cancellationToken));
     }
 }

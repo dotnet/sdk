@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 (_, _) =>
                 {
                     updateFinished = true;
-                    return Task.FromResult(42);
+                    return 42;
                 },
                 msbuildServer.Object).Invoke(Parser.InvocationConfiguration);
 
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 .Setup(server => server.Shutdown())
                 .Throws(new InvalidOperationException("Shutdown failed"));
 
-            int exitCode = ParseWorkloadUpdate((_, _) => Task.FromResult(42), msbuildServer.Object)
+            int exitCode = ParseWorkloadUpdate((_, _) => 42, msbuildServer.Object)
                 .Invoke(Parser.InvocationConfiguration);
 
             exitCode.Should().Be(42);
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
             string[] arguments = value is null ? [option] : [option, value];
 
-            int exitCode = ParseWorkloadUpdate((_, _) => Task.FromResult(42), msbuildServer.Object, arguments)
+            int exitCode = ParseWorkloadUpdate((_, _) => 42, msbuildServer.Object, arguments)
                 .Invoke(Parser.InvocationConfiguration);
 
             exitCode.Should().Be(42);
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         private static ParseResult ParseWorkloadUpdate(
-            Func<ParseResult, CancellationToken, Task<int>> executeUpdate,
+            Func<ParseResult, CancellationToken, int> executeUpdate,
             IBuildServer msbuildServer,
             params string[] arguments)
         {

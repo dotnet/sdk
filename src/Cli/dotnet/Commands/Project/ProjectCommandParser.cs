@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Project.Convert;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -13,6 +14,6 @@ internal sealed class ProjectCommandParser
     public static void ConfigureCommand(ProjectCommandDefinition command)
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
-        command.ConvertCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new ProjectConvertCommand(parseResult).Execute(cancellationToken)));
+        command.ConvertCommand.SetAction((parseResult, cancellationToken) => new ProjectConvertCommand(parseResult).Execute(cancellationToken));
     }
 }

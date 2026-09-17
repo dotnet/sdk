@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 #if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
@@ -21,10 +22,10 @@ internal static class SolutionCommandParser
         // 'sln add' requires MSBuild, so it falls back to the managed CLI.
         command.AddCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
 #else
-        command.AddCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionAddCommand(parseResult).Execute(cancellationToken)));
+        command.AddCommand.SetAction((parseResult, cancellationToken) => new SolutionAddCommand(parseResult).Execute(cancellationToken));
 #endif
-        command.ListCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionListCommand(parseResult).Execute(cancellationToken)));
-        command.MigrateCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionMigrateCommand(parseResult).Execute(cancellationToken)));
-        command.RemoveCommand.SetAction((parseResult, cancellationToken) => Task.FromResult(new SolutionRemoveCommand(parseResult).Execute(cancellationToken)));
+        command.ListCommand.SetAction((parseResult, cancellationToken) => new SolutionListCommand(parseResult).Execute(cancellationToken));
+        command.MigrateCommand.SetAction((parseResult, cancellationToken) => new SolutionMigrateCommand(parseResult).Execute(cancellationToken));
+        command.RemoveCommand.SetAction((parseResult, cancellationToken) => new SolutionRemoveCommand(parseResult).Execute(cancellationToken));
     }
 }

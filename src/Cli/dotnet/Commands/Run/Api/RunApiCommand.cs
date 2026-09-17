@@ -22,25 +22,30 @@ internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parse
 {
     public override int Execute(CancellationToken cancellationToken)
     {
-        for (string? line; (line = Console.ReadLine()) != null;)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            for (string? line; (line = Console.In.ReadLineAsync(cancellationToken).AsTask().GetAwaiter().GetResult()) != null;)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
 
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
+                try
+                {
+                    RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
+                    RunApiOutput output = input.Execute();
+                    Respond(output);
+                }
+                catch (Exception ex)
+                {
+                    Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
+                }
             }
-
-            try
-            {
-                RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
-                RunApiOutput output = input.Execute();
-                Respond(output);
-            }
-            catch (Exception ex)
-            {
-                Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
-            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The stdin read was cancelled (e.g. Ctrl+C/SIGTERM); exit the loop gracefully.
         }
 
         return 0;
