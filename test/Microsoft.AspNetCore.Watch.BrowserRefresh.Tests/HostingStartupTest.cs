@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
@@ -49,7 +50,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var requestDelegate = GetRequestDelegate();
             var context = new DefaultHttpContext();
             context.Request.Path = "/_framework/blazor-hotreload";
+            context.Request.Headers.Origin = "http://localhost";
             context.Request.Method = "POST";
+            context.Request.ContentType = "application/json";
 
             var updateJson = """
                 {"id":0,"deltas":[{"moduleId":"9BBB9BBD-48F0-4EB2-B7A3-956CFC220CC4","metadataDelta":"","ilDelta":"","pdbDelta":"","updatedTypes":[1,2,3]}]}
@@ -182,6 +185,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             var serviceProvider = new ServiceCollection()
                 .AddLogging()
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .BuildServiceProvider();
             var builder = new ApplicationBuilder(serviceProvider);
             action(builder);
