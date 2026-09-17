@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var requestDelegate = GetRequestDelegate();
             var context = new DefaultHttpContext();
             context.Request.Path = "/_framework/blazor-hotreload";
+            context.Request.Headers.Origin = "http://localhost";
             context.Request.Method = "POST";
             context.Request.ContentType = "application/json";
 
