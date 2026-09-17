@@ -243,10 +243,20 @@ namespace Microsoft.NET.Build.Tasks
                 else if (eligibility.CompileUnrootedIntoCompositeImage)
                 {
                     r2rCompositeUnrootedInput.Add(file);
+
+                    // crossgen2 emits component assemblies flat into the composite output directory using only their
+                    // file names, so the publish source path must use just the file name. The RelativePath metadata
+                    // (already set on r2rFileToPublish) continues to drive the final publish destination.
+                    r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
                     r2rCompositeInputList.Add(file);
+
+                    // crossgen2 emits component assemblies flat into the composite output directory using only their
+                    // file names, so the publish source path must use just the file name. The RelativePath metadata
+                    // (already set on r2rFileToPublish) continues to drive the final publish destination.
+                    r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
 
                 r2rFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);

@@ -79,5 +79,7 @@ internal static class LogEvents
     public static readonly LogEvent<string> ManifestFileNotFound = Create<string>(LogLevel.Debug, "Manifest file '{0}' not found.");
     public static readonly LogEvent<string> ProjectSpecifiesCapabilities = Create<string>(LogLevel.Debug, "Project specifies capabilities: {0}.");
     public static readonly LogEvent<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create<(Version, string)>(LogLevel.Debug, "Using capabilities based on project target framework version: '{0}': {1}.");
+    public static readonly LogEvent<None> StaticWebAssetManifestNotFound = Create(LogLevel.Warning, "Static web asset manifest not found.");
+    public static readonly LogEvent<string> ScopedCssBundleFileNotFound = Create<string>(LogLevel.Warning, "Scoped CSS bundle file '{0}' not found.");
 }
 

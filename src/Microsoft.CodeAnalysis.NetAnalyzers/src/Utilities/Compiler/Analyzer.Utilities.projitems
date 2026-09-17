@@ -9,7 +9,6 @@
     <Import_RootNamespace>Analyzer.Utilities</Import_RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants),HAS_IOPERATION,CODEANALYSIS_V3_OR_BETTER,CODEANALYSIS_V3_7_OR_BETTER</DefineConstants>
     <!-- Explicitly enable nullable for all projects that link Analyzer.Utilities.
 	     This is needed as this project is linked into test projects which don't yet have nullable enabled,
 		 and building the test projects without the explicit enable nullable below leads to following warnings:
@@ -50,7 +49,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ReportDiagnosticExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ImmutableArrayExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\KeyValuePairExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodKindEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DisposeMethodKind.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\OperationBlockAnalysisContextExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\SourceTextExtensions.cs" />
@@ -60,13 +58,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\WellKnownDiagnosticTagsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Index.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsExternalInit.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\ICollectionExpressionOperationWrapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\IOperationWrapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\IFunctionPointerInvocationOperationWrapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\IUtf8StringOperationWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lightup\LightupHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\OperationKindEx.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Lightup\OperationWrapperHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\MSBuildItemOptionNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\OptionKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\OptionKind.cs" />
@@ -124,7 +116,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SymbolDisplayStringCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SymbolByDisplayStringComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FxCopWellKnownDiagnosticTags.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SymbolEqualityComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnusedValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WellKnownTypeNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WellKnownTypeProvider.cs" />

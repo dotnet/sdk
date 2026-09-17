@@ -21,6 +21,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Optional] Arguments: a string of arguments to be passed to the test runner
         /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
         ///   used for partitioning tests into Helix shards
+        /// - [Optional] PartitionByClass: when set to "true", bypasses the method-count scheduler and creates
+        ///   one Helix work item per schedulable public test-class candidate discovered in the assembly
+        /// - [Optional] NodeRequiredTestClass: full name of the only test class that requires Node.js
+        /// - [Optional] NodeVersion: Node.js version installed for the partition containing NodeRequiredTestClass
         /// The two required parameters will be automatically created if TestProject.Identity is set to the path of the test csproj file
         /// </summary>
         [Required]
@@ -123,6 +127,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             testProject.TryGetMetadata("ExcludeAdditionalParameters", out string ExcludeAdditionalParameters);
 
             testProject.TryGetMetadata("Arguments", out string arguments);
+            testProject.TryGetMetadata("NodeRequiredTestClass", out string nodeRequiredTestClass);
+            testProject.TryGetMetadata("NodeVersion", out string nodeVersion);
             TimeSpan timeout = TimeSpan.FromMinutes(5);
             if (!string.IsNullOrEmpty(TestWorkItemTimeout))
             {
@@ -208,29 +214,45 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var methodLimit = BaseMethodLimit;
-            if (testProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            // When PartitionByClass is "true", bypass the method-count scheduler and create one
+            // Helix work item per test class. The MethodLimitMultiplier metadata only affects
+            // method-count scheduling, so it is intentionally read only in the else branch.
+            testProject.TryGetMetadata("PartitionByClass", out string partitionByClassMetadata);
+            IEnumerable<AssemblyPartitionInfo> assemblyPartitionInfos;
+            if (string.Equals(partitionByClassMetadata, "true", StringComparison.OrdinalIgnoreCase))
             {
-                if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                assemblyPartitionInfos = new AssemblyScheduler().PartitionByClass(targetPath);
+            }
+            else
+            {
+                var methodLimit = BaseMethodLimit;
+                if (testProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
                 {
-                    methodLimit *= multiplier;
+                    if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                    {
+                        methodLimit *= multiplier;
+                    }
+                    else
+                    {
+                        Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
+                    }
                 }
-                else
-                {
-                    Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
-                }
+
+                assemblyPartitionInfos = new AssemblyScheduler(methodLimit: methodLimit).Schedule(targetPath);
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
-            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
+            string formattedArguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
                 string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                string nodeSetupPrefix = GetNodeSetupPrefix(
+                    assemblyPartitionInfo,
+                    nodeRequiredTestClass,
+                    nodeVersion);
 
                 // Test executables run out-of-process (MTP hosts are launched directly; the legacy
                 // VSTest path launches the AppHost executable). On POSIX, the execute bit is lost
@@ -316,13 +338,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                         ? assemblyName
                         : $"{driver} exec {assemblyName}";
 
-                    command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
+                    command = $"{additionalPayloadPreCommand}{nodeSetupPrefix}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
                               $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {dumpArgs} {ignoreZeroTestsArg}";
                 }
                 else
                 {
-                    command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
+                    command = $"{additionalPayloadPreCommand}{nodeSetupPrefix}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                              $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {formattedArguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
@@ -337,6 +359,35 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             return partitionedWorkItem;
+        }
+
+        private string GetNodeSetupPrefix(
+            AssemblyPartitionInfo partition,
+            string nodeRequiredTestClass,
+            string nodeVersion)
+        {
+            if (string.IsNullOrEmpty(nodeRequiredTestClass)
+                || string.IsNullOrEmpty(nodeVersion)
+                || (!string.IsNullOrEmpty(partition.ClassListArgumentString)
+                    && !partition.ClassListArgumentString.Contains(
+                        $"{nodeRequiredTestClass}.",
+                        StringComparison.Ordinal)))
+            {
+                return string.Empty;
+            }
+
+            if (IsPosixShell)
+            {
+                string architecture = TargetRid.EndsWith("-arm64", StringComparison.OrdinalIgnoreCase)
+                    ? "arm64"
+                    : "x64";
+                return $"chmod +x $HELIX_CORRELATION_PAYLOAD/t/installnode.sh && " +
+                    $"$HELIX_CORRELATION_PAYLOAD/t/installnode.sh {nodeVersion} {architecture} && " +
+                    $"export PATH=$HELIX_CORRELATION_PAYLOAD/t/node/bin:$PATH && ";
+            }
+
+            return $"PowerShell -ExecutionPolicy ByPass -File \"%HELIX_CORRELATION_PAYLOAD%\\t\\InstallNode.ps1\" {nodeVersion} && " +
+                $"set \"PATH=%HELIX_CORRELATION_PAYLOAD%\\t\\nodejs;%PATH%\" && ";
         }
     }
 }

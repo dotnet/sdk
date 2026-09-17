@@ -19,120 +19,124 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA2231NoWarningCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    // Non-value type
-    public class A
-    {    
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
+                    // Non-value type
+                    public class A
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
 
-    // value type without overriding Equals
-    public struct B
-    {    
-        public new bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
-");
+                    // value type without overriding Equals
+                    public struct B
+                    {
+                        public new bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA2231NoEqualsOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public struct A
-    {
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
-",
+                    using System;
+
+                    public struct A
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
+
+                """,
             GetCA2231CSharpResultAt(4, 19));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA2231NoEqualsOperatorButNotExternallyVisibleCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    struct A
-    {
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
+                    struct A
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
 
-    public class A2
-    {
-        private struct B
-        {
-            public override bool Equals(Object obj)
-            {
-                return true;
-            }
-        }
-    }
-");
+                    public class A2
+                    {
+                        private struct B
+                        {
+                            public override bool Equals(Object obj)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA2231NoEqualsOperatorCSharpOutofScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public struct [|A|]
-    {
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
+                    public struct [|A|]
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
 
-    // value type without overriding Equals
-    public struct B
-    {    
-        public new bool Equals(Object obj)
-        {
-            return true;
-        }
-    }
-");
+                    // value type without overriding Equals
+                    public struct B
+                    {
+                        public new bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA2231CSharpInnerClassHasNoEqualsOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public struct A
-    {
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
+                    using System;
 
-        public struct Aa
-        {
-            public override bool Equals(Object obj)
-            {
-                return true;
-            }
-        }
-    }
-",
+                    public struct A
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
+
+                        public struct Aa
+                        {
+                            public override bool Equals(Object obj)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                """,
             GetCA2231CSharpResultAt(4, 19),
             GetCA2231CSharpResultAt(11, 23));
         }
@@ -140,27 +144,27 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA2231HasEqualsOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public struct A
-    {
-        public override bool Equals(Object obj)
-        {
-            return true;
-        }
+                    public struct A
+                    {
+                        public override bool Equals(Object obj)
+                        {
+                            return true;
+                        }
 
-        public static bool operator ==(A a1, A a2)
-        {
-            return false;
-        }
+                        public static bool operator ==(A a1, A a2)
+                        {
+                            return false;
+                        }
 
-        public static bool operator !=(A a1, A a2)
-        {
-            return false;
-        }
-    }
-");
+                        public static bool operator !=(A a1, A a2)
+                        {
+                            return false;
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
@@ -168,15 +172,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             await new VerifyCS.Test
             {
-                TestCode = @"
-public ref struct S
-{
-    public override bool Equals(object other)
-    {
-        return false;
-    }
-}
-",
+                TestCode = """
+                    public ref struct S
+                    {
+                        public override bool Equals(object other)
+                        {
+                            return false;
+                        }
+                    }
+                    """,
                 LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync(CancellationToken.None);
         }
@@ -184,92 +188,96 @@ public ref struct S
         [TestMethod]
         public async Task CA2231NoWarningBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Class
-");
+                Public Class A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CA2231NoEqualsOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure
-",
+                Imports System
+
+                Public Structure A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
+
+                """,
             GetCA2231BasicResultAt(4, 18));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA2231NoEqualsOperatorButNotExternallyVisibleBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure
+                Structure A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
 
-Public Class A2
-    Private Structure B
-        Public Overloads Overrides Function Equals(obj As Object) As Boolean
-            Return True
-        End Function
-    End Structure
-End Class
-");
+                Public Class A2
+                    Private Structure B
+                        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                            Return True
+                        End Function
+                    End Structure
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CA2231NoEqualsOperatorBasicWithScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Class
+                Public Class A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Class
 
-Public Structure [|B|]
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure
-");
+                Public Structure [|B|]
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
+                """);
         }
 
         [TestMethod]
         public async Task CA2231BasicInnerClassHasNoEqualsOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
+                Imports System
 
-    Public Structure Aa
-        Public Overloads Overrides Function Equals(obj As Object) As Boolean
-            Return True
-        End Function
-    End Structure
-End Structure
-",
+                Public Structure A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+
+                    Public Structure Aa
+                        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                            Return True
+                        End Function
+                    End Structure
+                End Structure
+
+                """,
             GetCA2231BasicResultAt(4, 18),
             GetCA2231BasicResultAt(9, 22));
         }
@@ -277,23 +285,23 @@ End Structure
         [TestMethod]
         public async Task CA2231HasEqualsOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
+                Public Structure A
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
 
-    Public Shared Operator =(left As A, right As A)
-        Return True
-    End Operator
+                    Public Shared Operator =(left As A, right As A)
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(left As A, right As A)
-        Return True
-    End Operator
-End Structure
-");
+                    Public Shared Operator <>(left As A, right As A)
+                        Return True
+                    End Operator
+                End Structure
+                """);
         }
 
         private static DiagnosticResult GetCA2231CSharpResultAt(int line, int column)

@@ -34,6 +34,7 @@ namespace Microsoft.NET.Pack.Tests
                 $"HelloWorld.pdb",
                 $"HelloWorld.deps.json",
                 $"HelloWorld.runtimeconfig.json",
+                $"HelloWorld.runtimeconfig.dev.json",
                 $"HelloWorld{EnvironmentInfo.ExecutableExtension}",
             });
         }

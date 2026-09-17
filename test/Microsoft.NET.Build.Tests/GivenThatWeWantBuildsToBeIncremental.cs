@@ -6,7 +6,6 @@ namespace Microsoft.NET.Build.Tests
     [TestClass]
     public class GivenThatWeWantBuildsToBeIncremental : SdkTest
     {
-
         [TestMethod]
         [DataRow("netcoreapp1.1")]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
@@ -28,6 +27,54 @@ namespace Microsoft.NET.Build.Tests
             DateTime runtimeConfigDevJsonSecondModifiedTime = File.GetLastWriteTimeUtc(runtimeConfigDevJsonPath);
 
             runtimeConfigDevJsonSecondModifiedTime.Should().Be(runtimeConfigDevJsonFirstModifiedTime);
+        }
+
+        [TestMethod]
+        public void RuntimeConfigInputCache_changes_when_GenerateProbingPathsToRuntimeConfigDevFile_changes()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "ProbingPathsCacheTest")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var intermediateDirectory = buildCommand.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework).FullName;
+            var cacheFilePath = Path.Combine(intermediateDirectory, "HelloWorld.genruntimeconfig.cache");
+
+            // Build with default (probing paths disabled for net6.0+)
+            buildCommand.Execute().Should().Pass();
+            var hash1 = File.ReadAllText(cacheFilePath).Trim();
+
+            // Build with probing paths explicitly enabled
+            buildCommand.Execute("/p:GenerateProbingPathsToRuntimeConfigDevFile=true").Should().Pass();
+            var hash2 = File.ReadAllText(cacheFilePath).Trim();
+
+            hash2.Should().NotBe(hash1,
+                "changing GenerateProbingPathsToRuntimeConfigDevFile should change the input cache hash");
+        }
+
+        [TestMethod]
+        public void RuntimeConfigInputCache_changes_when_EnableHotReloadInRuntimeConfigDevFile_changes()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "HotReloadCacheTest")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var intermediateDirectory = buildCommand.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework).FullName;
+            var cacheFilePath = Path.Combine(intermediateDirectory, "HelloWorld.genruntimeconfig.cache");
+
+            // Build with hot reload disabled
+            buildCommand.Execute("/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
+            var hash1 = File.ReadAllText(cacheFilePath).Trim();
+
+            // Build with hot reload enabled
+            buildCommand.Execute("/p:EnableHotReloadInRuntimeConfigDevFile=true").Should().Pass();
+            var hash2 = File.ReadAllText(cacheFilePath).Trim();
+
+            hash2.Should().NotBe(hash1,
+                "changing EnableHotReloadInRuntimeConfigDevFile should change the input cache hash");
         }
 
         [TestMethod]

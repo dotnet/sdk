@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using Microsoft.DotNet.HostFxr;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -84,37 +85,11 @@ internal static class DotnetRootResolver
         Func<string, bool> directoryExists,
         Func<string, string[]> getDirectories,
         Func<string, bool> fileExists)
-    {
-        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
-        if (!directoryExists(fxrDir))
-        {
-            return string.Empty;
-        }
-
-        // Pick the highest version directory by parsing version numbers
-        string? latestFxr = getDirectories(fxrDir)
-            .Select(path => new
-            {
-                Path = path,
-                Version = Version.TryParse(Path.GetFileName(path), out Version? version) ? version : null
-            })
-            .Where(candidate => candidate.Version is not null)
-            .OrderByDescending(candidate => candidate.Version)
-            .Select(candidate => candidate.Path)
-            .FirstOrDefault();
-
-        if (latestFxr is null)
-        {
-            return string.Empty;
-        }
-
-        string hostfxrName = isWindows
-            ? "hostfxr.dll"
-            : isMacOS
-                ? "libhostfxr.dylib"
-                : "libhostfxr.so";
-
-        string hostfxrPath = Path.Combine(latestFxr, hostfxrName);
-        return fileExists(hostfxrPath) ? hostfxrPath : string.Empty;
-    }
+        => HostFxrPathResolver.ResolveHostFxrPath(
+            dotnetRoot,
+            isWindows,
+            isMacOS,
+            directoryExists,
+            getDirectories,
+            fileExists);
 }

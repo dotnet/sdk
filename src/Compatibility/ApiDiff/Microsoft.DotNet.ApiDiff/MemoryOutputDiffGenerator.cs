@@ -589,6 +589,17 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
     private static SyntaxNode GetChildlessNode(MemberDeclarationSyntax node)
     {
+        if (node is ExtensionBlockDeclarationSyntax { ParameterList.Parameters: [var receiver] } extensionBlock &&
+            string.IsNullOrEmpty(receiver.Identifier.ValueText))
+        {
+            node = extensionBlock.WithParameterList(
+                extensionBlock.ParameterList.WithParameters(
+                    SyntaxFactory.SingletonSeparatedList(
+                        receiver.WithType(receiver.Type!.WithoutTrailingTrivia())
+                                .WithIdentifier(default)
+                                .WithoutTrailingTrivia())));
+        }
+
         SyntaxNode childlessNode = node.RemoveNodes(node.ChildNodes().Where(
                 c => c is MemberDeclarationSyntax or BaseTypeDeclarationSyntax or DelegateDeclarationSyntax), SyntaxRemoveOptions.KeepNoTrivia)!;
 
@@ -650,7 +661,9 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     private static bool IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(MemberDeclarationSyntax m) =>
-        // Destructors don't have visibility modifiers so they're special-cased
+        // Extension blocks don't have visibility modifiers, so only include a block with visible members.
+        m is ExtensionBlockDeclarationSyntax extensionBlock && GetMembersOfType<MemberDeclarationSyntax>(extensionBlock).Any() ||
+        // Destructors don't have visibility modifiers so they're special-cased.
         m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword) ||
         // Enum member declarations don't have any modifiers
         m is EnumMemberDeclarationSyntax ||

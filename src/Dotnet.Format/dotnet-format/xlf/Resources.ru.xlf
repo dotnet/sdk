@@ -292,14 +292,14 @@
         <target state="translated">Пропуск указанного проекта "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentDescription">
-        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">Файл проекта или решения. Если файл не указан, команда будет искать его в текущем каталоге.</target>
+      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
+        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
+        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentName">
-        <source>PROJECT | SOLUTION</source>
-        <target state="translated">PROJECT | SOLUTION</target>
+      <trans-unit id="SolutionOrProjectOrFileArgumentName">
+        <source>PROJECT | SOLUTION | FILE</source>
+        <target state="new">PROJECT | SOLUTION | FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
@@ -332,9 +332,9 @@
         <target state="translated">Версия среды выполнения dotnet: "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
-        <source>The file '{0}' does not appear to be a valid project or solution file.</source>
-        <target state="translated">Файл "{0}" не является допустимым файлом проекта или решения.</target>
+      <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app">
+        <source>The file '{0}' does not appear to be a valid project, solution file, or file-based app.</source>
+        <target state="new">The file '{0}' does not appear to be a valid project, solution file, or file-based app.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">

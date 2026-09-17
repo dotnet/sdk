@@ -658,5 +658,63 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """;
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
+
+        [TestMethod]
+        public async Task NestedParse_FixAllRewritesBoth_CSharp()
+        {
+            var source = """
+                using System.Text.Json;
+
+                namespace System.Text.Json
+                {
+                    public sealed class JsonDocument : System.IDisposable
+                    {
+                        public static JsonDocument Parse(string json) => null;
+                        public JsonElement RootElement => default;
+                        public void Dispose() { }
+                    }
+
+                    public struct JsonElement
+                    {
+                        public static JsonElement Parse(string json) => default;
+                    }
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        JsonElement element = [|JsonDocument.Parse([|JsonDocument.Parse("json").RootElement|].ToString()).RootElement|];
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.Json;
+
+                namespace System.Text.Json
+                {
+                    public sealed class JsonDocument : System.IDisposable
+                    {
+                        public static JsonDocument Parse(string json) => null;
+                        public JsonElement RootElement => default;
+                        public void Dispose() { }
+                    }
+
+                    public struct JsonElement
+                    {
+                        public static JsonElement Parse(string json) => default;
+                    }
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        JsonElement element = JsonElement.Parse(JsonElement.Parse("json").ToString());
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }

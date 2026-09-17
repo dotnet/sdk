@@ -42,6 +42,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
                 "Newtonsoft.Json.dll",
                 "runtimes/linux-x64/native/libsqlite3.so",
                 "runtimes/osx-x64/native/libsqlite3.dylib",
@@ -82,6 +83,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
             });
         }
 
@@ -121,6 +123,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
                 "Newtonsoft.Json.dll",
                 // NOTE: this may break in the future when the SDK supports platforms that libuv does not
                 $"libuv{FileConstants.DynamicLibSuffix}"

@@ -140,11 +140,43 @@ device selection:
   single target framework. If that framework provides
   `ComputeAvailableDevices`, the user may be prompted for a device.
 
+* **Build per target framework** — the selected `$(Device)` and any
+  `$(RuntimeIdentifier)` supplied by `ComputeAvailableDevices` are passed
+  to the build for that target framework.
+
+* **Deploy per target framework** — after a successful build and before
+  computing the test application's run arguments, `dotnet test` calls
+  `DeployToDevice` when the target exists.
+
+  * `DeployToDevice` receives the selected `$(Device)`,
+    `$(TargetFramework)`, and `$(RuntimeIdentifier)` as global
+    properties.
+
+  * Deployment still runs with `--no-build`, because the user may select
+    a different device for an existing build.
+
+  * If `DeployToDevice` does not exist, deployment is skipped.
+
+  * If `DeployToDevice` fails, `dotnet test` exits with an error and does
+    not invoke `ComputeRunArguments` or start the test application.
+
+* **`ComputeRunArguments` per target framework** — after deployment,
+  `dotnet test` calls `ComputeRunArguments` with the same device,
+  target framework, and runtime identifier. The resulting
+  `$(RunCommand)` and `$(RunArguments)` are used to start the test
+  application.
+
+* **Solutions** — automatic device selection and deployment happen for
+  each test project and target framework in a solution. An explicit
+  `--device` is rejected with `--solution`; use `--project` because a
+  device identifier is project- and platform-specific.
+
 * **`--list-devices`** works the same as with `dotnet run`.
 
-* **`-e` / `--environment`** — `dotnet test` already supports `-e` to
-  pass environment variables to the test process. This existing
-  behavior is unchanged.
+* **`-e` / `--environment`** — environment variables are passed to the test
+  process and, for projects that declare the `RuntimeEnvironmentVariableSupport`
+  capability, to the build, deployment, and `ComputeRunArguments` targets as
+  `@(RuntimeEnvironmentVariable)` items, matching `dotnet run`.
 
 ## New Command-line Switches
 
@@ -188,11 +220,12 @@ A new `--device` switch will:
 
 ## Environment Variables
 
-The `dotnet run` command supports passing environment variables via the
+The `dotnet run` and `dotnet test` commands support passing environment variables via the
 `-e` or `--environment` option:
 
 ```dotnetcli
 dotnet run -e FOO=BAR -e ANOTHER=VALUE
+dotnet test -e FOO=BAR -e ANOTHER=VALUE
 ```
 
 These environment variables are:
@@ -233,7 +266,7 @@ Workloads can consume these items in their MSBuild targets:
 
 ```xml
 <Target Name="DeployToDevice">
-  <!-- Access environment variables from dotnet run -e -->
+  <!-- Access environment variables from dotnet run/test -e -->
   <Message Text="Environment: @(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" />
 </Target>
 ```
@@ -242,14 +275,18 @@ Workloads can consume these items in their MSBuild targets:
 
 For the **build step**, which uses out-of-process MSBuild via `dotnet build`,
 environment variables are injected by creating a temporary `.props` file.
-The file is created in the project's `$(IntermediateOutputPath)` directory
-(e.g., `obj/Debug/net11.0-android/dotnet-run-env.props`). The path is
-obtained from the project evaluation performed during target framework and
-device selection. If `IntermediateOutputPath` is not available, the file
-falls back to the `obj/` directory.
+The file is created under the selected project intermediate output directory,
+or under the project's `obj/` directory when no intermediate output path is
+available (for example, `obj/dotnet-run-env.props` for `dotnet run` or
+`obj/dotnet-test-env.props` for `dotnet test`).
 
 The file is passed to MSBuild via the `CustomBeforeMicrosoftCommonProps` property,
-ensuring the items are available early in evaluation.
+ensuring the items are available during project evaluation. The CLI creates this
+file only after evaluating a project and confirming that it declares the
+`RuntimeEnvironmentVariableSupport` capability. Build-time injection is not
+performed for solution builds because the capability cannot be evaluated and
+applied independently to each solution child through a single global MSBuild
+property.
 The temporary file is automatically deleted after the build completes.
 
 The generated props file looks like:
@@ -271,17 +308,25 @@ invoking the target.
 
 ## Binary Logs for Device Selection
 
-When using `-bl` with `dotnet run`, all MSBuild operations are logged to a single
-binlog file: device selection, build, deploy, and run argument computation.
+When using `-bl` with `dotnet run`, all in-process MSBuild operations are
+logged to a single binlog file: device selection, deploy, and run argument
+computation.
 
 File naming for `dotnet run` binlogs:
 
 * `-bl:filename.binlog` creates `filename-dotnet-run.binlog`
 * `-bl` creates `msbuild-dotnet-run.binlog`
 
-Note: The build step may also create `msbuild.binlog` separately. Use
-`--no-build` with `-bl` to only capture run-specific MSBuild
-operations.
+`dotnet test` uses the same behavior for its in-process operations,
+including per-project and per-target-framework device selection,
+deployment, and run argument computation:
+
+* `-bl:filename.binlog` creates `filename-dotnet-test.binlog`
+* `-bl` creates `msbuild-dotnet-test.binlog`
+
+The out-of-process build step may also create `msbuild.binlog`
+separately. Use `--no-build` with `-bl` to capture only the in-process
+run or test operations.
 
 ## What about Launch Profiles?
 

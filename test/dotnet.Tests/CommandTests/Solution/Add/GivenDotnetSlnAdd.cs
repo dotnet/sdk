@@ -1421,5 +1421,49 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
         }
+
+        // Each path value below contains an unescaped Windows backslash before a character that is a
+        // valid JSON escape letter (\b, \n), which must be repaired before JSON parsing.
+        // The paths use the pattern "..\<dir>\..\App.slnx" so the intermediate directory cancels out
+        // and the path resolves to the existing App.slnx regardless of whether <dir> exists on disk.
+        [TestMethod]
+        [DataRow("sln", @"..\App.slnx")]                    // \A – not a JSON escape char (baseline)
+        [DataRow("solution", @"..\App.slnx")]
+        [DataRow("sln", @"..\bins\..\App.slnx")]            // \b in \bins is a JSON backspace escape
+        [DataRow("solution", @"..\bins\..\App.slnx")]
+        [DataRow("sln", @"..\new\..\App.slnx")]             // \n in \new is a JSON newline escape
+        [DataRow("solution", @"..\new\..\App.slnx")]
+        public void WhenAddingProjectToSlnfWithUnescapedBackslashesInPathItSucceeds(string solutionCommand, string pathValue)
+        {
+            var identifier = pathValue.Replace('\\', '_').Replace('.', '_').Replace('/', '_');
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfUnescapedBackslash-{solutionCommand}-{identifier}")
+                .WithSource()
+                .Path;
+
+            // Create a filters subdirectory and a .slnf file with unescaped backslashes in the path,
+            // simulating the output of "dotnet new slnf -s ..\App.slnx" on Windows.
+            var filtersDirectory = Path.Combine(projectDirectory, "filters");
+            Directory.CreateDirectory(filtersDirectory);
+            var slnfFullPath = Path.Combine(filtersDirectory, "Filter.slnf");
+            // Write pathValue directly into the JSON string – pathValue contains raw backslashes,
+            // which is invalid JSON but mirrors what "dotnet new slnf" produced on Windows.
+            File.WriteAllText(slnfFullPath, $$"""
+                {
+                    "solution": {
+                        "path": "{{pathValue}}",
+                        "projects": []
+                    }
+                }
+                """);
+
+            // Verify dotnet sln can parse the .slnf file with unescaped backslashes and add a project
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, Path.Combine("filters", "Filter.slnf"), "add", Path.Combine("src", "Lib", "Lib.csproj"));
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectAddedToTheSolution, Path.Combine("src", "Lib", "Lib.csproj")));
+        }
+
     }
 }

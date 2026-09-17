@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

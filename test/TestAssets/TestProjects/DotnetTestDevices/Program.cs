@@ -6,6 +6,28 @@ using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
 
+Console.WriteLine(
+    $"Runtime environment variables: FOO={Environment.GetEnvironmentVariable("FOO")}, INJECTED={Environment.GetEnvironmentVariable("INJECTED")}");
+
+int transportOptionIndex = Array.IndexOf(args, "--dotnet-test-transport");
+bool httpTransportSelected = transportOptionIndex >= 0 &&
+    transportOptionIndex + 1 < args.Length &&
+    string.Equals(args[transportOptionIndex + 1], "http", StringComparison.OrdinalIgnoreCase);
+if (!httpTransportSelected)
+{
+    string? responseFileArgument = args.FirstOrDefault(static arg => arg.StartsWith('@'));
+    if (responseFileArgument is not null && File.Exists(responseFileArgument[1..]))
+    {
+        httpTransportSelected = File.ReadLines(responseFileArgument[1..])
+            .Any(static line => line.Equals("--dotnet-test-transport http", StringComparison.OrdinalIgnoreCase));
+    }
+}
+
+if (httpTransportSelected)
+{
+    Console.WriteLine("HTTP transport selected.");
+}
+
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
 testApplicationBuilder.RegisterTestFramework(_ => new TestFrameworkCapabilities(), (_, __) => new DummyTestAdapter());

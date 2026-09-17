@@ -13,9 +13,11 @@ namespace Microsoft.DotNet.Tests
         [TestMethod]
         public void ItCanAcceptResponseFiles()
         {
-            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "response.rsp"), "build");
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            File.WriteAllText(Path.Combine(testDirectory, "response.rsp"), "build");
             string[] args = new[] { @"@response.rsp", "-h" };
             new DotnetCommand(Log, args)
+                .WithWorkingDirectory(testDirectory)
                 .Execute()
                 .Should()
                 .Pass()

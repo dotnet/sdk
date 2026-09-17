@@ -31,7 +31,7 @@
          (xunit.core/assert/runner.console/runner.visualstudio) into every MSTest test output. -->
     <UsingToolXUnit>false</UsingToolXUnit>
 
-    <!-- Parallelization disabled due to widespread concurrency-related intermittent test failures. -->
+    <!-- New test projects remain serialized until their shared resources have been audited. -->
     <MSTestParallelizeScope>None</MSTestParallelizeScope>
 
     <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
@@ -45,5 +45,13 @@
     <EnableMicrosoftTestingExtensionsCrashDump>true</EnableMicrosoftTestingExtensionsCrashDump>
     <EnableMicrosoftTestingExtensionsHangDump>true</EnableMicrosoftTestingExtensionsHangDump>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true' and '$(IsTestApplication)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)testconfig.json"
+          Link="testconfig.json"
+          TargetPath="$(AssemblyName).testconfig.json"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

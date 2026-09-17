@@ -29,37 +29,41 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
-using System.Xml.XPath;
+                """
 
-namespace TestNamespace
-{
-    public class UseXmlReaderForXPathDocument
-    {
-        public void TestMethod(string path)
-        {
-            XPathDocument doc = new XPathDocument(path);
-        }
-    }
-}
-",
+                    using System.Xml;
+                    using System.Xml.XPath;
+
+                    namespace TestNamespace
+                    {
+                        public class UseXmlReaderForXPathDocument
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XPathDocument doc = new XPathDocument(path);
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
-Imports System.Xml.XPath
+                """
 
-Namespace TestNamespace
-    Public Class UseXmlReaderForXPathDocument
-        Public Sub TestMethod(path As String)
-            Dim doc As New XPathDocument(path)
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+                    Imports System.Xml.XPath
+
+                    Namespace TestNamespace
+                        Public Class UseXmlReaderForXPathDocument
+                            Public Sub TestMethod(path As String)
+                                Dim doc As New XPathDocument(path)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(8, 24)
             );
         }
@@ -69,38 +73,42 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml.XPath;
+                """
 
-class TestClass
-{
-    public XPathDocument Test
-    {
-        get
-        {
-            var xml = """";
-            XPathDocument doc = new XPathDocument(xml);
-            return doc;
-        }
-    }
-}",
+                    using System.Xml.XPath;
+
+                    class TestClass
+                    {
+                        public XPathDocument Test
+                        {
+                            get
+                            {
+                                var xml = "";
+                                XPathDocument doc = new XPathDocument(xml);
+                                return doc;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Public ReadOnly Property Test() As XPathDocument
-        Get
-            Dim xml = """"
-            Dim doc As New XPathDocument(xml)
-            Return doc
-        End Get
-    End Property
-End Class",
+                    Imports System.Xml.XPath
+
+                    Class TestClass
+                        Public ReadOnly Property Test() As XPathDocument
+                            Get
+                                Dim xml = ""
+                                Dim doc As New XPathDocument(xml)
+                                Return doc
+                            End Get
+                        End Property
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(8, 24)
             );
         }
@@ -110,49 +118,53 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml.XPath;
+                """
 
-class TestClass
-{
-XPathDocument privateDoc;
-public XPathDocument GetDoc
-        {
-            set
-            {
-                if (value == null)
-                {
-                    var xml = """";
-                    XPathDocument doc = new XPathDocument(xml);
-                    privateDoc = doc;
-                }
-                else
-                    privateDoc = value;
-            }
-        }
-}",
+                    using System.Xml.XPath;
+
+                    class TestClass
+                    {
+                    XPathDocument privateDoc;
+                    public XPathDocument GetDoc
+                            {
+                                set
+                                {
+                                    if (value == null)
+                                    {
+                                        var xml = "";
+                                        XPathDocument doc = new XPathDocument(xml);
+                                        privateDoc = doc;
+                                    }
+                                    else
+                                        privateDoc = value;
+                                }
+                            }
+                    }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(14, 41)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private privateDoc As XPathDocument
-    Public WriteOnly Property GetDoc() As XPathDocument
-        Set
-            If value Is Nothing Then
-                Dim xml = """"
-                Dim doc As New XPathDocument(xml)
-                privateDoc = doc
-            Else
-                privateDoc = value
-            End If
-        End Set
-    End Property
-End Class",
+                    Imports System.Xml.XPath
+
+                    Class TestClass
+                        Private privateDoc As XPathDocument
+                        Public WriteOnly Property GetDoc() As XPathDocument
+                            Set
+                                If value Is Nothing Then
+                                    Dim xml = ""
+                                    Dim doc As New XPathDocument(xml)
+                                    privateDoc = doc
+                                Else
+                                    privateDoc = value
+                                End If
+                            End Set
+                        End Property
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(10, 28)
             );
         }
@@ -162,43 +174,47 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-  using System;
-  using System.Xml.XPath;
+                """
 
-    class TestClass
-    {
-        private void TestMethod()
-        {
-            try
-            {
-                var xml = """";
-                XPathDocument doc = new XPathDocument(xml);
-            }
-            catch (Exception) { throw; }
-            finally { }
-        }
-    }",
+                      using System;
+                      using System.Xml.XPath;
+
+                        class TestClass
+                        {
+                            private void TestMethod()
+                            {
+                                try
+                                {
+                                    var xml = "";
+                                    XPathDocument doc = new XPathDocument(xml);
+                                }
+                                catch (Exception) { throw; }
+                                finally { }
+                            }
+                        }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(12, 37)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-            Dim xml = """"
-            Dim doc As New XPathDocument(xml)
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml.XPath
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                                Dim xml = ""
+                                Dim doc As New XPathDocument(xml)
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(9, 24)
             );
         }
@@ -208,42 +224,46 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-   using System;
-   using System.Xml.XPath;
+                """
 
-    class TestClass
-    {
-        private void TestMethod()
-        {
-            try { }
-            catch (Exception)
-            {
-                var xml = """";
-                XPathDocument doc = new XPathDocument(xml);
-            }
-            finally { }
-        }
-    }",
+                       using System;
+                       using System.Xml.XPath;
+
+                        class TestClass
+                        {
+                            private void TestMethod()
+                            {
+                                try { }
+                                catch (Exception)
+                                {
+                                    var xml = "";
+                                    XPathDocument doc = new XPathDocument(xml);
+                                }
+                                finally { }
+                            }
+                        }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(13, 37)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Dim xml = """"
-            Dim doc As New XPathDocument(xml)
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml.XPath
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Dim xml = ""
+                                Dim doc As New XPathDocument(xml)
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(10, 24)
             );
         }
@@ -253,43 +273,47 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml.XPath;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try { }
-        catch (Exception) { throw; }
-        finally
-        {
-            var xml = """";
-            XPathDocument doc = new XPathDocument(xml);
-        }
-    }
-}",
+                    using System;
+                    using System.Xml.XPath;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try { }
+                            catch (Exception) { throw; }
+                            finally
+                            {
+                                var xml = "";
+                                XPathDocument doc = new XPathDocument(xml);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(14, 33)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-            Dim xml = """"
-            Dim doc As New XPathDocument(xml)
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml.XPath
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                                Dim xml = ""
+                                Dim doc As New XPathDocument(xml)
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(12, 24)
             );
         }
@@ -299,47 +323,51 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Threading.Tasks;
-using System.Xml.XPath;
+                """
 
-class TestClass
-{
-    private async Task TestMethod()
-    {
-        await Task.Run(() => {
-            var xml = """";
-            XPathDocument doc = new XPathDocument(xml);
-        });
-    }
+                    using System.Threading.Tasks;
+                    using System.Xml.XPath;
 
-    private async void TestMethod2()
-    {
-        await TestMethod();
-    }
-}",
+                    class TestClass
+                    {
+                        private async Task TestMethod()
+                        {
+                            await Task.Run(() => {
+                                var xml = "";
+                                XPathDocument doc = new XPathDocument(xml);
+                            });
+                        }
+
+                        private async void TestMethod2()
+                        {
+                            await TestMethod();
+                        }
+                    }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Threading.Tasks
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private Async Function TestMethod() As Task
-        Await Task.Run(Function() 
-        Dim xml = """"
-        Dim doc As New XPathDocument(xml)
+                    Imports System.Threading.Tasks
+                    Imports System.Xml.XPath
 
-        End Function)
-    End Function
+                    Class TestClass
+                        Private Async Function TestMethod() As Task
+                            Await Task.Run(Function()
+                            Dim xml = ""
+                            Dim doc As New XPathDocument(xml)
 
-    Private Async Sub TestMethod2()
-        Await TestMethod()
-    End Sub
-End Class",
+                            End Function)
+                        End Function
+
+                        Private Async Sub TestMethod2()
+                            Await TestMethod()
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(9, 20)
             );
         }
@@ -349,35 +377,39 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml.XPath;
+                """
 
-class TestClass
-{
-    delegate void Del();
+                    using System.Xml.XPath;
 
-    Del d = delegate () {
-        var xml = """";
-        XPathDocument doc = new XPathDocument(xml);
-    };
-}",
+                    class TestClass
+                    {
+                        delegate void Del();
+
+                        Del d = delegate () {
+                            var xml = "";
+                            XPathDocument doc = new XPathDocument(xml);
+                        };
+                    }
+                    """,
                 GetCA3075XPathDocumentCSharpResultAt(10, 29)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml.XPath
+                """
 
-Class TestClass
-    Private Delegate Sub Del()
+                    Imports System.Xml.XPath
 
-    Private d As Del = Sub() 
-    Dim xml = """"
-    Dim doc As New XPathDocument(xml)
+                    Class TestClass
+                        Private Delegate Sub Del()
 
-End Sub
-End Class",
+                        Private d As Del = Sub()
+                        Dim xml = ""
+                        Dim doc As New XPathDocument(xml)
+
+                    End Sub
+                    End Class
+                    """,
                 GetCA3075XPathDocumentBasicResultAt(9, 16)
             );
         }
@@ -387,21 +419,21 @@ End Class",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
-using System.Xml.XPath;
+                """
+                    using System.Xml;
+                    using System.Xml.XPath;
 
-namespace TestNamespace
-{
-    public class UseXmlReaderForXPathDocument
-    {
-        public void TestMethod17(XmlReader reader)
-        {
-            XPathDocument doc = new XPathDocument(reader);
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class UseXmlReaderForXPathDocument
+                        {
+                            public void TestMethod17(XmlReader reader)
+                            {
+                                XPathDocument doc = new XPathDocument(reader);
+                            }
+                        }
+                    }
+                    """
             );
         }
     }

@@ -340,7 +340,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         {
             // Arrange
             var totalCount = 2;
-            var readySource = new TaskCompletionSource<bool>();
+            var timeout = TimeSpan.FromMinutes(1);
+            var readySource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var list = new List<TaskCompletionSource<bool>>();
             var connectionHost = new Mock<ConnectionHost>();
             connectionHost
@@ -349,7 +350,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 {
                     if (list.Count < totalCount)
                     {
-                        var source = new TaskCompletionSource<bool>();
+                        var source = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                         var connectionTask = CreateConnectionWithEmptyServerRequest(c =>
                         {
                             // Keep the connection active until we decide to end it.
@@ -373,10 +374,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             var eventBus = new TestableEventBus();
             var completedCompilations = 0;
-            var allCompilationsComplete = new TaskCompletionSource<bool>();
+            var allCompilationsComplete = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             eventBus.CompilationComplete += (obj, args) =>
             {
-                if (++completedCompilations == totalCount)
+                if (Interlocked.Increment(ref completedCompilations) == totalCount)
                 {
                     // All compilations have completed.
                     allCompilationsComplete.SetResult(true);
@@ -391,10 +392,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             }, TestContext.CancellationToken);
 
             // Wait for all connections to be created.
-            await readySource.Task;
+            await readySource.Task.WaitAsync(timeout, TestContext.CancellationToken);
 
             // Wait for all compilations to complete.
-            await allCompilationsComplete.Task;
+            await allCompilationsComplete.Task.WaitAsync(timeout, TestContext.CancellationToken);
 
             // Now allow all the connections to be disconnected.
             foreach (var source in list)
@@ -404,7 +405,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             // Act
             // Now dispatcher should be in an idle state with no active connections.
-            await dispatcherTask;
+            await dispatcherTask.WaitAsync(timeout, TestContext.CancellationToken);
 
             // Assert
             Assert.IsFalse(eventBus.HasDetectedBadConnection);

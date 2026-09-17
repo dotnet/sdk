@@ -37,7 +37,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
     /// <summary>
     /// Launches a process.
-    /// Virutal for testing.
+    /// Virtual for testing.
     /// </summary>
     public virtual async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
     {

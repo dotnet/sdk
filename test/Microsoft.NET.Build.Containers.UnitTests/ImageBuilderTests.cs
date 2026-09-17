@@ -82,7 +82,7 @@ public class ImageBuilderTests
         baseConfig.AddLabel("testLabel1", "v1");
         baseConfig.AddLabel("testLabel2", "v2");
 
-        string readyImage = baseConfig.BuildConfig();
+        string readyImage = baseConfig.BuildConfig(DateTime.UtcNow);
 
         JsonNode? result = JsonNode.Parse(readyImage);
 
@@ -153,7 +153,7 @@ public class ImageBuilderTests
         baseConfig.AddLabel("testLabel1", "v1");
         baseConfig.AddLabel("existing2", "v2");
 
-        string readyImage = baseConfig.BuildConfig();
+        string readyImage = baseConfig.BuildConfig(DateTime.UtcNow);
 
         JsonNode? result = JsonNode.Parse(readyImage);
 
@@ -221,7 +221,7 @@ public class ImageBuilderTests
         baseConfig.ExposePort(6000, PortType.tcp);
         baseConfig.ExposePort(6010, PortType.udp);
 
-        string readyImage = baseConfig.BuildConfig();
+        string readyImage = baseConfig.BuildConfig(DateTime.UtcNow);
 
         JsonNode? result = JsonNode.Parse(readyImage);
 
@@ -295,7 +295,7 @@ public class ImageBuilderTests
         baseConfig.ExposePort(6100, PortType.udp);
         baseConfig.ExposePort(6200, PortType.tcp);
 
-        string readyImage = baseConfig.BuildConfig();
+        string readyImage = baseConfig.BuildConfig(DateTime.UtcNow);
 
         JsonNode? result = JsonNode.Parse(readyImage);
 
@@ -379,7 +379,7 @@ public class ImageBuilderTests
 
         ImageConfig baseConfig = new(node);
 
-        string readyImage = baseConfig.BuildConfig();
+        string readyImage = baseConfig.BuildConfig(DateTime.UtcNow);
 
         JsonNode? result = JsonNode.Parse(readyImage);
 

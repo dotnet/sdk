@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -47,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 context.RegisterOperationAction(AnalyzeMethodCall, OperationKind.Invocation);
 
-                context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
+                context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKind.FunctionPointerInvocation);
 
                 context.RegisterSymbolAction(AnalyzeEvent, SymbolKind.Event);
 
@@ -99,14 +98,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public void AnalyzeFunctionPointerCall(OperationAnalysisContext context)
             {
-                var functionPointerInvocation = IFunctionPointerInvocationOperationWrapper.FromOperation(context.Operation);
+                var functionPointerInvocation = (IFunctionPointerInvocationOperation)context.Operation;
 
                 if (functionPointerInvocation.GetFunctionPointerSignature().CallingConvention == System.Reflection.Metadata.SignatureCallingConvention.Default)
                 {
                     return;
                 }
 
-                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, functionPointerInvocation.GetFunctionPointerSignature(), ImmutableArray.Create(functionPointerInvocation.WrappedOperation.Syntax.GetLocation()));
+                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, functionPointerInvocation.GetFunctionPointerSignature(), ImmutableArray.Create(functionPointerInvocation.Syntax.GetLocation()));
             }
 
             public void AnalyzeLocalFunction(OperationAnalysisContext context)

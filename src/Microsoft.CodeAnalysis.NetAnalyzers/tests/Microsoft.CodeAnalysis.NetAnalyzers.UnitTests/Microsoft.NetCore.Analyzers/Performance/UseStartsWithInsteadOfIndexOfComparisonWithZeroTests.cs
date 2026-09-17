@@ -707,7 +707,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String)
-                        Dim unused = a.StartsWith(value:="a", comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:="a")
                     End Sub
                 End Class
                 """;
@@ -759,7 +759,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String, exp As Char)
-                        Dim unused = a.StartsWith(value:=exp.ToString(), comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:=exp.ToString())
                     End Sub
                 End Class
                 """;
@@ -797,12 +797,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task OutOfOrderNamedArguments_VB_Diagnostic()
         {
-            // IInvocationOperation.Arguments appears to behave differently in C# vs VB.
-            // In C#, the order of arguments are preserved, as they appear in source.
-            // In VB, the order of arguments is the same as parameters order.
-            // If we wanted to make VB behavior similar to OutOfOrderNamedArguments_CSharp_Diagnostic, we will need
-            // to go back to syntax. This scenario doesn't seem important/common, so might be good for now until
-            // we hear any user feedback.
             var testCode = """
                 Class C
                     Sub M(a As String)
@@ -814,13 +808,61 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String)
-                        Dim unused = a.StartsWith(value:="abc", comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:="abc")
                     End Sub
                 End Class
                 """;
 
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_CSharp_FixAllRewritesBoth()
+        {
+            var testCode = """
+                class C
+                {
+                    void M(string a, string b)
+                    {
+                        _ = [|([|a.IndexOf("x") == 0|] ? a : b).IndexOf("y") == 0|];
+                    }
+                }
+                """;
+
+            var fixedCode = """
+                class C
+                {
+                    void M(string a, string b)
+                    {
+                        _ = (a.StartsWith("x") ? a : b).StartsWith("y");
+                    }
+                }
+                """;
+
+            await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_VB_FixAllRewritesBoth()
+        {
+            var testCode = """
+                Class C
+                    Sub M(a As String, b As String)
+                        Dim unused = [|If([|a.IndexOf("x") = 0|], a, b).IndexOf("y") = 0|]
+                    End Sub
+                End Class
+                """;
+
+            var fixedCode = """
+                Class C
+                    Sub M(a As String, b As String)
+                        Dim unused = If(a.StartsWith("x"), a, b).StartsWith("y")
+                    End Sub
+                End Class
+                """;
+
+            await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
         }
     }
 }

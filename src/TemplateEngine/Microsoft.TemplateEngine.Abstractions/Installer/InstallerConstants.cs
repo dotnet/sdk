@@ -24,5 +24,10 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// Defines the key for <see cref="InstallRequest.Details"/> to specify that interactive mode should be used on installation. Supported by NuGet installer.
         /// </summary>
         public const string InteractiveModeKey = "Interactive";
+
+        /// <summary>
+        /// Defines the key for <see cref="InstallRequest.Details"/> to allow prerelease packages to be installed when no version is specified. Supported by NuGet installer.
+        /// </summary>
+        public const string PrereleaseModeKey = "Prerelease";
     }
 }

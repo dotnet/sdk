@@ -7,6 +7,5 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 
 [JsonSerializable(typeof(InstallRequestMessage))]
 [JsonSerializable(typeof(InstallResponseMessage))]
-[JsonSerializable(typeof(MsiManifest))]
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 internal partial class InstallerJsonSerializerContext : JsonSerializerContext;
