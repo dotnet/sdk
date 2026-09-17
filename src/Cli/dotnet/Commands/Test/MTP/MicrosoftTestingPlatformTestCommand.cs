@@ -34,7 +34,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     private const string ZeroTestsPolicyOptionName = "--zero-tests-policy";
     private const string ZeroTestsPolicyStrictArgument = "strict";
 
-    public int Run(ParseResult parseResult, bool isHelp)
+    public int Run(ParseResult parseResult, bool isHelp, CancellationToken cancellationToken = default)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
         string invocationWorkingDirectory = Directory.GetCurrentDirectory();
