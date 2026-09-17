@@ -118,16 +118,16 @@ internal static class ContainerArchive
 
         foreach (Descriptor descriptor in image.LayerDescriptors)
         {
-            if (sourceReference.Registry is not { } registry)
+            if (sourceReference.EffectiveImageSource is not { } imageSource)
             {
                 throw new NotImplementedException(Resource.FormatString(
                     nameof(Strings.MissingLinkToRegistry),
                     descriptor.Digest,
-                    sourceReference.Registry?.ToString() ?? "<null>"));
+                    sourceReference.ToString()));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, descriptor, cancellationToken).ConfigureAwait(false);
+            string localPath = await imageSource.GetBlobPathAsync(sourceReference.Repository, descriptor, cancellationToken).ConfigureAwait(false);
             string layerTarballPath = layerPathFunc(descriptor.Digest);
             await writer.WriteEntryAsync(localPath, layerTarballPath, cancellationToken).ConfigureAwait(false);
             layerTarballPaths?.Add(layerTarballPath);

@@ -34,6 +34,11 @@ partial class CreateImageIndex
     public string BaseImageDigest { get; set; }
 
     /// <summary>
+    /// The source from which to read the base image. Set to <c>local</c> to use the selected local container runtime.
+    /// </summary>
+    public string BaseImageSource { get; set; }
+
+    /// <summary>
     /// Manifests to include in the image index.
     /// </summary>
     [Required]
@@ -84,6 +89,7 @@ partial class CreateImageIndex
         BaseImageName = string.Empty;
         BaseImageTag = string.Empty;
         BaseImageDigest = string.Empty;
+        BaseImageSource = string.Empty;
         GeneratedContainers = Array.Empty<ITaskItem>();
         OutputRegistry = string.Empty;
         ArchiveOutputPath = string.Empty;
@@ -95,4 +101,4 @@ partial class CreateImageIndex
 
         TaskResources = Resource.Manager;
     }
-} 
+}

@@ -1,0 +1,64 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. -->
+<!-- The .NET Foundation licenses this file to you under the MIT license. -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Temporary source build for https://github.com/oras-project/oras-dotnet/pull/428.
+
+    Remove this project and replace its ProjectReference with the released OrasProject.Oras
+    package once the PR is merged, released, and available on the SDK's mirrored feeds.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AssemblyName>OrasProject.Oras</AssemblyName>
+    <RootNamespace>OrasProject.Oras</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <RunAnalyzers>false</RunAnalyzers>
+
+    <!-- Pin the exact reviewed PR commit so builds cannot change when the contributor branch moves. -->
+    <OrasSourceCommit>d0fc46893b451cd8770c1758327d855e4e79d20e</OrasSourceCommit>
+    <OrasSourceArchiveName>oras-dotnet-$(OrasSourceCommit).zip</OrasSourceArchiveName>
+    <OrasSourceArchiveUrl>https://github.com/oras-project/oras-dotnet/archive/$(OrasSourceCommit).zip</OrasSourceArchiveUrl>
+    <OrasSourceWorkDir>$(BaseIntermediateOutputPath)source-build/</OrasSourceWorkDir>
+    <OrasSourceArchive>$(OrasSourceWorkDir)$(OrasSourceArchiveName)</OrasSourceArchive>
+    <OrasSourceExtractDir>$(OrasSourceWorkDir)$(OrasSourceCommit)/</OrasSourceExtractDir>
+    <OrasSourceDir>$(OrasSourceExtractDir)oras-dotnet-$(OrasSourceCommit)/src/OrasProject.Oras/</OrasSourceDir>
+    <OrasSourceMarker>$(OrasSourceExtractDir).complete</OrasSourceMarker>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+  </ItemGroup>
+
+  <Target Name="AcquireOrasSource" Condition="!Exists('$(OrasSourceMarker)')">
+    <Message Importance="High" Text="Downloading ORAS.NET PR #428 commit $(OrasSourceCommit)" />
+    <MakeDir Directories="$(OrasSourceWorkDir)" />
+    <DownloadFile SourceUrl="$(OrasSourceArchiveUrl)"
+                  DestinationFolder="$(OrasSourceWorkDir)"
+                  DestinationFileName="$(OrasSourceArchiveName)"
+                  SkipUnchangedFiles="true" />
+    <RemoveDir Directories="$(OrasSourceExtractDir)" />
+    <MakeDir Directories="$(OrasSourceExtractDir)" />
+    <Unzip SourceFiles="$(OrasSourceArchive)"
+           DestinationFolder="$(OrasSourceExtractDir)"
+           SkipUnchangedFiles="true" />
+    <Touch Files="$(OrasSourceMarker)" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="AddOrasSourceFiles"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="AcquireOrasSource">
+    <ItemGroup>
+      <_OrasSourceFile Include="$(OrasSourceDir)**/*.cs" />
+      <Compile Include="@(_OrasSourceFile)" LinkBase="OrasProject.Oras" />
+    </ItemGroup>
+    <Error Condition="'@(_OrasSourceFile)' == ''"
+           Text="ORAS.NET source was not found under $(OrasSourceDir)." />
+  </Target>
+
+</Project>
