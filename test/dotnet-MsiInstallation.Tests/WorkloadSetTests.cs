@@ -12,6 +12,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 namespace Microsoft.DotNet.MsiInstallerTests
 {
     [TestClass]
+    [OSCondition(OperatingSystems.Windows)]
     public class WorkloadSetTests : WorkloadSetTestsBase
     {
         public WorkloadSetTests()

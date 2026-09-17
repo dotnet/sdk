@@ -13,7 +13,7 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows5.1.2600")]
     [TestClass]
     [OSCondition(OperatingSystems.Windows)]
     public class WindowsInstallerTests
@@ -171,12 +171,6 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"system.web.mvc.dll", 0)]
         public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
-            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
-            {
-                Assert.Inconclusive("Authenticode verification requires Windows 5.1.2600 or later.");
-                return;
-            }
-
             int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
             Assert.AreEqual(expectedStatus, status);
         }
@@ -197,12 +191,6 @@ namespace Microsoft.DotNet.Tests
         [DataRow(@"tampered.msi", 0)]
         public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
         {
-            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
-            {
-                Assert.Inconclusive("Certificate chain verification requires Windows 5.1.2600 or later.");
-                return;
-            }
-
             int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
 
             Assert.AreEqual(expectedResult, result);
