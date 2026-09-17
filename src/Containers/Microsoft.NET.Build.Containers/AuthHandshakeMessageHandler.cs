@@ -360,9 +360,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         // Reject another origin based on the scheme alone; its parameters may be malformed.
-        string? scheme = response.Headers.WwwAuthenticate.FirstOrDefault()?.Scheme;
-        if (string.Equals(scheme, BasicAuthScheme, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(scheme, BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
+        if (response.Headers.WwwAuthenticate.Any(challenge =>
+            string.Equals(challenge.Scheme, BasicAuthScheme, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(challenge.Scheme, BearerAuthScheme, StringComparison.OrdinalIgnoreCase)))
         {
             response.Dispose();
             throw new InvalidAuthResponseException(
