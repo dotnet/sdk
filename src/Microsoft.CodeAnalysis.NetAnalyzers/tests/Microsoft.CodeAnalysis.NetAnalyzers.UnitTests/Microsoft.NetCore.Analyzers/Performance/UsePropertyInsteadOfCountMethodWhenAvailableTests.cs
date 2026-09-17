@@ -828,7 +828,6 @@ class C
         }
     }
 
-    [TestClass]
     public abstract class UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
