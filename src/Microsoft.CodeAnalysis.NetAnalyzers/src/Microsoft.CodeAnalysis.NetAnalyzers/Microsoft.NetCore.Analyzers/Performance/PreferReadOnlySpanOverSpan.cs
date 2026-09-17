@@ -285,33 +285,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return false;
             }
 
-            // Unsafe if indexer is part of increment/decrement operation (e.g., data[i]++)
-            if (propRef.Parent is IIncrementOrDecrementOperation)
+            // GetValueUsageInfo covers writable ref locals only through an initializer.
+            if (propRef.Parent is IVariableDeclaratorOperation { Symbol.RefKind: not RefKind.None } ||
+                propRef.Parent is IVariableInitializerOperation { Parent: IVariableDeclaratorOperation { Symbol.RefKind: RefKind.RefReadOnly } })
             {
                 return false;
             }
 
-            // Unsafe if indexer result is passed as ref/out
-            if (propRef.Parent is IArgumentOperation argument &&
-                argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out)
-            {
-                return false;
-            }
-
-            // Unsafe if stored in ref local
-            // Check both direct parent and through initializer (ref int x = ref data[0])
-            IVariableDeclaratorOperation? declarator = propRef.Parent as IVariableDeclaratorOperation;
-            if (declarator is null && propRef.Parent is IVariableInitializerOperation initializer)
-            {
-                declarator = initializer.Parent as IVariableDeclaratorOperation;
-            }
-            
-            if (declarator is not null && declarator.Symbol.RefKind != RefKind.None)
-            {
-                return false;
-            }
-
-            // Unsafe if returned as ref (indexer result from readonly span doesn't support ref returns)
+            // GetValueUsageInfo uses the nearest nested function's return kind, not necessarily containingMethod's.
             if (propRef.Parent is IReturnOperation && containingMethod.ReturnsByRef)
             {
                 return false;
