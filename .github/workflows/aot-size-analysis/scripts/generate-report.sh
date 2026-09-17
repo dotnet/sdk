@@ -10,6 +10,7 @@ Options:
   --platforms <list>           Space-separated platforms to analyze
   --pr-build-url <url>         Pull request build link
   --baseline-build-url <url>   Baseline build link
+  --workflow-run-url <url>     GitHub Actions workflow run containing report artifacts
   --temp-dir <path>            Directory containing extracted artifacts
   --output-file <path>         File that receives step outputs
   -h, --help                   Show this help
@@ -19,6 +20,7 @@ Example:
     --platforms "Linux_x64_AOT Windows_x64_AOT" \
     --pr-build-url "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569498" \
     --baseline-build-url "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569822" \
+    --workflow-run-url "https://github.com/dotnet/sdk/actions/runs/123456" \
     --temp-dir /tmp/aot-size-analysis \
     --output-file /tmp/generate-report.out
 EOF
@@ -40,6 +42,13 @@ emit_output_value() {
   printf '%s=%s\n' "$1" "$2" >> "$output_file"
 }
 
+escape_html() {
+  sed \
+    -e 's/&/\&amp;/g' \
+    -e 's/</\&lt;/g' \
+    -e 's/>/\&gt;/g'
+}
+
 start_group() {
   printf '::group::%s\n' "$1"
 }
@@ -51,6 +60,7 @@ end_group() {
 platforms=""
 pr_build_url=""
 baseline_build_url=""
+workflow_run_url=""
 temp_dir=""
 output_file=""
 
@@ -69,6 +79,11 @@ while [ "$#" -gt 0 ]; do
     --baseline-build-url)
       require_value "$@"
       baseline_build_url="$2"
+      shift 2
+      ;;
+    --workflow-run-url)
+      require_value "$@"
+      workflow_run_url="$2"
       shift 2
       ;;
     --temp-dir)
@@ -94,7 +109,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$platforms" ] || [ -z "$pr_build_url" ] || [ -z "$baseline_build_url" ] ||
-    [ -z "$temp_dir" ] || [ -z "$output_file" ]; then
+    [ -z "$workflow_run_url" ] || [ -z "$temp_dir" ] || [ -z "$output_file" ]; then
   echo "All options except --help are required." >&2
   print_usage >&2
   exit 2
@@ -102,10 +117,15 @@ fi
 
 report_file="${temp_dir}/size-report.md"
 details_file="${temp_dir}/size-details.md"
+treemap_dir="${temp_dir}/nativeaot-size-treemaps"
+html_report_file="${treemap_dir}/index.html"
+mkdir -p "$treemap_dir"
+: > "$details_file"
 
 # Pass 1: run sizoscope-cli for each platform, collect summary data
 declare -A platform_totals
 has_any_diff=false
+has_any_treemap=false
 
 for platform in $platforms; do
   start_group "Analyzing ${platform}"
@@ -134,6 +154,16 @@ for platform in $platforms; do
       "$((elapsed_ns / 1000000000))" "$(((elapsed_ns / 1000000) % 1000))" \
       "${total_size:-unknown}" "$detail_line_count"
 
+    treemap_file="${treemap_dir}/${platform}.svg"
+    if pwsh -NoLogo -NoProfile -File "$(dirname "$0")/generate-treemap.ps1" \
+        -InputPath "$diff_file" \
+        -OutputPath "$treemap_file" \
+        -Platform "$platform"; then
+      has_any_treemap=true
+    else
+      emit_warning "Treemap generation failed for ${platform}."
+    fi
+
     # Accumulate per-platform details
     {
       echo "### ${platform}"
@@ -161,12 +191,67 @@ if [ "$has_any_diff" = false ]; then
   exit 0
 fi
 
+if [ "$has_any_treemap" = true ]; then
+  {
+    cat <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NativeAOT Size Analysis</title>
+  <style>
+    :root{color-scheme:dark}body{max-width:1500px;margin:auto;padding:24px;background:#0d1117;color:#f0f3f6;font-family:system-ui,sans-serif}
+    a{color:#58a6ff}table{border-collapse:collapse}th,td{padding:7px 12px;border:1px solid #36404a;text-align:left}
+    details{margin:28px 0}summary{font-size:20px;font-weight:600;cursor:pointer}object{width:100%;margin-top:16px}pre{overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>NativeAOT Size Analysis</h1>
+  <p>Comparing <a href="$(printf '%s' "$pr_build_url" | escape_html)">PR build</a> against <a href="$(printf '%s' "$baseline_build_url" | escape_html)">baseline build</a>.</p>
+  <table><thead><tr><th>Platform</th><th>Size Difference</th></tr></thead><tbody>
+EOF
+    for platform in $platforms; do
+      if [ -n "${platform_totals[$platform]+x}" ]; then
+        printf '    <tr><td>%s</td><td>%s</td></tr>\n' \
+          "$(printf '%s' "$platform" | escape_html)" \
+          "$(printf '%s' "${platform_totals[$platform]}" | escape_html)"
+      fi
+    done
+    printf '  </tbody></table>\n'
+    for platform in $platforms; do
+      treemap_file="${treemap_dir}/${platform}.svg"
+      diff_file="${temp_dir}/${platform}-diff.md"
+      if [ ! -s "$treemap_file" ]; then
+        continue
+      fi
+
+      escaped_platform=$(printf '%s' "$platform" | escape_html)
+      escaped_file_name=$(printf '%s' "${platform}.svg" | escape_html)
+      printf '  <details open><summary>%s</summary>\n' "$escaped_platform"
+      printf '    <object data="%s" type="image/svg+xml" aria-label="%s NativeAOT size diff"></object>\n' "$escaped_file_name" "$escaped_platform"
+      printf '    <details><summary>Text size diff</summary><pre>'
+      escape_html < "$diff_file"
+      printf '</pre></details>\n'
+      printf '  </details>\n'
+    done
+    cat <<'EOF'
+</body>
+</html>
+EOF
+  } > "$html_report_file"
+fi
+
 # Pass 2: assemble the final report with summary table first
 {
   echo "## 📊 NativeAOT Size Analysis"
   echo ""
   echo "Comparing [PR build](${pr_build_url}) against [baseline build](${baseline_build_url})."
   echo ""
+  if [ "$has_any_treemap" = true ]; then
+    echo "The interactive HTML report embeds a hoverable SVG treemap for each platform. Download the \`nativeaot-size-report\` artifact from the [workflow run](${workflow_run_url})."
+    echo ""
+  fi
   echo "| Platform | Size Difference |"
   echo "|----------|-----------------|"
   for platform in $platforms; do
@@ -180,3 +265,5 @@ fi
 
 emit_output_value "has_report" "true"
 emit_output_value "report_file" "$report_file"
+emit_output_value "has_treemaps" "$has_any_treemap"
+emit_output_value "treemap_dir" "$treemap_dir"
