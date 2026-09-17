@@ -137,6 +137,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
+            catch (InvalidAuthResponseException e)
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+                return !Log.HasLoggedErrors;
+            }
             catch (ContainerHttpException e)
             {
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);

@@ -38,7 +38,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private sealed record AuthInfo(string Realm, string? Service, string? Scope);
 
     private readonly string _registryName;
+    private readonly Uri _registryUri;
     private readonly bool _isInsecureRegistry;
+    private readonly int _insecureRegistryHttpPort;
     private readonly ILogger _logger;
     private readonly RegistryMode _registryMode;
     private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
@@ -57,10 +59,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         IPNetwork.Parse("224.0.0.0/24"),   // link-local multicast
     ];
 
-    public AuthHandshakeMessageHandler(string registryName, bool isInsecureRegistry, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
+    public AuthHandshakeMessageHandler(string registryName, Uri registryUri, bool isInsecureRegistry, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
     {
         _registryName = registryName;
+        _registryUri = registryUri;
         _isInsecureRegistry = isInsecureRegistry;
+        _insecureRegistryHttpPort = RegistryNameContainsPort(registryName) ? registryUri.Port : 80;
         _logger = logger;
         _registryMode = mode;
     }
@@ -304,6 +308,71 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private static string TrimTrailingDot(string host) =>
         host.Length > 1 && host[^1] == '.' ? host[..^1] : host;
+
+    private static bool RegistryNameContainsPort(string registryName)
+    {
+        // Use a scheme that does not have a default port.
+        return new Uri($"container://{registryName}").Port != -1;
+    }
+
+    /// <summary>
+    /// Returns whether <paramref name="uri"/> targets the configured registry.
+    /// For a registry configured as insecure, the HTTP fallback produced by
+    /// <see cref="FallbackToHttpMessageHandler"/> is also accepted so that fallback can authenticate.
+    /// This exception is limited to the same host and fallback port; it does not permit general
+    /// HTTP or cross-host redirects.
+    /// </summary>
+    private bool IsRegistryOrigin(Uri uri)
+    {
+        if (!uri.IsAbsoluteUri
+            || !uri.IdnHost.Equals(_registryUri.IdnHost, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (uri.Scheme == _registryUri.Scheme && uri.Port == _registryUri.Port)
+        {
+            return true;
+        }
+
+        return _isInsecureRegistry
+            && _registryUri.Scheme == Uri.UriSchemeHttps
+            && uri.Scheme == Uri.UriSchemeHttp
+            && uri.Port == _insecureRegistryHttpPort;
+    }
+
+    /// <summary>
+    /// Rejects Basic or Bearer authentication challenges from an origin other than the configured registry.
+    /// Disposes <paramref name="response"/> before throwing <see cref="InvalidAuthResponseException"/>
+    /// on rejection; callers retain ownership of the response when this method returns normally.
+    /// </summary>
+    private void ValidateAuthenticationOrigin(HttpResponseMessage response, Uri requestUri)
+    {
+        if (response.StatusCode != HttpStatusCode.Unauthorized)
+        {
+            return;
+        }
+
+        Uri challengeUri = response.RequestMessage?.RequestUri ?? requestUri;
+        if (IsRegistryOrigin(challengeUri))
+        {
+            return;
+        }
+
+        // Reject another origin based on the scheme alone; its parameters may be malformed.
+        if (response.Headers.WwwAuthenticate.Any(challenge =>
+            string.Equals(challenge.Scheme, BasicAuthScheme, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(challenge.Scheme, BearerAuthScheme, StringComparison.OrdinalIgnoreCase)))
+        {
+            response.Dispose();
+            throw new InvalidAuthResponseException(
+                _registryName,
+                Resource.FormatString(
+                    nameof(Strings.InvalidAuthResponse_UnexpectedAuthOrigin),
+                    challengeUri.GetLeftPart(UriPartial.Authority),
+                    _registryUri.GetLeftPart(UriPartial.Authority)));
+        }
+    }
 
     /// <summary>
     /// Returns true when <paramref name="registryName"/> identifies the local machine via a
@@ -576,7 +645,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             throw new ArgumentException(Resource.GetString(nameof(Strings.NoRequestUriSpecified)), nameof(request));
         }
 
-        if (_authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
+        if (IsRegistryOrigin(request.RequestUri)
+            && _authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
         {
             request.Headers.Authorization = header;
         }
@@ -589,6 +659,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             try
             {
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                ValidateAuthenticationOrigin(response, request.RequestUri);
                 if (response is { StatusCode: HttpStatusCode.OK })
                 {
                     return response;
@@ -603,7 +674,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                     {
                         _authenticationHeaders[_registryName] = authHeader;
                         request.Headers.Authorization = authHeader;
-                        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        HttpResponseMessage authenticatedResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        ValidateAuthenticationOrigin(authenticatedResponse, request.RequestUri);
+                        return authenticatedResponse;
                     }
 
                     throw new UnableToAccessRepositoryException(_registryName);
