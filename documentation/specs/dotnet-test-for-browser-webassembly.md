@@ -46,10 +46,12 @@ The current snapshots are:
   The experiment consists only of `BrowserWasmTestApp.csproj`,
   `BrowserWasmTests.cs`, `Directory.Packages.props`, and `README.md` under
   `poc/browser-wasm-unit-tests`: four files and 120 added lines.
-- **TestFX:** `e6d8e4e0ccbdacb56db71313fcff328c73182b08`, following
-  `d0eefc044`. The final fixtures use only `EnableMSTestRunner=true` to
-  enable the runner and assert `IsTestingPlatformApplication=true`.
-  Build-only host assets are attributed to the consuming project.
+- **TestFX:** `d3d54c37113fa9fee96c692c753249c2f8c2ba62`, following
+  review-feedback commit `220f67563`. Reserved build-only host assets,
+  prompt binding failure, longest-first redaction, final-only bootstrap
+  expansion and bounded Playwright call sites incorporate the review fixes.
+  Fixtures retain only `EnableMSTestRunner=true` and assert
+  `IsTestingPlatformApplication=true`.
 
 TestFX source is identified by commit and path because the cited experiment
 is local/unpublished. SDK experiment paths are also snapshot citations, not
@@ -65,7 +67,7 @@ at the commit above.
 | Evaluated host wrapping and Static Web Assets registration | Package `buildMultiTargeting/Microsoft.Testing.Platform.Browser.props` and `Microsoft.Testing.Platform.Browser.targets` |
 | URI-encoded launch options, SDK response-file expansion and bootstrap validation | Package `BrowserLauncherOptions.cs` |
 | Host command execution, HTTP stdout readiness and host cleanup | Package `HostProcess.cs` |
-| Private page bindings, terminal result, browser diagnostics and cleanup | Package `ChromiumBrowser.cs`, `BrowserRunMonitor.cs`, `Program.cs`, `DiagnosticBuffer.cs` |
+| Private page bindings, terminal result, browser diagnostics and cleanup | Package `ChromiumBrowser.cs`, `BrowserTerminalResult.cs`, `BoundedResourceCleanup.cs`, `BrowserRunMonitor.cs`, `Program.cs`, `DiagnosticBuffer.cs` |
 | Page and dynamic runtime boot module | Package `buildMultiTargeting/assets/index.html` and `Microsoft.Testing.Platform.Browser.main.js` |
 | Managed HTTP protocol | TestFX `src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/DotnetTestConnection.cs` and `Transport/DotnetTestHttpClient.cs` |
 | Package acceptance coverage | TestFX `test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs` |
@@ -77,7 +79,8 @@ For these simplified snapshots, the implementation owner reports:
 
 | Validation | Result |
 | --- | --- |
-| TestFX browser package acceptance tests | 6/6 passed |
+| TestFX focused unit cases | 19/19 passed |
+| TestFX browser package acceptance tests | 7/7 passed |
 | SDK PoC execution | 1 passed |
 | SDK PoC discovery | 1 discovered |
 
@@ -87,6 +90,12 @@ acceptance fixture has three tests, including an intentional failure and an
 ignored test; the SDK PoC has one passing browser assertion and no ignored
 test. Their discovery counts are not interchangeable. Earlier validation
 counts are not evidence for this final snapshot.
+
+The inspected local `Microsoft.Testing.Platform.Browser.0.1.0-dev.nupkg`
+has SHA-256
+`58BC88E181BC00E36BB2ADDD38287E49788133A1BA09AB5F4D88461A010288D5`.
+This identifies the validated local artifact, not a published package or a
+hash guaranteed for future rebuilds.
 
 ## Existing product foundation
 
@@ -162,6 +171,9 @@ or application-to-launcher bridge. Current TestFX acceptance explicitly
 checks that `EnableMSTestRunner=true` results in
 `IsTestingPlatformApplication=true` for both browser and desktop fixtures;
 no additional runner-enablement property is needed.
+The canonical consumer requires no authored MSBuild targets or
+`Directory.Build.targets`. Acceptance reads manifest paths through evaluated
+properties instead of adding recording targets to the consumer.
 
 ### Run the inspected experiment
 
@@ -219,8 +231,8 @@ The PoC explicitly passes `-p:DotnetTestInvocation=true`. That is the only
 invocation marker supplied by the recipe and consumed by the package.
 It is not a reserved product SDK global or a negotiated product capability.
 
-The package's `PACKAGE.md` shorthand about the SDK setting the marker must
-be read in this PoC context: it is supplied explicitly by the README recipe.
+The package's `PACKAGE.md` identifies this as a caller-supplied PoC marker:
+it is supplied explicitly by the README recipe.
 Bare product `dotnet test` does not acquire browser wrapping solely from
 installing this package. A future supported activation mechanism needs an
 explicit SDK/TestFX decision; the PoC does not commit that design.
@@ -265,25 +277,28 @@ product design, not a current SDK implementation.
 
 ### Host assets are Static Web Assets
 
-When enabled and `WasmMainJSPath` is unset, the package selects its boot module
-and, if unset, its HTML page. It copies both into an intermediate directory,
-registers them with `DefineStaticWebAssets` and
+When enabled, the package supplies two reserved build-only URLs:
+`/_mtp/browser-host.html` and `/_mtp/Microsoft.Testing.Platform.Browser.main.js`.
+It copies its source `assets/index.html` as `browser-host.html` and its boot
+module into an intermediate `wwwroot\_mtp` directory, registers them with `DefineStaticWebAssets` and
 `DefineStaticWebAssetEndpoints`, and records the copied assets in
 `FileWrites`. `SourceId="$(PackageId)"` attributes these computed assets to
 the consuming project, not to the browser package's identity.
 
 That registration is necessary for the tested WasmAppHost serving path:
-setting `WasmMainJSPath`/`WasmMainHTMLPath` alone is not enough to expose the
-page and module and resulted in 404s during the experiment. Do not remove
-the Static Web Assets integration as redundant property wiring.
+the assets must participate in the Static Web Assets graph to be served.
+The package no longer sets or gates its assets on `WasmMainJSPath` or
+`WasmMainHTMLPath`. The reserved `/_mtp/` location avoids competing with a
+consumer-owned root `index.html`; the source filename inside the package
+must not be confused with its served URL.
 
 The current assets are registered with `AssetKind="Build"`. Acceptance checks
 their consumer identity in the build manifest and their absence from the
 publish manifest and published output. This intentionally excludes the test
-host assets from publication; it is not published-layout browser test support.
-If a project has already selected a
-`WasmMainJSPath`, the package does not take ownership of its page; no public
-framework-page adapter or generated-assets opt-out contract is supplied.
+host assets from publication while preserving the consumer's root page.
+Acceptance also runs a browser test with that consumer page present.
+This is not published-layout browser test support, a public framework-page
+adapter, or a generated-assets opt-out contract.
 
 ### Host readiness and browser selection
 
@@ -297,8 +312,9 @@ The parser permits whitespace/case variation but requires an HTTP loopback
 URL. It ignores HTTPS `App url:` lines, `Debug at url:` and
 `Now listening on:`. Stderr is diagnostic output, not a readiness channel.
 Early host exit, non-loopback readiness and readiness timeout are failures.
-The browser navigates to the reported URL; no configurable URL-path override
-is supported.
+The launcher resolves `/_mtp/browser-host.html` against the reported host
+origin and navigates there, not to the consumer's root page. No configurable
+URL-path override is supported.
 
 There is no launch-info file, environment variable, versioned JSON readiness
 schema, readiness-directory DACL, or generic server fallback. WasmAppHost
@@ -323,12 +339,16 @@ details, not a public/versioned framework API:
 
 Calls are checked against the expected page, top-level frame, and exact host
 origin. Navigation outside that origin is rejected. The launcher validates
-the terminal result's integer exit code and optional string error; the first
-accepted terminal result wins. It does not promise that a later duplicate
-can retroactively fail an already-completed run.
+the terminal result's integer exit code and optional string error. Exceptions
+from either binding callback, including source/payload validation failures,
+fault pending completion promptly instead of leaving it waiting for timeout.
+A reported terminal error is recorded through redacted diagnostics and fails
+the run even if accompanied by a zero exit code. The first settled outcome
+wins; a later duplicate cannot retroactively change an already-completed run.
 
 The package module obtains arguments, dynamically imports
-`./_framework/dotnet.js`, calls `withApplicationArguments(...args).create()`,
+`../_framework/dotnet.js` from the reserved module location, resolving to the
+host's root runtime module. It calls `withApplicationArguments(...args).create()`,
 awaits `runMain()`, and awaits terminal-result delivery. Dynamic import is
 inside its error-handling path so runtime import/startup failures can be
 reported through the same terminal channel.
@@ -365,10 +385,13 @@ is not required for launch or results.
 
 The existing SDK creates the bootstrap response file with a current-user
 Windows ACL or Unix user-read/write mode, using create-new semantics. The
-launcher expands the SDK's line-oriented file format and validates a
-loopback authenticated HTTP `dotnettestcli` bootstrap before starting the
-host. This response file is distinct from the removed launcher configuration
-and readiness files.
+launcher requires the final test-application argument to be the SDK's private
+`@response-file`, expands only that line-oriented bootstrap, and validates
+loopback authenticated HTTP `dotnettestcli` settings before starting the host.
+Earlier user-authored `@response-file` arguments are explicitly rejected;
+ordinary arguments preceding the bootstrap are preserved. This is not a
+general response-file parser. The bootstrap file is distinct from the removed
+launcher configuration and readiness files.
 
 The package response-file reader checks Unix group/other permission bits and
 opens with exclusive sharing; on Windows it does not independently validate
@@ -376,7 +399,9 @@ the file ACL. Do not turn those checks into a claim of general hostile-file,
 ownership, symlink, replacement-race or bounded-input hardening.
 
 The bearer token stays out of URLs and static assets. The package redacts
-bootstrap values in bounded diagnostics and disables Playwright's `DEBUG`
+distinct nonempty bootstrap values longest-first in bounded diagnostics,
+including short secrets, so a shorter overlapping value cannot prevent
+redaction of a longer endpoint or token. It disables Playwright's `DEBUG`
 channel logging, which could otherwise include binding payloads. It uses no
 unauthenticated DevTools TCP endpoint. Existing gateway CORS/PNA behavior is
 unchanged; there is no added origin-registration API or dynamic CSP protocol.
@@ -402,9 +427,14 @@ binding disposal, browser/context close, host-exit confirmation and host
 output-reader completion each have five-second limits. It attempts to kill
 the owned host process tree and records cleanup failures in diagnostics.
 These are per-operation bounds, not a five-second total cleanup guarantee.
-`Playwright.CreateAsync()` and synchronous `Playwright.Dispose()` still have
-no explicit deadline at their call sites. End-to-end force-termination and
-real cancellation behavior need validation before a supported preview.
+`Playwright.CreateAsync()` is now awaited with the startup cancellation
+token. Cleanup observes interrupted creation for a bounded interval and
+arranges background disposal if the resource arrives later.
+`Playwright.Dispose()` runs off the main path with a bounded wait.
+These call-site limits do not terminate the underlying operation: a
+permanently wedged private driver can still remain orphaned after cleanup
+expires. Stable support needs explicit transport-process ownership; local
+success is not proof that this remaining lifecycle risk is resolved.
 
 Graceful SDK-to-managed-MTP cancellation is not implemented. Forceful
 cleanup cannot guarantee managed `finally` execution or artifact flushing.
@@ -442,14 +472,15 @@ The current maintained coverage includes:
 
 | Area | Current assertions |
 | --- | --- |
-| Pure-managed package execution | No app HTML/JS/wwwroot; pass, intentional failure, skip, filter and discovery through the SDK HTTP gateway |
+| Pure-managed package execution | Canonical consumer has no app HTML/JS/wwwroot or authored targets; pass, intentional failure, skip, filter and discovery through the SDK HTTP gateway |
 | Nonactivation | Unmarked browser `ComputeRunArguments` and desktop execution remain unwrapped |
 | Runner activation | Browser and desktop fixtures evaluate `IsTestingPlatformApplication=true` with only `EnableMSTestRunner=true` |
-| Asset ownership and publication | Consumer `SourceId`, build-only page/module assets, and exclusion from publish manifest/output |
+| Asset ownership and publication | Consumer `SourceId`, reserved `/_mtp/` build-only assets, execution alongside a consumer root page, and exclusion from publish manifest/output |
 | Package layout | Private Playwright/Node payload, dynamic-import boot module/private bindings, no removed `.After.targets` |
-| Argument handling | URI round-trip, newlines/special characters, SDK bootstrap response-file expansion, invalid bootstrap rejection |
-| Readiness and diagnostics | Exact HTTP `App url:` parsing, rejection of non-loopback URL, diagnostic redaction and output bounds |
-| Cancellation | Linked run-monitor cancellation stops its wait promptly; this unit case is not an end-to-end process cleanup test |
+| Argument handling | URI round-trip including empty arguments, newlines/special characters, final SDK bootstrap expansion, rejection of earlier user response files and invalid bootstrap |
+| Readiness and diagnostics | Exact HTTP `App url:` parsing, rejection of non-loopback URL, longest-first/short-secret redaction and output bounds |
+| Terminal failures | Binding callback failures promptly fault completion; terminal error details pass through redacted diagnostics |
+| Cancellation and cleanup | Prompt linked run-monitor cancellation, late-resource disposal and bounded synchronous-disposal wait; helper unit cases are not proof against permanent driver orphans |
 
 The reported counts are in [Reported validation](#reported-validation).
 Custom host composition, option denylist and framework API tests are not
@@ -472,7 +503,8 @@ A credible preview would additionally require:
 2. A published, reviewable package and reproducible SDK/workload/browser
    prerequisites with an explicitly tested platform matrix.
 3. Reliable terminal-state, timeout, crash and cancellation behavior,
-   including real owned-process cleanup evidence and remaining deadline gaps.
+   including real owned-process cleanup evidence and ownership of a permanently
+   wedged transport process.
 4. A declared host-file/report policy, bootstrap/security review, and coverage
    for the build/run modes actually advertised.
 
