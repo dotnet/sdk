@@ -16,10 +16,25 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool handlesStaticAssetUpdates, ClientTransport transport)
+/// <summary>
+/// Default Hot Reload client. Used for local app or an app running on a device.
+/// </summary>
+/// <param name="logger">Logger for client messages.</param>
+/// <param name="agentLogger">Logger for messages received from the agent.</param>
+/// <param name="startupHookPath">Path to the startup hook to be loaded to the target process.</param>
+/// <param name="transport">Transport layer (e.g. named pipe or web socket)</param>
+/// <param name="handlesStaticAssetUpdates">True if the agent handles static asset updates. False if static assets are updated via browser refresh server.</param>
+/// <param name="hasRemoteAgent">True if the agent runs on a remote machine (device).</param>
+internal sealed class DefaultHotReloadClient(
+    ILogger logger,
+    ILogger agentLogger,
+    string startupHookPath,
+    ClientTransport transport,
+    bool handlesStaticAssetUpdates,
+    bool hasRemoteAgent)
     : HotReloadClient(logger, agentLogger)
 {
-    private Task<ImmutableArray<string>>? _capabilitiesTask;
+    private Task<HotReloadAgentInfo>? _connectedAgentTask;
     private bool _managedCodeUpdateFailedOrCancelled;
 
     // The status of the last update response.
@@ -40,9 +55,9 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         // It is important to establish the connection (WaitForConnectionAsync) before we return,
         // otherwise the client wouldn't be able to connect.
         // However, we don't want to wait for the task to complete, so that we can start the client process.
-        _capabilitiesTask = ConnectAsync();
+        _connectedAgentTask = ConnectAsync();
 
-        async Task<ImmutableArray<string>> ConnectAsync()
+        async Task<HotReloadAgentInfo> ConnectAsync()
         {
             try
             {
@@ -52,26 +67,37 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
                 var initResponse = await transport.ReadAsync(cancellationToken);
                 if (initResponse == null)
                 {
-                    return [];
+                    // connection dropped before we could read the initialization response.
+                    return HotReloadAgentInfo.Unavailable;
                 }
 
                 using var r = initResponse.Value;
                 if (r.Type != ResponseType.InitializationResponse)
                 {
                     Logger.LogError("Expected initialization response, got: {ResponseType}", r.Type);
-                    return [];
+                    return HotReloadAgentInfo.Unavailable;
                 }
 
-                var capabilities = (await ClientInitializationResponse.ReadAsync(r.Data, cancellationToken)).Capabilities;
+                var response = await ClientInitializationResponse.ReadAsync(r.Data, cancellationToken);
 
-                if (string.IsNullOrEmpty(capabilities))
+                // Remote process id has no meaning on the client's machine:
+                var localProcessId = hasRemoteAgent ? (int?)null : response.ProcessId;
+
+                if (response.Capabilities is "")
                 {
-                    return [];
+                    // Hot Reload not supported by the runtime:
+                    Logger.Log(LogEvents.Capabilities, "");
+
+                    return new HotReloadAgentInfo
+                    {
+                        ManagedCodeUpdateCapabilities = [],
+                        LocalProcessId = localProcessId
+                    };
                 }
 
-                var result = AddImplicitCapabilities(capabilities.Split(' '));
+                var effectiveCapabilities = AddImplicitCapabilities(response.Capabilities.Split(' '));
 
-                Logger.Log(LogEvents.Capabilities, string.Join(" ", result));
+                Logger.Log(LogEvents.Capabilities, string.Join(" ", effectiveCapabilities));
 
                 // Initialize process:
                 await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
@@ -79,7 +105,11 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
                 // fire and forget:
                 _ = ListenForResponsesAsync(cancellationToken);
 
-                return result;
+                return new HotReloadAgentInfo
+                {
+                    ManagedCodeUpdateCapabilities = effectiveCapabilities,
+                    LocalProcessId = localProcessId
+                };
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -90,7 +120,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
                     Logger.LogError("Failed to read capabilities: {Message}", e.Message);
                 }
 
-                return [];
+                return HotReloadAgentInfo.Unavailable;
             }
         }
     }
@@ -137,15 +167,15 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         }
     }
 
-    [MemberNotNull(nameof(_capabilitiesTask))]
-    private Task<ImmutableArray<string>> GetCapabilitiesTask()
-        => _capabilitiesTask ?? throw new InvalidOperationException();
+    [MemberNotNull(nameof(_connectedAgentTask))]
+    private Task<HotReloadAgentInfo> GetAgentConnectedTask()
+        => _connectedAgentTask ?? throw new InvalidOperationException();
 
-    [MemberNotNull(nameof(_capabilitiesTask))]
+    [MemberNotNull(nameof(_connectedAgentTask))]
     private void RequireReadyForUpdates()
     {
         // should only be called after connection has been created:
-        _ = GetCapabilitiesTask();
+        _ = GetAgentConnectedTask();
     }
 
     public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
@@ -159,10 +189,10 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
     }
 
     public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
-        => GetCapabilitiesTask();
+        => GetAgentConnectedTask();
 
-    public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        => GetCapabilitiesTask();
+    public override Task<HotReloadAgentInfo> GetConnectedAgentInfoAsync(CancellationToken cancellationToken)
+        => GetAgentConnectedTask();
 
     private ResponseLoggingLevel ResponseLoggingLevel
         => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;

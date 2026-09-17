@@ -232,12 +232,15 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
-    public void TestExecutionCompleted_WithAllowedZeroTestsAndAllSelectedTestsSkipped_RemainsZeroTests()
+    [DataRow(TestExitCode.Success, "Passed!")]
+    [DataRow(TestExitCode.ZeroTests, "Zero tests ran")]
+    public void TestExecutionCompleted_WithAllSelectedTestsSkipped_MatchesFinalExitCode(
+        int exitCode,
+        string expectedSummary)
     {
         var capturingConsole = new CapturingConsole();
         var options = new TerminalTestReporterOptions
         {
-            AllowZeroTests = true,
             AnsiMode = AnsiMode.SimpleAnsi,
             ShowProgress = false,
             ShowAssembly = true,
@@ -255,9 +258,9 @@ public class TerminalTestReporterTests
             exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success,
             outputData: null,
             errorData: null);
-        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
 
-        StripAnsi(capturingConsole.GetOutput()).Should().Contain("Zero tests ran");
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain($"Test run summary: {expectedSummary}");
     }
 
     [TestMethod]
@@ -278,6 +281,27 @@ public class TerminalTestReporterTests
             exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.GenericFailure);
 
         StripAnsi(capturingConsole.GetOutput()).Should().Contain("Test run summary: Failed!");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithForwardedMinimumExpectedTestsViolation_PrintsGenericFailure()
+    {
+        var capturingConsole = new CapturingConsole();
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.TestExecutionCompleted(
+            DateTimeOffset.UtcNow,
+            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.MinimumExpectedTestsPolicyViolation);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("Test run summary: Failed!");
+        output.Should().NotContain("minimum expected 0");
     }
 
     [TestMethod]

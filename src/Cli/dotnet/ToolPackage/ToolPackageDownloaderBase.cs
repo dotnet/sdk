@@ -330,6 +330,37 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     }
 
+    public bool TryGetBestDownloadedTool(
+        PackageId packageId,
+        VersionRange versionRange,
+        string? targetFramework,
+        VerbosityOptions verbosity,
+        [NotNullWhen(true)] out IToolPackage? toolPackage)
+    {
+        string packageRootDirectory = Path.Combine(_localToolDownloadDir.Value, packageId.ToString());
+        if (!_fileSystem.Directory.Exists(packageRootDirectory))
+        {
+            toolPackage = null;
+            return false;
+        }
+
+        IEnumerable<NuGetVersion> installedVersions = _fileSystem.Directory
+            .EnumerateDirectories(packageRootDirectory)
+            .Select(Path.GetFileName)
+            .Select(version => NuGetVersion.TryParse(version, out NuGetVersion? parsedVersion) ? parsedVersion : null)
+            .Where(version => version is not null && IsPackageInstalled(packageId, version, _localToolDownloadDir.Value))
+            .Cast<NuGetVersion>();
+
+        NuGetVersion? bestVersion = versionRange.FindBestMatch(installedVersions);
+        if (bestVersion is null)
+        {
+            toolPackage = null;
+            return false;
+        }
+
+        return TryGetDownloadedTool(packageId, bestVersion, targetFramework, verbosity, out toolPackage);
+    }
+
     private PackageId? ResolveRidSpecificPackage(PackageId packageId,
         NuGetVersion packageVersion,
         DirectoryPath packageDownloadDir,
@@ -397,21 +428,18 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    public virtual (NuGetVersion version, PackageSource source) GetNuGetVersion(
+    public async Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
         VersionRange? versionRange = null,
-        RestoreActionConfig? restoreActionConfig = null)
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default)
     {
-        if (versionRange == null)
-        {
-            var versionString = "*";
-            versionRange = VersionRange.Parse(versionString);
-        }
+        versionRange ??= VersionRange.Parse("*");
 
         var nugetPackageDownloader = CreateNuGetPackageDownloader(
-            false,
+            verifySignatures: false,
             verbosity,
             restoreActionConfig);
 
@@ -422,6 +450,12 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             additionalSourceFeeds: packageLocation.AdditionalFeeds,
             basePath: _currentWorkingDirectory);
 
-        return nugetPackageDownloader.GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+        return await nugetPackageDownloader
+            .GetBestPackageVersionAndSourceAsync(
+                packageId,
+                versionRange,
+                packageSourceLocation,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 }

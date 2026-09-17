@@ -90,8 +90,12 @@ internal sealed class WebAssemblyHotReloadClient(
         // Wait for the browser connection to be established. Currently we need the browser to be running in order to apply changes.
         => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
-    public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        => Task.FromResult(_capabilities);
+    public override Task<HotReloadAgentInfo> GetConnectedAgentInfoAsync(CancellationToken cancellationToken)
+        => Task.FromResult(new HotReloadAgentInfo
+        {
+            ManagedCodeUpdateCapabilities = _capabilities,
+            LocalProcessId = null
+        });
 
     public override async Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
