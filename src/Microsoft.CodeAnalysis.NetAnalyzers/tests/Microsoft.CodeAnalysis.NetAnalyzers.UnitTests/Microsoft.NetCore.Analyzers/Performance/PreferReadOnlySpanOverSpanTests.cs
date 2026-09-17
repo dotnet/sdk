@@ -713,6 +713,52 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        [DataRow("(a, (values[x], values[y])) = (0, (values[y], values[x]));")]
+        [DataRow("((values[x]), values[y]) = (values[y], values[x]);")]
+        public async Task SpanParameter_WrittenViaWrappedTupleAssignment_NoDiagnostic(string assignment)
+        {
+            await VerifyAnalyzerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private void M(Span<char> values, int x, int y, int a)
+                    {
+                        {{assignment}}
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_ReadViaTupleAssignment_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<char> [|values|], int x, int y)
+                    {
+                        char a, b;
+                        (a, b) = (values[x], values[y]);
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<char> values, int x, int y)
+                    {
+                        char a, b;
+                        (a, b) = (values[x], values[y]);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_PassedAsRefParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1165,6 +1211,89 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task SpanParameter_RefReadOnlyVariableDeclaration_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> [|data|])
+                    {
+                        ref readonly int firstElement = ref data[0];
+                        Console.WriteLine(firstElement);
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data)
+                    {
+                        ref readonly int firstElement = ref data[0];
+                        Console.WriteLine(firstElement);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow("ref")]
+        [DataRow("out")]
+        public async Task SpanParameter_IndexerPassedAsWritableReference_NoDiagnostic(string refKind)
+        {
+            await VerifyAnalyzerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> data)
+                    {
+                        Helper({{refKind}} data[0]);
+                    }
+
+                    private void Helper({{refKind}} int value)
+                    {
+                        value = 42;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow("int value", "data[0]")]
+        [DataRow("in int value", "in data[0]")]
+        public async Task SpanParameter_IndexerPassedAsReadOnlyArgument_ProducesDiagnostic(string parameter, string argument)
+        {
+            await VerifyFixerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> [|data|])
+                    {
+                        Helper({{argument}});
+                    }
+
+                    private void Helper({{parameter}}) { }
+                }
+                """, $$"""
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data)
+                    {
+                        Helper({{argument}});
+                    }
+
+                    private void Helper({{parameter}}) { }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_RefReturn_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1176,6 +1305,54 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     private ref int GetFirst(Span<int> data)
                     {
                         return ref data[0];
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow("int", "data[0]")]
+        [DataRow("ref readonly int", "ref data[0]")]
+        public async Task SpanParameter_IndexerReturnedReadOnly_ProducesDiagnostic(string returnType, string expression)
+        {
+            await VerifyFixerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private {{returnType}} M(Span<int> [|data|])
+                    {
+                        return {{expression}};
+                    }
+                }
+                """, $$"""
+                using System;
+
+                class C
+                {
+                    private {{returnType}} M(ReadOnlySpan<int> data)
+                    {
+                        return {{expression}};
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow("int GetLength() { return data.Length; }")]
+        [DataRow("Func<int> GetLength = () => { return data.Length; };")]
+        public async Task MemoryParameter_ReadInNestedFunctionOfRefReturningMethod_NoDiagnostic(string nestedFunction)
+        {
+            await VerifyAnalyzerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private ref int M(Memory<int> data, ref int result)
+                    {
+                        {{nestedFunction}}
+                        result = GetLength();
+                        return ref result;
                     }
                 }
                 """);
