@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal interface ITestHandler
 {
-    bool Initialize();
+    bool Initialize(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// All modules that will be run. Available after a successful <see cref="Initialize"/> so the
