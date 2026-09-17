@@ -133,7 +133,7 @@ internal sealed class BlazorWasmHotReloadMiddleware
     internal static IReadOnlyList<BindingAddress> ParseServerUrls(ILogger<BlazorWasmHotReloadMiddleware> logger, string? urls)
     {
         var result = new List<BindingAddress>();
-        if (string.IsNullOrWhiteSpace(urls))
+        if (urls is null)
         {
             return result;
         }
@@ -175,6 +175,11 @@ internal sealed class BlazorWasmHotReloadMiddleware
             (requestOrigin.Scheme != Uri.UriSchemeHttp && requestOrigin.Scheme != Uri.UriSchemeHttps))
         {
             return false;
+        }
+
+        if (allowedAddresses is [])
+        {
+            return IsLoopbackHost(requestOrigin.Host);
         }
 
         foreach (var allowedAddress in allowedAddresses)

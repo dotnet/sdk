@@ -309,6 +309,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [DataRow("http://*:5000", "http://127.0.0.1:5000", true)] // wildcards in --urls allow loopback
         [DataRow("http://*:5000", "http://[::1]:5000", true)] // wildcards in --urls allow loopback
         [DataRow("http://*:5000", "http://localhost:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("http://[::]:5000", "http://localhost:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("", "http://127.0.0.1:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("", "http://[::1]", true)] // wildcards in --urls allow loopback
+        [DataRow(" ", "http://localhost:5000", true)] // wildcards in --urls allow loopback
+        [DataRow("", "http://contoso.example", false)]
         public void IsAllowedOrigin_MatchesConfiguredServerUrls(string urls, string origin, bool allowed)
         {
             var addresses = BlazorWasmHotReloadMiddleware.ParseServerUrls(_logger, urls);
