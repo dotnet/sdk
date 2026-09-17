@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+
 namespace Microsoft.DotNet.Watch;
 
 internal static class EnvironmentVariables
@@ -43,6 +45,14 @@ internal static class EnvironmentVariables
 
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
     public static int? AutoReloadWSPort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
+
+    /// <summary>
+    /// A list of additional domains, other than localhost and <see cref="BrowserWebSocketHostName"/>,
+    /// allowed as origins of connections to the broser refresh web socket.
+    /// Use when the browser opens the app on a custom domain.
+    /// </summary>
+    public static ImmutableArray<string> AutoReloadWSOrigins = ReadList("DOTNET_WATCH_AUTO_RELOAD_WS_ORIGINS", separators: [';', ',']);
+
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     private static bool ReadBool(string variableName)
@@ -53,4 +63,9 @@ internal static class EnvironmentVariables
 
     private static int? ReadInt(string variableName)
         => Environment.GetEnvironmentVariable(variableName) is var value && int.TryParse(value, out var intValue) ? intValue : null;
+
+    private static ImmutableArray<string> ReadList(string variableName, char[] separators)
+        => Environment.GetEnvironmentVariable(variableName) is { } value
+            ? [.. value.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]
+            : [];
 }

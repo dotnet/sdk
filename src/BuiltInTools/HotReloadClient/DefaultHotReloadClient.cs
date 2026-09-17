@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.HotReload
         internal string NamedPipeName
             => _namedPipeName;
 
-        public override void InitiateConnection(CancellationToken cancellationToken)
+        public override void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
         {
 #if NET
             var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
@@ -78,6 +78,9 @@ namespace Microsoft.DotNet.HotReload
 
                     var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Logger.Log(LogEvents.Capabilities, capabilities);
+
+                    // Initialize process:
+                    await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
 
                     // fire and forget:
                     _ = ListenForResponsesAsync(cancellationToken);
@@ -171,6 +174,33 @@ namespace Microsoft.DotNet.HotReload
 
         private ResponseLoggingLevel ResponseLoggingLevel
             => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+
+        public async ValueTask SetEnvironmentVariablesAsync(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
+        {
+            if (environmentVariables.Count == 0)
+            {
+                return;
+            }
+
+            Debug.Assert(_pipe != null);
+
+            // Send a request to set environment variables:
+            await _pipe.WriteAsync((byte)RequestType.SetEnvironmentVariables, cancellationToken);
+            await _pipe.WriteAsync(environmentVariables.Count, cancellationToken);
+
+            foreach (var (name, value) in environmentVariables)
+            {
+                await _pipe.WriteAsync(name, cancellationToken);
+                await _pipe.WriteAsync(value, cancellationToken);
+            }
+
+            // Wait until the environment variables are set in the target process:
+            var responseType = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
+            if (responseType != ResponseType.EnvironmentVariablesSet)
+            {
+                throw new InvalidOperationException($"Unexpected response received from the agent: {responseType}");
+            }
+        }
 
         public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
