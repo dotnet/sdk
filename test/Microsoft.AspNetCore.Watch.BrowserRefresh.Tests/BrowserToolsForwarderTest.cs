@@ -162,6 +162,17 @@ public class BrowserToolsForwarderTest
         Assert.AreEqual("browser request", observation.Payload);
     }
 
+    [TestMethod]
+    public async Task PumpWebSocketAsync_IgnoresPeerAbortWhilePropagatingClose()
+    {
+        using var source = new CloseReceivingWebSocket();
+        using var destination = new AbortingOnCloseWebSocket();
+
+        await BrowserToolsForwarder.PumpWebSocketAsync(source, destination, TestContext.CancellationToken);
+
+        Assert.AreEqual(WebSocketState.Aborted, destination.State);
+    }
+
     /// <summary>
     /// The provider rejects a browser that does not present a decryptable encrypted secret before it
     /// upgrades the connection, so the rejection is an ordinary HTTP response. That deliberate status is
@@ -286,6 +297,71 @@ public class BrowserToolsForwarderTest
             .Addresses;
 
         return new Uri(addresses.Single());
+    }
+
+    private sealed class CloseReceivingWebSocket : WebSocket
+    {
+        public override WebSocketCloseStatus? CloseStatus => WebSocketCloseStatus.NormalClosure;
+        public override string? CloseStatusDescription => "complete";
+        public override WebSocketState State => WebSocketState.Open;
+        public override string? SubProtocol => null;
+
+        public override void Abort()
+        {
+        }
+
+        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public override void Dispose()
+        {
+        }
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            => Task.FromResult(new WebSocketReceiveResult(
+                count: 0,
+                WebSocketMessageType.Close,
+                endOfMessage: true,
+                WebSocketCloseStatus.NormalClosure,
+                "complete"));
+
+        public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+    }
+
+    private sealed class AbortingOnCloseWebSocket : WebSocket
+    {
+        private WebSocketState _state = WebSocketState.Open;
+
+        public override WebSocketCloseStatus? CloseStatus => null;
+        public override string? CloseStatusDescription => null;
+        public override WebSocketState State => _state;
+        public override string? SubProtocol => null;
+
+        public override void Abort()
+            => _state = WebSocketState.Aborted;
+
+        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+        {
+            Abort();
+            throw new WebSocketException("The peer disconnected.");
+        }
+
+        public override void Dispose()
+        {
+        }
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
     }
 
     private sealed record HttpRequestObservation(

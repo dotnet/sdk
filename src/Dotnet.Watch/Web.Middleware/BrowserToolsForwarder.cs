@@ -244,7 +244,7 @@ internal sealed class BrowserToolsForwarder : IDisposable
         }
     }
 
-    private static async Task PumpWebSocketAsync(
+    internal static async Task PumpWebSocketAsync(
         WebSocket source,
         WebSocket destination,
         CancellationToken cancellationToken)
@@ -259,10 +259,17 @@ internal sealed class BrowserToolsForwarder : IDisposable
                 {
                     if (destination.State is WebSocketState.Open or WebSocketState.CloseReceived)
                     {
-                        await destination.CloseOutputAsync(
-                            result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                            result.CloseStatusDescription,
-                            cancellationToken);
+                        try
+                        {
+                            await destination.CloseOutputAsync(
+                                result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                                result.CloseStatusDescription,
+                                cancellationToken);
+                        }
+                        catch (WebSocketException) when (destination.State is WebSocketState.Aborted or WebSocketState.Closed)
+                        {
+                            // The peer can disappear between the state check and close propagation.
+                        }
                     }
 
                     return;
