@@ -228,6 +228,17 @@ internal static class DotnetupTestUtilities
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
     {
+        string? explicitPath = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
+        if (!string.IsNullOrEmpty(explicitPath))
+        {
+            if (!File.Exists(explicitPath))
+            {
+                throw new FileNotFoundException("DOTNETUP_TEST_EXECUTABLE must point to an existing executable.", explicitPath);
+            }
+
+            return Path.GetFullPath(explicitPath);
+        }
+
 #if DEBUG
         string configuration = "Debug";
         string fallbackConfiguration = "Release";
@@ -330,9 +341,11 @@ internal static class DotnetupTestUtilities
         string[] args,
         bool captureOutput = false,
         string? workingDirectory = null,
-        Dictionary<string, string>? environmentVariables = null)
+        Dictionary<string, string>? environmentVariables = null,
+        string? executablePath = null,
+        TimeSpan? timeout = null)
     {
-        string dotnetupPath = GetDotnetupExecutablePath();
+        string dotnetupPath = executablePath ?? GetDotnetupExecutablePath();
 
         using var process = new Process();
         process.StartInfo.FileName = dotnetupPath;
@@ -384,6 +397,17 @@ internal static class DotnetupTestUtilities
         {
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+        }
+
+        if (timeout is { } limit && !process.WaitForExit((int)limit.TotalMilliseconds))
+        {
+            process.Kill(entireProcessTree: true);
+            if (process.WaitForExit(10_000))
+            {
+                process.WaitForExit();
+            }
+
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} timed out after {limit}. Output:\n{outputBuilder}");
         }
 
         process.WaitForExit();

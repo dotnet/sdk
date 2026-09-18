@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,6 +9,7 @@
   <!-- Exclude test asset apps from test compilation -->
   <ItemGroup>
     <Compile Remove="TestAssets\**\*.cs" />
+    <Compile Include="..\..\src\Installer\VersionMetadata\VersionMetadataSource.cs" Link="VersionMetadata\VersionMetadataSource.cs" />
   </ItemGroup>
 
   <!-- Embed the test assets path so tests can locate assets regardless of output directory -->

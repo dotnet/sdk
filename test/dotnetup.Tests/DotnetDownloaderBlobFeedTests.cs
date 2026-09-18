@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -10,9 +11,14 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
+using Spectre.Console;
+using Strings = Microsoft.Dotnet.Installation.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -21,11 +27,11 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// not list the requested version (e.g. daily/preview builds).
 /// </summary>
 [TestClass]
-public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
+public class DotnetDownloaderBlobFeedTests : IDisposable
 {
     private readonly ITestOutputHelper _log;
 
-    public DotnetArchiveDownloaderBlobFeedTests(TestContext testContext)
+    public DotnetDownloaderBlobFeedTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
         // Defensive: clear any IT-policy override leaked from an earlier test.
@@ -33,6 +39,302 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
     }
 
     public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
+
+    private const string DotnetupVersion = "0.1.0-preview.1.26359.118";
+    private const string DotnetupUrl = "https://ci.dot.net/public/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe";
+    private const string DotnetupChecksumUrl = "https://ci.dot.net/public-checksums/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe.sha512";
+    private const string DotnetupDailyUrl = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+
+    [TestMethod]
+    [DataRow(false, "daily")]
+    [DataRow(true, "preview")]
+    public void SelfUpdateCommandWarnsBeforeUnsignedDownload(bool noProgress, string channel)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        string artifactName = $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : "")}";
+        string artifactUrl = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/{artifactName}";
+        string channelUrl = $"https://aka.ms/dotnet/dotnetup/{channel}/{artifactName}";
+        string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/{artifactName}.sha512";
+        string warning = Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning;
+        string? outputAtDownloadStart = null;
+        using var handler = new RecordingHandler(new()
+        {
+            [channelUrl] = (HttpStatusCode.OK, ""),
+            [checksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
+            [artifactUrl] = (HttpStatusCode.OK, "Deliberate hash mismatch to stop before executable replacement."),
+        }, new(), new() { [channelUrl] = artifactUrl })
+        {
+            OnRequest = url =>
+            {
+                if (url == artifactUrl)
+                {
+                    outputAtDownloadStart = output.ToString();
+                }
+            },
+        };
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var originalConsole = AnsiConsole.Console;
+        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
+        try
+        {
+            UnsignedSourcePolicy.OverrideForTesting = () => false;
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                ColorSystem = ColorSystemSupport.NoColors,
+                Interactive = InteractionSupport.No,
+                Out = new AnsiConsoleOutput(output),
+            });
+            AnsiConsole.Profile.Width = int.MaxValue;
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            var arguments = new List<string> { "self", "update", "--channel", channel };
+            if (noProgress)
+            {
+                arguments.Add("--no-progress");
+            }
+
+            var result = Parser.Parse([.. arguments]);
+
+            new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(1);
+
+            outputAtDownloadStart.Should().NotBeNull().And.Contain(warning);
+            output.ToString().Split(warning, StringSplitOptions.None).Should().HaveCount(2);
+            SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath).Should().Be(SelfUpdateTestFiles.OriginalIdentity);
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
+        }
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupDownload_DownloadsPinnedBuildToExactPathAndRevalidatesCache()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string content = "verified executable";
+        string hash = Convert.ToHexString(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        var history = new List<string>();
+        var responses = new Dictionary<string, (HttpStatusCode, string)>
+        {
+            [DotnetupDailyUrl] = (HttpStatusCode.OK, ""),
+            [DotnetupChecksumUrl] = (HttpStatusCode.OK, hash),
+            [DotnetupUrl] = (HttpStatusCode.OK, content),
+        };
+        var redirects = new Dictionary<string, string> { [DotnetupDailyUrl] = DotnetupUrl };
+        using var handler = new RecordingHandler(responses, history, redirects);
+        using var http = new HttpClient(handler);
+        string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var download = downloader.ResolveDotnetupDownload("win-x64");
+        redirects[DotnetupDailyUrl] = DotnetupUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal);
+        string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
+        File.WriteAllText(destination + ".download", "stale partial download");
+
+        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
+        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
+
+        history.Should().Equal(DotnetupDailyUrl, DotnetupChecksumUrl, DotnetupUrl);
+        File.ReadAllText(destination).Should().Be(content);
+        File.Exists(destination + ".exe").Should().BeFalse();
+        File.Exists(destination + ".download").Should().BeFalse();
+
+        File.WriteAllText(new DownloadCache(cacheDirectory).GetCachedFilePath(DotnetupUrl)!, "corrupt cache");
+        responses[DotnetupUrl] = (HttpStatusCode.OK, "truncated");
+        File.Delete(destination);
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
+        File.Exists(destination).Should().BeFalse();
+        File.Exists(destination + ".download").Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("win-x64", ".exe")]
+    [DataRow("win-arm64", ".exe")]
+    [DataRow("linux-x64", "")]
+    [DataRow("osx-arm64", "")]
+    public void ResolveDotnetupDownload_PinsArtifactChecksumVersionAndRid(string rid, string extension)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        string url = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/dotnetup-{rid}{extension}";
+        string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/dotnetup-{rid}{extension}.sha512";
+        string dailyUrl = $"https://aka.ms/dotnet/dotnetup/daily/dotnetup-{rid}{extension}";
+        string hash = new string('a', 128);
+        var history = new List<string>();
+        using var handler = new RecordingHandler(new()
+        {
+            [dailyUrl] = (HttpStatusCode.OK, ""),
+            [checksumUrl] = (HttpStatusCode.OK, $"{hash}  dotnetup-{rid}{extension}\n"),
+        }, history, new() { [dailyUrl] = url });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ThrowingReleaseManifest(DotnetInstallErrorCode.ManifestFetchFailed), http, testEnv.TempRoot);
+
+        ResolvedDownload download = downloader.ResolveDotnetupDownload(rid);
+
+        download.DownloadUri.Should().Be(new Uri(url));
+        download.ExpectedHash.Should().Be(hash);
+        download.Version.ToString().Should().Be(DotnetupVersion);
+        download.Rid.Should().Be(rid);
+        download.IsUnsigned.Should().BeTrue();
+        history.Should().Equal(dailyUrl, checksumUrl);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.NotFound, "", DotnetInstallErrorCode.ArchiveHashMissing)]
+    [DataRow(HttpStatusCode.OK, "malformed", DotnetInstallErrorCode.ManifestParseFailed)]
+    [DataRow(HttpStatusCode.ServiceUnavailable, "", DotnetInstallErrorCode.NetworkError)]
+    public void ResolveDotnetupDownload_RejectsMissingOrInvalidChecksum(HttpStatusCode status, string content, DotnetInstallErrorCode expectedError)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var history = new List<string>();
+        using var handler = new RecordingHandler(new()
+        {
+            [DotnetupDailyUrl] = (HttpStatusCode.OK, ""),
+            [DotnetupChecksumUrl] = (status, content),
+        }, history, new() { [DotnetupDailyUrl] = DotnetupUrl });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
+
+        exception.ErrorCode.Should().Be(expectedError);
+        history.Should().HaveCount(2);
+        history.Should().NotContain(DotnetupUrl);
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupDownload_RejectsChecksumRedirectToAnotherVersion()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        string metadataUrl = DotnetupChecksumUrl;
+        var history = new List<string>();
+        using var handler = new RecordingHandler(new()
+        {
+            [DotnetupDailyUrl] = (HttpStatusCode.OK, ""),
+            [DotnetupChecksumUrl] = (HttpStatusCode.OK, new string('a', 128)),
+        }, history, new()
+        {
+            [DotnetupDailyUrl] = DotnetupUrl,
+            [metadataUrl] = metadataUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal),
+        });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestParseFailed);
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupDownload_BlockedPolicyMakesNoRequests()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var (handler, history) = BuildHandler(new());
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+        UnsignedSourcePolicy.OverrideForTesting = () => true;
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
+        history.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void DownloadWithVerification_PolicyBlocksCachedDotnetup()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        string seed = Path.Combine(testEnv.TempRoot, "seed");
+        File.WriteAllText(seed, "verified executable");
+        string hash = DotnetDownloader.ComputeFileHash(seed);
+        string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
+        new DownloadCache(cacheDirectory).AddToCache(DotnetupUrl, seed);
+        var (handler, history) = BuildHandler(new());
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64", new ReleaseVersion(DotnetupVersion), IsUnsigned: true);
+        string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
+        UnsignedSourcePolicy.OverrideForTesting = () => true;
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
+        history.Should().BeEmpty();
+        File.Exists(destination).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("https://example.test/dotnetup.exe")]
+    [DataRow("http://ci.dot.net/public/dotnetup/0.1.0-preview.1.26359.118/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.2/dotnetup-win-x64.exe")]
+    public void DownloadWithVerification_RejectsRedirectedDotnetupEvenWithMatchingHash(string redirectUrl)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string content = "verified executable";
+        string hash = Convert.ToHexString(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        var history = new List<string>();
+        using var handler = new RecordingHandler(new() { [DotnetupUrl] = (HttpStatusCode.OK, content) }, history, new() { [DotnetupUrl] = redirectUrl });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"));
+        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64", new ReleaseVersion(DotnetupVersion), IsUnsigned: true);
+        string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestParseFailed);
+        File.Exists(destination).Should().BeFalse();
+        File.Exists(destination + ".download").Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DownloadWithVerification_UsesExactPathAndValidatesCache(bool corruptCache)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string url = "https://example.test/dotnetup-win-x64.exe";
+        const string content = "verified executable bytes";
+        string expectedHash = Convert.ToHexString(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
+        string seed = Path.Combine(testEnv.TempRoot, "seed");
+        File.WriteAllText(seed, corruptCache ? "corrupt" : content);
+        new DownloadCache(cacheDirectory).AddToCache(url, seed);
+        var (handler, history) = BuildHandler(new() { [url] = (HttpStatusCode.OK, content) });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var download = new ResolvedDownload(new Uri(url), expectedHash, "win-x64", new ReleaseVersion("0.1.0-preview.1"));
+        string destination = Path.Combine(testEnv.TempRoot, "nested", "dotnetup.exe.new");
+
+        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
+
+        File.ReadAllText(destination).Should().Be(content);
+        File.Exists(destination + ".exe").Should().BeFalse();
+        File.Exists(destination + ".download").Should().BeFalse();
+        history.Should().HaveCount(corruptCache ? 1 : 0);
+    }
+
+    [TestMethod]
+    public void DownloadWithVerification_BadHashDoesNotCommitOrCacheBytes()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string url = "https://example.test/dotnetup-win-x64.exe";
+        string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
+        var (handler, _) = BuildHandler(new() { [url] = (HttpStatusCode.OK, "corrupt") });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var download = new ResolvedDownload(new Uri(url), new string('a', 128), "win-x64", new ReleaseVersion("0.1.0-preview.1"));
+        string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
+        File.Exists(destination).Should().BeFalse();
+        File.Exists(destination + ".download").Should().BeFalse();
+        new DownloadCache(cacheDirectory).GetCachedFilePath(url).Should().BeNull();
+    }
 
     [TestMethod]
     [DataRow(InstallComponent.SDK, "Sdk", "dotnet-sdk")]
@@ -232,7 +534,7 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
     /// <summary>
     /// End-to-end: parse a real Windows Desktop Runtime release (via the deployment library)
     /// whose manifest lists only .exe installers — no .tar.gz and no .zip — then drive the full
-    /// download entry point <see cref="DotnetArchiveDownloader.DownloadArchiveWithVerification"/>.
+    /// download entry point <see cref="DotnetDownloader.DownloadArchiveWithVerification"/>.
     /// The resolve-then-download path must surface the user-actionable
     /// <see cref="DotnetInstallErrorCode.NoUserInstallableArtifact"/> error and must NOT issue any
     /// HTTP download (it fails during manifest resolution, before touching the network).
@@ -251,7 +553,7 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        var downloader = new DotnetArchiveDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir);
+        var downloader = new DotnetDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir);
 
         string destinationBase = Path.Combine(cacheDir, "windowsdesktop-runtime");
 
@@ -484,22 +786,22 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
         return new DotnetInstallRequest(root, new UpdateChannel(channel), component, new InstallRequestOptions());
     }
 
-    private static DotnetArchiveDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
+    private static DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
     {
         var manifest = new ThrowingReleaseManifest(manifestThrows);
         // Use a per-test cache directory so we don't pollute the user cache.
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        return new DotnetArchiveDownloader(manifest, http, cacheDir);
+        return new DotnetDownloader(manifest, http, cacheDir);
     }
 
     private static (string DownloadUrl, string ExpectedHash) InvokeResolveManifestEntry(
-        DotnetArchiveDownloader downloader,
+        DotnetDownloader downloader,
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion)
     {
-        var method = typeof(DotnetArchiveDownloader).GetMethod("ResolveManifestEntry",
+        var method = typeof(DotnetDownloader).GetMethod("ResolveManifestEntry",
             BindingFlags.NonPublic | BindingFlags.Instance);
-        method.Should().NotBeNull("ResolveManifestEntry must exist on DotnetArchiveDownloader");
+        method.Should().NotBeNull("ResolveManifestEntry must exist on DotnetDownloader");
 
         try
         {
@@ -525,23 +827,30 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
     {
         private readonly Dictionary<string, (HttpStatusCode, string)> _responses;
         private readonly List<string> _history;
+        private readonly Dictionary<string, string>? _redirects;
 
-        public RecordingHandler(Dictionary<string, (HttpStatusCode, string)> responses, List<string> history)
+        public RecordingHandler(Dictionary<string, (HttpStatusCode, string)> responses, List<string> history, Dictionary<string, string>? redirects = null)
         {
             _responses = responses;
             _history = history;
+            _redirects = redirects;
         }
+
+        public Action<string>? OnRequest { get; init; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string url = request.RequestUri!.ToString();
             _history.Add(url);
+            OnRequest?.Invoke(url);
 
             if (_responses.TryGetValue(url, out var entry))
             {
                 var resp = new HttpResponseMessage(entry.Item1)
                 {
                     Content = new StringContent(entry.Item2, Encoding.UTF8, "text/plain"),
+                    RequestMessage = _redirects is not null && _redirects.TryGetValue(url, out var target)
+                        ? new HttpRequestMessage(HttpMethod.Get, target) : request,
                 };
                 return Task.FromResult(resp);
             }

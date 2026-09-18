@@ -61,6 +61,7 @@ Important root files:
 | [`src/Common`](../../src/Common), [`src/Microsoft.DotNet.ProjectTools`](../../src/Microsoft.DotNet.ProjectTools), [`src/Microsoft.Extensions.Logging.MSBuild`](../../src/Microsoft.Extensions.Logging.MSBuild) | Cross-area utilities, project tooling, and MSBuild logging support. | Consumed by the owning product areas; verify references before changing shared code. |
 | [`src/Microsoft.Net.Sdk.Compilers.Toolset`](../../src/Microsoft.Net.Sdk.Compilers.Toolset), [`src/Microsoft.Win32.Msi`](../../src/Microsoft.Win32.Msi), [`src/System.CommandLine.StaticCompletions`](../../src/System.CommandLine.StaticCompletions) | Compiler toolset packaging, Windows installer support, and shell completion generation. | Consumed by layout, CLI, or platform-specific builds and tests. |
 | [`src/SourceBuild`](../../src/SourceBuild) | Source-build-specific content and integration. | Consumed by the VMR/source-only build; use source-build guidance for source-only failures. |
+| [`src/Installer`](../../src/Installer) | dotnetup NativeAOT entry point, command library, and installation library. See the [self-update design](../../documentation/general/dotnetup/designs/self-update.md) and [version metadata tooling](../../src/Installer/VersionMetadata/README.md). | The host-only metadata task source-links the Installation reader without a product project reference; consumed by native generation/publish validation and `test/dotnetup.Tests`. |
 
 ## Test Structure
 

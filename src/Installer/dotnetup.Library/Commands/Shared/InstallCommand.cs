@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal abstract class InstallCommand : CommandBase
 {
+    private readonly Lazy<ChannelVersionResolver> _channelVersionResolver = new(() => new ChannelVersionResolver());
+
     public string? InstallPath { get; }
     public string? ManifestPath { get; }
     public bool Interactive { get; }
@@ -28,7 +30,7 @@ internal abstract class InstallCommand : CommandBase
     public virtual IReadOnlyCollection<InstallComponent> MigrationComponents => [];
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
-    public ChannelVersionResolver ChannelVersionResolver { get; }
+    public ChannelVersionResolver ChannelVersionResolver => _channelVersionResolver.Value;
 
     protected InstallCommand(ParseResult parseResult, string commandName)
         : base(parseResult, commandName)
@@ -45,6 +47,5 @@ internal abstract class InstallCommand : CommandBase
         MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 
         DotnetEnvironment = new DotnetEnvironmentManager();
-        ChannelVersionResolver = new ChannelVersionResolver();
     }
 }
