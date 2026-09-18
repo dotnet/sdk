@@ -11,7 +11,7 @@ internal sealed class SelfUpdatePaths
     public SelfUpdatePaths(string installedPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(installedPath);
-        InstalledPath = Path.GetFullPath(installedPath);
+        InstalledPath = ResolvePath(installedPath);
         DirectoryPath = Path.GetDirectoryName(InstalledPath)!;
         StagedPath = InstalledPath + ".new";
         UpdateLockPath = Path.Combine(DirectoryPath, "dotnetup.update.lock");
@@ -24,7 +24,33 @@ internal sealed class SelfUpdatePaths
     public string UpdateLockPath { get; }
     public string ActivityLockPath { get; }
 
-    public string CreateBackupPath() => InstalledPath + ".old." + Guid.NewGuid().ToString("N");
+    public string CreateBackupPath() => InstalledPath + ".old." + Guid.NewGuid().ToString("N")[..8];
+
+    internal static string ResolvePath(string path)
+    {
+        // Resolve only the directory: executable and recovery-file symlinks must still be rejected.
+        var directory = Path.GetDirectoryName(path);
+        var realDirectory = ExecutablePathResolver.ResolveRealPath(string.IsNullOrEmpty(directory) ? "." : directory);
+        return Path.Combine(realDirectory!, Path.GetFileName(path));
+    }
+
+    internal static bool IsBackupIdentifier(ReadOnlySpan<char> identifier)
+    {
+        if (identifier.Length != 8)
+        {
+            return false;
+        }
+
+        foreach (var character in identifier)
+        {
+            if (!char.IsAsciiHexDigit(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public void Validate()
     {
@@ -40,7 +66,7 @@ internal sealed class SelfUpdatePaths
 
     public static FileStream OpenFile(string path, FileAccess access = FileAccess.Read)
     {
-        path = Path.GetFullPath(path);
+        path = ResolvePath(path);
         ValidateDirectory(Path.GetDirectoryName(path)!);
         if ((File.GetAttributes(path) & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
         {
@@ -91,7 +117,7 @@ internal sealed class SelfUpdatePaths
     {
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var prefix = InstalledPath + ".old.";
-        if (!backupPath.StartsWith(prefix, comparison) || !Guid.TryParseExact(backupPath[prefix.Length..], "N", out _))
+        if (!backupPath.StartsWith(prefix, comparison) || !IsBackupIdentifier(backupPath.AsSpan(prefix.Length)))
         {
             throw new IOException("Self-update requires a transaction-specific sibling backup path.");
         }

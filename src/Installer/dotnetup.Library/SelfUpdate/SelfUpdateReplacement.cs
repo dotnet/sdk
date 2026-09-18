@@ -21,7 +21,7 @@ internal sealed class SelfUpdateReplacement
         ArgumentException.ThrowIfNullOrEmpty(backupPath);
         ArgumentException.ThrowIfNullOrEmpty(originalIdentity);
         _paths = paths;
-        _backupPath = backupPath;
+        _backupPath = SelfUpdatePaths.ResolvePath(backupPath);
         _originalIdentity = originalIdentity;
     }
 

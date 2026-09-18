@@ -14,13 +14,12 @@ internal static class SelfUpdateCleanup
     private const int BackupRetentionDays = 7;
     private const int EntryBudget = 32;
     private const string RejectedSuffix = ".rejected";
-    private const string TransactionIdFormat = "N";
 
     public static void TryRun(string installedPath, string loadedIdentity)
     {
         try
         {
-            installedPath = Path.GetFullPath(installedPath);
+            installedPath = SelfUpdatePaths.ResolvePath(installedPath);
             var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
             if (!IsPlainDirectoryPath(directory))
             {
@@ -50,7 +49,7 @@ internal static class SelfUpdateCleanup
         try
         {
             // Normalize independently because callers that already own the update lock bypass TryRun.
-            installedPath = Path.GetFullPath(installedPath);
+            installedPath = SelfUpdatePaths.ResolvePath(installedPath);
             var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
             // TryRun validates before acquiring the lock; repeat because the filesystem objects may have changed meanwhile.
             if (!IsPlainDirectoryPath(directory) || !IsPlainFile(installedPath))
@@ -116,8 +115,7 @@ internal static class SelfUpdateCleanup
             transaction = transaction[..^RejectedSuffix.Length];
         }
 
-        // The "N" format accepts exactly 32 hexadecimal digits without separators.
-        return Guid.TryParseExact(transaction, TransactionIdFormat, out _);
+        return SelfUpdatePaths.IsBackupIdentifier(transaction);
     }
 
     private static bool IsPlainDirectoryPath(DirectoryInfo directory)

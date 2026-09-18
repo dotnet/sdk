@@ -22,27 +22,44 @@ public class SelfUpdateReplacementTests : SdkTest
     public void PathsAreCanonicalSiblingsWithUniqueBackups()
     {
         var directory = Directory.CreateTempSubdirectory("selfupdate-paths-");
-        directory = new DirectoryInfo(ExecutablePathResolver.ResolveRealPath(directory.FullName)!);
         try
         {
             var installed = Path.Combine(directory.FullName, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup");
             File.WriteAllText(installed, "original");
             var paths = new SelfUpdatePaths(installed);
             paths.Validate();
-            Assert.AreEqual(installed, paths.InstalledPath);
-            Assert.AreEqual(directory.FullName, paths.DirectoryPath);
-            Assert.AreEqual(installed + ".new", paths.StagedPath);
-            Assert.AreEqual(Path.Combine(directory.FullName, "dotnetup.update.lock"), paths.UpdateLockPath);
-            Assert.AreEqual(Path.Combine(directory.FullName, "dotnetup.activity.lock"), paths.ActivityLockPath);
+            var realDirectory = ExecutablePathResolver.ResolveRealDirectory(installed)!;
+            var realInstalled = Path.Combine(realDirectory, Path.GetFileName(installed));
+            Assert.AreEqual(realInstalled, paths.InstalledPath);
+            Assert.AreEqual(realDirectory, paths.DirectoryPath);
+            Assert.AreEqual(realInstalled + ".new", paths.StagedPath);
+            Assert.AreEqual(Path.Combine(realDirectory, "dotnetup.update.lock"), paths.UpdateLockPath);
+            Assert.AreEqual(Path.Combine(realDirectory, "dotnetup.activity.lock"), paths.ActivityLockPath);
             var backup = paths.CreateBackupPath();
-            Assert.IsTrue(backup.StartsWith(installed + ".old.", StringComparison.Ordinal));
+            Assert.IsTrue(backup.StartsWith(realInstalled + ".old.", StringComparison.Ordinal));
             Assert.AreNotEqual(backup, paths.CreateBackupPath());
-            Assert.IsTrue(Guid.TryParseExact(backup[(installed.Length + 5)..], "N", out _));
+            var identifier = backup[(realInstalled.Length + 5)..];
+            Assert.AreEqual(8, identifier.Length);
+            Assert.IsTrue(identifier.All(char.IsAsciiHexDigit));
         }
         finally
         {
             directory.Delete(recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void RelativeExecutablePathsResolveToTheSameInstallation()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var relativePath = Path.GetRelativePath(Environment.CurrentDirectory, files.Paths.InstalledPath);
+        var paths = new SelfUpdatePaths(relativePath);
+
+        paths.Validate();
+
+        Assert.AreEqual(files.Paths.InstalledPath, paths.InstalledPath);
+        Assert.AreEqual(files.Paths.UpdateLockPath, paths.UpdateLockPath);
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(relativePath));
     }
 
     [TestMethod]
@@ -60,7 +77,6 @@ public class SelfUpdateReplacementTests : SdkTest
     public void ExecutableSymlinkIsRejectedWithoutChangingTarget()
     {
         var directory = Directory.CreateTempSubdirectory("selfupdate-paths-");
-        directory = new DirectoryInfo(ExecutablePathResolver.ResolveRealPath(directory.FullName)!);
         try
         {
             var target = Path.Combine(directory.FullName, "target");
@@ -78,7 +94,9 @@ public class SelfUpdateReplacementTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
-    public void ResolvedDirectoryAllowsAccessWithoutAcceptingSymlinkedPaths()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SymlinkedDirectoryResolvesToTheSameInstallationAndLocks(bool missingExecutable)
     {
         using var files = new SelfUpdateTestFiles();
         var linkedDirectory = files.Paths.DirectoryPath + "-link";
@@ -86,19 +104,54 @@ public class SelfUpdateReplacementTests : SdkTest
         {
             Directory.CreateSymbolicLink(linkedDirectory, files.Paths.DirectoryPath);
             var linkedExecutable = Path.Combine(linkedDirectory, Path.GetFileName(files.Paths.InstalledPath));
-            var linkedPaths = new SelfUpdatePaths(linkedExecutable);
-            Assert.ThrowsExactly<IOException>(linkedPaths.Validate);
+            if (missingExecutable)
+            {
+                File.Delete(files.Paths.InstalledPath);
+            }
 
-            var resolvedDirectory = ExecutablePathResolver.ResolveRealDirectory(linkedExecutable);
-            Assert.AreEqual(files.Paths.DirectoryPath, resolvedDirectory);
-            var resolvedPaths = new SelfUpdatePaths(Path.Combine(resolvedDirectory, Path.GetFileName(linkedExecutable)));
-            resolvedPaths.Validate();
-            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(resolvedPaths.InstalledPath));
+            var linkedPaths = new SelfUpdatePaths(linkedExecutable);
+            linkedPaths.ValidateLocation();
+            Assert.AreEqual(files.Paths.InstalledPath, linkedPaths.InstalledPath);
+            Assert.AreEqual(files.Paths.UpdateLockPath, linkedPaths.UpdateLockPath);
+            Assert.AreEqual(files.Paths.ActivityLockPath, linkedPaths.ActivityLockPath);
+            using var updateLock = ScopedLockFile.TryAcquireExclusive(linkedPaths.UpdateLockPath);
+            Assert.IsNotNull(updateLock);
+            using var competingLock = ScopedLockFile.TryAcquireExclusive(files.Paths.UpdateLockPath);
+            Assert.IsNull(competingLock);
+
+            if (missingExecutable)
+            {
+                Assert.ThrowsExactly<FileNotFoundException>(linkedPaths.Validate);
+            }
+            else
+            {
+                linkedPaths.Validate();
+                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(linkedExecutable));
+            }
         }
         finally
         {
             Directory.Delete(linkedDirectory);
         }
+    }
+
+    [TestMethod]
+    [DataRow("1234567")]
+    [DataRow("123456789")]
+    [DataRow("1234567g")]
+    [DataRow("12345678.extra")]
+    [DataRow("0123456789abcdef0123456789abcdef")]
+    public void InvalidBackupIdentifiersAreRejected(string identifier)
+    {
+        using var files = new SelfUpdateTestFiles();
+        var backupPath = files.Paths.InstalledPath + ".old." + identifier;
+        var replacement = new SelfUpdateReplacement(files.Paths, backupPath, SelfUpdateTestFiles.OriginalIdentity);
+
+        Assert.ThrowsExactly<DotnetInstallException>(() => replacement.Replace());
+
+        Assert.IsFalse(File.Exists(backupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -300,7 +353,7 @@ public class SelfUpdateReplacementTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
-    public void StagedSymlinkAndDirectorySymlinkAreRejected()
+    public void StagedSymlinkIsRejectedThroughResolvedDirectory()
     {
         using var files = new SelfUpdateTestFiles();
         File.Delete(files.Paths.StagedPath);
@@ -312,7 +365,8 @@ public class SelfUpdateReplacementTests : SdkTest
         {
             _ = Directory.CreateSymbolicLink(linkedDirectory, files.Paths.DirectoryPath);
             var linkedPaths = new SelfUpdatePaths(Path.Combine(linkedDirectory, Path.GetFileName(files.Paths.InstalledPath)));
-            Assert.ThrowsExactly<IOException>(linkedPaths.Validate);
+            linkedPaths.Validate();
+            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(linkedPaths.StagedPath));
         }
         finally
         {
