@@ -96,6 +96,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             {
                 arguments.Add("--no-progress");
             }
+
             var result = Parser.Parse([.. arguments]);
 
             new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(1);
