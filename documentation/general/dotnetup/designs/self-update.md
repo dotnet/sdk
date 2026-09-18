@@ -202,7 +202,7 @@ Cleanup does not use these retry timeouts: it makes one nonblocking attempt to a
 
 ###### Lock Acquisition for `P`
 
-**1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the full version/RID read from the canonical executable. If the two are equal, `P` exits successfully without acquiring `U` or `A`.
+**1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the full version/RID read from the canonical executable. For versions in the same semantic channel—the first prerelease identifier, or stable when there is no prerelease identifier—the resolved version must be newer. A version from a different semantic channel is eligible even when its SemVer precedence is lower, so an explicit channel transition is not mistaken for a downgrade. If no update is eligible, `P` exits successfully without acquiring `U` or `A`.
 
 The canonical identity read is advisory: it is never the basis for replacing or deleting an executable. A failed read, including an observation of the step 2.4 replacement window, falls through to step 1.1 and the authoritative check under both locks. Release resolution is different: a network or release-metadata failure stops the command before either lock is acquired. The resolved release, including `V_channel`, is pinned for the rest of the transaction. See [SelfUpdateWorkflow.Execute](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs).
 
@@ -259,7 +259,7 @@ Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. [SelfU
 
 `Execute` requires a non-null lease-owner callback. Ownership transfers when that callback returns successfully; if it throws, the workflow disposes the acquired locks. Tests that need locks released when execution ends use the test-only [SelfUpdateTestWorkflow.ExecuteAndReleaseLocks](../../../../test/dotnetup.Tests/Utilities/SelfUpdateTestWorkflow.cs) wrapper. Production has no optional workflow-scoped lock lifetime.
 
-**2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded metadata. If the full version/RID fields are equal, the command reports no update needed and exits successfully; the invocation releases acquired locks after telemetry flush.
+**2.1 — `P` determines whether an update is required.** `P` reads `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded metadata. It repeats the semantic-channel and version-ordering check from step 1.0. If no update is eligible, the command reports no update needed and exits successfully; the invocation releases acquired locks after telemetry flush.
 
 Step 2.1 is the authoritative check and is performed even when step 1.0 already reported an available update, because a peer `self update` can complete a transaction between step 1.0 and step 1.2. Reading `V_installed` from the canonical executable rather than from the loaded image of `P` is what lets `P` observe that peer's work and exit successfully instead of repeating it.
 
@@ -409,7 +409,7 @@ The macOS implementation selects the same managed hard-link/move flow in [SelfUp
 
 # Update As a Version Swap Mechanism
 
-Explicit version selection, downgrade commands, and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts `self update`, `--channel`, and `--no-progress`; it does not enforce version ordering. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for older versions.
+Explicit version selection, downgrade commands, and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts `self update`, `--channel`, and `--no-progress`. Self-update prevents equal-version replacement and downgrades within one semantic channel, while allowing explicit transitions between semantic channels. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for older versions.
 
 # Release Stable VS Preview
 
