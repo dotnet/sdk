@@ -143,10 +143,18 @@ Crossgen2, ILCompiler, ILLink, Mono, and NativeAOT entries, but not ASP.NET Core
 SDK sources that reference ASP.NET Core need a conditional baseline copy while stage 0
 lacks the new entry; see [`Directory.Build.targets`](../../Directory.Build.targets).
 An older bootstrap can also lack pruning data for the new TFM. Scope
-`AllowMissingPrunePackageData` to the new source framework (including platform-qualified
-variants) and the older bootstrap, and remove it after the bootstrap update. Missing
-pruning data can leave normally pruned packages in the dependency graph; inspect any
-resulting NuGet warnings rather than suppressing them.
+`LoadPrunePackageDataFromNearestFramework` to the new source framework (including
+platform-qualified variants) and the older bootstrap, and remove it after the bootstrap
+update. Use the baseline data instead of allowing missing data and leaving normally
+pruned packages in the dependency graph.
+
+Preserve the live reference-pack overrides for the baseline framework, not just packages
+whose major version matches the new source TFM. Otherwise compilation uses the older
+bootstrap reference pack while the layout ships newer runtime packages. This can leave
+framework assemblies copied beside SDK tools. For example, an SDK-local dependency
+injection abstractions assembly can load into MSBuild's logger context while options
+loads from the shared runtime, causing incompatible `IServiceCollection` type identities.
+Check package conflict resolution and the final layout as well as restore.
 
 Update task/tool lookup paths and TFM-specific API baselines with the source outputs.
 Keep paths into externally produced packages, such as F# and WindowsDesktop, on their

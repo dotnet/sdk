@@ -35,4 +35,15 @@ public sealed class GivenTheSdkTaskLayout : SdkTest
 
         File.Exists(assemblyPath).Should().BeTrue();
     }
+
+    [TestMethod]
+    public void FrameworkProvidedDependencyInjectionAbstractionsAreNotDuplicatedInTheSdk()
+    {
+        var assemblyPath = Path.Combine(
+            SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+            "Microsoft.Extensions.DependencyInjection.Abstractions.dll");
+
+        new FileInfo(assemblyPath).Should().NotExist(
+            "MSBuild logger dependencies must share the runtime's IServiceCollection type");
+    }
 }
