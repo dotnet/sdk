@@ -32,7 +32,7 @@ internal static class SelfTests
             MstatModel mstat = MstatReader.Read(mstatPath);
             Assert(mstat.Version.Major == 2 && mstat.Version.Minor == 2, "MSTAT version");
             Assert(mstat.Methods.Count == 2, "method record count");
-            Assert(mstat.Types.Count == 3, "type record count");
+            Assert(mstat.Types.Count == 5, "type record count");
             Assert(mstat.DeduplicatedMethods.Count == 1, "deduplicated method count");
             Assert(
                 mstat.Names.GetMember(mstat.Methods[1].Token).Text.Contains(
@@ -41,10 +41,21 @@ internal static class SelfTests
                 "generic method name");
 
             SizeReport report = ReportBuilder.Build(mstat, mstatPath);
-            Assert(report.AttributedSize == 71, "physical size sum");
+            Assert(report.AttributedSize == 76, "physical size sum");
             SizeNode typeInstantiation = Descendants(report.Root)
-                .Single(static node => node.Kind == "type instantiation");
-            Assert(typeInstantiation.Name == "Box<int>", "generic type name");
+                .Single(static node =>
+                    node.Kind == "type instantiation" &&
+                    node.Name == "Demo.Box<int>");
+            Assert(typeInstantiation.Name == "Demo.Box<int>", "generic type name");
+            SizeNode[] sameNamedArguments = Descendants(report.Root)
+                .Where(static node =>
+                    node.Kind == "type instantiation" &&
+                    node.Name is "Demo.Box<Alpha.Item>" or "Demo.Box<Beta.Item>")
+                .ToArray();
+            Assert(sameNamedArguments.Length == 2, "namespace-qualified generic arguments");
+            Assert(
+                sameNamedArguments.Select(static node => node.ExclusiveSize).Order().SequenceEqual([2L, 3L]),
+                "separate generic instantiation sizes");
             SizeNode[] physicalTypeNodes = Descendants(typeInstantiation)
                 .Where(static node => node.Kind == "type instantiation physical node")
                 .ToArray();
@@ -78,7 +89,7 @@ internal static class SelfTests
             string singleCsv = File.ReadAllText(singleCsvPath);
             Assert(html.Contains("Echo\\u003Cint\\u003E", StringComparison.Ordinal), "HTML label");
             Assert(html.Contains("Why is this kept?", StringComparison.Ordinal), "HTML retention UI");
-            Assert(genericCsv.Contains("Box<int>", StringComparison.Ordinal), "generic CSV type");
+            Assert(genericCsv.Contains("Demo.Box<int>", StringComparison.Ordinal), "generic CSV type");
             Assert(genericCsv.Contains("Echo<int>(int): int", StringComparison.Ordinal), "generic CSV method");
             Assert(!singleCsv.Contains("Echo<int>(int): int", StringComparison.Ordinal), "fan-in exclusion");
             Assert(singleCsv.Contains("keeps type", StringComparison.Ordinal), "single dependency CSV");
@@ -235,6 +246,14 @@ internal static class SyntheticMstatWriter
             demoAssembly,
             metadata.GetOrAddString("Demo"),
             metadata.GetOrAddString("Box`1"));
+        TypeReferenceHandle alphaItem = metadata.AddTypeReference(
+            demoAssembly,
+            metadata.GetOrAddString("Alpha"),
+            metadata.GetOrAddString("Item"));
+        TypeReferenceHandle betaItem = metadata.AddTypeReference(
+            demoAssembly,
+            metadata.GetOrAddString("Beta"),
+            metadata.GetOrAddString("Item"));
 
         var boxIntSignature = new BlobBuilder();
         boxIntSignature.WriteByte((byte)SignatureTypeCode.GenericTypeInstance);
@@ -244,6 +263,14 @@ internal static class SyntheticMstatWriter
         boxIntSignature.WriteByte((byte)SignatureTypeCode.Int32);
         TypeSpecificationHandle boxInt = metadata.AddTypeSpecification(
             metadata.GetOrAddBlob(boxIntSignature));
+        TypeSpecificationHandle boxAlphaItem = AddGenericInstantiation(
+            metadata,
+            boxType,
+            alphaItem);
+        TypeSpecificationHandle boxBetaItem = AddGenericInstantiation(
+            metadata,
+            boxType,
+            betaItem);
 
         var methodSignature = new BlobBuilder();
         methodSignature.WriteByte(new SignatureHeader(
@@ -287,6 +314,8 @@ internal static class SyntheticMstatWriter
         int typeName = AppendName(names, "TYPE<&>");
         int boxIntName = AppendName(names, "BOX_INT");
         int boxIntAlternateName = AppendName(names, "BOX_INT_ALT");
+        int boxAlphaItemName = AppendName(names, "BOX_ALPHA_ITEM");
+        int boxBetaItemName = AppendName(names, "BOX_BETA_ITEM");
         int methodName = AppendName(names, "METHOD_DEF");
         int methodIntName = AppendName(names, "METHOD_INT");
         int fieldName = AppendName(names, "FIELD_VALUE");
@@ -301,6 +330,8 @@ internal static class SyntheticMstatWriter
         WriteType(types, boxType, 7, typeName);
         WriteType(types, boxInt, 13, boxIntName);
         WriteType(types, boxInt, 3, boxIntAlternateName);
+        WriteType(types, boxAlphaItem, 2, boxAlphaItemName);
+        WriteType(types, boxBetaItem, 3, boxBetaItemName);
 
         var blobs = new InstructionEncoder(new BlobBuilder());
         blobs.LoadString(metadata.GetOrAddUserString("Runtime blob"));
@@ -357,6 +388,21 @@ internal static class SyntheticMstatWriter
         int offset = names.Count;
         names.WriteSerializedString(value);
         return offset;
+    }
+
+    private static TypeSpecificationHandle AddGenericInstantiation(
+        MetadataBuilder metadata,
+        EntityHandle genericType,
+        EntityHandle argument)
+    {
+        var signature = new BlobBuilder();
+        signature.WriteByte((byte)SignatureTypeCode.GenericTypeInstance);
+        signature.WriteByte((byte)SignatureTypeKind.Class);
+        signature.WriteCompressedInteger(CodedIndex.TypeDefOrRef(genericType));
+        signature.WriteCompressedInteger(1);
+        signature.WriteByte((byte)SignatureTypeKind.Class);
+        signature.WriteCompressedInteger(CodedIndex.TypeDefOrRef(argument));
+        return metadata.AddTypeSpecification(metadata.GetOrAddBlob(signature));
     }
 
     private static void WriteMethod(

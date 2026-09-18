@@ -339,7 +339,7 @@ internal sealed class DisplayTypeProvider : ISignatureTypeProvider<TypeDisplay, 
         string assembly = reader.IsAssembly
             ? reader.GetString(reader.GetAssemblyDefinition().Name)
             : "<module>";
-        return new TypeDisplay(name, assembly, ns, name);
+        return new TypeDisplay(Qualify(ns, name), assembly, ns, name);
     }
 
     public TypeDisplay GetTypeFromReference(
@@ -375,7 +375,7 @@ internal sealed class DisplayTypeProvider : ISignatureTypeProvider<TypeDisplay, 
                     reader.GetAssemblyReference(
                         (AssemblyReferenceHandle)reference.ResolutionScope).Name)
                 : "<module>";
-            result = new TypeDisplay(localName, assembly, ns, localName);
+            result = new TypeDisplay(Qualify(ns, localName), assembly, ns, localName);
         }
 
         _references.Add(handle, result);
@@ -394,6 +394,9 @@ internal sealed class DisplayTypeProvider : ISignatureTypeProvider<TypeDisplay, 
 
     private static TypeDisplay Placeholder(string text) =>
         new(text, "<generic parameter>", "", text);
+
+    private static string Qualify(string ns, string name) =>
+        string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
 
     private static string RemoveGenericArity(string name)
     {

@@ -60,6 +60,14 @@ function ConvertTo-SvgNumber([double] $value) {
     return $value.ToString('0.0', $invariantCulture)
 }
 
+function Get-TotalBytes([object[]] $items) {
+    if ($items.Count -eq 0) {
+        return [long]0
+    }
+
+    return [long]($items | Measure-Object Bytes -Sum).Sum
+}
+
 function Read-Entries([string] $path) {
     $entries = [Collections.Generic.List[object]]::new()
     $section = $null
@@ -101,7 +109,7 @@ function Write-Panel(
     [int] $x,
     [int] $baseHue) {
 
-    $total = [long]($items | Measure-Object Bytes -Sum).Sum
+    $total = Get-TotalBytes $items
     $escapedTitle = ConvertTo-Xml $title
     $formattedTotal = ConvertTo-Xml "$sign$(Format-Bytes $total)"
     [void] $svg.AppendLine("<rect x=`"$x`" y=`"$panelTop`" width=`"$panelWidth`" height=`"$panelHeight`" rx=`"8`" class=`"panel`"/>")
@@ -150,7 +158,7 @@ if ($entries.Count -eq 0) {
 
 $grown = @($entries | Where-Object Kind -eq 'grown')
 $shrunk = @($entries | Where-Object Kind -eq 'shrunk')
-$net = ($grown | Measure-Object Bytes -Sum).Sum - ($shrunk | Measure-Object Bytes -Sum).Sum
+$net = (Get-TotalBytes $grown) - (Get-TotalBytes $shrunk)
 $netText = if ($net -ge 0) { "+$(Format-Bytes $net)" } else { "-$(Format-Bytes (-$net))" }
 $escapedPlatform = ConvertTo-Xml $Platform
 

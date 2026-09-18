@@ -55,6 +55,24 @@ Total accounted size difference: 115.0 kB
     Assert-Matches -Actual $svg -Pattern 'New / Grown'
     Assert-Matches -Actual $svg -Pattern 'Removed / Shrunk'
 
+    foreach ($oneSidedDiff in @(
+        [PSCustomObject]@{
+            Content = "=== New / Grown ===`n  +1.0 kB      New.Library"
+            NetChange = '\+1\.0 kB net change'
+        },
+        [PSCustomObject]@{
+            Content = "=== Removed / Shrunk ===`n  -1.0 kB      Old.Library"
+            NetChange = '-1\.0 kB net change'
+        }
+    )) {
+        [IO.File]::WriteAllText($diffPath, $oneSidedDiff.Content)
+        & (Join-Path $PSScriptRoot 'generate-treemap.ps1') `
+            -InputPath $diffPath `
+            -OutputPath $svgPath `
+            -Platform 'One-sided test'
+        Assert-Matches -Actual ([IO.File]::ReadAllText($svgPath)) -Pattern $oneSidedDiff.NetChange
+    }
+
     Write-Output 'All treemap generator tests passed.'
 }
 finally {
