@@ -71,6 +71,11 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
+        // Match the managed entry point before any localized resources are read. The AOT host does
+        // not run Program.Main, so it must apply DOTNET_CLI_UI_LANGUAGE/VSLANG itself.
+        using AutomaticEncodingRestorer _ = new();
+        UILanguageOverride.Setup();
+
         // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
         // (SdkPaths.DataName) for the assemblies compiled into the AOT host (MSBuild, NuGet, the command
         // resolvers, ...) that otherwise probe AppContext.BaseDirectory - which under the NativeAOT muxer
