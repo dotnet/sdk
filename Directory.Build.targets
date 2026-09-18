@@ -39,10 +39,26 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup Condition="('$(TargetFramework)' == '$(SdkTargetFramework)' or $(TargetFramework.StartsWith('$(SdkTargetFramework)-'))) and
+                            $([MSBuild]::VersionLessThan('$(BundledNETCoreAppTargetFrameworkVersion)', '12.0'))">
+    <!-- NetTFMUpdate: Use the baseline framework's pruning data and live packs until stage 0 supports net12. -->
+    <LoadPrunePackageDataFromNearestFramework>true</LoadPrunePackageDataFromNearestFramework>
+    <_SdkTargetingPackBaselineVersion>$([MSBuild]::GetTargetFrameworkVersion('$(TargetingPackBaselineTargetFramework)'))</_SdkTargetingPackBaselineVersion>
+  </PropertyGroup>
+
+  <!-- NetTFMUpdate: Arcade creates Core pack entries, but watch and its tests also need ASP.NET Core. -->
+  <ItemGroup Condition="'$(EnableKnownPackItemsForUnknownTargetFramework)' == 'true'">
+    <KnownFrameworkReference
+        Include="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '$(TargetingPackBaselineTargetFramework)'))"
+        TargetFramework="$(TargetingPackCurrentTargetFramework)"
+        Condition="'@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->AnyHaveMetadataValue('TargetFramework', '$(TargetingPackCurrentTargetFramework)'))' != 'true'" />
+  </ItemGroup>
+
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
   <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-                          and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
+                          and ($(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)')) or
+                               ('$(_SdkTargetingPackBaselineVersion)' != '' and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_SdkTargetingPackBaselineVersion)'))))
                           and '$(MSBuildProjectName)' != 'sdk-tasks'
                           and '$(MSBuildProjectName)' != 'GenerateDocumentationAndConfigFiles'
                           and ('$(DotNetBuild)' != 'true' or '$(PackAsToolShimRuntimeIdentifiers)' == '')">
@@ -67,7 +83,8 @@
         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))">
+  <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)')) or
+                        ('$(_SdkTargetingPackBaselineVersion)' != '' and $(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_SdkTargetingPackBaselineVersion)')))">
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</LatestRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimePackRuntimeIdentifiers>
