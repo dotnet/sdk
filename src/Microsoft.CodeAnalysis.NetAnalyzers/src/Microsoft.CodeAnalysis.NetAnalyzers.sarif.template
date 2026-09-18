@@ -245,25 +245,6 @@
             ]
           }
         },
-        "CA1825": {
-          "id": "CA1825",
-          "shortDescription": "Avoid zero-length array allocations",
-          "fullDescription": "Avoid unnecessary zero-length array allocations.  Use {0} instead.",
-          "defaultLevel": "note",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpAvoidZeroLengthArrayAllocationsAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1841": {
           "id": "CA1841",
           "shortDescription": "Prefer Dictionary.Contains methods",
@@ -2778,6 +2759,26 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1825": {
+          "id": "CA1825",
+          "shortDescription": "Avoid zero-length array allocations",
+          "fullDescription": "Avoid unnecessary zero-length array allocations.  Use {0} instead.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidZeroLengthArrayAllocationsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -6896,25 +6897,6 @@
             ],
             "tags": [
               "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1825": {
-          "id": "CA1825",
-          "shortDescription": "Avoid zero-length array allocations",
-          "fullDescription": "Avoid unnecessary zero-length array allocations.  Use {0} instead.",
-          "defaultLevel": "note",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "BasicAvoidZeroLengthArrayAllocationsAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
