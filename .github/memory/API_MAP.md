@@ -85,7 +85,7 @@ relationships. The additional observable contracts are:
 | `dotnet watch` / `dotnet format` | CLI contract, output, file watching/hot reload behavior, and bundled tool layout |
 | ApiCompat, ApiDiff, GenAPI, package validation | Tool commands/options, MSBuild task parameters, package-validation rules, and library APIs |
 | .NET analyzers | CA diagnostic IDs, descriptors, options, generated docs/SARIF, and code-fix behavior |
-| Project tools and container libraries | Public APIs tracked for [project tools](../../src/Microsoft.DotNet.ProjectTools/PublicAPI.Shipped.txt) and [each container TFM](../../src/Containers/Microsoft.NET.Build.Containers/PublicAPI/net12.0/PublicAPI.Shipped.txt), with corresponding unshipped files |
+| Project tools and container libraries | Public APIs tracked for [project tools](../../src/Microsoft.DotNet.ProjectTools/PublicAPI.Shipped.txt), with corresponding unshipped files, and each container TFM's [shipped](../../src/Containers/Microsoft.NET.Build.Containers/PublicAPI/net12.0/PublicAPI.Shipped.txt) / [unshipped](../../src/Containers/Microsoft.NET.Build.Containers/PublicAPI/net12.0/PublicAPI.Unshipped.txt) files |
 
 When a project has [`PublicAPI.Shipped.txt`](../../src/Microsoft.DotNet.ProjectTools/PublicAPI.Shipped.txt)
 and [`PublicAPI.Unshipped.txt`](../../src/Microsoft.DotNet.ProjectTools/PublicAPI.Unshipped.txt),
