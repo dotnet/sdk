@@ -35,7 +35,10 @@ The generated initializer checks the provider-owned
 configuration; this response is not a generated file or Static Web Asset.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
-never reach publish output.
+never reach publish output. Its generated watch initializer also initializes the SDK Hot
+Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
+second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
+agent's apply functions directly.
 Browser-tools UI must remain self-contained and compatible with strict Content Security
 Policy: isolate it in Shadow DOM, use constructable stylesheets, and do not require
 application stylesheets, inline styles, nonces, or `style-src 'unsafe-inline'`.

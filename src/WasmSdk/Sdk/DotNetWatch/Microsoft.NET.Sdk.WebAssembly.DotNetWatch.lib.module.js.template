@@ -7,6 +7,10 @@
 // framework's built-in WebAssembly Hot Reload agent has to be enabled explicitly.
 const useRuntimeHotReloadAgent = __RUNTIME_HOT_RELOAD_AGENT__;
 
+// Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. True when the SDK ships the
+// WebAssembly Hot Reload agent assembly and this initializer must install its apply API.
+const useSdkHotReloadAgent = __SDK_HOT_RELOAD_AGENT__;
+
 // Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
 const settingsPath = '__SETTINGS_PATH__';
 const settingsRequestTimeoutMilliseconds = 5000;
@@ -28,7 +32,7 @@ export async function onRuntimeConfigLoaded(config) {
         return;
     }
 
-    // Signals to Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js that the app is watched.
+    // Activates the SDK Hot Reload agent on .NET 10+.
     // Do not use __ASPNETCORE_BROWSER_TOOLS for this: .NET 8 interprets it as a request to load the
     // legacy application-hosted blazor-hotreload.js module, which the SDK no longer produces.
     config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] ??= "debug";
@@ -43,17 +47,50 @@ export async function onRuntimeConfigLoaded(config) {
 
 }
 
-export async function onRuntimeReady() {
+export async function onRuntimeReady(runtime) {
     if (!hotReloadEnabled) {
         return;
     }
 
-    // Started once the runtime is up so that the Hot Reload apply API is available before updates are replayed.
+    if (useSdkHotReloadAgent) {
+        const agent = hotReloadAgentSignal();
+        try {
+            const exports = await runtime.getAssemblyExports("Microsoft.DotNet.HotReload.WebAssembly.Browser");
+            await exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.InitializeAsync(document.baseURI);
+
+            agent.applyHotReloadDeltas = (deltas, loggingLevel) => {
+                const result = exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.ApplyHotReloadDeltas(JSON.stringify(deltas), loggingLevel);
+                return result ? JSON.parse(result) : [];
+            };
+
+            agent.getApplyUpdateCapabilities = () => {
+                return exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.GetApplyUpdateCapabilities() ?? '';
+            };
+        } catch (error) {
+            console.debug('Unable to initialize the dotnet-watch Hot Reload agent.', error);
+        } finally {
+            // Release the browser tools client even when agent initialization failed. It will report
+            // an apply failure instead of dropping replayed updates.
+            agent.setReady();
+        }
+    }
+
     try {
         await import(new URL(configModulePath, import.meta.url).href);
     } catch (error) {
         console.debug('Unable to load the dotnet-watch browser tools.', error);
     }
+}
+
+// Shared with the browser tools client. Library initializer module evaluation order is not
+// guaranteed, so either module may create the rendezvous object first.
+function hotReloadAgentSignal() {
+    const agent = globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT ||= {};
+    if (!agent.ready) {
+        agent.ready = new Promise(resolve => { agent.setReady = resolve; });
+    }
+
+    return agent;
 }
 
 async function isHotReloadEnabled() {

@@ -36,8 +36,8 @@ Copyright (c) .NET Foundation. All rights reserved.
        (static SSR or Interactive Server), which the browser refresh TagHelper does not reach.
        The assets are produced by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. -->
   <PropertyGroup>
-    <DotNetWatchBrowserToolsAssetPrefix>Microsoft.NET.Sdk.Web.DotNetWatch</DotNetWatchBrowserToolsAssetPrefix>
-    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js</DotNetWatchBrowserToolsInitializerFile>
+    <DotNetWatchBrowserToolsAssetPrefix>Microsoft.NET.Sdk.BlazorWeb.DotNetWatch</DotNetWatchBrowserToolsAssetPrefix>
+    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js</DotNetWatchBrowserToolsInitializerFile>
     <DotNetWatchBrowserToolsRegisterInitializerAsJSModule>true</DotNetWatchBrowserToolsRegisterInitializerAsJSModule>
   </PropertyGroup>
 

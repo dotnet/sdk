@@ -52,6 +52,21 @@ public class HostingStartupTest
             await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
+    [TestMethod]
+    public async Task BrowserToolsRoutes_AreCaseSensitive()
+    {
+        await using var provider = await StartProviderAsync();
+        await using var application = await StartApplicationAsync(GetAddress(provider));
+        using var client = new HttpClient { BaseAddress = GetAddress(application) };
+
+        using var response = await client.GetAsync(
+            ApplicationPaths.BrowserToolsHotReloadSettings.Value!.ToUpperInvariant(),
+            TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual("application", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
     /// <summary>
     /// The .NET 9 WebAssembly runtime fetches the legacy replay endpoint from the application origin
     /// when its Hot Reload agent starts. The endpoint no longer exists, so without a local answer the

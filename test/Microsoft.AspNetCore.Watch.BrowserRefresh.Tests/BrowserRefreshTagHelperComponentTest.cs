@@ -19,7 +19,7 @@ public class BrowserRefreshTagHelperComponentTest
 
         Assert.AreEqual(int.MaxValue, component.Order);
         Assert.AreEqual(
-            "<script type=\"module\" src=\"/_framework/Microsoft.NET.Sdk.Web.DotNetWatch.BrowserTools.Config.js\"></script>",
+            "<script type=\"module\" src=\"/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js\"></script>",
             output.PostContent.GetContent());
     }
 
@@ -32,7 +32,7 @@ public class BrowserRefreshTagHelperComponentTest
         await component.ProcessAsync(CreateContext("body"), output);
 
         Assert.AreEqual(
-            "<script type=\"module\" src=\"/app/_framework/Microsoft.NET.Sdk.Web.DotNetWatch.BrowserTools.Config.js\"></script>",
+            "<script type=\"module\" src=\"/app/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js\"></script>",
             output.PostContent.GetContent());
     }
 

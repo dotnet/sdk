@@ -27,9 +27,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         protected override string RestoreNugetPackagePath => nameof(DotNetWatchBrowserToolsIntegrationTest);
 
         private const string TestAsset = "RazorComponentApp";
-        private const string ConfigFileName = "Microsoft.NET.Sdk.Web.DotNetWatch.BrowserTools.Config.js";
-        private const string ClientFileName = "Microsoft.NET.Sdk.Web.DotNetWatch.BrowserTools.js";
-        private const string InitializerFileName = "Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js";
+        private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js";
+        private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js";
+        private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js";
 
         // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";

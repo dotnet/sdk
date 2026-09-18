@@ -111,12 +111,14 @@ The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
 prefix and initializer
 ([WebAssembly module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template),
-[Web module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js)).
+[Blazor Web module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js)).
 The WebAssembly initializer signals the Hot Reload agent through the watch-private
 `__DOTNET_WATCH_BROWSER_TOOLS` runtime configuration variable rather than a shared global
 or the legacy `__ASPNETCORE_BROWSER_TOOLS` switch, and must not capture globals at module
 evaluation because Blazor runs every `onRuntimeConfigLoaded` before any `onRuntimeReady`
-and does not guarantee initializer load order. .NET 9 is the single exception: its runtime
+and does not guarantee initializer load order. On .NET 10+ the same initializer loads the
+SDK Hot Reload agent and publishes its apply functions on the browser-tools rendezvous
+object; there is no second agent initializer. .NET 9 is the single exception: its runtime
 creates the Hot Reload agent only when `__ASPNETCORE_BROWSER_TOOLS` is set, so the
 initializer is generated from a template whose gate the targets substitute for that target
 framework version alone. MVC and Razor Pages responses are activated

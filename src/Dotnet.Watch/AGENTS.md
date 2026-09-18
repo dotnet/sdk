@@ -91,29 +91,29 @@ Reload).
   and each module's URL is subject to fingerprinting. Do not use
   `__ASPNETCORE_BROWSER_TOOLS` as that handshake, because .NET 8 interprets it as a request
   to load the removed application-hosted `blazor-hotreload.js`. On .NET 10+ the
-  separate Hot Reload agent initializer applies managed
+  same WebAssembly watch initializer loads the SDK Hot Reload agent assembly and applies managed
   updates; older target frameworks fall back to the runtime's own
-  `window.Blazor._internal.applyHotReload`. Both initializers can run in the same app;
-  duplicate activation is absorbed by module caching and the client's injection sentinel.
+  `window.Blazor._internal.applyHotReload`. The configuration module may also be imported
+  by a host activation path; duplicate activation is absorbed by module caching and the
+  client's injection sentinel.
   Static/custom HTML that has no supported
   initializer requires user-provided activation; do not add build-time `index.html`
   rewriting. Apps that disable `StaticWebAssetsEnabled` or `JSModulesEnabled` cannot host
   the client and therefore cannot receive browser tools.
 - **The replay handshake waits for the Hot Reload agent through a `globalThis`
   rendezvous.** The provider sends the replay snapshot exactly once, so applying it before
-  the agent installed `window.Blazor._internal.applyHotReloadDeltas` would drop those
-  updates while the browser still acknowledged success. Both `onRuntimeReady` callbacks run
-  unordered, so the agent publishes
-  `globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT = { ready, setReady }` synchronously before
-  its first `await` and resolves it in a `finally`, including on its disabled early-return
-  path, and the client awaits it before replaying. This is the one case that cannot use the
-  runtime config object, because the value is a promise that only exists once
-  `onRuntimeReady` has started. The helper is duplicated in
-  [`Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js`](HotReloadAgent.WebAssembly.Browser/wwwroot/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js)
-  and in the Static Web Assets SDK's `dotnet-watch-browser-tools.js`; keep the two in sync.
-  The wait is bounded and best effort so runtimes that install the apply API through their
-  own bootstrap, or pages that never boot WebAssembly, degrade to a logged warning instead
-  of a reload loop.
+  the agent is ready would drop those updates while the browser still acknowledged success.
+  The WebAssembly watch initializer publishes
+  `globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT = { ready, setReady }` before its first
+  `await`, attaches the SDK agent's apply functions directly to that shared object, and
+  resolves readiness in a `finally`; the browser tools client awaits it before replaying.
+  This is the one case that cannot use the runtime config object, because the value is a
+  promise that only exists once `onRuntimeReady` has started. Keep the rendezvous helpers in
+  the [WebAssembly initializer](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
+  and the Static Web Assets SDK's `dotnet-watch-browser-tools.js` in sync. The wait is
+  bounded and best effort for older runtimes that install the apply API through their own
+  bootstrap, or pages that never boot WebAssembly, so they degrade to a logged warning
+  instead of a reload loop.
 - **A browser that cannot apply an update must fail the acknowledgement.** `dotnet watch`
   treats an acknowledged update as applied, so any path that answers with an empty log is
   indistinguishable from a successful apply and produces "C# and Razor changes applied"

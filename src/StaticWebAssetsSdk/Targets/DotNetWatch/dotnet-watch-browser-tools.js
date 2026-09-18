@@ -347,7 +347,7 @@ export async function startBrowserTools(config) {
   }
 
   function applyDeltas(deltas, responseLoggingLevel) {
-    let applyDeltas = window.Blazor?._internal?.applyHotReloadDeltas
+    let applyDeltas = hotReloadAgentSignal().applyHotReloadDeltas ?? window.Blazor?._internal?.applyHotReloadDeltas
     if (applyDeltas) {
       // Only apply hot reload deltas if Blazor has been initialized.
       // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
@@ -575,9 +575,8 @@ function getMessageAndStack(error) {
   return messageAndStack
 }
 
-// Rendezvous with the Hot Reload agent's library initializer. Both modules create the object,
-// because library initializer module evaluation order is not guaranteed, and only the agent
-// resolves it. Kept in sync with Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js.
+// Rendezvous with the WebAssembly initializer. Either module may create the object first because
+// library initializer module evaluation order is not guaranteed; the initializer resolves it.
 function hotReloadAgentSignal() {
   const agent = globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT ||= {};
   if (!agent.ready) {
@@ -588,7 +587,7 @@ function hotReloadAgentSignal() {
 }
 
 function hasDeltaApplyApi() {
-  return !!(window.Blazor?._internal?.applyHotReloadDeltas || window.Blazor?._internal?.applyHotReload);
+  return !!(hotReloadAgentSignal().applyHotReloadDeltas || window.Blazor?._internal?.applyHotReloadDeltas || window.Blazor?._internal?.applyHotReload);
 }
 
 // The provider sends the replay snapshot once, so applying it before the agent installed the apply

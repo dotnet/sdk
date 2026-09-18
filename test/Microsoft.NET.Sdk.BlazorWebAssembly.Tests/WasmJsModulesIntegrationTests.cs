@@ -60,7 +60,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [DataRow("net9.0", false, true)]
         [DataRow("net10.0", true, false)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, true, false)]
-        public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectHotReloadAgent, bool expectRuntimeHotReloadAgent)
+        public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectSdkHotReloadAgent, bool expectRuntimeHotReloadAgent)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
                 .WithTargetFramework(targetFramework);
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var build = CreateBuildCommand(ProjectDirectory);
 
             // Browser tools assets are part of every Hot Reload-enabled build: the build owns the
-            // key pair and dotnet-watch reads the private half before starting the provider.
+            // key pair and dotnet-watch reads the private half when the browser connects.
             ExecuteCommand(build).Should().Pass();
 
             var initializers = GetLibraryInitializers(build, targetFramework);
@@ -78,14 +78,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // runtime's own agent on .NET 9.0, and via window.Blazor._internal.applyHotReload on .NET 8.0.
             initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*.lib.module.js");
 
-            if (expectHotReloadAgent)
-            {
-                initializers.Should().ContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
-            }
-            else
-            {
-                initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*");
-            }
+            initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
 
             // .NET 9.0 only creates its built-in WebAssembly Hot Reload agent when __ASPNETCORE_BROWSER_TOOLS
             // is set, and without that agent every apply entry point silently applies nothing. .NET 8.0 must
@@ -98,7 +91,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var initializerContent = File.ReadAllText(initializerPath);
 
             initializerContent.Should().Contain($"const useRuntimeHotReloadAgent = {(expectRuntimeHotReloadAgent ? "true" : "false")};");
+            initializerContent.Should().Contain($"const useSdkHotReloadAgent = {(expectSdkHotReloadAgent ? "true" : "false")};");
+            initializerContent.Should().Contain("agent.applyHotReloadDeltas =");
+            initializerContent.Should().NotContain("window.Blazor._internal.applyHotReloadDeltas =");
             initializerContent.Should().NotContain("__RUNTIME_HOT_RELOAD_AGENT__");
+            initializerContent.Should().NotContain("__SDK_HOT_RELOAD_AGENT__");
         }
 
         [TestMethod]

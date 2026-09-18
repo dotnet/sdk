@@ -40,9 +40,9 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
             // generated configuration module.
             app.MapWhen(
                 static context =>
-                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsConnect, StringComparison.OrdinalIgnoreCase) ||
-                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.OrdinalIgnoreCase) ||
-                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsHotReloadSettings, StringComparison.OrdinalIgnoreCase),
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsConnect, StringComparison.Ordinal) ||
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.Ordinal) ||
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsHotReloadSettings, StringComparison.Ordinal),
                 static browserTools =>
                 {
                     browserTools.UseWebSockets();
