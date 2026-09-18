@@ -43,7 +43,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     {
         var router = new BrowserToolsEndpointRouter(_browserServer);
         _server = await KestrelWebSocketServer.StartServerAsync(
-            new WebSocketConfig(port: 0, securePort: null, hostName: null),
+            new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []),
             router.HandleAsync,
             TestContext.CancellationToken);
 
