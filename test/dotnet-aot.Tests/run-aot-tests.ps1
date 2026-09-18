@@ -69,6 +69,7 @@ if (-not $RuntimeIdentifier) {
 }
 
 $publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
+$managedTestDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "managed-tests", $Configuration, $RuntimeIdentifier)
 $aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier)
 $dnPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dn", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
@@ -77,6 +78,7 @@ $aotLibraryName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.dll" }
                   else { "libdotnet-aot.so" }
 $dnName = if ($RuntimeIdentifier.StartsWith("win")) { "dn.exe" } else { "dn" }
 $exePath = Join-Path $publishDir $exeName
+$managedTestModule = Join-Path $managedTestDir "dotnet-aot.Tests.dll"
 $aotLibraryPath = Join-Path $aotPublishDir $aotLibraryName
 $dnPath = Join-Path $dnPublishDir $dnName
 
@@ -89,6 +91,16 @@ Write-Host ""
 # Publish
 if (-not $NoBuild) {
     Write-Host "Publishing as NativeAOT..." -ForegroundColor Yellow
+
+    & $dotnet build $testProject `
+        -c $Configuration `
+        -p:PublishAotTests=false `
+        -p:OutDir=$managedTestDir
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Managed test build failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
 
     & $dotnet publish $testProject `
         -c $Configuration `
@@ -130,11 +142,6 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
-    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
-    Select-Object -First 1 -ExpandProperty FullName
-
 # Run
 if (-not (Test-Path $exePath)) {
     Write-Host "ERROR: Published binary not found at $exePath" -ForegroundColor Red
@@ -149,7 +156,7 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not $managedTestModule) {
+if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
     Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }

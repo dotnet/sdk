@@ -347,7 +347,7 @@ namespace EndToEnd.Tests
         [DataRow("razorclasslib")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
+            string framework = DetectExpectedDefaultFramework();
             TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: framework);
         }
 
@@ -379,7 +379,7 @@ namespace EndToEnd.Tests
         [DataRow("winformscontrollib", "VB")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
+            string framework = DetectExpectedDefaultFramework();
             TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: $"{framework}-windows");
         }
 
@@ -392,7 +392,7 @@ namespace EndToEnd.Tests
         [DataRow("grpc")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_DisableBuildOnLinuxMusl(string templateName)
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
+            string framework = DetectExpectedDefaultFramework();
 
             if (RuntimeInformation.RuntimeIdentifier.StartsWith("linux-musl"))
             {
@@ -404,17 +404,9 @@ namespace EndToEnd.Tests
             }
         }
 
-        private static string DetectExpectedDefaultFramework(string template = "")
+        private static string DetectExpectedDefaultFramework()
         {
-            string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-            int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 11)
-            {
-                return $"net{latestMajorVersion}.0";
-            }
-
-            throw new Exception("Unsupported version of SDK");
+            return ToolsetInfo.CurrentTargetFramework;
         }
 
         private void TestTemplateCreateAndBuild(
