@@ -9,7 +9,7 @@ using Microsoft.DotNet.HotReload;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// The provider exposes exactly two routes and one credential. The browser generated secret,
+/// The provider exposes exactly three routes and one credential. The browser generated secret,
 /// encrypted with the public key that was pinned into the application build output, is the only
 /// thing that lets a caller obtain a socket, and a caller that cannot produce one is rejected
 /// before the connection is upgraded so it never gets one at all.
@@ -19,6 +19,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
 {
     private const string ConnectPath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
     private const string ClearCachePath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath;
+    private const string HotReloadSettingsPath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.HotReloadSettingsPath;
 
     private readonly SharedSecretProvider _sharedSecretProvider = new();
     private readonly TestBrowserRefreshServer _browserServer;
@@ -156,8 +157,24 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         Assert.AreEqual("no-store", response.Headers.CacheControl?.ToString());
     }
 
+    [TestMethod]
+    public async Task HotReloadSettings_ReportsProviderAvailability()
+    {
+        var baseAddress = await StartRouterAsync();
+        using var client = new HttpClient { BaseAddress = baseAddress };
+
+        using var response = await client.GetAsync(HotReloadSettingsPath, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual("no-store", response.Headers.CacheControl?.ToString());
+        Assert.AreEqual(
+            "{ \"hotReload\": true }",
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
     /// <summary>
-    /// The provider serves no JavaScript and no session or update documents. Anything but the two
+    /// The provider serves no JavaScript and no session or update documents. Anything but the three
     /// routes it owns is a 404, which is what keeps the browser tools client app hosted.
     /// </summary>
     [TestMethod]

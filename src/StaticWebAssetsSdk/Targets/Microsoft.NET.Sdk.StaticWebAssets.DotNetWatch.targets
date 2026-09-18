@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Fixed, same-origin route the dotnet-watch provider is forwarded on. Must match
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <DotNetWatchBrowserToolsRoutePrefix Condition="'$(DotNetWatchBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</DotNetWatchBrowserToolsRoutePrefix>
+    <DotNetWatchBrowserToolsSettingsPath Condition="'$(DotNetWatchBrowserToolsSettingsPath)' == ''">$(DotNetWatchBrowserToolsRoutePrefix)/hot-reload-settings.json</DotNetWatchBrowserToolsSettingsPath>
 
     <!--
       The browser tools assets are build only and never reach publish output. The existing
@@ -116,6 +117,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_DotNetWatchBrowserToolsInitializerContent>$([System.IO.File]::ReadAllText('$(DotNetWatchBrowserToolsInitializerFile)'))</_DotNetWatchBrowserToolsInitializerContent>
       <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__RUNTIME_HOT_RELOAD_AGENT__', '$(_DotNetWatchBrowserToolsRuntimeHotReloadAgent)'))</_DotNetWatchBrowserToolsInitializerContent>
+      <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__SETTINGS_PATH__', '$(DotNetWatchBrowserToolsSettingsPath)'))</_DotNetWatchBrowserToolsInitializerContent>
       <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__CONFIG_MODULE__', './$(_DotNetWatchBrowserToolsConfigFileName)'))</_DotNetWatchBrowserToolsInitializerContent>
 
       <_DotNetWatchBrowserToolsConfigContent>$([System.IO.File]::ReadAllText('$(_DotNetWatchBrowserToolsConfigTemplate)'))</_DotNetWatchBrowserToolsConfigContent>

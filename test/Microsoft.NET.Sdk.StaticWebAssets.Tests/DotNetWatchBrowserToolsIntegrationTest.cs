@@ -116,8 +116,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         /// <summary>
-        /// The initializer starts the tools unconditionally once the Hot Reload-enabled build
-        /// includes it, and resolves the generated configuration relative to itself.
+        /// The initializer checks provider availability before resolving the generated configuration
+        /// relative to itself.
         /// </summary>
         [TestMethod]
         public void Build_InitializerResolvesConfigurationRelativeToItself()
@@ -129,10 +129,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var initializer = File.ReadAllText(Path.Combine(GeneratedDirectory(build), InitializerFileName));
 
+            initializer.Should().Contain("const settingsPath = '/_framework/dotnet-browser-tools/hot-reload-settings.json';");
             initializer.Should().Contain($"const configModulePath = './{ConfigFileName}';");
+            initializer.Should().Contain("settings?.hotReload === true");
+            initializer.Should().Contain("cache: 'no-store'");
+            initializer.Should().Contain("signal: controller.signal");
+            initializer.Should().Contain("isHotReloadEnabled");
+            initializer.Should().NotContain("__SETTINGS_PATH__");
             initializer.Should().NotContain("__CONFIG_MODULE__");
-            initializer.Should().NotContain("hot-reload-settings");
-            initializer.Should().NotContain("isHotReloadEnabled");
         }
 
         [TestMethod]

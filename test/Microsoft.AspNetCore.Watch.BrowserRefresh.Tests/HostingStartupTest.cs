@@ -34,6 +34,24 @@ public class HostingStartupTest
             services);
     }
 
+    [TestMethod]
+    public async Task HotReloadSettings_IsForwardedToTheProvider()
+    {
+        await using var provider = await StartProviderAsync();
+        await using var application = await StartApplicationAsync(GetAddress(provider));
+        using var client = new HttpClient { BaseAddress = GetAddress(application) };
+
+        using var response = await client.GetAsync(
+            ApplicationPaths.BrowserToolsHotReloadSettings,
+            TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual(
+            "{ \"hotReload\": true }",
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
     /// <summary>
     /// The .NET 9 WebAssembly runtime fetches the legacy replay endpoint from the application origin
     /// when its Hot Reload agent starts. The endpoint no longer exists, so without a local answer the
@@ -73,11 +91,13 @@ public class HostingStartupTest
         Assert.AreEqual("application", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
-    private static async Task<WebApplication> StartApplicationAsync()
+    private static async Task<WebApplication> StartApplicationAsync(Uri? providerAddress = null)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
-        new HostingStartup().ConfigureServices(builder.Services, new Uri("http://127.0.0.1:5000"));
+        new HostingStartup().ConfigureServices(
+            builder.Services,
+            providerAddress ?? new Uri("http://127.0.0.1:5000"));
 
         var application = builder.Build();
 
@@ -88,6 +108,20 @@ public class HostingStartupTest
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return context.Response.WriteAsync("application", context.RequestAborted);
         });
+
+        await application.StartAsync();
+        return application;
+    }
+
+    private static async Task<WebApplication> StartProviderAsync()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
+
+        var application = builder.Build();
+        application.MapGet(
+            ApplicationPaths.BrowserToolsHotReloadSettings,
+            static () => Results.Text("{ \"hotReload\": true }", "application/json"));
 
         await application.StartAsync();
         return application;

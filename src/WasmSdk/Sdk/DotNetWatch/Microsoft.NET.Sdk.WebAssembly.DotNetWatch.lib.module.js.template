@@ -1,21 +1,30 @@
 // Activates the browser tools client. Added when Hot Reload build outputs are enabled.
 //
-// Provider availability signaling is handled separately. The initializer does not require the
-// launcher to mutate application files or pass activation state through the build.
+// The provider reports its availability over a stable application route. The initializer does not
+// require the launcher to mutate application files or pass activation state through the build.
 
 // Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. True only when the target
 // framework's built-in WebAssembly Hot Reload agent has to be enabled explicitly.
 const useRuntimeHotReloadAgent = __RUNTIME_HOT_RELOAD_AGENT__;
+
+// Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
+const settingsPath = '__SETTINGS_PATH__';
+const settingsRequestTimeoutMilliseconds = 5000;
 
 // Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. The configuration is app
 // hosted and sits next to this initializer, so resolving it relative to import.meta.url keeps it
 // correct under any static web asset base path or fingerprinting scheme.
 const configModulePath = '__CONFIG_MODULE__';
 
-let runtimeConfigured = false;
+let hotReloadEnabled = false;
 
 export async function onRuntimeConfigLoaded(config) {
     if (config.debugLevel === 0) {
+        return;
+    }
+
+    hotReloadEnabled = await isHotReloadEnabled();
+    if (!hotReloadEnabled) {
         return;
     }
 
@@ -32,11 +41,10 @@ export async function onRuntimeConfigLoaded(config) {
         config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"] ??= "true";
     }
 
-    runtimeConfigured = true;
 }
 
 export async function onRuntimeReady() {
-    if (!runtimeConfigured) {
+    if (!hotReloadEnabled) {
         return;
     }
 
@@ -45,5 +53,25 @@ export async function onRuntimeReady() {
         await import(new URL(configModulePath, import.meta.url).href);
     } catch (error) {
         console.debug('Unable to load the dotnet-watch browser tools.', error);
+    }
+}
+
+async function isHotReloadEnabled() {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), settingsRequestTimeoutMilliseconds);
+
+    try {
+        const response = await fetch(settingsPath, { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) {
+            return false;
+        }
+
+        const settings = await response.json();
+        return settings?.hotReload === true;
+    } catch (error) {
+        console.debug('Unable to read the dotnet-watch browser tools settings.', error);
+        return false;
+    } finally {
+        clearTimeout(timeout);
     }
 }

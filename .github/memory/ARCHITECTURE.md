@@ -88,9 +88,12 @@ none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
 `EnableHotReloadInRuntimeConfigDevFile` cannot receive browser tools. That existing SDK
 property defaults to `true` for Debug builds and is the only build-time generation gate;
 `dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
-the initializer imports the configuration module directly and starts the browser client.
-Provider-availability signaling for non-watch launches is separate from this flow; watch
-does not activate the client by mutating an application file.
+the initializer first fetches
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
+semantics and imports the configuration module only when the response contains
+`{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
+fallback for non-watch launches is a separate concern. Watch does not activate the client
+by mutating an application file.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced
@@ -129,8 +132,9 @@ activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
 configuration because older target frameworks are served by `blazor-devserver`, an ordinary
 ASP.NET Core host.
 
-The provider serves no JavaScript. Its remaining HTTP surface is the `/connect` WebSocket
-and `/clear-cache`; see
+The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
+`/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
+see
 [`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire
 level generation id: replay is serialized on the authenticated WebSocket, which sends the

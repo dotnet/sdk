@@ -30,6 +30,9 @@ code, nor of the key. This target therefore also generates the keypair (via
 the public half in the generated configuration module. The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
+The generated initializer checks the provider-owned
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` response before importing the
+configuration; this response is not a generated file or Static Web Asset.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output.
