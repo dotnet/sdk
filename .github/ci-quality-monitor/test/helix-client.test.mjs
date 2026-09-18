@@ -83,3 +83,23 @@ test("preserves a teardown hang alongside a failed assertion", async () =>
 
   assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
 });
+
+test("MSTest timeout parameter names do not create an independent timeout observation", async () =>
+{
+  const message = "NuGet.Protocol.Core.Types.FatalProtocolException: An error occurred while retrieving package metadata.";
+  const stackFrame = "at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodInfo.ExecuteInternalAsync(Object[] arguments, CancellationTokenSource timeoutTokenSource)";
+  for (const errorMessage of [message, `${message}\n${stackFrame}`])
+  {
+    const observations = await collect({
+      files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+      bodies: {"https://files/results.trx": trxResult({message: errorMessage})},
+      consoleText: `${message}\n${stackFrame}`,
+      exitCode: 2
+    });
+
+    assert.equal(observations.length, 1);
+    assert.equal(observations[0].kind, "test");
+    assert.equal(observations[0].failureType, "test-assertion");
+    assert.match(observations[0].mechanism, /FatalProtocolException/);
+  }
+});
