@@ -8,6 +8,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
@@ -21,6 +22,7 @@ public class SelfUpdateReplacementTests : SdkTest
     public void PathsAreCanonicalSiblingsWithUniqueBackups()
     {
         var directory = Directory.CreateTempSubdirectory("selfupdate-paths-");
+        directory = new DirectoryInfo(ExecutablePathResolver.ResolveRealPath(directory.FullName)!);
         try
         {
             var installed = Path.Combine(directory.FullName, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup");
@@ -58,6 +60,7 @@ public class SelfUpdateReplacementTests : SdkTest
     public void ExecutableSymlinkIsRejectedWithoutChangingTarget()
     {
         var directory = Directory.CreateTempSubdirectory("selfupdate-paths-");
+        directory = new DirectoryInfo(ExecutablePathResolver.ResolveRealPath(directory.FullName)!);
         try
         {
             var target = Path.Combine(directory.FullName, "target");
@@ -70,6 +73,31 @@ public class SelfUpdateReplacementTests : SdkTest
         finally
         {
             directory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    public void ResolvedDirectoryAllowsAccessWithoutAcceptingSymlinkedPaths()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var linkedDirectory = files.Paths.DirectoryPath + "-link";
+        try
+        {
+            Directory.CreateSymbolicLink(linkedDirectory, files.Paths.DirectoryPath);
+            var linkedExecutable = Path.Combine(linkedDirectory, Path.GetFileName(files.Paths.InstalledPath));
+            var linkedPaths = new SelfUpdatePaths(linkedExecutable);
+            Assert.ThrowsExactly<IOException>(linkedPaths.Validate);
+
+            var resolvedDirectory = ExecutablePathResolver.ResolveRealDirectory(linkedExecutable);
+            Assert.AreEqual(files.Paths.DirectoryPath, resolvedDirectory);
+            var resolvedPaths = new SelfUpdatePaths(Path.Combine(resolvedDirectory, Path.GetFileName(linkedExecutable)));
+            resolvedPaths.Validate();
+            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(resolvedPaths.InstalledPath));
+        }
+        finally
+        {
+            Directory.Delete(linkedDirectory);
         }
     }
 
@@ -87,6 +115,70 @@ public class SelfUpdateReplacementTests : SdkTest
         {
             Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath + ".rejected"));
         }
+    }
+
+    [TestMethod]
+    public void ReplacementOfOldExecutableRetainsBackupUntilRetentionExpires()
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
+        File.SetLastWriteTimeUtc(files.Paths.InstalledPath, DateTime.UtcNow.AddDays(-30));
+        var updateStarted = DateTime.UtcNow;
+
+        files.Replacement.Replace();
+        SelfUpdateCleanup.RunWithUpdateLock(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity);
+
+        Assert.IsTrue(File.Exists(files.BackupPath), "A new backup must not expire based on the executable's old timestamp.");
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.BackupPath));
+        var backupTime = File.GetLastWriteTimeUtc(files.BackupPath);
+        // Allow for filesystem timestamp precision without sleeping.
+        Assert.IsTrue(backupTime >= updateStarted.AddSeconds(-2) && backupTime <= DateTime.UtcNow.AddSeconds(2));
+
+        File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
+        SelfUpdateCleanup.RunWithUpdateLock(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity);
+        Assert.IsFalse(File.Exists(files.BackupPath));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RollbackRetainsOldRejectedExecutableUntilRetentionExpires(bool replacementThrows)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
+        File.SetLastWriteTimeUtc(files.Paths.StagedPath, DateTime.UtcNow.AddDays(-30));
+        var updateStarted = DateTime.UtcNow;
+
+        if (replacementThrows)
+        {
+            Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace(
+                (source, destination, backup) =>
+                {
+                    File.Replace(source, destination, backup, ignoreMetadataErrors: false);
+                    throw new IOException("Injected failure after the canonical name switched.");
+                }));
+        }
+        else
+        {
+            files.Replacement.Replace();
+            files.Replacement.Rollback();
+        }
+
+        SelfUpdateCleanup.RunWithUpdateLock(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+
+        var rejectedPath = files.BackupPath + ".rejected";
+        Assert.IsTrue(File.Exists(rejectedPath), "A newly rejected executable must not expire based on its old timestamp.");
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreSequenceEqual(stagedBytes, File.ReadAllBytes(rejectedPath));
+        var rejectedTime = File.GetLastWriteTimeUtc(rejectedPath);
+        Assert.IsTrue(rejectedTime >= updateStarted.AddSeconds(-2) && rejectedTime <= DateTime.UtcNow.AddSeconds(2));
+
+        File.SetLastWriteTimeUtc(rejectedPath, DateTime.UtcNow.AddDays(-8));
+        SelfUpdateCleanup.RunWithUpdateLock(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        Assert.IsFalse(File.Exists(rejectedPath));
     }
 
     [TestMethod]
