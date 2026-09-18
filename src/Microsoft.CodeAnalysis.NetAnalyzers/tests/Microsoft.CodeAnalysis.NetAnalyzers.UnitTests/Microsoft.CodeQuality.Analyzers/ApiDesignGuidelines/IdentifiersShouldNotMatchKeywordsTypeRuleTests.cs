@@ -24,136 +24,153 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class @class {}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class @class {}
+
+                """,
                 GetCSharpResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicTypeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class [Class]
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class [Class]
+                End Class
+
+                """,
                 GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class iNtErNaL {}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class iNtErNaL {}
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class iNtErNaL
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class iNtErNaL
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public struct aDdHaNdLeR {}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public struct aDdHaNdLeR {}
+
+                """,
                 GetCSharpResultAt(2, 15, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "aDdHaNdLeR", "AddHandler"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Structure [aDdHaNdLeR]
-End Structure",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Structure [aDdHaNdLeR]
+                End Structure
+                """,
                 GetBasicResultAt(2, 18, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "aDdHaNdLeR", "AddHandler"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedInternalypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class @class {}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal class @class {}
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedInternalTypeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Friend Class [Class]
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Friend Class [Class]
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class classic {}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class classic {}
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class Classic
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class Classic
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace N
-{
-    public enum @enum {}
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                namespace N
+                {
+                    public enum @enum {}
+                }
+
+                """,
                 GetCSharpResultAt(4, 17, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "enum", "enum"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace N
-    Public Enum [Enum]
-        X
-    End Enum
-End Namespace
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Namespace N
+                    Public Enum [Enum]
+                        X
+                    End Enum
+                End Namespace
+
+                """,
                 GetBasicResultAt(3, 17, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Enum", "Enum"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    protected class @protected {}
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    protected class @protected {}
+                }
+
+                """,
                 GetCSharpResultAt(4, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.protected", "protected"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Protected Class [Protected]
-    End Class
-End Class
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class C
+                    Protected Class [Protected]
+                    End Class
+                End Class
+
+                """,
                 GetBasicResultAt(3, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.Protected", "Protected"));
         }
 
@@ -170,13 +187,14 @@ End Class
                 {
                     Sources =
                     {
-                        @"public class @class {}",
+                        "public class @class {}",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -186,15 +204,17 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-Public Class [Class]
-End Class",
+                        """
+                            Public Class [Class]
+                            End Class
+                            """,
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -212,13 +232,15 @@ End Class",
                 {
                     Sources =
                     {
-                        @"public class @class {}",
+                        "public class @class {}",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics = { GetCSharpResultAt(1, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -229,15 +251,19 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-Public Class [Class]
-End Class",
-            },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                            Public Class [Class]
+                            End Class
+                            """,
+            },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -263,8 +289,8 @@ End Class",
                 {
                     Sources =
                     {
-                        ("/folder1/Test0.cs", @"public partial class @class {}"),
-                        ("/folder2/Test1.cs", @"public partial class @class {}"),
+                        ("/folder1/Test0.cs", "public partial class @class {}"),
+                        ("/folder2/Test1.cs", "public partial class @class {}"),
                     },
                     AnalyzerConfigFiles =
                     {
@@ -276,7 +302,7 @@ End Class",
 
             if (expectDiagnostic)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.cs", 1, 22, 1, 28).WithSpan(@"/folder2/Test1.cs", 1, 22, 1, 28).WithArguments("class", "class"));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan("/folder1/Test0.cs", 1, 22, 1, 28).WithSpan("/folder2/Test1.cs", 1, 22, 1, 28).WithArguments("class", "class"));
             }
 
             await csTest.RunAsync(CancellationToken.None);
@@ -287,12 +313,16 @@ End Class",
                 {
                     Sources =
                     {
-                        ("/folder1/Test0.vb", @"
-Public Partial Class [Class]
-End Class"),
-                        ("/folder2/Test1.vb", @"
-Public Partial Class [Class]
-End Class"),
+                        ("/folder1/Test0.vb", """
+
+                            Public Partial Class [Class]
+                            End Class
+                            """),
+                        ("/folder2/Test1.vb", """
+
+                            Public Partial Class [Class]
+                            End Class
+                            """),
                     },
                     AnalyzerConfigFiles =
                     {
@@ -304,7 +334,7 @@ End Class"),
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.vb", 2, 22, 2, 29).WithSpan(@"/folder2/Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan("/folder1/Test0.vb", 2, 22, 2, 29).WithSpan("/folder2/Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
             }
 
             await vbTest.RunAsync(CancellationToken.None);

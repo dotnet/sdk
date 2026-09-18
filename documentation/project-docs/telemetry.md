@@ -290,6 +290,25 @@ servers, in-process builds, server fallback, and telemetry opt-out. The test ins
 pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
 loopback endpoints, and verifies exported events through the dashboard telemetry API.
 
+#### `msbuild/roslyn/compilercache`
+
+**When fired**: When the Roslyn [compiler output cache](https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/compiler-output-cache-experiment.md)
+is enabled and a compilation runs on the compiler server through the MSBuild `Csc` or `Vbc` task
+
+**Properties**:
+
+- `cachestatus`: Cache lookup result: `hit` or `miss`
+- `storeresult`: Cache store result: `none`, `stored`, `skippedrace`, `skippedexists`, or `failed`
+- `language`: Compiler language: `C#` or `Visual Basic`
+- `keycomputems`: Milliseconds spent computing the deterministic cache key
+- `restorems`: Milliseconds spent attempting to restore a cached result
+- `storems`: Milliseconds spent storing the result; omitted when no store was attempted
+- `compilems`: Milliseconds spent compiling and emitting on a cache miss; omitted on a cache hit or when compilation failed
+
+**Description**: Tracks the effectiveness and performance of the experimental Roslyn compiler output cache
+
+---
+
 #### `msbuild/targetframeworkeval`
 
 **When fired**: When target framework is evaluated

@@ -219,6 +219,11 @@
         <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
+      <trans-unit id="InvalidAuthResponse_UnexpectedAuthOrigin">
+        <source>authentication challenge origin '{0}' does not match registry origin '{1}'</source>
+        <target state="new">authentication challenge origin '{0}' does not match registry origin '{1}'</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</note>
+      </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
         <target state="translated">CONTAINER2031: no se admite el formato de imagen de contenedor '{0}'. Los formatos admitidos son '{1}'.</target>
@@ -398,6 +403,11 @@
         <source>Finished uploading layer '{0}' to '{1}'.</source>
         <target state="translated">Finalizó la carga de la capa "{0}" en "{1}".</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestExists">
+        <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
+        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>

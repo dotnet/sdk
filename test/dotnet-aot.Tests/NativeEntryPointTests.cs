@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 [TestClass]
 [ResourceLock(nameof(NativeEntryPoint))]
 [ResourceLock(nameof(Reporter))]
+[ResourceLock(nameof(SdkDirectoryScope))]
 [ResourceLock(WellKnownResources.Console)]
 [ResourceLock(WellKnownResources.EnvironmentVariables)]
 public partial class NativeEntryPointTests

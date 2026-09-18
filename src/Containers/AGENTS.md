@@ -16,6 +16,9 @@ feature (`Microsoft.NET.Build.Containers`).
 - **User-facing config is `Container*` MSBuild properties**
 - **Diagnostics use `CONTAINER####` codes** — a self-contained scheme, *not* the
   `NETSDK####` sequence from `src/Tasks`.
+- **`Resource.FormatString` takes a resource key**, so use
+  `nameof(Strings.ResourceName)`, not a literal key or the localized property value.
+  See [Resource.cs](Microsoft.NET.Build.Containers/Resources/Resource.cs).
 - **Registry behavior is tuned via `DOTNET_CONTAINER_*` env vars.** Many (older) ones
   also carry a legacy `SDK_CONTAINER_*` alias; newer ones (e.g. the push/pull
   credentials, `DOTNET_CONTAINER_INSECURE_REGISTRIES`) are `DOTNET_CONTAINER_*`-only.

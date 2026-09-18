@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <IsTestProject>true</IsTestProject>
+    <!-- Test classes use separate virtualized environments, while methods within each class share
+         an EnvironmentSettingsHelper and, in some cases, mutable search-provider fixtures. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

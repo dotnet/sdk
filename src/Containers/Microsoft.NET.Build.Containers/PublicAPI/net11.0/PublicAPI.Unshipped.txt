@@ -203,6 +203,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.g
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SourceDateEpoch.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SourceDateEpoch.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.CreateNewImage() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Dispose() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.get -> Microsoft.Build.Framework.ITaskItem![]!
@@ -249,10 +251,14 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> stri
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCreatedLabels.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCreatedLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.NoCache.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.NoCache.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?

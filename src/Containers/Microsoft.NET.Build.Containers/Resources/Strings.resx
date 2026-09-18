@@ -248,6 +248,10 @@
     <value>bearer realm '{0}' is not a valid absolute URI</value>
     <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</comment>
   </data>
+  <data name="InvalidAuthResponse_UnexpectedAuthOrigin" xml:space="preserve">
+    <value>authentication challenge origin '{0}' does not match registry origin '{1}'</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</comment>
+  </data>
   <data name="InvalidAuthResponse_PrivateIpLiteralRealm" xml:space="preserve">
     <value>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</value>
     <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</comment>
@@ -452,6 +456,10 @@
   <data name="Registry_ManifestUploaded" xml:space="preserve">
     <value>Uploaded manifest to '{0}'.</value>
     <comment>{0} is the registry name</comment>
+  </data>
+  <data name="Registry_ManifestExists" xml:space="preserve">
+    <value>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</value>
+    <comment>{0} is the manifest digest, {1} is the repository name</comment>
   </data>
   <data name="Registry_ManifestUploadStarted" xml:space="preserve">
     <value>Uploading manifest to registry '{0}' as blob '{1}'.</value>

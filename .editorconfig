@@ -286,9 +286,9 @@ dotnet_diagnostic.IDE0082.severity = warning
 dotnet_diagnostic.IDE0200.severity = none
 # Remove redundant nullable directive
 dotnet_diagnostic.IDE0240.severity = warning
-# MSBuildTask0001-0005 (Microsoft.Build.TaskAuthoring.Analyzer). MSBuildTask0001 is Error severity by
-# default; the rest are warnings. All are downgraded to 'suggestion' here for report-only onboarding while
-# task migration to the multithreaded model (IMultiThreadableTask / TaskEnvironment) is pending. At
+# MSBuildTask0001-0008 (Microsoft.Build.TaskAuthoring.Analyzer). All are downgraded to 'suggestion' here
+# for report-only onboarding while task migration to the multithreaded model
+# (IMultiThreadableTask / TaskEnvironment) is pending. At
 # suggestion level they are info diagnostics, so they never fail the build (not even under Arcade's
 # MSBuild-engine warn-as-error) without needing any WarningsNotAsErrors exemptions.
 #
@@ -303,6 +303,9 @@ dotnet_diagnostic.MSBuildTask0002.severity = suggestion
 dotnet_diagnostic.MSBuildTask0003.severity = suggestion
 dotnet_diagnostic.MSBuildTask0004.severity = suggestion
 dotnet_diagnostic.MSBuildTask0005.severity = suggestion
+dotnet_diagnostic.MSBuildTask0006.severity = suggestion
+dotnet_diagnostic.MSBuildTask0007.severity = suggestion
+dotnet_diagnostic.MSBuildTask0008.severity = suggestion
 
 # Additional rules for template engine source code
 

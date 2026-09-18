@@ -489,6 +489,11 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <target state="translated">Paketleri ve http isteklerini önbelleğe almayın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Projeden projeye başvuruları geri yüklemez ve yalnızca belirtilen projeyi geri yükler.</target>
@@ -585,8 +590,8 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Test edilecek proje veya çözüm dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Test edilecek proje veya çözüm dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
