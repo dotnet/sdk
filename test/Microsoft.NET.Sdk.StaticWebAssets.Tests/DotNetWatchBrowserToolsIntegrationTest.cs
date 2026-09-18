@@ -18,8 +18,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     /// authenticates the provider are all produced by the build, never by the provider the browser
     /// authenticates. These tests pin that contract: the key pair is generated into deterministic
     /// intermediate output paths, only its public half is pinned into a static web asset, the
-    /// settings document that gates activation defaults to disabled and is never fingerprinted,
-    /// cached or compressed, and none of it reaches publish output.
+    /// initializer is generated only when the existing Hot Reload build property is enabled, and
+    /// none of it reaches publish output.
     /// </summary>
     [TestClass]
     public class DotNetWatchBrowserToolsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
@@ -32,11 +32,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string InitializerFileName = "Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js";
 
         // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
-        private const string SettingsFileName = "hot-reload-settings.json";
         private const string PublicKeyFileName = "browser-tools-key.public.json";
         private const string PrivateKeyFileName = "browser-tools-key.private.json";
-        private const string SettingsRelativeRoute = "_framework/browser-tools/hot-reload-settings.json";
-        private const string DisabledSettings = "{ \"hotReload\": false }";
 
         private string GeneratedDirectory(MSBuildCommand command)
             => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "dotnet-watch");
@@ -119,84 +116,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         /// <summary>
-        /// The settings document is what makes the browser tools inert outside a watch session, so
-        /// an ordinary build has to leave it disabled with the exact content both sides agree on.
+        /// The initializer starts the tools unconditionally once the Hot Reload-enabled build
+        /// includes it, and resolves the generated configuration relative to itself.
         /// </summary>
         [TestMethod]
-        public void Build_GeneratesSettingsDocumentDisabled()
-        {
-            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
-            var build = CreateBuildCommand(projectDirectory);
-
-            ExecuteCommand(build).Should().Pass();
-
-            var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
-            new FileInfo(settingsPath).Should().Exist();
-            File.ReadAllText(settingsPath).Trim().Should().Be(DisabledSettings);
-
-            using var document = JsonDocument.Parse(File.ReadAllBytes(settingsPath));
-            Assert.AreEqual(JsonValueKind.Object, document.RootElement.ValueKind);
-            Assert.AreEqual(JsonValueKind.False, document.RootElement.GetProperty("hotReload").ValueKind);
-
-            // Only the boolean: the public key and the routes are embedded in the initializer and
-            // the configuration module instead.
-            Assert.HasCount(1, document.RootElement.EnumerateObject());
-        }
-
-        /// <summary>
-        /// A watch session rewrites the settings document while the application runs. That only
-        /// works if the asset has a single stable route, so it must not be fingerprinted, must not
-        /// have a compressed alternative that would be negotiated instead, and must not be cached.
-        /// </summary>
-        [TestMethod]
-        public void Build_SettingsAssetIsStableUncachedAndUncompressed()
-        {
-            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
-            var build = CreateBuildCommand(projectDirectory);
-
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(
-                File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-
-            var settingsAssets = manifest.Assets.Where(a => a.RelativePath.Contains("hot-reload-settings")).ToArray();
-            settingsAssets.Should().HaveCount(1);
-
-            var settingsAsset = settingsAssets[0];
-            Assert.AreEqual(SettingsRelativeRoute, settingsAsset.RelativePath.Replace('\\', '/'));
-            settingsAsset.IsBuildOnly().Should().BeTrue();
-            Assert.AreEqual("Never", settingsAsset.CopyToPublishDirectory);
-            settingsAsset.Fingerprint.Should().NotBeNullOrEmpty();
-
-            var endpointsManifest = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(Path.Combine(
-                build.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
-                "ComponentApp.staticwebassets.endpoints.json")));
-
-            var settingsEndpoints = endpointsManifest.Endpoints.Where(e => e.AssetFile.Contains("hot-reload-settings")).ToArray();
-
-            // A single, non-fingerprinted route, so the initializer can hardcode it.
-            settingsEndpoints.Should().HaveCount(1);
-            Assert.AreEqual(SettingsRelativeRoute, settingsEndpoints[0].Route);
-
-            // No cached or revalidated response may report the state the build wrote.
-            var cacheControl = settingsEndpoints[0].ResponseHeaders
-                .Where(h => h.Name == "Cache-Control")
-                .Select(h => h.Value)
-                .ToArray();
-            Assert.AreSequenceEqual(new[] { "no-store" }, cacheControl);
-
-            // No compressed alternative that could be negotiated in preference to the live document.
-            manifest.Assets.Should().NotContain(a =>
-                a.RelativePath.Contains("hot-reload-settings") && a.AssetTraitName == "Content-Encoding");
-        }
-
-        /// <summary>
-        /// The initializer is what fetches the settings document and starts the tools, so the fixed
-        /// route and the configuration module have to be substituted into it.
-        /// </summary>
-        [TestMethod]
-        public void Build_InitializerResolvesSettingsAndConfigurationRelativeToItself()
+        public void Build_InitializerResolvesConfigurationRelativeToItself()
         {
             var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
             var build = CreateBuildCommand(projectDirectory);
@@ -205,13 +129,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var initializer = File.ReadAllText(Path.Combine(GeneratedDirectory(build), InitializerFileName));
 
-            initializer.Should().Contain("const settingsPath = './browser-tools/hot-reload-settings.json';");
             initializer.Should().Contain($"const configModulePath = './{ConfigFileName}';");
-            initializer.Should().NotContain("__SETTINGS_PATH__");
             initializer.Should().NotContain("__CONFIG_MODULE__");
-
-            // The tools only start for an explicit opt in from a watch session.
-            initializer.Should().Contain("settings?.hotReload === true");
+            initializer.Should().NotContain("hot-reload-settings");
+            initializer.Should().NotContain("isHotReloadEnabled");
         }
 
         [TestMethod]
@@ -281,29 +202,45 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         /// including the key pair.
         /// </summary>
         [TestMethod]
-        public void Build_WithBrowserToolsDisabled_DoesNotGenerateAnything()
+        public void Build_WithHotReloadDisabled_DoesNotGenerateAnything()
         {
             var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
             var build = CreateBuildCommand(projectDirectory);
 
-            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             new DirectoryInfo(GeneratedDirectory(build)).Should().NotExist();
         }
 
         [TestMethod]
-        public void Build_InReleaseConfiguration_GeneratesDisabledOutputs()
+        public void Build_InReleaseConfiguration_DoesNotGenerateOutputs()
         {
             var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
             var build = CreateBuildCommand(projectDirectory);
 
             ExecuteCommand(build, "/p:Configuration=Release").Should().Pass();
 
+            new DirectoryInfo(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Release").ToString(),
+                "dotnet-watch")).Should().NotExist();
+        }
+
+        [TestMethod]
+        public void Build_InReleaseConfigurationWithHotReloadEnabled_GeneratesOutputs()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(
+                build,
+                "/p:Configuration=Release",
+                "/p:EnableHotReloadInRuntimeConfigDevFile=true").Should().Pass();
+
             var generated = Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Release").ToString(),
                 "dotnet-watch");
             new FileInfo(Path.Combine(generated, PublicKeyFileName)).Should().Exist();
-            File.ReadAllText(Path.Combine(generated, SettingsFileName)).Trim().Should().Be(DisabledSettings);
+            new FileInfo(Path.Combine(generated, InitializerFileName)).Should().Exist();
         }
 
         [TestMethod]
@@ -326,20 +263,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new DirectoryInfo(hostGenerated).Should().NotExist();
             new FileInfo(Path.Combine(clientGenerated, PublicKeyFileName)).Should().Exist();
             new FileInfo(Path.Combine(clientGenerated, PrivateKeyFileName)).Should().Exist();
-            File.ReadAllText(Path.Combine(clientGenerated, SettingsFileName)).Trim().Should().Be(DisabledSettings);
 
             var hostManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.build.json")));
-            var settingsAssets = hostManifest.Assets
-                .Where(a => a.RelativePath.Replace('\\', '/') == SettingsRelativeRoute)
+            var initializerAssets = hostManifest.Assets
+                .Where(a => a.RelativePath.Replace('\\', '/').Contains("Microsoft.NET.Sdk.WebAssembly.DotNetWatch"))
+                .Where(a => a.IsPrimaryAsset())
                 .ToArray();
 
-            settingsAssets.Should().HaveCount(1);
-            Assert.AreEqual("blazorwasm", settingsAssets[0].SourceId);
-            Assert.AreEqual(
-                Path.Combine(clientGenerated, SettingsFileName),
-                settingsAssets[0].Identity);
+            initializerAssets.Should().NotBeEmpty();
+            initializerAssets.Should().OnlyContain(a => a.SourceId == "blazorwasm");
         }
 
         /// <summary>
@@ -406,49 +340,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 privateDocument.RootElement.GetProperty("publicKey").GetString());
         }
 
-        /// <summary>
-        /// A build outside a watch session has to put the settings document back into the disabled
-        /// state, otherwise a plain <c>dotnet run</c> after a watch session would keep trying to
-        /// reach a provider that no longer exists.
-        /// </summary>
-        [TestMethod]
-        public void Rebuild_ResetsTheSettingsDocumentToDisabled()
-        {
-            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
-            var build = CreateBuildCommand(projectDirectory);
-
-            ExecuteCommand(build).Should().Pass();
-
-            var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
-
-            // Simulates what dotnet-watch writes before it launches the application.
-            File.WriteAllText(settingsPath, "{ \"hotReload\": true }" + Environment.NewLine);
-
-            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
-
-            File.ReadAllText(settingsPath).Trim().Should().Be(DisabledSettings);
-        }
-
-        [TestMethod]
-        public void DesignTimeBuild_DoesNotResetTheSettingsDocument()
-        {
-            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
-            var build = CreateBuildCommand(projectDirectory);
-
-            ExecuteCommand(build).Should().Pass();
-
-            var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
-            var enabledSettings = "{ \"hotReload\": true } " + Environment.NewLine;
-            File.WriteAllText(settingsPath, enabledSettings);
-
-            ExecuteCommand(
-                new MSBuildCommand(Log, "UpdateStaticWebAssetsDesignTime", build.FullPathProjectFile),
-                "/p:DesignTimeBuild=true",
-                "/p:BuildingInsideVisualStudio=true").Should().Pass();
-
-            Assert.AreEqual(enabledSettings, File.ReadAllText(settingsPath));
-        }
-
         [TestMethod]
         public void Publish_NeverContainsBrowserToolsAssets()
         {
@@ -467,10 +358,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             Directory.GetFiles(
                 publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
                 "*BrowserTools*",
-                SearchOption.AllDirectories).Should().BeEmpty();
-            Directory.GetFiles(
-                publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
-                "hot-reload-settings.json",
                 SearchOption.AllDirectories).Should().BeEmpty();
         }
 
@@ -494,7 +381,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ExecuteCommand(clean).Should().Pass();
 
             new FileInfo(Path.Combine(generated, ConfigFileName)).Should().NotExist();
-            new FileInfo(Path.Combine(generated, SettingsFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, PublicKeyFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, PrivateKeyFileName)).Should().NotExist();
         }

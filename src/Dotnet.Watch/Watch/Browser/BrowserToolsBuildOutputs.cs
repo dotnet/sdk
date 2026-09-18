@@ -26,7 +26,7 @@ internal sealed class BrowserToolsBuildOutputsException(string message) : Except
 /// the application pins at build time, so the key has to be created by the build; a key that the
 /// watcher pushed into the build through a global property would let the provider authenticate
 /// itself, and a global property could not be scoped to a project anyway. The build therefore owns
-/// the key pair and the settings document, and the watcher reads them back per project instance.
+/// the key pair, and the watcher reads it back per project instance.
 ///
 /// The paths are derived from evaluated MSBuild properties, the same way the static web assets
 /// manifest is located in <see cref="EvaluationResult"/>, rather than by searching the file system.
@@ -39,26 +39,8 @@ internal sealed class BrowserToolsBuildOutputs
     /// </summary>
     public const string DirectoryName = "dotnet-watch";
 
-    public const string SettingsFileName = "hot-reload-settings.json";
     public const string PublicKeyFileName = "browser-tools-key.public.json";
     public const string PrivateKeyFileName = "browser-tools-key.private.json";
-
-    /// <summary>
-    /// Route of the settings document relative to the <c>_framework</c> folder. Only used by tests
-    /// and diagnostics: the browser resolves it relative to the initializer module.
-    /// </summary>
-    public const string SettingsRelativeRoute = "browser-tools/hot-reload-settings.json";
-
-    /// <summary>
-    /// The exact documents the build and the watcher write. The build resets the document to the
-    /// disabled form on every build, and the watcher writes the enabled form before it launches or
-    /// relaunches the application, so the two shapes have to agree byte for byte with what
-    /// <c>WriteLinesToFile</c> produces in the targets.
-    /// </summary>
-    private const string DisabledSettings = "{ \"hotReload\": false }";
-    // Keep the enabled and disabled documents the same byte length. Static Web Asset endpoints
-    // capture Content-Length during the build, before dotnet-watch mutates the physical file.
-    private const string EnabledSettings = "{ \"hotReload\": true } ";
 
     private const int SupportedKeyDocumentVersion = 1;
     private const string SupportedKeyAlgorithm = "RSA-OAEP-SHA256";
@@ -68,7 +50,6 @@ internal sealed class BrowserToolsBuildOutputs
     private readonly ILogger _logger;
 
     public string ProjectPath { get; }
-    public string SettingsPath { get; }
     public string PublicKeyPath { get; }
     public string PrivateKeyPath { get; }
 
@@ -76,7 +57,6 @@ internal sealed class BrowserToolsBuildOutputs
     {
         _logger = logger;
         ProjectPath = projectPath;
-        SettingsPath = Path.Combine(directory, SettingsFileName);
         PublicKeyPath = Path.Combine(directory, PublicKeyFileName);
         PrivateKeyPath = Path.Combine(directory, PrivateKeyFileName);
     }
@@ -93,7 +73,14 @@ internal sealed class BrowserToolsBuildOutputs
 
     public static BrowserToolsBuildOutputs? TryGetFor(ProjectInstance projectInstance, ILogger logger)
     {
-        if (!projectInstance.GetBooleanPropertyValue(PropertyNames.DotNetWatchBrowserToolsEnabled) ||
+        var enableHotReload = projectInstance.GetBooleanPropertyValue(
+            PropertyNames.EnableHotReloadInRuntimeConfigDevFile,
+            defaultValue: string.Equals(
+                projectInstance.GetPropertyValue(PropertyNames.Configuration),
+                "Debug",
+                StringComparison.OrdinalIgnoreCase));
+
+        if (!enableHotReload ||
             projectInstance.GetPropertyValue(PropertyNames.DotNetWatchBrowserToolsAssetPrefix) is not { Length: > 0 } ||
             !projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled) ||
             !projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled))
@@ -163,47 +150,6 @@ internal sealed class BrowserToolsBuildOutputs
 
     internal string GetPinnedPublicKey()
         => ReadPinnedPublicKey();
-
-    /// <summary>
-    /// Puts the settings document into the enabled state. Called before the application is launched
-    /// or relaunched, because every build resets the document to the disabled state.
-    /// </summary>
-    public void EnableHotReload()
-        => WriteSettings(EnabledSettings);
-
-    /// <summary>
-    /// Puts the settings document back into the state a plain build leaves it in. Used by tests and
-    /// by shutdown paths that want the project to be inert again.
-    /// </summary>
-    public void DisableHotReload()
-        => WriteSettings(DisabledSettings);
-
-    private void WriteSettings(string content)
-    {
-        var text = content + Environment.NewLine;
-
-        try
-        {
-            // Written only when different, mirroring the build, so that neither side keeps
-            // invalidating incremental state or the file watcher.
-            if (File.Exists(SettingsPath) && File.ReadAllText(SettingsPath) == text)
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-
-            // WriteLinesToFile in the targets writes UTF-8 without a BOM and terminates the line
-            // with Environment.NewLine. Both sides have to produce the same bytes so that the
-            // "write only when different" checks on either side behave.
-            File.WriteAllText(SettingsPath, text);
-            _logger.Log(MessageDescriptor.BrowserToolsSettingsUpdated, SettingsPath);
-        }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-        {
-            throw Fail($"the settings document could not be written ({e.GetType().Name})");
-        }
-    }
 
     private string ReadPinnedPublicKey()
     {

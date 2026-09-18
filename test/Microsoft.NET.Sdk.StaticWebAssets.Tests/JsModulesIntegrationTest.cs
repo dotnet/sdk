@@ -73,7 +73,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 .And.Contain("lib.module.js");
 
             // Opting out removes them entirely.
-            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
             if (File.Exists(jsModulesManifestPath))
             {
                 File.ReadAllText(jsModulesManifestPath).Should().NotContain("Microsoft.NET.Sdk.Web.DotNetWatch");
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml.js");
 
             var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -179,7 +179,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = CreateBuildCommand(projectDirectory);
-            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 

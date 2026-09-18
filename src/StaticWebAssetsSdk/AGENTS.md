@@ -26,12 +26,13 @@ WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the bro
 client must be an application static asset: the browser authenticates the watch provider
 with a build-pinned public key, so the provider must not be the source of the executable
 code, nor of the key. This target therefore also generates the keypair (via
-`EnsureDotNetWatchBrowserToolsKey`) into `obj/<config>/<tfm>/dotnet-watch/`, and a
-non-fingerprinted, `no-store`, compression-excluded settings asset at
-`_framework/browser-tools/hot-reload-settings.json` that every non-design-time build resets
-to `{ "hotReload": false }`. Hosted WebAssembly's client owns these outputs; its server
-consumes the referenced assets rather than generating a competing route and keypair. The
-assets are build only and must never reach publish output.
+`EnsureDotNetWatchBrowserToolsKey`) into `obj/<config>/<tfm>/dotnet-watch/` and embeds only
+the public half in the generated configuration module. The existing
+`EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
+`true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
+Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
+rather than generating a competing route and keypair. The assets are build only and must
+never reach publish output.
 Browser-tools UI must remain self-contained and compatible with strict Content Security
 Policy: isolate it in Shadow DOM, use constructable stylesheets, and do not require
 application stylesheets, inline styles, nonces, or `style-src 'unsafe-inline'`.

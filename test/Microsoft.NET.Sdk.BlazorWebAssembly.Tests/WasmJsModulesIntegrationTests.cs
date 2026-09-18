@@ -67,8 +67,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var build = CreateBuildCommand(ProjectDirectory);
 
-            // Browser tools assets are part of every development build: the build owns the key pair
-            // and the settings document, and dotnet-watch reads them back and flips the settings.
+            // Browser tools assets are part of every Hot Reload-enabled build: the build owns the
+            // key pair and dotnet-watch reads the private half before starting the provider.
             ExecuteCommand(build).Should().Pass();
 
             var initializers = GetLibraryInitializers(build, targetFramework);
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
 
             var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build, "/p:DotNetWatchBrowserToolsEnabled=false").Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*");
         }

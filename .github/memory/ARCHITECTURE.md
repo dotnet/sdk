@@ -85,25 +85,17 @@ are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `
 (including both key files, so `Clean` removes key material), and are written only when their
 content changes so that the stable key keeps rebuilds incremental. Publish output contains
 none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
-`DotNetWatchBrowserToolsEnabled` cannot receive browser tools. Generation is independent
-of configuration so custom and Release builds retain the same opt-in-at-runtime contract.
-
-Runtime activation is gated by a separate settings asset,
-`_framework/browser-tools/hot-reload-settings.json`, whose content is exactly
-`{ "hotReload": false }` or `{ "hotReload": true }` and nothing else. It is deliberately
-**not** fingerprinted (the initializer resolves a fixed route), is excluded from
-compression, and its endpoint carries `Cache-Control: no-store`, because `dotnet watch`
-rewrites the file the asset points at while the application runs and the development static
-assets handler must observe the change. Every non-design-time build resets it to disabled;
-`dotnet watch` writes the enabled document before each launch and relaunch. Design-time
-builds must not reset a running session. The initializer always fetches it and starts the
-browser tools only for `hotReload === true`.
+`EnableHotReloadInRuntimeConfigDevFile` cannot receive browser tools. That existing SDK
+property defaults to `true` for Debug builds and is the only build-time generation gate;
+`dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
+the initializer imports the configuration module directly and starts the browser client.
+Provider-availability signaling for non-watch launches is separate from this flow; watch
+does not activate the client by mutating an application file.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
-settings, initializer and configuration assets. The launching server consumes those
-referenced assets and hosts the forwarding route, while `dotnet watch` reads and updates
-the client project's deterministic outputs. This avoids competing host/client keys and
-duplicate stable settings routes.
+initializer and configuration assets. The launching server consumes those referenced
+assets and hosts the forwarding route, while `dotnet watch` reads the client project's
+deterministic private-key output. This avoids competing host/client keys.
 
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset

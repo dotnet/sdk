@@ -20,37 +20,23 @@ Copyright (c) .NET Foundation. All rights reserved.
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <DotNetWatchBrowserToolsRoutePrefix Condition="'$(DotNetWatchBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</DotNetWatchBrowserToolsRoutePrefix>
 
-    <!-- Route of the settings document, relative to the '_framework' folder the browser tools assets
-         live in. Must match Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.SettingsRelativeRoute. -->
-    <DotNetWatchBrowserToolsSettingsRelativeRoute Condition="'$(DotNetWatchBrowserToolsSettingsRelativeRoute)' == ''">browser-tools/hot-reload-settings.json</DotNetWatchBrowserToolsSettingsRelativeRoute>
-
     <!--
-      The browser tools assets are development only. They are produced by ordinary development
-      builds - not only by builds that dotnet-watch drives - because the browser tools key pair has
-      to exist before dotnet-watch can key its provider, and because the settings document has to be
-      part of the application before dotnet-watch can flip it. They are build only assets that never
-      reach publish output, and they are inert unless the settings document says otherwise.
-
-      Set DotNetWatchBrowserToolsEnabled explicitly to opt out.
+      The browser tools assets are build only and never reach publish output. The existing
+      EnableHotReloadInRuntimeConfigDevFile property controls whether they are generated, matching
+      the rest of the SDK's Hot Reload build outputs. It defaults to true for Debug builds and can
+      be explicitly enabled or disabled by the build host.
     -->
-    <DotNetWatchBrowserToolsEnabled Condition="'$(DotNetWatchBrowserToolsEnabled)' == ''">true</DotNetWatchBrowserToolsEnabled>
-
-    <!--
-      The settings document is rewritten in place by dotnet-watch while the application is running,
-      so a compressed alternative would immediately be stale and could be negotiated in preference
-      to the document the application serves from the intermediate output.
-    -->
-    <CompressionExcludePatterns>$(CompressionExcludePatterns);**/$(DotNetWatchBrowserToolsSettingsRelativeRoute)</CompressionExcludePatterns>
+    <_DotNetWatchBrowserToolsEnabled>$(EnableHotReloadInRuntimeConfigDevFile)</_DotNetWatchBrowserToolsEnabled>
+    <_DotNetWatchBrowserToolsEnabled Condition="'$(_DotNetWatchBrowserToolsEnabled)' == '' and '$(Configuration)' == 'Debug'">true</_DotNetWatchBrowserToolsEnabled>
   </PropertyGroup>
 
   <!--
     Produces the dotnet-watch browser tools assets for the current project:
 
-      * the SDK specific JS initializer, which fetches the settings document and activates the tools
-        at the right point of the application lifecycle,
+      * the SDK specific JS initializer, which activates the tools at the right point of the
+        application lifecycle,
       * the browser tools client,
-      * a generated configuration module that pins the provider's public key and routes, and
-      * the settings document that decides, at runtime, whether the tools start at all.
+      * a generated configuration module that pins the provider's public key and routes.
 
     The client is served by the application rather than by the dotnet-watch provider on purpose.
     The browser authenticates the provider with the pinned public key, so accepting executable
@@ -73,7 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_DefineDotNetWatchBrowserToolsAssetsCore"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration"
           Condition="'$(DesignTimeBuild)' != 'true'
-            and '$(DotNetWatchBrowserToolsEnabled)' == 'true'
+            and '$(_DotNetWatchBrowserToolsEnabled)' == 'true'
             and '$(DotNetWatchBrowserToolsAssetPrefix)' != ''
             and '$(StaticWebAssetsEnabled)' == 'true'
             and '$(JSModulesEnabled)' == 'true'
@@ -81,10 +67,9 @@ Copyright (c) .NET Foundation. All rights reserved.
             and '@(WebAssemblyProjectReference)' == ''">
 
     <PropertyGroup>
-      <!-- These four paths are a contract with dotnet-watch. Keep them in sync with
+      <!-- These paths are a contract with dotnet-watch. Keep them in sync with
            Microsoft.DotNet.Watch.BrowserToolsBuildOutputs. -->
       <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
-      <_DotNetWatchBrowserToolsSettingsFile>$(_DotNetWatchBrowserToolsIntermediatePath)hot-reload-settings.json</_DotNetWatchBrowserToolsSettingsFile>
       <_DotNetWatchBrowserToolsPublicKeyFile>$(_DotNetWatchBrowserToolsIntermediatePath)browser-tools-key.public.json</_DotNetWatchBrowserToolsPublicKeyFile>
       <_DotNetWatchBrowserToolsPrivateKeyFile>$(_DotNetWatchBrowserToolsIntermediatePath)browser-tools-key.private.json</_DotNetWatchBrowserToolsPrivateKeyFile>
 
@@ -122,19 +107,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="PublicKey" PropertyName="_DotNetWatchBrowserToolsPublicKey" />
     </EnsureDotNetWatchBrowserToolsKey>
 
-    <!--
-      Every build resets the settings document to the disabled state, so an application that is
-      built or run outside dotnet-watch never activates browser tools even if a previous
-      dotnet-watch session left the document enabled. WriteOnlyWhenDifferent keeps the build
-      incremental: when the document is already disabled, the file, and therefore every static web
-      asset computed from it, is left untouched.
-    -->
-    <WriteLinesToFile
-      File="$(_DotNetWatchBrowserToolsSettingsFile)"
-      Lines="{ &quot;hotReload&quot;: false }"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-
     <!-- Copy to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
       SourceFiles="$(_DotNetWatchBrowserToolsClientSource)"
@@ -144,7 +116,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_DotNetWatchBrowserToolsInitializerContent>$([System.IO.File]::ReadAllText('$(DotNetWatchBrowserToolsInitializerFile)'))</_DotNetWatchBrowserToolsInitializerContent>
       <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__RUNTIME_HOT_RELOAD_AGENT__', '$(_DotNetWatchBrowserToolsRuntimeHotReloadAgent)'))</_DotNetWatchBrowserToolsInitializerContent>
-      <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__SETTINGS_PATH__', './$(DotNetWatchBrowserToolsSettingsRelativeRoute)'))</_DotNetWatchBrowserToolsInitializerContent>
       <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__CONFIG_MODULE__', './$(_DotNetWatchBrowserToolsConfigFileName)'))</_DotNetWatchBrowserToolsInitializerContent>
 
       <_DotNetWatchBrowserToolsConfigContent>$([System.IO.File]::ReadAllText('$(_DotNetWatchBrowserToolsConfigTemplate)'))</_DotNetWatchBrowserToolsConfigContent>
@@ -185,14 +156,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_DotNetWatchBrowserToolsClientModule>
 
-      <_DotNetWatchBrowserToolsSettings Include="$(_DotNetWatchBrowserToolsSettingsFile)">
-        <RelativePath>_framework/$(DotNetWatchBrowserToolsSettingsRelativeRoute)</RelativePath>
-        <OriginalItemSpec>$(_DotNetWatchBrowserToolsSettingsFile)</OriginalItemSpec>
-      </_DotNetWatchBrowserToolsSettings>
-
       <!-- The key files are not static web assets. They are tracked so that Clean removes them and
            no key material is left behind on disk. -->
-      <FileWrites Include="@(_DotNetWatchBrowserToolsInitializer);@(_DotNetWatchBrowserToolsClientModule);@(_DotNetWatchBrowserToolsSettings)" />
+      <FileWrites Include="@(_DotNetWatchBrowserToolsInitializer);@(_DotNetWatchBrowserToolsClientModule)" />
       <FileWrites Include="$(_DotNetWatchBrowserToolsPublicKeyFile);$(_DotNetWatchBrowserToolsPrivateKeyFile)" />
     </ItemGroup>
 
@@ -248,50 +214,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
-    <!--
-      The settings document is deliberately not fingerprinted: the initializer resolves it by a fixed
-      route, and dotnet-watch rewrites the file the asset points at while the application is running.
-      A fingerprinted route would pin the contents the build observed.
-    -->
-    <DefineStaticWebAssets
-      CandidateAssets="@(_DotNetWatchBrowserToolsSettings)"
-      FingerprintCandidates="false"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      ContentRoot="$(_DotNetWatchBrowserToolsIntermediatePath)"
-      BasePath="$(StaticWebAssetBasePath)"
-      AssetKind="Build"
-      CopyToPublishDirectory="Never">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-      <Output TaskParameter="Assets" ItemName="_DotNetWatchBrowserToolsSettingsAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_DotNetWatchBrowserToolsSettingsAsset)"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
-      <Output TaskParameter="Endpoints" ItemName="_DotNetWatchBrowserToolsSettingsEndpoint" />
-    </DefineStaticWebAssetEndpoints>
-
-    <ItemGroup>
-      <!-- The document changes while the application runs, so it must never be cached, not even for
-           revalidation: a cached or revalidated response would report the state the build wrote. -->
-      <_DotNetWatchBrowserToolsSettingsCacheOperation Include="Replace">
-        <UpdateTarget>Header</UpdateTarget>
-        <Name>Cache-Control</Name>
-        <NewValue>no-store</NewValue>
-      </_DotNetWatchBrowserToolsSettingsCacheOperation>
-    </ItemGroup>
-
-    <UpdateStaticWebAssetEndpoints
-      EndpointsToUpdate="@(_DotNetWatchBrowserToolsSettingsEndpoint)"
-      AllEndpoints="@(_DotNetWatchBrowserToolsSettingsEndpoint)"
-      Operations="@(_DotNetWatchBrowserToolsSettingsCacheOperation)">
-      <Output TaskParameter="UpdatedEndpoints" ItemName="_DotNetWatchBrowserToolsSettingsEndpointWithCacheControl" />
-    </UpdateStaticWebAssetEndpoints>
-
-    <ItemGroup>
-      <StaticWebAssetEndpoint Include="@(_DotNetWatchBrowserToolsSettingsEndpointWithCacheControl)" />
-    </ItemGroup>
   </Target>
 
 </Project>

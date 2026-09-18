@@ -105,19 +105,6 @@ internal static class DotNetWatcher
 
             browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
 
-            if (browserRefreshServer != null && browserToolsOutputs != null)
-            {
-                try
-                {
-                    browserToolsOutputs.EnableHotReload();
-                }
-                catch (BrowserToolsBuildOutputsException e)
-                {
-                    context.Logger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
-                    return;
-                }
-            }
-
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)
             {

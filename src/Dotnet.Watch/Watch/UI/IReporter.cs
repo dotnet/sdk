@@ -226,7 +226,6 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<None> UsingBrowserRefreshMiddleware = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<None> BrowserToolsAssetsNotProducedByProject = Create("The project does not produce dotnet-watch browser tools assets. Browser tools are disabled for it.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> BrowserToolsUsingKeyFromBuild = Create("Using the dotnet-watch browser tools key produced by the build.", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<string> BrowserToolsSettingsUpdated = Create<string>("Enabled the dotnet-watch browser tools in '{0}'.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserToolsUnavailable = Create<string>("{0}", Emoji.Error, LogLevel.Error);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);

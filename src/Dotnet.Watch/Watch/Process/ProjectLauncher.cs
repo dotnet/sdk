@@ -64,26 +64,6 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        if (clients.BrowserRefreshServer != null &&
-            appModel is WebApplicationAppModel webAppModel &&
-            BrowserToolsBuildOutputs.TryGetFor(webAppModel.BrowserToolsProject, clientLogger) is { } browserToolsOutputs)
-        {
-            // Every build resets the settings document to the disabled state, so it has to be
-            // enabled again on each launch and relaunch. The application reads it once at startup,
-            // and the development static assets handler picks up the new content because the asset
-            // is not fingerprinted and is served with 'Cache-Control: no-store'.
-            try
-            {
-                browserToolsOutputs.EnableHotReload();
-            }
-            catch (BrowserToolsBuildOutputsException e)
-            {
-                clientLogger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
-                clients.Dispose();
-                return null;
-            }
-        }
-
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.GetMuxerPath(),

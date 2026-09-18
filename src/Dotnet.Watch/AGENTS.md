@@ -49,11 +49,12 @@ Reload).
   no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
   [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) and keys a
   per-project provider with it, so a provider can never supply the key that authenticates
-  it. Activation is gated at runtime by a non-fingerprinted, `no-store`, build-only static
-  asset at `_framework/browser-tools/hot-reload-settings.json`; every non-design-time build
-  resets it to `{ "hotReload": false }` and `dotnet watch` writes
-  `{ "hotReload": true }` before each launch and relaunch. Hosted WebAssembly uses the
-  client as the browser-tools project even though the server remains the launching project.
+  it. The existing `EnableHotReloadInRuntimeConfigDevFile` SDK property controls whether
+  the build generates the browser-tools assets and defaults to `true` for Debug builds.
+  When present, the initializer starts the browser client directly. Provider-availability
+  signaling for non-watch launches is a separate concern. Watch never activates the client
+  by mutating an application file. Hosted WebAssembly uses the client as the browser-tools
+  project even though the server remains the launching project.
   See
   [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
   Never move executable browser-tools code back into the provider, never let the private

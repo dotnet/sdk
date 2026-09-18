@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// The build owns the browser tools key pair and the settings document; dotnet-watch only reads
-/// them back from deterministic paths under the project's intermediate output. These tests pin the
-/// two halves of that contract: the provider is keyed with the key the application pinned, and
+/// The build owns the browser tools key pair; dotnet-watch only reads it back from deterministic
+/// paths under the project's intermediate output. These tests pin the two halves of that contract:
+/// the provider is keyed with the key the application pinned, and
 /// anything that would make the provider unusable fails loudly instead of silently disabling the
 /// browser tools, because a browser that pinned a key can never be told that the tools are off.
 /// </summary>
@@ -18,7 +18,6 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class BrowserToolsBuildOutputsTests : IDisposable
 {
     private readonly string _directory;
-    private readonly string _settingsPath;
     private readonly string _publicKeyPath;
     private readonly string _privateKeyPath;
 
@@ -26,7 +25,6 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     {
         _directory = Path.Combine(Path.GetTempPath(), "dotnet-watch-browser-tools", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
-        _settingsPath = Path.Combine(_directory, BrowserToolsBuildOutputs.SettingsFileName);
         _publicKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PublicKeyFileName);
         _privateKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PrivateKeyFileName);
     }
@@ -190,72 +188,4 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
     }
 
-    /// <summary>
-    /// The settings document is the only thing that activates the browser tools in the application,
-    /// and every build resets it, so dotnet-watch has to be able to flip it back before each launch.
-    /// </summary>
-    [TestMethod]
-    public void EnableHotReload_WritesTheEnabledDocument()
-    {
-        File.WriteAllText(_settingsPath, "{ \"hotReload\": false }" + Environment.NewLine);
-
-        CreateOutputs().EnableHotReload();
-
-        using var document = JsonDocument.Parse(File.ReadAllBytes(_settingsPath));
-        Assert.AreEqual(JsonValueKind.True, document.RootElement.GetProperty("hotReload").ValueKind);
-
-        // Only the boolean: the public key and the routes live in the initializer and configuration.
-        Assert.HasCount(1, document.RootElement.EnumerateObject());
-    }
-
-    [TestMethod]
-    public void EnableHotReload_CreatesTheDocumentWhenItIsMissing()
-    {
-        CreateOutputs().EnableHotReload();
-
-        using var document = JsonDocument.Parse(File.ReadAllBytes(_settingsPath));
-        Assert.AreEqual(JsonValueKind.True, document.RootElement.GetProperty("hotReload").ValueKind);
-    }
-
-    /// <summary>
-    /// A relaunch that rewrote an already enabled document would touch a file the build tracks and
-    /// keep invalidating incremental state and the file watcher for no reason.
-    /// </summary>
-    [TestMethod]
-    public void EnableHotReload_IsANoOpWhenAlreadyEnabled()
-    {
-        var outputs = CreateOutputs();
-        outputs.EnableHotReload();
-
-        var timestamp = File.GetLastWriteTimeUtc(_settingsPath);
-        File.SetLastWriteTimeUtc(_settingsPath, timestamp.AddDays(-1));
-        var movedTimestamp = File.GetLastWriteTimeUtc(_settingsPath);
-
-        outputs.EnableHotReload();
-
-        Assert.AreEqual(movedTimestamp, File.GetLastWriteTimeUtc(_settingsPath));
-    }
-
-    /// <summary>
-    /// The build writes the disabled document with WriteLinesToFile. Both sides have to produce the
-    /// same bytes so that the "write only when different" checks on either side behave.
-    /// </summary>
-    [TestMethod]
-    public void SettingsDocumentsRoundTripBetweenBothSides()
-    {
-        var outputs = CreateOutputs();
-
-        outputs.EnableHotReload();
-        var enabled = File.ReadAllText(_settingsPath);
-
-        outputs.DisableHotReload();
-        var disabled = File.ReadAllText(_settingsPath);
-
-        Assert.AreEqual("{ \"hotReload\": true } " + Environment.NewLine, enabled);
-        Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, disabled);
-        Assert.AreEqual(enabled.Length, disabled.Length);
-
-        // No BOM: WriteLinesToFile writes UTF-8 without one.
-        Assert.AreNotEqual(0xEF, File.ReadAllBytes(_settingsPath)[0]);
-    }
 }
