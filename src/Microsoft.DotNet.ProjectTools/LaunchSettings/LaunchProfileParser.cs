@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.ProjectTools;
@@ -32,6 +33,36 @@ internal abstract partial class LaunchProfileParser
         => value is not null
             ? ExpandVariables(value, expandCommandLineArgs ? evaluateExpression : null)
             : null;
+
+    protected static bool TryParseWorkingDirectory(
+        string launchSettingsPath,
+        string? value,
+        Func<string, string>? evaluateExpression,
+        out string? workingDirectory,
+        [NotNullWhen(false)] out string? error)
+    {
+        if (value == null)
+        {
+            workingDirectory = null;
+            error = null;
+            return true;
+        }
+
+        var expandedValue = ExpandVariables(value, evaluateExpression);
+
+        try
+        {
+            workingDirectory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(launchSettingsPath)!, expandedValue));
+            error = null;
+            return true;
+        }
+        catch
+        {
+            workingDirectory = null;
+            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, LaunchProfile.WorkingDirectoryPropertyName);
+            return false;
+        }
+    }
 
     public static string GetLaunchProfileDisplayName(string? launchProfile)
         => string.IsNullOrEmpty(launchProfile) ? Resources.DefaultLaunchProfileDisplayName : launchProfile;
