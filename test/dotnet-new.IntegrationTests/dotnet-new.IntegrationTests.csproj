@@ -8,6 +8,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Several classes intentionally share a custom hive or output root through class fixtures. -->
     <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+    <!-- Template tests launch nested dotnet and MSBuild processes, so limit Helix resource contention. -->
+    <MSTestParallelizeWorkers>2</MSTestParallelizeWorkers>
   </PropertyGroup>
 
   <ItemGroup>
