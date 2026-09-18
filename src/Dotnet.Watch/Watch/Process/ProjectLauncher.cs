@@ -49,6 +49,7 @@ internal sealed class ProjectLauncher(
         var agentLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
 
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
+
         var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
 
         var processSpec = new ProcessSpec

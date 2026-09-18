@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -124,7 +124,7 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
-        // no other browser refresh messages sent:
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
@@ -148,6 +148,9 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
+        // no other browser message sent:
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+
         App.Process.ClearOutput();
 
         // valid edit:
@@ -163,7 +166,7 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"RefreshBrowser"}
             """);
 
-        // no other browser refresh messages sent:
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
     }
 }

@@ -11,7 +11,35 @@ namespace Microsoft.DotNet.HotReload;
 
 internal sealed class SharedSecretProvider : IDisposable
 {
-    private readonly RSA _rsa = RSA.Create(2048);
+    private readonly RSA _rsa;
+
+    /// <summary>
+    /// Creates a provider with a fresh key pair. Only used where no application pins a key, such as
+    /// in tests; a provider that has to authenticate against an application is created from the key
+    /// pair the application's build produced.
+    /// </summary>
+    public SharedSecretProvider()
+        => _rsa = RSA.Create(2048);
+
+    /// <summary>
+    /// Creates a provider from an existing key pair, which is how <c>dotnet watch</c> keys a
+    /// provider from the private key half the build wrote next to the application's build outputs.
+    /// </summary>
+    public SharedSecretProvider(RSAParameters parameters)
+    {
+        var rsa = RSA.Create();
+        try
+        {
+            rsa.ImportParameters(parameters);
+        }
+        catch
+        {
+            rsa.Dispose();
+            throw;
+        }
+
+        _rsa = rsa;
+    }
 
     public void Dispose()
         => _rsa.Dispose();

@@ -18,6 +18,24 @@ only a test project can leave production assemblies or targets in that layout st
 product-layout freshness decision and invokes area-specific deployment workflows where
 applicable.
 
+## A Reused App Tree Can Serve Stale WebAssembly Runtime Assets
+
+**Affected area:** Manual validation of `dotnet watch` / Blazor WebAssembly against a
+locally built SDK
+
+**Description:** Building the same sample app with successive
+`artifacts/bin/redist/<configuration>/dotnet` builds without cleaning can leave `obj` and
+`bin` holding runtime assets from an earlier SDK. Static Web Assets incrementality keeps
+the stale copies, and the app can then boot with a runtime whose
+`System.Reflection.Metadata.MetadataUpdater.IsSupported` is `false`, so Hot Reload silently
+applies nothing even though the sources, the SDK, and the generated modules are correct.
+
+**Workaround:** Delete the sample's `obj` and `bin` after rebuilding the redist SDK.
+Confirm the app really supports updates by reading
+`getDotnetRuntime(0).getConfig()` and calling
+`window.Blazor._internal.getApplyUpdateCapabilities()`: an empty capability string means no
+agent was created.
+
 ## Windows Builds Can Exceed Legacy Path Limits
 
 **Affected area:** Full builds and generated intermediates on Windows
