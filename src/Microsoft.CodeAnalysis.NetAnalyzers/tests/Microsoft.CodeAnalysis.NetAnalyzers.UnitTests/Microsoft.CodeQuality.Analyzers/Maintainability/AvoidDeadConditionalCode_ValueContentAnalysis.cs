@@ -82,6 +82,35 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
+        public async Task AttributeArguments_NoDiagnosticAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+
+                [assembly: Example(1 < 2)]
+
+                [Example(1 < 2)]
+                class Test
+                {
+                }
+
+                [Example(1 < 2)]
+                static class StaticTest
+                {
+                }
+
+                [AttributeUsage(AttributeTargets.All)]
+                sealed class ExampleAttribute : Attribute
+                {
+                    public ExampleAttribute(bool value)
+                    {
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
         public async Task ValueCompareWithAdd_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync("""
