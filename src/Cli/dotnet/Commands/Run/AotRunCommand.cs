@@ -27,21 +27,23 @@ internal static class AotRunCommand
     /// </summary>
     /// <param name="command">The shared run command definition.</param>
     internal static void ConfigureCommand(RunCommandDefinition command)
-        => command.SetAction(parseResult => Execute(parseResult, Launch));
+        => command.SetAction((parseResult, cancellationToken) => Execute(parseResult, cancellationToken));
 
     /// <summary>
     /// Executes an eligible file-based application through the Native AOT launcher.
     /// </summary>
     /// <param name="parseResult">The parsed run invocation.</param>
+    /// <param name="cancellationToken">Token observed while launching the invocation.</param>
     /// <returns>The launched process exit code.</returns>
-    internal static int Execute(ParseResult parseResult)
-        => Execute(parseResult, Launch);
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
+        => Execute(parseResult, Launch, cancellationToken);
 
     /// <summary>
     /// Plans and executes an eligible file-based application using an injected launcher.
     /// </summary>
     /// <param name="parseResult">The parsed run invocation.</param>
     /// <param name="launch">Launches the committed invocation.</param>
+    /// <param name="cancellationToken">Token observed while launching the invocation.</param>
     /// <param name="currentDirectory">The current directory used for discovery and relative paths.</param>
     /// <returns>The launcher exit code.</returns>
     /// <exception cref="CommandNotAvailableInAotException">The invocation cannot be handled safely by the Native AOT path.</exception>
@@ -49,6 +51,7 @@ internal static class AotRunCommand
     internal static int Execute(
         ParseResult parseResult,
         Func<AotRunInvocation, int> launch,
+        CancellationToken cancellationToken,
         string? currentDirectory = null)
     {
         currentDirectory ??= Environment.CurrentDirectory;

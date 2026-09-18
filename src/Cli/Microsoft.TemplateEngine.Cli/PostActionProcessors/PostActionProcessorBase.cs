@@ -17,14 +17,15 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             IPostAction action,
             ICreationEffects creationEffects,
             ICreationResult templateCreationResult,
-            string outputBasePath)
+            string outputBasePath,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(outputBasePath))
             {
                 throw new ArgumentException($"'{nameof(outputBasePath)}' cannot be null or whitespace.", nameof(outputBasePath));
             }
             outputBasePath = Path.GetFullPath(outputBasePath);
-            return ProcessInternal(environment, action, creationEffects, templateCreationResult, outputBasePath);
+            return ProcessInternal(environment, action, creationEffects, templateCreationResult, outputBasePath, cancellationToken);
         }
 
         /// <summary>
@@ -118,7 +119,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             IPostAction action,
             ICreationEffects creationEffects,
             ICreationResult templateCreationResult,
-            string outputBasePath);
+            string outputBasePath,
+            CancellationToken cancellationToken);
 
         private static bool TryParseAsJson(string targetFiles, out IReadOnlyList<string> paths)
         {

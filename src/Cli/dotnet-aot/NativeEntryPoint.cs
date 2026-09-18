@@ -339,7 +339,9 @@ static unsafe partial class NativeEntryPoint
             {
                 try
                 {
-                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult);
+                    // The native entry point runs outside System.CommandLine's InvokeAsync pipeline, so no
+                    // cancellation token flows in from Ctrl+C/SIGTERM handling here.
+                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult, CancellationToken.None);
                     success = true;
                     mainActivity?.SetDisplayName(fileBasedRunParseResult);
                     SendAotParserTelemetry(fileBasedRunParseResult, globalJsonState);

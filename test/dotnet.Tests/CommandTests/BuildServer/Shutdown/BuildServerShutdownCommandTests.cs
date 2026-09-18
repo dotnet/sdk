@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--msbuild"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--vbcscompiler"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--razor"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(
                 FormatShuttingDownMessage(mocks[0].Object),
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(1);
+            command.Execute(CancellationToken.None).Should().Be(1);
 
             _reporter.Lines.Should().Equal(
                 FormatShuttingDownMessage(mocks[0].Object),

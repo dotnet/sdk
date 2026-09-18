@@ -23,7 +23,7 @@ internal sealed class SolutionMigrateCommand : CommandBase<SolutionMigrateComman
     }
 
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_slnFileOrDirectory);
         if (slnFileFullPath.HasExtension(".slnx"))

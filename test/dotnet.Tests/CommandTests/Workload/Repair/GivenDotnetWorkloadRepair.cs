@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
                 nugetPackageDownloader: nugetDownloader);
-            repairCommand.Execute();
+            repairCommand.Execute(CancellationToken.None);
 
             _reporter.Lines.Should().Contain(CliCommandStrings.NoWorkloadsToRepair);
         }
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
 
             // Add extra pack dirs and records
             var extraPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkFeatureVersion);
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
                 nugetPackageDownloader: nugetDownloader);
-            repairCommand.Execute();
+            repairCommand.Execute(CancellationToken.None);
 
             // Check that pack dirs and records have been removed
             File.Exists(extraPackRecordPath).Should().BeFalse();
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
 
             // Delete pack dirs/ records
             var deletedPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Xamarin.Android.Sdk", "8.4.7", sdkFeatureVersion);
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
                 nugetPackageDownloader: nugetDownloader);
-            repairCommand.Execute();
+            repairCommand.Execute(CancellationToken.None);
 
             // Check that pack dirs and records have been replaced
             File.Exists(deletedPackRecordPath).Should().BeTrue();

@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         public override Guid Id => ActionProcessorId;
 
-        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
         {
             if (!actionConfig.Args.TryGetValue("executable", out string? executable) || string.IsNullOrWhiteSpace(executable))
             {

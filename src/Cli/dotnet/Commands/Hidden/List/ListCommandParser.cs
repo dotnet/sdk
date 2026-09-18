@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
 using Microsoft.DotNet.Cli.Extensions;
@@ -14,7 +15,7 @@ internal static class ListCommandParser
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.PackageCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
-        command.ReferenceCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
+        command.PackageCommand.SetAction((parseResult, cancellationToken) => new PackageListCommand(parseResult).Execute(cancellationToken));
+        command.ReferenceCommand.SetAction((parseResult, cancellationToken) => new ReferenceListCommand(parseResult).Execute(cancellationToken));
     }
 }

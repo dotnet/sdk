@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater();
 
-            configCommand.Execute().Should().Be(0);
+            configCommand.Execute(CancellationToken.None).Should().Be(0);
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
             File.Exists(sentinelPath).Should().BeTrue();
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.WriteAllText(sentinelPath, string.Empty);
             var createTime = DateTime.Now;
 
-            configCommand.Execute().Should().Be(0);
+            configCommand.Execute(CancellationToken.None).Should().Be(0);
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
@@ -695,7 +695,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
-                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute().Should().Be(0);
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute(CancellationToken.None).Should().Be(0);
             await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeFalse();
 
@@ -703,7 +703,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
-                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute().Should().Be(0);
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute(CancellationToken.None).Should().Be(0);
             await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeTrue();
             downloader2.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.200"));

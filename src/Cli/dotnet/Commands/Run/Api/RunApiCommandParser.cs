@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -11,6 +12,6 @@ internal sealed class RunApiCommandParser
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static void ConfigureCommand(RunApiCommandDefinition command)
     {
-        command.SetAction(parseResult => new RunApiCommand(parseResult).Execute());
+        command.SetAction((parseResult, cancellationToken) => new RunApiCommand(parseResult).Execute(cancellationToken));
     }
 }

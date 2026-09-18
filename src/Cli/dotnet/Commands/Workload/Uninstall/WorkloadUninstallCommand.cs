@@ -51,7 +51,7 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         _recorder.HistoryRecord.CommandName = "uninstall";
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         try
         {

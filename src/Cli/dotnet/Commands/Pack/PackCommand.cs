@@ -134,7 +134,7 @@ public class PackCommand(
         return 0;
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -149,6 +149,6 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 }
