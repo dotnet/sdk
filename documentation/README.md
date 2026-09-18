@@ -24,6 +24,7 @@ Documents Index
 
 ## Specifications
 
+- [`dotnet test` for browser WebAssembly](specs/dotnet-test-for-browser-webassembly.md)
 - [CLI installation scenarios](specs/cli-installation-scenarios.md)
 - [Runtime configuration file specification](specs/runtime-configuration-file.md)
 
