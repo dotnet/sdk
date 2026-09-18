@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.TemplateLocator
     public sealed class TemplateLocator
     {
         private IWorkloadManifestProvider? _workloadManifestProvider;
-        private IWorkloadResolver? _workloadResolver;
+        private WorkloadResolver? _workloadResolver;
         private readonly Lazy<NETCoreSdkResolver> _netCoreSdkResolver;
         private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly Func<string>? _getCurrentProcessPath;
@@ -23,8 +23,8 @@ namespace Microsoft.DotNet.TemplateLocator
         /// <summary>
         /// Test constructor
         /// </summary>
-        public TemplateLocator(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
-            IWorkloadManifestProvider? workloadManifestProvider, IWorkloadResolver? workloadResolver)
+        internal TemplateLocator(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
+            IWorkloadManifestProvider? workloadManifestProvider, WorkloadResolver? workloadResolver)
         {
             _netCoreSdkResolver =
                 new Lazy<NETCoreSdkResolver>(() => new NETCoreSdkResolver(getEnvironmentVariable, vsSettings));

@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         /// This represents the 'open delegate' form of the updated SdkResultFactory.IndicateSuccess method with environment variable support.
         /// Because it is an open delegate, we can provide an object instance to be called as the first argument.
         /// </summary>
-        public delegate SdkResult UpdatedSdkResultFactorySuccess(SdkResultFactory factory, string sdkPath, string? sdkVersion, IDictionary<string, string?>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, List<string>? warnings, IDictionary<string, string?>? environmentVariablesToAdd);
+        private delegate SdkResult UpdatedSdkResultFactorySuccess(SdkResultFactory factory, string sdkPath, string? sdkVersion, IDictionary<string, string?>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, List<string>? warnings, IDictionary<string, string?>? environmentVariablesToAdd);
 
         private static UpdatedSdkResultFactorySuccess? TryLocateNewMSBuildFactory()
         {
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?> getMsbuildRuntime, VSSettings vsSettings)
+        internal DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?> getMsbuildRuntime, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;

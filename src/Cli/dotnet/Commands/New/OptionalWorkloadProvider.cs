@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias DotNetTemplateLocator;
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.TemplateEngine.Abstractions;
@@ -30,7 +32,7 @@ internal class OptionalWorkloadProvider : ITemplatePackageProvider
     public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
     {
         var list = new List<TemplatePackage>();
-        var optionalWorkloadLocator = new TemplateLocator.TemplateLocator();
+        var optionalWorkloadLocator = new DotNetTemplateLocator::Microsoft.DotNet.TemplateLocator.TemplateLocator();
         var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
         var sdkDirectory = sdksDirectory?.Parent;
         var sdkVersion = sdkDirectory?.Name;

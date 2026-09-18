@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Setup.Configuration;
 
 namespace Microsoft.DotNet.DotNetSdkResolver
 {
-    public sealed class VSSettings
+    sealed partial class VSSettings
     {
         private readonly object _lock = new();
         private readonly string? _settingsFilePath;
@@ -147,4 +147,3 @@ namespace Microsoft.DotNet.DotNetSdkResolver
         }
     }
 }
-

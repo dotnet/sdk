@@ -7,7 +7,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// Wraps a workload definition id string to help ensure consistency of behavior/semantics.
     /// Comparisons are case insensitive but ToString() will return the original string for display purposes.
     /// </summary>
-    public readonly struct WorkloadId : IComparable<WorkloadId>, IEquatable<WorkloadId>
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#endif
+    readonly partial struct WorkloadId
+#if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        : IComparable<WorkloadId>, IEquatable<WorkloadId>
+#endif
     {
         private readonly string _id;
 
@@ -21,9 +27,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _id = id;
         }
 
-        public int CompareTo(WorkloadId other) => string.Compare(_id, other._id, StringComparison.OrdinalIgnoreCase);
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        int CompareTo(WorkloadId other) => string.Compare(_id, other._id, StringComparison.OrdinalIgnoreCase);
 
-        public bool Equals(WorkloadId other) => string.Equals(_id, other._id, StringComparison.OrdinalIgnoreCase);
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        bool Equals(WorkloadId other) => string.Equals(_id, other._id, StringComparison.OrdinalIgnoreCase);
 
         public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(_id);
 
@@ -31,10 +47,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override string ToString() => _id;
 
+#if !TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
         public static implicit operator string(WorkloadId id) => id._id;
 
         public static bool operator ==(WorkloadId a, WorkloadId b) => a.Equals(b);
 
         public static bool operator !=(WorkloadId a, WorkloadId b) => !a.Equals(b);
+#endif
     }
 }
