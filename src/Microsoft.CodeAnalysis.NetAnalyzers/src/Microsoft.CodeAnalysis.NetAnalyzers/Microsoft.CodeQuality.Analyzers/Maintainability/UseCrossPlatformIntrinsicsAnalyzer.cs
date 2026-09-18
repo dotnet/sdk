@@ -45,7 +45,22 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static DiagnosticDescriptor CreateDiagnosticDescriptor(RuleKind ruleKind) => DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            CreateLocalizableResourceString($"UseCrossPlatformIntrinsicsMessage_{ruleKind}"),
+            CreateLocalizableResourceString(ruleKind switch
+            {
+                RuleKind.op_Addition => nameof(UseCrossPlatformIntrinsicsMessage_op_Addition),
+                RuleKind.op_BitwiseAnd => nameof(UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd),
+                RuleKind.op_BitwiseOr => nameof(UseCrossPlatformIntrinsicsMessage_op_BitwiseOr),
+                RuleKind.op_Division => nameof(UseCrossPlatformIntrinsicsMessage_op_Division),
+                RuleKind.op_ExclusiveOr => nameof(UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr),
+                RuleKind.op_LeftShift => nameof(UseCrossPlatformIntrinsicsMessage_op_LeftShift),
+                RuleKind.op_Multiply => nameof(UseCrossPlatformIntrinsicsMessage_op_Multiply),
+                RuleKind.op_OnesComplement => nameof(UseCrossPlatformIntrinsicsMessage_op_OnesComplement),
+                RuleKind.op_RightShift => nameof(UseCrossPlatformIntrinsicsMessage_op_RightShift),
+                RuleKind.op_Subtraction => nameof(UseCrossPlatformIntrinsicsMessage_op_Subtraction),
+                RuleKind.op_UnaryNegation => nameof(UseCrossPlatformIntrinsicsMessage_op_UnaryNegation),
+                RuleKind.op_UnsignedRightShift => nameof(UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift),
+                _ => throw new ArgumentOutOfRangeException(nameof(ruleKind)),
+            }),
             DiagnosticCategory.Maintainability,
             RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
