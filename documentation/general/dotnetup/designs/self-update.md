@@ -1,12 +1,16 @@
 # Self Update
 
-`dotnetup self update [--no-progress]` updates the published NativeAOT `dotnetup`
+`dotnetup self update [--channel <daily|preview|stable>] [--no-progress]` updates the published NativeAOT `dotnetup`
 executable in place. Stage A is implemented; waiting and transparent forwarding of
 ordinary commands remain Stage B work. See [Stage A Status](#stage-a-status) and
 the [review guide](#review-guide) for the source map and environment boundaries.
 
-The current command resolves the daily release for the selected RID. It does not
-accept a channel or version argument. See [command usage](../reference/dotnetup.md#self-update).
+The command resolves the latest release for the selected RID from the `daily` channel
+by default. `--channel` can select `preview` or `stable`; `stable` is accepted so the
+command is ready when that channel starts publishing. Dotnetup does not currently persist
+the channel from which an executable was installed, so an omitted `--channel` cannot infer
+whether the running prerelease executable came from the `daily` or `preview` shortlink.
+See [command usage](../reference/dotnetup.md#self-update).
 
 `dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 
@@ -340,7 +344,9 @@ Cleanup makes one nonblocking attempt to acquire `U` exclusively. If ownership c
 
 Before deleting backups, cleanup reads the canonical executable's embedded build ID under `U` and requires it to match the cleanup process's loaded build ID. If the canonical executable is absent, its record is invalid or unreadable, or the IDs differ, cleanup leaves the backups untouched. This conservative check preserves recovery artifacts when the canonical build cannot be confirmed; acquiring `U` alone does not prove that an earlier transaction completed successfully. The same check applies to backup deletion in step 2.2.
 
-Cleanup checks at most 32 directory entries matching the installed executable's backup prefix, accepts only transaction-GUID backup names (optionally ending in `.rejected`), and requires a last-write time at least seven days old. It skips failed deletions rather than retrying them and rejects symbolic links or reparse points. It releases `U` as soon as cleanup finishes or is skipped, including on failure, before continuing command execution. The exception is step 2.2, where `P` retains its existing locks for the transaction. Failure to delete a locked backup is not a command or transaction failure, because a process started before the transaction may still be executing that image. These rules also apply to Unix cleanup, subject to the runtime locking compatibility boundary below; cleanup skips failed lock acquisition but does not independently probe lock enforcement.
+Cleanup checks at most 32 directory entries matching the installed executable's backup prefix, accepts only transaction-GUID backup names (optionally ending in `.rejected`), and requires a last-write time at least seven days old. After validation and before replacement, `P` sets both the installed and staged executables' last-write times to the current UTC update time using `File.SetLastWriteTimeUtc`. The backup and any rejected candidate inherit that time through replacement, hard links, and rollback renames, so retention starts at the update rather than the executable's original modification time. This changes metadata only, not executable bytes or build identity; on Unix other hard links to the same inode also observe the new timestamp. A timestamp-write failure aborts before replacement, though a timestamp already updated is not restored.
+
+Cleanup skips failed deletions rather than retrying them and rejects symbolic links or reparse points. It releases `U` as soon as cleanup finishes or is skipped, including on failure, before continuing command execution. The exception is step 2.2, where `P` retains its existing locks for the transaction. Failure to delete a locked backup is not a command or transaction failure, because a process started before the transaction may still be executing that image. These rules also apply to Unix cleanup, subject to the runtime locking compatibility boundary below; cleanup skips failed lock acquisition but does not independently probe lock enforcement.
 
 ##### Properties of Algorithms 1 and 2
 

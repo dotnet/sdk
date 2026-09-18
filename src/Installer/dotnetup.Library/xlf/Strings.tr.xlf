@@ -421,9 +421,14 @@ Or open a new terminal.</target>
         <target state="new">Dotnetup is busy with another self-update or cleanup. Try again after it completes.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateChannelOptionDescription">
+        <source>The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</source>
+        <target state="new">The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</target>
+        <note>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateCommandDescription">
-        <source>Update dotnetup to the latest daily release.</source>
-        <target state="new">Update dotnetup to the latest daily release.</target>
+        <source>Update dotnetup to the latest release in a channel.</source>
+        <target state="new">Update dotnetup to the latest release in a channel.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateDownloading">

@@ -32,7 +32,22 @@ public class SelfCommandParserTests
     }
 
     [TestMethod]
+    [DataRow("self update", "daily")]
+    [DataRow("self update --channel daily", "daily")]
+    [DataRow("self update --channel preview", "preview")]
+    [DataRow("self update --channel stable", "stable")]
+    public void ParsesChannelOption(string commandLine, string expected)
+    {
+        var result = Parser.Parse(commandLine.Split(' '));
+
+        result.Errors.Should().BeEmpty();
+        result.GetValue(SelfCommandParser.ChannelOption).Should().Be(expected);
+        result.CommandResult.Command.Options.Should().Contain(SelfCommandParser.ChannelOption);
+    }
+
+    [TestMethod]
     [DataRow("self update --no-progress invalid")]
+    [DataRow("self update --channel servicing")]
     [DataRow("self update --unknown")]
     [DataRow("self update 1.0")]
     public void RejectsInvalidArguments(string commandLine)
@@ -58,12 +73,14 @@ public class SelfCommandParserTests
         result.Invoke(new InvocationConfiguration { Output = output, Error = output }).Should().Be(0);
 
         output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateCommandDescription)
+            .And.Contain("--channel")
             .And.Contain("--no-progress");
     }
 
     [TestMethod]
     [DataRow(nameof(BootstrapperStrings.SelfCommandDescription), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateCommandDescription), 0)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateChannelOptionDescription), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateDownloading), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateSucceeded), 1)]

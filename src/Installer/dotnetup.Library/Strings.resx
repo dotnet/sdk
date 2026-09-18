@@ -125,8 +125,12 @@
     <comment>{Locked="dotnetup"}</comment>
   </data>
   <data name="SelfUpdateCommandDescription" xml:space="preserve">
-    <value>Update dotnetup to the latest daily release.</value>
+    <value>Update dotnetup to the latest release in a channel.</value>
     <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateChannelOptionDescription" xml:space="preserve">
+    <value>The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</value>
+    <comment>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</comment>
   </data>
   <data name="SelfUpdateDownloading" xml:space="preserve">
     <value>Downloading dotnetup</value>

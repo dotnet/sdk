@@ -21,6 +21,32 @@ public class DailyChannelResolverTests
         "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
     [TestMethod]
+    [DataRow("daily")]
+    [DataRow("preview")]
+    [DataRow("stable")]
+    public void ResolveDotnetupVersion_UsesRequestedChannel(string channel)
+    {
+        string shortlink = $"https://aka.ms/dotnet/dotnetup/{channel}/dotnetup-win-x64.exe";
+        const string target = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = target });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion(channel, "win-x64").ToString().Should().Be("0.1.0-preview.1");
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupVersion_RejectsUnknownChannel()
+    {
+        using var resolver = new DailyChannelResolver();
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(
+            () => resolver.ResolveDotnetupVersion("../daily", "win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidChannel);
+    }
+
+    [TestMethod]
     [DataRow("https://example.test/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
     [DataRow("http://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
     [DataRow("https://ci.dot.net:444/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]

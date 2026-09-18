@@ -9,9 +9,10 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 
-/// <summary>Updates the canonical dotnetup executable using the shared daily-download pipeline.</summary>
+/// <summary>Updates the canonical dotnetup executable from the requested release channel.</summary>
 internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result, "self/update")
 {
+    private readonly string _channel = result.GetValue(SelfCommandParser.ChannelOption)!;
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
     private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
 
@@ -30,7 +31,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         var downloader = _createDownloader();
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedIdentity,
-            () => downloader.ResolveDotnetupDownload(rid),
+            () => downloader.ResolveDotnetupDownload(_channel, rid),
             (release, destination) =>
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
