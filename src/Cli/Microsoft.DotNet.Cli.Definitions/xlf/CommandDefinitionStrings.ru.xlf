@@ -1962,6 +1962,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Отключает проверку наличия обновлений пакета шаблона при создании экземпляра шаблона.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Запуск тестов без отображения баннера Testplatform Майкрософт</target>

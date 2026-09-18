@@ -1962,6 +1962,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">템플릿을 인스턴스화할 때 템플릿 패키지 업데이트 확인을 사용하지 않도록 설정합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Microsoft Testplatform 배너를 표시하지 않고 테스트 실행</target>

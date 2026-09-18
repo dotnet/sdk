@@ -1962,6 +1962,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">停用在具現化範本時檢查範本套件更新。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">執行測試，但不顯示 Microsoft Testplatform 橫幅</target>
