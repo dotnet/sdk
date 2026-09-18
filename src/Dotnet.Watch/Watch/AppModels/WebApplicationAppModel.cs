@@ -84,14 +84,10 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// Creates the browser tools provider for the project. The application host is configured by
     /// <see cref="ConfigureBrowserToolsLaunchEnvironment"/> to expose it on the app's own origin.
     ///
-    /// The provider is keyed with the private half of the key pair the project's build produced, so
-    /// that it can authenticate against the public half the application pinned into its build
-    /// output. Consequently the provider can only be created once the project has been built.
+    /// Each connection is authenticated with the private half of the key pair the project's build
+    /// produced. The key is loaded when the browser connects, after <c>dotnet run</c> has built and
+    /// launched the application that serves the matching public half.
     /// </summary>
-    /// <exception cref="BrowserToolsBuildOutputsException">
-    /// The project produces browser tools assets but the key pair the build wrote is missing,
-    /// malformed or mismatched.
-    /// </exception>
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
         var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
@@ -108,25 +104,15 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return null;
         }
 
-        var sessionKey = browserToolsOutputs.CreateSessionKey();
-
-        try
-        {
-            return new BrowserRefreshServer(
-                logger,
-                connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
-                connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-                configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
-                dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-                sessionKey: sessionKey,
-                webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
-                suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
-        }
-        catch
-        {
-            sessionKey.Dispose();
-            throw;
-        }
+        return new BrowserRefreshServer(
+            logger,
+            connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
+            connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
+            configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
+            dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
+            sessionKeyFactory: browserToolsOutputs.CreateSessionKey,
+            webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
+            suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
     }
 
     private static string GetBrowserLoggerName(int connectionId)

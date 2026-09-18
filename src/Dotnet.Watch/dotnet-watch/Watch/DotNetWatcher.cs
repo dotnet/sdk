@@ -58,26 +58,12 @@ internal static class DotNetWatcher
                 HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel inferredWebAppModel
                     ? inferredWebAppModel
                     : null;
-            var browserToolsOutputs = webAppModel != null
-                ? BrowserToolsBuildOutputs.TryGetFor(webAppModel.BrowserToolsProject, context.Logger)
-                : null;
-
-            if (browserToolsOutputs != null &&
-                !await buildEvaluator.BuildProjectAsync(shutdownCancellationToken))
-            {
-                changedFile = await fileSetWatcher.WaitForFileChangeAsync(
-                    evaluationResult.Files,
-                    startedWatching: () => context.Logger.Log(MessageDescriptor.FixBuildError),
-                    shutdownCancellationToken);
-                continue;
-            }
-
             var processSpec = new ProcessSpec
             {
                 Executable = context.EnvironmentOptions.GetMuxerPath(),
                 WorkingDirectory = context.EnvironmentOptions.WorkingDirectory,
                 IsUserApplication = true,
-                Arguments = buildEvaluator.GetProcessArguments(iteration, skipBuild: browserToolsOutputs != null),
+                Arguments = buildEvaluator.GetProcessArguments(iteration),
                 EnvironmentVariables =
                 {
                     [EnvironmentVariables.Names.DotnetWatch] = "1",
@@ -85,23 +71,9 @@ internal static class DotNetWatcher
                 }
             };
 
-            BrowserRefreshServer? browserRefreshServer;
-            try
-            {
-                browserRefreshServer = browserToolsOutputs != null &&
-                    projectRootNode != null &&
-                    webAppModel != null
-                    ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
-                    : null;
-            }
-            catch (BrowserToolsBuildOutputsException e)
-            {
-                // The application pinned a key that dotnet-watch cannot match, so browser tools
-                // could never work. Fail explicitly rather than run an application whose refresh
-                // and diagnostics would silently do nothing.
-                context.Logger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
-                return;
-            }
+            var browserRefreshServer = projectRootNode != null && webAppModel != null
+                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
+                : null;
 
             browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
 

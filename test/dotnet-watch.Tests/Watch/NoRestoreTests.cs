@@ -45,15 +45,6 @@ public class NoRestoreTests
     }
 
     [TestMethod]
-    public void AddsNoBuildWhenProjectWasBuiltBeforeLaunch()
-    {
-        var context = CreateContext();
-        var evaluator = new BuildEvaluator(context);
-
-        AssertProcessArguments(["run", "--no-build"], evaluator.GetProcessArguments(iteration: 0, skipBuild: true));
-    }
-
-    [TestMethod]
     public void LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
     {
         var context = CreateContext();

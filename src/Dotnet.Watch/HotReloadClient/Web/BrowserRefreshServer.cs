@@ -26,13 +26,16 @@ internal sealed class BrowserRefreshServer(
     Func<int, ILogger> connectionAgentLoggerFactory,
     Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     string dotnetPath,
-    SharedSecretProvider sessionKey,
+    Func<SharedSecretProvider> sessionKeyFactory,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKey, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKeyFactory, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
+
+    internal void UpdateSessionKeyFactory(Func<SharedSecretProvider> value)
+        => SetSessionKeyFactory(value);
 
     protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {

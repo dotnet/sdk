@@ -55,7 +55,7 @@ internal class BuildEvaluator
             _context.EnvironmentOptions);
     }
 
-    public IReadOnlyList<string> GetProcessArguments(int iteration, bool skipBuild = false)
+    public IReadOnlyList<string> GetProcessArguments(int iteration)
     {
         var noRestore = false;
         if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
@@ -78,11 +78,6 @@ internal class BuildEvaluator
             MainProjectOptions.Command
         };
 
-        if (skipBuild)
-        {
-            arguments.Add("--no-build");
-        }
-
         if (noRestore)
         {
             arguments.Add("--no-restore");
@@ -103,44 +98,6 @@ internal class BuildEvaluator
         arguments.AddRange(MainProjectOptions.CommandArguments);
 
         return arguments;
-    }
-
-    public async ValueTask<bool> BuildProjectAsync(CancellationToken cancellationToken)
-    {
-        Debug.Assert(MainProjectOptions.Representation.PhysicalPath != null);
-
-        var projectPath = MainProjectOptions.Representation.PhysicalPath;
-        var arguments = new List<string>
-        {
-            "build",
-            projectPath,
-        };
-
-        arguments.AddRange(_context.BuildArguments);
-
-        if (MainProjectOptions.TargetFramework != null)
-        {
-            arguments.Add("--framework");
-            arguments.Add(MainProjectOptions.TargetFramework);
-        }
-
-        if (MainProjectOptions.Device != null)
-        {
-            arguments.Add($"-p:Device={MainProjectOptions.Device}");
-        }
-
-        var processSpec = new ProcessSpec
-        {
-            Executable = _context.EnvironmentOptions.GetMuxerPath(),
-            WorkingDirectory = Path.GetDirectoryName(projectPath),
-            IsUserApplication = false,
-            Arguments = arguments,
-        };
-
-        processSpec.EnvironmentVariables.Add(EnvironmentVariables.Names.DotnetWatch, "1");
-
-        _context.BuildLogger.Log(MessageDescriptor.Building, projectPath);
-        return await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken) == 0;
     }
 
     public async ValueTask<MSBuildFileSetFactory.EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)

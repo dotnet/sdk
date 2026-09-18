@@ -102,6 +102,17 @@ public class BrowserToolsEndpointRouterTests
         AssertResponse(context, StatusCodes.Status400BadRequest);
     }
 
+    [TestMethod]
+    public async Task Connect_KeyLoadingFailure_IsReportedBeforeAcceptance()
+    {
+        using var server = new TestBrowserRefreshServer(
+            static () => throw new InvalidOperationException("Unable to read key."));
+
+        var context = await ConnectAsync(server, "ciphertext");
+
+        AssertResponse(context, StatusCodes.Status500InternalServerError);
+    }
+
     /// <summary>
     /// A secret encrypted with a key pair other than the one pinned into the application build
     /// output must not authenticate: this is what prevents a rogue provider or a stale browser tab

@@ -16,12 +16,9 @@ namespace Microsoft.DotNet.Watch;
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
 ///
-/// Each server owns its own browser tools session key, which is created from the key pair the
-/// project's build wrote to its intermediate output. The build has to own the key pair because the
-/// browser only trusts the provider whose public key the application pinned at build time, and a
-/// key the watcher produced could not be pinned without letting a build - or anything reading a
-/// build log - impersonate the provider. Keys are therefore per project instance rather than per
-/// invocation, which also isolates projects from each other within a single watch session.
+/// Each connection loads the current browser tools session key from the key pair the project's
+/// build wrote to its intermediate output. Loading on connect allows the server to start before
+/// <c>dotnet run</c> builds the application and naturally observes key rotation after a clean.
 /// </summary>
 internal sealed class BrowserRefreshServerFactory : IDisposable
 {
@@ -46,9 +43,6 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         };
     }
 
-    /// <exception cref="BrowserToolsBuildOutputsException">
-    /// The project produces browser tools assets but the key pair the build wrote cannot be used.
-    /// </exception>
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)
     {
         BrowserRefreshServer? server;
@@ -61,14 +55,19 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
 
-            if (server != null &&
-                (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs ||
-                 !string.Equals(server.PublicKey, outputs.GetPinnedPublicKey(), StringComparison.Ordinal)))
+            if (server != null)
             {
-                server.Dispose();
-                _servers.Remove(key);
-                server = null;
-                hasExistingServer = false;
+                if (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs)
+                {
+                    server.Dispose();
+                    _servers.Remove(key);
+                    server = null;
+                    hasExistingServer = false;
+                }
+                else
+                {
+                    server.UpdateSessionKeyFactory(outputs.CreateSessionKey);
+                }
             }
 
             if (!hasExistingServer)

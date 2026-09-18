@@ -50,19 +50,7 @@ internal sealed class ProjectLauncher(
 
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
 
-        HotReloadClients clients;
-        try
-        {
-            clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
-        }
-        catch (BrowserToolsBuildOutputsException e)
-        {
-            // The application pinned a key that dotnet-watch cannot match, so browser tools could
-            // never work for this launch. Fail explicitly instead of starting an application whose
-            // Hot Reload, refresh and diagnostics would silently do nothing.
-            clientLogger.Log(MessageDescriptor.BrowserToolsUnavailable, e.Message);
-            return null;
-        }
+        var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
 
         var processSpec = new ProcessSpec
         {

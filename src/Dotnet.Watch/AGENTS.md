@@ -47,17 +47,21 @@ Reload).
   output, and
   only the public half is pinned into an application-hosted configuration module. There is
   no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
-  [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) and keys a
-  per-project provider with it, so a provider can never supply the key that authenticates
+  [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) when each browser
+  connects. This lets the per-project provider bind before `dotnet run` builds the
+  application, avoids a separate watcher build, and observes key rotation after `Clean`.
+  The provider validates and imports the current matching pair only long enough to decrypt
+  that connection's credential, so a provider can never supply the key that authenticates
   it. The existing `EnableHotReloadInRuntimeConfigDevFile` SDK property controls whether
   the build generates the browser-tools assets and defaults to `true` for Debug builds.
   When present, the initializer fetches the provider-owned
   `/_framework/dotnet-browser-tools/hot-reload-settings.json` route and starts the client
   only for `{ "hotReload": true }`; the response is non-executable, contains no key
   material, and is served with `Cache-Control: no-store`. The ASP.NET Core disabled
-  fallback for non-watch launches is separate. Watch never activates the client by
-  mutating an application file. Hosted WebAssembly uses the client as the browser-tools
-  project even though the server remains the launching project.
+  fallback for non-watch launches is supplied by the runtime/host, not by the SDK or
+  `dotnet watch`. Watch never activates the client by mutating an application file. Hosted
+  WebAssembly uses the client as the browser-tools project even though the server remains
+  the launching project.
   See
   [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
   Never move executable browser-tools code back into the provider, never let the private

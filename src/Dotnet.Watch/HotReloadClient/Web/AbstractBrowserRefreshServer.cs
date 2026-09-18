@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
     Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
-    SharedSecretProvider sessionKey,
+    Func<SharedSecretProvider> sessionKeyFactory,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
@@ -36,15 +36,7 @@ internal abstract class AbstractBrowserRefreshServer(
 
     private static int s_lastConnectionId;
 
-    /// <summary>
-    /// The RSA key pair the project's build produced, whose public half the application pinned into
-    /// its build output. Owned by this server: the key belongs to the project instance this server
-    /// is associated with, not to the <c>dotnet watch</c> invocation.
-    /// </summary>
-    protected SharedSecretProvider SessionKey => sessionKey;
-
-    internal string PublicKey
-        => SessionKey.GetPublicKey();
+    private Func<SharedSecretProvider> _sessionKeyFactory = sessionKeyFactory;
 
     /// <summary>
     /// Guards the connection list, the retained updates and the baseline epoch together.
@@ -79,8 +71,6 @@ internal abstract class AbstractBrowserRefreshServer(
 
         _lazyHost?.Dispose();
 
-        // The session key belongs to this server, so it is disposed with it.
-        sessionKey.Dispose();
     }
 
     protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
@@ -147,6 +137,9 @@ internal abstract class AbstractBrowserRefreshServer(
     /// </summary>
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
         => configureLaunchEnvironment(builder, this);
+
+    internal void SetSessionKeyFactory(Func<SharedSecretProvider> value)
+        => Volatile.Write(ref _sessionKeyFactory, value);
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
@@ -244,19 +237,34 @@ internal abstract class AbstractBrowserRefreshServer(
             return;
         }
 
-        // The browser generated secret, encrypted with the build-pinned public key, is the only
-        // credential. Reject before upgrading the connection so an unauthenticated peer never gets
-        // a socket.
-        string sharedSecret;
+        SharedSecretProvider sessionKey;
         try
         {
-            sharedSecret = SessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+            sessionKey = Volatile.Read(ref _sessionKeyFactory)();
         }
         catch (Exception e)
         {
-            logger.LogDebug("Rejecting a browser connection with an invalid encrypted secret: {Message}", e.Message);
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            logger.LogError(e, "Unable to load the browser tools session key.");
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return;
+        }
+
+        string sharedSecret;
+        using (sessionKey)
+        {
+            // The browser generated secret, encrypted with the build-pinned public key, is the only
+            // credential. Reject before upgrading the connection so an unauthenticated peer never gets
+            // a socket.
+            try
+            {
+                sharedSecret = sessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+            }
+            catch (Exception e)
+            {
+                logger.LogDebug("Rejecting a browser connection with an invalid encrypted secret: {Message}", e.Message);
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
         }
 
         var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);

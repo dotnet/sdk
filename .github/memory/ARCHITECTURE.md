@@ -67,8 +67,14 @@ rebuilds stay incremental; anything missing, malformed, mismatched or cleaned re
 both halves. `dotnet watch` reads the private half back through
 [`BrowserToolsBuildOutputs`](../../src/Dotnet.Watch/Watch/Browser/BrowserToolsBuildOutputs.cs)
 — derived from the project's evaluated `IntermediateOutputPath`, not from a filesystem
-search — and keys a **per-project** provider in
-[`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs).
+search. A **per-project** provider in
+[`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs)
+binds before application launch so its address can be passed through startup environment
+variables. It does not require the key yet: each `/connect` request loads and validates
+the current pair, imports the private key only long enough to decrypt that browser's
+credential, and then disposes it. Consequently ordinary `dotnet run` can perform the
+build, concurrent connections may harmlessly read the same pair, and a later connection
+naturally observes key rotation after `Clean`.
 There is deliberately **no** watch-to-MSBuild property flow: a key the provider handed to
 the build would let the provider authenticate itself. The private key never leaves the
 `obj` folder and the watch process; the 32-byte secret the browser generates is never
@@ -92,8 +98,9 @@ the initializer first fetches
 `/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
 semantics and imports the configuration module only when the response contains
 `{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
-fallback for non-watch launches is a separate concern. Watch does not activate the client
-by mutating an application file.
+runtime/host owns the disabled fallback for non-watch launches. The SDK and `dotnet watch`
+do not emit that fallback. Watch does not activate the client by mutating an application
+file.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced

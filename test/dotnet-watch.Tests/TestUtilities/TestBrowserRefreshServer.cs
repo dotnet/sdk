@@ -11,18 +11,15 @@ internal class TestBrowserRefreshServer : AbstractBrowserRefreshServer
 
     public TestBrowserRefreshServer(
         Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
-        SharedSecretProvider sharedSecretProvider)
-        : base(configureLaunchEnvironment, sharedSecretProvider, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
+        Func<SharedSecretProvider> sessionKeyFactory)
+        : base(configureLaunchEnvironment, sessionKeyFactory, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
     {
-        SharedSecretProvider = sharedSecretProvider;
     }
 
     public TestBrowserRefreshServer(Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment)
-        : this(configureLaunchEnvironment, new SharedSecretProvider())
+        : this(configureLaunchEnvironment, static () => new SharedSecretProvider())
     {
     }
-
-    public SharedSecretProvider SharedSecretProvider { get; }
 
     protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
         => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())());

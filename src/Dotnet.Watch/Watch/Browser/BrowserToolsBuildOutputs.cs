@@ -148,9 +148,6 @@ internal sealed class BrowserToolsBuildOutputs
         return sessionKey;
     }
 
-    internal string GetPinnedPublicKey()
-        => ReadPinnedPublicKey();
-
     private string ReadPinnedPublicKey()
     {
         using var document = ReadDocument(PublicKeyPath);

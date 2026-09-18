@@ -21,15 +21,24 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     private const string ClearCachePath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath;
     private const string HotReloadSettingsPath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.HotReloadSettingsPath;
 
-    private readonly SharedSecretProvider _sharedSecretProvider = new();
+    private readonly RSAParameters _sessionKeyParameters;
+    private readonly SharedSecretProvider _sharedSecretProvider;
     private readonly TestBrowserRefreshServer _browserServer;
+    private int _sessionKeyLoads;
     private KestrelWebSocketServer? _server;
 
     public TestContext TestContext { get; set; } = null!;
 
     public BrowserToolsEndpointRouterTests()
     {
-        _browserServer = new TestBrowserRefreshServer((_, _) => { }, _sharedSecretProvider);
+        using var rsa = RSA.Create(2048);
+        _sessionKeyParameters = rsa.ExportParameters(includePrivateParameters: true);
+        _sharedSecretProvider = new SharedSecretProvider(_sessionKeyParameters);
+        _browserServer = new TestBrowserRefreshServer((_, _) => { }, () =>
+        {
+            _sessionKeyLoads++;
+            return new SharedSecretProvider(_sessionKeyParameters);
+        });
     }
 
     public void Dispose()
@@ -113,6 +122,17 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     {
         var baseAddress = await StartRouterAsync();
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, subProtocol));
+        Assert.AreEqual(1, _sessionKeyLoads);
+    }
+
+    [TestMethod]
+    public async Task Connect_LoadsTheCurrentSessionKeyForEachRequest()
+    {
+        var baseAddress = await StartRouterAsync();
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, "not-base64!!"));
+        Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, "not-base64!!"));
+        Assert.AreEqual(2, _sessionKeyLoads);
     }
 
     /// <summary>
@@ -171,6 +191,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         Assert.AreEqual(
             "{ \"hotReload\": true }",
             await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(0, _sessionKeyLoads);
     }
 
     /// <summary>

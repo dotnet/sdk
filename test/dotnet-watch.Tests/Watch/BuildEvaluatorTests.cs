@@ -40,37 +40,6 @@ public partial class BuildEvaluatorTests
     }
 
     [TestMethod]
-    public async Task BuildProjectAsync_BuildsSelectedProjectWithBuildOptions()
-    {
-        ProcessSpec? observedProcess = null;
-        var processRunner = new TestProcessRunner
-        {
-            RunImpl = (process, _, _) =>
-            {
-                observedProcess = process;
-                return 0;
-            }
-        };
-        var context = CreateContext(
-            processRunner: processRunner,
-            buildArguments: ["--property:Configuration=Release"]);
-        var evaluator = new BuildEvaluator(context);
-
-        Assert.IsTrue(await evaluator.BuildProjectAsync(CancellationToken.None));
-
-        Assert.IsNotNull(observedProcess);
-        AssertEx.SequenceEqual(
-            [
-                "build",
-                TestOptions.ProjectOptions.Representation.PhysicalPath!,
-                "--property:Configuration=Release",
-            ],
-            observedProcess.Arguments);
-        Assert.AreEqual("1", observedProcess.EnvironmentVariables[EnvironmentVariables.Names.DotnetWatch]);
-        Assert.IsFalse(observedProcess.IsUserApplication);
-    }
-
-    [TestMethod]
     public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
     {
         var context = CreateContext();
