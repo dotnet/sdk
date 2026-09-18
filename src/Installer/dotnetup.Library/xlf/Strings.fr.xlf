@@ -442,18 +442,13 @@ Or open a new terminal.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateIdentityUnavailable">
-        <source>The dotnetup executable's build identity could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
-        <target state="new">The dotnetup executable's build identity could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <source>The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
         <note>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateInProgress">
         <source>A dotnetup self-update is in progress. Run the command again after the update completes.</source>
         <target state="new">A dotnetup self-update is in progress. Run the command again after the update completes.</target>
-        <note>{Locked="dotnetup"}</note>
-      </trans-unit>
-      <trans-unit id="SelfUpdateReleaseIdentityMissing">
-        <source>The dotnetup release does not include a valid build identity. The executable was not updated.</source>
-        <target state="new">The dotnetup release does not include a valid build identity. The executable was not updated.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateRollbackFailed">
@@ -462,8 +457,8 @@ Or open a new terminal.</target>
         <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateStagedIdentityMismatch">
-        <source>The downloaded dotnetup executable's build identity does not match the release. The executable was not updated.</source>
-        <target state="new">The downloaded dotnetup executable's build identity does not match the release. The executable was not updated.</target>
+        <source>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</source>
+        <target state="new">The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateSucceeded">

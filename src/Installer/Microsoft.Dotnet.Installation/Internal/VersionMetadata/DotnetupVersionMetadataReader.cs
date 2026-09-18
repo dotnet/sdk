@@ -15,10 +15,19 @@ internal static class DotnetupVersionMetadataReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
-        if (version.Concat(runtimeIdentifier).Any(character => character < '!' || character > '~' || character == '|') ||
-            version.Length + runtimeIdentifier.Length + 1 >= PayloadLength)
+        if (version.Any(character => character is < '!' or > '~' or '|'))
         {
-            throw new ArgumentException("Version metadata requires printable ASCII version/RID fields that fit in the record.");
+            throw new ArgumentException("Version metadata requires a printable ASCII version without '|'.", nameof(version));
+        }
+
+        if (runtimeIdentifier.Any(character => character is < '!' or > '~' or '|'))
+        {
+            throw new ArgumentException("Version metadata requires a printable ASCII RID without '|'.", nameof(runtimeIdentifier));
+        }
+
+        if (version.Length + runtimeIdentifier.Length + 1 >= PayloadLength)
+        {
+            throw new ArgumentException("The version and RID must fit in the version metadata record.", nameof(version));
         }
 
         return version + "|" + runtimeIdentifier;
@@ -108,7 +117,7 @@ internal static class DotnetupVersionMetadataReader
 
         foreach (var character in payload[..length])
         {
-            if (character < (byte)'!' || character > (byte)'~')
+            if (character is < (byte)'!' or > (byte)'~')
             {
                 throw new InvalidDataException("Version metadata must contain printable ASCII fields.");
             }
@@ -116,7 +125,7 @@ internal static class DotnetupVersionMetadataReader
 
         var metadata = System.Text.Encoding.ASCII.GetString(payload[..length]);
         var separator = metadata.IndexOf('|');
-        if (separator <= 0 || separator == metadata.Length - 1 || separator != metadata.LastIndexOf('|'))
+        if (separator <= 0 || separator == metadata.Length - 1 || separator != metadata.LastIndexOf("|", StringComparison.Ordinal))
         {
             throw new InvalidDataException("Version metadata must contain one version and one RID.");
         }

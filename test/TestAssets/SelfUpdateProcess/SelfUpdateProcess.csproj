@@ -4,6 +4,8 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <SelfContained>false</SelfContained>
+    <UseAppHost>true</UseAppHost>
     <AppHostDotNetSearch>AppRelative</AppHostDotNetSearch>
   </PropertyGroup>
   <ItemGroup>

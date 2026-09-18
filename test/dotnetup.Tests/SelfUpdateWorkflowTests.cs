@@ -84,6 +84,44 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6")]
+    [DataRow("0.3.0", "0.2.0")]
+    public void SameChannelReleaseMustBeNewer(string installedVersion, string availableVersion)
+    {
+        using var files = new SelfUpdateTestFiles();
+        var installedMetadata = DotnetupVersionMetadataReader.Format(installedVersion, "win-x64");
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, installedMetadata);
+        var release = CreateWorkflowRelease(DotnetupVersionMetadataReader.Format(availableVersion, "win-x64"));
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedMetadata, () => release,
+            (download, path) => Assert.Fail("An older release from the same channel must not be downloaded."),
+            CreateImmediateWorkflowCoordinator());
+
+        Assert.IsNull(workflow.Execute(lease => Assert.Fail("A no-op must not transfer a lock lease.")));
+        Assert.AreEqual(0, workflow.VerificationCount);
+        Assert.AreEqual(installedMetadata, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
+    [DataRow("0.3.0-preview.1.26465.7", "0.2.0-dev.1")]
+    [DataRow("1.0.0", "0.9.0-preview.1")]
+    public void CrossChannelReleaseCanChangeSemanticVersionDirection(string installedVersion, string availableVersion)
+    {
+        using var files = new SelfUpdateTestFiles();
+        var installedMetadata = DotnetupVersionMetadataReader.Format(installedVersion, "win-x64");
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, installedMetadata);
+        var release = CreateWorkflowRelease(DotnetupVersionMetadataReader.Format(availableVersion, "win-x64"));
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedMetadata, () => release,
+            (download, path) => SelfUpdateTestFiles.WriteIdentity(path, ReleaseMetadata(download)),
+            CreateImmediateWorkflowCoordinator());
+
+        Assert.AreEqual(availableVersion, workflow.Execute());
+        Assert.AreEqual(1, workflow.VerificationCount);
+        Assert.AreEqual(ReleaseMetadata(release), SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
     public void DownloadFailureDoesNotReplaceInstalledExecutable()
     {
         using var files = new SelfUpdateTestFiles();

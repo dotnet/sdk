@@ -87,7 +87,6 @@ public class SelfCommandParserTests
     [DataRow(nameof(BootstrapperStrings.SelfUpdateInProgress), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateExecutableChanged), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateIdentityUnavailable), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateReleaseIdentityMissing), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateBusyUpdate), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateBusyCommand), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateStagedIdentityMismatch), 0)]

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.NET.TestFramework;
 
@@ -68,16 +69,20 @@ internal sealed class SelfUpdateTestFiles : IDisposable
             .Single(attribute => attribute.Key == "RepoRoot").Value!);
         var dotnetPath = ResolveDotnetHostPath();
         var buildDirectory = Path.Combine(Environment.GetEnvironmentVariable("ArtifactsDir") ?? Path.GetTempPath(), "selfupdate-process-" + Guid.NewGuid().ToString("N"));
+        // Embed a physical relative runtime path, even when the publish root is reached through /var on macOS.
+        buildDirectory = ExecutablePathResolver.ResolveRealPath(Directory.CreateDirectory(buildDirectory).FullName)!;
         var output = Path.Combine(buildDirectory, "out");
         var framework = new FrameworkName(typeof(SelfUpdateTestFiles).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName);
         var startInfo = new ProcessStartInfo(dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         foreach (var argument in new[]
         {
-            "build", Path.Combine(repoRoot!, "test", "TestAssets", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
+            // AppHostRelativeDotNet is embedded during publish, not build. Copies live in siblings of output.
+            "publish", Path.Combine(repoRoot!, "test", "TestAssets", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
             "--output", output,
             "/p:CurrentTargetFramework=net" + framework.Version.ToString(2),
             "/p:AppHostRelativeDotNet=" + Path.GetRelativePath(output, Path.GetDirectoryName(dotnetPath)!),
             "/p:ArtifactsDir=" + buildDirectory + Path.DirectorySeparatorChar,
+            "/p:BaseOutputPath=" + Path.Combine(buildDirectory, "bin") + Path.DirectorySeparatorChar,
             "/p:BaseIntermediateOutputPath=" + Path.Combine(buildDirectory, "obj") + Path.DirectorySeparatorChar,
             "/nodeReuse:false",
         })
@@ -89,8 +94,8 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         Assert.IsNotNull(process);
         try
         {
-            Assert.IsTrue(process.WaitForExit(120_000), "Self-update process fixture build timed out.");
-            Assert.AreEqual(0, process.ExitCode, "Self-update process fixture build failed.");
+            Assert.IsTrue(process.WaitForExit(120_000), "Self-update process fixture publish timed out.");
+            Assert.AreEqual(0, process.ExitCode, "Self-update process fixture publish failed.");
         }
         finally
         {
@@ -107,8 +112,9 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     private static string ResolveDotnetHostPath()
     {
         var processPath = Environment.ProcessPath!;
-        return string.Equals(Path.GetFileNameWithoutExtension(processPath), "dotnet", StringComparison.OrdinalIgnoreCase)
+        var dotnetPath = string.Equals(Path.GetFileNameWithoutExtension(processPath), "dotnet", StringComparison.OrdinalIgnoreCase)
             ? processPath
             : Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
+        return ExecutablePathResolver.ResolveRealPath(dotnetPath)!;
     }
 }

@@ -37,18 +37,8 @@ internal static class SelfUpdateVerifier
     {
         using var process = new Process
         {
-            StartInfo = new ProcessStartInfo(installedPath)
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            },
+            StartInfo = CreateStartInfo(installedPath),
         };
-        process.StartInfo.ArgumentList.Add("--version");
-        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
-        process.StartInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         if (!process.Start())
         {
             throw new IOException("The verification child could not be started.");
@@ -97,6 +87,22 @@ internal static class SelfUpdateVerifier
         {
             ExceptionDispatchInfo.Capture(failure).Throw();
         }
+    }
+
+    private static ProcessStartInfo CreateStartInfo(string installedPath)
+    {
+        var startInfo = new ProcessStartInfo(installedPath)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("--version");
+        startInfo.Environment["DOTNET_NOLOGO"] = "1";
+        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        return startInfo;
     }
 
     private static async Task TerminateAsync(Process process)

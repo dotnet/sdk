@@ -34,61 +34,46 @@ if (args is not ["--version"])
 
 var mode = File.ReadAllText(executable + ".mode");
 var version = identity.Split('|')[0];
-switch (mode)
+Console.Error.WriteLine($"SelfUpdateProcess mode: {mode}");
+if (mode == "timeout")
 {
-    case "timeout":
-        File.WriteAllText(executable + ".pid", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
-        await Task.Delay(TimeSpan.FromMinutes(5));
-        return 0;
-    case "flood":
-    case "stderr-flood":
-        var output = new string('x', 4096);
-        for (var index = 0; index < 128; index++)
-        {
-            Console.Error.Write(output);
-            if (mode == "flood")
-            {
-                Console.Write(output);
-            }
-        }
-        Console.WriteLine(version);
-        return 0;
-    case "empty":
-        return 0;
-    case "wrong":
-        Console.WriteLine(new string('f', 64));
-        return 0;
-    case "extra":
-        Console.WriteLine(version);
-        Console.WriteLine(version);
-        return 0;
-    case "space":
-        Console.WriteLine(version + " ");
-        return 0;
-    case "bom":
-        using (var stdout = Console.OpenStandardOutput())
-        {
-            stdout.Write(new byte[] { 0xef, 0xbb, 0xbf });
-            stdout.Write(Encoding.ASCII.GetBytes(version));
-        }
-        return 0;
-    case "lf":
-        Console.Write(version + "\n");
-        return 0;
-    case "crlf":
-        Console.Write(version + "\r\n");
-        return 0;
-    case "cr":
-        Console.Write(version + "\r");
-        return 0;
-    case "none":
-        Console.Write(version);
-        return 0;
-    case "nonzero":
-        Console.Error.WriteLine("fixture failure");
-        Console.WriteLine(version);
-        return 17;
-    default:
-        Console.WriteLine(version);
-        return 0;
+    File.WriteAllText(executable + ".pid", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
+    await Task.Delay(TimeSpan.FromMinutes(5));
+    return 0;
 }
+
+var output = mode switch
+{
+    "empty" => "",
+    "wrong" => new string('f', 64) + Environment.NewLine,
+    "extra" => version + Environment.NewLine + version + Environment.NewLine,
+    "space" => version + " " + Environment.NewLine,
+    "bom" => "\uFEFF" + version,
+    "lf" => version + "\n",
+    "crlf" => version + "\r\n",
+    "cr" => version + "\r",
+    "none" => version,
+    "flood" => new string('x', 4096 * 128) + version + Environment.NewLine,
+    "valid" or "stderr-flood" or "nonzero" => version + Environment.NewLine,
+    _ => throw new InvalidOperationException($"Unknown fixture mode: {mode}"),
+};
+
+if (mode is "flood" or "stderr-flood")
+{
+    Console.Error.Write(new string('x', 4096 * 128));
+}
+else if (mode == "nonzero")
+{
+    Console.Error.WriteLine("fixture failure");
+}
+
+var bytes = Encoding.UTF8.GetBytes(output);
+using (var stdout = Console.OpenStandardOutput())
+{
+    stdout.Write(bytes);
+    stdout.Flush();
+}
+
+// Record the bytes emitted by this invocation so rejection tests can independently check stdout.
+File.WriteAllBytes(executable + ".stdout", bytes);
+return mode == "nonzero" ? 17 : 0;

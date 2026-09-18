@@ -37,7 +37,7 @@ internal class SelfUpdateWorkflow
 
             try
             {
-                if (SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath) == expectedMetadata)
+                if (!IsUpdateAvailable(SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath), release))
                 {
                     return null;
                 }
@@ -52,7 +52,7 @@ internal class SelfUpdateWorkflow
 
             _paths.Validate();
             var originalMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath);
-            if (originalMetadata == expectedMetadata)
+            if (!IsUpdateAvailable(originalMetadata, release))
             {
                 return null;
             }
@@ -79,6 +79,34 @@ internal class SelfUpdateWorkflow
 
     protected virtual void Verify(string installedPath)
         => SelfUpdateVerifier.Verify(installedPath, TimeSpan.FromSeconds(15));
+
+    private static bool IsUpdateAvailable(string installedMetadata, ResolvedDownload release)
+    {
+        var separator = installedMetadata.IndexOf('|');
+        if (separator <= 0 ||
+            !ReleaseVersion.TryParse(installedMetadata[..separator], out var installedVersion) ||
+            !string.Equals(installedMetadata[(separator + 1)..], release.Rid, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The installed dotnetup version metadata is invalid.");
+        }
+
+        return !HasSameSemanticChannel(installedVersion, release.Version) ||
+            release.Version.CompareTo(installedVersion) > 0;
+    }
+
+    private static bool HasSameSemanticChannel(ReleaseVersion left, ReleaseVersion right)
+        => string.Equals(GetSemanticChannel(left), GetSemanticChannel(right), StringComparison.OrdinalIgnoreCase);
+
+    private static string GetSemanticChannel(ReleaseVersion version)
+    {
+        if (string.IsNullOrEmpty(version.Prerelease))
+        {
+            return "";
+        }
+
+        var separator = version.Prerelease.IndexOf('.');
+        return separator < 0 ? version.Prerelease : version.Prerelease[..separator];
+    }
 
     private SelfUpdateLockLease AcquireLocks()
     {
