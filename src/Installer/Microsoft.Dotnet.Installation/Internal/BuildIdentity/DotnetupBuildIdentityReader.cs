@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
-using System.Text;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -95,6 +94,6 @@ internal static class DotnetupBuildIdentityReader
             }
         }
 
-        return Encoding.ASCII.GetString(payload);
+        return System.Text.Encoding.ASCII.GetString(payload);
     }
 }

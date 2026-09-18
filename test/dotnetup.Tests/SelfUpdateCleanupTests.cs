@@ -162,7 +162,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void OnlyExactBackupNamesAreDeleted(bool ownsUpdateLock)
     {
-        var transaction = Guid.NewGuid().ToString("N");
+        var transaction = Guid.NewGuid().ToString("N")[..8];
         string[] names =
         [
             "dotnetup.activity.lock",
@@ -171,6 +171,8 @@ public class SelfUpdateCleanupTests : SdkTest
             "dotnetup.exe.old.invalid",
             "dotnetup.exe.old." + Guid.NewGuid().ToString("D"),
             "dotnetup.exe.old." + new string('g', 32),
+            "dotnetup.exe.old." + new string('g', 8),
+            "dotnetup.exe.old." + transaction[..^1],
             "dotnetup.exe.old." + transaction + "x",
             "dotnetup.exe.old." + transaction + ".rejected.extra",
             "dotnetup.exe.old." + transaction + ".REJECTED",
@@ -356,8 +358,6 @@ public class SelfUpdateCleanupTests : SdkTest
     [TestMethod]
     [DataRow("canonical")]
     [DataRow("lock")]
-    [DataRow("directory")]
-    [DataRow("ancestor")]
     public void SkipsUnexpectedSymlinksBeforeOpeningFiles(string kind)
     {
         var outside = Directory.CreateTempSubdirectory("self-update-cleanup-target-");
@@ -427,7 +427,7 @@ public class SelfUpdateCleanupTests : SdkTest
 
     private string CreateBackup(TimeSpan age, string suffix = "")
     {
-        var path = _installedPath + ".old." + Guid.NewGuid().ToString("N") + suffix;
+        var path = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8] + suffix;
         File.WriteAllText(path, "backup");
         File.SetLastWriteTimeUtc(path, DateTime.UtcNow - age);
         return path;

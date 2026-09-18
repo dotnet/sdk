@@ -19,7 +19,7 @@ internal sealed class LockFileTestProcess : IDisposable
 
     public static LockFileTestProcess Start(string dotnetPath, string assemblyPath, string mode, string lockPath)
     {
-        var pipeName = "scoped-lock-" + Guid.NewGuid().ToString("N");
+        var pipeName = "scoped-lock-" + Guid.NewGuid().ToString("N")[..8];
         var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.Out);
         var process = new Process { StartInfo = CreateStartInfo(dotnetPath, assemblyPath, mode, lockPath) };
         process.StartInfo.ArgumentList.Add(pipeName);

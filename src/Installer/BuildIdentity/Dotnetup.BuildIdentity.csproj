@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BuildIdentityTask.cs;BuildIdentityMetadata.cs" />
