@@ -11,10 +11,24 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.EnsureDotNetWatchBrowserToolsKey"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+
   <PropertyGroup>
     <!-- Fixed, same-origin route the dotnet-watch provider is forwarded on. Must match
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <DotNetWatchBrowserToolsRoutePrefix Condition="'$(DotNetWatchBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</DotNetWatchBrowserToolsRoutePrefix>
+    <DotNetWatchBrowserToolsSettingsPath Condition="'$(DotNetWatchBrowserToolsSettingsPath)' == ''">$(DotNetWatchBrowserToolsRoutePrefix)/hot-reload-settings.json</DotNetWatchBrowserToolsSettingsPath>
+
+    <!--
+      The browser tools assets are build only and never reach publish output. The existing
+      EnableHotReloadInRuntimeConfigDevFile property controls whether they are generated, matching
+      the rest of the SDK's Hot Reload build outputs. It defaults to true for Debug builds and can
+      be explicitly enabled or disabled by the build host.
+    -->
+    <_DotNetWatchBrowserToolsEnabled>$(EnableHotReloadInRuntimeConfigDevFile)</_DotNetWatchBrowserToolsEnabled>
+    <_DotNetWatchBrowserToolsEnabled Condition="'$(_DotNetWatchBrowserToolsEnabled)' == '' and '$(Configuration)' == 'Debug'">true</_DotNetWatchBrowserToolsEnabled>
   </PropertyGroup>
 
   <!--
@@ -22,34 +36,44 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       * the SDK specific JS initializer, which activates the tools at the right point of the
         application lifecycle,
-      * the browser tools client, and
-      * a generated configuration module that pins the provider's public key and route.
+      * the browser tools client,
+      * a generated configuration module that pins the provider's public key and routes.
 
     The client is served by the application rather than by the dotnet-watch provider on purpose.
     The browser authenticates the provider with the pinned public key, so accepting executable
-    code from that same provider would make the authentication meaningless.
+    code from that same provider would make the authentication meaningless. For the same reason the
+    key pair is produced by the build: a key that the provider handed to the application would let
+    the provider authenticate itself.
 
-    Only the public key reaches the build. The provider keeps the private key in memory for the
-    lifetime of the dotnet-watch invocation, and the secret the browser generates is never
-    persisted. The assets are build only ('AssetKind=Build' and 'CopyToPublishDirectory=Never')
-    so that neither publish output nor a plain build contains them.
+    Only the public half of the key pair reaches a static web asset. The private half is written to a
+    separate file in the intermediate output that is not a static web asset, is never served, and is
+    read only by the dotnet-watch process. The assets are build only ('AssetKind=Build' and
+    'CopyToPublishDirectory=Never') so that publish output never contains them.
 
     SDKs opt in by setting DotNetWatchBrowserToolsAssetPrefix and
     DotNetWatchBrowserToolsInitializerFile.
   -->
   <Target Name="_DefineDotNetWatchBrowserToolsAssets"
-          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
           BeforeTargets="ResolveProjectStaticWebAssets"
-          AfterTargets="ResolveStaticWebAssetsConfiguration"
-          Condition="'$(DotNetWatchBrowserTools)' == 'true'
+          DependsOnTargets="ResolveWebAssemblyProjectReferences;_DefineDotNetWatchBrowserToolsAssetsCore" />
+
+  <Target Name="_DefineDotNetWatchBrowserToolsAssetsCore"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+          Condition="'$(DesignTimeBuild)' != 'true'
+            and '$(_DotNetWatchBrowserToolsEnabled)' == 'true'
             and '$(DotNetWatchBrowserToolsAssetPrefix)' != ''
-            and '$(DotNetWatchBrowserToolsPublicKey)' != ''
             and '$(StaticWebAssetsEnabled)' == 'true'
             and '$(JSModulesEnabled)' == 'true'
-            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+            and '@(WebAssemblyProjectReference)' == ''">
 
     <PropertyGroup>
+      <!-- These paths are a contract with dotnet-watch. Keep them in sync with
+           Microsoft.DotNet.Watch.BrowserToolsBuildOutputs. -->
       <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
+      <_DotNetWatchBrowserToolsPublicKeyFile>$(_DotNetWatchBrowserToolsIntermediatePath)browser-tools-key.public.json</_DotNetWatchBrowserToolsPublicKeyFile>
+      <_DotNetWatchBrowserToolsPrivateKeyFile>$(_DotNetWatchBrowserToolsIntermediatePath)browser-tools-key.private.json</_DotNetWatchBrowserToolsPrivateKeyFile>
+
       <_DotNetWatchBrowserToolsInitializerFileName>$(DotNetWatchBrowserToolsAssetPrefix).lib.module.js</_DotNetWatchBrowserToolsInitializerFileName>
       <_DotNetWatchBrowserToolsClientFileName>$(DotNetWatchBrowserToolsAssetPrefix).BrowserTools.js</_DotNetWatchBrowserToolsClientFileName>
       <_DotNetWatchBrowserToolsConfigFileName>$(DotNetWatchBrowserToolsAssetPrefix).BrowserTools.Config.js</_DotNetWatchBrowserToolsConfigFileName>
@@ -71,6 +95,19 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="$([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '9.0'))">true</_DotNetWatchBrowserToolsRuntimeHotReloadAgent>
     </PropertyGroup>
 
+    <MakeDir Directories="$(_DotNetWatchBrowserToolsIntermediatePath)" />
+
+    <!--
+      Ensures the key pair exists. A valid, matching pair is reused so that the generated
+      configuration module stays byte identical across rebuilds; anything missing, malformed,
+      mismatched or removed by a clean regenerates both halves.
+    -->
+    <EnsureDotNetWatchBrowserToolsKey
+      PublicKeyPath="$(_DotNetWatchBrowserToolsPublicKeyFile)"
+      PrivateKeyPath="$(_DotNetWatchBrowserToolsPrivateKeyFile)">
+      <Output TaskParameter="PublicKey" PropertyName="_DotNetWatchBrowserToolsPublicKey" />
+    </EnsureDotNetWatchBrowserToolsKey>
+
     <!-- Copy to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
       SourceFiles="$(_DotNetWatchBrowserToolsClientSource)"
@@ -80,15 +117,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_DotNetWatchBrowserToolsInitializerContent>$([System.IO.File]::ReadAllText('$(DotNetWatchBrowserToolsInitializerFile)'))</_DotNetWatchBrowserToolsInitializerContent>
       <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__RUNTIME_HOT_RELOAD_AGENT__', '$(_DotNetWatchBrowserToolsRuntimeHotReloadAgent)'))</_DotNetWatchBrowserToolsInitializerContent>
+      <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__SETTINGS_PATH__', '$(DotNetWatchBrowserToolsSettingsPath)'))</_DotNetWatchBrowserToolsInitializerContent>
+      <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__CONFIG_MODULE__', './$(_DotNetWatchBrowserToolsConfigFileName)'))</_DotNetWatchBrowserToolsInitializerContent>
 
       <_DotNetWatchBrowserToolsConfigContent>$([System.IO.File]::ReadAllText('$(_DotNetWatchBrowserToolsConfigTemplate)'))</_DotNetWatchBrowserToolsConfigContent>
       <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__CLIENT_MODULE__', '$(_DotNetWatchBrowserToolsClientFileName)'))</_DotNetWatchBrowserToolsConfigContent>
       <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__ROUTE_PREFIX__', '$(DotNetWatchBrowserToolsRoutePrefix)'))</_DotNetWatchBrowserToolsConfigContent>
-      <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__PUBLIC_KEY__', '$(DotNetWatchBrowserToolsPublicKey)'))</_DotNetWatchBrowserToolsConfigContent>
+      <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__PUBLIC_KEY__', '$(_DotNetWatchBrowserToolsPublicKey)'))</_DotNetWatchBrowserToolsConfigContent>
     </PropertyGroup>
 
-    <!-- WriteOnlyWhenDifferent keeps the build incremental: the key is stable for the whole
-         dotnet-watch invocation, so rebuilds must not rewrite these files. -->
+    <!-- WriteOnlyWhenDifferent keeps the build incremental: the key is stable as long as the key
+         pair on disk stays valid, so rebuilds must not rewrite these files. -->
     <WriteLinesToFile
       File="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsInitializerFileName)"
       Lines="$([MSBuild]::Escape($(_DotNetWatchBrowserToolsInitializerContent)))"
@@ -119,7 +158,10 @@ Copyright (c) .NET Foundation. All rights reserved.
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_DotNetWatchBrowserToolsClientModule>
 
+      <!-- The key files are not static web assets. They are tracked so that Clean removes them and
+           no key material is left behind on disk. -->
       <FileWrites Include="@(_DotNetWatchBrowserToolsInitializer);@(_DotNetWatchBrowserToolsClientModule)" />
+      <FileWrites Include="$(_DotNetWatchBrowserToolsPublicKeyFile);$(_DotNetWatchBrowserToolsPrivateKeyFile)" />
     </ItemGroup>
 
     <DefineStaticWebAssets
@@ -173,6 +215,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
+
   </Target>
 
 </Project>

@@ -16,14 +16,12 @@ namespace Microsoft.DotNet.Watch;
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
 ///
-/// Owns the browser tools session key. A single key pair is created per <c>dotnet watch</c>
-/// invocation, before any project is built, because the public half has to be passed to the build as
-/// a global MSBuild property and global properties apply to the whole project graph. Per project keys
-/// are therefore not expressible: the key has to exist before the graph and the app model are known.
-/// Project isolation is unaffected - each provider listens on its own loopback port that is only
-/// reachable through its own application's forwarder, and all providers of an invocation live in this
-/// process and share its trust domain. Aspire runs a separate watcher process per app host, so it
-/// gets a separate key.
+/// Each server owns its own browser tools session key, which is created from the key pair the
+/// project's build wrote to its intermediate output. The build has to own the key pair because the
+/// browser only trusts the provider whose public key the application pinned at build time, and a
+/// key the watcher produced could not be pinned without letting a build - or anything reading a
+/// build log - impersonate the provider. Keys are therefore per project instance rather than per
+/// invocation, which also isolates projects from each other within a single watch session.
 /// </summary>
 internal sealed class BrowserRefreshServerFactory : IDisposable
 {
@@ -31,26 +29,6 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
-
-    /// <summary>
-    /// The private half never leaves this process: it is not written to disk, to build output, to
-    /// MSBuild properties or to logs. Only the public half is handed to the build.
-    /// </summary>
-    private readonly SharedSecretProvider _sessionKey = new();
-
-    /// <summary>
-    /// Base64 encoded X.509 SubjectPublicKeyInfo of the session key, stable for the lifetime of the
-    /// watch invocation including incremental rebuilds. A new invocation rotates it.
-    /// </summary>
-    public string PublicKey { get; }
-
-    public SharedSecretProvider SessionKey
-        => _sessionKey;
-
-    public BrowserRefreshServerFactory()
-    {
-        PublicKey = _sessionKey.GetPublicKey();
-    }
 
     public void Dispose()
     {
@@ -66,23 +44,36 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         {
             server?.Dispose();
         };
-
-        _sessionKey.Dispose();
     }
 
+    /// <exception cref="BrowserToolsBuildOutputsException">
+    /// The project produces browser tools assets but the key pair the build wrote cannot be used.
+    /// </exception>
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)
     {
         BrowserRefreshServer? server;
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
+        var browserToolsProject = appModel.BrowserToolsProject;
 
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
+
+            if (server != null &&
+                (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs ||
+                 !string.Equals(server.PublicKey, outputs.GetPinnedPublicKey(), StringComparison.Ordinal)))
+            {
+                server.Dispose();
+                _servers.Remove(key);
+                server = null;
+                hasExistingServer = false;
+            }
+
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(projectNode);
+                server = appModel.TryCreateRefreshServer(browserToolsProject);
                 _servers.Add(key, server);
             }
         }

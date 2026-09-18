@@ -37,11 +37,14 @@ internal abstract class AbstractBrowserRefreshServer(
     private static int s_lastConnectionId;
 
     /// <summary>
-    /// The RSA key pair whose public half is pinned into the application build output for the
-    /// lifetime of the <c>dotnet watch</c> invocation. Owned by the caller and deliberately not
-    /// disposed here: several servers share a single invocation scoped key.
+    /// The RSA key pair the project's build produced, whose public half the application pinned into
+    /// its build output. Owned by this server: the key belongs to the project instance this server
+    /// is associated with, not to the <c>dotnet watch</c> invocation.
     /// </summary>
     protected SharedSecretProvider SessionKey => sessionKey;
+
+    internal string PublicKey
+        => SessionKey.GetPublicKey();
 
     /// <summary>
     /// Guards the connection list, the retained updates and the baseline epoch together.
@@ -76,7 +79,8 @@ internal abstract class AbstractBrowserRefreshServer(
 
         _lazyHost?.Dispose();
 
-        // The session key is owned by the watcher and shared by all providers of the invocation.
+        // The session key belongs to this server, so it is disposed with it.
+        sessionKey.Dispose();
     }
 
     protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);

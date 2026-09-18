@@ -53,10 +53,7 @@ internal sealed class HotReloadDotNetWatcher
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(
             context.RootProjects,
-            buildProperties: EvaluationResult.GetGlobalBuildProperties(
-                context.BuildArguments,
-                context.EnvironmentOptions,
-                context.BrowserRefreshServerFactory.PublicKey),
+            buildProperties: EvaluationResult.GetGlobalBuildProperties(context.BuildArguments),
             context.BuildLogger,
             context.Options,
             context.EnvironmentOptions);
@@ -1259,7 +1256,6 @@ internal sealed class HotReloadDotNetWatcher
         };
 
         arguments.AddRange(_context.BuildArguments);
-        arguments.AddRange(ReservedBuildProperties.GetBrowserToolsArguments(_context.EnvironmentOptions, _context.BrowserRefreshServerFactory.PublicKey));
 
         if (action != BuildAction.RestoreOnly && targetFramework != null)
         {

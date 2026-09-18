@@ -41,7 +41,8 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
             app.MapWhen(
                 static context =>
                     context.Request.Path.Equals(ApplicationPaths.BrowserToolsConnect, StringComparison.OrdinalIgnoreCase) ||
-                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.OrdinalIgnoreCase),
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.OrdinalIgnoreCase) ||
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsHotReloadSettings, StringComparison.OrdinalIgnoreCase),
                 static browserTools =>
                 {
                     browserTools.UseWebSockets();

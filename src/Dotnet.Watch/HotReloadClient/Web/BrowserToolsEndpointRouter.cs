@@ -13,9 +13,9 @@ namespace Microsoft.DotNet.HotReload;
 /// <summary>
 /// The complete HTTP surface of the browser tools provider.
 ///
-/// The provider serves no JavaScript: the browser tools client and its configuration are part of the
-/// application build output, which is what makes authenticating the provider with the build pinned
-/// public key meaningful.
+/// The provider serves no executable content: the browser tools client and its configuration are
+/// part of the application build output, which is what makes authenticating the provider with the
+/// build pinned public key meaningful. Its settings response only reports provider availability.
 /// </summary>
 internal sealed class BrowserToolsEndpointRouter(AbstractBrowserRefreshServer browserServer)
 {
@@ -35,6 +35,13 @@ internal sealed class BrowserToolsEndpointRouter(AbstractBrowserRefreshServer br
         {
             context.Response.Headers.Append("Clear-Site-Data", "\"cache\"");
             context.Response.StatusCode = StatusCodes.Status204NoContent;
+            return;
+        }
+
+        if (path == BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.HotReloadSettingsPath)
+        {
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{ \"hotReload\": true }", context.RequestAborted);
             return;
         }
 

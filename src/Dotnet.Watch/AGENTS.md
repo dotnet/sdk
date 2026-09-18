@@ -40,17 +40,29 @@ Reload).
   destinations fixed to the trusted loopback provider address, the route root-relative, and
   the encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
   applications.
-- **The browser authenticates the provider, so the provider must not serve code.**
-  `dotnet watch` creates one RSA keypair per invocation in
-  [`BrowserRefreshServerFactory`](Watch/Browser/BrowserRefreshServerFactory.cs) before any
-  project is built, and only the public half travels to MSBuild through
-  [`ReservedBuildProperties`](Watch/Build/ReservedBuildProperties.cs). The build pins that
-  key into an application-hosted configuration module and the client is an application
-  static asset; see
+- **The browser authenticates the provider, so the provider must not serve code.** The
+  *build* owns the browser-tools RSA keypair:
+  [`EnsureDotNetWatchBrowserToolsKey`](../StaticWebAssetsSdk/Tasks/EnsureDotNetWatchBrowserToolsKey.cs)
+  writes both halves to deterministic paths under the browser-facing project's intermediate
+  output, and
+  only the public half is pinned into an application-hosted configuration module. There is
+  no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
+  [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) and keys a
+  per-project provider with it, so a provider can never supply the key that authenticates
+  it. The existing `EnableHotReloadInRuntimeConfigDevFile` SDK property controls whether
+  the build generates the browser-tools assets and defaults to `true` for Debug builds.
+  When present, the initializer fetches the provider-owned
+  `/_framework/dotnet-browser-tools/hot-reload-settings.json` route and starts the client
+  only for `{ "hotReload": true }`; the response is non-executable, contains no key
+  material, and is served with `Cache-Control: no-store`. The ASP.NET Core disabled
+  fallback for non-watch launches is separate. Watch never activates the client by
+  mutating an application file. Hosted WebAssembly uses the client as the browser-tools
+  project even though the server remains the launching project.
+  See
   [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
   Never move executable browser-tools code back into the provider, never let the private
-  key or the browser's shared secret reach disk, a build property, or a log, and keep the
-  generated assets build only.
+  key or the browser's shared secret reach a build property, an application asset or a log,
+  and keep the generated assets build only.
 - **Replay lives in the WebSocket handshake.** The provider sends the current snapshot as
   the first message on an accepted connection and releases live messages for that
   connection only after the browser acknowledges it, so there is no wire-level generation

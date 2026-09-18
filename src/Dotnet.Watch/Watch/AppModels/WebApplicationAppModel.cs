@@ -27,6 +27,12 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
 
+    /// <summary>
+    /// Project whose browser initializer, settings document and pinned public key are served to the
+    /// browser. Usually the launching project; for hosted WebAssembly it is the client project.
+    /// </summary>
+    public virtual ProjectGraphNode BrowserToolsProject => LaunchingProject;
+
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
@@ -77,12 +83,34 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// <summary>
     /// Creates the browser tools provider for the project. The application host is configured by
     /// <see cref="ConfigureBrowserToolsLaunchEnvironment"/> to expose it on the app's own origin.
+    ///
+    /// The provider is keyed with the private half of the key pair the project's build produced, so
+    /// that it can authenticate against the public half the application pinned into its build
+    /// output. Consequently the provider can only be created once the project has been built.
     /// </summary>
+    /// <exception cref="BrowserToolsBuildOutputsException">
+    /// The project produces browser tools assets but the key pair the build wrote is missing,
+    /// malformed or mismatched.
+    /// </exception>
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
         var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
 
-        if (IsServerSupported(projectNode, logger))
+        if (!IsServerSupported(projectNode, logger))
+        {
+            return null;
+        }
+
+        if (BrowserToolsBuildOutputs.TryGetFor(projectNode, logger) is not { } browserToolsOutputs)
+        {
+            // The application has no pinned key, so nothing in the browser would ever connect to a
+            // provider. This is not an error: the project simply does not opt into browser tools.
+            return null;
+        }
+
+        var sessionKey = browserToolsOutputs.CreateSessionKey();
+
+        try
         {
             return new BrowserRefreshServer(
                 logger,
@@ -90,12 +118,15 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
                 configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-                sessionKey: context.BrowserRefreshServerFactory.SessionKey,
+                sessionKey: sessionKey,
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
-
-        return null;
+        catch
+        {
+            sessionKey.Dispose();
+            throw;
+        }
     }
 
     private static string GetBrowserLoggerName(int connectionId)

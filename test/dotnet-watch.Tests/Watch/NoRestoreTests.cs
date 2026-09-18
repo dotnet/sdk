@@ -45,6 +45,15 @@ public class NoRestoreTests
     }
 
     [TestMethod]
+    public void AddsNoBuildWhenProjectWasBuiltBeforeLaunch()
+    {
+        var context = CreateContext();
+        var evaluator = new BuildEvaluator(context);
+
+        AssertProcessArguments(["run", "--no-build"], evaluator.GetProcessArguments(iteration: 0, skipBuild: true));
+    }
+
+    [TestMethod]
     public void LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
     {
         var context = CreateContext();
@@ -149,39 +158,20 @@ public class NoRestoreTests
     }
 
     [TestMethod]
-    public void AddsReservedPropertiesBeforeApplicationArguments()
+    public void PassesApplicationArgumentsThrough()
     {
-        var environmentOptions = TestOptions.GetEnvironmentOptions() with { SuppressBrowserRefresh = true };
-        var context = CreateContext(["--", "application-argument"], environmentOptions);
+        var context = CreateContext(["--", "application-argument"]);
         var evaluator = new BuildEvaluator(context);
 
         AssertProcessArguments(
             ["run", "--", "application-argument"],
-            evaluator.GetProcessArguments(iteration: 0),
-            browserToolsEnabled: false);
+            evaluator.GetProcessArguments(iteration: 0));
     }
 
     private static void AssertProcessArguments(
-        IEnumerable<string> expectedArgumentsWithoutReservedProperties,
-        IReadOnlyList<string> actualArguments,
-        bool browserToolsEnabled = true)
+        IEnumerable<string> expectedArguments,
+        IReadOnlyList<string> actualArguments)
     {
-        // The public key is randomly generated per invocation.
-        var normalizedActualArguments = actualArguments
-            .Select(static a => a.StartsWith("-p:DotNetWatchBrowserToolsPublicKey=", StringComparison.Ordinal) && a.Length > "-p:DotNetWatchBrowserToolsPublicKey=".Length
-                ? "-p:DotNetWatchBrowserToolsPublicKey=<key>"
-                : a)
-            .ToList();
-
-        var expectedArguments = expectedArgumentsWithoutReservedProperties.ToList();
-        var applicationArgumentsSeparator = expectedArguments.IndexOf("--");
-        var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : expectedArguments.Count;
-        expectedArguments.InsertRange(reservedPropertiesIndex,
-        [
-            $"-p:DotNetWatchBrowserTools={browserToolsEnabled}",
-            browserToolsEnabled ? "-p:DotNetWatchBrowserToolsPublicKey=<key>" : "-p:DotNetWatchBrowserToolsPublicKey="
-        ]);
-
-        AssertEx.SequenceEqual(expectedArguments, normalizedActualArguments);
+        AssertEx.SequenceEqual(expectedArguments.ToList(), actualArguments);
     }
 }

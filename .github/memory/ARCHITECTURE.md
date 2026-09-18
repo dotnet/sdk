@@ -57,28 +57,48 @@ browser-tools JavaScript must come from the application's own build output and n
 the provider being authenticated**; downloading the client from that provider would make
 the authentication meaningless.
 
-[`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs)
-creates one RSA keypair per `dotnet watch` invocation, before any project is built. Only
-the base64 `SubjectPublicKeyInfo` half reaches MSBuild, through the reserved
-`DotNetWatchBrowserToolsPublicKey` property alongside `DotNetWatchBrowserTools`; see
-[`ReservedBuildProperties`](../../src/Dotnet.Watch/Watch/Build/ReservedBuildProperties.cs),
-[`EvaluationResult.GetGlobalBuildProperties`](../../src/Dotnet.Watch/Watch/Build/EvaluationResult.cs)
-and [`BuildEvaluator`](../../src/Dotnet.Watch/dotnet-watch/Watch/BuildEvaluator.cs). The
-private key stays in the watch process; the 32-byte secret the browser generates is never
+The *build* owns the keypair.
+[`EnsureDotNetWatchBrowserToolsKey`](../../src/StaticWebAssetsSdk/Tasks/EnsureDotNetWatchBrowserToolsKey.cs)
+creates an RSA-2048 pair per project into `obj/<configuration>/<tfm>/dotnet-watch/`,
+writing `browser-tools-key.public.json` (base64 `SubjectPublicKeyInfo`) and
+`browser-tools-key.private.json` (raw `RSAParameters` components, portable to .NET
+Framework). Neither file is a static web asset. A valid, matching pair is reused so
+rebuilds stay incremental; anything missing, malformed, mismatched or cleaned regenerates
+both halves. `dotnet watch` reads the private half back through
+[`BrowserToolsBuildOutputs`](../../src/Dotnet.Watch/Watch/Browser/BrowserToolsBuildOutputs.cs)
+— derived from the project's evaluated `IntermediateOutputPath`, not from a filesystem
+search — and keys a **per-project** provider in
+[`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs).
+There is deliberately **no** watch-to-MSBuild property flow: a key the provider handed to
+the build would let the provider authenticate itself. The private key never leaves the
+`obj` folder and the watch process; the 32-byte secret the browser generates is never
 persisted and travels only RSA-OAEP encrypted as the WebSocket subprotocol.
 
 [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
-turns those two properties into build-only static web assets under
+turns that key into build-only static web assets under
 `obj/<configuration>/<tfm>/dotnet-watch/`: the SDK-specific activation initializer, the
 [browser-tools client](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.js),
 and a configuration module generated from a
 [checked-in template](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.config.js.template)
 that pins the public key and the fixed `/_framework/dotnet-browser-tools` route. The assets
-are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `FileWrites`,
-and are written only when their content changes so that the stable per-invocation key keeps
-rebuilds incremental. Publish output and plain builds contain none of them. Apps that
-disable `StaticWebAssetsEnabled` or `JSModulesEnabled` therefore cannot receive browser
-tools.
+are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `FileWrites`
+(including both key files, so `Clean` removes key material), and are written only when their
+content changes so that the stable key keeps rebuilds incremental. Publish output contains
+none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
+`EnableHotReloadInRuntimeConfigDevFile` cannot receive browser tools. That existing SDK
+property defaults to `true` for Debug builds and is the only build-time generation gate;
+`dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
+the initializer first fetches
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
+semantics and imports the configuration module only when the response contains
+`{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
+fallback for non-watch launches is a separate concern. Watch does not activate the client
+by mutating an application file.
+
+For hosted WebAssembly applications, the browser-facing client project owns the key,
+initializer and configuration assets. The launching server consumes those referenced
+assets and hosts the forwarding route, while `dotnet watch` reads the client project's
+deterministic private-key output. This avoids competing host/client keys.
 
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
@@ -112,8 +132,9 @@ activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
 configuration because older target frameworks are served by `blazor-devserver`, an ordinary
 ASP.NET Core host.
 
-The provider serves no JavaScript. Its remaining HTTP surface is the `/connect` WebSocket
-and `/clear-cache`; see
+The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
+`/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
+see
 [`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire
 level generation id: replay is serialized on the authenticated WebSocket, which sends the
