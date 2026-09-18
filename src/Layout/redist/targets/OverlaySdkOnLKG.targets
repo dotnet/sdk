@@ -32,12 +32,7 @@
 
     <!-- 2. Other template packages will be included from SDK Stage 0. -->
     <ItemGroup>
-      <!-- WASM workload manifests are installed below at the versions pinned by this repo. -->
-      <OverlaySDK Include="$(_DotNetHiveRoot)/**/*"
-                  Exclude="$(_DotNetHiveRoot)sdk/**/*;
-                           $(_DotNetHiveRoot)sdk-manifests/**/microsoft.net.workload.mono.toolchain.*/**/*;
-                           $(_DotNetHiveRoot)sdk-manifests/**/microsoft.net.workload.emscripten.*/**/*;
-                           $(_DotNetHiveRoot)templates/**/microsoft.dotnet.common.*.nupkg"/>
+      <OverlaySDK Include="$(_DotNetHiveRoot)/**/*" Exclude="$(_DotNetHiveRoot)sdk/**/*;$(_DotNetHiveRoot)templates/**/microsoft.dotnet.common.*.nupkg"/>
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledCliTools.props" />
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledMSBuildInformation.props" />
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/RuntimeIdentifierGraph.json" />
