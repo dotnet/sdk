@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class Parser
 {
-    internal static readonly Option<bool> BuildIdentityOption = new("--build-identity")
+    internal static Option<bool> BuildIdentityOption { get; } = new("--build-identity")
     {
         Hidden = true,
         Arity = ArgumentArity.Zero,

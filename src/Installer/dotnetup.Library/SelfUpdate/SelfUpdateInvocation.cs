@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Dotnet.Installation.Internal;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Owns command coordination through synchronous process shutdown, including telemetry flush.</summary>
 internal sealed class SelfUpdateInvocation : IDisposable
 {
-    [ThreadStatic]
-    private static SelfUpdateInvocation? s_current;
     private readonly SelfUpdateInvocation? _previous;
     private readonly List<IDisposable> _leases = [];
     private bool _passedGate;
@@ -19,11 +15,12 @@ internal sealed class SelfUpdateInvocation : IDisposable
     {
         Paths = new SelfUpdatePaths(executablePath);
         LoadedIdentity = loadedIdentity;
-        _previous = s_current;
-        s_current = this;
+        _previous = Current;
+        Current = this;
     }
 
-    public static SelfUpdateInvocation? Current => s_current;
+    [field: ThreadStatic]
+    public static SelfUpdateInvocation? Current { get; private set; }
     public SelfUpdatePaths Paths { get; }
     public string LoadedIdentity { get; }
 
@@ -61,7 +58,7 @@ internal sealed class SelfUpdateInvocation : IDisposable
         }
         finally
         {
-            s_current = _previous;
+            Current = _previous;
         }
     }
 }

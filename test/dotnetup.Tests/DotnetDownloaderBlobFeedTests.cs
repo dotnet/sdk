@@ -46,26 +46,26 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     private const string DotnetupDailyUrl = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void SelfUpdateCommandWarnsBeforeUnsignedDownload(bool noProgress)
+    [DataRow(false, "daily")]
+    [DataRow(true, "preview")]
+    public void SelfUpdateCommandWarnsBeforeUnsignedDownload(bool noProgress, string channel)
     {
         using var files = new SelfUpdateTestFiles();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         string artifactName = $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : "")}";
         string artifactUrl = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/{artifactName}";
-        string dailyUrl = $"https://aka.ms/dotnet/dotnetup/daily/{artifactName}";
+        string channelUrl = $"https://aka.ms/dotnet/dotnetup/{channel}/{artifactName}";
         string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/{artifactName}.sha512";
         string warning = Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning;
         string? outputAtDownloadStart = null;
         using var handler = new RecordingHandler(new()
         {
-            [dailyUrl] = (HttpStatusCode.OK, ""),
+            [channelUrl] = (HttpStatusCode.OK, ""),
             [checksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
             [artifactUrl + ".buildid"] = (HttpStatusCode.OK, SelfUpdateTestFiles.ReplacementIdentity),
             [artifactUrl] = (HttpStatusCode.OK, "Deliberate hash mismatch to stop before executable replacement."),
-        }, new(), new() { [dailyUrl] = artifactUrl })
+        }, new(), new() { [channelUrl] = artifactUrl })
         {
             OnRequest = url =>
             {
@@ -91,7 +91,12 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             });
             AnsiConsole.Profile.Width = int.MaxValue;
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
-            var result = Parser.Parse(noProgress ? ["self", "update", "--no-progress"] : ["self", "update"]);
+            var arguments = new List<string> { "self", "update", "--channel", channel };
+            if (noProgress)
+            {
+                arguments.Add("--no-progress");
+            }
+            var result = Parser.Parse([.. arguments]);
 
             new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(1);
 

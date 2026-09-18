@@ -21,8 +21,7 @@ public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
     private readonly string _commandName;
-    private TrackedOperation? _trackedOperation;
-    private TrackedOperation _operation => _trackedOperation ??= DotnetupTelemetry.Instance.StartTrackedCommand(_commandName);
+    private TrackedOperation _operation => field ??= DotnetupTelemetry.Instance.StartTrackedCommand(_commandName);
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult, string commandName)
