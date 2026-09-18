@@ -44,6 +44,12 @@ internal sealed class SelfUpdateReplacement
                 staged.Flush(flushToDisk: true);
             }
 
+            // Backups and rejected candidates inherit these timestamps through renames/hard links.
+            // Stamp before replacement so a metadata failure cannot interrupt recovery afterward.
+            var updateTime = DateTime.UtcNow;
+            File.SetLastWriteTimeUtc(_paths.InstalledPath, updateTime);
+            File.SetLastWriteTimeUtc(_paths.StagedPath, updateTime);
+
             _replacementIdentity = replacementIdentity;
             mutationStarted = true;
             if (OperatingSystem.IsWindows())
