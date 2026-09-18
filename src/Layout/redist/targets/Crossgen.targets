@@ -40,6 +40,7 @@
       <DefaultToolTfm>$(SdkTargetFramework)</DefaultToolTfm>
 
       <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
+      <NetSdkCodeStyle>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\codestyle\</NetSdkCodeStyle>
       <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
@@ -71,6 +72,7 @@
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(NetSdkAnalyzers)**\*" />
+      <RemainingFiles Include="$(NetSdkCodeStyle)**\*" />
       <RemainingFiles Include="$(NetSdkTools)**\*" />
       <RemainingFiles Include="$(BlazorWasmTools)**\*" />
       <RemainingFiles Include="$(RazorSourceGenerators)**\*" />
@@ -83,7 +85,8 @@
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
-      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll;
+                              $(NetSdkCodeStyle)vb\**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
@@ -127,6 +130,19 @@
     <!-- Remove DotnetTools-unique assemblies from crossgen -->
     <ItemGroup>
       <RemainingFiles Remove="@(_DotnetToolsUniqueFiles)" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+
+      <RemainingRoslynOptimizationFiles Include="$(InstallerOutputDirectory)Microsoft.CodeAnalysis*.dll;
+                                                       $(NetSdkAnalyzers)**\*;
+                                                       $(NetSdkCodeStyle)**\*;
+                                                       $(RazorSourceGenerators)**\*" />
+      <RemainingRoslynOptimizationFiles Remove="$(NetSdkAnalyzers)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll;
+                                              $(NetSdkCodeStyle)vb\**\*;
+                                              $(InstallerOutputDirectory)**\*.resources.dll;
+                                              $(InstallerOutputDirectory)**\ref\*.dll" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
@@ -141,17 +157,26 @@
     <AddMetadataIsPE Items="@(RemainingFiles)">
       <Output TaskParameter="ResultItems" ItemName="RemainingFilesWithPEMarker" />
     </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(RemainingRoslynOptimizationFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RemainingRoslynOptimizationFilesWithPEMarker" />
+    </AddMetadataIsPE>
 
     <ItemGroup>
       <RoslynTargets Include="%(RoslynFilesWithPEMarker.FullPath)" Condition=" '%(RoslynFilesWithPEMarker.IsPE)' == 'True' " />
       <FSharpTargets Include="%(FSharpFilesWithPEMarker.FullPath)" Condition=" '%(FSharpFilesWithPEMarker.IsPE)' == 'True' " />
       <RazorToolTargets Include="%(RazorToolFilesWithPEMarker.FullPath)" Condition=" '%(RazorToolFilesWithPEMarker.IsPE)' == 'True' " />
       <RemainingTargets Include="%(RemainingFilesWithPEMarker.FullPath)" Condition=" '%(RemainingFilesWithPEMarker.IsPE)' == 'True' " />
+      <RemainingRoslynOptimizationTargets Include="%(RemainingRoslynOptimizationFilesWithPEMarker.FullPath)"
+                                          Condition=" '%(RemainingRoslynOptimizationFilesWithPEMarker.IsPE)' == 'True' " />
+
+      <RemainingStandaloneTargets Include="@(RemainingTargets)"
+                                  Exclude="@(RemainingRoslynOptimizationTargets)" />
 
       <RoslynFolders Include="@(RoslynTargets-&gt;DirectoryName()-&gt;Distinct())" />
       <FSharpFolders Include="@(FSharpTargets-&gt;DirectoryName()-&gt;Distinct())" />
       <RazorToolFolders Include="@(RazorToolTargets-&gt;DirectoryName()-&gt;Distinct())" />
       <RemainingFolders Include="@(RemainingTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <RemainingRoslynOptimizationFolders Include="@(RemainingRoslynOptimizationTargets-&gt;DirectoryName()-&gt;Distinct())" />
 
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
       <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
@@ -164,8 +189,11 @@
       <RemainingFolders Include="$(InstallerOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
     </ItemGroup>
 
+    <Error Text="Potentially missed crossgen for '$(NetSdkAnalyzers)', directory does not exist" Condition= "!EXISTS('$(NetSdkAnalyzers)') " />
+    <Error Text="Potentially missed crossgen for '$(NetSdkCodeStyle)', directory does not exist" Condition= "!EXISTS('$(NetSdkCodeStyle)') " />
     <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') " />
     <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') " />
+    <Error Text="Potentially missed crossgen for '$(RazorSourceGenerators)', directory does not exist" Condition= "!EXISTS('$(RazorSourceGenerators)') " />
     <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') " />
     <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildSourceOnly)' != 'true'" />
     <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') " />
@@ -175,7 +203,12 @@
     <Error Text="Potentially missed crossgen for Roslyn, RoslynTargets is empty" Condition= "@(RoslynTargets) == ''" />
     <Error Text="Potentially missed crossgen for FSharp, FSharpTargets is empty" Condition= "@(FSharpTargets) == ''" />
     <Error Text="Potentially missed crossgen for Razor, RazorToolTargets is empty" Condition= "@(RazorToolTargets) == ''" />
+    <Error Text="Potentially missed optimized crossgen for Roslyn dependencies, RemainingRoslynOptimizationTargets is empty" Condition= "@(RemainingRoslynOptimizationTargets) == ''" />
     <Error Text="Potentially missed crossgen for other SDK files, RemainingTargets is empty" Condition= "@(RemainingTargets) == ''" />
+
+    <ItemGroup>
+      <RoslynCrossModuleInliningAssembly Include="System.Reflection.Metadata;System.Collections.Immutable" />
+    </ItemGroup>
 
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
@@ -184,6 +217,8 @@
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
         CreateSymbols="$(CreateCrossgenSymbols)"
+        CrossModuleInliningAssemblies="@(RoslynCrossModuleInliningAssembly)"
+        NonLocalGenericsModule="%(RoslynTargets.Filename)"
         PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
@@ -196,8 +231,9 @@
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
-        SourceAssembly="%(RemainingTargets.FullPath)"
-        DestinationPath="%(RemainingTargets.FullPath)"
+        Condition="'@(RemainingStandaloneTargets)' != ''"
+        SourceAssembly="%(RemainingStandaloneTargets.FullPath)"
+        DestinationPath="%(RemainingStandaloneTargets.FullPath)"
         TargetArchitecture="$(TargetArchitecture)"
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
@@ -211,7 +247,20 @@
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
         CreateSymbols="$(CreateCrossgenSymbols)"
+        CrossModuleInliningAssemblies="@(RoslynCrossModuleInliningAssembly)"
+        NonLocalGenericsModule="%(RazorToolTargets.Filename)"
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(RemainingRoslynOptimizationTargets.FullPath)"
+        DestinationPath="%(RemainingRoslynOptimizationTargets.FullPath)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
+        CrossgenPath="$(CrossgenPath)"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        CrossModuleInliningAssemblies="@(RoslynCrossModuleInliningAssembly)"
+        NonLocalGenericsModule="%(RemainingRoslynOptimizationTargets.Filename)"
+        PlatformAssemblyPaths="@(RemainingRoslynOptimizationFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <ItemGroup>
       <PdbsToMove Include="$(InstallerOutputDirectory)**/*.pdb" />
