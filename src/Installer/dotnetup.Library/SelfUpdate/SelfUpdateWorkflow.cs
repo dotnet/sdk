@@ -5,20 +5,20 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Stages and verifies one  release while coordinating replacement and recovery.</summary>
+/// <summary>Stages and smoke-tests one release while coordinating replacement and recovery.</summary>
 internal class SelfUpdateWorkflow
 {
     private readonly SelfUpdatePaths _paths;
-    private readonly string _loadedIdentity;
+    private readonly string _loadedVersionMetadata;
     private readonly Func<ResolvedDownload> _resolve;
     private readonly Action<ResolvedDownload, string> _download;
     private readonly SelfUpdateCoordinator _coordinator;
 
-    public SelfUpdateWorkflow(SelfUpdatePaths paths, string loadedIdentity, Func<ResolvedDownload> resolve,
+    public SelfUpdateWorkflow(SelfUpdatePaths paths, string loadedVersionMetadata, Func<ResolvedDownload> resolve,
         Action<ResolvedDownload, string> download, SelfUpdateCoordinator? coordinator = null)
     {
         _paths = paths;
-        _loadedIdentity = loadedIdentity;
+        _loadedVersionMetadata = loadedVersionMetadata;
         _resolve = resolve;
         _download = download;
         _coordinator = coordinator ?? new SelfUpdateCoordinator();
@@ -32,14 +32,12 @@ internal class SelfUpdateWorkflow
         {
             _paths.ValidateLocation();
             var release = _resolve();
-            if (string.IsNullOrEmpty(release.BuildId))
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, Strings.SelfUpdateReleaseIdentityMissing);
-            }
+            // Equality is a local consistency check, not authenticated freshness or downgrade protection.
+            var expectedMetadata = DotnetupVersionMetadataReader.Format(release.Version.ToString(), release.Rid);
 
             try
             {
-                if (SelfUpdatePaths.ReadIdentity(_paths.InstalledPath) == release.BuildId)
+                if (SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath) == expectedMetadata)
                 {
                     return null;
                 }
@@ -53,16 +51,16 @@ internal class SelfUpdateWorkflow
             locks = null;
 
             _paths.Validate();
-            var originalIdentity = SelfUpdatePaths.ReadIdentity(_paths.InstalledPath);
-            if (originalIdentity == release.BuildId)
+            var originalMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath);
+            if (originalMetadata == expectedMetadata)
             {
                 return null;
             }
 
             StageRelease(release);
-            var replacement = new SelfUpdateReplacement(_paths, _paths.CreateBackupPath(), originalIdentity);
+            var replacement = new SelfUpdateReplacement(_paths, _paths.CreateBackupPath(), originalMetadata);
             replacement.Replace();
-            VerifyOrRestore(release.BuildId, replacement);
+            VerifyOrRestore(replacement);
             return release.Version.ToString();
         }
         catch (InvalidDataException exception)
@@ -79,8 +77,8 @@ internal class SelfUpdateWorkflow
         }
     }
 
-    protected virtual void Verify(string installedPath, string expectedIdentity)
-        => SelfUpdateVerifier.Verify(installedPath, expectedIdentity, TimeSpan.FromSeconds(15));
+    protected virtual void Verify(string installedPath)
+        => SelfUpdateVerifier.Verify(installedPath, TimeSpan.FromSeconds(15));
 
     private SelfUpdateLockLease AcquireLocks()
     {
@@ -102,9 +100,9 @@ internal class SelfUpdateWorkflow
     {
         ClearStagingFile(_paths.StagedPath);
         ClearStagingFile(_paths.StagedPath + ".download");
-        SelfUpdateCleanup.RunWithUpdateLock(_paths.InstalledPath, _loadedIdentity);
+        SelfUpdateCleanup.RunWithUpdateLock(_paths.InstalledPath, _loadedVersionMetadata);
         _download(release, _paths.StagedPath);
-        if (SelfUpdatePaths.ReadIdentity(_paths.StagedPath) != release.BuildId)
+        if (SelfUpdatePaths.ReadVersionMetadata(_paths.StagedPath) != DotnetupVersionMetadataReader.Format(release.Version.ToString(), release.Rid))
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable, Strings.SelfUpdateStagedIdentityMismatch);
         }
@@ -115,11 +113,11 @@ internal class SelfUpdateWorkflow
         }
     }
 
-    private void VerifyOrRestore(string expectedIdentity, SelfUpdateReplacement replacement)
+    private void VerifyOrRestore(SelfUpdateReplacement replacement)
     {
         try
         {
-            Verify(_paths.InstalledPath, expectedIdentity);
+            Verify(_paths.InstalledPath);
         }
         catch (Exception verificationFailure)
         {

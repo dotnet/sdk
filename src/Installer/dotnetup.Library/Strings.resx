@@ -153,12 +153,8 @@
     <comment>{Locked="dotnetup"}</comment>
   </data>
   <data name="SelfUpdateIdentityUnavailable" xml:space="preserve">
-    <value>The dotnetup executable's build identity could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <value>The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
     <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
-  </data>
-  <data name="SelfUpdateReleaseIdentityMissing" xml:space="preserve">
-    <value>The dotnetup release does not include a valid build identity. The executable was not updated.</value>
-    <comment>{Locked="dotnetup"}</comment>
   </data>
   <data name="SelfUpdateBusyUpdate" xml:space="preserve">
     <value>Dotnetup is busy with another self-update or cleanup. Try again after it completes.</value>
@@ -169,7 +165,7 @@
     <comment>{Locked="Dotnetup"}</comment>
   </data>
   <data name="SelfUpdateStagedIdentityMismatch" xml:space="preserve">
-    <value>The downloaded dotnetup executable's build identity does not match the release. The executable was not updated.</value>
+    <value>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</value>
     <comment>{Locked="dotnetup"}</comment>
   </data>
   <data name="SelfUpdateRollbackFailed" xml:space="preserve">

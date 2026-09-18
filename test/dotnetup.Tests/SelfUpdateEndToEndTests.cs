@@ -16,7 +16,7 @@ public class SelfUpdateEndToEndTests : SdkTest
 {
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void NativeCopyUpdatesToDailyAndChangesBuildIdentity()
+    public void NativeCopyUpdatesToDailyAndChangesVersionMetadata()
     {
         using var environment = new TestEnvironment();
         string source = DotnetupTestUtilities.GetDotnetupExecutablePath();
@@ -29,7 +29,7 @@ public class SelfUpdateEndToEndTests : SdkTest
 
         string originalIdentity = ReadIdentity(environment, executable);
         var daily = CreateDownloader(environment).ResolveDotnetupDownload(CurrentRid());
-        Assert.AreNotEqual(daily.BuildId, originalIdentity,
+        Assert.AreNotEqual(DotnetupVersionMetadataReader.Format(daily.Version.ToString(), daily.Rid), originalIdentity,
             "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different version/RID identity.");
 
         string output = Run(environment, executable, ["self", "update", "--no-progress"]);
@@ -38,7 +38,7 @@ public class SelfUpdateEndToEndTests : SdkTest
         Assert.AreNotEqual(originalIdentity, updatedIdentity, output);
         Assert.Contains(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
         Assert.Contains(originalIdentity, Directory.EnumerateFiles(environment.TempRoot, Path.GetFileName(executable) + ".old.*")
-            .Select(SelfUpdatePaths.ReadIdentity), "The update must retain the original executable as a backup.");
+            .Select(SelfUpdatePaths.ReadVersionMetadata), "The update must retain the original executable as a backup.");
         AssertDailyBecomesNoOp(environment, executable);
     }
 
@@ -56,7 +56,7 @@ public class SelfUpdateEndToEndTests : SdkTest
             File.SetUnixFileMode(executable, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
-        Assert.AreEqual(daily.BuildId, ReadIdentity(environment, executable));
+        Assert.AreEqual(DotnetupVersionMetadataReader.Format(daily.Version.ToString(), daily.Rid), ReadIdentity(environment, executable));
         AssertDailyBecomesNoOp(environment, executable);
     }
 
@@ -85,10 +85,9 @@ public class SelfUpdateEndToEndTests : SdkTest
 
     private static string ReadIdentity(TestEnvironment environment, string executable)
     {
-        string identity = Run(environment, executable, ["--build-identity"]).Trim();
-        Assert.MatchesRegex("^[0-9a-f]{64}$", identity);
-        Assert.AreEqual(SelfUpdatePaths.ReadIdentity(executable), identity);
-        return identity;
+        string metadata = SelfUpdatePaths.ReadVersionMetadata(executable);
+        Assert.StartsWith(metadata.Split('|')[0], Run(environment, executable, ["--version"]).Trim());
+        return metadata;
     }
 
     private static string Run(TestEnvironment environment, string executable, string[] args)
@@ -98,6 +97,7 @@ public class SelfUpdateEndToEndTests : SdkTest
             environmentVariables: new()
             {
                 ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
+                ["DOTNET_NOLOGO"] = "1",
                 ["DOTNET_CLI_UI_LANGUAGE"] = "en-US",
                 ["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(environment.TempRoot, "data"),
                 ["DOTNET_CLI_HOME"] = Path.Combine(environment.TempRoot, "home"),

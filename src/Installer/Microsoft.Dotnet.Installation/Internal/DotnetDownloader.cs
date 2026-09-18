@@ -162,29 +162,7 @@ internal class DotnetDownloader : IArchiveDownloader
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
         string hash = TryGetHashFromUrl(location.ChecksumUrl, version, "dotnetup", requirePinnedUri: true)
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {version} ({rid}).");
-        string buildIdUrl = location.ArchiveUrl + ".buildid";
-        try
-        {
-            using var response = _httpClient.GetAsync(buildIdUrl).GetAwaiter().GetResult();
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound, $"No build ID is published for dotnetup {version} ({rid}).");
-            }
-
-            response.EnsureSuccessStatusCode();
-            BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(response.RequestMessage?.RequestUri, new Uri(buildIdUrl));
-            byte[] contents = response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-            string buildId = BlobFeedUrlBuilder.ParseBuildIdFile(Encoding.UTF8.GetString(contents));
-            return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, buildId, IsUnsigned: true);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.NetworkError, $"Failed to fetch build ID from {buildIdUrl}: {ex.Message}", ex);
-        }
-        catch (FormatException ex)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, $"Build ID at {buildIdUrl} is malformed: {ex.Message}", ex);
-        }
+        return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, IsUnsigned: true);
     }
 
     /// <summary>
@@ -230,20 +208,6 @@ internal class DotnetDownloader : IArchiveDownloader
 
         if (download.IsDotnetup)
         {
-            if (download.BuildId is null || download.BuildId.Length != 64)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, "A dotnetup download requires a canonical build ID.");
-            }
-
-            try
-            {
-                BlobFeedUrlBuilder.ParseBuildIdFile(download.BuildId);
-            }
-            catch (FormatException ex)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, ex.Message, ex);
-            }
-
             var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(download.Version, download.Rid);
             BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(download.DownloadUri, new Uri(location.ArchiveUrl));
         }

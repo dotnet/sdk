@@ -12,8 +12,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 internal sealed class SelfUpdateTestFiles : IDisposable
 {
-    public const string OriginalIdentity = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    public const string ReplacementIdentity = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    public const string OriginalIdentity = "0.2.0-preview.1.26465.6|win-x64";
+    public const string ReplacementIdentity = "0.2.0-preview.1.26465.7|win-x64";
 
     private static readonly Lazy<string> s_assetOutput = new(BuildAsset);
     private readonly DirectoryInfo _directory;
@@ -57,7 +57,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     public static void WriteIdentity(string path, string identity, bool append = false)
     {
         using var stream = new FileStream(path, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
-        stream.Write(Encoding.ASCII.GetBytes("DOTNETUP-ID-REC\0\u0001\0\0\0\u0040\0\0\0" + identity + "END-ID\0\0"));
+        stream.Write(Encoding.ASCII.GetBytes("DOTNETUP-VR-REC\0\u0001\0\0\0\0\0\0\0" + identity.PadRight(224, '\0') + "END-VER\0"));
     }
 
     public void Dispose() => _directory.Delete(recursive: true);

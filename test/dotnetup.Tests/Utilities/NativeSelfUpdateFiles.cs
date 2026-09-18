@@ -42,13 +42,14 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
             }
 
             File.Delete(Paths.StagedPath);
-            OriginalIdentity = SelfUpdatePaths.ReadIdentity(Paths.InstalledPath);
-            ReplacementIdentity = SelfUpdatePaths.ReadIdentity(ReplacementPath);
+            OriginalIdentity = SelfUpdatePaths.ReadVersionMetadata(Paths.InstalledPath);
+            ReplacementIdentity = SelfUpdatePaths.ReadVersionMetadata(ReplacementPath);
             Assert.AreNotEqual(OriginalIdentity, ReplacementIdentity, "Publish the two binaries with different release versions.");
-            var version = GetExecutableVersion(ReplacementPath);
-            var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+            var metadata = ReplacementIdentity.Split('|');
+            Assert.StartsWith(metadata[0], GetExecutableVersion(ReplacementPath));
+            var rid = metadata[1];
             Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup"), new string('0', 128),
-                rid, ReleaseVersion.Parse(version.Split('+')[0]), ReplacementIdentity);
+                rid, ReleaseVersion.Parse(metadata[0]));
         }
         catch
         {

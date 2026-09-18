@@ -20,7 +20,7 @@ public class DotnetupProgram
     public static int Main(string[] args)
     {
         _ = DotnetupProcessInfo.ExecutablePath;
-        _ = DotnetupProcessInfo.BuildIdentity;
+        _ = DotnetupProcessInfo.VersionMetadata;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
@@ -36,22 +36,9 @@ public class DotnetupProgram
         TrackedOperation? rootOperation = null;
         SelfUpdateInvocation? invocation = null;
         int processExitCode = 1;
-        bool identityInvocation = false;
 
         try
         {
-            // The identity action must skip telemetry and normal startup, but the parser still
-            // decides which action wins when it is combined with help or command arguments.
-            if (args.Contains("--build-identity", StringComparer.Ordinal))
-            {
-                var parseResult = Parser.Parse(args);
-                identityInvocation = ReferenceEquals(parseResult.Action, Parser.BuildIdentityOption.Action);
-                if (identityInvocation)
-                {
-                    return Parser.Invoke(parseResult);
-                }
-            }
-
             // Start the root before language and console setup so startup failures are recorded,
             // including failures creating or disposing the encoding restorer.
             rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
@@ -61,11 +48,8 @@ public class DotnetupProgram
         catch (Exception ex)
         {
             processExitCode = 1;
-            if (!identityInvocation)
-            {
-                rootOperation ??= DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
-                DotnetupTelemetry.Instance.RecordException(rootOperation, ex);
-            }
+            rootOperation ??= DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+            DotnetupTelemetry.Instance.RecordException(rootOperation, ex);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -113,7 +97,7 @@ public class DotnetupProgram
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
         if (DotnetupProcessInfo.IsDirectExecution && DotnetupProcessInfo.ExecutablePath is { } executablePath)
         {
-            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.BuildIdentity);
+            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.VersionMetadata);
         }
 
         return Parser.Invoke(args);

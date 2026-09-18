@@ -14,22 +14,21 @@ public class SelfUpdateNativeTests : SdkTest
 {
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void NativeHelpRegistersSelfUpdateAndHidesBuildIdentity()
+    public void NativeHelpRegistersSelfUpdate()
     {
         using var files = new NativeSelfUpdateFiles();
         Assert.Contains("self update", files.Run(["self", "update", "--help"]));
-        Assert.DoesNotContain("--build-identity", files.Run(["--help"]));
+        Assert.Contains("--version", files.Run(["--help"]));
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void NativeIdentityBypassesBusyLocksWithoutTelemetryWrites()
+    public void NativeVersionBypassesBusyLocks()
     {
         using var files = new NativeSelfUpdateFiles();
         using (var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken))
         {
-            Assert.AreEqual(files.OriginalIdentity + Environment.NewLine, files.Run(["--build-identity"], enableTelemetry: true));
-            Assert.IsFalse(Directory.Exists(files.StateDirectory), "Identity must not create a sentinel, telemetry log, storage, or drainer state.");
+            Assert.StartsWith(files.OriginalIdentity.Split('|')[0], files.Run(["--version"]));
             Assert.Contains("update", files.Run(["--info"], succeeds: false));
         }
 
@@ -53,13 +52,13 @@ public class SelfUpdateNativeTests : SdkTest
             Assert.AreEqual(files.Release.Version.ToString(), workflow.Execute(lease => retained = lease));
             Assert.IsNotNull(retained);
             AssertNativeLocksHeld(files.Paths);
-            Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-            Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
+            Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+            Assert.StartsWith(files.Release.Version.ToString(), files.Run(["--version"]));
             Assert.Contains("update", files.Run(["--info"], succeeds: false));
             Assert.IsFalse(File.Exists(files.Paths.StagedPath));
             var backups = Directory.GetFiles(files.Paths.DirectoryPath, Path.GetFileName(files.Paths.InstalledPath) + ".old.*");
             Assert.HasCount(1, backups);
-            Assert.AreEqual(files.OriginalIdentity, SelfUpdatePaths.ReadIdentity(backups[0]));
+            Assert.AreEqual(files.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(backups[0]));
         }
         finally
         {
@@ -82,7 +81,7 @@ public class SelfUpdateNativeTests : SdkTest
         var originalBytes = File.ReadAllBytes(candidate.Paths.InstalledPath);
         var candidateBytes = File.ReadAllBytes(candidate.Paths.StagedPath);
         var release = new ResolvedDownload(new Uri("https://example.invalid/rejected-dotnetup.exe"), new string('0', 128), "win-x64",
-            native.Release.Version, SelfUpdateTestFiles.ReplacementIdentity);
+            Microsoft.Deployment.DotNet.Releases.ReleaseVersion.Parse(SelfUpdateTestFiles.ReplacementIdentity.Split('|')[0]));
         var workflow = new SelfUpdateWorkflow(candidate.Paths, native.OriginalIdentity, () => release,
             (download, destination) => File.WriteAllBytes(destination, candidateBytes));
 
@@ -93,11 +92,11 @@ public class SelfUpdateNativeTests : SdkTest
         Assert.Contains("fixture failure", exception.InnerException.ToString());
         Assert.Contains("17", exception.InnerException.ToString());
         Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(candidate.Paths.InstalledPath));
-        SelfUpdateVerifier.Verify(candidate.Paths.InstalledPath, native.OriginalIdentity, TimeSpan.FromSeconds(20));
+        SelfUpdateVerifier.Verify(candidate.Paths.InstalledPath, TimeSpan.FromSeconds(20));
         AssertNativeLocksAvailable(candidate.Paths);
         var rejected = Directory.GetFiles(candidate.Paths.DirectoryPath, "*.old.*.rejected");
         Assert.HasCount(1, rejected);
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(rejected[0]));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(rejected[0]));
     }
 
     [TestMethod]
@@ -117,7 +116,7 @@ public class SelfUpdateNativeTests : SdkTest
             Assert.IsFalse(oldProcess.HasExited);
             Assert.AreEqual(files.Release.Version.ToString(), SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(files.CreateWorkflow()));
             Assert.IsFalse(oldProcess.HasExited, "Replacement must not terminate an existing safe dotnet invocation.");
-            Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
+            Assert.StartsWith(files.Release.Version.ToString(), files.Run(["--version"]));
             Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
             await oldProcess.StandardInput.WriteLineAsync("done".AsMemory(), TestContext.CancellationToken);
             oldProcess.StandardInput.Close();
@@ -159,7 +158,7 @@ public class SelfUpdateNativeTests : SdkTest
             Assert.IsNull(await second.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
             Assert.AreEqual(1, downloadCount);
             AssertNativeLocksAvailable(files.Paths);
-            Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
+            Assert.StartsWith(files.Release.Version.ToString(), files.Run(["--version"]));
             Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
         }
         finally

@@ -64,23 +64,28 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void NativeWorkflowRejectsPublishedBuildIdMismatchDespiteValidHash()
+    public void NativeWorkflowRejectsVersionMetadataMismatchDespiteValidHash()
     {
         using var files = new NativeSelfUpdateFiles();
-        using var handler = new NativeSelfUpdateDownloadHandler(files) { PublishedBuildId = SelfUpdateTestFiles.ReplacementIdentity };
+        const string advertisedVersion = "0.2.0-preview.1.99999.3";
+        using var handler = new NativeSelfUpdateDownloadHandler(files, advertisedVersion);
         using var http = new HttpClient(handler);
         var downloader = CreateDownloader(files, http);
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        Assert.AreNotEqual(files.OriginalIdentity, handler.PublishedBuildId);
-        Assert.AreNotEqual(files.ReplacementIdentity, handler.PublishedBuildId);
+        var advertisedMetadata = DotnetupVersionMetadataReader.Format(advertisedVersion, files.Release.Rid);
+        Assert.AreNotEqual(files.OriginalIdentity, advertisedMetadata);
+        Assert.AreNotEqual(files.ReplacementIdentity, advertisedMetadata);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(CreateWorkflow(files, downloader)));
+        var workflow = new SelfUpdateWorkflow(files.Paths, files.OriginalIdentity,
+            () => downloader.ResolveDotnetupDownload(files.Release.Rid),
+            (release, destination) => downloader.DownloadWithVerification(release, destination));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
         AssertPinnedRequests(handler);
         AssertOriginalUnchanged(files, originalBytes);
         Assert.AreSequenceEqual(File.ReadAllBytes(files.ReplacementPath), File.ReadAllBytes(files.Paths.StagedPath));
-        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
         Assert.IsFalse(File.Exists(files.Paths.StagedPath + ".download"));
     }
 
@@ -96,7 +101,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         Assert.AreNotEqual(handler.ArtifactUri, movedDailyUri);
         var workflow = CreateWorkflow(files, downloader, () =>
         {
-            Assert.HasCount(3, handler.Requests);
+            Assert.HasCount(2, handler.Requests);
             handler.DailyFinalUri = movedDailyUri;
         });
 
@@ -126,7 +131,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
         Assert.AreEqual(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy, exception.ErrorCode);
-        Assert.AreSequenceEqual(new[] { NativeSelfUpdateDownloadHandler.DailyUri, handler.ChecksumUri, handler.BuildIdUri }, handler.Requests);
+        Assert.AreSequenceEqual(new[] { NativeSelfUpdateDownloadHandler.DailyUri, handler.ChecksumUri }, handler.Requests);
         AssertOriginalUnchanged(files, originalBytes);
         Assert.IsFalse(File.Exists(files.Paths.StagedPath));
         Assert.IsFalse(File.Exists(files.Paths.StagedPath + ".download"));
@@ -150,20 +155,21 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         });
 
     private static void AssertPinnedRequests(NativeSelfUpdateDownloadHandler handler)
-        => Assert.AreSequenceEqual(new[] { NativeSelfUpdateDownloadHandler.DailyUri, handler.ChecksumUri, handler.BuildIdUri, handler.ArtifactUri }, handler.Requests);
+        => Assert.AreSequenceEqual(new[] { NativeSelfUpdateDownloadHandler.DailyUri, handler.ChecksumUri, handler.ArtifactUri }, handler.Requests);
 
     private static void AssertInstalledReplacement(NativeSelfUpdateFiles files)
     {
         Assert.AreSequenceEqual(File.ReadAllBytes(files.ReplacementPath), File.ReadAllBytes(files.Paths.InstalledPath));
-        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(files.ReplacementIdentity + Environment.NewLine, files.Run(["--build-identity"]));
+        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.StartsWith(files.Release.Version.ToString(), files.Run(["--version"]));
         Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
     }
 
     private static void AssertOriginalUnchanged(NativeSelfUpdateFiles files, byte[] originalBytes)
     {
         Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
-        Assert.AreEqual(files.OriginalIdentity + Environment.NewLine, files.Run(["--build-identity"]));
+        Assert.AreEqual(files.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.StartsWith(files.OriginalIdentity.Split('|')[0], files.Run(["--version"]));
         Assert.IsEmpty(Directory.GetFiles(files.Paths.DirectoryPath, "dotnetup.exe.old.*"));
         AssertLocksAvailable(files.Paths);
     }

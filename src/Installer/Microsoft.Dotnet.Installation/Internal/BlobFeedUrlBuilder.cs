@@ -83,18 +83,6 @@ internal static class BlobFeedUrlBuilder
         }
     }
 
-    public static string ParseBuildIdFile(string contents)
-    {
-        string buildId = contents.EndsWith("\r\n", StringComparison.Ordinal) ? contents[..^2]
-            : contents.EndsWith('\n') ? contents[..^1] : contents;
-        if (buildId.Length != 64 || buildId.Any(character => character is not (>= '0' and <= '9') and not (>= 'a' and <= 'f')))
-        {
-            throw new FormatException("Dotnetup build ID must be 64 lowercase hexadecimal characters with only an optional terminal newline.");
-        }
-
-        return buildId;
-    }
-
     /// <summary>
     /// Component → directory segment used in blob feed URLs.
     /// </summary>

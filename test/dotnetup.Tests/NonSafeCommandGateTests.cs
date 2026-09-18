@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -18,8 +18,8 @@ public class NonSafeCommandGateTests
         try
         {
             var paths = CreateExecutable(directory.FullName);
-            using var first = NonSafeCommandGate.Enter(paths, new string('a', 64));
-            using var second = NonSafeCommandGate.Enter(paths, new string('a', 64));
+            using var first = NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity);
+            using var second = NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity);
             using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
             Assert.IsNull(update);
         }
@@ -37,7 +37,7 @@ public class NonSafeCommandGateTests
         {
             var paths = CreateExecutable(directory.FullName);
             using var updater = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, new string('a', 64)));
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity));
             Assert.AreEqual(DotnetInstallErrorCode.DotnetupUpdateInProgress, exception.ErrorCode);
             Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateInProgress, exception.Message);
         }
@@ -54,7 +54,7 @@ public class NonSafeCommandGateTests
         try
         {
             var paths = CreateExecutable(directory.FullName);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, new string('b', 64)));
+            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.ReplacementIdentity));
             Assert.AreEqual(DotnetInstallErrorCode.DotnetupExecutableChanged, exception.ErrorCode);
             using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
             Assert.IsNotNull(update);
@@ -68,7 +68,7 @@ public class NonSafeCommandGateTests
     private static SelfUpdatePaths CreateExecutable(string directory)
     {
         var paths = new SelfUpdatePaths(Path.Combine(directory, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
-        File.WriteAllBytes(paths.InstalledPath, Encoding.ASCII.GetBytes("DOTNETUP-ID-REC\0\u0001\0\0\0\u0040\0\0\0" + new string('a', 64) + "END-ID\0\0"));
+        SelfUpdateTestFiles.WriteIdentity(paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
         return paths;
     }
 }

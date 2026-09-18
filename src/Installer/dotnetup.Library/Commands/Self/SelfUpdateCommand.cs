@@ -30,7 +30,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
         var downloader = _createDownloader();
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
-        var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedIdentity,
+        var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedVersionMetadata,
             () => downloader.ResolveDotnetupDownload(_channel, rid),
             (release, destination) =>
             {

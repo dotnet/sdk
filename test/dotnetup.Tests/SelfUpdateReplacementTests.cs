@@ -59,7 +59,7 @@ public class SelfUpdateReplacementTests : SdkTest
 
         Assert.AreEqual(files.Paths.InstalledPath, paths.InstalledPath);
         Assert.AreEqual(files.Paths.UpdateLockPath, paths.UpdateLockPath);
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(relativePath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(relativePath));
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class SelfUpdateReplacementTests : SdkTest
             else
             {
                 linkedPaths.Validate();
-                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(linkedExecutable));
+                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(linkedExecutable));
             }
         }
         finally
@@ -150,8 +150,8 @@ public class SelfUpdateReplacementTests : SdkTest
         Assert.ThrowsExactly<DotnetInstallException>(() => replacement.Replace());
 
         Assert.IsFalse(File.Exists(backupPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -159,14 +159,14 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         files.Replacement.Replace();
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
         Assert.IsFalse(File.Exists(files.Paths.StagedPath));
         files.Replacement.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
         if (OperatingSystem.IsWindows())
         {
-            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath + ".rejected"));
+            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath + ".rejected"));
         }
     }
 
@@ -224,7 +224,7 @@ public class SelfUpdateReplacementTests : SdkTest
 
         var rejectedPath = files.BackupPath + ".rejected";
         Assert.IsTrue(File.Exists(rejectedPath), "A newly rejected executable must not expire based on its old timestamp.");
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
         Assert.AreSequenceEqual(stagedBytes, File.ReadAllBytes(rejectedPath));
         var rejectedTime = File.GetLastWriteTimeUtc(rejectedPath);
         Assert.IsTrue(rejectedTime >= updateStarted.AddSeconds(-2) && rejectedTime <= DateTime.UtcNow.AddSeconds(2));
@@ -239,17 +239,17 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         files.Replacement.Replace();
-        var nextIdentity = new string('c', 64);
+        var nextIdentity = "0.2.0-next|win-x64";
         SelfUpdateTestFiles.WriteIdentity(files.Paths.StagedPath, nextIdentity);
         var secondBackup = files.Paths.CreateBackupPath();
         var second = new SelfUpdateReplacement(files.Paths, secondBackup, SelfUpdateTestFiles.ReplacementIdentity);
 
         second.Replace();
-        Assert.AreEqual(nextIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(nextIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
         second.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
         files.Replacement.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
     }
 
     [TestMethod]
@@ -260,22 +260,22 @@ public class SelfUpdateReplacementTests : SdkTest
         var unrecorded = new SelfUpdateReplacement(files.Paths, files.BackupPath, SelfUpdateTestFiles.OriginalIdentity);
 
         Assert.ThrowsExactly<DotnetInstallException>(() => unrecorded.Rollback());
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
         files.Replacement.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
     }
 
     [TestMethod]
     public void ReplacementRejectsChangedOriginalBeforeMutation()
     {
         using var files = new SelfUpdateTestFiles();
-        var unexpectedIdentity = new string('c', 64);
+        var unexpectedIdentity = "0.2.0-other|win-x64";
         SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, unexpectedIdentity);
 
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
-        Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
         Assert.IsFalse(File.Exists(files.BackupPath));
     }
 
@@ -285,8 +285,8 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         File.Move(files.Paths.InstalledPath, files.BackupPath);
         files.Replacement.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -297,8 +297,8 @@ public class SelfUpdateReplacementTests : SdkTest
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
         Assert.AreEqual("recoverable", File.ReadAllText(files.BackupPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         File.WriteAllText(files.Paths.StagedPath, "not an identity");
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
         Assert.IsFalse(File.Exists(files.BackupPath));
     }
 
@@ -320,8 +320,8 @@ public class SelfUpdateReplacementTests : SdkTest
         File.CreateHardLink(linkedPath, files.Paths.StagedPath);
         files.Replacement.Replace();
         Assert.AreSequenceEqual(replacementBytes, File.ReadAllBytes(linkedPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
     }
 
     [TestMethod]
@@ -329,15 +329,15 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         files.Replacement.Replace();
-        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, new string('c', 64));
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, "0.2.0-other|win-x64");
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
-        Assert.AreEqual(new string('c', 64), SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual("0.2.0-other|win-x64", SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
         SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity);
-        SelfUpdateTestFiles.WriteIdentity(files.BackupPath, new string('c', 64));
+        SelfUpdateTestFiles.WriteIdentity(files.BackupPath, "0.2.0-other|win-x64");
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(new string('c', 64), SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual("0.2.0-other|win-x64", SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
     }
 
     [TestMethod]
@@ -347,8 +347,8 @@ public class SelfUpdateReplacementTests : SdkTest
         File.Copy(files.Paths.InstalledPath, files.BackupPath);
         File.Move(files.Paths.StagedPath, files.Paths.InstalledPath, overwrite: true);
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
     }
 
     [TestMethod]
@@ -359,14 +359,14 @@ public class SelfUpdateReplacementTests : SdkTest
         File.Delete(files.Paths.StagedPath);
         _ = File.CreateSymbolicLink(files.Paths.StagedPath, files.Paths.InstalledPath);
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
-        Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
         var linkedDirectory = files.Paths.DirectoryPath + "-link";
         try
         {
             _ = Directory.CreateSymbolicLink(linkedDirectory, files.Paths.DirectoryPath);
             var linkedPaths = new SelfUpdatePaths(Path.Combine(linkedDirectory, Path.GetFileName(files.Paths.InstalledPath)));
             linkedPaths.Validate();
-            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(linkedPaths.StagedPath));
+            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadVersionMetadata(linkedPaths.StagedPath));
         }
         finally
         {
@@ -411,7 +411,7 @@ public class SelfUpdateReplacementTests : SdkTest
         }
         else
         {
-            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(junction));
+            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadVersionMetadata(junction));
             Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
         }
 
@@ -420,13 +420,13 @@ public class SelfUpdateReplacementTests : SdkTest
     }
 
     [TestMethod]
-    public void ReadIdentityRejectsMissingAndNonRegularFiles()
+    public void ReadVersionMetadataRejectsMissingAndNonRegularFiles()
     {
         using var files = new SelfUpdateTestFiles();
-        Assert.ThrowsExactly<FileNotFoundException>(() => SelfUpdatePaths.ReadIdentity(files.BackupPath));
+        Assert.ThrowsExactly<FileNotFoundException>(() => SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
         File.Delete(files.Paths.StagedPath);
         _ = Directory.CreateDirectory(files.Paths.StagedPath);
-        Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -435,8 +435,8 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         var replacement = new SelfUpdateReplacement(files.Paths, files.Paths.StagedPath, SelfUpdateTestFiles.OriginalIdentity);
         Assert.ThrowsExactly<DotnetInstallException>(() => replacement.Replace());
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -488,8 +488,8 @@ public class SelfUpdateReplacementTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         using var locked = new FileStream(files.Paths.InstalledPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace());
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
     }
 
     [TestMethod]
@@ -574,7 +574,7 @@ public class SelfUpdateReplacementTests : SdkTest
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
         var failure = new IOException("Injected partial replacement failure.", unchecked((int)0x80070499));
-        var unexpectedIdentity = new string('c', 64);
+        var unexpectedIdentity = "0.2.0-other|win-x64";
         FileStream? blockedBackup = null;
         try
         {
@@ -605,12 +605,12 @@ public class SelfUpdateReplacementTests : SdkTest
             Assert.AreEqual(obstruction == "unknown-canonical", File.Exists(files.Paths.InstalledPath));
             if (obstruction == "unknown-canonical")
             {
-                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
             }
 
             if (obstruction == "wrong-backup")
             {
-                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+                Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
             }
             else
             {
@@ -643,8 +643,8 @@ public class SelfUpdateReplacementTests : SdkTest
         using (var locked = new FileStream(files.Paths.InstalledPath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
             Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
-            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
-            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
+            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
             Assert.IsFalse(File.Exists(files.BackupPath + ".rejected"));
         }
 
@@ -661,12 +661,12 @@ public class SelfUpdateReplacementTests : SdkTest
         {
             Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
             Assert.IsFalse(File.Exists(files.Paths.InstalledPath));
-            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
-            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath + ".rejected"));
+            Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
+            Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath + ".rejected"));
         }
 
         files.Replacement.Rollback();
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
     }
 
     [TestMethod]
@@ -678,8 +678,8 @@ public class SelfUpdateReplacementTests : SdkTest
         File.WriteAllText(files.BackupPath + ".rejected", "recoverable");
         Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Rollback());
         Assert.AreEqual("recoverable", File.ReadAllText(files.BackupPath + ".rejected"));
-        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.BackupPath));
-        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.BackupPath));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
     }
 
     [TestMethod]
@@ -697,9 +697,9 @@ public class SelfUpdateReplacementTests : SdkTest
         {
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, await process.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
             files.Replacement.Replace();
-            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity, TimeSpan.FromSeconds(20));
+            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(20));
             files.Replacement.Rollback();
-            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(20));
+            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(20));
             process.StandardInput.Close();
             Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, await process.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
             Assert.IsTrue(process.WaitForExit(10_000));

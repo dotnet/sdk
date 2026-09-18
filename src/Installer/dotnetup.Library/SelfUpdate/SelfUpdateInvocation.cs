@@ -11,10 +11,10 @@ internal sealed class SelfUpdateInvocation : IDisposable
     private bool _passedGate;
     private bool _disposed;
 
-    public SelfUpdateInvocation(string executablePath, string loadedIdentity)
+    public SelfUpdateInvocation(string executablePath, string loadedVersionMetadata)
     {
         Paths = new SelfUpdatePaths(executablePath);
-        LoadedIdentity = loadedIdentity;
+        LoadedVersionMetadata = loadedVersionMetadata;
         _previous = Current;
         Current = this;
     }
@@ -22,19 +22,19 @@ internal sealed class SelfUpdateInvocation : IDisposable
     [field: ThreadStatic]
     public static SelfUpdateInvocation? Current { get; private set; }
     public SelfUpdatePaths Paths { get; }
-    public string LoadedIdentity { get; }
+    public string LoadedVersionMetadata { get; }
 
     public void EnterCommand(bool safe)
     {
         if (!safe && !_passedGate)
         {
-            Retain(NonSafeCommandGate.Enter(Paths, LoadedIdentity));
+            Retain(NonSafeCommandGate.Enter(Paths, LoadedVersionMetadata));
             _passedGate = true;
         }
 
         if (!safe)
         {
-            SelfUpdateCleanup.TryRun(Paths.InstalledPath, LoadedIdentity);
+            SelfUpdateCleanup.TryRun(Paths.InstalledPath, LoadedVersionMetadata);
         }
 
     }

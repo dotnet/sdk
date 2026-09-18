@@ -74,19 +74,20 @@ available; until then, it reports that no stable build is available.
 `--no-progress` disables progress display, not warnings or the result message.
 The command resolves the latest build in the selected channel for the runtime
 identifier and
-reports success without replacing the executable when the installed build ID
+reports success without replacing the executable when the installed full version/RID
 already matches. Dotnetup does not persist the channel used to install an
 executable, so omitting `--channel` does not infer `preview` or `daily` from the
 running executable.
 See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
 and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
 
-Self-update checks the published SHA-512 hash and embedded build ID but is
+Self-update checks the published SHA-512 hash and embedded full version/RID but is
 unsigned, emits an unsigned-source warning, and respects the unsigned-download
-policy. The selected release must publish the executable, checksum, and matching
-`.buildid` sidecar. Publishing support exists in source; availability at the live
-channel target depends on a release deploying these artifacts. See the
-[download contract](../designs/self-update.md#shared-downloads).
+policy. The selected release must publish the executable and checksum; no identity
+sidecar is needed. After replacement, `--version` provides a bounded startup smoke
+check. These unsigned checks do not authenticate freshness or prevent downgrades.
+Signed version manifests and monotonic authorization are deferred to future stages. See the
+[metadata limitations](../designs/version-metadata.md#scope-and-limitations).
 
 The executable must be in a trusted, writable installation directory. Managed
 development hosts reject self-update. Other update callers wait for the current

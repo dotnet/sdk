@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup Condition="'$(DotnetupIdentityRid)' != ''">
-    <IntermediateOutputPath>$(ArtifactsObjDir)$(MSBuildProjectName)\identity-artifact\$(Configuration)\$(DotnetupIdentityRid)\</IntermediateOutputPath>
-    <OutputPath>$(ArtifactsBinDir)$(MSBuildProjectName)\identity-artifact\$(Configuration)\$(DotnetupIdentityRid)\</OutputPath>
-  </PropertyGroup>
-</Project>

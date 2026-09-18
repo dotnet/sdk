@@ -18,28 +18,27 @@ public class SelfUpdateVerifierTests : SdkTest
     [DataRow("none")]
     [DataRow("lf")]
     [DataRow("crlf")]
+    [DataRow("cr")]
+    [DataRow("space")]
     [DataRow("stderr-flood")]
-    public void ExactIdentityAndNormalNewlinesAreAccepted(string mode)
+    public void ParseableVersionOutputIsAccepted(string mode)
     {
         using var files = new SelfUpdateTestFiles(executable: true, mode);
-        SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(20));
+        SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(20));
     }
 
     [TestMethod]
     [DataRow("empty")]
     [DataRow("wrong")]
-    [DataRow("upper")]
     [DataRow("extra")]
-    [DataRow("space")]
     [DataRow("bom")]
-    [DataRow("cr")]
     [DataRow("nonzero")]
     [DataRow("flood")]
-    public void BadIdentityExitStatusAndExcessiveOutputAreRejected(string mode)
+    public void BadVersionExitStatusAndExcessiveOutputAreRejected(string mode)
     {
         using var files = new SelfUpdateTestFiles(executable: true, mode);
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(20)));
+            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(20)));
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
         Assert.IsLessThan(5000, exception.Message.Length);
         Assert.IsInstanceOfType<IOException>(exception.InnerException);
@@ -52,7 +51,7 @@ public class SelfUpdateVerifierTests : SdkTest
         using var files = new SelfUpdateTestFiles(executable: true, "timeout");
         var watch = Stopwatch.StartNew();
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(3)));
+            SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(3)));
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
         Assert.IsLessThan(TimeSpan.FromSeconds(15), watch.Elapsed);
         Assert.IsTrue(File.Exists(files.Paths.InstalledPath + ".pid"), "The fixture must have started before timing out.");
@@ -74,8 +73,7 @@ public class SelfUpdateVerifierTests : SdkTest
     public void UnstartableExecutableAndInvalidTimeoutAreReported()
     {
         using var files = new SelfUpdateTestFiles();
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.FromSeconds(3)));
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateVerifier.Verify(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity, TimeSpan.Zero));
-        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateVerifier.Verify(files.Paths.InstalledPath, "invalid", TimeSpan.FromSeconds(3)));
+        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.FromSeconds(3)));
+        Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateVerifier.Verify(files.Paths.InstalledPath, TimeSpan.Zero));
     }
 }

@@ -23,13 +23,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class Parser
 {
-    internal static Option<bool> BuildIdentityOption { get; } = new("--build-identity")
-    {
-        Hidden = true,
-        Arity = ArgumentArity.Zero,
-        Action = new BuildIdentityAction(),
-    };
-
     public static ParserConfiguration ParserConfiguration { get; } = new()
     {
         EnablePosixBundling = false,
@@ -81,7 +74,6 @@ internal class Parser
         // (!IsCIEnvironmentOrRedirected()). Without this, GetValue returns default(bool)
         // for bare `dotnetup`, suppressing first-use onboarding.
         rootCommand.Options.Add(CommonOptions.InteractiveOption);
-        rootCommand.Options.Add(BuildIdentityOption);
 
         ConfigureHelp(rootCommand);
 

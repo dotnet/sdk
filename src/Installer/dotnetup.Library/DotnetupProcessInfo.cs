@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal static class DotnetupProcessInfo
 {
     public static string? ExecutablePath { get; } = Environment.ProcessPath;
-    public static string BuildIdentity { get; } = DotnetupBuildIdentity.Current;
+    public static string VersionMetadata { get; } = DotnetupVersionMetadata.Current;
     public static bool IsDirectExecution { get; } = IsDotnetupExecutable(ExecutablePath, Assembly.GetEntryAssembly()?.GetName().Name);
 
     internal static bool IsDotnetupExecutable(string? executablePath, string? entryAssemblyName)

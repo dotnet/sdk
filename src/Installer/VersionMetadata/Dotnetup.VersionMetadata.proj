@@ -1,0 +1,7 @@
+<Project>
+  <UsingTask TaskName="Microsoft.Dotnet.VersionMetadata.VersionMetadataTask" AssemblyFile="$(MetadataTaskAssembly)" />
+  <Target Name="Execute">
+    <VersionMetadataTask Operation="$(MetadataOperation)" ProductVersion="$(MetadataVersion)" RuntimeIdentifier="$(MetadataRid)"
+                         SourcePath="$(MetadataSource)" ArtifactPath="$(MetadataArtifact)" />
+  </Target>
+</Project>

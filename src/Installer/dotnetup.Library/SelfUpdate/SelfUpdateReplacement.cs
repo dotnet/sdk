@@ -5,24 +5,24 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Replaces and restores executables while the caller holds both update locks. Recovery never deletes artifacts.</summary>
 /// <remarks>
-/// One instance owns the paths and identity evidence for one update, including partial-failure recovery.
-/// A missing canonical path can also be recovered without that evidence if the backup matches the original identity.
+/// One instance owns the paths and local version metadata for one update, including partial-failure recovery.
+/// A missing canonical path can also be recovered if the backup matches the original version metadata.
 /// </remarks>
 internal sealed class SelfUpdateReplacement
 {
     private readonly SelfUpdatePaths _paths;
     private readonly string _backupPath;
-    private readonly string _originalIdentity;
-    private string? _replacementIdentity;
+    private readonly string _originalMetadata;
+    private string? _replacementMetadata;
 
-    public SelfUpdateReplacement(SelfUpdatePaths paths, string backupPath, string originalIdentity)
+    public SelfUpdateReplacement(SelfUpdatePaths paths, string backupPath, string originalMetadata)
     {
         ArgumentNullException.ThrowIfNull(paths);
         ArgumentException.ThrowIfNullOrEmpty(backupPath);
-        ArgumentException.ThrowIfNullOrEmpty(originalIdentity);
+        ArgumentException.ThrowIfNullOrEmpty(originalMetadata);
         _paths = paths;
         _backupPath = SelfUpdatePaths.ResolvePath(backupPath);
-        _originalIdentity = originalIdentity;
+        _originalMetadata = originalMetadata;
     }
 
     public void Replace()
@@ -37,8 +37,8 @@ internal sealed class SelfUpdateReplacement
             _paths.Validate();
             _paths.ValidateBackupPath(_backupPath);
             SelfUpdatePaths.RequireAbsent(_backupPath);
-            RequireIdentity(_paths.InstalledPath, _originalIdentity);
-            var replacementIdentity = SelfUpdatePaths.ReadIdentity(_paths.StagedPath);
+            RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
+            var replacementMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.StagedPath);
             using (var staged = SelfUpdatePaths.OpenFile(_paths.StagedPath, FileAccess.ReadWrite))
             {
                 staged.Flush(flushToDisk: true);
@@ -50,7 +50,7 @@ internal sealed class SelfUpdateReplacement
             File.SetLastWriteTimeUtc(_paths.InstalledPath, updateTime);
             File.SetLastWriteTimeUtc(_paths.StagedPath, updateTime);
 
-            _replacementIdentity = replacementIdentity;
+            _replacementMetadata = replacementMetadata;
             mutationStarted = true;
             if (OperatingSystem.IsWindows())
             {
@@ -73,7 +73,7 @@ internal sealed class SelfUpdateReplacement
                         Rollback();
                     }
 
-                    RequireIdentity(_paths.InstalledPath, _originalIdentity);
+                    RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
                 }
                 catch (Exception recoveryException) when (IsFileFailure(recoveryException) || recoveryException is DotnetInstallException)
                 {
@@ -92,16 +92,16 @@ internal sealed class SelfUpdateReplacement
         {
             _paths.ValidateLocation();
             _paths.ValidateBackupPath(_backupPath);
-            RequireIdentity(_backupPath, _originalIdentity);
+            RequireVersionMetadata(_backupPath, _originalMetadata);
             if (SelfUpdatePaths.Exists(_paths.InstalledPath))
             {
-                var canonicalIdentity = SelfUpdatePaths.ReadIdentity(_paths.InstalledPath);
-                if (string.Equals(canonicalIdentity, _originalIdentity, StringComparison.Ordinal))
+                var canonicalMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath);
+                if (string.Equals(canonicalMetadata, _originalMetadata, StringComparison.Ordinal))
                 {
                     return;
                 }
 
-                if (!string.Equals(_replacementIdentity, canonicalIdentity, StringComparison.Ordinal))
+                if (!string.Equals(_replacementMetadata, canonicalMetadata, StringComparison.Ordinal))
                 {
                     throw new IOException("The canonical executable is not the known replacement; rollback will not overwrite it.");
                 }
@@ -123,7 +123,7 @@ internal sealed class SelfUpdateReplacement
                 File.Move(_backupPath, _paths.InstalledPath, overwrite: true);
             }
 
-            RequireIdentity(_paths.InstalledPath, _originalIdentity);
+            RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
         }
         catch (Exception exception) when (IsFileFailure(exception))
         {
@@ -131,11 +131,11 @@ internal sealed class SelfUpdateReplacement
         }
     }
 
-    private static void RequireIdentity(string path, string identity)
+    private static void RequireVersionMetadata(string path, string metadata)
     {
-        if (!string.Equals(SelfUpdatePaths.ReadIdentity(path), identity, StringComparison.Ordinal))
+        if (!string.Equals(SelfUpdatePaths.ReadVersionMetadata(path), metadata, StringComparison.Ordinal))
         {
-            throw new IOException($"The build identity of '{path}' does not match the expected transaction identity.");
+            throw new IOException($"The version metadata of '{path}' does not match the expected transaction metadata.");
         }
     }
 

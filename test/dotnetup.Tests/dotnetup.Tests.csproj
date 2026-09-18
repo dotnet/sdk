@@ -9,7 +9,7 @@
   <!-- Exclude test asset apps from test compilation -->
   <ItemGroup>
     <Compile Remove="TestAssets\**\*.cs" />
-    <Compile Include="..\..\src\Installer\BuildIdentity\BuildIdentityMetadata.cs" Link="BuildIdentity\BuildIdentityMetadata.cs" />
+    <Compile Include="..\..\src\Installer\VersionMetadata\VersionMetadataSource.cs" Link="VersionMetadata\VersionMetadataSource.cs" />
   </ItemGroup>
 
   <!-- Embed the test assets path so tests can locate assets regardless of output directory -->

@@ -16,7 +16,7 @@ var executable = Environment.ProcessPath!;
 string identity;
 using (var stream = File.OpenRead(executable))
 {
-    identity = DotnetupBuildIdentityReader.Read(stream);
+    identity = DotnetupVersionMetadataReader.Read(stream);
 }
 
 if (args is ["--hold"])
@@ -27,12 +27,13 @@ if (args is ["--hold"])
     return 0;
 }
 
-if (args is not ["--build-identity"])
+if (args is not ["--version"])
 {
     return 91;
 }
 
 var mode = File.ReadAllText(executable + ".mode");
+var version = identity.Split('|')[0];
 switch (mode)
 {
     case "timeout":
@@ -50,47 +51,44 @@ switch (mode)
                 Console.Write(output);
             }
         }
-        Console.WriteLine(identity);
+        Console.WriteLine(version);
         return 0;
     case "empty":
         return 0;
     case "wrong":
         Console.WriteLine(new string('f', 64));
         return 0;
-    case "upper":
-        Console.WriteLine(identity.ToUpperInvariant());
-        return 0;
     case "extra":
-        Console.WriteLine(identity);
-        Console.WriteLine(identity);
+        Console.WriteLine(version);
+        Console.WriteLine(version);
         return 0;
     case "space":
-        Console.WriteLine(identity + " ");
+        Console.WriteLine(version + " ");
         return 0;
     case "bom":
         using (var stdout = Console.OpenStandardOutput())
         {
             stdout.Write(new byte[] { 0xef, 0xbb, 0xbf });
-            stdout.Write(Encoding.ASCII.GetBytes(identity));
+            stdout.Write(Encoding.ASCII.GetBytes(version));
         }
         return 0;
     case "lf":
-        Console.Write(identity + "\n");
+        Console.Write(version + "\n");
         return 0;
     case "crlf":
-        Console.Write(identity + "\r\n");
+        Console.Write(version + "\r\n");
         return 0;
     case "cr":
-        Console.Write(identity + "\r");
+        Console.Write(version + "\r");
         return 0;
     case "none":
-        Console.Write(identity);
+        Console.Write(version);
         return 0;
     case "nonzero":
         Console.Error.WriteLine("fixture failure");
-        Console.WriteLine(identity);
+        Console.WriteLine(version);
         return 17;
     default:
-        Console.WriteLine(identity);
+        Console.WriteLine(version);
         return 0;
 }

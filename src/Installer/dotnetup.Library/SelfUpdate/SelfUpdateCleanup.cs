@@ -15,7 +15,7 @@ internal static class SelfUpdateCleanup
     private const int EntryBudget = 32;
     private const string RejectedSuffix = ".rejected";
 
-    public static void TryRun(string installedPath, string loadedIdentity)
+    public static void TryRun(string installedPath, string loadedVersionMetadata)
     {
         try
         {
@@ -35,7 +35,7 @@ internal static class SelfUpdateCleanup
             using var updateLock = ScopedLockFile.TryAcquireExclusive(lockPath);
             if (updateLock is not null)
             {
-                RunWithUpdateLock(installedPath, loadedIdentity);
+                RunWithUpdateLock(installedPath, loadedVersionMetadata);
             }
         }
         catch (Exception)
@@ -44,7 +44,7 @@ internal static class SelfUpdateCleanup
     }
 
     /// <summary>Runs cleanup with the caller's update lock, without acquiring or releasing it.</summary>
-    public static void RunWithUpdateLock(string installedPath, string loadedIdentity)
+    public static void RunWithUpdateLock(string installedPath, string loadedVersionMetadata)
     {
         try
         {
@@ -59,7 +59,7 @@ internal static class SelfUpdateCleanup
 
             using var installedExecutable = new FileStream(installedPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             // A process loaded before a later update must not delete that update's recovery artifacts.
-            if (!string.Equals(DotnetupBuildIdentityReader.Read(installedExecutable), loadedIdentity, StringComparison.Ordinal))
+            if (!string.Equals(DotnetupVersionMetadataReader.Read(installedExecutable), loadedVersionMetadata, StringComparison.Ordinal))
             {
                 return;
             }

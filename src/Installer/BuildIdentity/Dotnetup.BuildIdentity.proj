@@ -1,8 +1,0 @@
-<Project>
-  <UsingTask TaskName="Microsoft.Dotnet.BuildIdentity.BuildIdentityTask" AssemblyFile="$(IdentityTaskAssembly)" />
-  <Target Name="Execute">
-    <BuildIdentityTask Operation="$(IdentityOperation)" ProductVersion="$(IdentityVersion)" RuntimeIdentifier="$(IdentityRid)"
-                       SourcePath="$(IdentitySource)" ArtifactPath="$(IdentityArtifact)"
-               SidecarPath="$(IdentitySidecar)" />
-  </Target>
-</Project>

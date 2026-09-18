@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class SelfUpdateCleanupTests : SdkTest
 {
     private const int ExpiredBackupAgeDays = 8;
-    private const string Identity = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    private const string Identity = "0.2.0-preview.1.26465.6|win-x64";
     private const int RetainedBackupAgeDays = 6;
     private DirectoryInfo _directory = null!;
     private string _installedPath = null!;
@@ -475,7 +475,7 @@ public class SelfUpdateCleanupTests : SdkTest
     }
 
     private static byte[] CreateRecord(string identity = Identity)
-        => Encoding.ASCII.GetBytes("DOTNETUP-ID-REC\0\u0001\0\0\0\u0040\0\0\0" + identity + "END-ID\0\0");
+        => Encoding.ASCII.GetBytes("DOTNETUP-VR-REC\0\u0001\0\0\0\0\0\0\0" + identity.PadRight(224, '\0') + "END-VER\0");
 
     private static void CreateSymbolicLink(string path, string target, bool isDirectory)
     {

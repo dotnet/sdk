@@ -132,10 +132,10 @@ public class SelfUpdateWorkflowTests : SdkTest
                 File.WriteAllBytes(path, replacementBytes);
             }, CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) =>
+            VerifyAction = path =>
             {
                 Assert.AreEqual(files.Paths.InstalledPath, path);
-                Assert.AreEqual(release.BuildId, identity);
+                Assert.AreEqual(ReleaseMetadata(release), SelfUpdatePaths.ReadVersionMetadata(path));
                 Assert.AreSequenceEqual(replacementBytes, File.ReadAllBytes(path));
                 AssertWorkflowLocksHeld(files.Paths);
                 var backups = Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*");
@@ -174,9 +174,9 @@ public class SelfUpdateWorkflowTests : SdkTest
         var directoryMode = File.GetUnixFileMode(files.Paths.DirectoryPath);
         var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
-            (release, destination) => SelfUpdateTestFiles.WriteIdentity(destination, release.BuildId!), CreateImmediateWorkflowCoordinator())
+            (release, destination) => SelfUpdateTestFiles.WriteIdentity(destination, ReleaseMetadata(release)), CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) =>
+            VerifyAction = path =>
             {
                 Assert.AreEqual(originalMode, File.GetUnixFileMode(path));
                 if (failVerification)
@@ -199,7 +199,7 @@ public class SelfUpdateWorkflowTests : SdkTest
         Assert.AreEqual(originalMode, File.GetUnixFileMode(files.Paths.InstalledPath));
         Assert.AreEqual(directoryMode, File.GetUnixFileMode(files.Paths.DirectoryPath));
         Assert.AreEqual(failVerification ? SelfUpdateTestFiles.OriginalIdentity : SelfUpdateTestFiles.ReplacementIdentity,
-            SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+            SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
     }
 
     [TestMethod]
@@ -220,10 +220,10 @@ public class SelfUpdateWorkflowTests : SdkTest
                 AssertWorkflowLocksHeld(files.Paths);
                 firstDownloading.SetResult();
                 Assert.IsTrue(finishDownload.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken), "First updater was not released.");
-                SelfUpdateTestFiles.WriteIdentity(path, download.BuildId!);
+                SelfUpdateTestFiles.WriteIdentity(path, ReleaseMetadata(download));
             }, CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) => AssertWorkflowLocksHeld(files.Paths),
+            VerifyAction = path => AssertWorkflowLocksHeld(files.Paths),
         };
         var retryPolicy = new WorkflowContentionRetryPolicy(() =>
         {
@@ -233,7 +233,7 @@ public class SelfUpdateWorkflowTests : SdkTest
         var secondWorkflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
             () =>
             {
-                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+                Assert.AreEqual(SelfUpdateTestFiles.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
                 return release;
             },
             (download, path) =>
@@ -262,7 +262,7 @@ public class SelfUpdateWorkflowTests : SdkTest
             Assert.AreEqual(1, downloadCount);
             Assert.AreEqual(1, firstWorkflow.VerificationCount);
             Assert.AreEqual(0, secondWorkflow.VerificationCount);
-            Assert.AreEqual(release.BuildId, SelfUpdatePaths.ReadIdentity(files.Paths.InstalledPath));
+            Assert.AreEqual(ReleaseMetadata(release), SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
             var backups = Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*");
             Assert.HasCount(1, backups);
             Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(backups[0]));
@@ -313,7 +313,7 @@ public class SelfUpdateWorkflowTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        var unexpectedIdentity = new string('c', 64);
+        var unexpectedIdentity = "0.2.0-other|win-x64";
         var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
             (download, path) => SelfUpdateTestFiles.WriteIdentity(path, unexpectedIdentity), CreateImmediateWorkflowCoordinator());
@@ -323,7 +323,7 @@ public class SelfUpdateWorkflowTests : SdkTest
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
         Assert.AreEqual(0, workflow.VerificationCount);
         Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
-        Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadIdentity(files.Paths.StagedPath));
+        Assert.AreEqual(unexpectedIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
         Assert.IsEmpty(Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*"));
         AssertWorkflowLocksAvailable(files.Paths);
     }
@@ -334,15 +334,15 @@ public class SelfUpdateWorkflowTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var replacementBytes = File.ReadAllBytes(files.Paths.StagedPath);
-        var verificationFailure = new InvalidDataException("Injected runtime identity mismatch.");
+        var verificationFailure = new InvalidDataException("Injected startup smoke-test failure.");
         var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalIdentity,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
             (download, path) => File.WriteAllBytes(path, replacementBytes), CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) =>
+            VerifyAction = path =>
             {
                 AssertWorkflowLocksHeld(files.Paths);
-                Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(path));
+                Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(path));
                 throw verificationFailure;
             },
         };
@@ -384,10 +384,10 @@ public class SelfUpdateWorkflowTests : SdkTest
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
             (download, path) => File.WriteAllBytes(path, replacementBytes), CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) =>
+            VerifyAction = path =>
             {
                 AssertWorkflowLocksHeld(files.Paths);
-                Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadIdentity(path));
+                Assert.AreEqual(SelfUpdateTestFiles.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(path));
                 throw reportedFailure;
             },
         };
@@ -431,10 +431,10 @@ public class SelfUpdateWorkflowTests : SdkTest
             {
                 Assert.IsNotNull(retained);
                 AssertWorkflowLocksHeld(files.Paths);
-                SelfUpdateTestFiles.WriteIdentity(path, download.BuildId!);
+                SelfUpdateTestFiles.WriteIdentity(path, ReleaseMetadata(download));
             }, CreateImmediateWorkflowCoordinator())
         {
-            VerifyAction = (path, identity) =>
+            VerifyAction = path =>
             {
                 Assert.IsNotNull(retained);
                 AssertWorkflowLocksHeld(files.Paths);
@@ -553,7 +553,7 @@ public class SelfUpdateWorkflowTests : SdkTest
         File.WriteAllText(files.BackupPath + ".rejected", "aged rejected executable");
         File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
         File.SetLastWriteTimeUtc(files.BackupPath + ".rejected", DateTime.UtcNow.AddDays(-8));
-        var loadedIdentity = staleLoadedIdentity ? new string('c', 64) : SelfUpdateTestFiles.OriginalIdentity;
+        var loadedIdentity = staleLoadedIdentity ? "0.2.0-other|win-x64" : SelfUpdateTestFiles.OriginalIdentity;
         var workflow = new SelfUpdateTestWorkflow(files.Paths, loadedIdentity,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity),
             (download, path) =>
@@ -561,7 +561,7 @@ public class SelfUpdateWorkflowTests : SdkTest
                 AssertWorkflowLocksHeld(files.Paths);
                 Assert.AreEqual(staleLoadedIdentity, File.Exists(files.BackupPath));
                 Assert.AreEqual(staleLoadedIdentity, File.Exists(files.BackupPath + ".rejected"));
-                SelfUpdateTestFiles.WriteIdentity(path, download.BuildId!);
+                SelfUpdateTestFiles.WriteIdentity(path, ReleaseMetadata(download));
             }, CreateImmediateWorkflowCoordinator());
 
         Assert.AreEqual(CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementIdentity).Version.ToString(), workflow.Execute());
@@ -588,8 +588,11 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     private static ResolvedDownload CreateWorkflowRelease(string identity)
-        => new(new Uri("https://example.invalid/dotnetup.exe"), new string('0', 128), "win-x64",
-            ReleaseVersion.Parse("0.2.0-preview.1.26465.7"), identity);
+        => new(new Uri("https://example.invalid/dotnetup.exe"), new string('0', 128), identity.Split('|')[1],
+            ReleaseVersion.Parse(identity.Split('|')[0]));
+
+    private static string ReleaseMetadata(ResolvedDownload release)
+        => DotnetupVersionMetadataReader.Format(release.Version.ToString(), release.Rid);
 
     private static SelfUpdateCoordinator CreateImmediateWorkflowCoordinator()
         => new(new LockFileRetryPolicy(TimeSpan.Zero), new LockFileRetryPolicy(TimeSpan.Zero));

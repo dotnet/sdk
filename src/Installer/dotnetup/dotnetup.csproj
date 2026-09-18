@@ -103,7 +103,7 @@
   </PropertyGroup>
   <Target Name="CreateRidSuffixedDotnetupCopy"
           AfterTargets="Publish"
-      DependsOnTargets="ValidateDotnetupBuildIdentity"
+      DependsOnTargets="ValidateDotnetupVersionMetadata"
       Condition="'$(RuntimeIdentifier)' != '' and '$(PublishAot)' == 'true'"
           Inputs="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
           Outputs="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)">
@@ -138,5 +138,5 @@
   -->
   <Target Name="ReturnDotnetupVersion" Returns="$(Version)" />
 
-  <Import Project="..\BuildIdentity\Dotnetup.BuildIdentity.targets" />
+  <Import Project="..\VersionMetadata\Dotnetup.VersionMetadata.targets" />
 </Project>

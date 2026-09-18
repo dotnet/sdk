@@ -14,7 +14,7 @@ internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
     {
     }
 
-    public Action<string, string>? VerifyAction { get; init; }
+    public Action<string>? VerifyAction { get; init; }
 
     public int VerificationCount { get; private set; }
 
@@ -33,9 +33,9 @@ internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
         }
     }
 
-    protected override void Verify(string installedPath, string expectedIdentity)
+    protected override void Verify(string installedPath)
     {
         VerificationCount++;
-        VerifyAction?.Invoke(installedPath, expectedIdentity);
+        VerifyAction?.Invoke(installedPath);
     }
 }

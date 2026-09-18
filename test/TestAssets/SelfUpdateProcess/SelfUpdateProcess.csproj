@@ -7,6 +7,6 @@
     <AppHostDotNetSearch>AppRelative</AppHostDotNetSearch>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../../src/Installer/Microsoft.Dotnet.Installation/Internal/BuildIdentity/DotnetupBuildIdentityReader.cs" Link="DotnetupBuildIdentityReader.cs" />
+    <Compile Include="../../../src/Installer/Microsoft.Dotnet.Installation/Internal/VersionMetadata/DotnetupVersionMetadataReader.cs" Link="DotnetupVersionMetadataReader.cs" />
   </ItemGroup>
 </Project>

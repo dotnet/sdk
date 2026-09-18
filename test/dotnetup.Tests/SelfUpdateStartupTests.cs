@@ -25,6 +25,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class SelfUpdateStartupTests : SdkTest
 {
     [TestMethod]
+    public void RemovedBuildIdentityOptionIsRejected()
+    {
+        Assert.IsNotEmpty(Parser.Parse(["--build-identity"]).Errors);
+    }
+
+    [TestMethod]
     public void BlockedInstallCommandsDoNotInitializeReleaseManifestServices()
     {
         using var files = new SelfUpdateTestFiles();
@@ -337,12 +343,12 @@ public class SelfUpdateStartupTests : SdkTest
     }
 
     [TestMethod]
-    public async Task ProgramIdentityOptionSkipsNormalSetupAndTelemetry()
+    public async Task ProgramVersionOptionUsesNormalSetupAndTelemetry()
     {
         if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
         {
             await SelfUpdateStartupTelemetryProcess.RunAsync(
-                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramIdentityOptionSkipsNormalSetupAndTelemetry)).ConfigureAwait(false);
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramVersionOptionUsesNormalSetupAndTelemetry)).ConfigureAwait(false);
             return;
         }
 
@@ -354,7 +360,7 @@ public class SelfUpdateStartupTests : SdkTest
             ActivityStarted = _ => started++,
         };
         ActivitySource.AddActivityListener(listener);
-        string[][] invocations = [["--build-identity"], ["--build-identity", "--interactive", "false"]];
+        string[][] invocations = [["--version"], ["--version", "--interactive", "false"]];
         foreach (var args in invocations)
         {
             var setupCalled = false;
@@ -363,10 +369,10 @@ public class SelfUpdateStartupTests : SdkTest
                 setupCalled = true;
                 return new StartupEncodingScope(() => { });
             }));
-            Assert.IsFalse(setupCalled);
+            Assert.IsTrue(setupCalled);
         }
 
-        Assert.AreEqual(0, started);
+        Assert.AreEqual(invocations.Length, started);
     }
 
     [TestMethod]
@@ -408,26 +414,25 @@ public class SelfUpdateStartupTests : SdkTest
     }
 
     [TestMethod]
-    public async Task ProgramRespectsParserPrecedenceForIdentityLikeArguments()
+    public async Task ProgramVersionAndHelpStillRunSetup()
     {
         if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
         {
             await SelfUpdateStartupTelemetryProcess.RunAsync(
-                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramRespectsParserPrecedenceForIdentityLikeArguments)).ConfigureAwait(false);
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramVersionAndHelpStillRunSetup)).ConfigureAwait(false);
             return;
         }
 
-        string[][] invocations = [["--help", "--build-identity"], ["--build-identity", "--help"], ["dotnet", "--build-identity"], ["self", "update", "--build-identity"]];
+        string[][] invocations = [["--help", "--version"], ["--version", "--help"], ["dotnet", "--version"], ["self", "update", "--help"]];
         foreach (var args in invocations)
         {
-            var isIdentityAction = ReferenceEquals(Parser.Parse(args).Action, Parser.BuildIdentityOption.Action);
             var setupCalled = false;
-            Assert.AreEqual(isIdentityAction ? 0 : 1, DotnetupProgram.InvokeCommand(args, () =>
+            Assert.AreEqual(1, DotnetupProgram.InvokeCommand(args, () =>
             {
                 setupCalled = true;
                 throw new InvalidOperationException("Injected setup failure before command dispatch.");
             }));
-            Assert.AreEqual(!isIdentityAction, setupCalled, string.Join(' ', args));
+            Assert.IsTrue(setupCalled, string.Join(' ', args));
         }
     }
 }

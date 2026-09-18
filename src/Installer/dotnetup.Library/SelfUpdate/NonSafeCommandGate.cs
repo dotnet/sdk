@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// <summary>Rejects busy or stale non-safe invocations before installation state can be accessed.</summary>
 internal static class NonSafeCommandGate
 {
-    public static ScopedLockFile Enter(SelfUpdatePaths paths, string loadedIdentity)
+    public static ScopedLockFile Enter(SelfUpdatePaths paths, string loadedVersionMetadata)
     {
         ScopedLockFile? lease = null;
         try
@@ -17,7 +17,7 @@ internal static class NonSafeCommandGate
             lease = ScopedLockFile.TryAcquireShared(paths.ActivityLockPath)
                 ?? throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupUpdateInProgress,
                     Strings.SelfUpdateInProgress);
-            if (!string.Equals(loadedIdentity, SelfUpdatePaths.ReadIdentity(paths.InstalledPath), StringComparison.Ordinal))
+            if (!string.Equals(loadedVersionMetadata, SelfUpdatePaths.ReadVersionMetadata(paths.InstalledPath), StringComparison.Ordinal))
             {
                 throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupExecutableChanged,
                     Strings.SelfUpdateExecutableChanged);

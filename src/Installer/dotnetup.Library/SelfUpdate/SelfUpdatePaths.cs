@@ -58,10 +58,10 @@ internal sealed class SelfUpdatePaths
         using var executable = OpenFile(InstalledPath);
     }
 
-    public static string ReadIdentity(string path)
+    public static string ReadVersionMetadata(string path)
     {
         using var stream = OpenFile(path);
-        return DotnetupBuildIdentityReader.Read(stream);
+        return DotnetupVersionMetadataReader.Read(stream);
     }
 
     public static FileStream OpenFile(string path, FileAccess access = FileAccess.Read)

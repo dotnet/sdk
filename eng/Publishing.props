@@ -80,7 +80,7 @@
     to both files.
   -->
   <Target Name="SetDotnetupBlobPaths"
-          DependsOnTargets="GetDotnetupVersion;GenerateDotnetupBuildIdMetadata"
+          DependsOnTargets="GetDotnetupVersion;ValidateDotnetupPublishedMetadata"
           AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
     <ItemGroup>
@@ -88,8 +88,6 @@
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
       <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512'"
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512" />
-      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt).buildid'"
-              RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).buildid" />
       <!-- Publish get-dotnetup scripts under the same dotnetup/<version>/ prefix as the binaries.
       This allows arcade's DotnetupAkaMSCreateLinkPatterns to properly produce aka.ms/dotnet/dotnetup/daily/get-dotnetup.{ps1,sh}.
       -->
@@ -104,19 +102,16 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateDotnetupBuildIdMetadata" DependsOnTargets="GetDotnetupVersion" Condition="'@(_DotnetupPublishedBinary)' != ''">
-    <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj" Targets="BuildDotnetupIdentityTool">
-      <Output TaskParameter="TargetOutputs" PropertyName="_DotnetupIdentityPublishingTool" />
+  <Target Name="ValidateDotnetupPublishedMetadata" DependsOnTargets="GetDotnetupVersion" Condition="'@(_DotnetupPublishedBinary)' != ''">
+    <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj" Targets="BuildDotnetupMetadataTool">
+      <Output TaskParameter="TargetOutputs" PropertyName="_DotnetupMetadataPublishingTool" />
     </MSBuild>
-    <MSBuild Projects="$(RepoRoot)src\Installer\BuildIdentity\Dotnetup.BuildIdentity.proj" Targets="Execute"
-           Properties="IdentityTaskAssembly=$(_DotnetupIdentityPublishingTool);IdentityOperation=validate;IdentityArtifact=%(_DotnetupPublishedBinary.Identity);IdentityVersion=$(DotnetupVersion);IdentityRid=$(TargetRid);IdentitySidecar=%(_DotnetupPublishedBinary.Identity).buildid" />
-    <ItemGroup>
-      <Artifact Include="@(_DotnetupPublishedBinary->'%(Identity).buildid')" Kind="Blob" />
-    </ItemGroup>
+    <MSBuild Projects="$(RepoRoot)src\Installer\VersionMetadata\Dotnetup.VersionMetadata.proj" Targets="Execute"
+             Properties="MetadataTaskAssembly=$(_DotnetupMetadataPublishingTool);MetadataOperation=validate;MetadataArtifact=%(_DotnetupPublishedBinary.Identity);MetadataVersion=$(DotnetupVersion);MetadataRid=$(TargetRid)" />
   </Target>
 
   <Target Name="AddRelativeBlobPathToBlobArtifacts"
-          DependsOnTargets="GetNonStableProductVersion;GenerateDotnetupBuildIdMetadata"
+          DependsOnTargets="GetNonStableProductVersion;ValidateDotnetupPublishedMetadata"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
           AfterTargets="GenerateChecksumsFromArtifacts">
     <ItemGroup>
