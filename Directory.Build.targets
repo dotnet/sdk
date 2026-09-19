@@ -39,39 +39,23 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
-  <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
+  <!-- Update KnownFrameworkReferences to target the right version of the runtime
+       Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available.
+       When building source-only always update the version, regardless of the TFM as that helps with re-branding major versions. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-                          and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
+                          and ($(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)')) or '$(DotNetBuildSourceOnly)' == 'true')
                           and '$(MSBuildProjectName)' != 'sdk-tasks'
                           and '$(MSBuildProjectName)' != 'GenerateDocumentationAndConfigFiles'
                           and ('$(DotNetBuild)' != 'true' or '$(PackAsToolShimRuntimeIdentifiers)' == '')">
-    <FrameworkReference
-        Update="Microsoft.NETCore.App"
-        TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <!-- Exact pack RID matches do not require the distro-specific RID to be in the portable RID graph. -->
-    <KnownFrameworkReference Update="Microsoft.NETCore.App"
-        Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">
-      <RuntimePackRuntimeIdentifiers>%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
-    </KnownFrameworkReference>
-    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
-      <ILCompilerPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</ILCompilerPackVersion>
-      <ILCompilerRuntimeIdentifiers Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">%(ILCompilerRuntimeIdentifiers);$(TargetRid)</ILCompilerRuntimeIdentifiers>
-    </KnownILCompilerPack>
-    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks"
-        ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack"
-        WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2"
-        Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack" WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
   </ItemGroup>
-
-  <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))">
+  <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)')) or '$(DotNetBuildSourceOnly)' == 'true'">
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</LatestRuntimeFrameworkVersion>
-      <RuntimePackRuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimePackRuntimeIdentifiers>
-      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
       <TargetingPackVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</TargetingPackVersion>
       <DefaultRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
