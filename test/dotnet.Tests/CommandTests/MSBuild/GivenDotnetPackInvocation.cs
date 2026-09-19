@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
         [DataRow(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
         [DataRow(new string[] { "<project>" }, new string[] { "<project>" })]
+        [DataRow(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [DataRow(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
