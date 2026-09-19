@@ -110,28 +110,23 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
     }
 
     [TestMethod]
-    public async Task MixedArityOptions()
+    public async Task WindowsStyleAliasesAreFilteredOut()
     {
-        var singleOption = new Option<string>("--config");
-        singleOption.AcceptOnlyFromAmong("debug", "release");
-
-        var multiOption = new Option<string[]>("--framework", "-f")
+        // Options with Windows-style aliases (starting with '/') should not appear in fish completions
+        var flagOption = new Option<bool>("--verbose", "/v", "-v")
         {
-            Arity = new ArgumentArity(1, 3)
+            Arity = ArgumentArity.Zero
         };
-        multiOption.AcceptOnlyFromAmong("net8.0", "net9.0", "net10.0");
-
-        var unboundedOption = new Option<string[]>("--sources")
+        var valueOption = new Option<string>("--verbosity", "/verbosity", "-verbosity", "-v")
         {
-            Arity = ArgumentArity.OneOrMore
+            Description = "Set verbosity level"
         };
-
+        valueOption.AcceptOnlyFromAmong("quiet", "normal", "detailed");
         Command command = new Command("mycommand")
         {
-            singleOption,
-            multiOption,
-            unboundedOption,
-            new Command("build")
+            flagOption,
+            valueOption,
+            new Command("subcommand")
         };
         await provider.Verify(command, TestContext);
     }
