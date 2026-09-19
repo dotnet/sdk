@@ -127,6 +127,46 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    public async Task BlazorWasmHosted_ScopedCss()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
+            .WithSource();
+
+        WriteAllText(Path.Combine(testAsset.Path, "blazorhosted", "Program.cs"), """
+            using Microsoft.AspNetCore.Builder;
+
+            var builder = WebApplication.CreateBuilder(args);
+            var app = builder.Build();
+            app.UseStaticFiles();
+            app.MapFallbackToFile("index.html");
+            app.Run();
+            """);
+
+        var scopedCssPath = Path.Combine(testAsset.Path, "blazorwasm", "Pages", "Index.razor.css");
+        WriteAllText(scopedCssPath, "h1 { color: red; }");
+
+        var port = TestOptions.GetTestPort();
+        App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
+        App.Process.ClearOutput();
+
+        UpdateSourceFile(scopedCssPath, "h1 { color: blue; }");
+
+        await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
+        await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
+        await App.WaitUntilOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/blazorwasm.styles.css"));
+        App.AssertOutputDoesNotContain(MessageDescriptor.ScopedCssBundleFileNotFound);
+
+        using var client = new System.Net.Http.HttpClient();
+        var css = await client.GetStringAsync($"http://localhost:{port}/blazorwasm.styles.css", TestContext.CancellationToken);
+        Assert.Contains("color: blue;", css);
+        Assert.DoesNotContain("color: red;", css);
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
     public async Task Razor_Component_ScopedCssAndStaticAssets()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
