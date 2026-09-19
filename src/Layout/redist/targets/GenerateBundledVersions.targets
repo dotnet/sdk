@@ -297,6 +297,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Net110RuntimePackRids Include="
@@ -316,6 +317,7 @@
         openbsd-x64;
         openbsd-arm64;
         browser-wasm;
+        linux-armel;
         " />
 
       <!-- TODO: Remove these .NET 11 RID additions once source-build can consume stable .NET 11 targeting packs from SBRP. -->
@@ -464,6 +466,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Net110Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedRids)" />
@@ -525,6 +528,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Net110ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedRids)" />
@@ -602,6 +606,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Net120NativeAOTRuntimePackRids Include="@(Net110NativeAOTRuntimePackRids)" />
