@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -178,12 +179,22 @@ static unsafe partial class NativeEntryPoint
             // can use it instead of re-probing PATH / environment for the dotnet installation.
             DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
 
-            if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: true))
+            if (ShouldAttemptAotExecution(args))
             {
                 ParseResult? parseResult = null;
+                bool genericCommandHelp = false;
                 using (var parse = Activities.Source.StartActivity("parse"))
                 {
-                    parseResult = Parser.Parse(args);
+                    if (Parser.TryParseGenericCommandHelp(args, out ParseResult? genericHelpParseResult))
+                    {
+                        genericCommandHelp = true;
+                        parseResult = genericHelpParseResult;
+                    }
+                    else
+                    {
+                        parseResult = Parser.Parse(args);
+                    }
+
                     mainActivity?.SetDisplayName(parseResult);
                 }
 
@@ -207,7 +218,7 @@ static unsafe partial class NativeEntryPoint
 
                 if (firstRunCompleted)
                 {
-                    if (parseResult.CanBeInvoked())
+                    if (genericCommandHelp || parseResult.CanBeInvoked())
                     {
                         // Parse errors here usually mean the command is contributed dynamically by the managed
                         // CLI (e.g. NuGet's `package update`/`why`) and absent from the static AOT tree, so defer.
@@ -288,6 +299,12 @@ static unsafe partial class NativeEntryPoint
             }
         }
     }
+
+    internal static bool ShouldAttemptAotExecution(string[] args)
+        => EnvironmentVariableParser.ParseBool(
+            Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT),
+            defaultValue: true)
+        && !NewCommandDefinition.IsGenericHelpInvocation(args);
 
     /// <summary>
     ///  Attempts to resolve and invoke an external/tool command (e.g. <c>dotnet ef</c>, a global or
