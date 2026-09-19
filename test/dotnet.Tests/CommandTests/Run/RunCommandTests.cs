@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -8,7 +8,8 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class RunCommandTests : SdkTest
 {
     // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
     private static string EnvironmentVariableReference(string name)
@@ -35,7 +36,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             readCodeFromStdin: false,
             environmentVariables: new Dictionary<string, string>());
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentVariableExpansion_Project()
     {
         var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -72,7 +73,140 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
     }
 
-    [Fact]
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project()
+    {
+        var testAppName = "AppThatOutputsDotnetLaunchProfile";
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            .WithSource();
+
+        var testProjectDirectory = testInstance.Path;
+        var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.Int32]::MaxValue)\" \"@(Items)\" \"%(Identity)\"",
+                  "environmentVariables": {
+                    "TEST_VAR1": "$(MSBuildProjectDirectory)"
+                  }
+                }
+              }
+            }
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testProjectDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},{int.MaxValue},@(Items),%(Identity)")
+            .And.HaveStdOutContaining($"TEST_VAR1=<<<{testProjectDirectory}>>>");
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project_UsesPostComputeRunArgumentsValue()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "environmentVariables": {
+                    "TEST_VAR1": "$(LaunchEnvironment)"
+                  }
+                }
+              }
+            }
+            """);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="SetLaunchEnvironment" BeforeTargets="ComputeRunArguments">
+                <PropertyGroup>
+                  <LaunchEnvironment>post-target</LaunchEnvironment>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("TEST_VAR1=<<<post-target>>>");
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project_IgnoresCommandLineArgsWhenRunArgumentsAreSet()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "$([)",
+                  "environmentVariables": {
+                    "TEST_VAR1": "profile-environment"
+                  }
+                }
+              }
+            }
+            """);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="SetRunArguments" AfterTargets="ComputeRunArguments">
+                <PropertyGroup>
+                  <RunArguments>target-argument</RunArguments>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("ARGS=target-argument")
+            .And.HaveStdOutContaining("TEST_VAR1=<<<profile-environment>>>")
+            .And.NotHaveStdErrContaining("could not be applied");
+    }
+
+    [TestMethod]
+    public void InvalidMSBuildExpressionInLaunchSettingsDoesNotPreventRun()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        string launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "$([)"
+                }
+              }
+            }
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                LaunchProfileParser.GetLaunchProfileDisplayName(launchProfile: null),
+                "").Trim());
+    }
+
+    [TestMethod]
     public void Executable_DefaultWorkingDirectory()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -89,14 +223,14 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
-        Assert.Equal("executable", command.StartInfo.FileName);
-        Assert.Equal(dir, command.StartInfo.WorkingDirectory);
-        Assert.Equal("", command.StartInfo.Arguments);
+        Assert.AreEqual("executable", command.StartInfo.FileName);
+        Assert.AreEqual(dir, command.StartInfo.WorkingDirectory);
+        Assert.AreEqual("", command.StartInfo.Arguments);
     }
 
-    [Fact]
+    [TestMethod]
     public void Executable_NoLaunchProfileArguments()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -114,12 +248,12 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
-        Assert.Equal("", command.StartInfo.Arguments);
+        Assert.AreEqual("", command.StartInfo.Arguments);
     }
 
-    [Fact]
+    [TestMethod]
     public void Executable_ApplicationArguments()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -137,8 +271,133 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
-        Assert.Equal("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
+        Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
+    }
+
+    [TestMethod]
+    public void Executable_MSBuildPropertyExpansion()
+    {
+        var root = TestAssetsManager.CreateTestDirectory().Path;
+        var projectPath = Path.Combine(root, "myproj.csproj");
+        var launchSettingsDirectory = Path.Combine(root, "Properties");
+        Directory.CreateDirectory(launchSettingsDirectory);
+        File.WriteAllText(projectPath, """
+            <Project>
+              <PropertyGroup>
+                <LaunchExecutable>executable</LaunchExecutable>
+                <LaunchArgument>expanded-argument</LaunchArgument>
+                <LaunchWorkingDirectory>working</LaunchWorkingDirectory>
+                <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(launchSettingsDirectory, "launchSettings.json"), """
+            {
+              "profiles": {
+                "MyProfile": {
+                  "commandName": "Executable",
+                  "executablePath": "$(LaunchExecutable)",
+                  "commandLineArgs": "$(LaunchArgument)",
+                  "workingDirectory": "$(LaunchWorkingDirectory)",
+                  "environmentVariables": {
+                    "VALUE": "$(LaunchEnvironment)"
+                  }
+                }
+              }
+            }
+            """);
+
+        var runCommand = CreateRunCommand(projectPath);
+        var result = runCommand.ReadLaunchProfileSettings(
+            projectFactory: null,
+            expandExecutableProfile: true,
+            out _);
+
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
+        Assert.AreEqual("executable", model.ExecutablePath);
+        Assert.AreEqual("expanded-argument", model.CommandLineArgs);
+        Assert.AreEqual(Path.Combine(launchSettingsDirectory, "working"), model.WorkingDirectory);
+        Assert.AreEqual("expanded-environment", model.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void Executable_MSBuildPropertyExpansion_UsesPostBuildEvaluation()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        string launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Executable",
+                  "executablePath": "dotnet",
+                  "commandLineArgs": "$(GeneratedArgument)"
+                }
+              }
+            }
+            """);
+        string projectPath = Directory.GetFiles(testInstance.Path, "*.csproj").Single();
+        string runJsonPath = Path.ChangeExtension(projectPath, ".run.json");
+        File.WriteAllText(runJsonPath, "{}");
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Import Project="$(BaseIntermediateOutputPath)launch-profile.props"
+                      Condition="Exists('$(BaseIntermediateOutputPath)launch-profile.props')" />
+              <Target Name="GenerateLaunchProfileProperties" BeforeTargets="Build">
+                <WriteLinesToFile
+                  File="$(BaseIntermediateOutputPath)launch-profile.props"
+                  Lines="&lt;Project&gt;&lt;PropertyGroup&gt;&lt;GeneratedArgument&gt;--version&lt;/GeneratedArgument&gt;&lt;/PropertyGroup&gt;&lt;/Project&gt;"
+                  Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+
+        CommandResult result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
+        string usingLaunchSettingsMessage = string.Format(
+            CliCommandStrings.UsingLaunchSettingsFromMessage,
+            launchSettingsPath);
+        string ignoredRunJsonWarning = string.Format(
+            CliCommandStrings.RunCommandWarningRunJsonNotUsed,
+            runJsonPath,
+            launchSettingsPath);
+        Assert.IsNotNull(result.StdErr);
+        Assert.IsNotNull(result.StdOut);
+        Assert.AreEqual(1, result.StdErr.Split(usingLaunchSettingsMessage, StringSplitOptions.None).Length - 1);
+        Assert.AreEqual(1, result.StdOut.Split(ignoredRunJsonWarning, StringSplitOptions.None).Length - 1);
+    }
+
+    [TestMethod]
+    [DataRow("cached-argument", "cached-argument \"app arg\"")]
+    [DataRow(null, "\"app arg\"")]
+    public void Project_CachedRunPropertiesApplicationArguments(string? cachedArguments, string expectedArguments)
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string projectPath = Path.Combine(root, "myproj.csproj");
+        var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app arg"]);
+        var runProperties = new RunProperties(
+            Command: "executable",
+            Arguments: cachedArguments,
+            WorkingDirectory: root,
+            RuntimeIdentifier: string.Empty,
+            DefaultAppHostRuntimeIdentifier: string.Empty,
+            TargetFrameworkVersion: string.Empty);
+
+        var command = (Command)runCommand.GetTargetCommand(
+            launchSettings: null,
+            projectFactory: null,
+            cachedRunProperties: runProperties,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(expectedArguments, command.StartInfo.Arguments);
     }
 }

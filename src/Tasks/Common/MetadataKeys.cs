@@ -27,6 +27,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string FrameworkVersion = "FrameworkVersion";
         public const string IsTrimmable = "IsTrimmable";
         public const string RuntimeFrameworkName = "RuntimeFrameworkName";
+        public const string Profile = "Profile";
 
         // SDK Metadata
         public const string SDKPackageItemSpec = "SDKPackageItemSpec";

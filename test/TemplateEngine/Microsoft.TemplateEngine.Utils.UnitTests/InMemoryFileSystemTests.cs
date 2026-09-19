@@ -1,15 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Mocks;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
+    [TestClass]
     public class InMemoryFileSystemTests
     {
-        [Fact(DisplayName = nameof(VerifyMultipleVirtualizationsAreHandled))]
+        [TestMethod]
         public void VerifyMultipleVirtualizationsAreHandled()
         {
             IPhysicalFileSystem mockFileSystem = new MockFileSystem();
@@ -18,9 +18,9 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             string testFilePath = Directory.GetCurrentDirectory().CombinePaths("test1", "test.txt");
             virtualized2.CreateFile(testFilePath).Dispose();
-            Assert.False(mockFileSystem.FileExists(testFilePath));
-            Assert.True(virtualized1.FileExists(testFilePath));
-            Assert.True(virtualized2.FileExists(testFilePath));
+            Assert.IsFalse(mockFileSystem.FileExists(testFilePath));
+            Assert.IsTrue(virtualized1.FileExists(testFilePath));
+            Assert.IsTrue(virtualized2.FileExists(testFilePath));
         }
     }
 }

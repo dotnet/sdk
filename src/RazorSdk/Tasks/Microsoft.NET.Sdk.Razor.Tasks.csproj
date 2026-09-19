@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <RazorSdkRoot>$(RepoRoot)\src\RazorSdk\</RazorSdkRoot>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk.Razor</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
 

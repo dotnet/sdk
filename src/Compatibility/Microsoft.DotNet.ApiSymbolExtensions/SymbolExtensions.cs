@@ -78,7 +78,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <returns>true if the symbol is the explicit interface implementation method</returns>
         public static bool IsExplicitInterfaceImplementation(this ISymbol symbol) =>
             symbol is IMethodSymbol method && method.MethodKind == MethodKind.ExplicitInterfaceImplementation ||
-            symbol is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty;
+            symbol is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty ||
+            symbol is IEventSymbol @event && !@event.ExplicitInterfaceImplementations.IsEmpty;
 
         private static bool HasVisibleConstructor(ITypeSymbol type, bool includeInternalSymbols)
         {

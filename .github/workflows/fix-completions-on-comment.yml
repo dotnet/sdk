@@ -13,6 +13,7 @@ permissions:
   contents: read
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   REPO_NAME: ${{ github.event.repository.name }}
   RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
@@ -34,7 +35,7 @@ jobs:
     steps:
       - name: Evaluate comment command
         id: command-filter
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
@@ -48,7 +49,7 @@ jobs:
 
       - name: Ensure commenter is trusted
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -78,7 +79,7 @@ jobs:
 
       - name: React to comment
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -98,7 +99,7 @@ jobs:
 
       - name: Comment on PR - Started
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ format('▶️ CLI completion snapshot update started. Track progress in [this workflow run]({0}).', env.RUN_URL) }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -116,7 +117,7 @@ jobs:
       - name: Capture PR metadata
         id: metadata
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -124,6 +125,33 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.payload.issue.number,
             });
+
+            if (pr.data.state !== 'open') {
+              core.setFailed(`Pull request #${pr.data.number} is not open.`);
+              return;
+            }
+
+            // Commits cannot be applied to a pull request whose head branch lives in a fork. Detect that and explain how to proceed.
+            const baseRepo = `${context.repo.owner}/${context.repo.repo}`;
+            const headRepo = pr.data.head.repo ? pr.data.head.repo.full_name : null;
+            if (headRepo !== baseRepo) {
+              const body = [
+                `❌ This command can't run on this pull request because its head branch lives in a fork`,
+                `(\`${headRepo || 'a deleted fork'}\`), not in \`${baseRepo}\`.`,
+                ``,
+                `The GitHub Actions runner can only push to \`${baseRepo}\`; it has no access to push commits to your fork.`,
+                `To use this command, push your branch directly to the \`${baseRepo}\` remote and open the pull request`,
+                `from that branch (based off \`${baseRepo}\`), then comment the command again.`,
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number(context.payload.issue.number),
+                body,
+              });
+              core.setFailed(`Pull request head branch is in a fork (${headRepo || 'deleted'}); the runner cannot push to it.`);
+              return;
+            }
 
             core.setOutput('pr_number', String(pr.data.number));
             core.setOutput('head_ref', pr.data.head.ref);
@@ -142,7 +170,7 @@ jobs:
 
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -262,16 +290,31 @@ jobs:
         if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
         working-directory: pr
         run: |
+          set -euo pipefail
+          snapshot_root="test/dotnet.Tests/CompletionTests/snapshots"
           mkdir -p __artifacts
-          git diff --name-only -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/changed-files.txt
-          git status --short test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/status.txt
-          git diff --stat -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/diff-summary.txt
-          tar -czf __artifacts/snapshots.tar.gz test/dotnet.Tests/CompletionTests/snapshots
+
+          # Build the file list packed into the tarball. Updated verified snapshots are either modifications to
+          # tracked files (git diff) or brand-new files for a newly supported shell (git ls-files --others).
+          # __changed-files.txt is only used to build the tarball; it is intentionally not shipped, because the
+          # 'apply' job derives the file list from the extracted tree, not from this list.
+          {
+            git diff --name-only -- "$snapshot_root"
+            git ls-files --others --exclude-standard -- "$snapshot_root"
+          } | grep -E '\.verified\.(sh|zsh|fish|ps1|nu)$' | sort -u > __changed-files.txt || true
+
+          if [ ! -s __changed-files.txt ]; then
+            echo "No updated verified snapshots found to package." >&2
+            exit 1
+          fi
+
+          git diff --stat -- "$snapshot_root" > __artifacts/diff-summary.txt
+          tar -czf __artifacts/snapshots.tar.gz -T __changed-files.txt
           printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Upload snapshot artifacts
         if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cli-completion-snapshots
           path: pr/__artifacts
@@ -290,7 +333,7 @@ jobs:
 
       - name: Upload failure diagnostics
         if: steps.evaluate.outputs.status == 'failed'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cli-completion-failure
           path: pr/__failure
@@ -314,42 +357,68 @@ jobs:
 
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: ${{ needs.authorize.outputs.head_ref }}
+          # Check out the PR head commit by pull-request ref (mirrors the generate job). The branch NAME
+          # (head_ref) is only resolvable for same-repo PRs; refs/pull/<n>/head resolves for any open PR, so
+          # the checkout no longer fails on fork PRs or when the head branch was renamed/deleted.
+          ref: refs/pull/${{ needs.authorize.outputs.pr_number }}/head
           persist-credentials: false
 
       - name: Download snapshot artifacts
         if: needs.generate.outputs.changes == 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: cli-completion-snapshots
           path: artifact
 
-      - name: Apply snapshot updates
+      - name: Checkout trusted validation script
         if: needs.generate.outputs.changes == 'true'
-        run: |
-          tar -xzf artifact/snapshots.tar.gz
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          # Always use the canonical validator from the repository's default branch (main), never the PR's copy.
+          # issue_comment workflows already run from the default branch, so this also keeps the script version
+          # matched to this workflow definition regardless of which branch the PR targets.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          path: _validator
+          sparse-checkout: |
+            .github/scripts/validate-change-archive.py
+          sparse-checkout-cone-mode: false
 
       - name: Validate and stage snapshot files
         if: needs.generate.outputs.changes == 'true'
         run: |
-          if [ ! -f artifact/changed-files.txt ]; then
-            echo "Expected list of changed files is missing." >&2
+          set -euo pipefail
+
+          # The artifact comes from the untrusted 'generate' job. Validate and extract it with the shared script
+          # checked out separately above from the trusted default branch (never the PR's copy), then stage only
+          # the repository-relative paths it approves. Only known <name>.verified.<shell-ext> snapshots inside the
+          # snapshot directory are accepted; adding a new shell requires adding its extension here and in the
+          # commit allowlist below.
+          if ! python3 _validator/.github/scripts/validate-change-archive.py \
+              --archive artifact/snapshots.tar.gz \
+              --dest . \
+              --scope test/dotnet.Tests/CompletionTests/snapshots \
+              --ext .verified.sh \
+              --ext .verified.zsh \
+              --ext .verified.fish \
+              --ext .verified.ps1 \
+              --ext .verified.nu \
+              > __staged-files.nul; then
+            echo "Artifact validation failed." >&2
             exit 1
           fi
 
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            if [[ "$file" == test/dotnet.Tests/CompletionTests/snapshots/* ]]; then
-              git add "$file"
-            else
-              echo "Disallowed file detected in artifact: $file" >&2
-              exit 1
-            fi
-          done < artifact/changed-files.txt
+          mapfile -d '' -t staged_files < __staged-files.nul
+          rm -f __staged-files.nul
+          if [ ${#staged_files[@]} -eq 0 ]; then
+            echo "No snapshot files were present in the artifact." >&2
+            exit 1
+          fi
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message
@@ -366,7 +435,11 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ steps.commit-message.outputs.message }}
           ALLOWED_PATTERNS: |
-            test/dotnet.Tests/CompletionTests/snapshots/**.verified.*
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.sh
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.zsh
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.fish
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.ps1
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.nu
           GIT_USER_NAME: github-actions[bot]
           GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
@@ -410,7 +483,10 @@ jobs:
             fi
           done
 
-          git commit -m "${COMMIT_MESSAGE}"
+          # Defense in depth: disable hooks and gitattributes-driven filters so a
+          # commit can never execute repository- or artifact-supplied code, even
+          # if an unexpected file slipped into .git/ earlier.
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null commit -m "${COMMIT_MESSAGE}"
 
       - name: Push snapshot changes
         if: steps.commit.outcome == 'success'
@@ -435,7 +511,7 @@ jobs:
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ steps.success-comment.outputs.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -461,7 +537,7 @@ jobs:
 
       - name: Comment on PR - No changes
         if: needs.generate.outputs.changes != 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ format('ℹ️ No completion snapshot files needed to be updated. Review [the workflow run]({0}).', env.RUN_URL) }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -496,7 +572,7 @@ jobs:
 
     steps:
       - name: Download failure diagnostics
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: cli-completion-failure
           path: diagnostics
@@ -539,7 +615,7 @@ jobs:
           printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}

@@ -120,6 +120,9 @@
   <data name="VerificationEngine_Error_InstallUnexpectedFail" xml:space="preserve">
     <value>Template installation expected to pass but it had exit code '{0}'.</value>
   </data>
+  <data name="VerificationEngine_Error_NoDirectoryVerifier" xml:space="preserve">
+    <value>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</value>
+  </data>
   <data name="VerificationEngine_Error_ScrubberExtension" xml:space="preserve">
     <value>File extension passed to scrubber should not start with dot.</value>
   </data>

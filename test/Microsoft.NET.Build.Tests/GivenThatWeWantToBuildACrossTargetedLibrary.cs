@@ -5,13 +5,12 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildACrossTargetedLibrary : SdkTest
     {
-        public GivenThatWeWantToBuildACrossTargetedLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_builds_nondesktop_library_successfully_on_all_platforms()
         {
             var testAsset = TestAssetsManager
@@ -29,6 +28,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.pdb",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.json",
+                $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.runtimeconfig.dev.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/Newtonsoft.Json.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
@@ -39,7 +39,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_desktop_library_successfully_on_windows()
         {
             var testAsset = TestAssetsManager
@@ -69,8 +70,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
-        [InlineData("1", "win7-x86", "win7-x86;win7-x64", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm", "win7-x86;linux;WIN7-X86;unix", "osx-10.12", "win8-arm;win8-arm-aot",
+        [TestMethod]
+        [DataRow("1", "win7-x86", "win7-x86;win7-x64", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm", "win7-x86;linux;WIN7-X86;unix", "osx-10.12", "win8-arm;win8-arm-aot",
             $"win7-x86;win7-x64;{ToolsetInfo.LatestWinRuntimeIdentifier}-arm;linux;unix;osx-10.12;win8-arm;win8-arm-aot")]
         public void It_combines_inner_rids_for_restore(
             string identifier,
@@ -113,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().Should().BeEquivalentTo(expectedCombination.Split(';'));
         }
 
-        [Fact]
+        [TestMethod]
         public void OutputPathDoesNotHaveDuplicatedBackslashesInOuterBuild()
         {
             var testProject = new TestProject()
@@ -145,7 +146,8 @@ namespace Microsoft.NET.Build.Tests
             outputPathValue.Trim().Should().NotContain("\\\\");
         }
 
-        [RequiresMSBuildVersionFact("17.9.0.61803")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.9.0.61803")]
         public void OuterBuildImportsUserFile()
         {
             var testProject = new TestProject()

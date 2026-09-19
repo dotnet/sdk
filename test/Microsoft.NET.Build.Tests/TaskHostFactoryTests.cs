@@ -3,15 +3,16 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class TaskHostFactoryTests : SdkTest
     {
-        public TaskHostFactoryTests(ITestOutputHelper log) : base(log) { }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/53787")]
-        [InlineData("NET")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53787")]
+        [DataRow("NET")]
         // dotnet.exe doesn't support launching .Net Framework nodes
 #if NETFRAMEWORK
-        [InlineData("CLR4")]
+        [DataRow("CLR4")]
 #endif
         public void TaskHostFactory_Communication_Works(string runtime)
         {
@@ -68,7 +69,8 @@ namespace Microsoft.NET.Build.Tests
         /// points at <c>MSBuild.exe</c>); only full MSBuild can spawn a CLR4 TaskHost. The
         /// <c>dotnet build</c> launcher cannot launch .NET Framework nodes.
         /// </summary>
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void IMultiThreadableSdkTask_LoadsAndExecutes_InCLR4TaskHost()
         {
             var testProject = new TestProject

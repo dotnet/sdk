@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
@@ -9,20 +9,30 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class TemplateCreatorTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class TemplateCreatorTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public TemplateCreatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public TemplateCreatorTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _environmentSettingsHelper = s_environmentSettingsHelper;
         }
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
 
         private const string TemplateConfigBooleanParam = /*lang=json,strict*/ """
             {
@@ -95,11 +105,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             </Project>
             """;
 
-        [Theory]
-        [InlineData(false, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnFalse)]
-        [InlineData(true, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnTrue)]
-        [InlineData(false, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnFalse)]
-        [InlineData(true, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnTrue)]
+        [TestMethod]
+        [DataRow(false, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnFalse)]
+        [DataRow(true, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnTrue)]
+        [DataRow(false, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnFalse)]
+        [DataRow(true, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnTrue)]
         public async Task InstantiateAsync_XmlConditionsAndComments(bool paramA, string sourceSnippet, string expectedOutput)
         {
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
@@ -150,15 +160,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
             """;
 
-        [Theory]
+        [TestMethod]
         // basic choice
-        [InlineData("FirstChoice", "FIRST", false)]
+        [DataRow("FirstChoice", "FIRST", false)]
         // nonexistent choice
-        [InlineData("Invalid", "UNKNOWN", true)]
+        [DataRow("Invalid", "UNKNOWN", true)]
         // value not set - default used
-        [InlineData(null, "SECOND", false)]
+        [DataRow(null, "SECOND", false)]
         // explicit unset
-        [InlineData("", "UNKNOWN", false)]
+        [DataRow("", "UNKNOWN", false)]
         public async Task InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
         {
             string sourceSnippet = """
@@ -210,11 +220,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
             """;
 
-        [Theory]
-        [InlineData(false, true, false, "B,", false)]
-        [InlineData(true, false, false, "A,", true)]
+        [TestMethod]
+        [DataRow(false, true, false, "B,", false)]
+        [DataRow(true, false, false, "A,", true)]
         // Theoretically the result is deterministic, but we'd need to understand the expression tree as well (and purge it)
-        [InlineData(true, false, true, "B,C", true)]
+        [DataRow(true, false, true, "B,C", true)]
         public async Task InstantiateAsync_ConditionalParametersCycleEvaluation(bool a_val, bool b_val, bool c_val, string expectedOutput, bool instantiateShouldFail)
         {
             //
@@ -278,17 +288,17 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             }
             """;
 
-        [Theory]
-        [InlineData(false, true, false, "B,", false, null)]
-        [InlineData(true, false, false, "A,", false, null)]
-        [InlineData(null, null, true, "C", true, "B")]
-        [InlineData(null, true, false, "C", true, "A")]
-        [InlineData(null, null, false, "C", true, "A, B")]
-        [InlineData(null, null, null, "B,", true, "A, B")]
-        [InlineData(null, true, null, "B,", true, "A")]
-        [InlineData(null, false, null, "", false, null)]
-        [InlineData(false, false, false, "", false, null)]
-        [InlineData(true, false, true, "A,C", false, null)]
+        [TestMethod]
+        [DataRow(false, true, false, "B,", false, null)]
+        [DataRow(true, false, false, "A,", false, null)]
+        [DataRow(null, null, true, "C", true, "B")]
+        [DataRow(null, true, false, "C", true, "A")]
+        [DataRow(null, null, false, "C", true, "A, B")]
+        [DataRow(null, null, null, "B,", true, "A, B")]
+        [DataRow(null, true, null, "B,", true, "A")]
+        [DataRow(null, false, null, "", false, null)]
+        [DataRow(false, false, false, "", false, null)]
+        [DataRow(true, false, true, "A,C", false, null)]
         public async Task InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string? expectedErrorMessage)
         {
             //
@@ -317,11 +327,15 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 .Where(p => p.Value != null)
                 .ToDictionary(p => p.Key, p => p.Value);
 
+            string formattedExpectedOutput =
+                expectedOutput.Length <= 2
+                    ? expectedOutput
+                    : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}");
+
             await InstantiateAsyncHelper(
                 TemplateConfigIsRequiredCondition,
                 sourceSnippet,
-                // To make the test data more compact we have left out the newlines - let's add them back here
-                expectedOutput.Length <= 2 ? expectedOutput : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}"),
+                formattedExpectedOutput,
                 expectedErrorMessage,
                 instantiateShouldFail,
                 parameters1: parameters);
@@ -357,19 +371,19 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             }
             """;
 
-        [Theory]
-        [InlineData(false, false, null, null, "", false, null)]
-        [InlineData(true, false, null, null, "", true, "A")]
-        [InlineData(true, false, null, "x", "", true, "A")]
-        [InlineData(true, true, "false", "false", "", false, null)]
-        [InlineData(true, false, "true", null, "A,", false, null)]
-        [InlineData(false, true, null, null, "", true, "B")]
-        [InlineData(true, true, null, null, "", true, "A, B")]
-        [InlineData(null, null, null, null, "", false, null)]
-        [InlineData(null, true, null, "true", "B,", false, null)]
-        [InlineData(true, null, "true", "false", "A,", false, null)]
-        [InlineData(true, null, "true", null, "A,", false, null)]
-        [InlineData(null, true, null, null, "", true, "B")]
+        [TestMethod]
+        [DataRow(false, false, null, null, "", false, null)]
+        [DataRow(true, false, null, null, "", true, "A")]
+        [DataRow(true, false, null, "x", "", true, "A")]
+        [DataRow(true, true, "false", "false", "", false, null)]
+        [DataRow(true, false, "true", null, "A,", false, null)]
+        [DataRow(false, true, null, null, "", true, "B")]
+        [DataRow(true, true, null, null, "", true, "A, B")]
+        [DataRow(null, null, null, null, "", false, null)]
+        [DataRow(null, true, null, "true", "B,", false, null)]
+        [DataRow(true, null, "true", "false", "A,", false, null)]
+        [DataRow(true, null, "true", null, "A,", false, null)]
+        [DataRow(null, true, null, null, "", true, "B")]
         public async Task InstantiateAsync_ConditionalParametersRequiredOverwrittenByDisabled(
             bool? a_enable_val,
             bool? b_enable_val,
@@ -436,14 +450,14 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             }
             """;
 
-        [Theory]
-        [InlineData(false, false, "", false, null)]
-        [InlineData(false, true, "A,", false, null)]
-        [InlineData(false, null, "", false, null)]
-        [InlineData(true, false, "", false, null)]
-        [InlineData(true, true, "", false, null)]
-        [InlineData(null, false, "", false, null)]
-        [InlineData(null, true, "A,", false, null)]
+        [TestMethod]
+        [DataRow(false, false, "", false, null)]
+        [DataRow(false, true, "A,", false, null)]
+        [DataRow(false, null, "", false, null)]
+        [DataRow(true, false, "", false, null)]
+        [DataRow(true, true, "", false, null)]
+        [DataRow(null, false, "", false, null)]
+        [DataRow(null, true, "A,", false, null)]
         public async Task InstantiateAsync_ConditionalParametersInversedEnablingCondition(
             bool? a_disable_val,
             bool? a,
@@ -538,13 +552,13 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 }
             """;
 
-        [Theory]
-        [InlineData(ParamSnippetStringNoDefault, "", true, "Failed to evaluate condition IsEnabled on parameter A (condition text: !IsDisabled, evaluation error: Unable to logical not System.String)")]
-        [InlineData(ParamSnippetStringDefault, "A,", false, null)]
-        [InlineData(ParamSnippetBooleanNoDefault, "A,", false, null)]
-        [InlineData(ParamSnippetBooleanDefaultFalse, "A,", false, null)]
-        [InlineData(ParamSnippetBooleanDefaultTrue, "notA,", false, null)]
-        //[InlineData(false, true, "A,", false, null)]
+        [TestMethod]
+        [DataRow(ParamSnippetStringNoDefault, "", true, "Failed to evaluate condition IsEnabled on parameter A (condition text: !IsDisabled, evaluation error: Unable to logical not System.String)")]
+        [DataRow(ParamSnippetStringDefault, "A,", false, null)]
+        [DataRow(ParamSnippetBooleanNoDefault, "A,", false, null)]
+        [DataRow(ParamSnippetBooleanDefaultFalse, "A,", false, null)]
+        [DataRow(ParamSnippetBooleanDefaultTrue, "notA,", false, null)]
+        //[DataRow(false, true, "A,", false, null)]
         public async Task InstantiateAsync_ConditionalParametersEvaluationBehavior(
             string paramSnippet,
             string expectedOutput,
@@ -620,12 +634,12 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             }
             """;
 
-        [Theory]
-        [InlineData(null, true, false, null, false, null, /*c_val*/ true, "C", false, "")]
-        [InlineData(true, true, true, null, false, null, /*c_val*/ false, "parA,", false, "")]
-        [InlineData(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
-        [InlineData(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]
-        [InlineData(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition): B (parameter)")]
+        [TestMethod]
+        [DataRow(null, true, false, null, false, null, /*c_val*/ true, "C", false, "")]
+        [DataRow(true, true, true, null, false, null, /*c_val*/ false, "parA,", false, "")]
+        [DataRow(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
+        [DataRow(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]
+        [DataRow(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: parB (parameter): <null>.")]
         public async Task InstantiateAsync_ConditionalParametersWithExternalEvaluation(
             bool? a_val,
             bool? a_enabled,
@@ -704,11 +718,11 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             }
             """;
 
-        [Theory]
-        [InlineData(TemplateConfigPreferDefaultNameWithDefaultName, "thisIsAName", "./thisIsAName.cs", false, "")]
-        [InlineData(TemplateConfigPreferDefaultNameWithDefaultName, null, "./defaultName.cs", false, "")]
-        [InlineData(TemplateConfigNoPreferDefaultNameWithDefaultName, null, "./tst2.cs", false, "")]
-        [InlineData(TemplateConfigPreferDefaultNameWithoutDefaultName, null, "./tst2.cs", true, "Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.")]
+        [TestMethod]
+        [DataRow(TemplateConfigPreferDefaultNameWithDefaultName, "thisIsAName", "./thisIsAName.cs", false, "")]
+        [DataRow(TemplateConfigPreferDefaultNameWithDefaultName, null, "./defaultName.cs", false, "")]
+        [DataRow(TemplateConfigNoPreferDefaultNameWithDefaultName, null, "./tst2.cs", false, "")]
+        [DataRow(TemplateConfigPreferDefaultNameWithoutDefaultName, null, "./tst2.cs", true, "Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.")]
         public async Task InstantiateAsync_PreferDefaultName(string templateConfig, string? name, string expectedOutputName, bool instanceFailure, string errorMessage)
         {
             string sourceSnippet = """
@@ -727,12 +741,12 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 expectedOutputName: expectedOutputName);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstantiateAsync_InvalidTemplate()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             const string templateConfig = /*lang=json*/ """
             {
@@ -754,7 +768,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             RunnableProjectGenerator rpg = new();
 
             IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using var runnableConfig = new RunnableProjectConfig(environmentSettings, rpg, templateConfigFile);
 
@@ -767,44 +781,46 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: "test",
                     fallbackName: "test",
                     inputParameters: new Dictionary<string, string?>(),
-                    outputPath: targetDir, cancellationToken: TestContext.Current.CancellationToken);
+                    outputPath: targetDir, cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(CreationResultStatus.TemplateIssueDetected, instantiateResult.Status);
-            Assert.Equal("The template is invalid and cannot be instantiated.", instantiateResult.ErrorMessage);
+            Assert.AreEqual(CreationResultStatus.TemplateIssueDetected, instantiateResult.Status);
+            Assert.AreEqual("The template is invalid and cannot be instantiated.", instantiateResult.ErrorMessage);
 
             string[] errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).ToArray();
             string debugMessage = loggedMessages.Where(m => m.Level == LogLevel.Debug).Select(m => m.Message).Last();
 
-            Assert.Equal(2, errors.Length);
+            Assert.HasCount(2, errors);
 
-            Assert.Equal(
+            Assert.AreEqual(
+                NormalizeLineEndings(
                 """
                 The template 'test' (test.template) has the following validation errors:
                    [Error][MV003] Missing 'shortName'.
 
-                """,
-                errors[0]);
-            Assert.Equal("Failed to load the template 'test' (test.template): the template is not valid.", errors[1]);
-            Assert.Equal(
-            """
-                The template 'test' (test.template) has the following validation messages:
-                   [Info][MV005] Missing 'sourceName'.
-                   [Info][MV006] Missing 'author'.
-                   [Info][MV007] Missing 'groupIdentity'.
-                   [Info][MV008] Missing 'generatorVersions'.
-                   [Info][MV009] Missing 'precedence'.
-                   [Info][MV010] Missing 'classifications'.
+                """),
+                NormalizeLineEndings(errors[0]));
+            Assert.AreEqual("Failed to load the template 'test' (test.template): the template is not valid.", errors[1]);
+            Assert.AreEqual(
+                NormalizeLineEndings(
+                """
+                    The template 'test' (test.template) has the following validation messages:
+                       [Info][MV005] Missing 'sourceName'.
+                       [Info][MV006] Missing 'author'.
+                       [Info][MV007] Missing 'groupIdentity'.
+                       [Info][MV008] Missing 'generatorVersions'.
+                       [Info][MV009] Missing 'precedence'.
+                       [Info][MV010] Missing 'classifications'.
 
-                """,
-            debugMessage);
+                    """),
+                NormalizeLineEndings(debugMessage));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstantiateAsync_InvalidLocalization()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             const string templateConfig = /*lang=json*/ """
             {
@@ -838,9 +854,9 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             RunnableProjectGenerator rpg = new();
 
             IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? templateLocFile = sourceMountPoint.FileInfo(".template.config/localize/templatestrings.de-DE.json");
-            Assert.NotNull(templateLoc);
+            Assert.IsNotNull(templateLoc);
 
             using var runnableConfig = new RunnableProjectConfig(environmentSettings, rpg, templateConfigFile, localeConfigFile: templateLocFile);
 
@@ -853,22 +869,23 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: "test",
                     fallbackName: "test",
                     inputParameters: new Dictionary<string, string?>(),
-                    outputPath: targetDir, cancellationToken: TestContext.Current.CancellationToken);
+                    outputPath: targetDir, cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(CreationResultStatus.Success, instantiateResult.Status);
-            Assert.Null(instantiateResult.ErrorMessage);
+            Assert.AreEqual(CreationResultStatus.Success, instantiateResult.Status);
+            Assert.IsNull(instantiateResult.ErrorMessage);
 
             string error = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).Single();
             string warning = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message).Single();
 
-            Assert.Equal(
+            Assert.AreEqual(
+                NormalizeLineEndings(
                 """
                 The template 'test' (test.template) has the following validation errors in 'de-DE' localization:
                    [Error][LOC002] Post action(s) with id(s) 'pa0' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.
-                
-                """,
-                error);
-            Assert.Equal("Failed to load the 'de-DE' localization the template 'test' (test.template): the localization file is not valid. The localization will be skipped.", warning);
+                 
+                """),
+                NormalizeLineEndings(error));
+            Assert.AreEqual("Failed to load the 'de-DE' localization the template 'test' (test.template): the localization file is not valid. The localization will be skipped.", warning);
         }
 
         private async Task InstantiateAsyncHelper(
@@ -909,7 +926,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             RunnableProjectGenerator rpg = new();
 
             IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, templateConfigFile);
 
@@ -925,7 +942,8 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: name,
                     fallbackName: "tst2",
                     inputParameters: parameters1!,
-                    outputPath: targetDir);
+                    outputPath: targetDir,
+                    cancellationToken: TestContext.CancellationToken);
             }
             else if (parameters2 != null)
             {
@@ -952,13 +970,16 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                         name: name,
                         fallbackName: "tst2",
                         inputParameters: data,
-                        outputPath: targetDir);
+                        outputPath: targetDir,
+                        cancellationToken: TestContext.CancellationToken);
                 }
-                catch (Exception e)
+                catch (Exception e) when (instantiateShouldFail)
                 {
-                    Assert.True(instantiateShouldFail);
-                    Assert.True(instantiateShouldFail);
-                    e.Message.Should().BeEquivalentTo(e.Message);
+                    if (!string.IsNullOrEmpty(expectedErrorMessage))
+                    {
+                        e.Message.Should().BeEquivalentTo(expectedErrorMessage);
+                    }
+
                     return;
                 }
             }
@@ -971,7 +992,8 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: name,
                     fallbackName: "tst2",
                     inputParameters: parameters,
-                    outputPath: targetDir);
+                    outputPath: targetDir,
+                    cancellationToken: TestContext.CancellationToken);
             }
 
             if (instantiateShouldFail)
@@ -1020,5 +1042,8 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
 
             public bool IsNull { get; }
         }
+
+        private static string NormalizeLineEndings(string value)
+            => value.Replace("\r\n", "\n").Replace('\r', '\n').TrimEnd();
     }
 }

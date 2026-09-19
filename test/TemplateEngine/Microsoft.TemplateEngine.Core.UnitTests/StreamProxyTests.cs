@@ -3,13 +3,13 @@
 
 using FluentAssertions;
 using Microsoft.TemplateEngine.Core.Util;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
+    [TestClass]
     public class StreamProxyTests
     {
-        [Fact]
+        [TestMethod]
         public void BytesBufferedIfSizeUnderThreshold()
         {
             byte[] bytes = new byte[256];
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 .Should().BeEquivalentTo(bytesToWrite.Concat(bytesToWrite2), options => options.WithStrictOrdering());
         }
 
-        [Fact]
+        [TestMethod]
         public void BytesSendToTagetIfSizeOverThreshold()
         {
             byte[] bytes = new byte[256];

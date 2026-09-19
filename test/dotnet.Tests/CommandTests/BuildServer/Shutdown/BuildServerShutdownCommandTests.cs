@@ -16,15 +16,16 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
+    [TestClass]
     public class BuildServerShutdownCommandTests : SdkTest
     {
-        public BuildServerShutdownCommandTests(ITestOutputHelper log) : base(log)
+        public BuildServerShutdownCommandTests()
         {
         }
 
         private readonly BufferedReporter _reporter = new();
 
-        [Fact]
+        [TestMethod]
         public void GivenNoOptionsItEnumeratesAllServers()
         {
             var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
@@ -42,7 +43,7 @@ namespace Microsoft.DotNet.Tests.Commands
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.All), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenMSBuildOptionOnlyItEnumeratesOnlyMSBuildServers()
         {
             var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Tests.Commands
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.MSBuild), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenVBCSCompilerOptionOnlyItEnumeratesOnlyVBCSCompilers()
         {
             var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
@@ -78,7 +79,7 @@ namespace Microsoft.DotNet.Tests.Commands
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.VBCSCompiler), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenRazorOptionOnlyItEnumeratesOnlyRazorServers()
         {
             var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
@@ -96,7 +97,7 @@ namespace Microsoft.DotNet.Tests.Commands
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.Razor), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSuccessfulShutdownsItPrintsSuccess()
         {
             var mocks = new[] {
@@ -125,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands
             VerifyShutdownCalls(mocks);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAFailingShutdownItPrintsFailureMessage()
         {
             const string FirstFailureMessage = "first failed!";
@@ -157,7 +158,8 @@ namespace Microsoft.DotNet.Tests.Commands
             VerifyShutdownCalls(mocks);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/3684")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/3684")]
         public void GivenARunningRazorServerItShutsDownSuccessfully()
         {
             var pipeName = Path.GetRandomFileName();

@@ -7,9 +7,10 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests;
 
+[TestClass]
 public class JExtensionsTests
 {
-    [Fact]
+    [TestMethod]
     public void ToInt32ParsesStringPropertyValues()
     {
         JsonObject json = JsonNode.Parse("""

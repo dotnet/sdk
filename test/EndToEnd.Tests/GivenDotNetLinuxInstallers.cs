@@ -6,12 +6,13 @@ using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests;
 
-public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class GivenDotNetLinuxInstallers : SdkTest
 {
     private static readonly string[] ExcludedDebSuffixes = ["-newkey"];
     private static readonly string[] ExcludedRpmSuffixes = ["-newkey", "-azl"];
 
-    [Fact]
+    [TestMethod]
     public void ItHasExpectedDependencies()
     {
         var installerFile = Environment.GetEnvironmentVariable("SDK_INSTALLER_FILE");
@@ -77,7 +78,7 @@ public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdOutMatching(@"dotnet-runtime-\d+(\.\d+){2} >= \d+(\.\d+){2}")
                 .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
 
-    [Fact]
+    [TestMethod]
     public void DebPackagePreservesSymbolicLinks() =>
         FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.Linux,
@@ -106,7 +107,7 @@ public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void RpmPackagePreservesSymbolicLinks() =>
         FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.Linux,

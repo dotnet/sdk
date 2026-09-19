@@ -40,9 +40,11 @@ Additionally, the implicit project file has the following customizations:
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
 
-  - `ArtifactsPath` is set to a [temp directory](#build-outputs).
+  - `ArtifactsPath` is set to a [temp directory](#build-outputs),
+    unless [artifacts output layout][artifacts-output] is enabled.
 
-  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app,
+    unless [artifacts output layout][artifacts-output] is enabled.
 
   - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
     which can be accessed in the app via `AppContext`:
@@ -132,8 +134,8 @@ again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
-Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
-can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
+Sub-commands of `dotnet package add` and `dotnet reference` can be used to manipulate `#:package`/`#:project`/`#:ref` directives in the C# files,
+similarly to what the commands do for project-based apps. For example, `dotnet package add PackageName --file app.cs`.
 
 ## Multiple files
 
@@ -156,7 +158,9 @@ and the conversion process only copying the items that were included in the orig
 
 ## Build outputs
 
-Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+If [artifacts output layout][artifacts-output] is enabled, build outputs of the file-based app are placed there
+(except caching markers which are placed in the global temp directory described next).
+Otherwise, build outputs are placed under a subdirectory whose name is hashed file path of the entry point
 inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
 The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
@@ -179,6 +183,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property TargetFramework=net11.0
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
+#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all
 #:project ../MyLibrary
 #:ref ../lib/lib.cs
 #:include ./**/*.cs
@@ -189,6 +194,41 @@ The value is required for `#:property`, optional for `#:package`/`#:sdk`, and di
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
+
+The remainder of a directive (after the kind) is split into whitespace-separated tokens.
+Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
+A value is written either bare or wrapped entirely in double quotes.
+A quoted value is lexed as a regular C# string literal,
+so its escape sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
+`#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`.
+Verbatim (`@"..."`) and raw (`"""..."""`) string literals are not supported.
+Quotes can only enclose a whole value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
+It is an error if a quote is left unterminated or if a quoted value contains an invalid escape sequence (e.g., `"a\q"`).
+
+`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
+Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
+When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
+The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
+
+Whitespace may surround the separator (`@` or `=`) of any directive,
+so `#:property Xyz="abc "`, `#:property Xyz ="abc "`, and `#:property Xyz = "abc "` are equivalent,
+as are `#:package Package@1.0.0 Note="see the docs"` and `#:package Package @ 1.0.0 Note = "see the docs"`.
+Either side of the separator can be quoted, e.g., `#:package "Humanizer"@2.0`.
+
+Because a bare value keeps a backslash literal while a quoted value follows C# escape rules,
+a Windows path is simplest written bare (`#:project C:\src\lib`)
+or with forward slashes if quoting is needed (`#:project "C:/src/my lib"`);
+quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
+
+For backward compatibility, a directive whose value contains no double quotes is still accepted in a *legacy mode*
+when its trailing whitespace-separated tokens cannot be parsed as the new metadata form:
+the entire remainder after the name and separator is taken verbatim as a single value (including any internal whitespace),
+matching how these directives behaved before quoting and metadata were supported.
+For `#:package`, `#:project`, and `#:ref`, if every trailing token is valid `Name=Value` metadata,
+those tokens are treated as metadata instead; for example, `#:project path A=B` has the value `path` and the metadata `A=B`.
+Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
+flags legacy directives and offers a code fix to rewrite them into the quoted form.
 
 The directives are processed as follows:
 
@@ -201,6 +241,8 @@ The directives are processed as follows:
 
 - Each `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
   It is an error if its name is empty (the value, i.e., package version, is allowed to be empty, but that results in empty `Version=""`).
+  Any trailing `Name=Value` metadata is injected as child elements, e.g.,
+  `<PackageReference Include="{0}" Version="{1}"><ExcludeAssets>runtime</ExcludeAssets></PackageReference>`.
 
   It is valid to have a `#:package` directive without a version.
   That's useful when central package management (CPM) is used.
@@ -208,6 +250,7 @@ The directives are processed as follows:
 
 - Each `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
   It is an error if the value is empty.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
@@ -216,6 +259,7 @@ The directives are processed as follows:
   A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
   and a `<ProjectReference Include="lib.cs.csproj" />` is injected in an `<ItemGroup>`.
   It is an error if the name is empty or if the referenced file does not exist.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
   The referenced file is itself a file-based program with its own virtual project (defaulting to `OutputType=Exe`).
@@ -230,12 +274,10 @@ The directives are processed as follows:
   and a corresponding `<ProjectReference>` entry is added to the converted project.
   The conversion is recursive: any `#:ref` directives in the referenced files are also converted in the same way.
 
-  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableRefDirective=true`.
-
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
   where `{0}` is the directive's value and `{1}` is determined by its extension.
   The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
-  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content`.
+  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference`.
 
   It is an error if the value is empty.
 
@@ -267,14 +309,17 @@ We do not limit these directives to appear only in entry point files because it 
 - which also makes it possible to share it independently or symlink it to multiple script folders,
 - and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us to design some deduplication mechanism in the future.
-Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
-`#:project` and `#:ref` duplicates are allowed because MSBuild allows duplicate `<ProjectReference />` items.
-Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
-even if they end up in the same compilation.
-For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
+Duplicate directives are handled according to the MSBuild construct they represent.
+For `#:sdk`, `#:property`, and `#:package`, directives are considered duplicate if their kind and name are equal case-insensitively.
+If the duplicate has the same unevaluated value (before any MSBuild variable expansion), it is ignored.
+If the duplicate has a different unevaluated value, it is an error (which might be relaxed in the future with smarter deduplication,
+for example, properties could be concatenated via `;`, more specific package versions could override less specific ones.)
+For `#:project`, `#:ref`, `#:include`, and `#:exclude`, duplicates are allowed and translated to the corresponding MSBuild items.
+Any resulting item behavior, including warnings for duplicate `Compile` items, is left to MSBuild and the compiler.
+Directive deduplication allows separate "self-contained" utilities to e.g. reference overlapping sets of packages even if they end up in the same compilation.
 
-During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file.
+During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file when needed.
+Files included with `#:include` are copied into the converted project directory; if an included file is not picked up by the converted project's defaults, the corresponding project item is also written explicitly into an `<ItemGroup>` in the converted project.
 For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
 `#!` directives are also removed during grow up, although we could consider to have an option to preserve them
 (since they might still be valid after grow up, depending on which program they are actually specifying to "interpret" the file, i.e., it might not be `dotnet run` at all).
@@ -284,7 +329,7 @@ For project-based programs, `#:` directives are an error (reported by Roslyn whe
 Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
-#!/usr/bin/dotnet run
+#!/usr/bin/env dotnet
 Console.WriteLine("Hello");
 ```
 
@@ -356,13 +401,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
-#!/usr/bin/env dotnet run
-// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
-```
-```cs
 #!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
+
+```cs
+#!/usr/bin/env dotnet run
+// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
+```
+
 ```cs
 #!/usr/bin/env -S dotnet run
 // ^ Works in some shells.
@@ -383,8 +430,6 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
 
-More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
-
 ### Explicit importing
 
 Instead of implicitly including files from the target directory, the importing could be explicit, like via a directive:
@@ -399,6 +444,6 @@ Instead of implicitly including files from the target directory, the importing c
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [verbose-env]: https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables#dotnet_cli_context_
-[ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
+[ignored-directives]: https://github.com/dotnet/csharplang/blob/c85bbf501958fa86ee2db94b14c82ee8fd2066b9/proposals/csharp-14.0/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
 [temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md

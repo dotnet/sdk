@@ -1,20 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypeNamesShouldNotMatchNamespacesAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpTypeNamesShouldNotMatchNamespacesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypeNamesShouldNotMatchNamespacesAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicTypeNamesShouldNotMatchNamespacesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class TypeNamesShouldNotMatchNamespacesTests
     {
         private static DiagnosticResult CSharpDefaultResultAt(int line, int column, string typeName, string namespaceName)
@@ -45,50 +45,53 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(typeName, namespaceName);
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724CSharpValidNameAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRuleAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Forms
-{
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class Forms
+                {
+                }
+                """,
         CSharpSystemResultAt(2, 14, "Forms", "System.Windows.Forms"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class Forms
-{
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal class Forms
+                {
+                }
 
-public class Outer
-{
-    private class Forms
-    {
-    }
-}
+                public class Outer
+                {
+                    private class Forms
+                    {
+                    }
+                }
 
-internal class Outer2
-{
-    public class Forms
-    {
-    }
-}
-");
+                internal class Outer2
+                {
+                    public class Forms
+                    {
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724CSharpInvalidNameMatchingSdkNamespaceInDefaultRuleAsync()
         {
             await new VerifyCS.Test
@@ -96,197 +99,214 @@ internal class Outer2
                 TestState =
                 {
                     Sources =
-                    { @"
-public class Sdk
-{
-}
-",
+                    { """
+
+                        public class Sdk
+                        {
+                        }
+
+                        """,
                     },
-                    AdditionalReferences =  { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location) }
+                    AdditionalReferences =  { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.NamespaceCollisionMarker).Assembly.Location) }
                 },
                 ExpectedDiagnostics =
                 {
                     CSharpDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoTypesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A.B
-{
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace A.B
+                {
+                }
 
-namespace D
-{
-    public class A {}
-}");
+                namespace D
+                {
+                    public class A {}
+                }
+                """);
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A
-{
-    internal class C { }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace A
+                {
+                    internal class C { }
+                }
 
-namespace D
-{
-    public class A {}
-}");
+                namespace D
+                {
+                    public class A {}
+                }
+                """);
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypes_02Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A
-{
-    namespace B
-    {
-        internal class C { }
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace A
+                {
+                    namespace B
+                    {
+                        internal class C { }
+                    }
+                }
 
-namespace D
-{
-    public class A {}
-}");
+                namespace D
+                {
+                    public class A {}
+                }
+                """);
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_NoDiagnostic_ClashingTypeIsNotExternallyVisibleAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A
-{
-    namespace B
-    {
-        public class C { }
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace A
+                {
+                    namespace B
+                    {
+                        public class C { }
+                    }
+                }
 
-namespace D
-{
-    internal class A {}
-}");
+                namespace D
+                {
+                    internal class A {}
+                }
+                """);
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMemberAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A
-{
-    public class C { }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace D
-{
-    public class A {}
-}",
+                namespace A
+                {
+                    public class C { }
+                }
+
+                namespace D
+                {
+                    public class A {}
+                }
+                """,
             // Test0.cs(9,18): warning CA1724: The type name A conflicts in whole or in part with the namespace name 'A'. Change either name to eliminate the conflict.
             CSharpDefaultResultAt(9, 18, "A", "A"));
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_02Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace B
-{
-    namespace A
-    {
-        public class C { }
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace D
-{
-    public class A {}
-}",
+                namespace B
+                {
+                    namespace A
+                    {
+                        public class C { }
+                    }
+                }
+
+                namespace D
+                {
+                    public class A {}
+                }
+                """,
             // Test0.cs(12,18): warning CA1724: The type name A conflicts in whole or in part with the namespace name 'B.A'. Change either name to eliminate the conflict.
             CSharpDefaultResultAt(12, 18, "A", "B.A"));
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A
-{
-    namespace B
-    {
-        public class C { }
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace D
-{
-    public class A {}
-}",
+                namespace A
+                {
+                    namespace B
+                    {
+                        public class C { }
+                    }
+                }
+
+                namespace D
+                {
+                    public class A {}
+                }
+                """,
             // Test0.cs(12,18): warning CA1724: The type name A conflicts in whole or in part with the namespace name 'A'. Change either name to eliminate the conflict.
             CSharpDefaultResultAt(12, 18, "A", "A"));
         }
 
-        [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
+        [TestMethod, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
         public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespace_02Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace A.B
-{
-    public class C { }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace D
-{
-    public class A {}
-}",
+                namespace A.B
+                {
+                    public class C { }
+                }
+
+                namespace D
+                {
+                    public class A {}
+                }
+                """,
             // Test0.cs(9,18): warning CA1724: The type name A conflicts in whole or in part with the namespace name 'A'. Change either name to eliminate the conflict.
             CSharpDefaultResultAt(9, 18, "A", "A"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724VisualBasicValidNameAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRuleAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class Forms
-End Class",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class Forms
+                End Class
+                """,
         BasicSystemResultAt(2, 14, "Forms", "System.Windows.Forms"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Friend Class Forms
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Friend Class Forms
+                End Class
 
-Public Class Outer
-    Private Class Forms
-    End Class
-End Class
+                Public Class Outer
+                    Private Class Forms
+                    End Class
+                End Class
 
-Friend Class Outer2
-    Public Class Forms
-    End Class
-End Class
-");
+                Friend Class Outer2
+                    Public Class Forms
+                    End Class
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1724VisualBasicInvalidNameMatchingSdkNamespaceInDefaultRuleAsync()
         {
             await new VerifyVB.Test
@@ -295,17 +315,19 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-Public Class Sdk
-End Class"
+                        """
+
+                            Public Class Sdk
+                            End Class
+                            """
                     },
-                    AdditionalReferences = { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location) }
+                    AdditionalReferences = { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.NamespaceCollisionMarker).Assembly.Location) }
                 },
                 ExpectedDiagnostics =
                 {
                     BasicDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

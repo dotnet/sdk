@@ -15,9 +15,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     using static AnalyzerAssemblyGenerator;
 
+    [TestClass]
     public class FilterDiagnosticsTests : CSharpFormatterTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestFilterWarning()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -35,11 +36,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Single(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.ContainsSingle(analyzers);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFilterError()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -57,11 +58,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Empty(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.IsEmpty(analyzers);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFilterDiagnostics_NotInDiagnosticsList()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -79,11 +80,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Empty(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.IsEmpty(analyzers);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFilterDiagnostics_InDiagnosticsList()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -101,11 +102,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Single(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.ContainsSingle(analyzers);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFilterDiagnostics_ExcludedFromDiagnosticsList()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -123,11 +124,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Empty(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.IsEmpty(analyzers);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFilterDiagnostics_ExcludeTrumpsInclude()
         {
             var (_, solution) = await GetSolutionAsync();
@@ -145,8 +146,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 diagnostics,
                 excludeDiagnostics,
                 CancellationToken.None);
-            var (_, analyzers) = Assert.Single(result);
-            Assert.Empty(analyzers);
+            var (_, analyzers) = Assert.ContainsSingle(result);
+            Assert.IsEmpty(analyzers);
         }
 
         private static async Task<AnalyzersAndFixers> GetAnalyzersAndFixersAsync(string language)

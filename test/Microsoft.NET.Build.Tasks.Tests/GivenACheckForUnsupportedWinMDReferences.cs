@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACheckForUnsupportedWinMDReferences
     {
-        [Fact]
+        [TestMethod]
         public void NoReferences_Succeeds()
         {
             var task = new CheckForUnsupportedWinMDReferences
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void NullReferencePaths_Throws()
         {
             var task = new CheckForUnsupportedWinMDReferences
@@ -34,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             act.Should().Throw<NullReferenceException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyItemSpec_HandlesGracefully()
         {
             var task = new CheckForUnsupportedWinMDReferences
@@ -51,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue("empty ItemSpec has no .winmd extension");
         }
 
-        [Fact]
+        [TestMethod]
         public void WinMDExtensionOnly_LogsError()
         {
             var task = new CheckForUnsupportedWinMDReferences
@@ -68,7 +69,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeFalse("a bare .winmd reference triggers an error");
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativePathItemSpec_HandlesCorrectly()
         {
             const string relativeWinmdPath = "subfolder/something.winmd";

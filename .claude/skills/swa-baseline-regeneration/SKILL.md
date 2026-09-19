@@ -84,12 +84,12 @@ The repo includes `src/RazorSdk/update-test-baselines.ps1`:
 
 ```powershell
 # Regenerate:
-dotnet test --no-build -c Release -l "console;verbosity=normal" <TestProject> `
-  -e ASPNETCORE_TEST_BASELINES=true --filter AspNetCore=BaselineTest
+dotnet test --project <TestProject> --no-build -c Release -v normal `
+  --environment ASPNETCORE_TEST_BASELINES=true --filter "TestCategory=BaselineTest"
 
 # Validate:
-dotnet test --no-build -c Release -l "console;verbosity=normal" <TestProject> `
-  --filter AspNetCore=BaselineTest
+dotnet test --project <TestProject> --no-build -c Release -v normal `
+  --filter "TestCategory=BaselineTest"
 ```
 
 ## Test Classes That Use Baselines

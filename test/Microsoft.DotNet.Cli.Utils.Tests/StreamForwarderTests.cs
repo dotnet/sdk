@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,9 +7,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace StreamForwarderTests
 {
+    [TestClass]
     public class StreamForwarderTests : SdkTest
     {
-        public StreamForwarderTests(ITestOutputHelper log) : base(log)
+        public StreamForwarderTests()
         {
         }
 
@@ -34,16 +35,16 @@ namespace StreamForwarderTests
             }
         }
 
-        [Theory]
-        [InlineData("123")]
-        [InlineData("123\n")]
+        [TestMethod]
+        [DataRow("123")]
+        [DataRow("123\n")]
         public void TestNoForwardingNoCapture(string inputStr)
         {
             TestCapturingAndForwardingHelper(ForwardOptions.None, inputStr, null, new string[0]);
         }
 
-        [Theory]
-        [MemberData(nameof(ForwardingTheoryVariations))]
+        [TestMethod]
+        [DynamicData(nameof(ForwardingTheoryVariations))]
         public void TestForwardingOnly(string inputStr, string[] expectedWrites)
         {
             for (int i = 0; i < expectedWrites.Length; ++i)
@@ -54,8 +55,8 @@ namespace StreamForwarderTests
             TestCapturingAndForwardingHelper(ForwardOptions.WriteLine, inputStr, null, expectedWrites);
         }
 
-        [Theory]
-        [MemberData(nameof(ForwardingTheoryVariations))]
+        [TestMethod]
+        [DynamicData(nameof(ForwardingTheoryVariations))]
         public void TestCaptureOnly(string inputStr, string[] expectedWrites)
         {
             for (int i = 0; i < expectedWrites.Length; ++i)
@@ -68,8 +69,8 @@ namespace StreamForwarderTests
             TestCapturingAndForwardingHelper(ForwardOptions.Capture, inputStr, expectedCaptured, new string[0]);
         }
 
-        [Theory]
-        [MemberData(nameof(ForwardingTheoryVariations))]
+        [TestMethod]
+        [DynamicData(nameof(ForwardingTheoryVariations))]
         public void TestCaptureAndForwardingTogether(string inputStr, string[] expectedWrites)
         {
             for (int i = 0; i < expectedWrites.Length; ++i)
@@ -104,10 +105,10 @@ namespace StreamForwarderTests
             }
 
             forwarder.Read(new StringReader(str));
-            Assert.Equal(expectedWrites, writes);
+            writes.Should().Equal(expectedWrites);
 
             var captured = forwarder.CapturedOutput;
-            Assert.Equal(expectedCaptured, captured);
+            Assert.AreEqual(expectedCaptured, captured);
         }
     }
 }

@@ -6,13 +6,14 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Workload.Tests;
 
+[TestClass]
 public class WorkloadUtilitiesTests : SdkTest
 {
-    public WorkloadUtilitiesTests(ITestOutputHelper log) : base(log)
+    public WorkloadUtilitiesTests()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldVerifySignatures_ParameterlessOverload_EquivalentToSkipFalse()
     {
         // The parameterless overload should return the same result as passing skipSignCheck: false.
@@ -22,7 +23,8 @@ public class WorkloadUtilitiesTests : SdkTest
         resultParameterless.Should().Be(resultExplicit);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ShouldVerifySignatures_OnWindows_WithSkipTrue_ReturnsFalseOrThrows()
     {
         // On Windows, when skipSignCheck is true and no policy forces verification,
@@ -42,7 +44,7 @@ public class WorkloadUtilitiesTests : SdkTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldVerifySignatures_WithSkipFalse_ReturnsBoolBasedOnPlatformAndSigningState()
     {
         // ShouldVerifySignatures(false) should return true only on Windows when dotnet is signed.

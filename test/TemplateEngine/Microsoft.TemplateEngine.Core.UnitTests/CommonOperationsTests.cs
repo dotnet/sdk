@@ -7,20 +7,28 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class CommonOperationsTests : IClassFixture<TestLoggerFactory>
+    [TestClass]
+    public class CommonOperationsTests
     {
+        private static TestLoggerFactory s_loggerFactory = null!;
         private readonly ILogger _logger;
 
-        public CommonOperationsTests(TestLoggerFactory testLoggerFactory)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_loggerFactory = new TestLoggerFactory();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_loggerFactory?.Dispose();
+
+        public CommonOperationsTests()
         {
-            _logger = testLoggerFactory.CreateLogger();
+            _logger = s_loggerFactory.CreateLogger();
         }
 
-        [Fact(DisplayName = nameof(VerifyTrimWhitespaceForward))]
+        [TestMethod]
         public void VerifyTrimWhitespaceForward()
         {
             MockOperation o = new MockOperation(
@@ -40,12 +48,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("    There", outcomeString);
+            Assert.AreEqual("    There", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyTrimWhitespaceBackward))]
+        [TestMethod]
         public void VerifyTrimWhitespaceBackward()
         {
             MockOperation o = new MockOperation(
@@ -65,12 +73,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n", outcomeString);
+            Assert.AreEqual("Hello    \r\n", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyTrimWhitespaceBothDirections))]
+        [TestMethod]
         public void VerifyTrimWhitespaceBothDirections()
         {
             MockOperation o = new MockOperation(
@@ -90,12 +98,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyTrimWhitespaceNeitherDirection))]
+        [TestMethod]
         public void VerifyTrimWhitespaceNeitherDirection()
         {
             MockOperation o = new MockOperation(
@@ -115,12 +123,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n        \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n        \r\n    You", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyConsumeWholeLine))]
+        [TestMethod]
         public void VerifyConsumeWholeLine()
         {
             MockOperation o = new MockOperation(
@@ -140,20 +148,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [Theory(DisplayName = nameof(VerifyWhitespaceHandlerConsumeWholeLine))]
-        [InlineData(false, false, false)]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, false)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
+        [TestMethod]
+        [DataRow(false, false, false)]
+        [DataRow(false, false, true)]
+        [DataRow(false, true, false)]
+        [DataRow(false, true, true)]
+        [DataRow(true, false, false)]
+        [DataRow(true, false, true)]
+        [DataRow(true, true, false)]
+        [DataRow(true, true, true)]
         public void VerifyWhitespaceHandlerConsumeWholeLine(bool trim, bool trimForward, bool trimBackward)
         {
             MockOperation o = new MockOperation(
@@ -173,16 +181,16 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [Theory(DisplayName = nameof(VerifyWhitespaceHandlerTrim))]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void VerifyWhitespaceHandlerTrim(bool trimForward, bool trimBackward)
         {
             MockOperation o = new MockOperation(
@@ -202,13 +210,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             result.Position = 0;
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimForwardButNotBack))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimForwardButNotBack()
         {
             MockOperation o = new MockOperation(
@@ -228,12 +236,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n        You", outcomeString);
+            Assert.AreEqual("Hello    \r\n        You", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackButNotForward))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimBackButNotForward()
         {
             MockOperation o = new MockOperation(
@@ -253,12 +261,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n     \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n     \r\n    You", outcomeString);
         }
 
-        [Fact(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackAndForward))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimBackAndForward()
         {
             MockOperation o = new MockOperation(
@@ -278,9 +286,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
 
-            Assert.True(modified);
+            Assert.IsTrue(modified);
             string outcomeString = Encoding.UTF8.GetString(result.ToArray());
-            Assert.Equal("Hello    \r\n    You", outcomeString);
+            Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
     }
 }

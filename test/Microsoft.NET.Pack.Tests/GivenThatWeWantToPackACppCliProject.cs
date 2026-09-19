@@ -1,17 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackACppCliProject : SdkTest
     {
-        public GivenThatWeWantToPackACppCliProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void It_cannot_pack_the_cppcliproject()
         {
             var testAsset = TestAssetsManager

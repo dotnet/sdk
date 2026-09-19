@@ -1,4 +1,8 @@
-﻿module Company.TestProject1
+﻿#if (TestRunner == "Microsoft.Testing.Platform")
+module Company.TestProject1.Tests
+#else
+module Company.TestProject1
+#endif
 
 open NUnit.Framework
 

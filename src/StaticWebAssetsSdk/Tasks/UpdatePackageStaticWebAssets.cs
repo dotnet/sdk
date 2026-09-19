@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class UpdatePackageStaticWebAssets : Task
+[MSBuildMultiThreadableTask]
+public class UpdatePackageStaticWebAssets : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -49,14 +53,14 @@ public class UpdatePackageStaticWebAssets : Task
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
                     originalAssets.Add(candidate);
-                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
+                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate, TaskEnvironment).ToTaskItem());
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
                     originalAssets.Add(candidate);
-                    var asset = StaticWebAsset.FromV1TaskItem(candidate);
+                    var asset = StaticWebAsset.FromV1TaskItem(candidate, TaskEnvironment);
                     var (transformed, oldPath, oldBasePath) = StaticWebAsset.MaterializeFrameworkAsset(
-                        asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log);
+                        asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log, TaskEnvironment);
                     if (transformed != null)
                     {
                         updatedAssets.Add(transformed.ToTaskItem());

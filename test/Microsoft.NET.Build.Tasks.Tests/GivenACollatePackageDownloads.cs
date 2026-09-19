@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACollatePackageDownloads
     {
-        [Fact]
+        [TestMethod]
         public void GroupsVersions()
         {
             var task = new CollatePackageDownloads
@@ -29,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             nugetCommon!.GetMetadata("Version").Should().Contain("[5.0.0]").And.Contain("[6.0.0]");
         }
 
-        [Fact]
+        [TestMethod]
         public void SingleVersion()
         {
             var task = new CollatePackageDownloads
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackageDownloads[0].GetMetadata("Version").Should().Be("[1.0.0]");
         }
 
-        [Fact]
+        [TestMethod]
         public void NullPackages_Throws()
         {
             var task = new CollatePackageDownloads
@@ -59,7 +60,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             act.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyArray_Succeeds()
         {
             var task = new CollatePackageDownloads
@@ -72,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackageDownloads.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyItemSpec_HandlesGracefully()
         {
             var task = new CollatePackageDownloads
@@ -90,8 +91,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackageDownloads[0].GetMetadata("Version").Should().Be("[1.0.0]");
         }
 
-        [Theory]
-        [InlineData("packages/NuGet.Common")]
+        [TestMethod]
+        [DataRow("packages/NuGet.Common")]
         public void PathItemSpec_PreservesFormat(string pathSpec)
         {
             var task = new CollatePackageDownloads
@@ -113,7 +114,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         // Backslash is only a path separator on Windows. On Linux, TaskItem normalizes '\' to '/'.
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void PathItemSpec_PreservesBackslashOnWindows()
         {
             var pathSpec = "packages\\NuGet.Common";

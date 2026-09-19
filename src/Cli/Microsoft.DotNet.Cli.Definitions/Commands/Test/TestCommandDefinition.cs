@@ -14,6 +14,7 @@ internal abstract partial class TestCommandDefinition : Command
     private const string Link = "https://aka.ms/dotnet-test";
     private const string VSTestRunnerName = "VSTest";
     private const string MicrosoftTestingPlatformRunnerName = "Microsoft.Testing.Platform";
+    private const string TestRunnerEnvironmentVariableName = "DOTNET_TEST_RUNNER";
 
     public readonly TargetPlatformOptions TargetPlatformOptions = new(CommandDefinitionStrings.TestRuntimeOptionDescription);
 
@@ -31,20 +32,41 @@ internal abstract partial class TestCommandDefinition : Command
     }
 
     public static TestCommandDefinition Create()
+        => Create(Environment.CurrentDirectory, Environment.GetEnvironmentVariable(TestRunnerEnvironmentVariableName));
+
+    internal static TestCommandDefinition Create(string startDirectory)
+        => Create(startDirectory, Environment.GetEnvironmentVariable(TestRunnerEnvironmentVariableName));
+
+    internal static TestCommandDefinition Create(string startDirectory, string? testRunnerEnvironmentValue)
     {
-        string? globalJsonPath = GetGlobalJsonPath(Environment.CurrentDirectory);
-        if (!File.Exists(globalJsonPath))
+        // The DOTNET_TEST_RUNNER environment variable lets users pick a runner without editing
+        // (or carrying multiple) global.json files. When set to a recognized value it takes
+        // precedence over the global.json `test.runner` setting.
+        //
+        // The runner name is resolved during CLI parser construction, which runs for *every*
+        // dotnet invocation (e.g. `dotnet --version`, `dotnet build`), so an unrecognized env
+        // var value must not crash unrelated commands. Unknown/whitespace values silently fall
+        // back to the global.json lookup; an unknown value in global.json itself remains a
+        // hard error because that file is explicit, in-repo configuration the user can fix.
+        string? trimmedEnvValue = testRunnerEnvironmentValue?.Trim();
+        if (!string.IsNullOrEmpty(trimmedEnvValue) && TryResolveRunner(trimmedEnvValue) is { } runnerFromEnv)
+        {
+            return runnerFromEnv;
+        }
+
+        string? globalJsonRunnerName = TryGetRunnerNameFromGlobalJson(startDirectory);
+        if (globalJsonRunnerName is null)
         {
             return new VSTest();
         }
 
-        string jsonText = File.ReadAllText(globalJsonPath);
+        return TryResolveRunner(globalJsonRunnerName)
+            ?? throw new InvalidOperationException(string.Format(CommandDefinitionStrings.CmdUnsupportedTestRunnerDescription, globalJsonRunnerName));
+    }
 
-        var globalJson = JsonSerializer.Deserialize(jsonText, GlobalJsonSerializerContext.Default.GlobalJsonModel);
-
-        var name = globalJson?.Test?.RunnerName;
-
-        if (name is null || name.Equals(VSTestRunnerName, StringComparison.OrdinalIgnoreCase))
+    private static TestCommandDefinition? TryResolveRunner(string name)
+    {
+        if (name.Equals(VSTestRunnerName, StringComparison.OrdinalIgnoreCase))
         {
             return new VSTest();
         }
@@ -54,7 +76,32 @@ internal abstract partial class TestCommandDefinition : Command
             return new MicrosoftTestingPlatform();
         }
 
-        throw new InvalidOperationException(string.Format(CommandDefinitionStrings.CmdUnsupportedTestRunnerDescription, name));
+        return null;
+    }
+
+    private static string? TryGetRunnerNameFromGlobalJson(string startDirectory)
+    {
+        string? globalJsonPath = GetGlobalJsonPath(startDirectory);
+        if (globalJsonPath is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            string jsonText = File.ReadAllText(globalJsonPath);
+            GlobalJsonModel? globalJson = JsonSerializer.Deserialize(jsonText, GlobalJsonSerializerContext.Default.GlobalJsonModel);
+            return globalJson?.Test?.RunnerName;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            // The global.json file is unreadable or malformed (for example, empty or mid-edit). This
+            // method is invoked very early during CLI parser construction, so throwing here would
+            // bring down ALL commands (including `dotnet --version`). Fall back to the default
+            // runner; if the user actually runs `dotnet test`, the test command itself will surface
+            // a clearer error when it tries to load the configuration.
+            return null;
+        }
     }
 
     private static string? GetGlobalJsonPath(string? startDir)

@@ -12,6 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     using static AnalyzerAssemblyGenerator;
 
+    [TestClass]
     public class LoadAnalyzersAndFixersTests
     {
         private static AnalyzersAndFixers GetAnalyzersAndFixers(IEnumerable<Assembly> assemblies, string language)
@@ -28,8 +29,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             return new AnalyzersAndFixers(analyzers, codeFixes);
         }
 
-        [Fact]
-        public static async Task TestSingleAnalyzerAndFixerAsync()
+        [TestMethod]
+        public async Task TestSingleAnalyzerAndFixerAsync()
         {
             var assemblies = new[]
             {
@@ -39,15 +40,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             };
 
             var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
-            var analyzer = Assert.Single(analyzers);
-            var fixer = Assert.Single(fixers);
-            var analyzerDiagnosticDescriptor = Assert.Single(analyzer.SupportedDiagnostics);
-            var fixerDiagnosticId = Assert.Single(fixer.FixableDiagnosticIds);
-            Assert.Equal(analyzerDiagnosticDescriptor.Id, fixerDiagnosticId);
+            var analyzer = Assert.ContainsSingle(analyzers);
+            var fixer = Assert.ContainsSingle(fixers);
+            var analyzerDiagnosticDescriptor = Assert.ContainsSingle(analyzer.SupportedDiagnostics);
+            var fixerDiagnosticId = Assert.ContainsSingle(fixer.FixableDiagnosticIds);
+            Assert.AreEqual(analyzerDiagnosticDescriptor.Id, fixerDiagnosticId);
         }
 
-        [Fact]
-        public static async Task TestMultipleAnalyzersAndFixersAsync()
+        [TestMethod]
+        public async Task TestMultipleAnalyzersAndFixersAsync()
         {
             var assemblies = new[]
             {
@@ -59,12 +60,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             };
 
             var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
-            Assert.Equal(2, analyzers.Length);
-            Assert.Equal(2, fixers.Length);
+            Assert.HasCount(2, analyzers);
+            Assert.HasCount(2, fixers);
         }
 
-        [Fact]
-        public static async Task TestMultipleAnalyzersAndFixersFromTwoAssembliesAsync()
+        [TestMethod]
+        public async Task TestMultipleAnalyzersAndFixersFromTwoAssembliesAsync()
         {
             var assemblies = new[]
             {
@@ -76,8 +77,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateCodeFix("CodeFixProvider2", "DiagnosticAnalyzerId2")),
             };
             var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
-            Assert.Equal(2, analyzers.Length);
-            Assert.Equal(2, fixers.Length);
+            Assert.HasCount(2, analyzers);
+            Assert.HasCount(2, fixers);
         }
     }
 }

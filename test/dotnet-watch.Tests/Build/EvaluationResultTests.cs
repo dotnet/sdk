@@ -8,6 +8,7 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class EvaluationResultTests
 {
     public ProjectGraph CreateGraph(TestDirectory testDir, params (string projectName, string[] targetFrameworks, string[] referencedProjects)[] projects)
@@ -65,9 +66,9 @@ public class EvaluationResultTests
             });
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("net9.0")]
     public void CreateDesignTimeBuildRequests_SingleTfm(string? mainTfm)
     {
         var testDir = TestAssetsManager.CreateTestDirectory(identifiers: [mainTfm]);
@@ -81,9 +82,9 @@ public class EvaluationResultTests
         AssertEx.SequenceEqual(["main (net9.0)"], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("net9.0")]
     public void CreateDesignTimeBuildRequests_SingleTfm_WithDependencies(string? mainTfm)
     {
         var testDir = TestAssetsManager.CreateTestDirectory(identifiers: [mainTfm]);
@@ -102,9 +103,9 @@ public class EvaluationResultTests
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("net9.0")]
     public void CreateDesignTimeBuildRequests_SingleTfm_WithMultiTargetedDependencies(string? mainTfm)
     {
         var testDir = TestAssetsManager.CreateTestDirectory(identifiers: [mainTfm]);
@@ -124,7 +125,7 @@ public class EvaluationResultTests
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
 
-    [Fact]
+    [TestMethod]
     public void CreateDesignTimeBuildRequests_MultiTfm_WithDependencies_NoMainTfm()
     {
         var testDir = TestAssetsManager.CreateTestDirectory();
@@ -145,7 +146,7 @@ public class EvaluationResultTests
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
 
-    [Fact]
+    [TestMethod]
     public void CreateDesignTimeBuildRequests_MultiTfm_WithDependencies_MainTfm()
     {
         var testDir = TestAssetsManager.CreateTestDirectory();

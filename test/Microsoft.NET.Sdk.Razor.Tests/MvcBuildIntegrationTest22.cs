@@ -3,14 +3,14 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [TestClass]
     public class MvcBuildIntegrationTest22 : MvcBuildIntegrationTestLegacy
     {
-        public MvcBuildIntegrationTest22(ITestOutputHelper log) : base(log) { }
-
         public override string TestProjectName => "SimpleMvc22";
         public override string TargetFramework => "netcoreapp2.2";
 
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void BuildProject_UsingDesktopMSBuild()
         {
             var testAsset = $"Razor{TestProjectName}";

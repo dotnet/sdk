@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadClean : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -37,17 +38,17 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             return (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader);
         }
 
-        public GivenDotnetWorkloadClean(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadClean()
         {
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
-        [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [DataRow(true, true)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(false, false)]
         public void GivenWorkloadCleanFileBasedItRemovesPacksAndPackRecords(bool userLocal, bool cleanAll)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, cleanAll);
@@ -74,9 +75,9 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             AssertAdjacentCommandsStillPass(userProfileDir, dotnetRoot, testDirectory, workloadResolver, nugetDownloader);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenWorkloadCleanAllFileBasedItCleansAllFeatureBands(bool userLocal)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
@@ -177,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private void AssertWorkloadInstallationRecordIsRemoved(string workloadInstallationRecordDirectory)
         {
-            Assert.Equal(Directory.GetFiles(workloadInstallationRecordDirectory), Array.Empty<string>());
+            Assert.AreSequenceEqual(Array.Empty<string>(), Directory.GetFiles(workloadInstallationRecordDirectory));
         }
 
         private void AssertValidPackCountsMatchExpected(string installRoot, int expectedPackCount, int expectedPackRecordCount)

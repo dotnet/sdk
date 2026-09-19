@@ -8,9 +8,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class GivenAGetDependsOnNETStandardTask(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public class GivenAGetDependsOnNETStandardTask : SdkTest
     {
-        [Fact]
+        [TestMethod]
         public void CanCheckThisAssembly()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -26,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DependsOnNETStandard.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void CanCheckThisAssemblyByHintPath()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -50,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DependsOnNETStandard.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsFalseForNonPE()
         {
             string testFile = $"testFile.{nameof(GivenAGetDependsOnNETStandardTask)}.{nameof(ReturnsFalseForNonPE)}.txt";
@@ -75,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsFalseForNativeLibrary()
         {
             var corelibLocation = typeof(object).GetTypeInfo().Assembly.Location;
@@ -102,7 +103,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void SucceedsOnMissingFileReturnsFalse()
         {
             var missingFile = $"{nameof(SucceedsOnMissingFileReturnsFalse)}.shouldNotExist.dll";
@@ -119,7 +120,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ((MockBuildEngine)task.BuildEngine).Warnings.Count.Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void SucceedsWithWarningOnLockedFile()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();

@@ -9,11 +9,17 @@
   "symbols/Framework/choices/net11.0/description": "net11.0 cible",
   "symbols/EnablePack/description": "Indique s’il faut activer ou non la création de packages (via « dotnet pack ») pour le projet.",
   "symbols/EnablePack/displayName": "Activer le pack",
+  "symbols/TestRunner/description": "Select the runner/platform.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
+  "symbols/TestRunner/choices/VSTest/description": "Use VSTest platform",
   "symbols/skipRestore/description": "Si spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/skipRestore/displayName": "Ignorer la restauration",
   "symbols/langVersion/description": "Définit la propriété LangVersion dans le fichier projet créé",
   "symbols/langVersion/displayName": "Version du langage",
   "postActions/restoreNugetPackages/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Exécutez « dotnet restore »",
+  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
+  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Ouvre UnitTest1.fs dans l’éditeur"
 }

@@ -6,16 +6,14 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToUseAnalyzers : SdkTest
     {
-        public GivenThatWeWantToUseAnalyzers(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
             var asset = TestAssetsManager
@@ -34,10 +32,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
         }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
         {
             var asset = TestAssetsManager
@@ -56,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
             var asset = TestAssetsManager
@@ -73,10 +71,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Theory]
-        [InlineData("net10.0", true)]
-        [InlineData("net9.0", false)]
-        [InlineData("net8.0", false)]
+        [TestMethod]
+        [DataRow("net10.0", true)]
+        [DataRow("net9.0", false)]
+        [DataRow("net8.0", false)]
         public void It_enables_validationsgenerator_correctly_for_TargetFramework(string targetFramework, bool expectEnabled)
         {
             var asset = TestAssetsManager
@@ -88,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.Extensions.Validation.Generated");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
             var asset = TestAssetsManager
@@ -121,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
+            Assert.AreEqual(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
         }
 
         private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
@@ -149,10 +147,10 @@ namespace Microsoft.NET.Build.Tests
 
             var namespaces = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+            Assert.AreEqual(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
         {
             var testProject = new TestProject()
@@ -193,7 +191,7 @@ namespace Microsoft.NET.Build.Tests
                 class C { public int Value { get; set; } }
                 """;
 
-            // Create a simple non-web project with ASP.NET FrameworkReference 
+            // Create a simple non-web project with ASP.NET FrameworkReference
             var asset = TestAssetsManager
                 .CreateTestProject(testProject);
 
@@ -215,17 +213,17 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Pass();
 
             var namespaces = command.GetValues();
-            
+
             // This should work correctly - the non-web project should get the InterceptorsPreviewNamespaces
             // because the logic was moved from Web SDK to FrameworkReferenceResolution targets
-            Assert.True(namespaces.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration"), 
+            Assert.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration", namespaces,
                 $"Expected InterceptorsPreviewNamespaces to contain 'Microsoft.Extensions.Configuration.Binder.SourceGeneration' but got: [{string.Join(", ", namespaces)}]");
         }
 
-        [Theory]
-        [InlineData("C#", "AppWithLibrary")]
-        [InlineData("VB", "AppWithLibraryVB")]
-        [InlineData("F#", "AppWithLibraryFS")]
+        [TestMethod]
+        [DataRow("C#", "AppWithLibrary")]
+        [DataRow("VB", "AppWithLibraryVB")]
+        [DataRow("F#", "AppWithLibraryFS")]
         public void It_resolves_analyzers_correctly(string language, string testAssetName)
         {
             var asset = TestAssetsManager
@@ -301,7 +299,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_multitargeted_analyzers()
         {
             var testProject = new TestProject()

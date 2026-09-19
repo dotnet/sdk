@@ -6,31 +6,40 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
     public class FirstUpperCaseInvariantValueFormTests
     {
-        [Theory]
-        [InlineData("a", "A", null)]
-        [InlineData("no", "No", null)]
-        [InlineData("new", "New", null)]
-        [InlineData("", "", null)]
-        [InlineData("indigo", "Indigo", "tr-TR")]
-        [InlineData("ındigo", "ındigo", "tr-TR")]
+        [TestMethod]
+        [DataRow("a", "A", null)]
+        [DataRow("no", "No", null)]
+        [DataRow("new", "New", null)]
+        [DataRow("", "", null)]
+        [DataRow("indigo", "Indigo", "tr-TR")]
+        [DataRow("ındigo", "ındigo", "tr-TR")]
         public void FirstUpperCaseInvariantWorksAsExpected(string input, string expected, string? culture)
         {
-            if (!string.IsNullOrEmpty(culture))
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
             {
-                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                if (!string.IsNullOrEmpty(culture))
+                {
+                    CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                }
+                IValueForm model = new FirstUpperCaseInvariantValueFormFactory().Create("test");
+                string actual = model.Process(input, new Dictionary<string, IValueForm>());
+                Assert.AreEqual(expected, actual);
             }
-            IValueForm model = new FirstUpperCaseInvariantValueFormFactory().Create("test");
-            string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new FirstUpperCaseInvariantValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

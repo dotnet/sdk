@@ -4,6 +4,8 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Construction;
+using Microsoft.Build.Definition;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Extensions;
@@ -174,7 +176,12 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
             return;
         }
 
-        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
+        // Only evaluated properties (ProjectGuid, Platforms, Configurations, DefaultProjectTypeGuid) and
+        // ProjectReference items are read from this instance, never targets, so stop after the Items pass
+        // instead of running a full evaluation.
+        ProjectInstance projectInstance = ProjectInstance.FromProjectRootElement(
+            projectRootElement,
+            new ProjectOptions { EvaluationStage = ProjectEvaluationStage.Items });
 
         string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
             ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();

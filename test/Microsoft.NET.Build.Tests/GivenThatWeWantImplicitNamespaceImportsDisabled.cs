@@ -3,13 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantImplicitNamespaceImportsDisabled : SdkTest
     {
-        public GivenThatWeWantImplicitNamespaceImportsDisabled(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_with_implicit_namespace_imports_disabled()
         {
             var asset = TestAssetsManager

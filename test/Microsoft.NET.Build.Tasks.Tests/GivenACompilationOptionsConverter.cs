@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACompilationOptionsConverter
     {
         private static MethodInfo s_convertFromMethod = typeof(GenerateDepsFile)
@@ -17,8 +18,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             .GetType("Microsoft.NET.Build.Tasks.CompilationOptionsConverter")
             .GetMethod("ConvertFrom");
 
-        [Theory]
-        [MemberData(nameof(CompilerOptionsData))]
+        [TestMethod]
+        [DynamicData(nameof(CompilerOptionsData))]
         public void ItConvertsFromITaskItemsCorrectly(ITaskItem taskItem, CompilationOptions expectedOptions)
         {
             CompilationOptions resultOptions = (CompilationOptions)s_convertFromMethod.Invoke(null, new object[] { taskItem });

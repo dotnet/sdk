@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHaveZeroValueAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumsShouldHaveZeroValueFixer>;
@@ -14,88 +13,93 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumsShouldHaveZeroValueFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
-            var code = @"
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        A = 0,
-        B = 3
-    }
-}
+            var code = """
 
-[System.Flags]
-public enum E2
-{
-    A2 = 0,
-    B2 = 1
-}
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        A = 0,
+                        B = 3
+                    }
+                }
 
-[System.Flags]
-public enum E3
-{
-    A3 = (ushort)0,
-    B3 = (ushort)1
-}
+                [System.Flags]
+                public enum E2
+                {
+                    A2 = 0,
+                    B2 = 1
+                }
 
-[System.Flags]
-public enum E4
-{
-    A4 = 0,
-    B4 = (int)2  // Sample comment
-}
+                [System.Flags]
+                public enum E3
+                {
+                    A3 = (ushort)0,
+                    B3 = (ushort)1
+                }
 
-[System.Flags]
-public enum NoZeroValuedField
-{
-    A5 = 1,
-    B5 = 2
-}";
+                [System.Flags]
+                public enum E4
+                {
+                    A4 = 0,
+                    B4 = (int)2  // Sample comment
+                }
 
-            var expectedFixedCode = @"
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        None = 0,
-        B = 3
-    }
-}
+                [System.Flags]
+                public enum NoZeroValuedField
+                {
+                    A5 = 1,
+                    B5 = 2
+                }
+                """;
 
-[System.Flags]
-public enum E2
-{
-    None = 0,
-    B2 = 1
-}
+            var expectedFixedCode = """
 
-[System.Flags]
-public enum E3
-{
-    None = (ushort)0,
-    B3 = (ushort)1
-}
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        None = 0,
+                        B = 3
+                    }
+                }
 
-[System.Flags]
-public enum E4
-{
-    None = 0,
-    B4 = (int)2  // Sample comment
-}
+                [System.Flags]
+                public enum E2
+                {
+                    None = 0,
+                    B2 = 1
+                }
 
-[System.Flags]
-public enum NoZeroValuedField
-{
-    A5 = 1,
-    B5 = 2
-}";
+                [System.Flags]
+                public enum E3
+                {
+                    None = (ushort)0,
+                    B3 = (ushort)1
+                }
+
+                [System.Flags]
+                public enum E4
+                {
+                    None = 0,
+                    B4 = (int)2  // Sample comment
+                }
+
+                [System.Flags]
+                public enum NoZeroValuedField
+                {
+                    A5 = 1,
+                    B5 = 2
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 code,
                 new[]
@@ -108,41 +112,45 @@ public enum NoZeroValuedField
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
-            var code = @"// Some comment
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        None = 0,
-        A = 0
-    }
-}
-// Some comment
-[System.Flags]
-public enum E2
-{
-    None = 0,
-    A = None
-}";
-            var expectedFixedCode = @"// Some comment
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        None = 0
-    }
-}
-// Some comment
-[System.Flags]
-public enum E2
-{
-    None = 0
-}";
+            var code = """
+                // Some comment
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        None = 0,
+                        A = 0
+                    }
+                }
+                // Some comment
+                [System.Flags]
+                public enum E2
+                {
+                    None = 0,
+                    A = None
+                }
+                """;
+            var expectedFixedCode = """
+                // Some comment
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        None = 0
+                    }
+                }
+                // Some comment
+                [System.Flags]
+                public enum E2
+                {
+                    None = 0
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 code,
                 new[]
@@ -153,65 +161,69 @@ public enum E2
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
-            var code = @"
-public class Outer
-{
-    public enum E
-    {
-        A = 1
-    }
+            var code = """
 
-    public enum E2
-    {
-        None = 1,
-        A = 2
-    }
-}
+                public class Outer
+                {
+                    public enum E
+                    {
+                        A = 1
+                    }
 
-public enum E3
-{
-    None = 0,
-    A = 1
-}
+                    public enum E2
+                    {
+                        None = 1,
+                        A = 2
+                    }
+                }
 
-public enum E4
-{
-    None = 0,
-    A = 0
-}
-";
+                public enum E3
+                {
+                    None = 0,
+                    A = 1
+                }
 
-            var expectedFixedCode = @"
-public class Outer
-{
-    public enum E
-    {
-        None,
-        A = 1
-    }
+                public enum E4
+                {
+                    None = 0,
+                    A = 0
+                }
 
-    public enum E2
-    {
-        None,
-        A = 2
-    }
-}
+                """;
 
-public enum E3
-{
-    None = 0,
-    A = 1
-}
+            var expectedFixedCode = """
 
-public enum E4
-{
-    None = 0,
-    A = 0
-}
-";
+                public class Outer
+                {
+                    public enum E
+                    {
+                        None,
+                        A = 1
+                    }
+
+                    public enum E2
+                    {
+                        None,
+                        A = 2
+                    }
+                }
+
+                public enum E3
+                {
+                    None = 0,
+                    A = 1
+                }
+
+                public enum E4
+                {
+                    None = 0,
+                    A = 0
+                }
+
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 code,
                 new[]
@@ -222,64 +234,68 @@ public enum E4
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags>
-    Public Enum E
-        {|#0:A|} = 0
-        B = 1
-    End Enum
-End Class
+            var code = """
 
-<System.Flags>
-Public Enum E2
-    {|#1:A2|} = 0
-    B2 = 1
-End Enum
+                Public Class Outer
+                    <System.Flags>
+                    Public Enum E
+                        {|#0:A|} = 0
+                        B = 1
+                    End Enum
+                End Class
 
-<System.Flags>
-Public Enum E3
-    {|#2:A3|} = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+                <System.Flags>
+                Public Enum E2
+                    {|#1:A2|} = 0
+                    B2 = 1
+                End Enum
 
-<System.Flags>
-Public Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                <System.Flags>
+                Public Enum E3
+                    {|#2:A3|} = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
 
-            var expectedFixedCode = @"
-Public Class Outer
-    <System.Flags>
-    Public Enum E
-        None = 0
-        B = 1
-    End Enum
-End Class
+                <System.Flags>
+                Public Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
 
-<System.Flags>
-Public Enum E2
-    None = 0
-    B2 = 1
-End Enum
+                """;
 
-<System.Flags>
-Public Enum E3
-    None = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+            var expectedFixedCode = """
 
-<System.Flags>
-Public Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                Public Class Outer
+                    <System.Flags>
+                    Public Enum E
+                        None = 0
+                        B = 1
+                    End Enum
+                End Class
+
+                <System.Flags>
+                Public Enum E2
+                    None = 0
+                    B2 = 1
+                End Enum
+
+                <System.Flags>
+                Public Enum E3
+                    None = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
+
+                <System.Flags>
+                Public Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
+
+                """;
             await new VerifyVB.Test
             {
                 // TODO: Remove 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
@@ -293,68 +309,72 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(836193, "DevDiv")]
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags> _
-    Public Enum E
-        {|#0:A|} = 0
-        B = 1
-    End Enum
-End Class
+            var code = """
 
-<System.Flags> _
-Public Enum E2
-    {|#1:A2|} = 0
-    B2 = 1
-End Enum
+                Public Class Outer
+                    <System.Flags> _
+                    Public Enum E
+                        {|#0:A|} = 0
+                        B = 1
+                    End Enum
+                End Class
 
-<System.Flags> _
-Public Enum E3
-    {|#2:A3|} = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+                <System.Flags> _
+                Public Enum E2
+                    {|#1:A2|} = 0
+                    B2 = 1
+                End Enum
 
-<System.Flags> _
-Public Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                <System.Flags> _
+                Public Enum E3
+                    {|#2:A3|} = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
 
-            var expectedFixedCode = @"
-Public Class Outer
-    <System.Flags> _
-    Public Enum E
-        None = 0
-        B = 1
-    End Enum
-End Class
+                <System.Flags> _
+                Public Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
 
-<System.Flags> _
-Public Enum E2
-    None = 0
-    B2 = 1
-End Enum
+                """;
 
-<System.Flags> _
-Public Enum E3
-    None = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+            var expectedFixedCode = """
 
-<System.Flags> _
-Public Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                Public Class Outer
+                    <System.Flags> _
+                    Public Enum E
+                        None = 0
+                        B = 1
+                    End Enum
+                End Class
+
+                <System.Flags> _
+                Public Enum E2
+                    None = 0
+                    B2 = 1
+                End Enum
+
+                <System.Flags> _
+                Public Enum E3
+                    None = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
+
+                <System.Flags> _
+                Public Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
+
+                """;
             await new VerifyVB.Test
             {
                 // TODO: Remove 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
@@ -368,50 +388,54 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags>
-    Public Enum E
-        None = 0
-        A = 0
-    End Enum
-End Class
+            var code = """
 
-<System.Flags>
-Public Enum E2
-    None = 0
-    A = None
-End Enum
+                Public Class Outer
+                    <System.Flags>
+                    Public Enum E
+                        None = 0
+                        A = 0
+                    End Enum
+                End Class
 
-<System.Flags>
-Public Enum E3
-    A3 = 0
-    B3 = CUInt(0)  ' Not a constant
-End Enum";
+                <System.Flags>
+                Public Enum E2
+                    None = 0
+                    A = None
+                End Enum
 
-            var expectedFixedCode = @"
-Public Class Outer
-    <System.Flags>
-    Public Enum E
-        None = 0
-    End Enum
-End Class
+                <System.Flags>
+                Public Enum E3
+                    A3 = 0
+                    B3 = CUInt(0)  ' Not a constant
+                End Enum
+                """;
 
-<System.Flags>
-Public Enum E2
-    None = 0
-End Enum
+            var expectedFixedCode = """
 
-<System.Flags>
-Public Enum E3
-    None
-End Enum";
+                Public Class Outer
+                    <System.Flags>
+                    Public Enum E
+                        None = 0
+                    End Enum
+                End Class
+
+                <System.Flags>
+                Public Enum E2
+                    None = 0
+                End Enum
+
+                <System.Flags>
+                Public Enum E3
+                    None
+                End Enum
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(
                 code,
@@ -424,55 +448,59 @@ End Enum";
                 expectedFixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
-            var code = @"
-Public Class C
-    Public Enum E
-        A = 1
-    End Enum
+            var code = """
 
-    Public Enum E2
-        None = 1
-        A = 2
-    End Enum
-End Class
+                Public Class C
+                    Public Enum E
+                        A = 1
+                    End Enum
 
-Public Enum E3
-    None = 0
-    A = 1
-End Enum
+                    Public Enum E2
+                        None = 1
+                        A = 2
+                    End Enum
+                End Class
 
-Public Enum E4
-    None = 0
-    A = 0
-End Enum
-";
+                Public Enum E3
+                    None = 0
+                    A = 1
+                End Enum
 
-            var expectedFixedCode = @"
-Public Class C
-    Public Enum E
-        None
-        A = 1
-    End Enum
+                Public Enum E4
+                    None = 0
+                    A = 0
+                End Enum
 
-    Public Enum E2
-        None
-        A = 2
-    End Enum
-End Class
+                """;
 
-Public Enum E3
-    None = 0
-    A = 1
-End Enum
+            var expectedFixedCode = """
 
-Public Enum E4
-    None = 0
-    A = 0
-End Enum
-";
+                Public Class C
+                    Public Enum E
+                        None
+                        A = 1
+                    End Enum
+
+                    Public Enum E2
+                        None
+                        A = 2
+                    End Enum
+                End Class
+
+                Public Enum E3
+                    None = 0
+                    A = 1
+                End Enum
+
+                Public Enum E4
+                    None = 0
+                    A = 0
+                End Enum
+
+                """;
             await VerifyVB.VerifyCodeFixAsync(
                 code,
                 new[]

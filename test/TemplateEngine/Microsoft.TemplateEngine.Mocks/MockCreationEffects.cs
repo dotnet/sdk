@@ -3,11 +3,10 @@
 
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockCreationEffects : ICreationEffects, ICreationEffects2, IXunitSerializable
+    public class MockCreationEffects : ICreationEffects, ICreationEffects2
     {
         private string[] _primaryOutputs = [];
 
@@ -45,20 +44,6 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             _absentFiles = _absentFiles.Concat(files).ToArray();
             return this;
-        }
-
-        public void Deserialize(IXunitSerializationInfo info)
-        {
-            _primaryOutputs = info.GetValue<string[]>("primaryOutputs")!;
-            _mockFileChanges = info.GetValue<MockFileChange[]>("fileChanges")!;
-            _absentFiles = info.GetValue<string[]>("absentFiles")!;
-        }
-
-        public void Serialize(IXunitSerializationInfo info)
-        {
-            info.AddValue("primaryOutputs", _primaryOutputs, typeof(string[]));
-            info.AddValue("fileChanges", _mockFileChanges, typeof(MockFileChange[]));
-            info.AddValue("absentFiles", _absentFiles, typeof(string[]));
         }
 
         public override string ToString()

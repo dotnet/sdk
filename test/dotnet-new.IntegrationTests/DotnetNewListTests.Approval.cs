@@ -5,11 +5,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public partial class DotnetNewListTests
     {
-        [Theory]
-        [InlineData("-l")]
-        [InlineData("--list")]
+        [TestMethod]
+        [DataRow("-l")]
+        [DataRow("--list")]
         public Task BasicTest_WhenLegacyCommandIsUsed(string commandName)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, commandName)
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(ScrubData);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BasicTest_WhenListCommandIsUsed()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "list")
@@ -90,7 +91,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public Task Constraints_CanShowMessageIfTemplateGroupIsRestricted()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -108,7 +109,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Constraints_CanIgnoreConstraints()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
@@ -126,7 +127,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");

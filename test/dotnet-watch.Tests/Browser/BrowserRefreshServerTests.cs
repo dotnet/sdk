@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class BrowserRefreshServerTests
 {
     class TestListener : IDisposable
@@ -15,7 +16,7 @@ public class BrowserRefreshServerTests
         }
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload) 
     {
@@ -34,7 +35,7 @@ public class BrowserRefreshServerTests
         var envBuilder = new Dictionary<string, string>();
         server.ConfigureLaunchEnvironment(envBuilder, enableHotReload);
 
-        Assert.True(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
+        Assert.IsTrue(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
 
         var expected = new List<string>()
         {

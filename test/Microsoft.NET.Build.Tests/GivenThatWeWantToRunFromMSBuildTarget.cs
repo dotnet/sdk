@@ -3,13 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRunFromMSBuildTarget : SdkTest
     {
-        public GivenThatWeWantToRunFromMSBuildTarget(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_runs_successfully()
         {
             TestProject testProject = new()

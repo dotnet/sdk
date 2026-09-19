@@ -12,6 +12,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadSearch : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -28,17 +29,18 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         static WorkloadResolver.WorkloadInfo CreateWorkloadInfo(string id, string description = null)
             => new(new WorkloadId(id), description);
 
-        public GivenDotnetWorkloadSearch(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadSearch()
         {
             _reporter = new BufferedReporter();
         }
 
-        [Theory]
-        [InlineData("--invalidArgument")]
-        [InlineData("notAVersion")]
-        [InlineData("1.2")] // too short
-        [InlineData("1.2.3.4.5")] // too long
-        [InlineData("1.2-3.4")] // numbers after [-, +] don't count
+        [TestMethod]
+        [DataRow("--invalidArgument")]
+        [DataRow("-foo bar")]
+        [DataRow("notAVersion")]
+        [DataRow("1.2")] // too short
+        [DataRow("1.2.3.4.5")] // too long
+        [DataRow("1.2-3.4")] // numbers after [-, +] don't count
         public void GivenInvalidArgumentToWorkloadSearchVersionItFailsCleanly(string argument)
         {
             _reporter.Clear();
@@ -46,10 +48,11 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "9.0.100", workloadResolver);
             var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Should().Throw<CommandParsingException>();
+            command.Should().Throw<CommandParsingException>()
+                .WithMessage(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, argument));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoWorkloadsAreInstalledSearchIsEmpty()
         {
             _reporter.Clear();
@@ -62,7 +65,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines.Count.Should().Be(4, because: "Output should have header and no values.");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadSearchWithComponentsItFindsHighestMatchingSet()
         {
             string workloadSet1 = @"{
@@ -110,7 +113,38 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines.Single().Should().Be("9.0.101");
         }
 
-        [Fact]
+        [TestMethod]
+        public void GivenWorkloadSearchVersionWithNuGetOptionsItPassesThemToTheDownloader()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version --source myfeed --configfile mynuget.config --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            var packageSourceLocation = nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation;
+            packageSourceLocation.Should().NotBeNull();
+            packageSourceLocation.SourceFeedOverrides.Should().ContainSingle().Which.Should().EndWith("myfeed");
+            packageSourceLocation.NugetConfig.Value.Value.Should().Contain("mynuget.config");
+        }
+
+        [TestMethod]
+        public void GivenWorkloadSearchVersionWithoutNuGetOptionsNoPackageSourceLocationIsUsed()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation.Should().BeNull();
+        }
+
+        [TestMethod]
         public void GivenNoStubIsProvidedSearchShowsAllWorkloads()
         {
             _reporter.Clear();
@@ -131,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenDetailedVerbositySearchShowsAllColumns()
         {
             _reporter.Clear();
@@ -152,7 +186,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenStubIsProvidedSearchShowsAllMatchingWorkloads()
         {
             _reporter.Clear();
@@ -174,7 +208,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSearchResultsAreOrdered()
         {
             _reporter.Clear();
@@ -191,7 +225,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines[7].Should().Contain("mock-workload-3");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadSearchItSearchesDescription()
         {
             _reporter.Clear();

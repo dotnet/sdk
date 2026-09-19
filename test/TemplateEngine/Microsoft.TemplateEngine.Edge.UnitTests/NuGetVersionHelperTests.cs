@@ -3,56 +3,56 @@
 
 using Microsoft.TemplateEngine.Edge.Installers.NuGet;
 using NuGet.Versioning;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
+    [TestClass]
     public class NuGetVersionHelperTests
     {
-        [Theory]
-        [InlineData(null, true)]
-        [InlineData("", true)]
-        [InlineData("*", true)]
-        [InlineData("1.*", true)]
-        [InlineData("55.66.77.*", true)]
-        [InlineData("55.66.77*", true)]
-        [InlineData("123.456.789.012", true)]
-        [InlineData("1.2", true)]
-        [InlineData("1.*.1", false)]
-        [InlineData("1.*.*", false)]
-        [InlineData("*.1", false)]
-        [InlineData("a.b", false)]
-        [InlineData("a.b.*", false)]
+        [TestMethod]
+        [DataRow(null, true)]
+        [DataRow("", true)]
+        [DataRow("*", true)]
+        [DataRow("1.*", true)]
+        [DataRow("55.66.77.*", true)]
+        [DataRow("55.66.77*", true)]
+        [DataRow("123.456.789.012", true)]
+        [DataRow("1.2", true)]
+        [DataRow("1.*.1", false)]
+        [DataRow("1.*.*", false)]
+        [DataRow("*.1", false)]
+        [DataRow("a.b", false)]
+        [DataRow("a.b.*", false)]
         public void IsSupportedVersionStringTest(string? versionString, bool isSupported)
         {
-            Assert.Equal(isSupported, NuGetVersionHelper.IsSupportedVersionString(versionString));
+            Assert.AreEqual(isSupported, NuGetVersionHelper.IsSupportedVersionString(versionString));
         }
 
-        [Theory]
-        [InlineData(null, true)]
-        [InlineData("", true)]
-        [InlineData("*", true)]
-        [InlineData("1.*", true)]
-        [InlineData("55.66.77.*", true)]
-        [InlineData("55.66.77*", true)]
-        [InlineData("123.456.789.012", false)]
-        [InlineData("1.2", false)]
+        [TestMethod]
+        [DataRow(null, true)]
+        [DataRow("", true)]
+        [DataRow("*", true)]
+        [DataRow("1.*", true)]
+        [DataRow("55.66.77.*", true)]
+        [DataRow("55.66.77*", true)]
+        [DataRow("123.456.789.012", false)]
+        [DataRow("1.2", false)]
         public void TryParseFloatRangeReturnsExpectedBoolFlag(string? versionString, bool isFloatingVersion)
         {
-            Assert.Equal(isFloatingVersion, NuGetVersionHelper.TryParseFloatRangeEx(versionString, out _));
+            Assert.AreEqual(isFloatingVersion, NuGetVersionHelper.TryParseFloatRangeEx(versionString, out _));
         }
 
-        [Theory]
-        [InlineData("1.2.3.4", null, true)]
-        [InlineData("1.2.3.4", "", true)]
-        [InlineData("1.2.3.4", "1.2.*", true)]
-        [InlineData("1.2.3.4", "2.2*", false)]
-        [InlineData("1.2.3.4", "1.2.*-*", true)]
+        [TestMethod]
+        [DataRow("1.2.3.4", null, true)]
+        [DataRow("1.2.3.4", "", true)]
+        [DataRow("1.2.3.4", "1.2.*", true)]
+        [DataRow("1.2.3.4", "2.2*", false)]
+        [DataRow("1.2.3.4", "1.2.*-*", true)]
         public void TryParseFloatRangeMatchingTest(string versionString, string? pattern, bool isMatch)
         {
             NuGetVersion version = new NuGetVersion(versionString);
-            Assert.True(NuGetVersionHelper.TryParseFloatRangeEx(pattern, out FloatRange floatRange));
-            Assert.Equal(isMatch, floatRange.Satisfies(version));
+            Assert.IsTrue(NuGetVersionHelper.TryParseFloatRangeEx(pattern, out FloatRange floatRange));
+            Assert.AreEqual(isMatch, floatRange.Satisfies(version));
         }
     }
 }

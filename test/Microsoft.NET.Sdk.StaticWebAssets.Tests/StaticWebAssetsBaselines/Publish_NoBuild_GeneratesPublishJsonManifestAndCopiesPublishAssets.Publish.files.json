@@ -9,9 +9,15 @@
   "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
   "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint}]?.styles.css",
   "${OutputPath}\\wwwroot\\_framework\\blazor.server.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js#[.{fingerprint}]?.map",
   "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.br",
   "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.gz",
   "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.br",
   "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.gz",
-  "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint}]?.js"
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint}]?.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js#[.{fingerprint}]?.map"
 ]

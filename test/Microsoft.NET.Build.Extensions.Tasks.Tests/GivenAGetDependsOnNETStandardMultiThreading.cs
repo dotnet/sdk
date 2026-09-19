@@ -5,9 +5,14 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGetDependsOnNETStandardMultiThreading
     {
-        [Fact]
+        // TaskTestEnvironment changes the process CWD to a scratch "spawn" directory for the
+        // duration of the test and restores it on Dispose. Lock the process CWD so it doesn't
+        // race with the other test in this class that reads Directory.GetCurrentDirectory().
+        [TestMethod]
+        [ResourceLock(WellKnownResources.CurrentDirectory)]
         public void ReferencePath_IsResolvedRelativeToProjectDirectory()
         {
             using var env = new TaskTestEnvironment();
@@ -35,9 +40,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "the assembly at the relative path (resolved via TaskEnvironment) references System.Runtime");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        // Reads Directory.GetCurrentDirectory() when useDifferentCwd is false, so this must not
+        // interleave with the other test in this class, which temporarily changes the process CWD.
+        [TestMethod]
+        [ResourceLock(WellKnownResources.CurrentDirectory)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void DependsOnNETStandard_IsConsistent_RegardlessOfCwd(bool useDifferentCwd)
         {
             // Use the test assembly itself as input — it references System.Runtime.

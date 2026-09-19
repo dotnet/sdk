@@ -8,6 +8,7 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
 {
+    [TestClass]
     public class VerifyCommandTests
     {
         public static IEnumerable<object?[]> CanParseVerifyCommandArgsData =>
@@ -66,10 +67,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
                 },
             };
 
-        [Theory]
-        [MemberData(nameof(CanParseVerifyCommandArgsData))]
-        internal void CanParseVerifyCommandArgs(string command, VerifyCommandArgs expVerifyCommandArgs)
+        [TestMethod]
+        [DynamicData(nameof(CanParseVerifyCommandArgsData))]
+        public void CanParseVerifyCommandArgs(string command, object expVerifyCommandArgsObj)
         {
+            VerifyCommandArgs expVerifyCommandArgs = (VerifyCommandArgs)expVerifyCommandArgsObj;
             VerifyCommand verifyCommand = new VerifyCommand();
 
             ParseResult parseResult = verifyCommand.Parse(command);

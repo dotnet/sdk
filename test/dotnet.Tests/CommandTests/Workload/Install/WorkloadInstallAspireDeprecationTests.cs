@@ -10,16 +10,17 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
+    [TestClass]
     public class WorkloadInstallAspireDeprecationTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
 
-        public WorkloadInstallAspireDeprecationTests(ITestOutputHelper log) : base(log)
+        public WorkloadInstallAspireDeprecationTests()
         {
             _reporter = new BufferedReporter();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenOnlyAspireWorkloadItShowsDeprecationMessage()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             workloadInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAspireWithOtherWorkloadsItShowsDeprecationAndInstallsOthers()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
@@ -90,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             workloadInstaller.InstallationRecordRepository.InstalledWorkloads.Should().NotContain(new WorkloadId("aspire"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAspireWorkloadDeprecationMessageIsShownOnlyOnce()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;

@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishDepsFilePathTests : SdkTest
     {
-        public PublishDepsFilePathTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void PublishDepsFilePathIsSetAsExpectedForNormalApps()
         {
             var testProject = SetupProject(singleFile: false);
@@ -28,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDepsFilePath.Should().Be(expectedDepsFilePath);
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishDepsFilePathIsEmptyForSingleFileApps()
         {
             var testProject = SetupProject(singleFile: true);

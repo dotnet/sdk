@@ -5,237 +5,253 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInIFormatterSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInIFormatterObjectGraphTests
     {
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            BlahClass bc = (BlahClass) bf.Deserialize(ms);
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            BinaryFormatter bf = new BinaryFormatter();
+                            BlahClass bc = (BlahClass) bf.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NetDataContractSerializer_Cast_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            NetDataContractSerializer ndcs = new NetDataContractSerializer();
-            BlahClass bc = (BlahClass) ndcs.Deserialize(ms);
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            NetDataContractSerializer ndcs = new NetDataContractSerializer();
+                            BlahClass bc = (BlahClass) ndcs.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObjectStateFormatter_Cast_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Web.UI;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Web.UI;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            ObjectStateFormatter osf = new ObjectStateFormatter();
-            BlahClass bc = (BlahClass) osf.Deserialize(ms);
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            ObjectStateFormatter osf = new ObjectStateFormatter();
+                            BlahClass bc = (BlahClass) osf.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SoapFormatter_Cast_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Soap;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Soap;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            SoapFormatter sf = new SoapFormatter();
-            BlahClass bc = (BlahClass) sf.Deserialize(ms);
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            SoapFormatter sf = new SoapFormatter();
+                            BlahClass bc = (BlahClass) sf.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_As_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            BlahClass bc = bf.Deserialize(ms) as BlahClass;
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            BinaryFormatter bf = new BinaryFormatter();
+                            BlahClass bc = bf.Deserialize(ms) as BlahClass;
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_As_PrivateAutoProperty_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        private DataSet DS { get; }
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            BlahClass bc = bf.Deserialize(ms) as BlahClass;
-            return bc;
-        }
-    }
-}",
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        private DataSet DS { get; }
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            BinaryFormatter bf = new BinaryFormatter();
+                            BlahClass bc = bf.Deserialize(ms) as BlahClass;
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_ReferenceLoop_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public DataSet DS;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-        public BlahClass Blah;
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public DataSet DS;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            BlahClass bc = (BlahClass) bf.Deserialize(ms);
-            return bc;
-        }
-    }
-}",
+                        public BlahClass Blah;
+
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            BinaryFormatter bf = new BinaryFormatter();
+                            BlahClass bc = (BlahClass) bf.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(19, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_ReferenceIndirectLoop_DiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    [Serializable]
-    public class BlahClass
-    {
-        public FooClass Foo;
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Runtime.Serialization.Formatters.Binary;
 
-        public BlahClass Method(MemoryStream ms)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            BlahClass bc = (BlahClass) bf.Deserialize(ms);
-            return bc;
-        }
-    }
+                namespace Blah
+                {
+                    [Serializable]
+                    public class BlahClass
+                    {
+                        public FooClass Foo;
 
-    [Serializable]
-    public class FooClass
-    {
-        private DataTable DT;
-        private BlahClass Blah;
-    }
-}",
+                        public BlahClass Method(MemoryStream ms)
+                        {
+                            BinaryFormatter bf = new BinaryFormatter();
+                            BlahClass bc = (BlahClass) bf.Deserialize(ms);
+                            return bc;
+                        }
+                    }
+
+                    [Serializable]
+                    public class FooClass
+                    {
+                        private DataTable DT;
+                        private BlahClass Blah;
+                    }
+                }
+                """,
                 GetCSharpResultAt(17, 28, "DataTable", "DataTable FooClass.DT"));
         }
 
@@ -254,7 +270,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

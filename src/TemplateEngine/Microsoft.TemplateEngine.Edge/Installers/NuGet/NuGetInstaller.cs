@@ -223,6 +223,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     {
                         additionalNuGetSources = nugetSources.Split(InstallerConstants.NuGetSourcesSeparator);
                     }
+                    bool includePrerelease = installRequest.Details != null && installRequest.Details.TryGetValue(InstallerConstants.PrereleaseModeKey, out _);
 
                     nuGetPackageInfo = await _packageDownloader.DownloadPackageAsync(
                         _installPath,
@@ -230,6 +231,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         installRequest.Version,
                         additionalNuGetSources,
                         force: installRequest.Force,
+                        includePrerelease: includePrerelease,
                         cancellationToken)
                         .ConfigureAwait(false);
                 }

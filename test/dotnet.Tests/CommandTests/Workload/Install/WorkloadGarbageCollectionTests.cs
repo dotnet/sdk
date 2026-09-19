@@ -13,18 +13,19 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
+    [TestClass]
     public class WorkloadGarbageCollectionTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
         private string _testDirectory;
         private string _dotnetRoot;
 
-        public WorkloadGarbageCollectionTests(ITestOutputHelper log) : base(log)
+        public WorkloadGarbageCollectionTests()
         {
             _reporter = new BufferedReporter();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManagedInstallItCanGarbageCollect()
         {
             CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
@@ -75,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManagedInstallItCanGarbageCollectPacksMissingFromManifest()
         {
             CreateMockManifest("testmanifest", "1.0.0");
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GarbageCollectManifests()
         {
             //  ARRANGE
@@ -179,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GarbageCollectManifestsWithInstallState()
         {
             //  ARRANGE

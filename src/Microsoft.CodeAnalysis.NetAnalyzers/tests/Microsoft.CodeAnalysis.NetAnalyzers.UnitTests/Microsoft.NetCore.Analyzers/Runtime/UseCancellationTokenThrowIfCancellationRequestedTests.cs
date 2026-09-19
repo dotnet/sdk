@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseCancellationTokenThrowIfCancellationRequested,
@@ -18,6 +17,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseCancellationTokenThrowIfCancellationRequestedTests
     {
         private static IEnumerable<string> LanguageVersionsToTest_CS
@@ -45,31 +45,35 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return @"if ({0}) {1}";
-                    yield return @"
-if ({0})
-    {1}";
-                    yield return @"
-if ({0})
-{{
-    {1}
-}}";
+                    yield return "if ({0}) {1}";
+                    yield return """
+
+                        if ({0})
+                            {1}
+                        """;
+                    yield return """
+
+                        if ({0})
+                        {{
+                            {1}
+                        }}
+                        """;
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString, string languageVersion)
+        [TestMethod]
+        [DynamicData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
+        public async Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString, string languageVersion)
         {
             string testStatements = Markup(
                 FormatInvariant(
                     simpleConditionalFormatString,
-                    @"token.IsCancellationRequested",
-                    $@"throw new {operationCanceledExceptionCtor};"), 0);
-            string fixedStatements = @"token.ThrowIfCancellationRequested();";
+                    "token.IsCancellationRequested",
+                    $"""throw new {operationCanceledExceptionCtor};"""), 0);
+            string fixedStatements = "token.ThrowIfCancellationRequested();";
             var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
 
             var test = new VerifyCS.Test
@@ -80,7 +84,71 @@ if ({0})
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedChecks_AreAllReportedAndFixed_CSAsync()
+        {
+            string testStatements = """
+                {|#0:if (token.IsCancellationRequested)
+                    throw new OperationCanceledException();
+                else
+                {
+                    {|#1:if (token.IsCancellationRequested)
+                        throw new OperationCanceledException();|}
+                    Console.WriteLine();
+                }|}
+                """;
+            string fixedStatements = """
+                token.ThrowIfCancellationRequested();
+                token.ThrowIfCancellationRequested();
+                Console.WriteLine();
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CS.CreateBlock(testStatements),
+                FixedCode = CS.CreateBlock(fixedStatements),
+                ExpectedDiagnostics = { CS.DiagnosticAt(0), CS.DiagnosticAt(1) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                //  The outer fix rewrites the region the inner one sits in, so whichever provider applies them
+                //  has to discard one and pick it up on a second pass.
+                NumberOfFixAllIterations = 2,
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedChecks_AreAllReportedAndFixed_VBAsync()
+        {
+            string testStatements = """
+                {|#0:If token.IsCancellationRequested Then
+                    Throw New OperationCanceledException()
+                Else
+                    {|#1:If token.IsCancellationRequested Then
+                        Throw New OperationCanceledException()
+                    End If|}
+                    Console.WriteLine()
+                End If|}
+                """;
+            string fixedStatements = """
+                token.ThrowIfCancellationRequested()
+                token.ThrowIfCancellationRequested()
+                Console.WriteLine()
+                """;
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VB.CreateBlock(testStatements),
+                FixedCode = VB.CreateBlock(fixedStatements),
+                ExpectedDiagnostics = { VB.DiagnosticAt(0), VB.DiagnosticAt(1) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                //  The outer fix rewrites the region the inner one sits in, so whichever provider applies them
+                //  has to discard one and pick it up on a second pass.
+                NumberOfFixAllIterations = 2,
+            };
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_VB
@@ -89,20 +157,22 @@ if ({0})
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return @"If {0} Then {1}";
-                    yield return @"
-If {0} Then
-    {1}
-End If";
+                    yield return "If {0} Then {1}";
+                    yield return """
+
+                        If {0} Then
+                            {1}
+                        End If
+                        """;
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
+        [TestMethod]
+        [DynamicData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
+        public async Task SimpleAffirmativeCheck_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             string testStatements = Markup(
                 FormatInvariant(
@@ -110,7 +180,7 @@ End If";
                     "token.IsCancellationRequested",
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
-            string fixedStatements = @"token.ThrowIfCancellationRequested()";
+            string fixedStatements = "token.ThrowIfCancellationRequested()";
 
             var test = new VerifyVB.Test
             {
@@ -119,7 +189,7 @@ End If";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_CS
@@ -128,187 +198,205 @@ End If";
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return @"
-if ({0}) {1}
-else {2}";
-                    yield return @"
-if ({0})
-    {1}
-else
-    {2}";
-                    yield return @"
-if ({0})
-{{
-    {1}
-}}
-else
-{{
-    {2}
-}}";
-                    yield return @"
-if ({0})
-    {1}
-else
-{{
-    {2}
-}}";
-                    yield return @"
-if ({0})
-{{
-    {1}
-}}
-else
-    {2}";
+                    yield return """
+
+                        if ({0}) {1}
+                        else {2}
+                        """;
+                    yield return """
+
+                        if ({0})
+                            {1}
+                        else
+                            {2}
+                        """;
+                    yield return """
+
+                        if ({0})
+                        {{
+                            {1}
+                        }}
+                        else
+                        {{
+                            {2}
+                        }}
+                        """;
+                    yield return """
+
+                        if ({0})
+                            {1}
+                        else
+                        {{
+                            {2}
+                        }}
+                        """;
+                    yield return """
+
+                        if ({0})
+                        {{
+                            {1}
+                        }}
+                        else
+                            {2}
+                        """;
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
             }
         }
 
-        [Fact]
-        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CSAsync()
+        [TestMethod]
+        public async Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CSAsync()
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Threading;
+                TestCode = """
+                    using System;
+                    using System.Threading;
 
-public class C
-{
-    private CancellationToken token;
+                    public class C
+                    {
+                        private CancellationToken token;
 
-    public void M()
-    {
-        {|#0:if (token.IsCancellationRequested)
-        {
-            throw new OperationCanceledException();
-        }
-        else
-        {
-            Frob();
-        }|}
-    }
-    
-    private void Frob() { }
-}",
-                FixedCode = @"
-using System;
-using System.Threading;
+                        public void M()
+                        {
+                            {|#0:if (token.IsCancellationRequested)
+                            {
+                                throw new OperationCanceledException();
+                            }
+                            else
+                            {
+                                Frob();
+                            }|}
+                        }
 
-public class C
-{
-    private CancellationToken token;
+                        private void Frob() { }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading;
 
-    public void M()
-    {
-        token.ThrowIfCancellationRequested();
-        Frob();
-    }
-    
-    private void Frob() { }
-}",
+                    public class C
+                    {
+                        private CancellationToken token;
+
+                        public void M()
+                        {
+                            token.ThrowIfCancellationRequested();
+                            Frob();
+                        }
+
+                        private void Frob() { }
+                    }
+                    """,
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VBAsync()
+        [TestMethod]
+        public async Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VBAsync()
         {
             var test = new VerifyVB.Test
             {
-                TestCode = @"
-Imports System
-Imports System.Threading
+                TestCode = """
+                    Imports System
+                    Imports System.Threading
 
-Public Class C
-    Private token As CancellationToken
+                    Public Class C
+                        Private token As CancellationToken
 
-    Public Sub M()
-        {|#0:If token.IsCancellationRequested Then
-            Throw New OperationCanceledException()
-        Else
-            Frob()
-        End If|}
-    End Sub
+                        Public Sub M()
+                            {|#0:If token.IsCancellationRequested Then
+                                Throw New OperationCanceledException()
+                            Else
+                                Frob()
+                            End If|}
+                        End Sub
 
-    Private Sub Frob()
-    End Sub
-End Class",
-                FixedCode = @"
-Imports System
-Imports System.Threading
+                        Private Sub Frob()
+                        End Sub
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System
+                    Imports System.Threading
 
-Public Class C
-    Private token As CancellationToken
+                    Public Class C
+                        Private token As CancellationToken
 
-    Public Sub M()
-        token.ThrowIfCancellationRequested()
-        Frob()
-    End Sub
+                        Public Sub M()
+                            token.ThrowIfCancellationRequested()
+                            Frob()
+                        End Sub
 
-    Private Sub Frob()
-    End Sub
-End Class",
+                        Private Sub Frob()
+                        End Sub
+                    End Class
+                    """,
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task TriviaInIfBlock_IsPreserved_CSAsync()
+        [TestMethod]
+        public async Task TriviaInIfBlock_IsPreserved_CSAsync()
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Threading;
+                TestCode = """
+                    using System;
+                    using System.Threading;
 
-public class C
-{
-    private CancellationToken token;
+                    public class C
+                    {
+                        private CancellationToken token;
 
-    public void M()
-    {
-        {|#0:if (token.IsCancellationRequested)
-        {
-            // Comment
-            throw new OperationCanceledException();
-        }|}
-    }
-}",
-                FixedCode = @"
-using System;
-using System.Threading;
+                        public void M()
+                        {
+                            {|#0:if (token.IsCancellationRequested)
+                            {
+                                // Comment
+                                throw new OperationCanceledException();
+                            }|}
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading;
 
-public class C
-{
-    private CancellationToken token;
+                    public class C
+                    {
+                        private CancellationToken token;
 
-    public void M()
-    {
-        // Comment
-        token.ThrowIfCancellationRequested();
-    }
-}",
+                        public void M()
+                        {
+                            // Comment
+                            token.ThrowIfCancellationRequested();
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString, string languageVersion)
+        [TestMethod]
+        [DynamicData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
+        public async Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString, string languageVersion)
         {
             var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
 
-            const string members = @"
-private CancellationToken token;
-private void DoSomething() { }";
+            const string members = """
+
+                private CancellationToken token;
+                private void DoSomething() { }
+                """;
             string testStatements = Markup(
                 FormatInvariant(
                     conditionalFormatString,
@@ -316,9 +404,11 @@ private void DoSomething() { }";
                     "DoSomething();",
                     $"throw new {operationCanceledExceptionCtor};"),
                 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested();
-DoSomething();";
+            string fixedStatements = """
+
+                token.ThrowIfCancellationRequested();
+                DoSomething();
+                """;
 
             var test = new VerifyCS.Test
             {
@@ -328,7 +418,7 @@ DoSomething();";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_VB
@@ -337,26 +427,30 @@ DoSomething();";
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    return Enumerable.Repeat(@"
-If {0} Then
-    {1}
-Else
-    {2}
-End If", 1);
+                    return Enumerable.Repeat("""
+
+                        If {0} Then
+                            {1}
+                        Else
+                            {2}
+                        End If
+                        """, 1);
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
+        [TestMethod]
+        [DynamicData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
+        public async Task NegatedCheckWithElse_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
-            const string members = @"
-Private token As CancellationToken
-Private Sub DoSomething()
-End Sub";
+            const string members = """
+
+                Private token As CancellationToken
+                Private Sub DoSomething()
+                End Sub
+                """;
             string testStatements = Markup(
                 FormatInvariant(
                     conditionalFormatString,
@@ -364,9 +458,11 @@ End Sub";
                     "DoSomething()",
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested()
-DoSomething()";
+            string fixedStatements = """
+
+                token.ThrowIfCancellationRequested()
+                DoSomething()
+                """;
 
             var test = new VerifyVB.Test
             {
@@ -375,30 +471,36 @@ DoSomething()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CSAsync()
+        [TestMethod]
+        public async Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CSAsync()
         {
-            const string members = @"
-private CancellationToken token;
-private void Fooble() { }
-private void Barble() { }";
-            string testStatements = Markup(@"
-if (!token.IsCancellationRequested)
-{
-    Fooble();
-    Barble();
-}
-else
-{
-    throw new OperationCanceledException();
-}", 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested();
-Fooble();
-Barble();";
+            const string members = """
+
+                private CancellationToken token;
+                private void Fooble() { }
+                private void Barble() { }
+                """;
+            string testStatements = Markup("""
+
+                if (!token.IsCancellationRequested)
+                {
+                    Fooble();
+                    Barble();
+                }
+                else
+                {
+                    throw new OperationCanceledException();
+                }
+                """, 0);
+            string fixedStatements = """
+
+                token.ThrowIfCancellationRequested();
+                Fooble();
+                Barble();
+                """;
 
             var test = new VerifyCS.Test
             {
@@ -407,29 +509,35 @@ Barble();";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VBAsync()
+        [TestMethod]
+        public async Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VBAsync()
         {
-            const string members = @"
-Private token As CancellationToken
-Private Sub Fooble()
-End Sub
-Private Sub Barble()
-End Sub";
-            string testStatements = Markup(@"
-If Not token.IsCancellationRequested Then
-    Fooble()
-    Barble()
-Else
-    Throw New OperationCanceledException()
-End If", 0);
-            string fixedStatements = @"
-token.ThrowIfCancellationRequested()
-Fooble()
-Barble()";
+            const string members = """
+
+                Private token As CancellationToken
+                Private Sub Fooble()
+                End Sub
+                Private Sub Barble()
+                End Sub
+                """;
+            string testStatements = Markup("""
+
+                If Not token.IsCancellationRequested Then
+                    Fooble()
+                    Barble()
+                Else
+                    Throw New OperationCanceledException()
+                End If
+                """, 0);
+            string fixedStatements = """
+
+                token.ThrowIfCancellationRequested()
+                Fooble()
+                Barble()
+                """;
 
             var test = new VerifyVB.Test
             {
@@ -438,88 +546,100 @@ Barble()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region No Diagnostic
-        [Fact]
-        public Task MultipleConditions_NoDiagnostic_CSAsync()
+        [TestMethod]
+        public async Task MultipleConditions_NoDiagnostic_CSAsync()
         {
-            const string members = @"
-private CancellationToken token;
-private bool otherCondition;";
-            const string testStatements = @"
-if (token.IsCancellationRequested && otherCondition)
-    throw new OperationCanceledException();";
+            const string members = """
+                private CancellationToken token;
+                private bool otherCondition;
+                """;
+            const string testStatements = """
+                if (token.IsCancellationRequested && otherCondition)
+                    throw new OperationCanceledException();
+                """;
 
             var test = new VerifyCS.Test
             {
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task MultipleConditions_NoDiagnostic_VBAsync()
+        [TestMethod]
+        public async Task MultipleConditions_NoDiagnostic_VBAsync()
         {
-            const string members = @"
-Private token As CancellationToken
-Private otherCondition As Boolean";
-            const string testStatements = @"
-If token.IsCancellationRequested AndAlso otherCondition Then
-    Throw New OperationCanceledException()
-End If";
+            const string members = """
+
+                Private token As CancellationToken
+                Private otherCondition As Boolean
+                """;
+            const string testStatements = """
+
+                If token.IsCancellationRequested AndAlso otherCondition Then
+                    Throw New OperationCanceledException()
+                End If
+                """;
 
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CSAsync()
+        [TestMethod]
+        public async Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CSAsync()
         {
-            const string members = @"
-private CancellationToken token;
-private void SomeOtherAction() { }";
-            const string testStatements = @"
-if (token.IsCancellationRequested)
-{
-    SomeOtherAction();
-    throw new OperationCanceledException();
-}";
+            const string members = """
+                private CancellationToken token;
+                private void SomeOtherAction() { }
+                """;
+            const string testStatements = """
+                if (token.IsCancellationRequested)
+                {
+                    SomeOtherAction();
+                    throw new OperationCanceledException();
+                }
+                """;
 
             var test = new VerifyCS.Test
             {
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VBAsync()
+        [TestMethod]
+        public async Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VBAsync()
         {
-            const string members = @"
-Private token As CancellationToken
-Private Sub SomeOtherAction()
-End Sub";
-            const string testStatements = @"
-If token.IsCancellationRequested Then
-    SomeOtherAction()
-    Throw New OperationCanceledException()
-End If";
+            const string members = """
+
+                Private token As CancellationToken
+                Private Sub SomeOtherAction()
+                End Sub
+                """;
+            const string testStatements = """
+
+                If token.IsCancellationRequested Then
+                    SomeOtherAction()
+                    Throw New OperationCanceledException()
+                End If
+                """;
 
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_OperationCanceledExceptionCtorArguments
@@ -533,142 +653,174 @@ End If";
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CSAsync(string ctorArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        public async Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CSAsync(string ctorArguments)
         {
-            const string members = @"
-private CancellationToken token;
-private string text;
-private Exception exception;";
-            string testStatements = @"
-if (token.IsCancellationRequested)
-    throw new OperationCanceledException(" + ctorArguments + @");";
+            const string members = """
+                private CancellationToken token;
+                private string text;
+                private Exception exception;
+                """;
+            string testStatements = """
+                if (token.IsCancellationRequested)
+                    throw new OperationCanceledException(
+                """ + ctorArguments + ");";
 
             var test = new VerifyCS.Test
             {
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VBAsync(string ctorArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        public async Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VBAsync(string ctorArguments)
         {
-            const string members = @"
-Private token As CancellationToken
-Private text As String
-private exception As Exception";
-            string testStatements = @"
-If token.IsCancellationRequested Then
-    Throw New OperationCanceledException(" + ctorArguments + @")
-End If";
+            const string members = """
+
+                Private token As CancellationToken
+                Private text As String
+                private exception As Exception
+                """;
+            string testStatements = """
+
+                If token.IsCancellationRequested Then
+                    Throw New OperationCanceledException(
+                """ + ctorArguments + """
+        )
+        End If
+        """;
 
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CSAsync(string ctorArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        public async Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CSAsync(string ctorArguments)
         {
-            const string members = @"
-private CancellationToken token;
-private string text;
-private Exception exception;
-private void DoSomething() { }";
-            string testStatements = @"
-if (!token.IsCancellationRequested)
-    DoSomething();
-else
-    throw new OperationCanceledException(" + ctorArguments + @");";
+            const string members = """
+                private CancellationToken token;
+                private string text;
+                private Exception exception;
+                private void DoSomething() { }
+                """;
+            string testStatements = """
+                if (!token.IsCancellationRequested)
+                    DoSomething();
+                else
+                    throw new OperationCanceledException(
+                """ + ctorArguments + ");";
 
             var test = new VerifyCS.Test
             {
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
-        public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VBAsync(string ctorArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        public async Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VBAsync(string ctorArguments)
         {
-            const string members = @"
-Private token As CancellationToken
-Private text As String
-Private exception As Exception
-Private Sub DoSomething()
-End Sub";
-            string testStatements = @"
-If Not token.IsCancellationRequested Then
-    DoSomething()
-Else
-    Throw New OperationCanceledException(" + ctorArguments + @")
-End If";
+            const string members = """
+
+                Private token As CancellationToken
+                Private text As String
+                Private exception As Exception
+                Private Sub DoSomething()
+                End Sub
+                """;
+            string testStatements = """
+
+                If Not token.IsCancellationRequested Then
+                    DoSomething()
+                Else
+                    Throw New OperationCanceledException(
+                """ + ctorArguments + """
+        )
+        End If
+        """;
 
             var test = new VerifyVB.Test
             {
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region Helpers
         private static class CS
         {
-            public const string Usings = @"
-using System;
-using System.Threading;";
+            public const string Usings = """
+
+                using System;
+                using System.Threading;
+                """;
 
             public static string CreateBlock(string statements, string members)
             {
-                return Usings + @"
-public partial class Body
-{
-" + IndentLines(members, "    ") + @"
-    public void Run()
-    {
-" + IndentLines(statements, "        ") + @"
+                return Usings + """
+
+                    public partial class Body
+                    {
+
+                    """ + IndentLines(members, "    ") + """
+
+        public void Run()
+        {
+
+    """ + IndentLines(statements, "        ") + """
+
+        }
     }
-}";
+    """;
             }
 
             /// <summary>
             /// Creates a test class with a single private CancellationToken member called 'token'.
             /// </summary>
-            public static string CreateBlock(string statements) => CreateBlock(statements, @"private CancellationToken token;");
+            public static string CreateBlock(string statements) => CreateBlock(statements, "private CancellationToken token;");
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyCS.Diagnostic(Rule).WithLocation(markupKey);
         }
 
         private static class VB
         {
-            public const string Usings = @"
-Imports System
-Imports System.Threading";
+            public const string Usings = """
+
+                Imports System
+                Imports System.Threading
+                """;
 
             public static string CreateBlock(string statements, string members)
             {
-                return Usings + @"
-Partial Public Class Body
-" + IndentLines(members, "    ") + @"
-    Public Sub Run()
-" + IndentLines(statements, "        ") + @"
-    End Sub
-End Class";
+                return Usings + """
+
+                    Partial Public Class Body
+
+                    """ + IndentLines(members, "    ") + """
+
+        Public Sub Run()
+
+    """ + IndentLines(statements, "        ") + """
+
+        End Sub
+    End Class
+    """;
             }
 
-            public static string CreateBlock(string statements) => CreateBlock(statements, @"Private token As CancellationToken");
+            public static string CreateBlock(string statements) => CreateBlock(statements, "Private token As CancellationToken");
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyVB.Diagnostic(Rule).WithLocation(markupKey);
         }

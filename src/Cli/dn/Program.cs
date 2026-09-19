@@ -21,12 +21,31 @@ partial class Program
         string hostPath = Environment.ProcessPath!;
         string baseDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         string dotnetRoot = ResolveDotnetRoot();
-        string sdkDir = baseDir;
+
+        // The muxer loads dotnet-aot from the resolved SDK directory. The harness can override the
+        // SDK and native-library directories independently so it can use a complete installed SDK
+        // without modifying it.
+        string sdkDir = ResolveAotSdkDir(baseDir);
+        string aotLibraryDir = ResolveAotLibraryDir(sdkDir);
+        if (!string.Equals(aotLibraryDir, baseDir, StringComparison.OrdinalIgnoreCase))
+        {
+            NativeLibrary.SetDllImportResolver(typeof(Program).Assembly, (name, assembly, searchPath) =>
+                string.Equals(name, "dotnet-aot", StringComparison.Ordinal)
+                    && NativeLibrary.TryLoad(Path.Combine(aotLibraryDir, AotLibraryFileName), out nint handle)
+                        ? handle
+                        : nint.Zero);
+        }
+
+        // Test hook: pass an empty sdk_dir to exercise dotnet-aot's self-locate fallback while still
+        // loading the library from the resolved directory above.
+        string sdkDirArg = string.Equals(Environment.GetEnvironmentVariable("DOTNET_AOT_BLANK_SDKDIR"), "1", StringComparison.Ordinal)
+            ? string.Empty
+            : sdkDir;
         string hostfxrPath = ResolveHostfxrPath(dotnetRoot);
 
         // Marshal argv to native platform strings (UTF-16 on Windows, UTF-8 on Unix)
         // to match hostfxr's char_t definition used by PlatformStringMarshaller
-        // in dotnet-aot.dll.
+        // in the dotnet-aot native library.
         nint* nativeArgv = stackalloc nint[args.Length];
         try
         {
@@ -37,7 +56,7 @@ partial class Program
 
             nint hpNative = MarshalStringToNative(hostPath);
             nint drNative = MarshalStringToNative(dotnetRoot);
-            nint sdNative = MarshalStringToNative(sdkDir);
+            nint sdNative = MarshalStringToNative(sdkDirArg);
             nint hfNative = MarshalStringToNative(hostfxrPath);
 
             try
@@ -75,56 +94,14 @@ partial class Program
     /// </summary>
     private static string ResolveDotnetRoot()
     {
-        // Check DOTNET_ROOT first (standard on all platforms)
-        string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        if (!string.IsNullOrEmpty(dotnetRoot) && Directory.Exists(dotnetRoot))
-        {
-            return dotnetRoot;
-        }
-
-        // On Windows, also check the architecture-specific variant
-        if (OperatingSystem.IsWindows())
-        {
-            string archVar = RuntimeInformation.ProcessArchitecture switch
-            {
-                Architecture.X64 => "DOTNET_ROOT(x64)",
-                Architecture.X86 => "DOTNET_ROOT(x86)",
-                Architecture.Arm64 => "DOTNET_ROOT(ARM64)",
-                _ => ""
-            };
-
-            if (!string.IsNullOrEmpty(archVar))
-            {
-                dotnetRoot = Environment.GetEnvironmentVariable(archVar);
-                if (!string.IsNullOrEmpty(dotnetRoot) && Directory.Exists(dotnetRoot))
-                {
-                    return dotnetRoot;
-                }
-            }
-        }
-
-        // Fall back to resolving from the process path
-        string? processPath = Environment.ProcessPath;
-        if (processPath is not null)
-        {
-            string? processDir = Path.GetDirectoryName(processPath);
-            if (processDir is not null)
-            {
-                // Walk up looking for a directory with dotnet(.exe)
-                string? candidate = processDir;
-                while (candidate is not null)
-                {
-                    if (File.Exists(Path.Combine(candidate, "dotnet" + (OperatingSystem.IsWindows() ? ".exe" : ""))))
-                    {
-                        return candidate;
-                    }
-                    candidate = Path.GetDirectoryName(candidate);
-                }
-            }
-        }
-
-        // Last resort: assume relative to AppContext.BaseDirectory
-        return Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)) ?? AppContext.BaseDirectory;
+        return DotnetRootResolver.ResolveDotnetRoot(
+            Environment.GetEnvironmentVariable,
+            Environment.ProcessPath,
+            RuntimeInformation.ProcessArchitecture,
+            OperatingSystem.IsWindows(),
+            Directory.Exists,
+            File.Exists,
+            AppContext.BaseDirectory);
     }
 
     /// <summary>
@@ -132,38 +109,48 @@ partial class Program
     /// </summary>
     private static string ResolveHostfxrPath(string dotnetRoot)
     {
-        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
-        if (!Directory.Exists(fxrDir))
-        {
-            return string.Empty;
-        }
-
-        // Pick the highest version directory by parsing version numbers
-        string? latestFxr = Directory.GetDirectories(fxrDir)
-            .Select(path => new
-            {
-                Path = path,
-                Version = Version.TryParse(Path.GetFileName(path), out Version? version) ? version : null
-            })
-            .Where(candidate => candidate.Version is not null)
-            .OrderByDescending(candidate => candidate.Version)
-            .Select(candidate => candidate.Path)
-            .FirstOrDefault();
-
-        if (latestFxr is null)
-        {
-            return string.Empty;
-        }
-
-        string hostfxrName = OperatingSystem.IsWindows()
-            ? "hostfxr.dll"
-            : OperatingSystem.IsMacOS()
-                ? "libhostfxr.dylib"
-                : "libhostfxr.so";
-
-        string hostfxrPath = Path.Combine(latestFxr, hostfxrName);
-        return File.Exists(hostfxrPath) ? hostfxrPath : string.Empty;
+        return DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot,
+            OperatingSystem.IsWindows(),
+            OperatingSystem.IsMacOS(),
+            Directory.Exists,
+            Directory.GetDirectories,
+            File.Exists);
     }
+
+    /// <summary>
+    ///  Resolves the directory passed to dotnet-aot as <c>sdk_dir</c>. Honors the
+    ///  DOTNET_AOT_SDK_DIR override for emulating the deployed non-flat layout; otherwise defaults
+    ///  to dn's own directory. The native-library load directory is resolved separately.
+    /// </summary>
+    private static string ResolveAotSdkDir(string baseDir)
+    {
+        string? overrideDir = Environment.GetEnvironmentVariable("DOTNET_AOT_SDK_DIR");
+        return !string.IsNullOrEmpty(overrideDir) && Directory.Exists(overrideDir)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(overrideDir))
+            : baseDir;
+    }
+
+    /// <summary>
+    ///  Resolves the directory from which the test harness loads dotnet-aot. By default this is the
+    ///  resolved SDK directory, matching the muxer; DOTNET_AOT_LIBRARY_DIR lets tests keep native
+    ///  artifacts separate from an installed SDK.
+    /// </summary>
+    private static string ResolveAotLibraryDir(string sdkDir)
+    {
+        string? overrideDir = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR");
+        return !string.IsNullOrEmpty(overrideDir) && Directory.Exists(overrideDir)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(overrideDir))
+            : sdkDir;
+    }
+
+    /// <summary>
+    ///  The platform-specific file name of the dotnet-aot native library.
+    /// </summary>
+    private static string AotLibraryFileName =>
+        OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+        : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
+        : "libdotnet-aot.so";
 
     /// <summary>
     ///  Marshals a string to a native platform string (UTF-16 on Windows, UTF-8 on Unix)

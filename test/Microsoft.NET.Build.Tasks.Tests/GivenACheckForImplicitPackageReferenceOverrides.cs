@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACheckForImplicitPackageReferenceOverrides
     {
-        [Fact]
+        [TestMethod]
         public void DetectsOverrides()
         {
             var task = new CheckForImplicitPackageReferenceOverrides
@@ -32,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().HaveCount(1, "the explicit item is re-added with AllowExplicitVersion");
         }
 
-        [Fact]
+        [TestMethod]
         public void NullPackageReferenceItems_Throws()
         {
             var task = new CheckForImplicitPackageReferenceOverrides
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             act.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyArray_Succeeds()
         {
             var task = new CheckForImplicitPackageReferenceOverrides
@@ -61,7 +62,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyItemSpec_HandlesGracefully()
         {
             var task = new CheckForImplicitPackageReferenceOverrides
@@ -86,7 +87,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().HaveCount(1, "the explicit item should be re-added");
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativePathItemSpec_PreservesFormat()
         {
             const string pathLikeSpec = "some/path/Newtonsoft.Json";

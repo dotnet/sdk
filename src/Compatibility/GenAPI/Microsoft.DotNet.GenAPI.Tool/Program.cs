@@ -50,6 +50,20 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
+            Option<string[]?> includeApiFilesOption = new("--include-api-file")
+            {
+                Description = "The path to one or more api inclusion files with types in DocId format. APIs listed in these files are emitted even if they would otherwise be filtered out.",
+                CustomParser = ParseAssemblyArgument,
+                Arity = ArgumentArity.ZeroOrMore,
+                Recursive = true
+            };
+
+            Option<bool> excludeInternalCompilerAttributesOption = new("--exclude-internal-compiler-attributes")
+            {
+                Description = "If true, opts out of emitting the curated set of internal compiler attributes (e.g. IsExternalInit) that are emitted by default.",
+                Recursive = true
+            };
+
             Option<string?> outputPathOption = new("--output-path")
             {
                 Description = @"Output path. Default is the console. Can specify an existing directory as well
@@ -89,6 +103,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.Options.Add(assemblyReferencesOption);
             rootCommand.Options.Add(excludeApiFilesOption);
             rootCommand.Options.Add(excludeAttributesFilesOption);
+            rootCommand.Options.Add(includeApiFilesOption);
+            rootCommand.Options.Add(excludeInternalCompilerAttributesOption);
             rootCommand.Options.Add(outputPathOption);
             rootCommand.Options.Add(headerFileOption);
             rootCommand.Options.Add(exceptionMessageOption);
@@ -113,6 +129,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
                         ExceptionMessage = parseResult.GetValue(exceptionMessageOption),
                         ExcludeApiFiles = parseResult.GetValue(excludeApiFilesOption),
                         ExcludeAttributesFiles = parseResult.GetValue(excludeAttributesFilesOption),
+                        IncludeApiFiles = parseResult.GetValue(includeApiFilesOption),
+                        ExcludeInternalCompilerAttributes = parseResult.GetValue(excludeInternalCompilerAttributesOption),
                         RespectInternals = respectInternals,
                         IncludeAssemblyAttributes = parseResult.GetValue(includeAssemblyAttributesOption),
                     });

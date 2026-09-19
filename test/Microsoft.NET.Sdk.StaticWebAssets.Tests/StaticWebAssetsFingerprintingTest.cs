@@ -3,15 +3,21 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using System.Text.Json;
 using System.IO.Compression;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelper log) : AspNetSdkBaselineTest(log)
+[TestClass]
+public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBaselineTest
 {
-    [Fact]
+    [TestMethod]
     public void Build_FingerprintsContent_WhenEnabled()
     {
         var expectedManifest = LoadBuildManifest();
@@ -54,8 +60,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         { "BlazorWasmMinimal", "_framework/blazor.webassembly.js", "_framework/blazor.webassembly#[.{fingerprint}].js", false, true }
     };
 
-    [Theory]
-    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    [TestMethod]
+    [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Build_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
@@ -72,7 +78,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm");
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));
@@ -88,8 +94,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertAdditionalEndpointDefinitionsExist(endpointsManifestPath);
     }
 
-    [Theory]
-    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    [TestMethod]
+    [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Publish_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
@@ -108,7 +114,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertImportMapInHtml(indexHtmlOutputPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm", assertHtmlCompressed: true);
     }
 
-    [Fact]
+    [TestMethod]
     public void Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));

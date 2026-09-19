@@ -3,6 +3,7 @@
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class ProcessFrameworkReferencesTests
     {
         // Shared runtime graph templates
@@ -185,6 +186,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.KnownRuntimePacks != null) task.KnownRuntimePacks = config.KnownRuntimePacks;
             if (config.KnownILLinkPacks != null) task.KnownILLinkPacks = config.KnownILLinkPacks;
             if (config.KnownILCompilerPacks != null) task.KnownILCompilerPacks = config.KnownILCompilerPacks;
+            if (config.KnownCrossgen2Packs != null) task.KnownCrossgen2Packs = config.KnownCrossgen2Packs;
             
             // Set additional AOT/trimming properties
             if (config.PublishAot.HasValue) task.PublishAot = config.PublishAot.Value;
@@ -195,6 +197,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.EnableSingleFileAnalyzer.HasValue) task.EnableSingleFileAnalyzer = config.EnableSingleFileAnalyzer.Value;
             if (config.ReadyToRunEnabled.HasValue) task.ReadyToRunEnabled = config.ReadyToRunEnabled.Value;
             if (config.ReadyToRunUseCrossgen2.HasValue) task.ReadyToRunUseCrossgen2 = config.ReadyToRunUseCrossgen2.Value;
+            if (config.RequiresCrossgen2Pack.HasValue) task.RequiresCrossgen2Pack = config.RequiresCrossgen2Pack.Value;
             
             if (!string.IsNullOrEmpty(config.NetCoreRoot)) task.NetCoreRoot = config.NetCoreRoot;
             if (!string.IsNullOrEmpty(config.NETCoreSdkVersion)) task.NETCoreSdkVersion = config.NETCoreSdkVersion;
@@ -227,6 +230,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public MockTaskItem[]? KnownRuntimePacks { get; set; }
             public MockTaskItem[]? KnownILLinkPacks { get; set; }
             public MockTaskItem[]? KnownILCompilerPacks { get; set; }
+            public MockTaskItem[]? KnownCrossgen2Packs { get; set; }
             public bool? PublishAot { get; set; }
             public bool? PublishTrimmed { get; set; }
             public bool? RequiresILLinkPack { get; set; }
@@ -235,14 +239,147 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public bool? EnableSingleFileAnalyzer { get; set; }
             public bool? ReadyToRunEnabled { get; set; }
             public bool? ReadyToRunUseCrossgen2 { get; set; }
+            public bool? RequiresCrossgen2Pack { get; set; }
             public string? NetCoreRoot { get; set; }
             public string? NETCoreSdkVersion { get; set; }
             public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
         }
 
-        [Theory]
-        [InlineData(false)] // Without target platform
-        [InlineData(true)]  // With target platform
+        /// <summary>
+        /// A KnownCrossgen2Pack is selected by exact target framework version, so
+        /// TargetFrameworkVersion here has to stay in step with the pack's TargetFramework or the
+        /// task reports an unsupported target framework and the RID never gets looked at.
+        /// </summary>
+        [TestMethod]
+        [DataRow(true, false, true, "RequiresCrossgen2Pack alone acquires the pack")]
+        [DataRow(false, true, true, "PublishReadyToRun still acquires the pack")]
+        [DataRow(false, false, false, "neither asks for it, so it is not downloaded")]
+        public void It_acquires_the_Crossgen2_pack_for_a_build_that_needs_the_tool_without_ReadyToRun(
+            bool requiresCrossgen2Pack, bool readyToRunEnabled, bool expectDownloaded, string scenario)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = ToolsetInfo.CurrentTargetFramework,
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "11.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64",
+                ["Crossgen2RuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = requiresCrossgen2Pack,
+                ReadyToRunEnabled = readyToRunEnabled,
+                ReadyToRunUseCrossgen2 = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeTrue(scenario);
+
+            var downloadedCrossgen2 = task.PackagesToDownload?
+                .Any(p => p.ItemSpec.Contains("Microsoft.NETCore.App.Crossgen2")) ?? false;
+
+            downloadedCrossgen2.Should().Be(expectDownloaded, scenario);
+        }
+
+        [TestMethod]
+        public void It_reports_the_unsupported_host_when_the_Crossgen2_pack_has_no_RID_for_it()
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            // Supported everywhere except this build's host, so only the host lookup fails.
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = ToolsetInfo.CurrentTargetFramework,
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "11.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "linux-x64",
+                ["Crossgen2RuntimeIdentifiers"] = "linux-x64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeFalse("the build host has no crossgen2 pack");
+
+            var engine = (MockNeverCacheBuildEngine4)task.BuildEngine;
+            var error = engine.Errors.Should().ContainSingle().Subject;
+            error.Code.Should().Be("NETSDK1245");
+            error.Message.Should().Contain("win-x64", "the message names the host it could not find a pack for");
+        }
+
+        [TestMethod]
+        public void It_reports_the_unsupported_target_framework_when_no_Crossgen2_pack_matches()
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            // The only pack targets net9.0, so the version filter rejects it before any RID lookup.
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net9.0",
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "9.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64",
+                ["Crossgen2RuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeFalse("no crossgen2 pack matches the target framework");
+
+            var engine = (MockNeverCacheBuildEngine4)task.BuildEngine;
+            engine.Errors.Should().ContainSingle()
+                .Which.Code.Should().Be("NETSDK1246");
+        }
+
+        [TestMethod]
+        [DataRow(false)] // Without target platform
+        [DataRow(true)]  // With target platform
         public void It_resolves_AspNetCore_FrameworkReferences(bool withTargetPlatform)
         {
             var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", 
@@ -271,7 +408,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_resolve_FrameworkReferences_if_targetframework_doesnt_match()
         {
             var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "netcoreapp3.0", "1.9.5");
@@ -292,7 +429,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_KnownFrameworkReferences_with_RuntimePackAlwaysCopyLocal_It_resolves_FrameworkReferences()
         {
             var windowsSDKRef = CreateKnownFrameworkReference("Microsoft.Windows.SDK.NET.Ref", 
@@ -340,7 +477,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             runtimePack.GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal).Should().Be("true");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_self_contained_FrameworkReferences_to_download()
         {
             var config = new TaskConfiguration
@@ -376,7 +513,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_reference_to_NETCoreApp_It_should_not_resolve_runtime_pack()
         {
             var config = new TaskConfiguration
@@ -410,12 +547,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref", "should not resolve runtime pack for Microsoft.NETCore.App");
         }
 
-        [Theory]
-        [InlineData(null, new[] { "win-x64", "win-x86", "linux-x64" }, "Multiple RuntimeIdentifiers without RuntimeIdentifier")]
-        [InlineData("", new[] { "win-x64", "linux-x64" }, "Empty RuntimeIdentifier with RuntimeIdentifiers")]
-        [InlineData("any", new[] { "win-x64" }, "Any RID with RuntimeIdentifiers")]
-        [InlineData(null, new string[0], "No RuntimeIdentifier with empty RuntimeIdentifiers")]
-        [InlineData(null, null, "No RuntimeIdentifier with null RuntimeIdentifiers")]
+        [TestMethod]
+        [DataRow(null, new[] { "win-x64", "win-x86", "linux-x64" }, "Multiple RuntimeIdentifiers without RuntimeIdentifier")]
+        [DataRow("", new[] { "win-x64", "linux-x64" }, "Empty RuntimeIdentifier with RuntimeIdentifiers")]
+        [DataRow("any", new[] { "win-x64" }, "Any RID with RuntimeIdentifiers")]
+        [DataRow(null, new string[0], "No RuntimeIdentifier with empty RuntimeIdentifiers")]
+        [DataRow(null, null, "No RuntimeIdentifier with null RuntimeIdentifiers")]
         public void It_processes_various_RuntimeIdentifier_scenarios(string? runtimeIdentifier, string[]? runtimeIdentifiers, string scenario)
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net5.0", "5.0.0",
@@ -449,7 +586,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_processes_RuntimeIdentifiers_with_AlwaysCopyLocal_and_no_RuntimeIdentifier()
         {
             var config = new TaskConfiguration
@@ -478,7 +615,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_real_world_ridless_scenario_with_aot_and_trimming()
         {
             // This test reproduces the exact scenario from the reported issue
@@ -562,7 +699,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"), "Should include AOT compiler tooling");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_AOT_properties_without_failure()
         {
             var config = new TaskConfiguration
@@ -591,7 +728,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_trimming_scenarios()
         {
             var config = new TaskConfiguration
@@ -618,7 +755,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_combined_publish_properties()
         {
             var config = new TaskConfiguration
@@ -648,7 +785,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.osx-arm64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_mobile_iOS_framework_references()
         {
             // Create compatible framework references with correct target framework
@@ -681,11 +818,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.iOS.Ref");
         }
 
-        [Theory]
-        [InlineData(true, true, true, "All analyzers enabled")]
-        [InlineData(true, true, false, "AOT and Trim analyzers only")]
-        [InlineData(false, false, true, "SingleFile analyzer only")]
-        [InlineData(true, false, false, "AOT analyzer only")]
+        [TestMethod]
+        [DataRow(true, true, true, "All analyzers enabled")]
+        [DataRow(true, true, false, "AOT and Trim analyzers only")]
+        [DataRow(false, false, true, "SingleFile analyzer only")]
+        [DataRow(true, false, false, "AOT analyzer only")]
         public void It_handles_analyzer_combinations(bool aotAnalyzer, bool trimAnalyzer, bool singleFileAnalyzer, string scenario)
         {
             var config = new TaskConfiguration
@@ -712,10 +849,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().NotBeNull();
         }
 
-        [Theory]
-        [InlineData("Android", "34.0", "android-arm64")]
-        [InlineData("macOS", "14.0", "osx-arm64")]
-        [InlineData("Windows", "10.0.19041.0", "win-x64")]
+        [TestMethod]
+        [DataRow("Android", "34.0", "android-arm64")]
+        [DataRow("macOS", "14.0", "osx-arm64")]
+        [DataRow("Windows", "10.0.19041.0", "win-x64")]
         public void It_handles_different_target_platforms(string platformId, string platformVersion, string runtimeId)
         {
             var platformFrameworkRef = CreateKnownFrameworkReference($"Microsoft.{platformId}", "net8.0", "8.0.0",
@@ -756,7 +893,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetingPacks.Should().NotBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_runtime_packs_for_SelfContained_deployment()
         {
             // This test validates the "good" behavior from good-processframeworkreferences-selfcontained.txt
@@ -826,7 +963,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_runtime_packs_for_PublishTrimmed_without_SelfContained()
         {
             // This test validates that PublishTrimmed should trigger runtime pack resolution
@@ -897,14 +1034,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "ILLink pack should be included for PublishTrimmed");
         }
 
-        [Theory]
-        [InlineData(true, false, false, false, "SelfContained only")]
-        [InlineData(false, true, false, false, "PublishTrimmed only")]
-        [InlineData(false, false, true, false, "PublishReadyToRun only")]
-        [InlineData(false, false, false, true, "PublishAot only")]
-        [InlineData(true, true, false, false, "SelfContained + PublishTrimmed")]
-        [InlineData(true, false, true, false, "SelfContained + PublishReadyToRun")]
-        [InlineData(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
+        [TestMethod]
+        [DataRow(true, false, false, false, "SelfContained only")]
+        [DataRow(false, true, false, false, "PublishTrimmed only")]
+        [DataRow(false, false, true, false, "PublishReadyToRun only")]
+        [DataRow(false, false, false, true, "PublishAot only")]
+        [DataRow(true, true, false, false, "SelfContained + PublishTrimmed")]
+        [DataRow(true, false, true, false, "SelfContained + PublishReadyToRun")]
+        [DataRow(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
         public void It_resolves_runtime_packs_for_various_publish_scenarios(
             bool selfContained, bool publishTrimmed, bool publishReadyToRun, bool publishAot, string scenario)
         {
@@ -955,7 +1092,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 $"Should have runtime pack in output for scenario: {scenario}");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_complex_cross_compilation_RuntimeIdentifiers()
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
@@ -988,10 +1125,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Theory]
-        [InlineData(null, "linux-x64")]
-        [InlineData("linux-x64", "linux-x64")]
-        [InlineData(NonPortableRid, NonPortableRid)]
+        [TestMethod]
+        [DataRow(null, "linux-x64")]
+        [DataRow("linux-x64", "linux-x64")]
+        [DataRow(NonPortableRid, NonPortableRid)]
         public void It_selects_correct_ILCompiler_based_on_RuntimeIdentifier(string? runtimeIdentifier, string expectedILCompilerRid)
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.1",

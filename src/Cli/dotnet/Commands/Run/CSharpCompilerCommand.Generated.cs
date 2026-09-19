@@ -35,9 +35,8 @@ partial class CSharpCompilerCommand
             "/warnaserror-",
             "/utf8output",
             "/deterministic+",
-            "/langversion:14.0",
+            "/langversion:15.0",
             "/features:FileBasedProgram",
-            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/codestyle/cs/build/config/analysislevelstyle_default.globalconfig",
             $"/analyzerconfig:{objDir}/{FileName}.GeneratedMSBuildEditorConfig.editorconfig",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_11_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",
@@ -153,7 +152,6 @@ is_global = true
 build_property.EnableAotAnalyzer = true
 build_property.EnableSingleFileAnalyzer = true
 build_property.EnableTrimAnalyzer = true
-build_property.EnableUnsafeAnalyzer = 
 build_property.IncludeAllContentForSelfExtract = 
 build_property.VerifyReferenceTrimCompatibility = 
 build_property.VerifyReferenceAotCompatibility = 

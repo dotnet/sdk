@@ -36,8 +36,7 @@ managing file system and logging. Host may also provide default parameter
 values for templates via `TryGetHostParamDefault` method.
 
 Applications using template engine are often called “hosts”.
-dotnet/templating repo is managing one of such hosts: dotnet new CLI, which is
-part of .NET SDK.
+The .NET SDK includes one such host: the dotnet new CLI.
 
 Main host properties:
 
@@ -207,9 +206,9 @@ Template engine also provides [default non-managed provider
 implementation](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/DefaultTemplatePackageProvider.cs)
 that can be used by other hosts to build simple providers or base implementation
 on. Here are two examples:
-[SdkTemplates](../../../src/Cli/dotnet/commands/dotnet-new/BuiltInTemplatePackageProvider.cs)
+[SdkTemplates](../../../src/Cli/dotnet/Commands/New/BuiltInTemplatePackageProvider.cs)
 and
-[OptionalWorkloads](../../../src/Cli/dotnet/commands/dotnet-new/OptionalWorkloadProvider.cs).
+[OptionalWorkloads](../../../src/Cli/dotnet/Commands/New/OptionalWorkloadProvider.cs).
 
 ### Prioritizing the providers
 

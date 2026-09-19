@@ -5196,7 +5196,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\dotnet.js",
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },

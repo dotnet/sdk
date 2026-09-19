@@ -12,121 +12,111 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     Public NotInheritable Class BasicPreferLengthCountIsEmptyOverAnyFixer
         Inherits PreferLengthCountIsEmptyOverAnyFixer
 
-        Protected Overrides Function ReplaceAnyWithIsEmpty(root As SyntaxNode, node As SyntaxNode) As SyntaxNode
+        Protected Overrides Function GetNodeToReplace(node As SyntaxNode) As SyntaxNode
             Dim invocation = TryCast(node, InvocationExpressionSyntax)
-            Dim memberAccess As MemberAccessExpressionSyntax
+            Dim target As SyntaxNode
             If invocation Is Nothing Then
-                memberAccess = TryCast(node, MemberAccessExpressionSyntax)
-                If memberAccess Is Nothing Then
+                If TryCast(node, MemberAccessExpressionSyntax) Is Nothing Then
                     Return Nothing
                 End If
 
-                Dim newMemberAccess = memberAccess.WithName(
-                    SyntaxFactory.IdentifierName(PreferLengthCountIsEmptyOverAnyAnalyzer.IsEmptyText)
+                target = node
+            Else
+                If TryCast(invocation.Expression, MemberAccessExpressionSyntax) Is Nothing Then
+                    Return Nothing
+                End If
+
+                target = invocation
+            End If
+
+            If target.Parent.IsKind(SyntaxKind.NotExpression) Then
+                Return target.Parent
+            End If
+
+            Return target
+        End Function
+
+        Protected Overrides Function ReplaceAnyWithIsEmpty(currentNode As SyntaxNode) As SyntaxNode
+            Dim isNegated As Boolean
+            Dim expression As ExpressionSyntax = Nothing
+            If Not TrySplit(currentNode, isNegated, expression) Then
+                Return Nothing
+            End If
+
+            Dim newMemberAccess = SyntaxFactory.MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                expression,
+                SyntaxFactory.Token(SyntaxKind.DotToken),
+                SyntaxFactory.IdentifierName(PreferLengthCountIsEmptyOverAnyAnalyzer.IsEmptyText)
                 )
-                Dim unaryParent = TryCast(memberAccess.Parent, UnaryExpressionSyntax)
-                If unaryParent IsNot Nothing And unaryParent.IsKind(SyntaxKind.NotExpression) Then
-                    Return root.ReplaceNode(unaryParent, newMemberAccess.WithTriviaFrom(unaryParent))
-                End If
 
-                Dim negatedExpression = SyntaxFactory.UnaryExpression(
-                    SyntaxKind.NotExpression,
-                    SyntaxFactory.Token(SyntaxKind.NotKeyword),
-                    newMemberAccess
-                    )
-
-                Return root.ReplaceNode(memberAccess, negatedExpression.WithTriviaFrom(memberAccess))
-            Else
-                memberAccess = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
-                If memberAccess Is Nothing Then
-                    Return Nothing
-                End If
-
-                Dim expression = memberAccess.Expression
-                If invocation.ArgumentList.Arguments.Count > 0 Then
-                    expression = invocation.ArgumentList.Arguments(0).GetExpression()
-                End If
-
-                Dim newMemberAccess = SyntaxFactory.MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    expression,
-                    SyntaxFactory.Token(SyntaxKind.DotToken),
-                    SyntaxFactory.IdentifierName(PreferLengthCountIsEmptyOverAnyAnalyzer.IsEmptyText)
-                    )
-                Dim unaryParent = TryCast(invocation.Parent, UnaryExpressionSyntax)
-                If unaryParent IsNot Nothing And unaryParent.IsKind(SyntaxKind.NotExpression) Then
-                    Return root.ReplaceNode(unaryParent, newMemberAccess.WithTriviaFrom(unaryParent))
-                End If
-
-                Dim negatedExpression = SyntaxFactory.UnaryExpression(
-                    SyntaxKind.NotExpression,
-                    SyntaxFactory.Token(SyntaxKind.NotKeyword),
-                    newMemberAccess
-                    )
-
-                Return root.ReplaceNode(invocation, negatedExpression.WithTriviaFrom(invocation))
+            If isNegated Then
+                Return newMemberAccess.WithTriviaFrom(currentNode)
             End If
+
+            Return SyntaxFactory.UnaryExpression(
+                SyntaxKind.NotExpression,
+                SyntaxFactory.Token(SyntaxKind.NotKeyword),
+                newMemberAccess
+                ).WithTriviaFrom(currentNode)
         End Function
 
-        Protected Overrides Function ReplaceAnyWithLength(root As SyntaxNode, node As SyntaxNode) As SyntaxNode
-            Return ReplaceAnyWithPropertyCheck(root, node, PreferLengthCountIsEmptyOverAnyAnalyzer.LengthText)
-        End Function
-
-        Protected Overrides Function ReplaceAnyWithCount(root As SyntaxNode, node As SyntaxNode) As SyntaxNode
-            Return ReplaceAnyWithPropertyCheck(root, node, PreferLengthCountIsEmptyOverAnyAnalyzer.CountText)
-        End Function
-
-        Private Shared Function ReplaceAnyWithPropertyCheck(root As SyntaxNode, node As SyntaxNode, propertyName As String) As SyntaxNode
-            Dim invocation = TryCast(node, InvocationExpressionSyntax)
-            Dim memberAccess As MemberAccessExpressionSyntax
-            If invocation Is Nothing Then
-                memberAccess = TryCast(node, MemberAccessExpressionSyntax)
-                If memberAccess Is Nothing Then
-                    Return Nothing
-                End If
-
-                If memberAccess.Parent.IsKind(SyntaxKind.NotExpression) Then
-                    Dim binaryExpression = GetBinaryExpression(memberAccess.Expression, propertyName, SyntaxKind.EqualsExpression)
-                    Return root.ReplaceNode(memberAccess.Parent, binaryExpression.WithTriviaFrom(memberAccess.Parent))
-                End If
-
-                Return root.ReplaceNode(memberAccess, GetBinaryExpression(memberAccess.Expression, propertyName, SyntaxKind.NotEqualsExpression).WithTriviaFrom(memberAccess))
-            Else
-                memberAccess = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
-                If memberAccess Is Nothing Then
-                    Return Nothing
-                End If
-
-                Dim expression = memberAccess.Expression
-                If invocation.ArgumentList.Arguments.Count > 0 Then
-                    expression = invocation.ArgumentList.Arguments(0).GetExpression()
-                End If
-
-                If invocation.Parent.IsKind(SyntaxKind.NotExpression) Then
-                    Dim binaryExpression = GetBinaryExpression(expression, propertyName, SyntaxKind.EqualsExpression)
-                    Return root.ReplaceNode(invocation.Parent, binaryExpression.WithTriviaFrom(invocation.Parent))
-                End If
-
-                Return root.ReplaceNode(invocation, GetBinaryExpression(expression, propertyName, SyntaxKind.NotEqualsExpression).WithTriviaFrom(invocation))
+        Protected Overrides Function ReplaceAnyWithPropertyCheck(currentNode As SyntaxNode, propertyName As String) As SyntaxNode
+            Dim isNegated As Boolean
+            Dim expression As ExpressionSyntax = Nothing
+            If Not TrySplit(currentNode, isNegated, expression) Then
+                Return Nothing
             End If
-        End Function
 
-        Private Shared Function GetBinaryExpression(expression As ExpressionSyntax, member As String, expressionKind As SyntaxKind) As BinaryExpressionSyntax
-            Dim tokenKind = If(expressionKind = SyntaxKind.EqualsExpression, SyntaxKind.EqualsToken, SyntaxKind.LessThanGreaterThanToken)
-            return SyntaxFactory.BinaryExpression(
+            Dim expressionKind = If(isNegated, SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression)
+            Dim tokenKind = If(isNegated, SyntaxKind.EqualsToken, SyntaxKind.LessThanGreaterThanToken)
+
+            Return SyntaxFactory.BinaryExpression(
                 expressionKind,
                 SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                     expression,
                     SyntaxFactory.Token(SyntaxKind.DotToken),
-                    SyntaxFactory.IdentifierName(member)
+                    SyntaxFactory.IdentifierName(propertyName)
                 ),
                 SyntaxFactory.Token(tokenKind),
                 SyntaxFactory.LiteralExpression(
                     SyntaxKind.NumericLiteralExpression,
                     SyntaxFactory.Literal(0)
                     )
-                )
+                ).WithTriviaFrom(currentNode)
+        End Function
+
+        Private Shared Function TrySplit(currentNode As SyntaxNode, ByRef isNegated As Boolean, ByRef expression As ExpressionSyntax) As Boolean
+            Dim unary = TryCast(currentNode, UnaryExpressionSyntax)
+            isNegated = unary IsNot Nothing AndAlso unary.IsKind(SyntaxKind.NotExpression)
+
+            Dim operand = If(isNegated, CType(unary.Operand, SyntaxNode), currentNode)
+            Dim invocation = TryCast(operand, InvocationExpressionSyntax)
+            If invocation Is Nothing Then
+                Dim memberAccess = TryCast(operand, MemberAccessExpressionSyntax)
+                If memberAccess Is Nothing Then
+                    Return False
+                End If
+
+                expression = memberAccess.Expression
+
+                Return True
+            End If
+
+            Dim invokedMemberAccess = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
+            If invokedMemberAccess Is Nothing Then
+                Return False
+            End If
+
+            ' `.Any()` used like a normal static method and not like an extension method.
+            If invocation.ArgumentList.Arguments.Count > 0 Then
+                expression = invocation.ArgumentList.Arguments(0).GetExpression()
+            Else
+                expression = invokedMemberAccess.Expression
+            End If
+
+            Return True
         End Function
     End Class
 End Namespace

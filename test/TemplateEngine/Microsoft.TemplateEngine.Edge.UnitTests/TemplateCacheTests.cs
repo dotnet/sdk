@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FakeItEasy;
@@ -15,33 +16,35 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class TemplateCacheTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class TemplateCacheTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public TemplateCacheTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
-        [Theory]
-        [InlineData("en-US", "en")]
-        [InlineData("zh-CN", "zh-Hans")]
-        [InlineData("zh-SG", "zh-Hans")]
-        [InlineData("zh-TW", "zh-Hant")]
-        [InlineData("zh-HK", "zh-Hant")]
-        [InlineData("zh-MO", "zh-Hant")]
-        [InlineData("pt-BR", "pt-BR")]
-        [InlineData("pt", null)]
-        [InlineData("uk-UA", null)]
-        [InlineData("invariant", null)]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
+        [DataRow("en-US", "en")]
+        [DataRow("zh-CN", "zh-Hans")]
+        [DataRow("zh-SG", "zh-Hans")]
+        [DataRow("zh-TW", "zh-Hant")]
+        [DataRow("zh-HK", "zh-Hant")]
+        [DataRow("zh-MO", "zh-Hant")]
+        [DataRow("pt-BR", "pt-BR")]
+        [DataRow("pt", null)]
+        [DataRow("uk-UA", null)]
+        [DataRow("invariant", null)]
         public void PicksCorrectLocator(string currentCulture, string? expectedLocator)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             CultureInfo persistedCulture = CultureInfo.CurrentUICulture;
             try
             {
@@ -77,9 +80,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
-                Assert.Equal(currentCulture, templateCache.Locale);
-                Assert.Equal("testIdentity", templateCache.TemplateInfo.Single().Identity);
-                Assert.Equal(string.IsNullOrEmpty(expectedLocator) ? string.Empty : expectedLocator + " name", templateCache.TemplateInfo.Single().Name);
+                Assert.AreEqual(currentCulture, templateCache.Locale);
+                Assert.AreEqual("testIdentity", templateCache.TemplateInfo.Single().Identity);
+                Assert.AreEqual(string.IsNullOrEmpty(expectedLocator) ? string.Empty : expectedLocator + " name", templateCache.TemplateInfo.Single().Name);
             }
             finally
             {
@@ -87,10 +90,104 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
+        public void ReadHandlesCompatibleJsonSyntax()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            const string json = """
+                                {
+                                    // Exact-cased property names win; otherwise the last case-insensitive match wins.
+                                    "Version": "1.0.0\u002E7",
+                                    "VERSION": "ignoredVersion",
+                                    "locale": "ignoredLocale",
+                                    "LOCALE": "en-US",
+                                    "templateinfo": [
+                                        {
+                                            "Identity": "testIdentity",
+                                            "IDENTITY": "ignoredIdentity",
+                                            "name": "ignoredName",
+                                            "NAME": "testName",
+                                            "shortnamelist": "testShort",
+                                            "mountpointuri": "testMount",
+                                            "configplace": ".template.config/template.json",
+                                            "generatorid": "00000000-0000-0000-0000-000000000000",
+                                            "parameters": [
+                                                {
+                                                    "name": "optionalParameter",
+                                                    "precedence": null,
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    "mountpointsinfo": {
+                                        "testMount": "2026-09-09T12:34:56.789Z",
+                                    },
+                                }
+                                """;
+
+            using (Stream stream = environmentSettings.Host.FileSystem.CreateFile(paths.TemplateCacheFile))
+            using (StreamWriter writer = new(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            {
+                writer.Write(json);
+            }
+
+            TemplateCache cache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
+
+            Assert.AreEqual("1.0.0.7", cache.Version);
+            Assert.AreEqual("en-US", cache.Locale);
+            Assert.ContainsSingle(cache.TemplateInfo);
+            Assert.AreEqual("testIdentity", cache.TemplateInfo[0].Identity);
+            Assert.AreEqual("testName", cache.TemplateInfo[0].Name);
+            Assert.AreSequenceEqual(new[] { "testShort" }, cache.TemplateInfo[0].ShortNameList);
+            Assert.AreEqual(
+                PrecedenceDefinition.Optional,
+                cache.TemplateInfo[0].ParameterDefinitions["optionalParameter"].Precedence.PrecedenceDefinition);
+            Assert.ContainsSingle(cache.MountPointsInfo);
+            Assert.AreEqual(
+                new DateTime(2026, 9, 9, 12, 34, 56, 789, DateTimeKind.Utc),
+                cache.MountPointsInfo["testMount"]);
+        }
+
+        [TestMethod]
+        [DataRow(nameof(TemplateInfo.Identity))]
+        [DataRow(nameof(TemplateInfo.Name))]
+        [DataRow(nameof(TemplateInfo.MountPointUri))]
+        [DataRow(nameof(TemplateInfo.ConfigPlace))]
+        [DataRow(nameof(TemplateInfo.GeneratorId))]
+        public void ReadRejectsTemplateMissingRequiredProperty(string propertyName)
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            JsonObject template = new()
+            {
+                [nameof(TemplateInfo.Identity)] = "testIdentity",
+                [nameof(TemplateInfo.Name)] = "testName",
+                [nameof(TemplateInfo.ShortNameList)] = new JsonArray("testShort"),
+                [nameof(TemplateInfo.MountPointUri)] = "testMount",
+                [nameof(TemplateInfo.ConfigPlace)] = ".template.config/template.json",
+                [nameof(TemplateInfo.GeneratorId)] = Guid.Empty.ToString()
+            };
+            Assert.IsTrue(template.Remove(propertyName));
+
+            JsonObject cache = new()
+            {
+                [nameof(TemplateCache.Version)] = "1.0.0.7",
+                [nameof(TemplateCache.Locale)] = "en-US",
+                [nameof(TemplateCache.TemplateInfo)] = new JsonArray(template),
+                [nameof(TemplateCache.MountPointsInfo)] = new JsonObject()
+            };
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, cache);
+
+            ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(
+                () => TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            Assert.Contains(propertyName, exception.Message);
+        }
+
+        [TestMethod]
         public void CanHandlePostActions()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
             Guid postAction1 = Guid.NewGuid();
@@ -105,17 +202,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
-            Assert.Single(readCache.TemplateInfo);
+            Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
-            Assert.Equal(new[] { postAction1, postAction2 }, readTemplate.PostActions);
+            Assert.AreSequenceEqual(new[] { postAction1, postAction2 }, readTemplate.PostActions);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleConstraints()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
             TemplateConstraintInfo constraintInfo1 = new TemplateConstraintInfo("t1", null);
@@ -130,21 +227,21 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
-            Assert.Single(readCache.TemplateInfo);
+            Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
-            Assert.Equal(2, readTemplate.Constraints.Count);
-            Assert.Equal("t1", readTemplate.Constraints[0].Type);
-            Assert.Equal("t1", readTemplate.Constraints[1].Type);
-            Assert.Null(readTemplate.Constraints[0].Args);
-            Assert.Equal(constraintInfo2.Args, readTemplate.Constraints[1].Args);
+            Assert.HasCount(2, readTemplate.Constraints);
+            Assert.AreEqual("t1", readTemplate.Constraints[0].Type);
+            Assert.AreEqual("t1", readTemplate.Constraints[1].Type);
+            Assert.IsNull(readTemplate.Constraints[0].Args);
+            Assert.AreEqual(constraintInfo2.Args, readTemplate.Constraints[1].Args);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleParameters()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
             ITemplateParameter param1 = new TemplateParameter("param1", "parameter", "string");
@@ -174,34 +271,71 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
-            Assert.Single(readCache.TemplateInfo);
+            Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
-            Assert.Equal(3, readTemplate.ParameterDefinitions.Count);
-            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param1"));
-            Assert.Equal(PrecedenceDefinition.Optional, readTemplate.ParameterDefinitions["param1"].Precedence.PrecedenceDefinition);
-            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param2"));
-            Assert.Equal("string", readTemplate.ParameterDefinitions["param2"].DataType);
-            Assert.Equal("param1 == \"foo\"", readTemplate.ParameterDefinitions["param2"].Precedence.IsRequiredCondition);
-            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param3"));
-            Assert.Equal("choice", readTemplate.ParameterDefinitions["param3"].DataType);
-            Assert.Equal(PrecedenceDefinition.Required, readTemplate.ParameterDefinitions["param3"].Precedence.PrecedenceDefinition);
-            Assert.Equal("def", readTemplate.ParameterDefinitions["param3"].DefaultValue);
-            Assert.Equal("def-no-value", readTemplate.ParameterDefinitions["param3"].DefaultIfOptionWithoutValue);
-            Assert.Equal("desc", readTemplate.ParameterDefinitions["param3"].Description);
-            Assert.Equal("displ", readTemplate.ParameterDefinitions["param3"].DisplayName);
-            Assert.True(readTemplate.ParameterDefinitions["param3"].AllowMultipleValues);
-            Assert.Equal(2, readTemplate.ParameterDefinitions["param3"].Choices!.Count);
+            Assert.HasCount(3, readTemplate.ParameterDefinitions);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param1"));
+            Assert.AreEqual(PrecedenceDefinition.Optional, readTemplate.ParameterDefinitions["param1"].Precedence.PrecedenceDefinition);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param2"));
+            Assert.AreEqual("string", readTemplate.ParameterDefinitions["param2"].DataType);
+            Assert.AreEqual("param1 == \"foo\"", readTemplate.ParameterDefinitions["param2"].Precedence.IsRequiredCondition);
+            Assert.IsTrue(readTemplate.ParameterDefinitions.ContainsKey("param3"));
+            Assert.AreEqual("choice", readTemplate.ParameterDefinitions["param3"].DataType);
+            Assert.AreEqual(PrecedenceDefinition.Required, readTemplate.ParameterDefinitions["param3"].Precedence.PrecedenceDefinition);
+            Assert.AreEqual("def", readTemplate.ParameterDefinitions["param3"].DefaultValue);
+            Assert.AreEqual("def-no-value", readTemplate.ParameterDefinitions["param3"].DefaultIfOptionWithoutValue);
+            Assert.AreEqual("desc", readTemplate.ParameterDefinitions["param3"].Description);
+            Assert.AreEqual("displ", readTemplate.ParameterDefinitions["param3"].DisplayName);
+            Assert.IsTrue(readTemplate.ParameterDefinitions["param3"].AllowMultipleValues);
+            Assert.HasCount(2, readTemplate.ParameterDefinitions["param3"].Choices!);
         }
 
-        [Theory]
-        [InlineData(true, "defaultName")]
-        [InlineData(true, null)]
-        [InlineData(false, "anotherDefault")]
+        [TestMethod]
+        public void CanHandleMetadata()
+        {
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new(environmentSettings);
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
+            A.CallTo(() => template.Classifications).Returns(["library", "console"]);
+            A.CallTo(() => template.TagsCollection).Returns(new Dictionary<string, string>
+            {
+                ["language"] = "C#",
+                ["type"] = "project"
+            });
+            A.CallTo(() => template.BaselineInfo).Returns(new Dictionary<string, IBaselineInfo>
+            {
+                ["standard"] = new BaselineInfo(
+                    new Dictionary<string, string> { ["framework"] = "net11.0" },
+                    "Standard baseline")
+            });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            TemplateCache templateCache = new(
+                [],
+                [new ScanResult(mountPoint, [template], [], [])],
+                new Dictionary<string, DateTime>(),
+                environmentSettings);
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+
+            TemplateInfo readTemplate = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile).TemplateInfo.Single();
+
+            Assert.AreSequenceEqual(new[] { "library", "console" }, readTemplate.Classifications);
+            Assert.AreEqual("C#", readTemplate.TagsCollection["language"]);
+            Assert.AreEqual("project", readTemplate.TagsCollection["type"]);
+            Assert.AreEqual("Standard baseline", readTemplate.BaselineInfo["standard"].Description);
+            Assert.AreEqual("net11.0", readTemplate.BaselineInfo["standard"].DefaultOverrides["framework"]);
+        }
+
+        [TestMethod]
+        [DataRow(true, "defaultName")]
+        [DataRow(true, null)]
+        [DataRow(false, "anotherDefault")]
         public void CanHandleDefaultName(bool preferDefaultName, string? defaultName)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
             var template = GetFakedTemplate("testIdentity", "testMount", "testName");
@@ -214,20 +348,20 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
-            Assert.Single(readCache.TemplateInfo);
+            Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
-            Assert.Equal(preferDefaultName, readTemplate.PreferDefaultName);
-            Assert.Equal(defaultName, readTemplate.DefaultName);
+            Assert.AreEqual(preferDefaultName, readTemplate.PreferDefaultName);
+            Assert.AreEqual(defaultName, readTemplate.DefaultName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProducesCorrectWarningOnOverlappingIdentity_ManagedCandidatesOnly()
         {
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             var overlappingIdentity = "testIdentity";
 
             var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
@@ -249,16 +383,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
-            Assert.Single(warningMessages);
+            Assert.ContainsSingle(warningMessages);
             Assert.Contains(expectedOutput, warningMessages.Single().Item2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProducesCorrectOutputOnOverlappingIdentity_ManagedAndUnmanagedCandidates()
         {
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             var overlappingIdentity = "testIdentity";
 
             var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
@@ -279,16 +413,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
-            Assert.Single(warningMessages);
+            Assert.ContainsSingle(warningMessages);
             Assert.Contains(expectedOutput, warningMessages.Single().Item2);
         }
 
-        [Fact]
+        [TestMethod]
         public void NoOutputOnOverlappingIdentity_UnmanagedCandidateWins()
         {
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             var overlappingIdentity = "testIdentity";
 
             var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
@@ -304,18 +438,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
-            Assert.Empty(warningMessages);
+            Assert.IsEmpty(warningMessages);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleHostData()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
-            string hostfile =
-                /*lang=json,strict*/
-                """
+            string hostfile = /*lang=json,strict*/ """
                    {
                       "$schema": "http://json.schemastore.org/dotnetcli.host",
                       "symbolInfo": {
@@ -349,16 +481,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ScanResult result = new ScanResult(sourceMountPoint, new[] { template }, [], []);
             TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
-            Assert.Equal(hostFileLocation, templateCache.TemplateInfo[0].HostConfigPlace);
-            Assert.Equal(hostFileFormatted, templateCache.TemplateInfo[0].HostData);
+            Assert.AreEqual(hostFileLocation, templateCache.TemplateInfo[0].HostConfigPlace);
+            Assert.AreEqual(hostFileFormatted, templateCache.TemplateInfo[0].HostData);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
+            TemplateCache readCache = TemplateCache.Read(environmentSettings.Host.FileSystem, paths.TemplateCacheFile);
 
-            Assert.Single(readCache.TemplateInfo);
+            Assert.ContainsSingle(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
-            Assert.Equal(hostFileLocation, readTemplate.HostConfigPlace);
-            Assert.Equal(hostFileFormatted, readTemplate.HostData);
+            Assert.AreEqual(hostFileLocation, readTemplate.HostConfigPlace);
+            Assert.AreEqual(hostFileFormatted, readTemplate.HostData);
         }
 
         private IScanTemplateInfo GetFakedTemplate(string identity, string mountPointUri, string name)
@@ -388,14 +520,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
 
             return managedTemplatePackage;
-        }
-
-        private static JsonObject ReadObject(IPhysicalFileSystem fileSystem, string path)
-        {
-            using var fileStream = fileSystem.OpenRead(path);
-            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
-            string content = textReader.ReadToEnd();
-            return JsonNode.Parse(content)!.AsObject();
         }
 
         private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)

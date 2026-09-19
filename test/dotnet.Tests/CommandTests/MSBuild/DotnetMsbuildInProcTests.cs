@@ -10,14 +10,16 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [Collection(TestConstants.UsesStaticTelemetryState)]
+    [TestClass]
+    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
+    [DoNotParallelize]
     public class DotnetMsbuildInProcTests : SdkTest
     {
-        public DotnetMsbuildInProcTests(ITestOutputHelper log) : base(log)
+        public DotnetMsbuildInProcTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTelemetryIsEnabledTheLoggerIsAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => true, out TelemetryClient telemetry);
@@ -32,7 +34,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTelemetryIsDisabledTheLoggerIsNotAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => false);

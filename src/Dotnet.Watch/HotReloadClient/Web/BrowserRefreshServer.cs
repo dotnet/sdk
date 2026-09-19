@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.DotNet.HotReload;
 
@@ -23,12 +24,13 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 internal sealed class BrowserRefreshServer(
     ILogger logger,
-    ILoggerFactory loggerFactory,
+    Func<int, ILogger> connectionServerLoggerFactory,
+    Func<int, ILogger> connectionAgentLoggerFactory,
     string middlewareAssemblyPath,
     string dotnetPath,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
+    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
@@ -51,7 +53,15 @@ internal sealed class BrowserRefreshServer(
     {
         if (!context.WebSockets.IsWebSocketRequest)
         {
-            context.Response.StatusCode = 400;
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        // check the domain of the Origin header:
+        if (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+            !webSocketConfig.GetAllowedOriginDomains().Contains(originUri.Host, StringComparer.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
 
@@ -62,6 +72,7 @@ internal sealed class BrowserRefreshServer(
 
         var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
 
+        // client socket ownership is transferred to the connection:
         var connection = OnBrowserConnected(clientSocket, subProtocol);
         await connection.Disconnected.Task;
     }

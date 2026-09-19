@@ -12,7 +12,7 @@ internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     LoadedProjectGraph projectGraph,
-    CompilationHandler compilationHandler,
+    RunningProjectsManager runningProjectsManager,
     int iteration)
 {
     public int Iteration = iteration;
@@ -26,8 +26,8 @@ internal sealed class ProjectLauncher(
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
 
-    public CompilationHandler CompilationHandler
-        => compilationHandler;
+    public RunningProjectsManager RunningProjectsManager
+        => runningProjectsManager;
 
     public async ValueTask<RunningProject?> TryLaunchProcessAsync(
         ProjectOptions projectOptions,
@@ -62,13 +62,6 @@ internal sealed class ProjectLauncher(
 
         var environmentBuilder = new Dictionary<string, string>();
 
-        // initialize with project settings:
-        foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
-        {
-            environmentBuilder[name] = value;
-        }
-
-        // override any project settings:
         environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
         environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 
@@ -87,7 +80,7 @@ internal sealed class ProjectLauncher(
 
         processSpec.RedirectOutput(outputObserver, context.ProcessOutputReporter, context.EnvironmentOptions, projectDisplayName);
 
-        return await compilationHandler.TrackRunningProjectAsync(
+        return await runningProjectsManager.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
             clients,

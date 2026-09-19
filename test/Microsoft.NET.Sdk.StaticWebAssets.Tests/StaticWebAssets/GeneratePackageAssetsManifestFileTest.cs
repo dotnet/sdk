@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -10,6 +15,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[TestClass]
 public class GeneratePackageAssetsManifestFileTest : IDisposable
 {
     private readonly string _tempDir;
@@ -36,7 +42,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void EmptyAssets_DoesNotGenerateManifestFile()
     {
         var manifestPath = Path.Combine(_tempDir, "empty.json");
@@ -55,7 +61,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         File.Exists(manifestPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Assets_SerializedWithCorrectPackagePaths()
     {
         var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -77,7 +83,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         manifestAsset.AssetRole.Should().Be("Primary");
     }
 
-    [Fact]
+    [TestMethod]
     public void RelatedAsset_RemappedToPackageRelativePath()
     {
         var primaryFile = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -108,7 +114,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         relatedAsset.RelatedAsset.Should().Be(primaryAssetPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void Endpoints_AssetFileRemappedToPackageRelativePath()
     {
         var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");
@@ -138,7 +144,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         ep.AssetFile.Should().Be(manifest.Assets.Keys.Single());
     }
 
-    [Fact]
+    [TestMethod]
     public void FrameworkPattern_TagsMatchingAssetsAsFramework()
     {
         var fwFile = CreateTempFile("wwwroot", "js", "framework.js", "fw");
@@ -163,7 +169,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         nonFwManifestAsset.SourceType.Should().Be("Package");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssetGroups_PreservedInManifest()
     {
         var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -180,7 +186,117 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         manifest.Assets.Values.Single().AssetGroups.Should().Be("BootstrapVersion=V5");
     }
 
-    [Fact]
+    [TestMethod]
+    public void RelatedAsset_Unmapped_ProducesError()
+    {
+        // Symmetric to Endpoints_UnmappedAssetFile_ProducesError: exercises the
+        // GeneratePackageAssetsManifestFile.cs error branch for RelatedAsset that
+        // can't be remapped to a package-relative path (i.e., points outside the
+        // packaged asset set). Without this test the RelatedAsset error branch is
+        // unexercised by automated tests.
+        var primaryFile = CreateTempFile("wwwroot", "css", "site.css", "body{}");
+        var relatedFile = CreateTempFile("wwwroot", "css", "site.css.gz", "gz");
+        var contentRoot = Path.Combine(_tempDir, "wwwroot") + Path.DirectorySeparatorChar;
+
+        var primary = CreateAsset(primaryFile, contentRoot, "css/site.css", "abc");
+
+        var related = CreateAsset(relatedFile, contentRoot, "css/site.css.gz", "def");
+        related.AssetRole = "Alternative";
+        related.AssetTraitName = "Content-Encoding";
+        related.AssetTraitValue = "gzip";
+        // RelatedAsset points to a file that is NOT in the StaticWebAssets input set,
+        // so it has no entry in identityToPackagePath and cannot be remapped.
+        related.RelatedAsset = Path.Combine(_tempDir, "nonexistent", "primary.css");
+
+        var task = CreateManifestTask(
+            new[] { primary.ToTaskItem(), related.ToTaskItem() });
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m =>
+            m.Contains("could not be mapped to a package-relative path") &&
+            m.Contains("RelatedAsset"));
+        File.Exists(task.TargetManifestPath).Should().BeFalse(
+            "the manifest must not be written when a referential integrity error is detected");
+    }
+
+    [TestMethod]
+    public void RoundTrip_GenerateThenRead_RelatedAssetResolvesToConsumerAbsolutePath()
+    {
+        // End-to-end cross-boundary test. Proves the contract between
+        // GeneratePackageAssetsManifestFile (producer) and ReadPackageAssetsManifest
+        // (consumer): an absolute build-time RelatedAsset is remapped to a
+        // package-relative form on the producer side, then re-resolved to an
+        // absolute path under the consumer's packageRoot on the consumer side.
+        // Two distinct directory trees stand in for producer and consumer machines.
+        var primaryFile = CreateTempFile("source", "wwwroot", "css", "site.css", "body{}");
+        var relatedFile = CreateTempFile("source", "wwwroot", "css", "site.css.gz", "gz");
+        var contentRoot = Path.Combine(_tempDir, "source", "wwwroot") + Path.DirectorySeparatorChar;
+
+        var primary = CreateAsset(primaryFile, contentRoot, "css/site.css", "abc");
+        var related = CreateAsset(relatedFile, contentRoot, "css/site.css.gz", "def");
+        related.AssetRole = "Alternative";
+        related.AssetTraitName = "Content-Encoding";
+        related.AssetTraitValue = "gzip";
+        related.RelatedAsset = primaryFile;
+
+        // Producer side: write the manifest at the layout ReadPackageAssetsManifest expects:
+        //   packageRoot/build/<PackageId>.PackageAssets.json
+        var packageRoot = Path.Combine(_tempDir, "packages", "MyLib");
+        var buildDir = Path.Combine(packageRoot, "build");
+        Directory.CreateDirectory(buildDir);
+        var manifestPath = Path.Combine(buildDir, "MyLib.PackageAssets.json");
+
+        var generateTask = new GeneratePackageAssetsManifestFile
+        {
+            BuildEngine = _buildEngine.Object,
+            StaticWebAssets = new[] { primary.ToTaskItem(), related.ToTaskItem() },
+            StaticWebAssetEndpoints = Array.Empty<ITaskItem>(),
+            TargetManifestPath = manifestPath,
+        };
+        generateTask.Execute().Should().BeTrue();
+        File.Exists(manifestPath).Should().BeTrue();
+
+        // Consumer side: feed the producer's manifest into ReadPackageAssetsManifest
+        // pretending we're on a different machine (different packageRoot than the
+        // producer's contentRoot). The whole point of producer-side package-relative
+        // remap is that the consumer can re-anchor without knowing the producer's CWD.
+        var consumerContentRoot = Path.Combine(packageRoot, "staticwebassets") + Path.DirectorySeparatorChar;
+        var manifestItem = new TaskItem(manifestPath, new Dictionary<string, string>
+        {
+            ["SourceId"] = "MyLib",
+            ["ContentRoot"] = consumerContentRoot,
+            ["PackageRoot"] = packageRoot,
+        });
+
+        var readTask = new ReadPackageAssetsManifest
+        {
+            BuildEngine = _buildEngine.Object,
+            PackageManifests = new[] { manifestItem },
+            StaticWebAssetGroups = Array.Empty<ITaskItem>(),
+            IntermediateOutputPath = Path.Combine(_tempDir, "obj"),
+            ProjectPackageId = "ConsumerApp",
+            ProjectBasePath = "_content/consumerapp",
+        };
+        readTask.Execute().Should().BeTrue();
+        readTask.Assets.Should().HaveCount(2);
+
+        var emittedRelated = readTask.Assets.Single(a => a.GetMetadata("AssetRole") == "Alternative");
+        var emittedPrimary = readTask.Assets.Single(a => a.GetMetadata("AssetRole") == "Primary");
+
+        // The producer's contentRoot is _tempDir/source/wwwroot — the consumer must
+        // not see any leakage of it. RelatedAsset on the consumer side must be the
+        // primary's Identity (absolute path under the consumer's packageRoot).
+        emittedRelated.GetMetadata("RelatedAsset").Should().Be(emittedPrimary.ItemSpec,
+            "consumer's RelatedAsset must equal primary's Identity after package-root re-resolution");
+        emittedRelated.GetMetadata("RelatedAsset").Should().StartWith(packageRoot,
+            "RelatedAsset must be re-anchored to the consumer's packageRoot, not the producer's contentRoot");
+        emittedRelated.GetMetadata("RelatedAsset").Should().NotContain(
+            Path.Combine(_tempDir, "source"),
+            "no producer-side build-time path may leak through the manifest to the consumer");
+    }
+
+    [TestMethod]
     public void Endpoints_UnmappedAssetFile_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");

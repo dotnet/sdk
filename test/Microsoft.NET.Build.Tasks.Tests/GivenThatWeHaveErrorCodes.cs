@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenThatWeHaveErrorCodes
     {
         private const int _firstCode = 1001;
@@ -52,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             "ILLinkOptimizedAssemblies"
         };
 
-        [Fact]
+        [TestMethod]
         public void ThereAreNoGapsDuplicatesOrIncorrectlyFormattedCodes()
         {
             var codes = new HashSet<int>(_deletedCodes);
@@ -92,7 +93,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ResxIsCommentedWithCorrectStrBegin()
         {
             var resxPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Strings.resx");

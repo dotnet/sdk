@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAToolProject : SdkTest
     {
 
@@ -15,10 +16,6 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "hostfxr.dll" :
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "libhostfxr.so" :
                 "libhostfxr.dylib";
-
-        public GivenThatWeWantToPublishAToolProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private TestAsset SetupTestAsset([CallerMemberName] string callingMethod = "")
         {
@@ -30,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             return helloWorldAsset;
         }
 
-        [Fact]
+        [TestMethod]
         // this test verifies that we don't regress the 'normal' publish experience accidentally in the
         // PackTool.targets
         public void It_can_publish_and_has_apphost()
@@ -44,7 +41,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().HaveFile("consoledemo" + Constants.ExeSuffix);
         }
 
-        [Fact]
+        [TestMethod]
         // this test verifies that we don't regress the 'normal' publish experience accidentally in the
         // PackTool.targets
         public void It_can_publish_selfcontained_and_has_apphost()

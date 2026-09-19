@@ -5,9 +5,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public partial class PostActionTests : BaseIntegrationTest
     {
-        [Fact]
+        [TestMethod]
         public Task Restore_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -38,7 +39,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public Task RunScript_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .UniqueForOSPlatform();
         }
 
-        [Fact]
+        [TestMethod]
         public Task AddPackageReference_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddPackageReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -92,7 +93,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public Task AddProjectReference_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -123,7 +124,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public Task AddProjectToSolution_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/AddProjectToSolution/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -163,7 +164,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public Task PrintInstructions_Basic_Approval()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/Instructions/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -185,7 +186,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task PostActions_DryRun()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RestoreNuGet/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -203,13 +204,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            Assert.False(File.Exists(Path.Combine(workingDirectory, "MyProject.csproj")));
-            Assert.False(File.Exists(Path.Combine(workingDirectory, "Program.cs")));
+            Assert.IsFalse(File.Exists(Path.Combine(workingDirectory, "MyProject.csproj")));
+            Assert.IsFalse(File.Exists(Path.Combine(workingDirectory, "Program.cs")));
 
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanProcessUnknownPostAction()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/UnknownPostAction", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
@@ -229,7 +230,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut + Environment.NewLine + commandResult.StdErr);
         }
 
-        [Fact]
+        [TestMethod]
         public Task RunScript_DoNotExecuteWhenScriptsAreNotAllowed()
         {
             string templateLocation = TestAssetsManager.CopyTestAsset("PostActions/RunScript/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;

@@ -7,15 +7,17 @@ using Microsoft.NET.HostModel.AppHost;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
+    [TestClass]
     public class AppHostShellShimMakerTests : SdkTest
     {
         const ushort WindowsGUISubsystem = 0x2;
 
-        public AppHostShellShimMakerTests(ITestOutputHelper log) : base(log)
+        public AppHostShellShimMakerTests()
         {
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void WhenCallWithWpfDllItCanCreateShimWithWindowsGraphicalUserInterfaceBitSet()
         {
             string shimPath = CreateApphostAndReturnShimPath();
@@ -23,7 +25,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
             PEUtils.GetWindowsGraphicalUserInterfaceBit(shimPath).Should().Be(WindowsGUISubsystem);
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void GivenNonWindowsMachineWhenCallWithWpfDllItCanCreateShimWithoutThrow()
         {
             Action a = () => CreateApphostAndReturnShimPath();

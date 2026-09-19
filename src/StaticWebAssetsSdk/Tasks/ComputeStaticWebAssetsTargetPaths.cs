@@ -7,7 +7,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeStaticWebAssetsTargetPaths : Task
+[MSBuildMultiThreadableTask]
+public class ComputeStaticWebAssetsTargetPaths : Task, IMultiThreadableTask
 {
     [Required]
     public ITaskItem[] Assets { get; set; }
@@ -21,6 +22,8 @@ public class ComputeStaticWebAssetsTargetPaths : Task
     [Output]
     public ITaskItem[] AssetsWithTargetPath { get; set; }
 
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     public override bool Execute()
     {
         try
@@ -33,7 +36,7 @@ public class ComputeStaticWebAssetsTargetPaths : Task
 
             for (var i = 0; i < Assets.Length; i++)
             {
-                var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
+                var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i], TaskEnvironment);
                 var result = staticWebAsset.ToTaskItem();
 
                 var targetPath = staticWebAsset.ComputeTargetPath(

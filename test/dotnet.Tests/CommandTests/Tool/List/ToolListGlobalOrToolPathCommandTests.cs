@@ -16,6 +16,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolListGlobalOrToolPathCommandTests
     {
         private readonly BufferedReporter _reporter;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter = new BufferedReporter();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoInstalledPackagesItPrintsEmptyTable()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnInvalidToolPathItThrowsException()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
              .Be(string.Format(CliCommandStrings.ToolListInvalidToolPathOption, toolPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAToolPathItPassesToolPathToStoreFactory()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAToolPathItPassesToolPathToStoreFactoryFromRedirectCommand()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenASingleInstalledPackageItPrintsThePackage()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -125,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenMultipleInstalledPackagesItPrintsThePackages()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -157,7 +158,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
 
-        [Fact]
+        [TestMethod]
         public void GivenMultipleInstalledPackagesItPrintsThePackagesForJsonFormat()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -197,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             versionedData.Data[1].Commands[0].Should().Be("foo");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAPackageWithMultipleCommandsItListsThem()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -217,7 +218,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenABrokenPackageItPrintsWarning()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -259,7 +260,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return package.Object;
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenPackageIdArgItPrintsThatPackage()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -290,7 +291,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object, new PackageId("test.tool")));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNotInstalledPackageItPrintsEmpty()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);

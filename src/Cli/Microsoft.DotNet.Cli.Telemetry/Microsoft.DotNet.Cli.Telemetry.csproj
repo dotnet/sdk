@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsPackable>false</IsPackable>
+    <!-- Consumed by dotnet-aot, which publishes Native AOT, so this must stay AOT/trim clean. -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- Not packaged today (IsPackable=false), but this is wired up so the README ships as the
+         NuGet package readme if/when this project becomes packable. -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.PersistentStorage.FileSystem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet.Tests" />
+    <InternalsVisibleTo Include="dotnet-aot.Tests" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Telemetry.Tests" />
+  </ItemGroup>
+
+  <!-- Surface the Azure Monitor exporter package version as assembly metadata so
+       PersistentStorageTraceExporter can report it in ai.internal.sdkVersion without taking a
+       direct type/assembly dependency on Azure.Monitor.OpenTelemetry.Exporter (which is not part
+       of source build). The version property is always defined in eng/Versions.props. -->
+  <ItemGroup>
+    <AssemblyMetadata Include="AzureMonitorOpenTelemetryExporterVersion" Value="$(AzureMonitorOpenTelemetryExporterPackageVersion)" />
+  </ItemGroup>
+</Project>

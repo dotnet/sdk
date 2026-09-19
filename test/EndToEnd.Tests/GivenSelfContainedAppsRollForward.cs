@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,9 +7,10 @@ using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
 {
-    public partial class GivenSelfContainedAppsRollForward(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public partial class GivenSelfContainedAppsRollForward : SdkTest
     {
-        [Fact]
+        [TestMethod]
         public void WeCoverLatestNetCoreAppRollForward()
         {
             //  Run "dotnet new console", get TargetFramework property, and make sure it's covered in SupportedNetCoreAppVersions
@@ -35,7 +36,7 @@ namespace EndToEnd.Tests
                 "of .NET Core created by \"dotnet new\"");
         }
 
-        [Fact]
+        [TestMethod]
         public void WeCoverLatestAspNetCoreAppRollForward()
         {
             var directory = TestAssetsManager.CreateTestDirectory();

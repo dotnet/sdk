@@ -33,7 +33,7 @@ https://github.com/dotnet/sdk/pulls?q=is%3Apr+author%3Adotnet-bot+onelocbuild
 ### Loc Builds
 We typically only localize the primary development branch. We move to vNext once we get to RC1 and only then, localize all new strings introduced in that release. That way we can continue to add messages in the 4xx release of an SDK.
 
-This is controlled https://github.com/dotnet/sdk/blob/main/eng/pipelines/templates/jobs/sdk-job-matrix.yml#L86 and requires a change both here and in the loc system to align branches.
+This is controlled by the OneLocBuild stage in [`.vsts-ci.yml`](../../.vsts-ci.yml) and requires a change both there and in the loc system to align branches.
 
 ### Translation directives
 There are a ton of translations directives our localization system understands. Here are some of the most common in this repo:

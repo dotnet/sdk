@@ -11,9 +11,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
     /// <summary>
     /// Verifies that the discover command produces JSON that the generate command can consume.
     /// </summary>
+    [TestClass]
     public class CommandRoundTripTest
     {
-        [Fact]
+        [TestMethod]
         public void DiscoverThenGenerate_ManifestIsConsumedByGenerateCommand()
         {
             // Arrange - find framework ref assemblies
@@ -23,8 +24,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var runtimeRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.NETCore.App.Ref");
             var aspnetRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.AspNetCore.App.Ref");
 
-            Assert.True(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
-            Assert.True(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
+            Assert.IsTrue(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
+            Assert.IsTrue(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
 
             var assemblies = Directory.GetFiles(runtimeRefDir, "*.dll")
                 .Concat(Directory.GetFiles(aspnetRefDir, "*.dll"))
@@ -38,8 +39,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 // Run the discover command to produce a manifest
                 var manifestPath = Path.Combine(tempDir, "manifest.json");
                 var discoverExitCode = RunDiscoverCommand(assemblies, tempDir, manifestPath);
-                Assert.True(discoverExitCode == 0, $"Discover command failed with exit code {discoverExitCode}");
-                Assert.True(File.Exists(manifestPath), "Manifest file was not created");
+                Assert.AreEqual(0, discoverExitCode, $"Discover command failed with exit code {discoverExitCode}");
+                Assert.IsTrue(File.Exists(manifestPath), "Manifest file was not created");
 
                 // Check that the AnchorTagHelper was discovered
                 var manifestFile = File.ReadAllText(manifestPath);
@@ -74,11 +75,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var generateExitCode = application.Execute(args.ToArray());
 
                 // Make sure the generate command succeeded and produced output
-                Assert.True(generateExitCode == 0, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
-                Assert.True(File.Exists(outputPath), "Generated C# file was not created");
+                Assert.AreEqual(0, generateExitCode, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
+                Assert.IsTrue(File.Exists(outputPath), "Generated C# file was not created");
 
                 var generatedCode = File.ReadAllText(outputPath);
-                Assert.NotEmpty(generatedCode);
+                Assert.IsNotEmpty(generatedCode);
 
                 // The generated code should reference the AnchorTagHelper since we used asp-action/asp-controller
                 Assert.Contains("global::Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", generatedCode);
@@ -92,8 +93,80 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        private static Application CreateApplication(TextWriter outputWriter = null, TextWriter errorWriter = null)
+        [TestMethod]
+        public void DiscoverThenGenerate_WithSourceGenerator_ProducesEquivalentOutput()
         {
+            // Arrange - find framework ref assemblies
+            var runtimeAssemblyDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            var dotnetRoot = Path.GetFullPath(Path.Combine(runtimeAssemblyDir, "..", "..", ".."));
+
+            var runtimeRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.NETCore.App.Ref");
+            var aspnetRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.AspNetCore.App.Ref");
+
+            Assert.IsTrue(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
+            Assert.IsTrue(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
+
+            var assemblies = Directory.GetFiles(runtimeRefDir, "*.dll")
+                .Concat(Directory.GetFiles(aspnetRefDir, "*.dll"))
+                .ToArray();
+
+            var tempDir = Path.Combine(Path.GetTempPath(), "RazorSourceGeneratorTest", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                // Discover via the hosted source generator.
+                var manifestPath = Path.Combine(tempDir, "manifest.json");
+                var discoverExitCode = RunDiscoverCommand(assemblies, tempDir, manifestPath, useSourceGenerator: true);
+                Assert.AreEqual(0, discoverExitCode, $"Discover command failed with exit code {discoverExitCode}");
+                Assert.Contains("Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", File.ReadAllText(manifestPath));
+
+                var cshtmlPath = Path.Combine(tempDir, "TestView.cshtml");
+                File.WriteAllText(cshtmlPath, """
+                    @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+                    <a asp-action="Index" asp-controller="Home">Home</a>
+                    """);
+
+                var outputPath = Path.Combine(tempDir, "TestView.cshtml.g.cs");
+                var errorWriter = new StringWriter();
+                var application = CreateApplication(errorWriter: errorWriter);
+
+                // Generate via the hosted source generator: tag helpers are discovered from the -a
+                // references (the compilation) rather than a precomputed manifest.
+                var args = new List<string>
+                {
+                    "generate",
+                    "--use-source-generator",
+                    "-s", cshtmlPath,
+                    "-o", outputPath,
+                    "-r", "TestView.cshtml",
+                    "-k", "mvc",
+                    "-p", tempDir,
+                    "-v", "Latest",
+                    "-c", "MVC-3.0",
+                };
+                foreach (var assembly in assemblies)
+                {
+                    args.Add("-a");
+                    args.Add(assembly);
+                }
+
+                var generateExitCode = application.Execute(args.ToArray());
+
+                Assert.AreEqual(0, generateExitCode, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
+                Assert.IsTrue(File.Exists(outputPath), "Generated C# file was not created");
+                Assert.Contains("global::Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", File.ReadAllText(outputPath));
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, recursive: true);
+                }
+            }
+        }
+
+        private static Application CreateApplication(TextWriter outputWriter = null, TextWriter errorWriter = null)        {
             var checker = new Mock<ExtensionDependencyChecker>();
             checker.Setup(c => c.Check(It.IsAny<IEnumerable<string>>())).Returns(true);
 
@@ -106,13 +179,17 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 errorWriter ?? new StringWriter());
         }
 
-        private static int RunDiscoverCommand(string[] assemblies, string projectDir, string manifestPath)
+        private static int RunDiscoverCommand(string[] assemblies, string projectDir, string manifestPath, bool useSourceGenerator = false)
         {
             var application = CreateApplication();
 
             var args = new List<string> { "discover" };
             args.AddRange(assemblies);
             args.AddRange(["-o", Path.GetFileName(manifestPath), "-p", projectDir, "-v", "Latest", "-c", "MVC-3.0"]);
+            if (useSourceGenerator)
+            {
+                args.Add("--use-source-generator");
+            }
 
             return application.Execute(args.ToArray());
         }

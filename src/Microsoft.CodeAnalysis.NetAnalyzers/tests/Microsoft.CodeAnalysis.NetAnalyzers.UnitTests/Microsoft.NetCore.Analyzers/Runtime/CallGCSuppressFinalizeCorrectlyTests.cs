@@ -1,20 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpCallGCSuppressFinalizeCorrectlyFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicCallGCSuppressFinalizeCorrectlyFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class CallGCSuppressFinalizeCorrectlyTests
     {
         private const string GCSuppressFinalizeMethodSignature_CSharp = "GC.SuppressFinalize(object)";
@@ -36,516 +36,537 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region NoDiagnosticCases
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public class DisposableWithoutFinalizer : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+                public class DisposableWithoutFinalizer : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public Class DisposableWithoutFinalizer
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		GC.SuppressFinalize(Me)
-	End Sub
+                Public Class DisposableWithoutFinalizer
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		GC.SuppressFinalize(Me)
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public class DisposableWithFinalizer : IDisposable
-{
-    ~DisposableWithFinalizer()
-    {
-        Dispose(false);
-    }
+                public class DisposableWithFinalizer : IDisposable
+                {
+                    ~DisposableWithFinalizer()
+                    {
+                        Dispose(false);
+                    }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public Class DisposableWithFinalizer
-	Implements IDisposable
-	Protected Overrides Sub Finalize()
-		Try
-			Dispose(False)
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                Public Class DisposableWithFinalizer
+                	Implements IDisposable
+                	Protected Overrides Sub Finalize()
+                		Try
+                			Dispose(False)
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		GC.SuppressFinalize(Me)
-	End Sub
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		GC.SuppressFinalize(Me)
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncDisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+            var code = """
+                using System;
+                using System.Runtime.InteropServices;
+                using System.Threading.Tasks;
 
-class MyAsyncDisposable : IAsyncDisposable
-{
-    [DllImport(""example.dll"")]
-    private static extern int GetHandle();
+                class MyAsyncDisposable : IAsyncDisposable
+                {
+                    [DllImport("example.dll")]
+                    private static extern int GetHandle();
 
-    [DllImport(""example.dll"")]
-    private static extern void FreeHandle(int handle);
+                    [DllImport("example.dll")]
+                    private static extern void FreeHandle(int handle);
 
-    private readonly int handle;
+                    private readonly int handle;
 
-    public MyAsyncDisposable()
-    {
-        this.handle = GetHandle();
-    }
+                    public MyAsyncDisposable()
+                    {
+                        this.handle = GetHandle();
+                    }
 
-    ~MyAsyncDisposable()
-    {
-        FreeHandle(this.handle);
-    }
+                    ~MyAsyncDisposable()
+                    {
+                        FreeHandle(this.handle);
+                    }
 
-    public async ValueTask DisposeAsync()
-    {
-        await Task.Run(() => FreeHandle(this.handle)).ConfigureAwait(false);
-        GC.SuppressFinalize(this);
-    }
-}";
+                    public async ValueTask DisposeAsync()
+                    {
+                        await Task.Run(() => FreeHandle(this.handle)).ConfigureAwait(false);
+                        GC.SuppressFinalize(this);
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
                 TestCode = code
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
 
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public sealed class SealedDisposableWithoutFinalizer : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+                public sealed class SealedDisposableWithoutFinalizer : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
 
-    private void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    private void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public NotInheritable Class SealedDisposableWithoutFinalizer
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		GC.SuppressFinalize(Me)
-	End Sub
+                Public NotInheritable Class SealedDisposableWithoutFinalizer
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		GC.SuppressFinalize(Me)
+                	End Sub
 
-	Private Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Private Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public sealed class SealedDisposableWithFinalizer : IDisposable
-{
-    ~SealedDisposableWithFinalizer()
-    {
-        Dispose(false);
-    }
+                public sealed class SealedDisposableWithFinalizer : IDisposable
+                {
+                    ~SealedDisposableWithFinalizer()
+                    {
+                        Dispose(false);
+                    }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
 
-    private void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    private void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public NotInheritable Class SealedDisposableWithFinalizer
-	Implements IDisposable
-	Protected Overrides Sub Finalize()
-		Try
-			Dispose(False)
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                Public NotInheritable Class SealedDisposableWithFinalizer
+                	Implements IDisposable
+                	Protected Overrides Sub Finalize()
+                		Try
+                			Dispose(False)
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		GC.SuppressFinalize(Me)
-	End Sub
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		GC.SuppressFinalize(Me)
+                	End Sub
 
-	Private Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Private Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-internal class InternalDisposableWithoutFinalizer : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-        // GC.SuppressFinalize(this);
-    }
+                internal class InternalDisposableWithoutFinalizer : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        // GC.SuppressFinalize(this);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Friend Class InternalDisposableWithoutFinalizer
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                Friend Class InternalDisposableWithoutFinalizer
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public static class NestedClassHolder
-{
-    private class PrivateDisposableWithoutFinalizer : IDisposable
-    {
-        public void Dispose()
-        {
-            Dispose(true);
-            // GC.SuppressFinalize(this);
-        }
+                public static class NestedClassHolder
+                {
+                    private class PrivateDisposableWithoutFinalizer : IDisposable
+                    {
+                        public void Dispose()
+                        {
+                            Dispose(true);
+                            // GC.SuppressFinalize(this);
+                        }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            Console.WriteLine(this);
-            Console.WriteLine(disposing);
-        }
-    }
-}";
+                        protected virtual void Dispose(bool disposing)
+                        {
+                            Console.WriteLine(this);
+                            Console.WriteLine(disposing);
+                        }
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public NotInheritable Class NestedClassHolder
-	Private Sub New()
-	End Sub
-	Private Class PrivateDisposableWithoutFinalizer
-		Implements IDisposable
-		Public Sub Dispose() Implements IDisposable.Dispose
-			Dispose(True)
-			' GC.SuppressFinalize(this);
-		End Sub
+                Public NotInheritable Class NestedClassHolder
+                	Private Sub New()
+                	End Sub
+                	Private Class PrivateDisposableWithoutFinalizer
+                		Implements IDisposable
+                		Public Sub Dispose() Implements IDisposable.Dispose
+                			Dispose(True)
+                			' GC.SuppressFinalize(this);
+                		End Sub
 
-		Protected Overridable Sub Dispose(disposing As Boolean)
-			Console.WriteLine(Me)
-			Console.WriteLine(disposing)
-		End Sub
-	End Class
-End Class";
+                		Protected Overridable Sub Dispose(disposing As Boolean)
+                			Console.WriteLine(Me)
+                			Console.WriteLine(disposing)
+                		End Sub
+                	End Class
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public sealed class SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-    }
+                public sealed class SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                    }
 
-    private void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    private void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public NotInheritable Class SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-	End Sub
+                Public NotInheritable Class SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                	End Sub
 
-	Private Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Private Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableStruct_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public struct DisposableStruct : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-    }
+                public struct DisposableStruct : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                    }
 
-    private void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    private void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableStruct_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public Structure DisposableStruct
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-	End Sub
+                Public Structure DisposableStruct
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                	End Sub
 
-	Private Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Structure";
+                	Private Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Structure
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableCallingGCSuppressFinalizeInConstructor_CSharp_NoDiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
+                using System;
+                using System.ComponentModel;
 
-public sealed class SealedDisposableCallingGCSuppressFinalizeInConstructor : Component
-{
-    public SealedDisposableCallingGCSuppressFinalizeInConstructor()
-    {
-        // We don't ever want our finalizer (that we inherit from Component) to run
-        // (We are sealed and we don't own any unmanaged resources).
-        GC.SuppressFinalize(this);
-    }
-}";
+                public sealed class SealedDisposableCallingGCSuppressFinalizeInConstructor : Component
+                {
+                    public SealedDisposableCallingGCSuppressFinalizeInConstructor()
+                    {
+                        // We don't ever want our finalizer (that we inherit from Component) to run
+                        // (We are sealed and we don't own any unmanaged resources).
+                        GC.SuppressFinalize(this);
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableCallingGCSuppressFinalizeInConstructor_Basic_NoDiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
+                Imports System
+                Imports System.ComponentModel
 
-Public NotInheritable Class SealedDisposableCallingGCSuppressFinalizeInConstructor
-	Inherits Component
-	Public Sub New()
-		' We don't ever want our finalizer (that we inherit from Component) to run
-		' (We are sealed and we don't own any unmanaged resources).
-		GC.SuppressFinalize(Me)
-	End Sub
-End Class";
+                Public NotInheritable Class SealedDisposableCallingGCSuppressFinalizeInConstructor
+                	Inherits Component
+                	Public Sub New()
+                		' We don't ever want our finalizer (that we inherit from Component) to run
+                		' (We are sealed and we don't own any unmanaged resources).
+                		GC.SuppressFinalize(Me)
+                	End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Disposable_ImplementedExplicitly_NoDiagnosticAsync()
         {
-            var csharpCode = @"
-using System;
+            var csharpCode = """
+                using System;
 
-public class ImplementsDisposableExplicitly : IDisposable
-{
-    void IDisposable.Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+                public class ImplementsDisposableExplicitly : IDisposable
+                {
+                    void IDisposable.Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-    }
-}";
+                    protected virtual void Dispose(bool disposing)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
-            var vbCode = @"
-Imports System
+            var vbCode = """
+                Imports System
 
-Public Class C
-    Implements IDisposable
+                Public Class C
+                    Implements IDisposable
 
-    Protected Sub NamedDifferent() Implements IDisposable.Dispose
-        Dispose(True)
-        GC.SuppressFinalize(Me)
-    End Sub
+                    Protected Sub NamedDifferent() Implements IDisposable.Dispose
+                        Dispose(True)
+                        GC.SuppressFinalize(Me)
+                    End Sub
 
-    Public Sub Dispose(disposing As Boolean)
-    End Sub
-End Class";
+                    Public Sub Dispose(disposing As Boolean)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
@@ -553,37 +574,39 @@ End Class";
 
         #region DiagnosticCases
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-    public class SealedDisposableWithFinalizer : IDisposable
-    {
-        public static void Main(string[] args)
-        {
+                using System;
+                using System.ComponentModel;
 
-        }
+                    public class SealedDisposableWithFinalizer : IDisposable
+                    {
+                        public static void Main(string[] args)
+                        {
 
-        ~SealedDisposableWithFinalizer()
-        {
-            Dispose(false);
-        }
+                        }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            // GC.SuppressFinalize(this);
-        }
+                        ~SealedDisposableWithFinalizer()
+                        {
+                            Dispose(false);
+                        }
 
-        private void Dispose(bool disposing)
-        {
-            Console.WriteLine(this);
-            Console.WriteLine(disposing);
-        }
-    }";
+                        public void Dispose()
+                        {
+                            Dispose(true);
+                            // GC.SuppressFinalize(this);
+                        }
+
+                        private void Dispose(bool disposing)
+                        {
+                            Console.WriteLine(this);
+                            Console.WriteLine(disposing);
+                        }
+                    }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 17,
                 column: 21,
@@ -594,37 +617,39 @@ using System.ComponentModel;
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class SealedDisposableWithFinalizer
-	Implements IDisposable
-	Public Shared Sub Main(args As String())
+                Imports System
+                Imports System.ComponentModel
 
-	End Sub
+                Public Class SealedDisposableWithFinalizer
+                	Implements IDisposable
+                	Public Shared Sub Main(args As String())
 
-	Protected Overrides Sub Finalize()
-		Try
-			Dispose(False)
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                	End Sub
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                	Protected Overrides Sub Finalize()
+                		Try
+                			Dispose(False)
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	Private Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
+
+                	Private Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 19,
@@ -636,32 +661,34 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class DisposableWithFinalizer : IDisposable
-{
-    ~DisposableWithFinalizer()
-    {
-        Dispose(false);
-    }
+                using System;
+                using System.ComponentModel;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        // GC.SuppressFinalize(this);
-    }
+                public class DisposableWithFinalizer : IDisposable
+                {
+                    ~DisposableWithFinalizer()
+                    {
+                        Dispose(false);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        // GC.SuppressFinalize(this);
+                    }
+
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 12,
                 column: 17,
@@ -672,33 +699,35 @@ public class DisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class DisposableWithFinalizer
-	Implements IDisposable
-	Protected Overrides Sub Finalize()
-		Try
-			Dispose(False)
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                Public Class DisposableWithFinalizer
+                	Implements IDisposable
+                	Protected Overrides Sub Finalize()
+                		Try
+                			Dispose(False)
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
+
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 15,
@@ -710,32 +739,34 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-internal class InternalDisposableWithFinalizer : IDisposable
-{
-    ~InternalDisposableWithFinalizer()
-    {
-        Dispose(false);
-    }
+                using System;
+                using System.ComponentModel;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        // GC.SuppressFinalize(this);
-    }
+                internal class InternalDisposableWithFinalizer : IDisposable
+                {
+                    ~InternalDisposableWithFinalizer()
+                    {
+                        Dispose(false);
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        // GC.SuppressFinalize(this);
+                    }
+
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 12,
                 column: 17,
@@ -746,33 +777,35 @@ internal class InternalDisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Friend Class InternalDisposableWithFinalizer
-	Implements IDisposable
-	Protected Overrides Sub Finalize()
-		Try
-			Dispose(False)
-		Finally
-			MyBase.Finalize()
-		End Try
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                Friend Class InternalDisposableWithFinalizer
+                	Implements IDisposable
+                	Protected Overrides Sub Finalize()
+                		Try
+                			Dispose(False)
+                		Finally
+                			MyBase.Finalize()
+                		End Try
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
+
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 15,
@@ -784,35 +817,37 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public static class NestedClassHolder
-{
-    private class PrivateDisposableWithFinalizer : IDisposable
-    {
-        ~PrivateDisposableWithFinalizer()
-        {
-            Dispose(false);
-        }
+                using System;
+                using System.ComponentModel;
 
-        public void Dispose()
-        {
-            Dispose(true);
-            // GC.SuppressFinalize(this);
-        }
+                public static class NestedClassHolder
+                {
+                    private class PrivateDisposableWithFinalizer : IDisposable
+                    {
+                        ~PrivateDisposableWithFinalizer()
+                        {
+                            Dispose(false);
+                        }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            Console.WriteLine(this);
-            Console.WriteLine(disposing);
-        }
-    }
-}";
+                        public void Dispose()
+                        {
+                            Dispose(true);
+                            // GC.SuppressFinalize(this);
+                        }
+
+                        protected virtual void Dispose(bool disposing)
+                        {
+                            Console.WriteLine(this);
+                            Console.WriteLine(disposing);
+                        }
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 14,
                 column: 21,
@@ -823,37 +858,39 @@ public static class NestedClassHolder
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public NotInheritable Class NestedClassHolder
-	Private Sub New()
-	End Sub
-	Private Class PrivateDisposableWithFinalizer
-		Implements IDisposable
-		Protected Overrides Sub Finalize()
-			Try
-				Dispose(False)
-			Finally
-				MyBase.Finalize()
-			End Try
-		End Sub
+                Imports System
+                Imports System.ComponentModel
 
-		Public Sub Dispose() Implements IDisposable.Dispose
-			Dispose(True)
-			' GC.SuppressFinalize(this);
-		End Sub
+                Public NotInheritable Class NestedClassHolder
+                	Private Sub New()
+                	End Sub
+                	Private Class PrivateDisposableWithFinalizer
+                		Implements IDisposable
+                		Protected Overrides Sub Finalize()
+                			Try
+                				Dispose(False)
+                			Finally
+                				MyBase.Finalize()
+                			End Try
+                		End Sub
 
-		Protected Overridable Sub Dispose(disposing As Boolean)
-			Console.WriteLine(Me)
-			Console.WriteLine(disposing)
-		End Sub
-	End Class
-End Class";
+                		Public Sub Dispose() Implements IDisposable.Dispose
+                			Dispose(True)
+                			' GC.SuppressFinalize(this);
+                		End Sub
+
+                		Protected Overridable Sub Dispose(disposing As Boolean)
+                			Console.WriteLine(Me)
+                			Console.WriteLine(disposing)
+                		End Sub
+                	End Class
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 18,
@@ -865,27 +902,29 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class DisposableWithoutFinalizer : IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-        // GC.SuppressFinalize(this);
-    }
+                using System;
+                using System.ComponentModel;
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Console.WriteLine(this);
-        Console.WriteLine(disposing);
-    }
-}";
+                public class DisposableWithoutFinalizer : IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        // GC.SuppressFinalize(this);
+                    }
+
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        Console.WriteLine(this);
+                        Console.WriteLine(disposing);
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 7,
                 column: 17,
@@ -896,25 +935,27 @@ public class DisposableWithoutFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class DisposableWithoutFinalizer
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		Console.WriteLine(Me)
-		Console.WriteLine(disposing)
-	End Sub
-End Class";
+                Public Class DisposableWithoutFinalizer
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
+
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		Console.WriteLine(Me)
+                		Console.WriteLine(disposing)
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 7,
@@ -926,21 +967,23 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableComponent_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class DisposableComponent : Component, IDisposable
-{
-    public void Dispose()
-    {
-        Dispose(true);
-        // GC.SuppressFinalize(this);
-    }
-}";
+                using System;
+                using System.ComponentModel;
+
+                public class DisposableComponent : Component, IDisposable
+                {
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        // GC.SuppressFinalize(this);
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 7,
                 column: 17,
@@ -951,24 +994,26 @@ public class DisposableComponent : Component, IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableComponent_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class DisposableComponent
-	Inherits Component
-	Implements IDisposable
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		' GC.SuppressFinalize(this);
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-    Protected Overridable Sub Dispose(disposing As Boolean)
-    End Sub
-End Class";
+                Public Class DisposableComponent
+                	Inherits Component
+                	Implements IDisposable
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		' GC.SuppressFinalize(this);
+                	End Sub
+
+                    Protected Overridable Sub Dispose(disposing As Boolean)
+                    End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 8,
@@ -980,20 +1025,22 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotADisposableClass_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class NotADisposableClass
-{
-    public NotADisposableClass()
-    {
-        GC.SuppressFinalize(this);
-    }
-}";
+                using System;
+                using System.ComponentModel;
+
+                public class NotADisposableClass
+                {
+                    public NotADisposableClass()
+                    {
+                        GC.SuppressFinalize(this);
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 9,
                 column: 9,
@@ -1004,18 +1051,20 @@ public class NotADisposableClass
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotADisposableClass_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class NotADisposableClass
-	Public Sub New()
-		GC.SuppressFinalize(Me)
-	End Sub
-End Class";
+                Imports System
+                Imports System.ComponentModel
+
+                Public Class NotADisposableClass
+                	Public Sub New()
+                		GC.SuppressFinalize(Me)
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 7,
@@ -1027,40 +1076,42 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces : IDisposable
-{
-    public DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces()
-    {
-        GC.SuppressFinalize(this);
-    }
+                using System;
+                using System.ComponentModel;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        CallGCSuppressFinalize();
-    }
+                public class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces : IDisposable
+                {
+                    public DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces()
+                    {
+                        GC.SuppressFinalize(this);
+                    }
 
-    private void CallGCSuppressFinalize()
-    {
-        GC.SuppressFinalize(this);
-    }
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        CallGCSuppressFinalize();
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            Console.WriteLine(this);
-            GC.SuppressFinalize(this);
-        }
-    }
-}";
+                    private void CallGCSuppressFinalize()
+                    {
+                        GC.SuppressFinalize(this);
+                    }
+
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        if (disposing)
+                        {
+                            Console.WriteLine(this);
+                            GC.SuppressFinalize(this);
+                        }
+                    }
+                }
+                """;
             var diagnosticResult1 = GetCA1816CSharpResultAt(
                 line: 9,
                 column: 9,
@@ -1089,35 +1140,37 @@ public class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces : IDispo
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult1, diagnosticResult2, diagnosticResult3, diagnosticResult4);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces
-	Implements IDisposable
-	Public Sub New()
-		GC.SuppressFinalize(Me)
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		CallGCSuppressFinalize()
-	End Sub
+                Public Class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces
+                	Implements IDisposable
+                	Public Sub New()
+                		GC.SuppressFinalize(Me)
+                	End Sub
 
-	Private Sub CallGCSuppressFinalize()
-		GC.SuppressFinalize(Me)
-	End Sub
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		CallGCSuppressFinalize()
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		If disposing Then
-			Console.WriteLine(Me)
-			GC.SuppressFinalize(Me)
-		End If
-	End Sub
-End Class";
+                	Private Sub CallGCSuppressFinalize()
+                		GC.SuppressFinalize(Me)
+                	End Sub
+
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		If disposing Then
+                			Console.WriteLine(Me)
+                			GC.SuppressFinalize(Me)
+                		End If
+                	End Sub
+                End Class
+                """;
 
             var diagnosticResult1 = GetCA1816BasicResultAt(
                 line: 8,
@@ -1147,33 +1200,35 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult1, diagnosticResult2, diagnosticResult3, diagnosticResult4);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments_CSharp_DiagnosticAsync()
         {
-            var code = @"
-using System;
-using System.ComponentModel;
+            var code = """
 
-public class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments : IDisposable
-{
-    public DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments()
-    {
-    }
+                using System;
+                using System.ComponentModel;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(true);
-    }
+                public class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments : IDisposable
+                {
+                    public DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments()
+                    {
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            Console.WriteLine(this);
-        }
-    }
-}";
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(true);
+                    }
+
+                    protected virtual void Dispose(bool disposing)
+                    {
+                        if (disposing)
+                        {
+                            Console.WriteLine(this);
+                        }
+                    }
+                }
+                """;
             var diagnosticResult = GetCA1816CSharpResultAt(
                 line: 14,
                 column: 9,
@@ -1184,29 +1239,31 @@ public class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments : I
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments_Basic_DiagnosticAsync()
         {
-            var code = @"
-Imports System
-Imports System.ComponentModel
+            var code = """
 
-Public Class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments
-	Implements IDisposable
-	Public Sub New()
-	End Sub
+                Imports System
+                Imports System.ComponentModel
 
-	Public Sub Dispose() Implements IDisposable.Dispose
-		Dispose(True)
-		GC.SuppressFinalize(True)
-	End Sub
+                Public Class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments
+                	Implements IDisposable
+                	Public Sub New()
+                	End Sub
 
-	Protected Overridable Sub Dispose(disposing As Boolean)
-		If disposing Then
-			Console.WriteLine(Me)
-		End If
-	End Sub
-End Class";
+                	Public Sub Dispose() Implements IDisposable.Dispose
+                		Dispose(True)
+                		GC.SuppressFinalize(True)
+                	End Sub
+
+                	Protected Overridable Sub Dispose(disposing As Boolean)
+                		If disposing Then
+                			Console.WriteLine(Me)
+                		End If
+                	End Sub
+                End Class
+                """;
             var diagnosticResult = GetCA1816BasicResultAt(
                 line: 12,
                 column: 3,

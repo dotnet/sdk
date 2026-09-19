@@ -33,9 +33,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             _runOnlyOnePage = runOnlyOnePage;
             _packageTempPath = Path.GetFullPath(Path.Combine(packageTempBasePath.FullName, DownloadedPacksDir, Name));
             _repository = Repository.Factory.GetCoreV3(NuGetOrgFeed);
-            ServiceIndexResourceV3 indexResource = _repository.GetResource<ServiceIndexResourceV3>();
+            ServiceIndexResourceV3 indexResource = _repository.GetResource<ServiceIndexResourceV3>()
+                ?? throw new InvalidOperationException($"The source '{NuGetOrgFeed}' does not provide {nameof(ServiceIndexResourceV3)}.");
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
-            _downloadResource = _repository.GetResource<FindPackageByIdResource>();
+            _downloadResource = _repository.GetResource<FindPackageByIdResource>()
+                ?? throw new InvalidOperationException($"The source '{NuGetOrgFeed}' does not provide {nameof(FindPackageByIdResource)}.");
             _includePreview = includePreviewPacks;
 
             if (!searchResources.Any())
@@ -210,7 +212,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             try
             {
-                PackageMetadataResource resource = await _repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+                PackageMetadataResource resource = await _repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("NuGet feed does not provide PackageMetadataResource.");
                 IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
                     packageIdentifier,
                     includePrerelease: _includePreview,

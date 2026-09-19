@@ -1,19 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildANetStandard2Library : SdkTest
     {
-        public GivenThatWeWantToBuildANetStandard2Library(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard2.1")]
+        [TestMethod]
+        [DataRow("netstandard2.0")]
+        [DataRow("netstandard2.1")]
         public void It_builds_a_netstandard2_library_successfully(string targetFramework)
         {
             TestProject project = new()
@@ -33,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_assembly_conflicts()
         {
             TestProject project = new()

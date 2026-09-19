@@ -5,6 +5,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenALogger
     {
         private sealed class TestLogger : Logger
@@ -13,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             protected override void LogCore(in Message message) => Messages.Add(message);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItLogsWarnings()
         {
             var logger = new TestLogger();
@@ -26,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.Warning, "Goodbye, cruel world.", code: "NETSDK4567"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItLogsErrors()
         {
             var logger = new TestLogger();
@@ -37,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.Error, "Uh oh! :(", code: "NETSDK9898"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItLogsMessages()
         {
             var logger = new TestLogger();
@@ -54,7 +55,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.HighImportance, "High importance"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIndicatesIfErrorsWereLogged()
         {
             var logger = new TestLogger();
@@ -79,7 +80,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             logger.HasLoggedErrors.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItEnforcesErrorCodesInDebug()
         {
             var logger = new TestLogger();

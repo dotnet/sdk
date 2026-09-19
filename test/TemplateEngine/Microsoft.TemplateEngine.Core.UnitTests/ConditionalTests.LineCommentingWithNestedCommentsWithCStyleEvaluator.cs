@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName = nameof(VerifyBasicQuadCommentRemoval))]
+        [TestMethod]
         public void VerifyBasicQuadCommentRemoval()
         {
             string originalValue = @"Start
@@ -51,7 +50,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyQuadCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -122,7 +121,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyQuadCommentRemovalWithNestedClause))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -168,7 +167,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyQuadCommentRemovalNestedDoesntRemove))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -215,7 +214,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyQuadCommentRemovalOnlyNestedRemoves))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalOnlyNestedRemoves()
         {
             string originalValue = @"Start

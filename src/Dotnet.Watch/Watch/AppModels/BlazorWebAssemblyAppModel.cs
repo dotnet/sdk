@@ -19,9 +19,9 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
-    protected override ImmutableArray<(HotReloadClient client, string name)> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
+    protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
-        return [(CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject), "")];
+        return [CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject)];
     }
 }

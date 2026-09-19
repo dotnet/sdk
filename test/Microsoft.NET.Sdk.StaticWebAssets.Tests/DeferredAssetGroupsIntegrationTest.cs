@@ -1,17 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class DeferredAssetGroupsIntegrationTest(ITestOutputHelper log) : AspNetSdkTest(log)
+    [TestClass]
+    public class DeferredAssetGroupsIntegrationTest : AspNetSdkTest
     {
-        [Fact]
+        [TestMethod]
         public void Build_DeferredGroupEnabled_IncludesGroupedAssetAndEndpoints()
         {
             var intermediateOutputPath = BuildWithDeferredGroup(enableBlazorGroup: "enabled");
@@ -55,7 +61,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             existingEndpoints.Should().NotBeEmpty("endpoints for existing non-grouped assets should be unaffected");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_DeferredGroupDisabled_ExcludesGroupedAssetAndEndpoints()
         {
             var intermediateOutputPath = BuildWithDeferredGroup(enableBlazorGroup: "disabled");

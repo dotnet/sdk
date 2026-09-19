@@ -1,29 +1,42 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
-    [Collection("Verify Tests")]
+    [TestClass]
     public class ValidateCommandTests : TestBase
     {
-        private readonly ITestOutputHelper _log;
+        private TestContext _testContext = null!;
 
-        public ValidateCommandTests(ITestOutputHelper log)
+        public TestContext TestContext
         {
-            _log = log;
+            get => _testContext;
+            set
+            {
+                _testContext = value;
+                VerifyMSTest.Verifier.CurrentTestContext.Value = new VerifyMSTest.TestExecutionContext(value, GetType());
+            }
         }
 
-        [Fact]
+        private ILogger Log => new TestContextLogger(TestContext);
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+        {
+            new VerifySettingsFixture();
+        }
+
+        [TestMethod]
         public Task ValidateCommand_BasicTest()
         {
             CommandResult commandResult = new BasicCommand(
-                          _log,
+                          Log,
                           "dotnet",
                           Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                           "validate",
@@ -34,7 +47,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 .Should()
                 .Fail();
 
-            return Verify(FormatOutputStreams(commandResult))
+            return Verifier.Verify(FormatOutputStreams(commandResult))
                .UniqueForOSPlatform()
                .AddScrubber(text => text.Replace(Path.Combine(TestTemplatesLocation, "Invalid"), "%TEMPLATE_LOCATION%"))
                //warning can appear in a different order, therefore scrubbing them

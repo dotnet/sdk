@@ -193,6 +193,30 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             return assemblyInfoList;
         }
 
+        /// <summary>
+        /// Produces one partition per schedulable public class candidate in the assembly, rather
+        /// than grouping classes together up to a method-count limit. Type discovery uses the same
+        /// heuristic as <see cref="Schedule(string, bool, bool)"/>, which may include public classes
+        /// with no directly-declared test methods (to account for inherited tests). If the assembly
+        /// contains no schedulable types, a single unpartitioned representation is returned.
+        /// </summary>
+        public IEnumerable<AssemblyPartitionInfo> PartitionByClass(string assemblyPath)
+        {
+            var typeInfoList = GetTypeInfoList(assemblyPath);
+            if (typeInfoList.Count == 0)
+            {
+                return new[] { CreateAssemblyInfo(assemblyPath) };
+            }
+
+            var assemblyName = Path.GetFileName(assemblyPath);
+            return typeInfoList
+                .Select(typeInfo => new AssemblyPartitionInfo(
+                    assemblyPath,
+                    displayName: $"{assemblyName}.{typeInfo.FullName}",
+                    classListArgumentString: $"{typeInfo.FullName}."))
+                .ToList();
+        }
+
         public AssemblyPartitionInfo CreateAssemblyInfo(string assemblyPath)
         {
             return new AssemblyPartitionInfo(assemblyPath);
@@ -235,13 +259,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         }
 
         /// <summary>
-        /// Determine if this type should be one of the <c>class</c> values passed to xunit.  This
-        /// code doesn't actually resolve base types or trace through inherrited Fact attributes
-        /// hence we have to error on the side of including types with no tests vs. excluding them.
+        /// Determine whether this type should be included in the <c>class</c> filter passed to the
+        /// test runner.  This code doesn't actually resolve base types or trace through inherited
+        /// test attributes, hence we have to err on the side of including types with no tests vs.
+        /// excluding them.
         /// </summary>
         private static bool ShouldIncludeType(MetadataReader reader, TypeDefinition type, int testMethodCount)
         {
-            // xunit only handles public, non-abstract, non-generic classes
+            // the test runner only handles public, non-abstract, non-generic classes
             var isPublic =
                 TypeAttributes.Public == (type.Attributes & TypeAttributes.VisibilityMask) ||
                 TypeAttributes.NestedPublic == (type.Attributes & TypeAttributes.VisibilityMask);
@@ -265,9 +290,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return true;
             }
 
-            // The case we still have to consider at this point is a class with 0 defined methods, 
-            // inheritting from a class with > 0 defined test methods.  That is a completely valid
-            // xunit scenario.  For now we're just going to exclude types that inherit from object
+            // The case we still have to consider at this point is a class with 0 defined methods
+            // that inherits from a class with > 0 defined test methods.  That is a completely valid
+            // scenario.  For now we're just going to exclude types that inherit from object
             // because they clearly don't fit that category.
             return !(InheritsFromObject(reader, type) ?? false);
         }

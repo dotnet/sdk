@@ -16,22 +16,23 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadRepair : SdkTest
     {
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly string _manifestPath;
 
-        public GivenDotnetWorkloadRepair(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadRepair()
         {
             _reporter = new BufferedReporter();
             _parseResult = Parser.Parse("dotnet workload repair");
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
@@ -56,9 +57,9 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             _reporter.Lines.Should().Contain(CliCommandStrings.NoWorkloadsToRepair);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -106,9 +107,9 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1")).Length.Should().Be(8);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -153,9 +154,9 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1")).Length.Should().Be(8);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
         {
             var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =

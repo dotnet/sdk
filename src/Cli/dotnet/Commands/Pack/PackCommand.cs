@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -15,6 +16,7 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
@@ -30,9 +32,6 @@ public class PackCommand(
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
-        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         bool noBuild = parseResult.HasOption(definition.NoBuildOption);
 
@@ -63,11 +62,11 @@ public class PackCommand(
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, otherArgs) =>
             {
                 ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonBinLogArgs,
+                            otherArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );
@@ -107,7 +106,8 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
-            Arguments = [nuspecPath]
+            Arguments = [nuspecPath],
+            NoDefaultExcludes = parseResult.GetValue(definition.NoDefaultExcludesOption)
         };
 
         packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -121,6 +121,9 @@ public class PackCommand(
         var version = parseResult.GetValue(definition.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
+
+        if (parseResult.GetValue(definition.IncludeSymbolsOption))
+            packArgs.Symbols = true;
 
         var configuration = parseResult.GetValue(definition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;

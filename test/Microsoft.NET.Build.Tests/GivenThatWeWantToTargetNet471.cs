@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,11 +9,9 @@ namespace Microsoft.NET.Build.Tests
 {
 #pragma warning disable xUnit1004 // Test methods should not be skipped
 
+    [TestClass]
     public class GivenThatWeWantToTargetNet471 : SdkTest
     {
-        public GivenThatWeWantToTargetNet471(ITestOutputHelper log) : base(log)
-        {
-        }
 
         string[] net471Shims =
         {
@@ -31,7 +29,8 @@ namespace Microsoft.NET.Build.Tests
             "System.Xml.XPath.XDocument.dll"
         };
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_a_net471_app()
         {
             var testProject = new TestProject()
@@ -62,7 +61,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_a_net471_app_referencing_netstandard20()
         {
             var testProject = new TestProject()
@@ -103,7 +103,8 @@ namespace Microsoft.NET.Build.Tests
             }.Concat(net471Shims));
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_does_not_include_facades_from_nuget_packages()
         {
             var testProject = new TestProject()
@@ -143,7 +144,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_includes_shims_when_net471_app_references_netstandard16()
         {
             var testProject = new TestProject()
@@ -185,7 +187,8 @@ namespace Microsoft.NET.Build.Tests
             }.Concat(net471Shims));
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_does_not_include_shims_when_app_references_471_library_and_461_library()
         {
             var testProject = new TestProject()
@@ -235,7 +238,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_contains_shims_if_override_property_is_set()
         {
             var testProject = new TestProject()
@@ -269,7 +273,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void Aliases_are_preserved_for_replaced_references()
         {
             var testProject = new TestProject()
@@ -324,14 +329,16 @@ public static class Program
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void ZipFileCanBeSharedWithNetStandard16()
         {
             TestZipFileSharing(false);
         }
 
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ZipFileCanBeSharedWithNetStandard16_sdk()
         {
             TestZipFileSharing(true);
@@ -488,7 +495,8 @@ public static class NS16LibClass
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/2479
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void HttpClient_can_be_used_in_project_references()
         {
             var referencedProject = new TestProject()

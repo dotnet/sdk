@@ -5,13 +5,14 @@ using Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
 namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
 {
+    [TestClass]
     public class DiscoverAllProjectsTests : SdkTest
     {
-        public DiscoverAllProjectsTests(ITestOutputHelper log) : base(log)
+        public DiscoverAllProjectsTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenCallWithNoSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
             var projectDirectory = TestAssetsManager
@@ -23,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "App.csproj");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenCallWithSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
             var projectDirectory = TestAssetsManager
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "Lib.csproj", "from directly pass in");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenCallWithDirectoryWith2ProjectItShouldFindAll()
         {
             var projectDirectory = TestAssetsManager
@@ -59,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "Second.csproj");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenCallWithSlnContainingSolutionFolderItExcludesFolderProjectsFromSolution()
         {
             var projectDirectory = TestAssetsManager

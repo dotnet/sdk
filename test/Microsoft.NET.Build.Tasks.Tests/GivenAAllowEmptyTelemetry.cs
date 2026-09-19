@@ -7,6 +7,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAAllowEmptyTelemetry
     {
         private static ITaskItem CreateHashItem(string key, string? value = null, bool? hash = null)
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return item;
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInvokeWithoutValueItSendValueAsNull()
         {
             var engine = new MockBuildEngine5();
@@ -41,7 +42,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             engine.Log.Should().Contain("'Property2' = 'null'");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInvokeWithDuplicatedEventDataItKeepsTheLastOne()
         {
             var engine = new MockBuildEngine5();
@@ -64,7 +65,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             engine.Log.Should().Contain("4ADE3D2622CA400B8B95A039DF540037");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInvokeWithNoEventDataItSendsEvents()
         {
             var engine = new MockBuildEngine5();
@@ -82,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             engine.Log.Should().NotContain("Property"); // shouldn't have any logged properties since none were supplied
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenHashIsRequestedValueIsHashed()
         {
             var engine = new MockBuildEngine5();

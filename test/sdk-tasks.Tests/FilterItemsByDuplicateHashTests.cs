@@ -7,10 +7,11 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class FilterItemsByDuplicateHashTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class FilterItemsByDuplicateHashTests : SdkTest
 {
 #if !NETFRAMEWORK
-    [Fact]
+    [TestMethod]
     public void UnmatchedFilesContainsOnlyCandidatesNotInReference()
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -34,7 +35,7 @@ public class FilterItemsByDuplicateHashTests(ITestOutputHelper log) : SdkTest(lo
         task.UnmatchedFiles[0].ItemSpec.Should().Be(candUnique);
     }
 
-    [Fact]
+    [TestMethod]
     public void MatchingIsByContentNotByFileName()
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;

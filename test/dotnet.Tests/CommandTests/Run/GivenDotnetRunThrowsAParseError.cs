@@ -3,13 +3,14 @@
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
+    [TestClass]
     public class GivenDotnetRunThrowsAParseError : SdkTest
     {
-        public GivenDotnetRunThrowsAParseError(ITestOutputHelper log) : base(log)
+        public GivenDotnetRunThrowsAParseError()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
             // Use a dedicated empty directory because file-based program support means that dotnet run will

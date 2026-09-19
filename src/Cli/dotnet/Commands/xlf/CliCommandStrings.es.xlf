@@ -77,6 +77,21 @@
         <target state="translated">Permitir la degradación del paquete al instalar un paquete de herramientas de .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingFailed">
+        <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
+        <target state="new">Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</target>
+        <note>{0} is the test application path. {1} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingProcessFailed">
+        <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
+        <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
+        <note>{0} is the test application path. {1} is the process exit code.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingStarted">
+        <source>Merging compatible artifacts produced by different test applications...</source>
+        <target state="new">Merging compatible artifacts produced by different test applications...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
         <target state="translated">La carga de trabajo Aspire está en desuso y ya no es necesaria. Ahora Aspire está disponible como paquetes NuGet que puedes añadir directamente a tus proyectos. Para obtener más información, consulta https://aka.ms/aspire/support-policy</target>
@@ -90,6 +105,51 @@
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
         <target state="translated">Generador para .NET</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsResponseFilesMustBeConsistent">
+        <source>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</source>
+        <target state="new">Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
+        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
+        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndAffectedTestsMutuallyExclusive">
+        <source>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</source>
+        <target state="new">The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
@@ -111,6 +171,131 @@
         <source>List available devices for running the application.</source>
         <target state="new">List available devices for running the application.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
+        <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
+        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
+        <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
+        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingRequiredMessageProperty">
+        <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
+        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeAtLeastOneTestFailedDescription">
+        <source>At least one test failed.</source>
+        <target state="new">At least one test failed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeCoverageThresholdFailedDescription">
+        <source>One or more code coverage thresholds were not met.</source>
+        <target state="new">One or more code coverage thresholds were not met.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeDependentProcessExitedDescription">
+        <source>A dependent process exited.</source>
+        <target state="new">A dependent process exited.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeGenericFailureDescription">
+        <source>An unexpected error occurred.</source>
+        <target state="new">An unexpected error occurred.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeIncompatibleProtocolVersionDescription">
+        <source>The test platform protocol version is incompatible.</source>
+        <target state="new">The test platform protocol version is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeInvalidCommandLineDescription">
+        <source>The command-line arguments are invalid.</source>
+        <target state="new">The command-line arguments are invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeInvalidPlatformSetupDescription">
+        <source>The test platform setup or extension configuration is invalid.</source>
+        <target state="new">The test platform setup or extension configuration is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeMinimumExpectedTestsPolicyViolationDescription">
+        <source>Fewer tests ran than required by the minimum expected tests policy.</source>
+        <target state="new">Fewer tests ran than required by the minimum expected tests policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeTestAdapterTestSessionFailureDescription">
+        <source>The test adapter reported a test session failure.</source>
+        <target state="new">The test adapter reported a test session failure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeTestExecutionStoppedAtDeadlineDescription">
+        <source>Test execution stopped because the configured deadline was approaching.</source>
+        <target state="new">Test execution stopped because the configured deadline was approaching.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeTestExecutionStoppedForMaxFailedTestsDescription">
+        <source>Test execution stopped after reaching the maximum failed tests limit.</source>
+        <target state="new">Test execution stopped after reaching the maximum failed tests limit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeTestHostProcessExitedNonGracefullyDescription">
+        <source>The test host process exited unexpectedly.</source>
+        <target state="new">The test host process exited unexpectedly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeTestSessionAbortedDescription">
+        <source>The test session was aborted.</source>
+        <target state="new">The test session was aborted.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeUnknownDescription">
+        <source>The exit code is not recognized.</source>
+        <target state="new">The exit code is not recognized.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCodeZeroTestsDescription">
+        <source>No tests ran.</source>
+        <target state="new">No tests ran.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlakyAttempts">
+        <source>{0} attempts</source>
+        <target state="new">{0} attempts</target>
+        <note>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</note>
+      </trans-unit>
+      <trans-unit id="FlakyLowercase">
+        <source>flaky: {0} (passed after retry)</source>
+        <target state="new">flaky: {0} (passed after retry)</target>
+        <note>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</note>
+      </trans-unit>
+      <trans-unit id="FlakyTests">
+        <source>Flaky tests:</source>
+        <target state="new">Flaky tests:</target>
+        <note>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</note>
+      </trans-unit>
+      <trans-unit id="FlakyTransition">
+        <source>failed -&gt; passed</source>
+        <target state="new">failed -&gt; passed</target>
+        <note>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</note>
+      </trans-unit>
+      <trans-unit id="HandshakeFailuresHeader">
+        <source>Handshake failures:</source>
+        <target state="new">Handshake failures:</target>
+        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
+      <trans-unit id="MismatchingHandshakeExecutionMode">
+        <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
+        <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
+        <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
+      </trans-unit>
+      <trans-unit id="MismatchingHandshakeHostType">
+        <source>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</source>
+        <target state="new">The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</target>
+        <note>{Locked="dotnet test"}</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
@@ -669,8 +854,8 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="translated">La arquitectura de opciones, la configuración, el marco, el sistema operativo y el tiempo de ejecución no se pueden usar con la opción "--test-modules".</target>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
+        <target state="needs-review-translation">La arquitectura de opciones, la configuración, el marco, el sistema operativo y el tiempo de ejecución no se pueden usar con la opción "--test-modules".</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -696,11 +881,6 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       <trans-unit id="CmdPackage">
         <source>PACKAGE_NAME</source>
         <target state="translated">PACKAGE_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">La referencia de paquete para agregar. Puede tener el formato del identificador del paquete, por ejemplo, "Newtonsoft.Json", o un identificador de paquete y una versión separados por "@", por ejemplo, "Newtonsoft.Json@13.0.3"</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -1036,16 +1216,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">La consola ya está en modo de procesamiento por lotes.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">No se pudo convertir el valor de la propiedad "{0}" en un booleano.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">No se pudo convertir el valor de la propiedad "{0}" en una cadena.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">No se ha podido encontrar un proyecto. Asegúrese de que exista uno en {0} o pase la ruta de acceso al proyecto mediante {1}.</target>
@@ -1307,16 +1477,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">error con {0} errores</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">error con {0} errores y {1} advertencias</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">error con {0} advertencias</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Para prueba</target>
@@ -1571,11 +1731,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">No se puede especificar la opción "{0}" cuando también se utiliza "-" para leer el archivo desde la entrada estándar.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">Error al analizar "{0}" como una versión semántica.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2250,6 +2405,11 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">No se admiten las opciones --prerelease y --version en el mismo comando.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PressCtrlCAgainToForceExit">
+        <source>Press Ctrl+C again to force exit.</source>
+        <target state="new">Press Ctrl+C again to force exit.</target>
+        <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
+      </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">Imprima solo la lista de vínculos para descargar, sin descargarla.</target>
@@ -2451,16 +2611,6 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Simulacro: eliminaría el archivo de origen: {0}</target>
         <note>{0} is the source file path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Simulación: se eliminaría el archivo {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Simulación: se movería el archivo "{0}" a "{1}".</target>
-        <note>{0} and {1} are file full paths.</note>
-      </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
         <target state="translated">PROJECT_MANIFEST</target>
@@ -2638,10 +2788,15 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <target state="translated">Se restauró la herramienta "{0}" (versión "{1}"). Comandos disponibles: {2}</target>
         <note />
       </trans-unit>
-      <trans-unit id="Retried">
-        <source>retried</source>
-        <target state="translated">volver a intentarlo</target>
-        <note />
+      <trans-unit id="RetriedColon">
+        <source>retried:</source>
+        <target state="new">retried:</target>
+        <note>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</note>
+      </trans-unit>
+      <trans-unit id="RetriedTestsAndRuns">
+        <source>{0} test(s), {1} extra run(s)</source>
+        <target state="new">{0} test(s), {1} extra run(s)</target>
+        <note>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</note>
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
@@ -2672,6 +2827,11 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <source>.NET Run Command</source>
         <target state="translated">Ejecutar comando de .NET</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunAsyncCalledMoreThanOnce">
+        <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
+        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <note>{Locked="TestApplication.RunAsync"}</note>
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
@@ -2809,6 +2969,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
         <target state="translated">Advertencia: la configuración de '{0}' no se utiliza porque '{1}' tiene prioridad.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="translated">Advertencia: no se pudieron determinar los argumentos de aplicación que aparecían después de "--". Todos los argumentos de aplicación se pasarán a la aplicación sin tratar especialmente los argumentos del registrador.</target>
+        <note>{Locked="--"}</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
@@ -3012,6 +3177,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Archivo .slnx {0} generado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SlowestTests">
+        <source>Slowest tests:</source>
+        <target state="new">Slowest tests:</target>
+        <note>Header of the run summary section that lists the longest-running tests.</note>
+      </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
         <source>Recursively add projects' ReferencedProjects to solution</source>
         <target state="translated">Agregar recursivamente ReferencedProjects de los proyectos a la solución</target>
@@ -3147,6 +3317,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Especifique un directorio temporal para que este comando descargue y extraiga paquetes NuGet (debe ser seguro).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Ejecutar pruebas, sin mostrar la pancarta de Microsoft Testplatform</target>
@@ -3188,9 +3363,9 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <note />
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Detección de pruebas completada con código de salida no correcto: {0} (vea: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
+        <source>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
+        <target state="new">Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
@@ -3208,9 +3383,9 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <note />
       </trans-unit>
       <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Serie de pruebas completada con código de salida incorrecto: {0} (consulte: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
+        <source>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
+        <target state="new">Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
@@ -3224,7 +3399,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">La herramienta "{0}" (versión "{1}") ya está instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3334,16 +3509,6 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="translated">El archivo de configuración de NuGet "{0}" no existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">El id. del paquete de NuGet de la herramienta que se instalará.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
@@ -3578,16 +3743,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">Actualizar una herramienta global o local.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">El id. del paquete de NuGet que se actualizará.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">La herramienta "{0}" tiene varias versiones instaladas y no se puede actualizar.</target>
@@ -3623,6 +3778,11 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">Se recibió un mensaje de tipo "{0}" antes de recibir cualquier protocolo de enlace, lo cual es inesperado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
+        <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
+        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
         <target state="translated">Se recibió un evento de finalización de sesión de prueba sin un evento de inicio de sesión de prueba correspondiente.</target>
@@ -3641,6 +3801,11 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Las filas con cambios sin registrar representan cambios de acciones distintas de los comandos de carga de trabajo de la CLI de .NET. Por lo general, esto representa una actualización del SDK de .NET o de Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownSessionEventType">
+        <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
+        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3748,21 +3913,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">No se puede especificar --version cuando el argumento del paquete ya contiene una versión.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">La propiedad "{0}" debe ser un objeto si se especifica.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Nivel de detalle</target>
@@ -3809,14 +3959,14 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <note />
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
-        <note>{0} is the .cs file path argument.</note>
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
+        <target state="translated">Advertencia: "{0}" parece una aplicación basada en archivos, pero no se encontró el archivo y se trató como un argumento de MSBuild. Argumentos no reconocidos: {1}.</target>
+        <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
-        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
+        <target state="translated">Advertencia: "{0}" parece ser una aplicación basada en archivos, pero se trató como un argumento de MSBuild. Para tratarla como una aplicación basada en archivos, use "dotnet {1}{0}" y quite los argumentos no admitidos {2}.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
@@ -4084,6 +4234,16 @@ Para mostrar un valor, especifique la opción de línea de comandos correspondie
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">No se encontró la versión de carga de trabajo {0}, que se especificó en {1}. Ejecuta "dotnet workload restore" para instalar esta versión de carga de trabajo.</target>
         <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
+        <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</source>
+        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</target>
+        <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionSpecifiedInGlobalJson">
+        <source> (Specified in '{0}')</source>
+        <target state="new"> (Specified in '{0}')</target>
+        <note>{0} is the path to the global.json file.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>

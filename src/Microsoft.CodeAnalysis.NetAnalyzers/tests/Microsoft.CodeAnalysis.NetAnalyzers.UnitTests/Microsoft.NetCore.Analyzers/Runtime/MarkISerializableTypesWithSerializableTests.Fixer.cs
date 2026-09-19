@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.MarkTypesWithSerializableFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public partial class MarkISerializableTypesWithSerializableFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2237SerializableMissingAttrFixAsync()
         {
             await new VerifyCS.Test
@@ -24,16 +24,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
-public class CA2237SerializableMissingAttr : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                        """
+
+                            using System;
+                            using System.Runtime.Serialization;
+                            public class CA2237SerializableMissingAttr : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -44,21 +46,23 @@ public class CA2237SerializableMissingAttr : ISerializable
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
+                        """
 
-[Serializable]
-public class CA2237SerializableMissingAttr : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                            using System;
+                            using System.Runtime.Serialization;
+
+                            [Serializable]
+                            public class CA2237SerializableMissingAttr : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -66,19 +70,21 @@ public class CA2237SerializableMissingAttr : ISerializable
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
-Public Class CA2237SerializableMissingAttr
-    Implements ISerializable
+                        """
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            Imports System
+                            Imports System.Runtime.Serialization
+                            Public Class CA2237SerializableMissingAttr
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class",
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -89,24 +95,174 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
+                        """
 
-<Serializable>
-Public Class CA2237SerializableMissingAttr
-    Implements ISerializable
+                            Imports System
+                            Imports System.Runtime.Serialization
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            <Serializable>
+                            Public Class CA2237SerializableMissingAttr
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class"
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA2237SerializableMissingAttrFixAll_CSharpAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        """
+
+                            using System;
+                            using System.Runtime.Serialization;
+                            public class First : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+
+                            public class Second : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA2237CSharpResultAt(4, 14, "First"),
+                        GetCA2237CSharpResultAt(12, 14, "Second"),
+                    }
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        """
+
+                            using System;
+                            using System.Runtime.Serialization;
+
+                            [Serializable]
+                            public class First : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+
+                            [Serializable]
+                            public class Second : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
+                    },
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA2237SerializableMissingAttrFixAll_BasicAsync()
+        {
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        """
+
+                            Imports System
+                            Imports System.Runtime.Serialization
+                            Public Class First
+                                Implements ISerializable
+
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+
+                            Public Class Second
+                                Implements ISerializable
+
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """,
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA2237BasicResultAt(4, 14, "First"),
+                        GetCA2237BasicResultAt(15, 14, "Second"),
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        """
+
+                            Imports System
+                            Imports System.Runtime.Serialization
+
+                            <Serializable>
+                            Public Class First
+                                Implements ISerializable
+
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+
+                            <Serializable>
+                            Public Class Second
+                                Implements ISerializable
+
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """
+                    },
+                },
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA2237CSharpResultAt(int line, int column, string objectName) =>

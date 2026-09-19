@@ -1,8 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <TargetFramework>$(NetCurrent)</TargetFramework>
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Verify.MSTest" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj" />

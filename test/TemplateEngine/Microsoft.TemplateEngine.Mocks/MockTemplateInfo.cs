@@ -7,11 +7,10 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-using Xunit.Sdk;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockTemplateInfo : ITemplateInfo, IXunitSerializable
+    public class MockTemplateInfo : ITemplateInfo
     {
         private string? _identity;
         private string? _name;
@@ -231,44 +230,6 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        #region XUnitSerializable implementation
-
-        public void Deserialize(IXunitSerializationInfo info)
-        {
-            _name = info.GetValue<string>("template_name");
-            Precedence = info.GetValue<int>("template_precedence");
-            _identity = info.GetValue<string>("template_identity");
-            GroupIdentity = info.GetValue<string>("template_group");
-            Description = info.GetValue<string>("template_description");
-            Author = info.GetValue<string>("template_author");
-            _tags = JsonSerializer.Deserialize<Dictionary<string, string>>(info.GetValue<string>("template_tags")!)
-                ?? throw new Exception("Deserialiation failed");
-            _parameters = JsonSerializer.Deserialize<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params")!)
-                         ?? throw new Exception("Deserialiation failed");
-            _baselineInfo = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_baseline")!)
-                         ?? throw new Exception("Deserialiation failed");
-            _classifications = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_classifications")!)
-                         ?? throw new Exception("Deserialiation failed");
-            _shortNameList = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_shortname")!)
-                         ?? throw new Exception("Deserialiation failed");
-        }
-
-        public void Serialize(IXunitSerializationInfo info)
-        {
-            info.AddValue("template_name", Name, typeof(string));
-            info.AddValue("template_shortname", JsonSerializer.Serialize(_shortNameList), typeof(string));
-            info.AddValue("template_precedence", Precedence, typeof(int));
-            info.AddValue("template_identity", Identity, typeof(string));
-            info.AddValue("template_group", GroupIdentity, typeof(string));
-            info.AddValue("template_description", Description, typeof(string));
-            info.AddValue("template_author", Author, typeof(string));
-
-            info.AddValue("template_tags", JsonSerializer.Serialize(_tags), typeof(string));
-            info.AddValue("template_params", JsonSerializer.Serialize(_parameters), typeof(string));
-            info.AddValue("template_baseline", JsonSerializer.Serialize(_baselineInfo), typeof(string));
-            info.AddValue("template_classifications", JsonSerializer.Serialize(_classifications), typeof(string));
-        }
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -302,8 +263,6 @@ namespace Microsoft.TemplateEngine.Mocks
             }
             return sb.ToString();
         }
-
-        #endregion XUnitSerializable implementation
     }
 
 }

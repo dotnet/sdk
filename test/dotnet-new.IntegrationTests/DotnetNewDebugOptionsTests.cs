@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
@@ -6,16 +6,16 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class DotnetNewDebugOptionsTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
-        public DotnetNewDebugOptionsTests(ITestOutputHelper log) : base(log)
+        public DotnetNewDebugOptionsTests()
         {
-            _log = log;
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowBasicInfoWithDebugReinit()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute();
 
             commandResult.Should().ExitWith(0).And.NotHaveStdErr();
-            Assert.True(File.Exists(cacheFilePath));
+            Assert.IsTrue(File.Exists(cacheFilePath));
             DateTime lastUpdateDate = File.GetLastWriteTimeUtc(cacheFilePath);
 
             CommandResult reinitCommandResult = new DotnetNewCommand(_log, "--debug:reinit")
@@ -34,12 +34,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .Execute();
 
             reinitCommandResult.Should().ExitWith(0).And.NotHaveStdErr();
-            Assert.Equal(commandResult.StdOut, reinitCommandResult.StdOut);
-            Assert.True(File.Exists(cacheFilePath));
-            Assert.True(lastUpdateDate < File.GetLastWriteTimeUtc(cacheFilePath));
+            Assert.AreEqual(commandResult.StdOut, reinitCommandResult.StdOut);
+            Assert.IsTrue(File.Exists(cacheFilePath));
+            Assert.IsGreaterThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowBasicInfoWithDebugRebuildCache()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute();
 
             commandResult.Should().ExitWith(0).And.NotHaveStdErr();
-            Assert.True(File.Exists(cacheFilePath));
+            Assert.IsTrue(File.Exists(cacheFilePath));
             DateTime lastUpdateDate = File.GetLastWriteTimeUtc(cacheFilePath);
 
             CommandResult reinitCommandResult = new DotnetNewCommand(_log, "--debug:rebuildcache")
@@ -58,12 +58,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .Execute();
 
             reinitCommandResult.Should().ExitWith(0).And.NotHaveStdErr();
-            Assert.Equal(commandResult.StdOut, reinitCommandResult.StdOut);
-            Assert.True(File.Exists(cacheFilePath));
-            Assert.True(lastUpdateDate < File.GetLastWriteTimeUtc(cacheFilePath));
+            Assert.AreEqual(commandResult.StdOut, reinitCommandResult.StdOut);
+            Assert.IsTrue(File.Exists(cacheFilePath));
+            Assert.IsGreaterThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowConfigWithDebugShowConfig()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesNotCreateCacheWhenVirtualHiveIsUsed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -102,10 +102,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .Execute()
                .Should().Pass().And.NotHaveStdErr();
 
-            Assert.Empty(new DirectoryInfo(home).EnumerateFiles());
+            Assert.IsEmpty(new DirectoryInfo(home).EnumerateFiles());
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesCreateCacheInDifferentLocationWhenCustomHiveIsUsed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -116,12 +116,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             string[] createdCacheEntries = Directory.GetFileSystemEntries(home);
 
-            Assert.Equal(2, createdCacheEntries.Length);
+            Assert.HasCount(2, createdCacheEntries);
             Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
-            Assert.True(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
+            Assert.IsTrue(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDisableBuiltInTemplates_List()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "list", "--debug:disable-sdk-templates")
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("No templates installed.");
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDisableBuiltInTemplates_Instantiate()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "console", "--debug:disable-sdk-templates")

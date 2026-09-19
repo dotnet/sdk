@@ -7,16 +7,12 @@ using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
+    [TestClass]
     public class CodeStyleAnalyzerFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => AnalyzerFormatter.CodeStyleFormatter;
 
-        public CodeStyleAnalyzerFormatterTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task TestUseVarCodeStyle_AppliesWhenNotUsingVar()
         {
             var testCode = @"
@@ -57,7 +53,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.CodeStyle);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonFixableCompilerDiagnostics_AreNotReported()
         {
             var testCode = @"

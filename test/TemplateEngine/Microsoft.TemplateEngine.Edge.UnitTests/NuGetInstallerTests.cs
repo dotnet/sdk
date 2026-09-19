@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
@@ -9,19 +9,27 @@ using Microsoft.TemplateEngine.Edge.UnitTests.Mocks;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class NuGetInstallerTests : TestBase, IClassFixture<PackageManager>, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class NuGetInstallerTests : TestBase
     {
-        private readonly PackageManager _packageManager;
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static PackageManager s_packageManager = null!;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public NuGetInstallerTests(PackageManager packageManager, EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
         {
-            _packageManager = packageManager;
-            _environmentSettingsHelper = environmentSettingsHelper;
+            s_packageManager = new PackageManager();
+            s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            s_packageManager?.Dispose();
+            s_environmentSettingsHelper?.Dispose();
         }
 
         public static IEnumerable<object?[]> SerializationData()
@@ -64,93 +72,93 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             };
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanInstall_LocalPackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            string package = PackTestTemplatesNuGetPackage(_packageManager);
+            string package = PackTestTemplatesNuGetPackage(s_packageManager);
 
             InstallRequest request = new InstallRequest(package);
-            Assert.True(await installer.CanInstallAsync(request, CancellationToken.None));
+            Assert.IsTrue(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanInstall_CannotInstallDirectory()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             string package = Directory.GetCurrentDirectory();
 
             InstallRequest request = new InstallRequest(package);
-            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None));
+            Assert.IsFalse(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanInstall_CannotInstallFile()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             string package = typeof(NuGetInstallerTests).Assembly.Location;
 
             InstallRequest request = new InstallRequest(package);
-            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None));
+            Assert.IsFalse(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
-        [Theory]
-        [InlineData("ValidId", "", true)]
-        [InlineData("Invalid&%", "", false)]
-        [InlineData("ValidId", "1.0.0", true)]
-        [InlineData("ValidId", "InvalidVersion", false)]
-        [InlineData("Invalid&%", "InvalidVersion", false)]
+        [TestMethod]
+        [DataRow("ValidId", "", true)]
+        [DataRow("Invalid&%", "", false)]
+        [DataRow("ValidId", "1.0.0", true)]
+        [DataRow("ValidId", "InvalidVersion", false)]
+        [DataRow("Invalid&%", "InvalidVersion", false)]
         public async Task CanInstall_RemotePackage(string identifier, string version, bool result)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(identifier, version);
 
-            Assert.Equal(result, await installer.CanInstallAsync(request, CancellationToken.None));
+            Assert.AreEqual(result, await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Install_LocalPackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            string package = PackTestTemplatesNuGetPackage(_packageManager);
+            string package = PackTestTemplatesNuGetPackage(s_packageManager);
 
             InstallRequest request = new InstallRequest(package);
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.Success, installResult.Error);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.Success, installResult.Error);
             installResult.ErrorMessage.Should().BeNullOrEmpty();
 
             var source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             source!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             source.Author.Should().Be("Microsoft");
             source.Owners.Should().BeNull();
@@ -163,13 +171,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.Provider.Should().Be(provider);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Install_LocalPackage_CannotInstallUnsupportedRequest()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
@@ -178,62 +186,62 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             InstallRequest request = new InstallRequest(package);
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.False(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.UnsupportedRequest, installResult.Error);
+            Assert.IsFalse(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.UnsupportedRequest, installResult.Error);
             installResult.ErrorMessage.Should().NotBeNullOrEmpty();
             installResult.TemplatePackage.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Install_LocalPackage_CannotInstallSamePackageTwice()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            string package = PackTestTemplatesNuGetPackage(_packageManager);
+            string package = PackTestTemplatesNuGetPackage(s_packageManager);
 
             InstallRequest request = new InstallRequest(package);
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
 
             installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.False(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.DownloadFailed, installResult.Error);
+            Assert.IsFalse(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.DownloadFailed, installResult.Error);
             installResult.ErrorMessage.Should().NotBeNullOrEmpty();
             installResult.TemplatePackage.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Install_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.Success, installResult.Error);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.Success, installResult.Error);
             installResult.ErrorMessage.Should().BeNullOrEmpty();
 
             var source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             source!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             source.Author.Should().Be("Microsoft");
             source.Owners.Should().Be("Microsoft");
@@ -247,17 +255,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.NuGetSource.Should().Be(MockPackageManager.DefaultFeed);
         }
 
-        [Theory]
-        [InlineData(nameof(DownloadException), InstallerErrorCode.DownloadFailed)]
-        [InlineData(nameof(PackageNotFoundException), InstallerErrorCode.PackageNotFound)]
-        [InlineData(nameof(InvalidNuGetSourceException), InstallerErrorCode.InvalidSource)]
-        [InlineData(nameof(Exception), InstallerErrorCode.GenericError)]
+        [TestMethod]
+        [DataRow(nameof(DownloadException), InstallerErrorCode.DownloadFailed)]
+        [DataRow(nameof(PackageNotFoundException), InstallerErrorCode.PackageNotFound)]
+        [DataRow(nameof(InvalidNuGetSourceException), InstallerErrorCode.InvalidSource)]
+        [DataRow(nameof(Exception), InstallerErrorCode.GenericError)]
         public async Task Install_RemotePackage_HandleExceptions(string exception, InstallerErrorCode expectedErrorCode)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
@@ -265,103 +273,103 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.False(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(expectedErrorCode, installResult.Error);
+            Assert.IsFalse(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(expectedErrorCode, installResult.Error);
             installResult.ErrorMessage.Should().NotBeNullOrEmpty();
             installResult.TemplatePackage.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Install_RemotePackage_HandleVulnerablePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "12.0.3");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
-            Assert.False(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.VulnerablePackage, installResult.Error);
+            Assert.IsFalse(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.VulnerablePackage, installResult.Error);
             installResult.ErrorMessage.Should().NotBeNullOrEmpty();
             installResult.TemplatePackage.Should().BeNull();
             installResult.Vulnerabilities.Should().NotBeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetLatestVersion_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
 
             NuGetManagedTemplatePackage? source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None);
 
-            Assert.Single(checkUpdateResults);
+            Assert.ContainsSingle(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
 
-            Assert.True(result.Success);
-            Assert.Equal(source, result.TemplatePackage);
-            Assert.Equal(InstallerErrorCode.Success, result.Error);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(source, result.TemplatePackage);
+            Assert.AreEqual(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
-            Assert.Equal("1.0.0", result.LatestVersion);
-            Assert.False(result.IsLatestVersion);
+            Assert.AreEqual("1.0.0", result.LatestVersion);
+            Assert.IsFalse(result.IsLatestVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetLatestVersion_RemotePackageWithVulnerabilities()
         {
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
-            NuGetInstaller installer = new NuGetInstaller(new MockInstallerFactory(), engineEnvironmentSettings, _environmentSettingsHelper.CreateTemporaryFolder(), mockPackageManager, mockPackageManager);
+            NuGetInstaller installer = new NuGetInstaller(new MockInstallerFactory(), engineEnvironmentSettings, s_environmentSettingsHelper.CreateTemporaryFolder(), mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "1.0.0");
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
 
             NuGetManagedTemplatePackage? source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             source.Version = "12.0.0";
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None);
 
-            Assert.Single(checkUpdateResults);
+            Assert.ContainsSingle(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
 
-            Assert.False(result.Success);
+            Assert.IsFalse(result.Success);
             result.ErrorMessage.Should().NotBeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(nameof(PackageNotFoundException), InstallerErrorCode.PackageNotFound)]
-        [InlineData(nameof(InvalidNuGetSourceException), InstallerErrorCode.InvalidSource)]
-        [InlineData(nameof(VulnerablePackageException), InstallerErrorCode.VulnerablePackage, "12.0.0")]
-        [InlineData(nameof(Exception), InstallerErrorCode.GenericError)]
+        [TestMethod]
+        [DataRow(nameof(PackageNotFoundException), InstallerErrorCode.PackageNotFound)]
+        [DataRow(nameof(InvalidNuGetSourceException), InstallerErrorCode.InvalidSource)]
+        [DataRow(nameof(VulnerablePackageException), InstallerErrorCode.VulnerablePackage, "12.0.0")]
+        [DataRow(nameof(Exception), InstallerErrorCode.GenericError)]
         public async Task GetLatestVersion_RemotePackage_HandleExceptions(string exception, InstallerErrorCode expectedErrorCode, string version = "1.0.0")
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
@@ -371,79 +379,79 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             };
             IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None);
 
-            Assert.Single(checkUpdateResults);
+            Assert.ContainsSingle(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
 
-            Assert.False(result.Success);
-            Assert.Equal(source, result.TemplatePackage);
-            Assert.Equal(expectedErrorCode, result.Error);
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual(source, result.TemplatePackage);
+            Assert.AreEqual(expectedErrorCode, result.Error);
             result.ErrorMessage.Should().NotBeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Uninstall_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
 
             var source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             string mountPoint = source!.MountPointUri;
-            Assert.True(File.Exists(mountPoint));
+            Assert.IsTrue(File.Exists(mountPoint));
 
             UninstallResult result = await installer.UninstallAsync(source, provider, CancellationToken.None);
 
-            Assert.True(result.Success);
-            Assert.Equal(source, result.TemplatePackage);
-            Assert.Equal(InstallerErrorCode.Success, result.Error);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(source, result.TemplatePackage);
+            Assert.AreEqual(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
-            Assert.False(File.Exists(mountPoint));
+            Assert.IsFalse(File.Exists(mountPoint));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Update_RemotePackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.Success, installResult.Error);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.Success, installResult.Error);
             installResult.ErrorMessage.Should().BeNullOrEmpty();
 
             var source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             string oldMountPoint = source!.MountPointUri;
-            Assert.True(File.Exists(oldMountPoint));
+            Assert.IsTrue(File.Exists(oldMountPoint));
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.1");
 
             UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None);
-            Assert.True(updateResult.Success);
-            Assert.Equal(updateRequest, updateResult.UpdateRequest);
-            Assert.Equal(InstallerErrorCode.Success, updateResult.Error);
+            Assert.IsTrue(updateResult.Success);
+            Assert.AreEqual(updateRequest, updateResult.UpdateRequest);
+            Assert.AreEqual(InstallerErrorCode.Success, updateResult.Error);
             updateResult.ErrorMessage.Should().BeNullOrEmpty();
 
             var updatedSource = updateResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(updatedSource);
+            Assert.IsNotNull(updatedSource);
             updatedSource!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             updatedSource.Author.Should().Be("Microsoft");
             updatedSource.Version.Should().Be("1.0.1");
@@ -453,44 +461,44 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             updatedSource.IsLocalPackage.Should().Be(false);
             updatedSource.Provider.Should().Be(provider);
             updatedSource.NuGetSource.Should().Be(MockPackageManager.DefaultFeed);
-            Assert.False(File.Exists(oldMountPoint));
-            Assert.True(File.Exists(updatedSource.MountPointUri));
+            Assert.IsFalse(File.Exists(oldMountPoint));
+            Assert.IsTrue(File.Exists(updatedSource.MountPointUri));
         }
 
-        [Fact]
-        internal async Task Update_CannotUpdateVulnerabilities()
+        [TestMethod]
+        public async Task Update_CannotUpdateVulnerabilities()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            MockPackageManager mockPackageManager = new MockPackageManager(_packageManager, TestPackageProjectPath);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            MockPackageManager mockPackageManager = new MockPackageManager(s_packageManager, TestPackageProjectPath);
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "2.0.10");
 
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
-            Assert.True(installResult.Success);
-            Assert.Equal(request, installResult.InstallRequest);
-            Assert.Equal(InstallerErrorCode.Success, installResult.Error);
+            Assert.IsTrue(installResult.Success);
+            Assert.AreEqual(request, installResult.InstallRequest);
+            Assert.AreEqual(InstallerErrorCode.Success, installResult.Error);
             installResult.ErrorMessage.Should().BeNullOrEmpty();
 
             var source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
-            Assert.NotNull(source);
+            Assert.IsNotNull(source);
             string oldMountPoint = source!.MountPointUri;
-            Assert.True(File.Exists(oldMountPoint));
+            Assert.IsTrue(File.Exists(oldMountPoint));
             UpdateRequest updateRequest = new UpdateRequest(source, "12.0.3");
 
             UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None);
-            Assert.False(updateResult.Success);
-            Assert.Equal(InstallerErrorCode.VulnerablePackage, updateResult.Error);
+            Assert.IsFalse(updateResult.Success);
+            Assert.AreEqual(InstallerErrorCode.VulnerablePackage, updateResult.Error);
             updateResult.ErrorMessage.Should().NotBeNullOrEmpty();
             updateResult.Vulnerabilities.Should().NotBeNullOrEmpty();
         }
 
-        [Theory]
-        [MemberData(nameof(SerializationData))]
+        [TestMethod]
+        [DynamicData(nameof(SerializationData))]
         public void Deserialize(
             TemplatePackageData data,
             string identifier,
@@ -503,8 +511,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
 
@@ -522,7 +530,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.NuGetSource.Should().Be(nugetFeed);
         }
 
-        [Fact]
+        [TestMethod]
         public void Deserialize_ThrowsWhenDetailsDoNotHavePackageID()
         {
             var templateData = new TemplatePackageData(
@@ -536,15 +544,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                      });
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
 
-            Assert.Throws<ArgumentException>(() => installer.Deserialize(provider, templateData));
+            Assert.ThrowsExactly<ArgumentException>(() => installer.Deserialize(provider, templateData));
         }
 
-        [Fact]
+        [TestMethod]
         public void Deserialize_ThrowsWhenInstallerIdDoesNotMatch()
         {
             var templateData = new TemplatePackageData(
@@ -558,11 +566,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 });
             MockInstallerFactory factory = new MockInstallerFactory();
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
-            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            Assert.Throws<ArgumentException>(() => installer.Deserialize(provider, templateData));
+            Assert.ThrowsExactly<ArgumentException>(() => installer.Deserialize(provider, templateData));
         }
     }
 }

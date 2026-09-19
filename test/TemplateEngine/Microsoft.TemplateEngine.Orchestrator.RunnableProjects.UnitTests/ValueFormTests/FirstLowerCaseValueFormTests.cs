@@ -6,32 +6,41 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
     public class FirstLowerCaseValueFormTests
     {
-        [Theory]
-        [InlineData("A", "a", null)]
-        [InlineData("NO", "nO", null)]
-        [InlineData("NEW", "nEW", null)]
-        [InlineData("", "", null)]
-        [InlineData("İndigo", "indigo", "tr-TR")]
-        [InlineData("Indigo", "ındigo", "tr-TR")]
+        [TestMethod]
+        [DataRow("A", "a", null)]
+        [DataRow("NO", "nO", null)]
+        [DataRow("NEW", "nEW", null)]
+        [DataRow("", "", null)]
+        [DataRow("İndigo", "indigo", "tr-TR")]
+        [DataRow("Indigo", "ındigo", "tr-TR")]
         public void FirstLowerCaseWorksAsExpected(string input, string expected, string? culture)
         {
-            if (!string.IsNullOrEmpty(culture))
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
             {
-                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
-            }
+                if (!string.IsNullOrEmpty(culture))
+                {
+                    CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                }
 
-            IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
-            string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+                IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
+                string actual = model.Process(input, new Dictionary<string, IValueForm>());
+                Assert.AreEqual(expected, actual);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }
