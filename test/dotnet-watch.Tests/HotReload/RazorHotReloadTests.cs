@@ -123,6 +123,12 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
+
+        UpdateSourceFile(Path.Combine(testAsset.Path, "blazorwasm", "Pages", "Index.razor.css"), ".page { color: blue; }");
+
+        await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
     }
 
     [TestMethod]

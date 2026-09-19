@@ -22,11 +22,6 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
     public abstract bool ManagedHotReloadRequiresBrowserRefresh { get; }
 
-    /// <summary>
-    /// Project that's used for launching the application.
-    /// </summary>
-    public abstract ProjectGraphNode LaunchingProject { get; }
-
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
