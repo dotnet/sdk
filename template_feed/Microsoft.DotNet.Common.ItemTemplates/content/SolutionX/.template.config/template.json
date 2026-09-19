@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Solution"
+  ],
+  "name": "XML Solution File",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "Create an empty XML solution (slnx) containing no projects",
+  "groupIdentity": "ItemSolutionX",
+  "precedence": "102",
+  "identity": "Microsoft.Standard.QuickStarts.SolutionX",
+  "shortName": [
+    "slnx",
+    "solutionx"
+  ],
+  "sourceName": "Solution1",
+  "defaultName": "Solution1"
+}
