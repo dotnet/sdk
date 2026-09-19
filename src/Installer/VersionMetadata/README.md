@@ -29,6 +29,14 @@ This is local consistency metadata, not authentication or freshness authorizatio
 [Dotnetup.VersionMetadata.csproj](Dotnetup.VersionMetadata.csproj) builds a
 host-only MSBuild task that source-links the production offline reader, avoiding
 a dependency cycle through the Installation library it helps compile.
+Installation declares it as a build-only project reference, so ordinary restore
+prepares the host tool along with the product. Compilation and publish validation
+build the tool without invoking restore, including when the product uses
+`--no-restore` or no-build publishing. Product RID, AOT, publish-directory, and
+version-record properties are removed when building the host tool; its assembly
+is not a product runtime dependency. The tool also clears product RID/AOT globals
+in its own project because NuGet's restore graph walk can forward them despite
+the project reference's `GlobalPropertiesToRemove` metadata.
 [The task host](Dotnetup.VersionMetadata.proj) loads the task from an immutable
 shadow copy so reused Windows MSBuild nodes do not lock compiler outputs.
 The copy's content hash only isolates the build tool's assembly; it is not
@@ -43,6 +51,12 @@ two-pass compilation, or post-link stamping.
 [Record tests](../../../test/dotnetup.Tests/DotnetupVersionMetadataTests.cs) cover
 full version/RID preservation, size limits, malformed/duplicate/truncated records,
 short reads, buffer boundaries, and write-only-on-change generation.
+[Build-graph tests](../../../test/dotnetup.Tests/DotnetupMetadataBuildTests.cs)
+restore Installation into an isolated directory, verify that the host tool's assets
+were restored without a product RID, and reject any nested `Restore` during a
+subsequent no-restore build or no-build validation-tool invocation. They cover
+ordinary and cross-RID/AOT product properties and check that the task assembly
+does not enter the product output.
 [Native fixtures](../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
 require two NativeAOT executables with different full versions via
 `DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT`.

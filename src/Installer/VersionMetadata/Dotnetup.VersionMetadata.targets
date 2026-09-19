@@ -3,7 +3,16 @@
     <_DotnetupMetadataToolProject>$(MSBuildThisFileDirectory)Dotnetup.VersionMetadata.csproj</_DotnetupMetadataToolProject>
     <_DotnetupMetadataTool>$(ArtifactsBinDir)Dotnetup.VersionMetadata\$(Configuration)\$(SdkTargetFramework)\Dotnetup.VersionMetadata.dll</_DotnetupMetadataTool>
     <_DotnetupMetadataSource>$(IntermediateOutputPath)DotnetupVersionMetadata.g.cs</_DotnetupMetadataSource>
+    <_DotnetupMetadataToolGlobalPropertiesToRemove>NoBuild;RuntimeIdentifier;RuntimeIdentifiers;PublishAot;PublishDir;SelfContained;_IsPublishing;DotnetupMetadataRid;DotnetupMetadataVersion</_DotnetupMetadataToolGlobalPropertiesToRemove>
   </PropertyGroup>
+
+  <!-- Restore the host tool with the product graph without referencing or shipping its assembly. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.Dotnet.Installation'">
+    <ProjectReference Include="$(_DotnetupMetadataToolProject)"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all"
+                      GlobalPropertiesToRemove="$(_DotnetupMetadataToolGlobalPropertiesToRemove)" />
+  </ItemGroup>
 
   <Target Name="ResolveDotnetupVersionMetadata">
     <PropertyGroup>
@@ -14,8 +23,8 @@
   </Target>
 
   <Target Name="BuildDotnetupMetadataTool" Returns="$(DotnetupMetadataTaskAssembly)">
-    <MSBuild Projects="$(_DotnetupMetadataToolProject)" Targets="Restore;Build"
-             RemoveProperties="NoBuild;RuntimeIdentifier;PublishAot;SelfContained;_IsPublishing;DotnetupMetadataRid;DotnetupMetadataVersion"
+    <MSBuild Projects="$(_DotnetupMetadataToolProject)" Targets="Build"
+             RemoveProperties="$(_DotnetupMetadataToolGlobalPropertiesToRemove)"
              Properties="ArtifactsDir=$(ArtifactsDir);Configuration=$(Configuration);TargetFramework=$(SdkTargetFramework);NoBuild=false" />
     <!-- Isolate loaded MSBuild task assemblies when the tool changes in a reused node. -->
     <GetFileHash Files="$(_DotnetupMetadataTool)" Algorithm="SHA256">

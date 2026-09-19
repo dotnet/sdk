@@ -1,5 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="RuntimeIdentifier;RuntimeIdentifiers;PublishAot;SelfContained;_IsPublishing">
   <PropertyGroup>
+    <!-- NuGet's restore graph walk can forward product globals despite ProjectReference metadata. -->
+    <RuntimeIdentifier />
+    <RuntimeIdentifiers />
+    <PublishAot>false</PublishAot>
+    <SelfContained>false</SelfContained>
+    <_IsPublishing>false</_IsPublishing>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
