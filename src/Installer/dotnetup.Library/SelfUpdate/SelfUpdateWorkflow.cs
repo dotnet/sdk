@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
@@ -32,8 +33,6 @@ internal class SelfUpdateWorkflow
         {
             _paths.ValidateLocation();
             var release = _resolve();
-            // Equality is a local consistency check, not authenticated freshness or downgrade protection.
-            var expectedMetadata = DotnetupVersionMetadataReader.Format(release.Version.ToString(), release.Rid);
 
             try
             {
