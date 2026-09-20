@@ -257,9 +257,10 @@
       "description": "Add the coverlet.collector package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package coverlet.collector --version 6.0.4 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addCoverletCollectorPackageReference",
       "continueOnError": true,
       "args": {
-        "files": [ "Company.TestProject1.vbproj" ],
+        "targetFiles": [ "Company.TestProject1.vbproj" ],
         "referenceType": "package",
         "reference": "coverlet.collector",
         "version": "6.0.4"
@@ -270,9 +271,10 @@
       "description": "Add the MSTest package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package MSTest --version 4.4.0 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addMSTestPackageReference",
       "continueOnError": true,
       "args": {
-        "files": [ "Company.TestProject1.vbproj" ],
+        "targetFiles": [ "Company.TestProject1.vbproj" ],
         "referenceType": "package",
         "reference": "MSTest",
         "version": "4.4.0"

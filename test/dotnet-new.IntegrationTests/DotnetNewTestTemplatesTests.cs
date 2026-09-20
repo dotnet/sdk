@@ -421,6 +421,47 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
+        [TestMethod]
+        public void TestProjectTemplate_WithAnotherProjectInOutputDirectory_StillAddsPackageReferences()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // A second project in the output directory makes the add-reference post actions
+            // ambiguous unless they name the generated project through "targetFiles". Without
+            // that they fail to resolve a project file, and because they run with
+            // continueOnError the command still exits 0 while the generated project silently
+            // ends up with no package references at all.
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Existing.csproj"),
+                $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().Contain("Include=\"NUnit3TestAdapter\"");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
         {
             var fsproj = Path.Combine(outputDirectory, $"{projectName}.fsproj");
