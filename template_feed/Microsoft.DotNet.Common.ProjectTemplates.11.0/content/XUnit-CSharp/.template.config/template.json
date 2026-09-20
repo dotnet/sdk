@@ -173,6 +173,7 @@
       "id": "addCoverletCollectorPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "coverlet.collector",
@@ -187,6 +188,7 @@
       "id": "addMicrosoftNETTestSdkPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "Microsoft.NET.Test.Sdk",
@@ -201,6 +203,7 @@
       "id": "addXunitPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "xunit",
@@ -215,6 +218,75 @@
       "id": "addXunitRunnerVisualstudioPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
+        "targetFiles": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "xunit.runner.visualstudio",
+        "version": "3.1.5"
+      }
+    },
+    {
+      "condition": "(XUnitVersion == \"v3\" && TestRunner == \"Microsoft.Testing.Platform\")",
+      "description": "Add the xunit.v3.mtp-v2 package reference.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet add package xunit.v3.mtp-v2 --version 3.2.2 --no-restore'" }
+      ],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addXunitV3MtpV2PackageReference",
+      "continueOnError": true,
+      "args": {
+        "noRestore": true,
+        "targetFiles": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "xunit.v3.mtp-v2",
+        "version": "3.2.2"
+      }
+    },
+    {
+      "condition": "(XUnitVersion == \"v3\" && TestRunner != \"Microsoft.Testing.Platform\")",
+      "description": "Add the Microsoft.NET.Test.Sdk package reference.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet add package Microsoft.NET.Test.Sdk --version 18.6.0 --no-restore'" }
+      ],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addMicrosoftNETTestSdkV3PackageReference",
+      "continueOnError": true,
+      "args": {
+        "noRestore": true,
+        "targetFiles": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "Microsoft.NET.Test.Sdk",
+        "version": "18.6.0"
+      }
+    },
+    {
+      "condition": "(XUnitVersion == \"v3\" && TestRunner != \"Microsoft.Testing.Platform\")",
+      "description": "Add the xunit.v3.mtp-off package reference.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet add package xunit.v3.mtp-off --version 3.2.2 --no-restore'" }
+      ],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addXunitV3MtpOffPackageReference",
+      "continueOnError": true,
+      "args": {
+        "noRestore": true,
+        "targetFiles": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "xunit.v3.mtp-off",
+        "version": "3.2.2"
+      }
+    },
+    {
+      "condition": "(XUnitVersion == \"v3\" && TestRunner != \"Microsoft.Testing.Platform\")",
+      "description": "Add the xunit.runner.visualstudio package reference.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet add package xunit.runner.visualstudio --version 3.1.5 --no-restore'" }
+      ],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "id": "addXunitRunnerVisualstudioV3PackageReference",
+      "continueOnError": true,
+      "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "xunit.runner.visualstudio",

@@ -110,6 +110,7 @@
       "id": "addCoverletCollectorPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.fsproj" ],
         "referenceType": "package",
         "reference": "coverlet.collector",
@@ -124,6 +125,7 @@
       "id": "addMicrosoftNETTestSdkPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.fsproj" ],
         "referenceType": "package",
         "reference": "Microsoft.NET.Test.Sdk",
@@ -137,6 +139,7 @@
       "id": "addNUnitPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.fsproj" ],
         "referenceType": "package",
         "reference": "NUnit",
@@ -150,6 +153,7 @@
       "id": "addNUnitAnalyzersPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.fsproj" ],
         "referenceType": "package",
         "reference": "NUnit.Analyzers",
@@ -163,6 +167,7 @@
       "id": "addNUnit3TestAdapterPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.fsproj" ],
         "referenceType": "package",
         "reference": "NUnit3TestAdapter",

@@ -310,6 +310,7 @@
       "id": "addCoverletCollectorPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "coverlet.collector",
@@ -324,6 +325,7 @@
       "id": "addMicrosoftPlaywrightMSTestV4PackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "Microsoft.Playwright.MSTest.v4",
@@ -338,6 +340,7 @@
       "id": "addMSTestPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "MSTest",
