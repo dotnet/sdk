@@ -260,6 +260,7 @@
       "id": "addCoverletCollectorPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.vbproj" ],
         "referenceType": "package",
         "reference": "coverlet.collector",
@@ -274,6 +275,7 @@
       "id": "addMSTestPackageReference",
       "continueOnError": true,
       "args": {
+        "noRestore": true,
         "targetFiles": [ "Company.TestProject1.vbproj" ],
         "referenceType": "package",
         "reference": "MSTest",

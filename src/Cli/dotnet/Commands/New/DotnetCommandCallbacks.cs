@@ -13,13 +13,19 @@ namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class DotnetCommandCallbacks
 {
-    internal static bool AddPackageReference(string projectPath, string packageName, string? version)
+    internal static bool AddPackageReference(string projectPath, string packageName, string? version, bool noRestore)
     {
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
 
         var packageAddCommandDef = new PackageAddCommandDefinition();
-        commandArgs = commandArgs.Append(packageAddCommandDef.NoRestoreOption.Name);
+        if (noRestore)
+        {
+            // Skipping the restore also skips the package existence and compatibility check, so
+            // only templates that run their own restore post-action afterwards ask for this.
+            commandArgs = commandArgs.Append(packageAddCommandDef.NoRestoreOption.Name);
+        }
+
         if (!string.IsNullOrWhiteSpace(version))
         {
             commandArgs = commandArgs.Append(packageAddCommandDef.VersionOption.Name).Append(version);

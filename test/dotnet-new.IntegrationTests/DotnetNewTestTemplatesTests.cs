@@ -462,6 +462,53 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
+        [TestMethod]
+        [DataRow("c#", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("c#", "VSTest", "xunit.v3.mtp-off")]
+        [DataRow("f#", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("f#", "VSTest", "xunit.v3.mtp-off")]
+        [DataRow("vb", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("vb", "VSTest", "xunit.v3.mtp-off")]
+        public void XUnitV3Template_WithCentralPackageManagement_OmitsInlinePackageVersions(string language, string testRunner, string expectedPackage)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // Under CPM an inline Version attribute on a PackageReference fails the restore with
+            // NU1008, which is the failure this template conversion exists to remove. xUnit v3 was
+            // the one package set still declared inline in the project template.
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"xunit -n {testProjectName} -o {outputDirectory} -lang {language} --xunit-version v3 --test-runner {testRunner}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string extension = language switch { "f#" => "fsproj", "vb" => "vbproj", _ => "csproj" };
+            string projectFile = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.{extension}"));
+
+            projectFile.Should().Contain($"Include=\"{expectedPackage}\"");
+            projectFile.Should().NotContain($"Include=\"{expectedPackage}\" Version=");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
         {
             var fsproj = Path.Combine(outputDirectory, $"{projectName}.fsproj");
