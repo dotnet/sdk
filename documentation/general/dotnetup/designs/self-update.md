@@ -51,6 +51,9 @@ For `2`, the temporary replacer and process-draining protocol add a handoff with
 For `3`, no separate replacer is needed. The original process can call `File.Replace` against its own canonical path, retain the update locks through verification and rollback, and allow explicitly safe processes such as the telemetry drainer to continue executing their already-loaded image. IDEs or other tools may also invoke unattended updates concurrently; the update lock serializes those callers.
 
 To clarify, this does not mean that updates to dotnetup itself execute concurrently. Racing update commands wait for the update lock, re-evaluate the installed identity after acquiring both locks, and exit successfully when no update remains to apply.
+No-op updates return exit code 0 and report the installed and available versions to
+standard error. The diagnostic states whether no newer build is available or the current
+same-channel version is newer than the available build.
 
 `dotnetup` is easily and quickly re-installed via the script if an outage occurs.
 

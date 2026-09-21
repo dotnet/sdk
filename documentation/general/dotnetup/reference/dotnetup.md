@@ -75,7 +75,9 @@ available; until then, it reports that no stable build is available.
 The command resolves the latest build in the selected channel for the runtime
 identifier and
 reports success without replacing the executable when the installed full version/RID
-already matches. Dotnetup does not persist the channel used to install an
+already matches or when the available build is older on the same semantic channel.
+These no-op results return exit code `0` and write the installed and available versions,
+plus the reason no update was applied, to standard error. Dotnetup does not persist the channel used to install an
 executable, so omitting `--channel` does not infer `preview` or `daily` from the
 running executable.
 See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)

@@ -407,9 +407,9 @@ Or open a new terminal.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateAlreadyUpToDate">
-        <source>Dotnetup is already up to date.</source>
-        <target state="new">Dotnetup is already up to date.</target>
-        <note>{Locked="Dotnetup"}</note>
+        <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</source>
+        <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</target>
+        <note>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateBusyCommand">
         <source>Dotnetup is busy with another command. Try self-update again after that command completes.</source>
@@ -430,6 +430,11 @@ Or open a new terminal.</target>
         <source>Update dotnetup to the latest release in a channel.</source>
         <target state="new">Update dotnetup to the latest release in a channel.</target>
         <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateCurrentVersionNewer">
+        <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</source>
+        <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</target>
+        <note>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateDownloading">
         <source>Downloading dotnetup</source>

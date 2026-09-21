@@ -38,9 +38,20 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
                 SelfUpdateDownloadProgress.Run(_noProgress,
                     progress => downloader.DownloadWithVerification(release, destination, progress));
             });
-        var version = workflow.Execute(invocation.Retain);
-        AnsiConsole.WriteLine(version is null
-            ? Strings.SelfUpdateAlreadyUpToDate
-            : string.Format(CultureInfo.InvariantCulture, Strings.SelfUpdateSucceeded, version));
+        var result = workflow.ExecuteWithResult(invocation.Retain);
+        if (result.WasUpdated)
+        {
+            AnsiConsole.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.SelfUpdateSucceeded, result.AvailableVersion));
+            return;
+        }
+
+        string message = result.InstalledVersion.CompareTo(result.AvailableVersion) > 0
+            ? Strings.SelfUpdateCurrentVersionNewer
+            : Strings.SelfUpdateAlreadyUpToDate;
+        Console.Error.WriteLine(string.Format(
+            CultureInfo.InvariantCulture,
+            message,
+            result.InstalledVersion,
+            result.AvailableVersion));
     }
 }

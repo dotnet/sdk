@@ -27,6 +27,12 @@ internal class SelfUpdateWorkflow
 
     public string? Execute(Action<IDisposable> retainUntilExit)
     {
+        var result = ExecuteWithResult(retainUntilExit);
+        return result.WasUpdated ? result.AvailableVersion.ToString() : null;
+    }
+
+    public SelfUpdateResult ExecuteWithResult(Action<IDisposable> retainUntilExit)
+    {
         ArgumentNullException.ThrowIfNull(retainUntilExit);
         SelfUpdateLockLease? locks = null;
         try
@@ -36,9 +42,10 @@ internal class SelfUpdateWorkflow
 
             try
             {
-                if (!IsUpdateAvailable(SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath), release))
+                var installedVersion = GetInstalledVersion(SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath), release.Rid);
+                if (!IsUpdateAvailable(installedVersion, release.Version))
                 {
-                    return null;
+                    return new SelfUpdateResult(installedVersion, release.Version, WasUpdated: false);
                 }
             }
             catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException)
@@ -51,16 +58,17 @@ internal class SelfUpdateWorkflow
 
             _paths.Validate();
             var originalMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath);
-            if (!IsUpdateAvailable(originalMetadata, release))
+            var originalVersion = GetInstalledVersion(originalMetadata, release.Rid);
+            if (!IsUpdateAvailable(originalVersion, release.Version))
             {
-                return null;
+                return new SelfUpdateResult(originalVersion, release.Version, WasUpdated: false);
             }
 
             StageRelease(release);
             var replacement = new SelfUpdateReplacement(_paths, _paths.CreateBackupPath(), originalMetadata);
             replacement.Replace();
             VerifyOrRestore(replacement);
-            return release.Version.ToString();
+            return new SelfUpdateResult(originalVersion, release.Version, WasUpdated: true);
         }
         catch (InvalidDataException exception)
         {
@@ -79,19 +87,22 @@ internal class SelfUpdateWorkflow
     protected virtual void Verify(string installedPath)
         => SelfUpdateVerifier.Verify(installedPath, TimeSpan.FromSeconds(15));
 
-    private static bool IsUpdateAvailable(string installedMetadata, ResolvedDownload release)
+    private static ReleaseVersion GetInstalledVersion(string installedMetadata, string expectedRid)
     {
         var separator = installedMetadata.IndexOf('|');
         if (separator <= 0 ||
             !ReleaseVersion.TryParse(installedMetadata[..separator], out var installedVersion) ||
-            !string.Equals(installedMetadata[(separator + 1)..], release.Rid, StringComparison.Ordinal))
+            !string.Equals(installedMetadata[(separator + 1)..], expectedRid, StringComparison.Ordinal))
         {
             throw new InvalidDataException("The installed dotnetup version metadata is invalid.");
         }
 
-        return !HasSameSemanticChannel(installedVersion, release.Version) ||
-            release.Version.CompareTo(installedVersion) > 0;
+        return installedVersion;
     }
+
+    private static bool IsUpdateAvailable(ReleaseVersion installedVersion, ReleaseVersion availableVersion)
+        => !HasSameSemanticChannel(installedVersion, availableVersion) ||
+            availableVersion.CompareTo(installedVersion) > 0;
 
     private static bool HasSameSemanticChannel(ReleaseVersion left, ReleaseVersion right)
         => string.Equals(GetSemanticChannel(left), GetSemanticChannel(right), StringComparison.OrdinalIgnoreCase);

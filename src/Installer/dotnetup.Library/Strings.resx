@@ -137,8 +137,12 @@
     <comment>{Locked="dotnetup"} Download progress task description.</comment>
   </data>
   <data name="SelfUpdateAlreadyUpToDate" xml:space="preserve">
-    <value>Dotnetup is already up to date.</value>
-    <comment>{Locked="Dotnetup"}</comment>
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</value>
+    <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateCurrentVersionNewer" xml:space="preserve">
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</value>
+    <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
   </data>
   <data name="SelfUpdateSucceeded" xml:space="preserve">
     <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>
