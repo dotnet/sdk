@@ -19,7 +19,7 @@ and [`CODEOWNERS`](../../CODEOWNERS) is the ownership source of truth.
 | [`build/`](../../build) | Repository-specific build targets and generated-resource support. | Imported from root `Directory.Build.*`. |
 | [`scripts/`](../../scripts) | Repository maintenance and evaluation utilities, including conditional-test selection. | Used by developers, agents, and CI. |
 | [`documentation/`](../../documentation) | Contributor and subsystem documentation. Start with the [Developer Guide](../../documentation/project-docs/developer-guide.md). | Must remain synchronized with product and workflow changes. |
-| [`.github/`](..) | GitHub workflows, agent instructions, agents, skills, and memory. | Guides GitHub automation and AI-assisted development. |
+| [`.github/`](..) | GitHub workflows, agents, skills, and memory. | Guides GitHub automation and AI-assisted development. |
 | [`.azuredevops/`](../../.azuredevops), [`eng/pipelines`](../../eng/pipelines) | Azure DevOps pipeline entry points and shared templates. | Build and submit tests to Helix. |
 | [`benchmarks/`](../../benchmarks) | Performance benchmarks for selected components. | Consumes product projects; not part of routine targeted validation. |
 | `.dotnet/` | Repository-local SDK restored by the build. Invoke `.dotnet/dotnet` (`.dotnet\dotnet.exe` on Windows) when a command should resolve with the repository bootstrap SDK. | Selected by [`global.json`](../../global.json); not a product output or the SDK exercised by product tests. |
@@ -27,6 +27,8 @@ and [`CODEOWNERS`](../../CODEOWNERS) is the ownership source of truth.
 
 Important root files:
 
+- [`AGENTS.md`](../../AGENTS.md): repository-wide agent instructions; nearer `AGENTS.md`
+  files add area-specific guidance.
 - [`build.cmd`](../../build.cmd) / [`build.sh`](../../build.sh): full Arcade build entry points.
 - [`test.cmd`](../../test.cmd) / [`test.sh`](../../test.sh) and
   [`restore.cmd`](../../restore.cmd) / [`restore.sh`](../../restore.sh): thin wrappers
@@ -51,7 +53,7 @@ Important root files:
 | [`src/StaticWebAssetsSdk`](../../src/StaticWebAssetsSdk) | Static web asset discovery, manifests, compression, endpoints, publish, and pack logic. | Integrates Web/Razor/Blazor builds; consumed by redist and SWA tests. |
 | [`src/BlazorWasmSdk`](../../src/BlazorWasmSdk), [`src/WasmSdk`](../../src/WasmSdk) | Blazor WebAssembly and general WebAssembly SDK tasks, targets, and tools. | Integrate runtime/workload packs; consumed by redist and WASM tests. |
 | [`src/Containers`](../../src/Containers) | Container publish tasks, image construction, registry integration, and packaging. | Imported by core `Sdk.targets`; consumed by redist and container tests. |
-| [`src/Dotnet.Watch`](../../src/Dotnet.Watch) | `dotnet watch`, hot reload, browser refresh, and Aspire integration. | Integrates CLI, Roslyn, MSBuild, and ASP.NET assets; bundled by redist. |
+| [`src/Dotnet.Watch`](../../src/Dotnet.Watch) | `dotnet watch`, hot reload, browser-tools provider/forwarding, and Aspire integration. | Integrates CLI, Roslyn, MSBuild, and ASP.NET assets; bundled by redist. |
 | [`src/Dotnet.Format`](../../src/Dotnet.Format) | `dotnet format` command implementation. | Integrates CLI and Roslyn workspaces; bundled by redist. |
 | [`src/Compatibility`](../../src/Compatibility) | ApiCompat, ApiDiff, GenAPI, package validation libraries, tasks, and tools. | Consumes Roslyn/MSBuild; tested under `test/Compatibility`. |
 | [`src/Microsoft.CodeAnalysis.NetAnalyzers`](../../src/Microsoft.CodeAnalysis.NetAnalyzers) | CA analyzers, code fixes, packaging, tests, and documentation generation. | Consumes Roslyn APIs; package is bundled by redist. |

@@ -19,11 +19,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" VersionOverride="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Combinatorial.MSTest" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial" />
     <!-- Test.Utilities defines its own WorkItemAttribute(int, string); alias it so the unqualified
          [WorkItem(...)] usages bind to it instead of MSTest's WorkItemAttribute(int). -->
     <Using Include="Test.Utilities.WorkItemAttribute" Alias="WorkItemAttribute" />

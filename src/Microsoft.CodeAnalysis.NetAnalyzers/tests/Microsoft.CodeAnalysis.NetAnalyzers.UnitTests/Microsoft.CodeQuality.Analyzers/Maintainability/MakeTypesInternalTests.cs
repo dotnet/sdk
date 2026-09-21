@@ -174,7 +174,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 End Class
 
                 Public MustInherit Class MyBaseType
-                End Class 
+                End Class
 
                 Public Structure MyValueType
                 End Structure
@@ -272,7 +272,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [DataRow(OutputKind.WindowsRuntimeMetadata)]
         public Task Records_LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
-            return VerifyCsAsync(outputKind, @"public record Person;");
+            return VerifyCsAsync(outputKind, "public record Person;");
         }
 
         [TestMethod]
@@ -441,7 +441,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 class Program
                 {
                     public static void Main() {}
-                
+
                     public struct [|MyValueType|]
                     {
                         public class [|Nested|] {}
@@ -452,7 +452,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 class Program
                 {
                     public static void Main() {}
-                
+
                     internal struct MyValueType
                     {
                         internal class Nested {}
@@ -464,7 +464,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 Class Program
                     Public Shared Sub Main()
                     End Sub
-                
+
                     Public Structure [|MyValueType|]
                         Public Class [|Nested|]
                         End Class
@@ -475,7 +475,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 Class Program
                     Public Shared Sub Main()
                     End Sub
-                
+
                     Friend Structure MyValueType
                         Friend Class Nested
                         End Class
@@ -493,7 +493,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 class Program
                 {
                     public static void Main() {}
-                
+
                     protected abstract class MyService {}
                 }
                 """);
@@ -502,7 +502,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 Class Program
                     Public Shared Sub Main()
                     End Sub
-                
+
                     Protected MustInherit Class MyService
                     End Class
                 End Class
@@ -518,7 +518,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 public delegate int GetValue(string s);
                 public delegate void Print(object x);
                 public delegate bool Match();
-
                 """);
 
             await VerifyVbAsync(outputKind,
@@ -528,7 +527,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 Public Delegate Function GetValue(s As String) As Int32
                 Public Delegate Sub Print(x As Object)
                 Public Delegate Function Match() As Boolean
-
                 """);
         }
 

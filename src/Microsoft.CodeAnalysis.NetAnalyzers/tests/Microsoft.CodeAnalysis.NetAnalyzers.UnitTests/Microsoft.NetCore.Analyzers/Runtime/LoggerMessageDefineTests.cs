@@ -20,9 +20,9 @@ namespace Microsoft.Extensions.Logging.Analyzer
     public class LoggerMessageDefineTests
     {
         [TestMethod]
-        [DynamicData(nameof(GenerateTemplateAndDefineUsages), @"{|CA2253:""{0}""|}", "1")]
-        [DataRow(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, 1)|};")]
-        [DataRow(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, ""1"")|};")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsages), """"{|CA2253:"{0}"|}"""", "1")]
+        [DataRow(""""{|CA1848:logger.LogTrace({|CA2253:"{0}"|}, 1)|};"""")]
+        [DataRow(""""{|CA1848:logger.LogTrace({|CA2253:"{0}"|}, "1")|};"""")]
         public async Task CA2253IsProducedForNumericFormatArgumentAsync(string format)
         {
             // Make sure CA1727 is enabled for this test so we can verify it does not trigger on numeric arguments.
@@ -36,36 +36,36 @@ namespace Microsoft.Extensions.Logging.Analyzer
         }
 
         [TestMethod]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{new System.Exception().Message}""|}", "11", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2254:""string"" + 2|}", "11", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2254:$"{new System.Exception().Message}"|}"""", "11", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2254:$"{string.Empty}"|}"""", "11", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2254:"string" + 2|}"""", "11", false)]
         public async Task CA2254IsProducedForDynamicFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [TestMethod]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:""""|}", "1", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", "1", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", "new object[] { 1 }", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{string}""|}|}", "1, 2", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{string}""|}|}", "new object[] { 1 }, new object[] { 2 }", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", "1, 2", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", "", true)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", "", true)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{string}""|}|}", 2)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:""""|}", 1)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:{|CA1727:""{string} {string}""|}|}|}", 1)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", 0)]
-        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", 0)]
+        [DynamicData(nameof(GenerateTemplateUsages), """""{|CA2017:""|}""""", "1", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:{|CA1727:"{string} {string}"|}|}|}"""", "1", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:{|CA1727:"{string} {string}"|}|}|}"""", "new object[] { 1 }", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:"{string}"|}|}"""", "1, 2", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:"{string}"|}|}"""", "new object[] { 1 }, new object[] { 2 }", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:"{str" + "ing}"|}|}"""", "1, 2", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:"{" + nameof(ILogger) + "}"|}"""", "", true)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA2017:{|CA1727:"{" + Const + "}"|}|}"""", "", true)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """"{|CA2017:{|CA1727:"{string}"|}|}"""", 2)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """"{|CA2017:{|CA1727:"{str" + "ing}"|}|}"""", 2)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """""{|CA2017:""|}""""", 1)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """"{|CA2017:{|CA1727:{|CA1727:"{string} {string}"|}|}|}"""", 1)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """"{|CA2017:"{" + nameof(ILogger) + "}"|}"""", 0)]
+        [DynamicData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), """"{|CA2017:{|CA1727:"{" + Const + "}"|}|}"""", 0)]
         public async Task CA2017IsProducedForFormatArgumentCountMismatchAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [TestMethod]
-        [DynamicData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsages), """"{|CA1727:"{camelCase}"|}"""", "1")]
         public async Task CA1727IsProducedForCamelCasedFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
@@ -73,37 +73,37 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         [TestMethod]
         // Concat would be optimized by compiler
-        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @"nameof(ILogger) + "" string""", "")]
-        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @""" string"" + "" string""", "")]
-        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @"$"" string"" + $"" string""", "")]
-        [DynamicData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{st"" + ""ring}""|}", "1")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), "nameof(ILogger) + \" string\"", "")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), "\" string\" + \" string\"", "")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), "$\" string\" + $\" string\"", "")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsages), """"{|CA1727:"{st" + "ring}"|}"""", "1")]
 
         // we are unable to parse expressions
-        [DynamicData(nameof(GenerateTemplateArrayUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}", "1", false)]
-        [DynamicData(nameof(GenerateDefineUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}")]
+        [DynamicData(nameof(GenerateTemplateArrayUsages), """"{|CA1727:{|CA1727:"{string} {string}"|}|}"""", "1", false)]
+        [DynamicData(nameof(GenerateDefineUsages), """"{|CA1727:{|CA1727:"{string} {string}"|}|}"""")]
 
         // correct number of arguments
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA1727:""{string}""|}", "1", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}", "1, 2", false)]
-        [DynamicData(nameof(GenerateTemplateUsages), @"{|CA1727:{|CA1727:""{string} {string}""|}|}", "new object[] { 1, 2 }", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA1727:"{string}"|}"""", "1", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA1727:{|CA1727:"{string} {string}"|}|}"""", "1, 2", false)]
+        [DynamicData(nameof(GenerateTemplateUsages), """"{|CA1727:{|CA1727:"{string} {string}"|}|}"""", "new object[] { 1, 2 }", false)]
 
         // CA2253 is not enabled by default.
-        [DynamicData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
+        [DynamicData(nameof(GenerateTemplateAndDefineUsages), """"{|CA1727:"{camelCase}"|}"""", "1")]
         public async Task TemplateDiagnosticsAreNotProducedAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [TestMethod]
-        [DataRow(@"LoggerMessage.Define(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {}""|});")]
-        [DataRow(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two}""|});")]
-        [DataRow(@"LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int, int>({|CA2017:""{One} {Two} {Three}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int, int, int>({|CA2017:""{One} {Two}""|});")]
+        [DataRow(""""LoggerMessage.Define(LogLevel.Information, 42, {|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:"{One} {}"|});"""")]
+        [DataRow(""""LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2017:"{One} {Two}"|});"""")]
+        [DataRow(""""LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int, int>({|CA2017:"{One} {Two} {Three}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int, int, int>({|CA2017:"{One} {Two}"|});"""")]
         public async Task CA2017IsProducedForDefineMessageTypeParameterMismatchAsync(string expression)
         {
             await TriggerCodeAsync(expression);
@@ -111,16 +111,16 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         [TestMethod]
         [WorkItem(7285, "https://github.com/dotnet/roslyn-analyzers/issues/7285")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{{One}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""}{One}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{One{Two}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{One}{""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{One}}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{{{One}}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""}}{One}}""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""{{{One}{""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int>({|CA2023:""}}{One}{""|});")]
-        [DataRow(@"LoggerMessage.DefineScope<int, int>({|CA2023:""}}{One} {Two}{""|});")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{{One}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"}{One}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{One{Two}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{One}{"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{One}}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{{{One}}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"}}{One}}"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"{{{One}{"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int>({|CA2023:"}}{One}{"|});"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int, int>({|CA2023:"}}{One} {Two}{"|});"""")]
         public async Task CA2023IsProducedWhenBracesAreInvalid(string format)
         {
             await TriggerCodeAsync(format);
@@ -142,25 +142,25 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         [TestMethod]
         [WorkItem(7285, "https://github.com/dotnet/roslyn-analyzers/issues/7285")]
-        [DataRow(@"LoggerMessage.DefineScope<int>(""Some logged value: {One}}} with an escaped brace"");")]
-        [DataRow(@"LoggerMessage.DefineScope<int, int>(""}}Some logged value: {One}}} with an {Two}{{ escaped brace"");")]
-        [DataRow(@"LoggerMessage.DefineScope<int, int>(""{{Some logged {{value: {One}}} with an {Two}{{{{ escaped brace{{}}"");")]
+        [DataRow(""""LoggerMessage.DefineScope<int>("Some logged value: {One}}} with an escaped brace");"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int, int>("}}Some logged value: {One}}} with an {Two}{{ escaped brace");"""")]
+        [DataRow(""""LoggerMessage.DefineScope<int, int>("{{Some logged {{value: {One}}} with an {Two}{{{{ escaped brace{{}}");"""")]
         public async Task CA2023IsNotProducedWhenBracesAreEscapedAndOtherwiseValid(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [TestMethod]
-        [DataRow("LogTrace", @"""This is a test {Message}""")]
-        [DataRow("LogDebug", @"""This is a test {Message}""")]
-        [DataRow("LogInformation", @"""This is a test {Message}""")]
-        [DataRow("LogWarning", @"""This is a test {Message}""")]
-        [DataRow("LogError", @"""This is a test {Message}""")]
-        [DataRow("LogCritical", @"""This is a test {Message}""")]
-        [DataRow("BeginScope", @"""This is a test {Message}""")]
+        [DataRow("LogTrace", "\"This is a test {Message}\"")]
+        [DataRow("LogDebug", "\"This is a test {Message}\"")]
+        [DataRow("LogInformation", "\"This is a test {Message}\"")]
+        [DataRow("LogWarning", "\"This is a test {Message}\"")]
+        [DataRow("LogError", "\"This is a test {Message}\"")]
+        [DataRow("LogCritical", "\"This is a test {Message}\"")]
+        [DataRow("BeginScope", "\"This is a test {Message}\"")]
         public async Task CA1848IsProducedForInvocationsOfAllLoggerExtensionsAsync(string method, string template)
         {
-            var expression = @$"{{|CA1848:logger.{method}({template},""Foo"")|}};";
+            var expression = $$""""{|CA1848:logger.{{method}}({{template}},"Foo")|};"""";
             await TriggerCodeAsync(expression);
         }
 
@@ -262,17 +262,18 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         private async Task TriggerCodeAsync(string expression)
         {
-            string code = @$"
-using Microsoft.Extensions.Logging;
-public class Program
-{{
-    public const string Const = ""const"";
-    public static void Main()
-    {{
-        ILogger logger = null;
-        {expression}
-    }}
-}}";
+            string code = $$"""
+                using Microsoft.Extensions.Logging;
+                public class Program
+                {
+                    public const string Const = "const";
+                    public static void Main()
+                    {
+                        ILogger logger = null;
+                        {{expression}}
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,

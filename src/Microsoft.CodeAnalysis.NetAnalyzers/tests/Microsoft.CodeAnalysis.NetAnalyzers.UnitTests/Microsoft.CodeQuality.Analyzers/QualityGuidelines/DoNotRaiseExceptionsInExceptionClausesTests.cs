@@ -18,32 +18,34 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpSimpleCaseAsync()
         {
-            var code = @"
-using System;
+            var code = """
 
-public class Test
-{
-    public void Method()
-    {
-        try
-        {
-            throw new Exception();
-        }
-        catch (ArgumentException e)
-        {
-            throw new Exception();
-        }
-        catch
-        {
-            throw new Exception();
-        }
-        finally
-        {
-            throw new Exception();
-        }
-    }
-}
-";
+                using System;
+
+                public class Test
+                {
+                    public void Method()
+                    {
+                        try
+                        {
+                            throw new Exception();
+                        }
+                        catch (ArgumentException e)
+                        {
+                            throw new Exception();
+                        }
+                        catch
+                        {
+                            throw new Exception();
+                        }
+                        finally
+                        {
+                            throw new Exception();
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(22, 13));
         }
@@ -51,23 +53,25 @@ public class Test
         [TestMethod]
         public async Task BasicSimpleCaseAsync()
         {
-            var code = @"
-Imports System
+            var code = """
 
-Public Class Test
-    Public Sub Method()
-        Try
-            Throw New Exception()
-        Catch e As ArgumentException
-            Throw New Exception()
-        Catch
-            Throw New Exception()
-        Finally
-            Throw New Exception()
-        End Try
-    End Sub
-End Class
-";
+                Imports System
+
+                Public Class Test
+                    Public Sub Method()
+                        Try
+                            Throw New Exception()
+                        Catch e As ArgumentException
+                            Throw New Exception()
+                        Catch
+                            Throw New Exception()
+                        Finally
+                            Throw New Exception()
+                        End Try
+                    End Sub
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicResultAt(13, 13));
         }
@@ -75,35 +79,37 @@ End Class
         [TestMethod]
         public async Task CSharpNestedFinallyAsync()
         {
-            var code = @"
-using System;
+            var code = """
 
-public class Test
-{
-    public static void Main()
-    {
-        try
-        {
-        }
-        finally
-        {
-            try
-            {
-                throw new Exception();
-            }
-            catch 
-            {
-                throw new Exception();
-            }
-            finally
-            {
-                throw new Exception();
-            }
-            throw new Exception();
-        }
-    }
-}
-";
+                using System;
+
+                public class Test
+                {
+                    public static void Main()
+                    {
+                        try
+                        {
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                throw new Exception();
+                            }
+                            catch
+                            {
+                                throw new Exception();
+                            }
+                            finally
+                            {
+                                throw new Exception();
+                            }
+                            throw new Exception();
+                        }
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(15, 17),
                 GetCSharpResultAt(19, 17),
@@ -114,25 +120,27 @@ public class Test
         [TestMethod]
         public async Task BasicNestedFinallyAsync()
         {
-            var code = @"
-Imports System
+            var code = """
 
-Public Class Test
-    Public Sub Method()
-        Try
-        Finally
-            Try
-                Throw New Exception()
-            Catch
-                Throw New Exception()
-            Finally
-                Throw New Exception()
-            End Try
-            Throw New Exception()
-        End Try
-    End Sub
-End Class
-";
+                Imports System
+
+                Public Class Test
+                    Public Sub Method()
+                        Try
+                        Finally
+                            Try
+                                Throw New Exception()
+                            Catch
+                                Throw New Exception()
+                            Finally
+                                Throw New Exception()
+                            End Try
+                            Throw New Exception()
+                        End Try
+                    End Sub
+                End Class
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicResultAt(9, 17),
                 GetBasicResultAt(11, 17),

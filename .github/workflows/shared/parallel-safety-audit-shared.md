@@ -820,12 +820,32 @@ everything except "literal passed straight into a mutating FS call" is yours:**
   analyzer: follow the path through a helper method, a `const`, a base-class
   fixture field, or a `.runsettings`/config value, and decide whether two tests
   can actually collide on it. **Do this work — it is the value proposition.**
-  In this repository the fixture to trace is `TestAssetsManager`: its
-  `CreateTestDirectory` / `CopyTestAsset` / `CreateTestProject` helpers key the
-  scratch directory off the **calling method name** plus an optional `identifier`,
-  so two tests that share a name or omit a distinguishing `identifier` land in the
-  **same** directory. That is the repository's characteristic collision, and it is
-  exactly the kind an analyzer cannot see.
+  In this repository the fixture to trace is
+  [`TestAssetsManager`](../../../test/Microsoft.NET.TestFramework/TestAssetsManager.cs).
+  Check the specific API:
+  - `CreateTestDirectory` keys the scratch directory off the **calling method name,
+    source file name without its extension, and optional `identifier`**. Direct
+    calls from files with different names are distinguished even when the test
+    method names match. The full source path is not part of the key, so matching
+    file names in different directories can still collide.
+  - `CopyTestAsset` also includes the caller's source file name, along with the
+    method name, identifier, and test project name. `CreateTestProject` uses the
+    method name, identifier, and test project name **without caller file identity**.
+    An explicitly supplied destination can bypass generated naming.
+  - Caller attributes capture the **immediate caller**, not the originating test.
+    A shared wrapper must capture and forward `[CallerMemberName]` and
+    `[CallerFilePath]` to `CreateTestDirectory`; otherwise different test classes
+    can still converge on the wrapper's name and file with the same identifier.
+    Check each layer of the call chain and distinguish this from same-file private
+    helpers that already preserve the required identity.
+  - Data rows or multiple directories from the same caller still need distinct
+    identifiers. `GetTestDestinationDirectoryPath` shortens long names with a hash;
+    that does not disambiguate identical inputs. Its `CI_BUILD` existing-directory
+    suffix is not atomic reservation and must not be treated as parallel isolation.
+  Trace the inputs through to
+  [`TestDirectory.EnsureExistsAndEmpty`](../../../test/Microsoft.NET.TestFramework/TestDirectory.cs),
+  which can delete an existing directory, and identify the second concurrently
+  runnable caller before reporting a collision.
 - Hardcoded absolute literals (`"C:\\temp\\x.txt"`, `"/tmp/foo"`,
   `@"C:\build\out"`) written by more than one test. When the literal is passed
   *straight* into a mutating `File.*`/`Directory.*` call, note that MSTEST0077
@@ -841,9 +861,12 @@ same path, do **not** report it at all — not even at Info. An unproven collisi
 is the false positive that narrowed MSTEST0077 in the first place; silence is the
 correct output.
 
-→ **Fix:** prefer **elimination** — give each test its own directory. In this
-repository that means a distinct `identifier:` argument to the `TestAssetsManager`
-helper, which is the idiomatic fix and should be your first recommendation.
+→ **Fix:** prefer **elimination** — give each test its own directory. For a shared
+wrapper that loses caller identity, capture and forward both caller attributes
+through the wrapper first. Use a distinct `identifier:` argument to the
+`TestAssetsManager` helper for data rows or multiple directories from the same
+caller; do not require class identifiers for direct calls already distinguished
+by their source file names.
 `TestContext.TestTempDirectory` (a per-test unique directory, created lazily on
 first access) is the framework-level equivalent. A resource each test *owns* needs
 no coordination at all. Two caveats, both of which make an unconditional

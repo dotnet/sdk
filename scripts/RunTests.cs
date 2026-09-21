@@ -50,12 +50,26 @@ Option<bool> skipRedistCheckOption = new("--skip-redist-check")
 {
     Description = "Allow tests that do not exercise the assembled SDK to run without a redist layout."
 };
+Option<int> repeatOption = new("--repeat")
+{
+    Arity = ArgumentArity.ExactlyOne,
+    DefaultValueFactory = _ => 1,
+    Description = "Run the selected tests N times after building the project once."
+};
+repeatOption.Validators.Add(optionResult =>
+{
+    if (optionResult.GetValueOrDefault<int>() < 1)
+    {
+        optionResult.AddError("--repeat must be at least 1.");
+    }
+});
 
 rootCommand.Options.Add(projectOption);
 rootCommand.Options.Add(filterOption);
 rootCommand.Options.Add(configurationOption);
 rootCommand.Options.Add(frameworkOption);
 rootCommand.Options.Add(skipRedistCheckOption);
+rootCommand.Options.Add(repeatOption);
 
 rootCommand.SetAction((parseResult, cancellationToken) => RunAsync(
     parseResult.GetValue(projectOption)!,
@@ -63,6 +77,7 @@ rootCommand.SetAction((parseResult, cancellationToken) => RunAsync(
     parseResult.GetValue(configurationOption)!,
     parseResult.GetValue(frameworkOption),
     parseResult.GetValue(skipRedistCheckOption),
+    parseResult.GetValue(repeatOption),
     cancellationToken));
 
 return await rootCommand
@@ -75,6 +90,7 @@ static async Task<int> RunAsync(
     string configuration,
     string? framework,
     bool skipRedistCheck,
+    int repeat,
     CancellationToken cancellationToken)
 {
     cancellationToken.ThrowIfCancellationRequested();
@@ -241,28 +257,65 @@ static async Task<int> RunAsync(
         return exitCode;
     }
 
-    TestInvocation invocation = CreateTestInvocation(
-        dotnetPath,
-        projectProperties,
-        runDirectory,
-        filter);
     Console.WriteLine($"Project: {relativeProjectPath}");
     Console.WriteLine($"Framework: {framework}");
     Console.WriteLine($"Run directory: {Path.GetRelativePath(repoRoot, runDirectory)}");
-    Console.WriteLine($"Command: {FormatCommand(invocation.Executable, invocation.Arguments, repoRoot)}");
-    Console.WriteLine();
 
-    int testExitCode = await RunProcess(
-        invocation.Executable,
-        invocation.Arguments,
-        repoRoot,
-        cancellationToken);
-    return ReportTestResult(
-        testExitCode,
-        repoRoot,
-        trxPath,
-        binlogPath,
-        rerunCommand);
+    int aggregateExitCode = 0;
+    var durations = new List<TimeSpan>(repeat);
+    for (int iteration = 1; iteration <= repeat; iteration++)
+    {
+        string iterationDirectory = repeat == 1
+            ? runDirectory
+            : Path.Combine(runDirectory, $"run-{iteration:D2}");
+        Directory.CreateDirectory(iterationDirectory);
+        string iterationTrxPath = Path.Combine(iterationDirectory, "test-results.trx");
+        TestInvocation invocation = CreateTestInvocation(
+            dotnetPath,
+            projectProperties,
+            iterationDirectory,
+            filter);
+
+        if (repeat > 1)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Iteration {iteration}/{repeat}");
+        }
+        Console.WriteLine($"Command: {FormatCommand(invocation.Executable, invocation.Arguments, repoRoot)}");
+        Console.WriteLine();
+
+        var stopwatch = Stopwatch.StartNew();
+        int testExitCode = await RunProcess(
+            invocation.Executable,
+            invocation.Arguments,
+            repoRoot,
+            cancellationToken);
+        stopwatch.Stop();
+        durations.Add(stopwatch.Elapsed);
+
+        int reportedExitCode = ReportTestResult(
+            testExitCode,
+            repoRoot,
+            iterationTrxPath,
+            binlogPath,
+            rerunCommand);
+        if (aggregateExitCode == 0 && reportedExitCode != 0)
+        {
+            aggregateExitCode = reportedExitCode;
+        }
+    }
+
+    if (repeat > 1)
+    {
+        Console.WriteLine();
+        Console.WriteLine(
+            $"Repeat summary: {repeat} runs, "
+            + $"mean {durations.Average(duration => duration.TotalSeconds):F3}s, "
+            + $"min {durations.Min().TotalSeconds:F3}s, "
+            + $"max {durations.Max().TotalSeconds:F3}s.");
+    }
+
+    return aggregateExitCode;
 }
 
 static async Task<int> BuildTestProject(

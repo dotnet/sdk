@@ -814,7 +814,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/45148")]
         [DataRow("netcoreapp3.1", ".NET Core 3.1")]
         [DataRow("netcoreapp2.1", ".NET Core 2.1")]
         [DataRow("netstandard2.1", ".NET Standard 2.1")]

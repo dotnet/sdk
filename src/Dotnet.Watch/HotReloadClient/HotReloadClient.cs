@@ -53,8 +53,9 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// <summary>
     /// Initiates connection with the agent in the target process.
     /// </summary>
+    /// <param name="environmentVariables">Environment variable to be set by the agent in the target process.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public abstract void InitiateConnection(CancellationToken cancellationToken);
+    public abstract void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken);
 
     /// <summary>
     /// Waits until the connection with the agent is established.

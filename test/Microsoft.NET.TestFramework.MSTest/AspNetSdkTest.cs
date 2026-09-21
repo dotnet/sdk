@@ -35,10 +35,11 @@ public abstract class AspNetSdkTest : SdkTest
         [CallerMemberName] string callerName = "",
         string subdirectory = "",
         string? overrideTfm = null,
-        string? identifier = null)
+        string? identifier = null,
+        [CallerFilePath] string? callerFilePath = null)
     {
         var projectDirectory = TestAssetsManager
-            .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
+            .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
             .WithSource()
             .WithProjectChanges(project =>
             {
@@ -71,10 +72,11 @@ public abstract class AspNetSdkTest : SdkTest
         [CallerMemberName] string callerName = "",
         string subdirectory = "",
         string? overrideTfm = null,
-        string? identifier = null)
+        string? identifier = null,
+        [CallerFilePath] string? callerFilePath = null)
     {
         var projectDirectory = TestAssetsManager
-            .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
+            .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
             .WithSource()
             .WithProjectChanges(project =>
             {

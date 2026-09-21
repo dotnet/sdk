@@ -27,80 +27,86 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedNamespaceContainingPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace @namespace
-{
-    public class C {}
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                namespace @namespace
+                {
+                    public class C {}
+                }
+
+                """,
                 GetCSharpResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "namespace", "namespace"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedNamespaceContainingPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace [Namespace]
-    Public Class C
-    End Class
-End Namespace
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Namespace [Namespace]
+                    Public Class C
+                    End Class
+                End Namespace
+
+                """,
             GetBasicResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "Namespace", "Namespace"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace namespace2
-{
-    public class C {}
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace namespace2
+                {
+                    public class C {}
+                }
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace Namespace2
-    Public Class C
-    End Class
-End Namespace
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Namespace Namespace2
+                    Public Class C
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedNamespaceContainingInternalClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace @namespace
-{
-    internal class C {}
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace @namespace
+                {
+                    internal class C {}
+                }
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedNamespaceContainingInternalClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace [Namespace]
-    Friend Class C
-    End Class
-End Namespace
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Namespace [Namespace]
+                    Friend Class C
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace N1.@namespace.N2.@for.N3
-{
-    public class C {}
-}
-",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                namespace N1.@namespace.N2.@for.N3
+                {
+                    public class C {}
+                }
+
+                """,
                 GetCSharpResultAt(2, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "N1.namespace.N2.for.N3", "namespace"),
                 GetCSharpResultAt(2, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "N1.namespace.N2.for.N3", "for"));
         }
@@ -108,12 +114,14 @@ namespace N1.@namespace.N2.@for.N3
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace N1.[Namespace].N2.[For].N3
-    Public Class C
-    End Class
-End Namespace
-",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Namespace N1.[Namespace].N2.[For].N3
+                    Public Class C
+                    End Class
+                End Namespace
+
+                """,
                 GetBasicResultAt(2, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "N1.Namespace.N2.For.N3", "Namespace"),
                 GetBasicResultAt(2, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "N1.Namespace.N2.For.N3", "For"));
         }
@@ -121,33 +129,35 @@ End Namespace
         [TestMethod]
         public async Task CSharpNoDiagnosticForPublicClassInGlobalNamespaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C {}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C {}
+                """);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForPublicClassInGlobalNamespaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace @namespace
-{
-    public class C {}
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace @namespace
-{
-    public class D {}
-}",
+                namespace @namespace
+                {
+                    public class C {}
+                }
+
+                namespace @namespace
+                {
+                    public class D {}
+                }
+                """,
                 // Diagnostic for only one of the two occurrences.
                 VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
                     .WithSpan(2, 11, 2, 21)
@@ -158,17 +168,19 @@ namespace @namespace
         [TestMethod]
         public async Task BasicNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace [Namespace]
-    Public Class C
-    End Class
-End Namespace
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace [Namespace]
-    Public Class D
-    End Class
-End Namespace
-",
+                Namespace [Namespace]
+                    Public Class C
+                    End Class
+                End Namespace
+
+                Namespace [Namespace]
+                    Public Class D
+                    End Class
+                End Namespace
+
+                """,
                 VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
                     .WithSpan(2, 11, 2, 22)
                     .WithSpan(7, 11, 7, 22)
@@ -188,18 +200,19 @@ End Namespace
                 {
                     Sources =
                     {
-                        @"
-namespace @namespace
-{
-    public class C {}
-}
-",
+                        """
+                            namespace @namespace
+                            {
+                                public class C {}
+                            }
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -209,17 +222,19 @@ namespace @namespace
                 {
                     Sources =
                     {
-                        @"
-Namespace [Namespace]
-    Public Class C
-    End Class
-End Namespace",
+                        """
+                            Namespace [Namespace]
+                                Public Class C
+                                End Class
+                            End Namespace
+                            """,
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -237,18 +252,22 @@ End Namespace",
                 {
                     Sources =
                     {
-                        @"
-namespace @namespace
-{
-    public class C {}
-}
-",
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                            namespace @namespace
+                            {
+                                public class C {}
+                            }
+
+                            """,
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics = { GetCSharpResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "namespace", "namespace"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -259,17 +278,21 @@ namespace @namespace
                 {
                     Sources =
                     {
-                        @"
-Namespace [Namespace]
-    Public Class C
-    End Class
-End Namespace",
-            },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                            Namespace [Namespace]
+                                Public Class C
+                                End Class
+                            End Namespace
+                            """,
+            },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics = { GetBasicResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "Namespace", "Namespace"), },
                 },
             }.RunAsync(CancellationToken.None);

@@ -59,7 +59,7 @@ jobs:
       - name: Evaluate comment command
         id: command-filter
         if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
@@ -73,7 +73,7 @@ jobs:
 
       - name: Ensure commenter is trusted
         if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -103,7 +103,7 @@ jobs:
 
       - name: React to comment
         if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -132,7 +132,7 @@ jobs:
 
       - name: Resolve PR metadata
         id: resolve
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           SHOULD_RUN: ${{ steps.command-filter.outputs.should_run }}
           DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -194,7 +194,7 @@ jobs:
 
     steps:
       - name: Check out workflow scripts
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: ${{ github.workflow_sha }}
@@ -249,7 +249,7 @@ jobs:
 
       - name: Upload size report
         if: steps.report.outputs.has_report == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: size-report
           path: ${{ steps.report.outputs.report_file }}
@@ -268,13 +268,13 @@ jobs:
 
     steps:
       - name: Download size report
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: size-report
           path: ${{ runner.temp }}
 
       - name: Post or update PR comment
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           REPORT_FILE: ${{ runner.temp }}/size-report.md
         with:
@@ -318,7 +318,7 @@ jobs:
 
       - name: Post failure notice
         if: failure() && (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment')
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           RUN_URL: ${{ format('https://github.com/{0}/actions/runs/{1}', github.repository, github.run_id) }}
         with:

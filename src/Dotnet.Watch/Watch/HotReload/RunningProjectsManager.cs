@@ -70,7 +70,13 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
         // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
         // and then start the process (named pipe client). Otherwise, the connection would fail.
-        clients.InitiateConnection(processCommunicationCancellationToken);
+        //
+        // Send project defined environment variables through RPC to avoid leaking potentially sensitive data.
+        // On Linux the command line of a process can be read by other users via `/proc/<pid>/cmdline`.
+        // Only environment variables that are necessary to establish communication with the agent are passed through command line (`-e` switch).
+        // The agent variables can't be set directly on `dotnet run` process as Hot Reload should not be enabled for that process. 
+        // Other variables are not set directly either to avoid leakage to `dotnet build` or other processes that `dotnet run` might execute.
+        clients.InitiateConnection(projectOptions.LaunchEnvironmentVariables, processCommunicationCancellationToken);
 
         RunningProject? publishedRunningProject = null;
 
@@ -242,6 +248,10 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         CancellationToken cancellationToken)
     {
         var applyTasks = new List<Task>();
+
+        // Tracked separately so that a browser or target process that reports a failed apply
+        // prevents dotnet-watch from reporting the changes as applied.
+        var managedCodeApplyTasks = new List<Task<bool>>();
         ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate = [];
 
         IReadOnlyList<RestartOperation> relaunchOperations;
@@ -308,7 +318,9 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                         applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                         cancellationToken);
 
-                    applyTasks.Add(runningProject.CompleteApplyOperationAsync(applyTask));
+                    var managedCodeApplyTask = runningProject.CompleteApplyOperationAsync(applyTask);
+                    applyTasks.Add(managedCodeApplyTask);
+                    managedCodeApplyTasks.Add(managedCodeApplyTask);
                 }
             }
         }
@@ -339,7 +351,12 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
                 var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-                if (builder.ManagedCodeUpdates.Count > 0)
+                // A client that could not apply the updates fails its apply task. Reporting the changes as
+                // applied in that case is a false positive, both in the console and on the notification
+                // channel that Aspire surfaces as a successful Hot Reload.
+                var managedCodeApplied = managedCodeApplyTasks.TrueForAll(static task => task.Result);
+
+                if (builder.ManagedCodeUpdates.Count > 0 && managedCodeApplied)
                 {
                     logger.Log(MessageDescriptor.ManagedCodeChangesApplied, elapsedMilliseconds);
                 }
@@ -349,9 +366,15 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                     logger.Log(MessageDescriptor.StaticAssetsChangesApplied, elapsedMilliseconds);
                 }
 
-                logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification,
-                    projectsToUpdate.Select(e => e.Value.First().Options.Representation).Concat(
-                        builder.StaticAssetUpdates.Select(e => e.Key.Options.Representation)).Distinct());
+                var updatedProjects = (managedCodeApplied ? projectsToUpdate.Select(e => e.Value.First().Options.Representation) : [])
+                    .Concat(builder.StaticAssetUpdates.Select(e => e.Key.Options.Representation))
+                    .Distinct()
+                    .ToArray();
+
+                if (updatedProjects is not [])
+                {
+                    logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification, updatedProjects);
+                }
             }
             catch (OperationCanceledException)
             {
