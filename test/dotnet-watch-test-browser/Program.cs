@@ -37,25 +37,37 @@ var encryptedSecret = GetEncryptedSecret(publicKey, secret);
 
 while (true)
 {
-    using var webSocket = await OpenWebSocket(origin, webSocketUrl, encryptedSecret);
-
-    while (await TryReceiveMessageAsync(webSocket, message =>
+    WebSocket webSocket;
+    try
     {
-        var text = Encoding.UTF8.GetString(message);
+        webSocket = await OpenWebSocket(origin, webSocketUrl, encryptedSecret);
+    }
+    catch (Exception e) when (e is not OperationCanceledException)
+    {
+        Log($"Error connecting to '{webSocketUrl}': {e.Message}");
+        return -1;
+    }
 
-        // The provider replays the current snapshot as part of the connection handshake and only
-        // releases live messages on this connection once the browser acknowledges it. Report it
-        // separately so that 'Received' keeps meaning 'live message'.
-        if (TryGetSessionInitializationUpdateCount(text, out var updateCount))
+    using (webSocket)
+    {
+        while (await TryReceiveMessageAsync(webSocket, message =>
         {
-            Log($"Session initialized with {updateCount} update(s).");
-            return true;
-        }
+            var text = Encoding.UTF8.GetString(message);
 
-        Log($"Received: {text}");
-        return RequiresAcknowledgement(text);
-    }))
-    {
+            // The provider replays the current snapshot as part of the connection handshake and only
+            // releases live messages on this connection once the browser acknowledges it. Report it
+            // separately so that 'Received' keeps meaning 'live message'.
+            if (TryGetSessionInitializationUpdateCount(text, out var updateCount))
+            {
+                Log($"Session initialized with {updateCount} update(s).");
+                return true;
+            }
+
+            Log($"Received: {text}");
+            return RequiresAcknowledgement(text);
+        }))
+        {
+        }
     }
 
     await WaitForApplicationAsync(configUrl);

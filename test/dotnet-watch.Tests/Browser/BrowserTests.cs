@@ -62,7 +62,7 @@ public class BrowserTests : DotNetWatchTestBase
         App.Start(testAsset, ["--urls", kestrelUrl], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
         // Verify that the connection has been rejected:
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{browserUrl}'.");
 
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
@@ -87,7 +87,7 @@ public class BrowserTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the browser has been launched.
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{kestrelUrl}'.");
 
         // Verify the browser connected to the refresh server.
