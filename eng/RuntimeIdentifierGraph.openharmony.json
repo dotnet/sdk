@@ -4625,7 +4625,11 @@
         "win8-x86-aot"
       ]
     },
-    "openharmony": {},
+    "openharmony": {
+      "#import": [
+        "any"
+      ]
+    },
     "openharmony-arm": {
       "#import": [
         "openharmony"

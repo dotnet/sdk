@@ -472,7 +472,11 @@
         "win"
       ]
     },
-    "openharmony": {},
+    "openharmony": {
+      "#import": [
+        "any"
+      ]
+    },
     "openharmony-arm": {
       "#import": [
         "openharmony"
