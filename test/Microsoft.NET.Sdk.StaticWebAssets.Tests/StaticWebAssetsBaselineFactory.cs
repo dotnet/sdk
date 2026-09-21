@@ -161,8 +161,12 @@ public partial class StaticWebAssetsBaselineFactory
                 switch (property.Name)
                 {
                     case "fingerprint":
+                        var fingerprint = property.Value;
                         property.Value = "__fingerprint__";
-                        endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
+                        if (!string.IsNullOrEmpty(fingerprint))
+                        {
+                            endpoint.Route = endpoint.Route.Replace($".{fingerprint}.", $".__{property.Name}__.");
+                        }
                         break;
                     case "integrity":
                         property.Value = "__integrity__";
