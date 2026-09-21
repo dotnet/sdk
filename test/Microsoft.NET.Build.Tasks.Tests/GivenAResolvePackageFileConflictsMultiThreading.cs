@@ -8,7 +8,6 @@ using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 [TestClass]
-[DoNotParallelize]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
     private readonly string _originalCwd = Directory.GetCurrentDirectory();
@@ -27,6 +26,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// CWD: if path resolution were CWD-based, the task would log CouldNotLoadPlatformManifest.
     /// </summary>
     [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void PlatformManifest_ResolvesRelativePathAgainstProjectDir()
     {
         var projectDir = CreateTempDir();
@@ -66,6 +66,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     }
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void PlatformManifest_EmptyPathLogsAndSkips()
     {
         var projectDir = CreateTempDir();
@@ -85,6 +86,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
     /// </summary>
     [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void TargetFrameworkDirectories_RelativePathLogsNotRootedOriginalPath()
     {
         var projectDir = CreateTempDir();
