@@ -1968,9 +1968,9 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <note>{Locked="Microsoft.Testing.Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Testleri Microsoft Testplatform bandını görüntülemeden çalıştır</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Testleri Microsoft Testplatform bandını görüntülemeden çalıştır</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>

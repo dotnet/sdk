@@ -1968,9 +1968,9 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <note>{Locked="Microsoft.Testing.Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Ejecutar pruebas, sin mostrar la pancarta de Microsoft Testplatform</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Ejecutar pruebas, sin mostrar la pancarta de Microsoft Testplatform</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
