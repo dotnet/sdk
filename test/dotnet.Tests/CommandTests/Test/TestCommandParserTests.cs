@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
 
-            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform banner");
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
         }
 
         [TestMethod]

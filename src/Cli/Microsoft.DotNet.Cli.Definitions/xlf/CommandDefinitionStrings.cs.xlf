@@ -1963,9 +1963,9 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
         <note />
       </trans-unit>
       <trans-unit id="TestCmdMTPNoLogo">
-        <source>Run test(s), without displaying Microsoft.Testing.Platform banner</source>
-        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform banner</target>
-        <note>{Locked="Microsoft.Testing.Platform"}</note>
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
