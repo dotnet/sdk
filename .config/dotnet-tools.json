@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "microsoft.dotnet.helix.jobmonitor": {
-      "version": "12.0.0-beta.26469.103",
+      "version": "12.0.0-beta.26470.102",
       "commands": [
         "dotnet-helix-job-monitor"
       ]
