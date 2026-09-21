@@ -1,7 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+    <!-- Child dotnet/MSBuild processes make class-level parallelism unsafe on Windows. -->
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 
@@ -25,6 +25,8 @@
     <!-- The shared CommandResultAssertions.cs uses xUnit's Assert.True/False/NotNull which clash
          with MSTest's Assert global using. Replace it with a local MSTest-friendly copy below. -->
     <Compile Remove="$(TemplateEngSrcDir)Tools\Shared\Microsoft.TemplateEngine.CommandUtils\CommandResultAssertions.cs" />
+    <!-- The shared command wrapper resolves dotnet from PATH instead of using the SDK under test. -->
+    <Compile Remove="$(TemplateEngSrcDir)Tools\Shared\Microsoft.TemplateEngine.CommandUtils\DotnetCommand.cs" />
   </ItemGroup>
 
 </Project>
