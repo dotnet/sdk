@@ -358,8 +358,33 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        terminal.AppendLine(string.Format(isRun ? CliCommandStrings.TestRunExitCode : CliCommandStrings.TestDiscoveryExitCode, exitCode));
+        string description = GetExitCodeDescription(exitCode.Value);
+        terminal.AppendLine(string.Format(
+            CultureInfo.CurrentCulture,
+            isRun ? CliCommandStrings.TestRunExitCode : CliCommandStrings.TestDiscoveryExitCode,
+            exitCode,
+            description));
     }
+
+    internal static string GetExitCodeDescription(int exitCode)
+        => exitCode switch
+        {
+            ExitCode.GenericFailure => CliCommandStrings.ExitCodeGenericFailureDescription,
+            ExitCode.AtLeastOneTestFailed => CliCommandStrings.ExitCodeAtLeastOneTestFailedDescription,
+            ExitCode.TestSessionAborted => CliCommandStrings.ExitCodeTestSessionAbortedDescription,
+            ExitCode.InvalidPlatformSetup => CliCommandStrings.ExitCodeInvalidPlatformSetupDescription,
+            ExitCode.InvalidCommandLine => CliCommandStrings.ExitCodeInvalidCommandLineDescription,
+            ExitCode.TestHostProcessExitedNonGracefully => CliCommandStrings.ExitCodeTestHostProcessExitedNonGracefullyDescription,
+            ExitCode.ZeroTests => CliCommandStrings.ExitCodeZeroTestsDescription,
+            ExitCode.MinimumExpectedTestsPolicyViolation => CliCommandStrings.ExitCodeMinimumExpectedTestsPolicyViolationDescription,
+            ExitCode.TestAdapterTestSessionFailure => CliCommandStrings.ExitCodeTestAdapterTestSessionFailureDescription,
+            ExitCode.DependentProcessExited => CliCommandStrings.ExitCodeDependentProcessExitedDescription,
+            ExitCode.IncompatibleProtocolVersion => CliCommandStrings.ExitCodeIncompatibleProtocolVersionDescription,
+            ExitCode.TestExecutionStoppedForMaxFailedTests => CliCommandStrings.ExitCodeTestExecutionStoppedForMaxFailedTestsDescription,
+            ExitCode.CoverageThresholdFailed => CliCommandStrings.ExitCodeCoverageThresholdFailedDescription,
+            ExitCode.TestExecutionStoppedAtDeadline => CliCommandStrings.ExitCodeTestExecutionStoppedAtDeadlineDescription,
+            _ => CliCommandStrings.ExitCodeUnknownDescription,
+        };
 
     /// <summary>
     /// Print a build result summary to the output.
