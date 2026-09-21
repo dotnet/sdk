@@ -32,7 +32,7 @@ public class SelfUpdateNativeTests : SdkTest
             Assert.Contains("update", files.Run(["--info"], succeeds: false));
         }
 
-        Assert.Contains("0.2.0", files.Run(["--info"]));
+        Assert.Contains(files.OriginalIdentity.Split('|')[0], files.Run(["--info"]));
     }
 
     [TestMethod]
@@ -199,6 +199,46 @@ public class SelfUpdateNativeTests : SdkTest
             Environment.SetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE", previous);
             directory.Delete(recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void NativeConfigurationIsOptInLocally()
+    {
+        Assert.ThrowsExactly<AssertInconclusiveException>(() => NativeSelfUpdateFiles.GetExecutablePaths(_ => null));
+    }
+
+    [TestMethod]
+    [DataRow(null, null, "true")]
+    [DataRow(null, "replacement", "TRUE")]
+    [DataRow("original", null, "true")]
+    [DataRow(" ", "replacement", "true")]
+    [DataRow("original", null, null)]
+    [DataRow(null, "replacement", null)]
+    public void NativeConfigurationRejectsMissingRequiredPaths(string? original, string? replacement, string? required)
+    {
+        Assert.ThrowsExactly<AssertFailedException>(() => NativeSelfUpdateFiles.GetExecutablePaths(name => name switch
+        {
+            "DOTNETUP_TEST_EXECUTABLE" => original,
+            "DOTNETUP_TEST_REPLACEMENT" => replacement,
+            "DOTNETUP_TEST_REQUIRE_NATIVE" => required,
+            _ => null,
+        }));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("true")]
+    public void NativeConfigurationUsesBothExplicitPaths(string? required)
+    {
+        var paths = NativeSelfUpdateFiles.GetExecutablePaths(name => name switch
+        {
+            "DOTNETUP_TEST_EXECUTABLE" => "original",
+            "DOTNETUP_TEST_REPLACEMENT" => "replacement",
+            "DOTNETUP_TEST_REQUIRE_NATIVE" => required,
+            _ => null,
+        });
+
+        Assert.AreEqual(("original", "replacement"), paths);
     }
 
     private static void AssertNativeLocksHeld(SelfUpdatePaths paths)

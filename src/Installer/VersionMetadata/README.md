@@ -59,7 +59,13 @@ ordinary and cross-RID/AOT product properties and check that the task assembly
 does not enter the product output.
 [Native fixtures](../../../test/dotnetup.Tests/Utilities/NativeSelfUpdateFiles.cs)
 require two NativeAOT executables with different full versions via
-`DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT`.
+`DOTNETUP_TEST_EXECUTABLE` and `DOTNETUP_TEST_REPLACEMENT`, built for the same RID.
+The [dotnetup test jobs](../../../eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml)
+publish two fixture versions into separate artifact directories on Windows and Linux,
+and set `DOTNETUP_TEST_REQUIRE_NATIVE=true` so missing configuration fails rather
+than silently skipping native scenarios. The ordinary publish remains separate.
+Local runs with neither executable variable set remain opt-in; configuring only
+one path is an error. macOS native self-update scenarios remain OS-skipped.
 [Live self-update tests](../../../test/dotnetup.Tests/SelfUpdateEndToEndTests.cs)
 exercise replacement and no-op polling on private copies on Windows and Linux.
 They require a reachable daily release with the command, embedded version metadata,

@@ -71,7 +71,12 @@ public class SelfUpdateEndToEndTests : SdkTest
             string after = ReadIdentity(environment, executable);
             if (before == after)
             {
-                Assert.Contains(BootstrapperStrings.SelfUpdateAlreadyUpToDate, output);
+                string version = before.Split('|')[0];
+                Assert.Contains(string.Format(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    BootstrapperStrings.SelfUpdateAlreadyUpToDate,
+                    version,
+                    version), output);
                 Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(executable), "A no-op must not change the executable bytes.");
                 Assert.DoesNotContain(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
                 return;

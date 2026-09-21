@@ -17,14 +17,8 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
     public NativeSelfUpdateFiles()
     {
-        var original = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
-        var replacement = Environment.GetEnvironmentVariable("DOTNETUP_TEST_REPLACEMENT");
-        if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(replacement))
-        {
-            Assert.Inconclusive("Set DOTNETUP_TEST_EXECUTABLE and DOTNETUP_TEST_REPLACEMENT to two distinct native dotnetup releases.");
-        }
-
-        original = DotnetupTestUtilities.GetDotnetupExecutablePath();
+        var (original, replacement) = GetExecutablePaths(Environment.GetEnvironmentVariable);
+        Assert.IsTrue(File.Exists(original), "DOTNETUP_TEST_EXECUTABLE must name an existing native executable.");
         Assert.IsTrue(File.Exists(replacement), "DOTNETUP_TEST_REPLACEMENT must name an existing native executable.");
         AssertNative(original);
         AssertNative(replacement);
@@ -44,8 +38,10 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
             File.Delete(Paths.StagedPath);
             OriginalIdentity = SelfUpdatePaths.ReadVersionMetadata(Paths.InstalledPath);
             ReplacementIdentity = SelfUpdatePaths.ReadVersionMetadata(ReplacementPath);
-            Assert.AreNotEqual(OriginalIdentity, ReplacementIdentity, "Publish the two binaries with different release versions.");
+            var originalMetadata = OriginalIdentity.Split('|');
             var metadata = ReplacementIdentity.Split('|');
+            Assert.AreEqual(originalMetadata[1], metadata[1], "Publish the two binaries for the same RID.");
+            Assert.AreNotEqual(originalMetadata[0], metadata[0], "Publish the two binaries with different full release versions.");
             Assert.StartsWith(metadata[0], GetExecutableVersion(ReplacementPath));
             var rid = metadata[1];
             Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup"), new string('0', 128),
@@ -64,6 +60,23 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
     public string ReplacementIdentity { get; }
     public ResolvedDownload Release { get; }
     public string StateDirectory => Path.Combine(Paths.DirectoryPath, "state");
+
+    internal static (string Original, string Replacement) GetExecutablePaths(Func<string, string?> getEnvironmentVariable)
+    {
+        var original = getEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
+        var replacement = getEnvironmentVariable("DOTNETUP_TEST_REPLACEMENT");
+        var required = string.Equals(getEnvironmentVariable("DOTNETUP_TEST_REQUIRE_NATIVE"), "true", StringComparison.OrdinalIgnoreCase);
+        const string message = "Set DOTNETUP_TEST_EXECUTABLE and DOTNETUP_TEST_REPLACEMENT to two native dotnetup releases with distinct full versions and the same RID.";
+
+        if (!required && string.IsNullOrWhiteSpace(original) && string.IsNullOrWhiteSpace(replacement))
+        {
+            Assert.Inconclusive(message);
+        }
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(original), message);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(replacement), message);
+        return (original!, replacement!);
+    }
 
     public SelfUpdateWorkflow CreateWorkflow(Action<ResolvedDownload, string>? download = null, SelfUpdateCoordinator? coordinator = null)
         => new(Paths, OriginalIdentity, () => Release, download ?? CopyReplacement, coordinator);
