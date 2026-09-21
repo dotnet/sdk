@@ -81,6 +81,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.12.0-1.26465.108</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>11.0.0-rc.2.26465.108</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-rc.2.26465.108</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftNETProjectDataTasksPackageVersion>5.12.0-1.26465.108</MicrosoftNETProjectDataTasksPackageVersion>
     <MicrosoftNETRuntimeEmscriptenInternalPackageVersion>11.0.0-rc.2.26465.108</MicrosoftNETRuntimeEmscriptenInternalPackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>11.1.0-preview.26465.108</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-rc.2.26465.108</MicrosoftNETSdkWindowsDesktopPackageVersion>
@@ -220,6 +221,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
+    <MicrosoftNETProjectDataTasksVersion>$(MicrosoftNETProjectDataTasksPackageVersion)</MicrosoftNETProjectDataTasksVersion>
     <MicrosoftNETRuntimeEmscriptenInternalVersion>$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
