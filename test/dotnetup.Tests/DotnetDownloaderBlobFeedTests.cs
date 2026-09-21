@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Text;
 using FluentAssertions;
@@ -18,6 +19,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Spectre.Console;
+using BootstrapperStrings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 using Strings = Microsoft.Dotnet.Installation.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -107,6 +109,66 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         finally
         {
             AnsiConsole.Console = originalConsole;
+            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
+        }
+    }
+
+    [TestMethod]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer))]
+    public void SelfUpdateCommandReportsNoUpdateToStandardError(
+        string installedVersion,
+        string availableVersion,
+        string messageResource)
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var stdout = new StringWriter(CultureInfo.InvariantCulture);
+        using var stderr = new StringWriter(CultureInfo.InvariantCulture);
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        string installedMetadata = DotnetupVersionMetadataReader.Format(installedVersion, rid);
+        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, installedMetadata);
+        var available = ReleaseVersion.Parse(availableVersion);
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(available, rid);
+        string artifactName = BlobFeedUrlBuilder.GetDotnetupFileName(rid);
+        string channelUrl = $"https://aka.ms/dotnet/dotnetup/daily/{artifactName}";
+        var history = new List<string>();
+        using var handler = new RecordingHandler(new()
+        {
+            [channelUrl] = (HttpStatusCode.OK, ""),
+            [location.ChecksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
+        }, history, new() { [channelUrl] = location.ArchiveUrl });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var originalConsole = AnsiConsole.Console;
+        var originalError = Console.Error;
+        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
+        try
+        {
+            UnsignedSourcePolicy.OverrideForTesting = () => false;
+            AnsiConsole.Console = CreateConsole(stdout);
+            Console.SetError(stderr);
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedMetadata);
+            var result = Parser.Parse(["self", "update", "--no-progress"]);
+
+            new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(0);
+
+            string format = new ResourceManager(
+                "Microsoft.DotNet.Tools.Bootstrapper.Strings",
+                typeof(SelfUpdateCommand).Assembly).GetString(messageResource, CultureInfo.InvariantCulture)!;
+            string expectedError = string.Format(
+                CultureInfo.InvariantCulture,
+                format,
+                installedVersion,
+                availableVersion);
+            stderr.ToString().Should().Be(expectedError + Environment.NewLine);
+            stdout.ToString().Should().BeEmpty();
+            history.Should().NotContain(location.ArchiveUrl);
+            SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath).Should().Be(installedMetadata);
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+            Console.SetError(originalError);
             UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
@@ -822,6 +884,14 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var handler = new RecordingHandler(responses, history);
         return (handler, history);
     }
+
+    private static IAnsiConsole CreateConsole(StringWriter output) => AnsiConsole.Create(new AnsiConsoleSettings
+    {
+        Ansi = AnsiSupport.No,
+        ColorSystem = ColorSystemSupport.NoColors,
+        Interactive = InteractionSupport.No,
+        Out = new AnsiConsoleOutput(output),
+    });
 
     private sealed class RecordingHandler : HttpMessageHandler
     {
