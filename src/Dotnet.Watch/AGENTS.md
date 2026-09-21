@@ -29,8 +29,9 @@ Reload).
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
   [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)
-  and `clear-cache`; the provider serves no JavaScript, no session descriptor, no protocol
-  version, and no HTTP replay. Most application hosts reach it through the
+  `clear-cache`, and the non-executable `hot-reload-settings.json`; the provider serves no
+  JavaScript, no session descriptor, no protocol version, and no HTTP replay. Most
+  application hosts reach it through the
   shared-framework-only [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)
   installed by the hosting-startup path. Standalone Blazor WebAssembly is the exception:
   it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
