@@ -137,8 +137,16 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         foreach (string solutionFilePath in slnFiles)
         {
             var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+            var projectPathBaseDirectory = Path.GetDirectoryName(solutionFilePath)!;
+
+            if (Path.GetExtension(solutionFilePath).Equals(".slnf", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(solutionFile.Description))
+            {
+                projectPathBaseDirectory = Path.GetDirectoryName(solutionFile.Description)!;
+            }
+
             projectFiles.AddRange(solutionFile.SolutionProjects.Select(
-                p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
+                p => Path.GetFullPath(p.FilePath, projectPathBaseDirectory)));
         }
 
         if (projectFiles.Count == 0)
