@@ -1,486 +1,675 @@
 # Proposal: predictable uninstall and relationship-based list output
 
-**Status:** Draft for discussion, September 11, 2026. This document describes
-proposed behavior, not the current command contract or a settled team decision.
-Command options explicitly marked **new** do not exist today.
+**Status:** Draft for discussion, revised September 21, 2026. This document
+describes proposed behavior, not the current command contract or a settled team
+decision. In particular, terminology and confirmation policy remain proposals.
 
 ## Experience we want
 
-When I ask to uninstall an SDK, that SDK should actually go away. Before
-dotnetup also stops maintaining a requirement for one of my repositories, it
-should tell me which repository and let me decide whether to proceed.
+`dotnetup sdk uninstall` should first undo the install spec I named. If other
+specs keep the SDK installed, explain why and list those specs rather
+than silently treating "removed an install spec" as "uninstalled an SDK."
 
-`dotnetup list` should help me understand this before I run uninstall: what is
-installed, why dotnetup is keeping it, and which install specs would be affected
-if I removed it.
+`dotnetup list` should explain what is installed and why it is there, without
+making me correlate separate lists of channels and versions.
 
-The proposed default is:
+The proposed model is:
 
-- Remove the installation I requested, not just a record that refers to it.
-- Remove the explicit install spec I am undoing, if there is one.
-- Show and offer to remove other install specs that would lose their last
-  satisfying installation. Do not remove those specs silently.
-- Keep independent specs when another remaining installation satisfies them.
-- Leave unrelated installations alone. Uninstall is not whole-root cleanup.
+- If the argument matches a saved install spec, remove that spec and garbage
+  collect the installations it no longer keeps.
+- This applies to both channel specs and exact-version specs. The syntax
+  alone does not decide whether the target is a spec or an installation.
+- Remove a matching spec without prompting. If its resolved SDK remains,
+  report that it was kept and list the other specs currently selecting it.
+  Do not offer to expand the operation to remove those specs.
+- If no spec matches an exact version, target that installed SDK directly.
+  Offer to remove the specs currently selecting that SDK, even if another
+  installed SDK could satisfy them. Do not reassign them to an older version.
+- Leave specs selecting other versions unchanged. A spec is not a removal
+  target merely because its version range could also accept the targeted SDK.
+- If no spec matches a channel, report an error. Do not guess an installed
+  version from that channel.
+- Changed or deleted `global.json` files update their repository requirements
+  automatically. Their contents are authoritative, not a cached channel value.
 
-Keep the name `uninstall`; do not require users to learn a separate `untrack`
-command for the common case. Retaining intentionally unsatisfied specs is an
-alternative discussed below, not the default in this proposal.
+For now, do not add a separate `untrack` command or a repository-path form of
+`uninstall`. Confirmation for affected specs when targeting an installed
+version is considered in [Confirmation and undo](#confirmation-and-undo).
 
-## Terms used in the scenarios
+## User-facing terminology
 
-An **install spec** is a requirement dotnetup maintains: an explicit channel,
-an explicit exact version, or a requirement from a particular `global.json`.
-Use "install specs" in the UI rather than "tracked channels"; not every spec
-is a channel.
+**Working term: "Install spec"**, for both SDKs and runtimes. An install spec
+describes a component and a channel,
+exact version, or repository requirement that dotnetup keeps installed.
+Use "spec" as shorthand when the context is clear. This is a provisional
+terminology choice, not a settled decision.
 
-An **installation** is a concrete SDK or runtime component version, in a
-particular installation root and architecture. Several specs can select the
-same installation. An installation can also share files with another
-installation.
+The component is logically part of the spec, but the table displays it in its
+own column. The Channel / version column shows the version/channel information
+and applicable version-selection policy. A `global.json` path identifies the
+source of that information, not the spec itself.
 
-A **satisfying installation** meets the actual requirement, not just a similar
-version prefix. For `global.json`, that includes the requested version,
-roll-forward policy, and prerelease policy. A spec's **selected installation**
-is the one dotnetup currently selects from the installed versions. Other
-installed versions may be eligible fallbacks after uninstall.
+| Candidate | Assessment |
+| --- | --- |
+| Install spec | Working choice: matches the existing data-model term and covers SDKs and runtimes. Still needs a short explanation for new users. |
+| Installation request | Describes something I asked dotnetup to install and continue providing, including a pinned version. Alternative if "spec" proves too technical. |
+| SDK requirement | Natural for `global.json`, but suggests every manually installed SDK is required by a project. |
+| Subscription | Describes moving channels, but is less natural for an exact version and can suggest a paid service. |
+| Tracked channel | Familiar, but inaccurate for exact versions and repository files. |
 
-Examples use illustrative SDK versions and `C:\dotnet` as the explicitly
-selected or currently configured dotnetup-managed installation root. The same
-behavior applies on other platforms. Uninstall does not change `global.json`
-contents, project files, PATH, or environment configuration.
-Unless noted otherwise, assume another SDK remains in the root; scenario 16
-adds confirmation when uninstall would remove the last SDK.
+Use concrete verbs in messages where possible: "Stopped following SDK channel
+10.0.1xx" is more useful than "Removed install spec."
+
+### Where an install spec came from
+
+Do not expose `Explicit` as the source label. Distinguish these origins:
+
+| Displayed origin | Meaning |
+| --- | --- |
+| Command line | Added by a command such as `dotnetup sdk install 10.0.1xx`. |
+| Migration | Added when bringing an existing SDK into dotnetup management. |
+| Repository (file path in the table) | Comes from a registered `global.json`; the source is its path and the spec is its SDK version information. |
+
+**Migration is a proposed distinct origin**, not a claim about today's stored
+types. Migrating SDK `10.0.103` creates a `10.0.1xx` spec, not an exact-version
+pin, so updates roll forward to the latest patch in that feature band. The
+migrated spec behaves like a command-line spec for the same channel. The origin
+explains why the spec exists; it does not change update or uninstall eligibility.
+
+If a migrated SDK is subsequently requested on the command line, retain useful
+provenance without making the user uninstall the same standalone spec twice.
+Whether to retain multiple origin annotations or replace the displayed origin
+is a data-model choice to resolve separately.
+
+Repository requirements remain independent even if their displayed version or
+derived channel matches a command-line spec. In this draft, argument matching
+first selects saved command-line or migrated specs; repository requirements
+are considered when deciding what else keeps an installation. This avoids
+treating a derived channel as an instruction to forget every matching repository.
+That matching boundary is an explicit design choice for review.
+
+### Scope and output details
+
+Uninstall scenarios cover SDKs; the list example includes both SDKs and runtimes
+in the default dotnetup-managed installation. Custom
+`--install-path` behavior and multi-architecture selection are outside this
+proposal until those experiences are designed.
+
+The earlier `(x64)` suffix conveyed the installation's architecture, but did not
+help the user make a choice in these scenarios. Omit it from ordinary success
+messages and examples. Architecture can remain available in diagnostics or a
+future UI where it actually disambiguates a target.
+
+An **installation** is a concrete component version. Multiple specs can
+select it, and multiple installations can share files. A **satisfying
+installation** meets the complete requirement, including a repository's
+minimum version, roll-forward policy, and prerelease policy. Do not infer
+satisfaction from a version prefix alone.
 
 ## Scenarios
 
-### 1. I undo an exact-version install
+### 1. I remove a spec that alone keeps an SDK installed
 
-I installed `10.0.103` explicitly. No other spec uses it.
-
-```console
-> dotnetup uninstall 10.0.103
-Uninstalled SDK 10.0.103 from C:\dotnet (x64).
-Removed install spec: SDK 10.0.103 (explicit).
-```
-
-No extra confirmation is needed: both changes directly undo my request.
-`list` no longer shows either entry. `update` does not reinstall it on behalf
-of that removed spec. A later explicit `install` can add it again.
-
-### 2. The SDK was installed for a channel, not by exact version
-
-I installed `10.0.1xx`, which selected `10.0.103`. I now run
-`dotnetup uninstall 10.0.103`.
-
-The command finds the physical SDK even though no exact-version spec exists.
-It does not tell me "no matching install spec" or require `--source all`.
-Because removing it would also stop maintaining `10.0.1xx`, it shows:
+I ran `dotnetup sdk install 10.0.103`. No other spec needs that SDK.
 
 ```console
-> dotnetup uninstall 10.0.103
-Uninstall SDK 10.0.103 from C:\dotnet (x64).
-
-This would also remove these install specs:
-  SDK 10.0.1xx (explicit)
-
-No remaining installed SDK satisfies these specs.
-Future updates will no longer maintain them.
-Uninstall the SDK and remove these install specs? [y/N]
+> dotnetup sdk uninstall 10.0.103
+Removed install spec: SDK 10.0.103 (command line).
+Uninstalled SDK 10.0.103.
 ```
 
-Accepting removes the SDK and that spec. Declining, or pressing Enter, changes
-nothing. Saying "Done" while retaining the requested SDK is not an outcome.
+The argument matches the saved exact-version spec. Removing it allows
+garbage collection to remove the SDK. No extra confirmation is needed.
+`dotnetup list` no longer shows either entry. `dotnetup update` does not
+reinstall it on behalf of the removed spec.
 
-### 3. Several repositories and explicit specs share one SDK
+If the SDK came from migration instead, its saved spec is `10.0.1xx`, not
+`10.0.103`. With no other spec keeping the SDK installed, remove it by naming
+that channel:
 
-`10.0.103` is selected by an explicit `10.0.1xx` spec and by
-`C:\src\app\global.json` and `C:\src\tools\global.json`. No other installed SDK
-satisfies those requirements.
+```console
+> dotnetup sdk uninstall 10.0.1xx
+Removed install spec: SDK 10.0.1xx (migration).
+Uninstalled SDK 10.0.103.
+```
 
-Uninstall shows all three specs in one confirmation, including each full
-repository file path. Accepting removes the SDK and all three specs in one
-operation. It does not remove one record, refresh others, and require me to
-run the same command again.
+If updates have replaced `10.0.103` with a newer patch, the same command removes
+the channel spec and that newer SDK instead. No extra confirmation is needed.
+The user does not need a different uninstall command or source filter for
+migrated specs. Naming the installed exact version instead follows scenario 2.
 
-The confirmation explains that those repositories may no longer build with
-this installation root. It also says:
+### 2. I name an installed version with no exact-version spec
+
+I ran `dotnetup sdk install 10.0.1xx`, which installed `10.0.103`. There is no
+saved spec for the exact version. The channel currently selects `10.0.103`;
+this behavior also applies if an older eligible SDK is installed.
+
+The command falls back to targeting the installed SDK. Under the prompt policy
+recommended below, it shows the complete additional effect:
+
+```console
+> dotnetup sdk uninstall 10.0.103
+.NET SDK 10.0.103 is required by the following install spec:
+
+  .NET SDK 10.0.1xx
+
+To uninstall .NET SDK 10.0.103, this install spec must be removed.
+Would you like to remove this install spec? [y/N]
+```
+
+Use singular wording for one spec and plural wording for multiple specs:
+"the following install specs", "these install specs must be removed", and
+"Would you like to remove these install specs? [y/N]".
+
+Accepting removes the SDK and channel spec. Declining changes nothing.
+Unlike a channel that is not registered, an exact installed version is a
+meaningful target even without a matching saved spec.
+
+### 3. An SDK is required by a global.json install spec
+
+Use this variation of scenario 2 whenever any spec that must be removed comes
+from a registered `global.json`, whether it is the only spec or one of several.
+Explain that removing a repository spec stops tracking its file without
+modifying the file itself.
+
+In this example, a command-line spec for `10.0.1xx` and two registered
+repository files currently select SDK `10.0.103`. There is no standalone spec
+for exact version `10.0.103`. The same prompt applies even if another installed
+SDK could satisfy some of these specs.
+
+```console
+> dotnetup sdk uninstall 10.0.103
+.NET SDK 10.0.103 is required by the following install specs:
+
+  .NET SDK 10.0.1xx
+  .NET SDK 10.0.100 (rollForward: latestPatch, allowPrerelease: false)
+    From C:\src\app\global.json
+  .NET SDK 10.0.103 (rollForward: disable)
+    From C:\src\tools\global.json
+
+To uninstall .NET SDK 10.0.103, these install specs must be removed.
+This will stop tracking the listed global.json files, but will not change them.
+These repositories may no longer build with the installed SDKs.
+Future updates will no longer install SDKs for these specs.
+To install a repository's SDK again, run dotnetup sdk install in that repository.
+
+Would you like to remove these install specs? [y/N]
+```
+
+Use singular or plural wording for install specs and repository files
+independently: several specs may include only one `global.json` file.
+
+Accepting removes the SDK and the listed specs, including the repository
+registrations. Declining changes nothing. Apply the displayed plan once; do not
+remove one record, refresh stale duplicates, and require the same command again.
+
+While a repository is registered, its `global.json` is the source of truth.
+Choosing to stop tracking it explicitly forgets that registration, not the file.
+A general `dotnetup update` follows registered files; it does not scan for and
+re-register every repository on disk. Running `dotnetup sdk install` from that
+repository registers it again. This distinction is necessary if uninstall is
+to stop a repository from bringing the SDK back without editing its files.
+
+### 4. An older SDK is also installed
+
+Start with an exact-version pin and a channel spec:
+
+```console
+dotnetup sdk install 10.0.103
+dotnetup sdk install 10.0.1xx
+```
+
+Assume the second command installs `10.0.105`. The exact-version spec pins
+`10.0.103`, so it survives cleanup. The channel selects `10.0.105`, as does a
+registered repository requiring `10.0.100` with `latestPatch` and no prereleases.
+There is **no exact-version spec for 10.0.105**.
+
+Uninstalling `10.0.105` requires removing the channel and repository specs
+currently selecting it. Do not silently uninstall the SDK because an older
+eligible version is present; ask for confirmation before changing anything:
+
+```console
+> dotnetup sdk uninstall 10.0.105
+.NET SDK 10.0.105 is required by the following install specs:
+
+  .NET SDK 10.0.1xx
+  .NET SDK 10.0.100 (rollForward: latestPatch, allowPrerelease: false)
+    From C:\src\app\global.json
+
+To uninstall .NET SDK 10.0.105, these install specs must be removed.
+This will stop tracking the listed global.json file, but will not change it.
+This repository may no longer build with the installed SDKs.
+Future updates will no longer install SDKs for these specs.
+To install the repository's SDK again, run dotnetup sdk install in that repository.
+
+Would you like to remove these install specs? [y/N]
+```
+
+Accepting removes both listed specs and SDK `10.0.105`. The independent
+`10.0.103` pin and its installation remain unchanged. Declining keeps both
+SDKs and all specs unchanged.
+
+Although `10.0.103` could satisfy the channel and repository requirements,
+uninstall does not move those specs onto it. Only specs currently selecting
+the targeted SDK are included in the additional-removal prompt.
+
+Uninstall is not a rollback operation. Rolling back while retaining a spec
+would need a separate design that can obtain a previous version even when it
+is not already installed and defines what subsequent updates do.
+
+If `10.0.105` also had its own saved spec, spec-first matching would apply, as in scenario 5:
+remove that spec, then explain that the channel still keeps the newer SDK.
+
+### 5. The argument matches a spec, but other specs keep the SDK
+
+Both a command-line spec for `10.0.1xx` and a repository select `10.0.105`.
+
+`dotnetup sdk uninstall 10.0.1xx` removes the matching channel spec and garbage
+collects without prompting. The SDK remains for the repository. Explain the
+result and show the remaining specs that currently resolve to that SDK:
+
+```console
+> dotnetup sdk uninstall 10.0.1xx
+Removed install spec: SDK 10.0.1xx (command line).
+.NET SDK 10.0.105 was kept because the following install spec still resolves to it:
+
+  .NET SDK 10.0.100 (rollForward: latestPatch, allowPrerelease: false)
+    From C:\src\app\global.json
+
+No SDKs were uninstalled.
+```
+
+This is a successful spec removal, not a request for another decision. Leave
+the other specs and repository registrations unchanged. List all other specs
+currently selecting the retained SDK, using plural wording when needed.
+
+**The same rule applies to exact-version specs.** If `10.0.105` is a saved
+command-line spec and a channel also selects that SDK:
+
+```console
+> dotnetup sdk uninstall 10.0.105
+Removed install spec: SDK 10.0.105 (command line).
+.NET SDK 10.0.105 was kept because the following install spec still resolves to it:
+
+  .NET SDK 10.0.1xx
+
+No SDKs were uninstalled.
+```
+
+Do not give exact-version specs a special prompt or implicitly remove the
+other specs. A later command naming the installed exact version, once there
+is no matching standalone spec, follows scenarios 2 or 3.
+
+If removing the matched spec allows garbage collection to uninstall its SDK,
+report the removal as in scenario 1. If it has no installed SDK to begin with,
+report spec-only removal without targeting unrelated specs.
+
+### 6. I name a channel that is not registered
+
+```console
+> dotnetup sdk uninstall 10.0.1xx
+No saved SDK install spec matches '10.0.1xx'.
+Run dotnetup list to see installed SDKs and their install specs.
+To remove an installed SDK, specify its full version.
+```
+
+Return a not-found failure without removing anything, even if `10.0.105` is
+installed for some other reason.
+
+This also covers `latest`, `lts`, `preview`, and `daily`: if the named spec
+exists, remove it and garbage collect as in scenario 5; otherwise error.
+There is no separate "resolve a moving channel for uninstall" experience, no
+lookup of the newest downloadable SDK, and no network requirement for uninstall.
+
+### 7. I deleted a repository or changed its SDK requirement
+
+Treat the registered `global.json` as the live requirement, not as a spec
+whose cached contents need separate approval to change.
+
+| Change | What the user sees |
+| --- | --- |
+| Repository or `global.json` deleted | Its spec disappears automatically on reconciliation. No prompt to accept the deletion. |
+| Valid file no longer specifies an SDK | The old SDK requirement is removed automatically. |
+| Version or roll-forward policy changed | The existing repository entry reflects the new requirement, not an extra historical entry. |
+| File is malformed or cannot be read, for example because access is denied | Keep the registration visible with the path and error, but do not use its cached requirement to retain an SDK or block uninstall. Do not treat the error as confirmed deletion. |
+
+Malformed content and access failures can both persist indefinitely, so neither
+should keep an SDK installed indefinitely. The previously selected SDK may be garbage
+collected if no valid spec keeps it, subject to the cleanup scope below.
+Explicit uninstall is not blocked by the invalid or unreadable registration
+and does not remove it or prompt to remove it. The registration stays visible
+with its error, without retaining an installation. Any other specs currently
+selecting the SDK still follow the normal uninstall rules.
+
+Do not silently substitute the last successfully read requirement as an active
+reference. If the file becomes readable and valid again, reconcile its current
+requirement normally. Its previously selected SDK may have been removed, so
+the requirement may be unsatisfied until the user installs an SDK again. This
+also means a temporary read or parse failure can allow cleanup of an SDK the
+repository still needs; the design accepts that tradeoff to avoid indefinite
+retention.
+
+`dotnetup list` reflects those changes without deleting SDK files. The next
+cleanup-capable operation can collect SDKs no remaining spec keeps, subject
+to the cleanup scope below. A changed requirement may appear without a
+satisfying installation until `dotnetup sdk install` is run in the repository.
+
+Do not add `dotnetup sdk uninstall --global-json ...` for this initial design.
+Deleting the repository naturally stops tracking it. Stopping tracking while
+keeping the repository on disk is a possible future niche operation; it should
+not drive an overloaded uninstall syntax now. A physical-version uninstall
+can still prompt to remove repository registrations as in scenario 3.
+
+### 8. The version's files are missing, or it was never installed
+
+If an exact-version spec exists but its SDK files are already missing,
+remove the matching spec without another confirmation. Report:
 
 ```text
-The global.json files will not be changed.
-To maintain a repository's SDK again, run dotnetup install in that repository.
+Removed install spec: SDK 10.0.103 (command line).
+SDK 10.0.103 was already missing; no SDK files were removed.
 ```
 
-Removing tracking is not deleting the repository's requirement. Dotnetup must
-not rediscover and silently re-add the removed repository specs on the next
-general `update`. A new `install` from that repository is an intentional request
-to add its spec again.
+If neither a matching spec nor the exact installation exists, return a
+not-found failure. Do not uninstall another version.
 
-### 4. Another installed SDK can take over
+Pre-existing unsatisfied specs remain visible in `dotnetup list`; they are
+not additional removal targets simply because a different SDK is uninstalled.
 
-`10.0.103` and `10.0.105` are installed. The latter has an explicit exact-version
-spec. An explicit `10.0.1xx` spec and a repository requirement with minimum
-`10.0.100`, `latestPatch`, and no prereleases both select `10.0.105`.
+### 9. SDKs share files, or removal fails
 
-I run `dotnetup uninstall 10.0.105`.
+Removing an SDK deletes its private content, but keeps runtime, host, pack, or
+other files used by remaining installations. This is normal behavior and does
+not need a separate "Shared runtime files retained" message. Removing an SDK
+does not necessarily remove every runtime that came in its archive. The overall
+uninstall output still needs refinement; focus on what was removed, SDKs kept
+because of other specs, and any failures rather than routine shared-file handling.
 
-Dotnetup removes the SDK and its explicit `10.0.105` spec. It retains the channel
-and repository specs because `10.0.103` satisfies both. The output states that
-those specs now select `10.0.103`; it does not describe them as deleted or broken.
-There is no additional-spec-removal confirmation.
+If a locked file or another error prevents physical removal, return failure
+and distinguish removed files from remaining files. Preserve enough state to
+show an incomplete installation and support retry or repair; do not claim
+rollback after partially deleting files.
 
-It also warns:
+A successful spec-only removal is different from a failed SDK removal.
+The former says the SDK was kept for other specs; the latter must not
+discard specs on the assumption that deleting the SDK succeeded.
 
-```text
-SDK 10.0.1xx is still maintained. A future update may install 10.0.105 again
-or install a newer eligible version.
-```
+If the last SDK is removed, say that no SDK remains in the managed installation.
+Do not silently select a system installation, rewrite environment settings, or
+remove dotnetup itself. A separate last-SDK confirmation is a policy question,
+not assumed by the examples above.
 
-This is intentional: uninstall is not a version blacklist. If my goal is to
-stop maintaining that channel entirely, I should name the channel instead.
-Independent repository specs may still maintain versions in that channel.
+## Confirmation and undo
 
-### 5. Only some of the other specs have a fallback
+**Working recommendation:** remove a matching spec without prompting, whether
+it names a channel or an exact version. If its SDK remains, explain why and
+list the remaining specs as in scenario 5; do not offer a broader action.
+When no standalone spec matches an installed exact version, ask before removing
+the specs or repository registrations currently selecting that installation.
 
-In the previous scenario, one repository instead requires a minimum of
-`10.0.105` with `latestPatch`. `10.0.103` is not a fallback for that repository.
+For that physical-version operation, automatic removal of affected specs
+remains an alternative to confirmation. The alternatives below do not expand
+matching-spec removal:
 
-The confirmation separates the outcomes:
+| Policy | Benefit | Cost |
+| --- | --- | --- |
+| Confirm affected-spec removal when targeting an installed version | No prompts for matching-spec removal; repository impact is visible before physical-version removal. | Adds a decision when a physical-version uninstall requires spec removals. |
+| Automatically remove affected specs and report it | The requested SDK disappears with less interaction. | Can stop tracking repositories or channels the user did not realize were involved. |
+| Automatic removal with undo | Makes the fast path simple and offers recovery after seeing the impact. | Only safe to advertise if undo restores both specs and SDK content reliably; restoring just the manifest is not undo. |
 
-| Outcome | Install spec |
-| --- | --- |
-| Removed as directly requested | Explicit `10.0.105` |
-| Also removed, subject to confirmation | That repository's `global.json` |
-| Kept, now selecting `10.0.103` | Explicit `10.0.1xx` and any compatible repository specs |
+An undo design would need to specify retention of deleted content, cache and
+disk-space costs, availability of old/private builds if redownload is required,
+partial failures, and subsequent changes to specs or `global.json`. It must
+not overwrite newer repository contents or settings. Offline restoration is
+not guaranteed merely by remembering the removed SDK version.
 
-Accepting removes only the listed specs. The same rule applies to prereleases:
-a preview below a requested minimum, or one excluded by `allowPrerelease`, is
-not a reason to claim that a repository still has a working SDK.
+For physical-version removal in this iteration, show prompt-based examples and
+keep automatic removal plus undo open for comparison. Do not add a speculative
+undo command or promise reversibility before its behavior is defined.
 
-### 6. I name a channel rather than a version
+### Scripts and cancellation
 
-I run `dotnetup uninstall 10.0.1xx` to undo `dotnetup install 10.0.1xx`.
+Spec-first removal behaves the same with or without an interactive terminal:
+remove the matching spec, then report any retained SDK and the specs selecting
+it. Do not expand to other specs. Without an interactive terminal, a
+physical-version uninstall that needs additional removals instead fails without
+mutation and reports the affected specs.
 
-**Proposed distinction:** naming a channel removes the explicit spec with that
-name, if present, and targets the single installed SDK currently selected for
-it. The plan shows the exact version. It does not mean "remove every SDK whose
-version starts with 10.0.1."
+Automation needs a deliberate way to approve affected-spec removal for a
+physical-version uninstall. The option remains to be designed; it must not
+change matching-spec removal into a physical-version operation.
+No new switch is presented as available in this draft.
 
-If `10.0.105` is selected and `10.0.103` is also installed, the plan removes
-`10.0.105` and the explicit `10.0.1xx` spec. It leaves `10.0.103` alone.
-Independent specs selecting `10.0.105` follow the same fallback and confirmation
-rules as an exact-version uninstall.
-
-If no explicit `10.0.1xx` spec exists, dotnetup may still select an installed
-version that satisfies the channel. It must show the concrete target before
-acting. Repository specs are independent requirements, not implicitly selected
-for removal just because their displayed channel is also `10.0.1xx`.
-
-This gives `uninstall <channel>` an "undo this install request" meaning, while
-`uninstall <version>` means "remove this particular installation." Both actually
-remove the selected installation.
-
-### 7. I name a broad or moving channel
-
-For `latest`, `lts`, `preview`, or `daily`, selecting a target must not mean
-looking up the newest downloadable SDK and trying to uninstall something I
-never installed.
-
-Use the channel's locally established selection and eligibility information,
-and print the concrete target. If that information is insufficient to select
-unambiguously, do not guess from the highest version number. List the installed
-candidates and ask me to rerun with an exact version.
-
-Uninstall must work without network access. It must not download a replacement
-SDK to make the operation safe, or silently broaden the request to all matching
-versions. Metadata needed for reliable named-channel relationships may need to
-be retained at install/update time.
-
-### 8. I stop maintaining one repository, but keep a shared SDK
-
-Two repository specs select `10.0.103`. I stop working on one repository.
-I should not have to uninstall a working SDK or remove the other repository's
-spec to express this.
-
-Proposed **new** form:
-
-```console
-dotnetup uninstall --global-json C:\src\app\global.json
-```
-
-This selects that repository's spec by file identity, not its current derived
-channel. It removes the spec and removes its selected installation only if no
-other remaining spec needs that installation. If the SDK stays, the output
-explicitly says "Removed repository install spec; SDK 10.0.103 kept for ..."
-and lists the other specs. It does not claim the SDK was uninstalled.
-
-This is a spec-targeted operation, unlike uninstalling a version. It should
-show the distinction in help and in its plan. The path selector is mutually
-exclusive with a version/channel argument. An explicit `--install-path`
-selects the root as usual; otherwise, if that file is tracked in multiple roots,
-require root disambiguation rather than removing all of them.
-
-This is the main additional UX choice to review: a path selector on `uninstall`
-keeps the common vocabulary small, but a separate spec-removal command would
-make the distinction more explicit.
-
-### 9. I switched branches and global.json changed
-
-The same repository used to require `10.0.1xx` and now requires `10.0.3xx`.
-Both SDK versions are still installed.
-
-`list` shows one logical repository spec, with the current requirement. Its
-identity is the normalized file path within the root, architecture, and
-component, not the old channel value. Existing duplicate records are treated
-as one spec; different repository paths remain independent.
-
-Uninstall refreshes and consolidates those requirements **before** computing
-the removal plan. Removing the old SDK does not also remove the repository spec
-if it now selects the new SDK. Removing the new SDK shows the actual current
-repository requirement in the confirmation.
-
-Refreshing a requirement does not authorize deleting its formerly selected
-SDK as a side effect of uninstalling something else. For example, uninstalling
-`8.0` must not delete an old `10.0.204` installation. Install/update cleanup
-policy can be considered separately.
-
-If the changed file now points to a different installation root, display that
-the registration needs reconciliation; uninstall does not silently migrate
-tracking or delete content in the other root.
-
-### 10. A repository file disappeared or cannot be read
-
-`list` keeps the repository visible, with a state such as "global.json missing"
-or "cannot read requirement," rather than silently treating it as unnecessary.
-Likewise, a valid file that no longer specifies an SDK is shown as having no
-current SDK requirement, pending removal of its old registration.
-
-Uninstall of a possibly related SDK shows the last known requirement and the
-uncertainty. It asks for explicit consent to remove that repository registration
-along with the SDK; it never asserts that another version satisfies an unreadable
-requirement. If the missing information prevents even identifying the affected
-set, fail with the path and reason rather than expanding the deletion set.
-
-The path-targeted operation in scenario 8 can remove a stale registration even
-if the file no longer exists. Removing a stale registration must not require
-recreating or repairing a repository that I intentionally deleted.
-
-### 11. Files are missing, or the requested version was never installed
-
-If the requested SDK and a directly matching explicit spec are both absent,
-report "SDK ... is not installed at ..." and return a not-found failure. Do not
-uninstall a different version or prune unrelated specs.
-
-If an exact explicit spec remains but its SDK files are already missing, show
-a spec-only cleanup plan: "SDK files are already missing; remove this install
-spec?" Report the cleanup separately from physical removal. Do not cascade into
-other already-unsatisfied specs as though this request had broken them.
-
-`list` distinguishes missing or invalid installations from valid installations.
-Pre-existing unsatisfied specs are visible; they are not removed as incidental
-cleanup during another SDK's uninstall.
-
-### 12. SDK and runtime installations share files
-
-Removing an SDK removes its SDK installation and private content. Runtime,
-host, pack, or other files still needed by remaining installations stay.
-The result may say "Shared runtime files retained." It must not imply that
-removing an SDK necessarily removes every runtime that came in its archive.
-
-For `dotnetup runtime uninstall runtime@10.0.3`, the target is that runtime
-component, not an SDK with a similar version. The install-spec rules otherwise
-apply in the same way.
-
-There is an important limit: if the requested runtime files are also required
-by a remaining SDK installation, dotnetup cannot both remove that runtime and
-preserve the SDK. Refuse physical removal with an explanation naming the
-dependent installation. Do not silently uninstall the SDK, or remove just a
-standalone runtime record and claim that the runtime disappeared.
-
-The initial proposal does not add a force option that breaks remaining
-installations, or recursively uninstalls other components.
-
-### 13. The same version exists in another installation root
-
-`dotnetup uninstall 10.0.103 --install-path C:\dotnet` only acts within
-`C:\dotnet`. An installation at `D:\tools\dotnet` and its specs are unaffected.
-Print the selected root and architecture in the plan and result.
-
-Without `--install-path`, preserve the current uninstall root-selection rule:
-use the configured dotnetup-managed root, otherwise the default managed root.
-Do not infer ownership from whichever `dotnet` happens to be first on PATH.
-
-Do not add cross-root or all-architecture deletion implicitly. If a future
-multi-architecture layout makes the target ambiguous, require explicit
-disambiguation. Files installed with `--untracked` or owned by another installer
-are not uninstall targets.
-
-### 14. I run uninstall in a script, or decline a prompt
-
-A removal that only undoes the directly named explicit spec and installation
-can proceed without interaction. Removing additional specs requires consent:
-
-| Situation | Proposed behavior |
-| --- | --- |
-| Interactive terminal | Show the complete plan, including affected paths; default to cancel. |
-| Redirected input / non-interactive execution | Show the plan and fail without mutation when additional consent is needed. |
-| **New** `--yes` / `-y` | Accept the displayed plan, including the explicitly listed additional spec removals. Still print it. |
-| Decline or cancel | Do not remove installations or specs; return non-success. |
-
-`--yes` is consent, not a force bypass. It cannot bypass ownership checks,
-unknown target selection, or shared-file safety. Before applying an accepted
-plan, revalidate it if the manifest or repository files changed while I was
-reading the prompt. Do not delete a newly affected spec under an old approval.
-
-### 15. A file is locked, or removal is interrupted
-
-If dotnetup cannot remove the requested installation, return failure and name
-the remaining files or installation. Do not finish with an unqualified "Done."
-Do not discard specs on the assumption that removal succeeded.
-
-If some files were removed before failure, report partial removal rather than
-claiming rollback. Preserve enough state for `list` to show the incomplete
-installation and for retry or repair to work. Retrying should not require
-hand-editing the manifest.
-
-### 16. I removed the last SDK in my active root
-
-Warn in the plan that no SDK will remain in this root, even if no additional
-specs need removal. Require confirmation, or `--yes` in a script. On success,
-make the empty SDK state clear; runtimes may still be present.
-
-Do not silently switch to a system installation or rewrite shell profiles.
-Dotnetup itself remains installed. `dotnetup install <spec>` can populate the
-root again; uninstalling dotnetup or resetting its environment is outside this
-proposal.
+In an interactive plan, Cancel changes nothing. File changes while the prompt
+is open require revalidation before applying it. Automatic reconciliation of
+an edited/deleted `global.json` needs no approval, but must not cause an already
+approved plan to remove a different SDK or forget an additional live repository.
 
 ## Make the relationships visible in dotnetup list
 
-Keep installation root as the top-level grouping, include architecture, then
-show each concrete installation once with its selected install specs beneath it.
-Do not keep two unrelated-looking sections that require me to correlate them.
-
-Illustrative text layout:
+Use one table for SDKs and runtimes with columns in this order: Component,
+Channel / version, Source, Installed version. Keep one row per install spec, plus
+installation-only rows for components without their own specs. Repeating a
+component/version pair shows that multiple independent specs select the same
+installation. Column order does not change the sorting rules below.
 
 ```text
 .NET managed by dotnetup
 
-  C:\dotnet (x64)
+Component        Channel / version                                             Source                      Installed version
+---------------  ------------------------------------------------------------  --------------------------  -----------------
+SDK              10.0.100 (rollForward: latestPatch, allowPrerelease: false)   C:\src\app\global.json      10.0.105
+SDK              10.0.1xx                                                      Migration                   10.0.105
+SDK              10.0.103                                                      Command line                10.0.103
+SDK              10.0.300 (rollForward: disable)                               C:\src\other\global.json    Not installed
+SDK              Unavailable                                                   C:\src\tools\global.json    Unknown
+.NET Runtime     10.0                                                          Command line                10.0.5
+ASP.NET Core     10.0                                                          Command line                10.0.5
+Windows Desktop  10.0                                                          Command line                10.0.3
+.NET Runtime     9.0                                                           Command line                9.0.8
+ASP.NET Core     9.0                                                           Command line                9.0.8
 
-    SDK 10.0.105
-      Install specs:
-        10.0.105             explicit
-        10.0.1xx             explicit
-        global.json          C:\src\app\global.json
-          version: 10.0.100; rollForward: latestPatch; allowPrerelease: false
+10 install specs; 7 installations (2 SDKs, 5 runtimes)
 
-    SDK 10.0.103
-      No install spec currently selects this installation.
-      Eligible fallback for: 10.0.1xx; C:\src\app\global.json
-
-    Runtime 10.0.3
-      Install specs:
-        runtime@10.0         explicit
-
-    Install specs without a usable installation:
-      global.json            C:\src\other\global.json
-        version: 10.0.300; rollForward: disable
-        No satisfying SDK installed.
-
-    Install specs requiring attention:
-      global.json            C:\src\old\global.json
-        File missing; last known requirement: SDK 9.0.3xx
-
-  Total: 3 installations
+Warning: Cannot read C:\src\tools\global.json: access denied.
 ```
 
-The tree describes current selection, not exclusive ownership. One spec appears
-under its selected installation, not under every version it could match.
-Fallback annotations explain scenario 4 without duplicating the spec as though
-it were another independent registration. A runtime included only as an SDK
-subcomponent is not counted as an additional standalone installation; when
-needed, label it as shared content instead.
+For runtime specs, show `10.0`, not command-line syntax such as `runtime@10.0`:
+the Component column already says which runtime it applies to. For repository
+specs, show the version and relevant selection policy from the file in the
+Channel / version column, and the file path in Source. Do not reduce a repository's
+minimum version and roll-forward policy to a lossy channel label.
 
-Specs from different repository paths remain distinct even when their
-requirements are identical. Full paths are available in text output. Use
-"No install spec currently selects this installation," not "untracked":
-`--untracked` already means files dotnetup does not manage. An unselected
-managed installation may still be a useful fallback and is not automatically
-deleted by `list` or an unrelated uninstall.
+Label repository policy values with their `global.json` property names:
+`rollForward: disable` means no SDK roll-forward, not a disabled install spec.
+Likewise, use `rollForward: latestPatch` and `allowPrerelease: false` rather
+than unlabeled abbreviations. Keep the values inline when they fit. Do not
+force each policy onto its own line; wrap within the same Channel / version cell
+only when terminal width requires it. The example shows the wide-terminal
+layout, not a requirement to fit long specs and paths on one line everywhere.
 
-Invalid installations have a visible validation error rather than appearing
-usable. With `--no-verify`, label installation health as unverified; any
-satisfaction/fallback annotations are conditional on those files being usable.
-Unknown channel eligibility or unreadable repository requirements belong in
-"requiring attention," not under a guessed selected installation.
+There is no separate Requirement / status column. Version-selection information
+belongs to the spec; installed-version availability belongs in Installed version.
+Show exceptional diagnostics below the table, identifying the affected source
+or component/version, rather than reserve a mostly empty column for them.
 
-`list` and uninstall must use the same requirement semantics and reconciliation
-rules. Listing does not install SDKs, remove specs, or perform garbage collection.
-It can reflect current repository contents without treating observation as
-permission to delete the old SDK or registration.
+The example deliberately gives the older SDK a command-line exact-version pin.
+The migrated `10.0.1xx` spec selects `10.0.105`, the latest installed patch in
+that feature band; it does not pin the originally migrated `10.0.103`.
+
+The Windows example includes the .NET, ASP.NET Core, and Windows Desktop
+runtimes. Only show components present in the managed installation; the table
+does not imply that all three runtime types are available on every platform.
+
+Group by ordering rather than adding divider lines or blank rows between every
+group. Use two top-level groups: SDKs first, then all runtimes together. Within
+each group, sort by resolved installed version, newest first, using semantic
+version ordering rather than alphabetical ordering.
+
+For runtimes with the same version, use a fixed component order: .NET Runtime,
+ASP.NET Core, Windows Desktop. Then break ties by install spec and source in
+ascending text order. This keeps runtime components from the same release
+together instead of separating them into component-first lists. The example
+shows both aligned runtime versions and a Windows Desktop runtime at a different
+patch level.
+
+Put specs with no usable resolution at the end of their respective SDK or
+runtime group: Not installed first, then Unknown, with the same component,
+spec, and source tie-breakers. Keep a header rule, but default to a compact
+body, especially when most groups contain only one row.
+
+Keep rows selecting the same component/version adjacent without hiding repeated
+values: do not merge cells, leave versions blank, or substitute ditto marks.
+Every row should remain meaningful when copied on its own. Whether sparse
+separators or subtle shading improve readability is worth trying with realistic
+small and large inventories; neither is required by this draft. Any styling
+must also remain readable without color.
+
+"Installed version" means the version selected from what is installed, not the
+latest version available to download. Resolve repository rows using the full
+`global.json` requirement, not just the abbreviated display. "Not installed"
+means no satisfying installation of that component was found; "Unknown" means
+the requirement could not be evaluated. Do not turn a read error into a claim
+that nothing is installed.
+
+The table describes current selection, not exclusive ownership or every
+potential match. In this example, `10.0.103` could also satisfy `10.0.1xx` and
+the app repository, but both currently select `10.0.105`, so neither gets
+another row for `10.0.103`. Uninstall uses these current selections to identify
+the affected specs; it does not plan alternative selections after removal.
+Long source paths and version-selection policies should wrap within their
+columns rather than be silently truncated.
+
+Count distinct component/version installations, not rows or version strings
+alone, in the total. For example, .NET Runtime `10.0.5` and ASP.NET Core
+`10.0.5` count separately, as do different versions of the same runtime
+component. This list presentation does not expand the SDK uninstall proposal
+into a runtime-command redesign.
+
+Do not hide installed components that have no selecting spec of their own.
+Add rows to the same table with `-` in the Channel / version column. In Source, a
+runtime supplied by an SDK is labeled "Included with SDK <version>"; a managed
+SDK left after a repository deletion can be labeled "No current install specs."
+These are installation-only rows, not synthetic
+specs. They count toward installation totals but not spec totals.
+
+If a runtime is both supplied by an SDK and selected by a runtime spec, annotate
+the existing runtime row's Source with that shared relationship rather than count
+another installation. List SDK-supplied runtimes even without a standalone runtime
+install record, while keeping internal host and pack directories out of this
+SDK/runtime inventory. This requires deriving shared-component relationships,
+not just displaying the current manifest's top-level installation records.
+
+Do not call managed components without their own specs "untracked":
+`--untracked` already means files dotnetup does not manage. A confirmed-deleted
+repository disappears from the spec table; a malformed or unreadable file
+remains visible with Unavailable version information, Unknown resolution,
+and its parse or access error.
+This row does not represent an active reference that keeps an SDK installed;
+do not display its cached requirement as if it were current.
+
+Invalid installations mark the version as invalid and show the validation
+error below the table. With `--no-verify`, show an installation-health-unverified
+notice rather than implying installed files were checked.
+Listing reflects live repository requirements, but does not install or delete
+SDK content.
 
 ### JSON and other output surfaces
 
-Keep `list --format json` and its existing `installSpecs` and `installations`
-arrays. Do not replace the machine-readable contract with the text tree.
-Relationship/status fields would be an additive, separately reviewed extension,
-including a way to identify endpoints by root, architecture, component,
-version, and spec identity. Do not require scripts to infer relationships from
-display strings or tree indentation.
+Keep `dotnetup list --format json` and its existing `installSpecs` and
+`installations` arrays. Adopting friendlier text labels does not require renaming
+those properties or flattening the JSON model into the text table's repeated
+version values.
 
-Other output using the shared installation lister should use the same terms and
-relationships. Update help and command reference only when the behavior ships;
-the current reference should not claim this draft is implemented.
+Relationship/status fields and migration provenance need a separately reviewed
+machine-readable contract, including stable identities. Migration-origin
+changes must account for existing consumers rather than being treated as a
+cosmetic text change. Likewise, exposing SDK-supplied runtimes needs an additive
+inventory representation rather than silently reinterpreting the existing
+`installations` array as including subcomponents. Other users of the shared
+installation lister should use the same user-facing labels and relationships.
 
-## Choices and tradeoffs still worth reviewing
+## Correctness prerequisites and cleanup scope
 
-| Choice | Recommendation and tradeoff |
+The earlier separate branch-switching scenario is primarily a correctness
+prerequisite, not a new user-facing operation:
+
+- Refresh repository requirements before matching specs or computing what
+  garbage collection would remove.
+- Keep one logical entry per registered repository file, not one per historical
+  derived channel. Consolidate legacy duplicates.
+- Apply the full SDK requirement, including version lower bounds, roll-forward,
+  and prerelease policy, when determining which installed SDK each spec
+  currently selects.
+- Keep malformed or unreadable repository registrations visible with diagnostics,
+  but exclude their cached requirements from SDK retention and uninstall blockers.
+- Use the same relationships in list, uninstall planning, and cleanup.
+
+**Cleanup scope remains an important design choice.** "Remove the spec and
+garbage collect" must not accidentally reproduce the report where uninstalling
+`8.0` also removed an unrelated `10.0.204` SDK after a repository changed.
+
+The working recommendation is to reconcile all relevant requirements, but scope
+uninstall cleanup to installations that the named spec was keeping, plus
+the installations targeted by an approved physical-version uninstall. That operation
+targets that version and its now-unused shared content. Leave unrelated
+unselected SDKs for the normal cleanup policy.
+
+Deleting a repository removes its requirement automatically, but whether its
+now-unused SDK is collected during *any* later uninstall or only an appropriate
+cleanup operation should be decided explicitly. Whole-installation garbage
+collection is a simpler alternative; it would need visible reporting of those
+additional SDK removals. The examples use scoped cleanup, not an assumption
+that today's garbage collector already provides it.
+
+## Remaining decisions
+
+| Decision | Current position in this draft |
 | --- | --- |
-| Keep unsatisfied specs after uninstall? | Not by default. Removing newly unsatisfied specs after consent avoids leaving hidden requests that can reinstall what I just removed. Consider a future explicit keep-specs option if temporary removal is common. |
-| Add `untrack`? | Defer it. The path-targeted form handles one-repository removal, but its spec-only behavior is a reason to revisit a separate command if `uninstall` becomes too overloaded. |
-| Remove all matching versions for a channel? | No. Remove the displayed selected version and named explicit spec; leave other versions alone. Bulk removal needs a separate, explicit plan. |
-| Preserve `--source`? | Do not let it filter physical exact-version targets. Retire it from the default experience; during transition, reject supplied `--source` with migration guidance rather than silently reinterpret an old script. A future spec-management surface could retain source filters. |
-| Guarantee a version never returns? | No blacklist in this proposal. Retained specs may request it on update. Explain that consequence when retaining a channel; deleting every broadly compatible spec would be too destructive. |
-| Suggest `update` instead? | When uninstall would drop a moving spec, offer a short hint that `update` may replace the old SDK while preserving the requirement. Never run update as part of uninstall. |
-
-Channel selection, the repository-path form, retirement of `--source`, and
-last-SDK confirmation are proposed refinements for review, not existing
-agreements. Hashing repository files is an implementation choice, not part of
-the user contract.
+| User-facing name | Try "Install spec" for both SDKs and runtimes; terminology remains open. |
+| List layout | Component, Channel / version, Source, Installed version. SDKs first, then all runtimes; resolved version descending within each group, then component, spec, and source. Missing/unknown resolutions go last within their group. Include installation-only rows. |
+| Source labels | Command line, Migration, Repository. Migration creates a latest-patch channel spec, such as `10.0.1xx` for SDK `10.0.103`, with the same retention behavior as a command-line spec for that channel. |
+| Match a spec or version first? | Match saved standalone specs first, whether channel or exact version; fall back to an installed exact version only. |
+| Match repository-derived channel strings directly? | Not by default. Keep repository registrations independent and show them as additional effects. |
+| Roll back while retaining specs? | Outside this uninstall proposal. Offer to remove specs currently selecting the targeted SDK, not reassign them to an older installation. A rollback design should not depend on a previous version already being installed. |
+| Confirmation policy | Matching-spec removal never prompts or expands to other specs, including for exact-version specs. Physical-version removal prompts for affected specs; automatic removal and a genuinely recoverable undo design remain alternatives for that case. |
+| Scope of garbage collection | Scoped cleanup recommended; explicitly decide whether unrelated newly unused SDKs can also be removed. |
+| Remove one repository registration while keeping its files? | Defer a dedicated UI. File deletion/change is authoritative without confirmation. |
+| Existing `--source` behavior | Compatibility/migration policy still needs design; do not invent or silently change its meaning here. |
+| Custom paths and architecture UI | Outside this proposal. Omit architecture noise from ordinary messages. |
+| Runtime uninstall and bulk removal | Do not redesign these commands as part of the initial SDK proposal. |
+| Last-SDK warning | Report the resulting empty state; decide separately whether it warrants an additional prompt. |
 
 ## Current behavior and supporting issues
 
-The current implementation differs materially from this proposal:
+The current implementation is context, not evidence that the proposed experience
+already works:
 
 - [`UninstallWorkflow.Execute`](../../../../src/Installer/dotnetup.Library/Commands/Shared/UninstallWorkflow.cs)
   matches stored specs by component, version/channel string, and source before
   calling garbage collection. It can report that target installations remain.
 - [`GarbageCollector.Collect`](../../../../src/Installer/dotnetup.Library/GarbageCollector.cs)
   refreshes repository specs, retains the latest matching installation for each,
-  and removes other installations across the root. This explains how an
-  unrelated old SDK can disappear during uninstall.
+  and removes other installations across the root.
 - [`GlobalJsonChannelResolver.ResolveChannel`](../../../../src/Installer/dotnetup.Library/GlobalJsonChannelResolver.cs)
-  currently reduces repository requirements to channel strings.
-  Correct fallback decisions are a prerequisite for this proposal, not a
-  capability to assume from the current matcher.
+  reduces repository requirements to channel strings. Correct SDK selection
+  cannot assume that this preserves the full SDK requirement.
 - [`InstallationLister`](../../../../src/Installer/dotnetup.Library/Commands/List/ListCommand.cs)
-  currently displays separate "Tracked channels" and "Installed versions"
-  sections. Its JSON model already names the requirements `installSpecs`.
+  displays separate "Tracked channels" and "Installed versions" sections.
   [`InstallSpec` and `Installation`](../../../../src/Installer/dotnetup.Library/DotnetupManifestData.cs)
   are separate manifest concepts.
-
-Public issue context:
+- The current [`SDK install`](../reference/dotnetup-sdk-install.md) and
+  [`SDK uninstall`](../reference/dotnetup-sdk-uninstall.md) references document
+  the SDK-qualified command names used throughout this draft.
 
 | Issue | Relevance |
 | --- | --- |
-| [dotnet/sdk#56228](https://github.com/dotnet/sdk/issues/56228) | Noah's original proposal separates untracking from physical uninstall and retains unsatisfied specs with an override. This draft intentionally chooses a different default. The review comment requests an interactive prompt. |
-| [dotnet/sdk#56225](https://github.com/dotnet/sdk/issues/56225) | Stable repository-spec identity and consolidation of duplicate records. |
+| [dotnet/sdk#56228](https://github.com/dotnet/sdk/issues/56228) | Noah's original proposal separates untracking from physical uninstall and retains unsatisfied specs with an override. This draft instead removes matching specs without prompting and confirms affected-spec removal when targeting an installed version with no matching standalone spec. |
+| [dotnet/sdk#56225](https://github.com/dotnet/sdk/issues/56225) | Stable repository identity and consolidation of duplicate records. |
 | [dotnet/sdk#56226](https://github.com/dotnet/sdk/issues/56226) | Refresh requirements before matching; avoid repeated identical uninstalls. |
 | [dotnet/sdk#56227](https://github.com/dotnet/sdk/issues/56227) | Preserve minimum versions, roll-forward, and prerelease semantics when determining satisfaction. |
-| [dotnet/sdk#53396](https://github.com/dotnet/sdk/issues/53396) | Existing prerelease-policy issue, with Noah's follow-up explaining why it affects correctness, not just documentation. |
+| [dotnet/sdk#53396](https://github.com/dotnet/sdk/issues/53396) | Prerelease-policy correctness as well as documentation. |
 | [dotnet/sdk#55312](https://github.com/dotnet/sdk/issues/55312) | Concrete report of uninstalling `8.0` removing an unrelated `10.0.204` SDK. |
-| [dotnet/sdk#53393](https://github.com/dotnet/sdk/issues/53393) | Earlier root-command scope discussion. This draft preserves the current SDK alias rather than making uninstall remove dotnetup itself. |
 
-The scenarios above are the proposed acceptance criteria. Shipping this design
-requires changing physical removal and requirement evaluation, not merely
-renaming the command or reorganizing `list`.
+This revision changes only the proposal. Command reference, runtime messages,
+and implementation should change together once the behavior is agreed.
