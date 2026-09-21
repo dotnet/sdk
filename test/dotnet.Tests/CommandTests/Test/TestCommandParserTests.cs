@@ -114,6 +114,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
+        }
+
+        [TestMethod]
+        public void VSTestCommandUsesMicrosoftTestPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.VSTest();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying the Microsoft Test Platform banner");
+        }
+
+        [TestMethod]
         public void MTPCommandDoesNotDuplicateNoBannerOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -659,6 +675,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
                 ["-ignore-exit-code:8"],
                 environmentValue: "").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                [],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: "10",
+                configurationValue: "8").Should().Be("10");
         }
 
         [TestMethod]

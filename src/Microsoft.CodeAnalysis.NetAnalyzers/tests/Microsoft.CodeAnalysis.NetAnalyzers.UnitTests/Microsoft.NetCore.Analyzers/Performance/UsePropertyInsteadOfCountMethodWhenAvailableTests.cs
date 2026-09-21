@@ -868,7 +868,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
     }
 
-    [TestClass]
     public abstract class UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {

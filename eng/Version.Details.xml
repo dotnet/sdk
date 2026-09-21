@@ -499,6 +499,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>3c8d132bfb012af4bbba80de22149a9f58e737f0</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NET.ProjectData.Tasks" Version="5.12.0-1.26466.107">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>59a8e950b13d4ba84ccab0c186d5c7275cd7fd9b</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26453.118">
@@ -544,18 +548,18 @@
     <!-- KEEP IN SYNC: the following testfx packages (Microsoft.Testing.Platform, MSTest, MSTest.Sdk) must
          stay on the SAME testfx build/Sha. The MSTest.Sdk source generator emits registrations against the
          MSTest.TestFramework runtime, so a version skew breaks the NativeAOT CLI test build. See #55302. -->
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.4.0">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.5.0-preview.26469.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>a81dff85c81f88b1cd0421619225b1037341d201</Sha>
+      <Sha>f0fe5a89980d2b29daeb3c949c08d7f61b9cf939</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.4.0">
+    <Dependency Name="MSTest" Version="4.5.0-preview.26469.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>a81dff85c81f88b1cd0421619225b1037341d201</Sha>
+      <Sha>f0fe5a89980d2b29daeb3c949c08d7f61b9cf939</Sha>
     </Dependency>
     <!-- MSTest.Sdk is consumed from global.json's msbuild-sdks (not as a PackageReference). -->
-    <Dependency Name="MSTest.Sdk" Version="4.4.0">
+    <Dependency Name="MSTest.Sdk" Version="4.5.0-preview.26469.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>a81dff85c81f88b1cd0421619225b1037341d201</Sha>
+      <Sha>f0fe5a89980d2b29daeb3c949c08d7f61b9cf939</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-rc.1.26453.118">
       <Uri>https://github.com/dotnet/dotnet</Uri>

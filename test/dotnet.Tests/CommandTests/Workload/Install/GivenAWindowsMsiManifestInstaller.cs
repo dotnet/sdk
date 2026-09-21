@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
 [TestClass]
 [SupportedOSPlatform("windows")]
+[OSCondition(OperatingSystems.Windows)]
 public class GivenAWindowsMsiManifestInstaller : SdkTest
 {
     [TestMethod]
