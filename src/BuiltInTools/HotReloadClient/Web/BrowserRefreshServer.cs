@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -34,6 +35,7 @@ internal sealed class BrowserRefreshServer(
     string dotnetPath,
     string? autoReloadWebSocketHostName,
     int? autoReloadWebSocketPort,
+    ImmutableArray<string> autoReloadWebSocketOrigins,
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
@@ -62,10 +64,22 @@ internal sealed class BrowserRefreshServer(
                     builder.UseUrls($"http://{hostName}:{port}");
                 }
 
+                var allowedHosts = new List<string>() { "localhost", "127.0.0.1", "[::1]" };
+
+                if (!autoReloadWebSocketOrigins.IsDefault)
+                {
+                    allowedHosts.AddRange(autoReloadWebSocketOrigins);
+                }
+
+                if (autoReloadWebSocketHostName != null)
+                {
+                    allowedHosts.Add(autoReloadWebSocketHostName);
+                }
+
                 builder.Configure(app =>
                 {
                     app.UseWebSockets();
-                    app.Run(WebSocketRequestAsync);
+                    app.Run(context => WebSocketRequestAsync(context, [.. allowedHosts]));
                 });
             })
             .Build();
@@ -128,11 +142,19 @@ internal sealed class BrowserRefreshServer(
         ];
     }
 
-    private async Task WebSocketRequestAsync(HttpContext context)
+    private async Task WebSocketRequestAsync(HttpContext context, ImmutableArray<string> allowedHosts)
     {
         if (!context.WebSockets.IsWebSocketRequest)
         {
-            context.Response.StatusCode = 400;
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        // check the domain of the Origin header:
+        if (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+            !allowedHosts.Contains(originUri.Host, StringComparer.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
 
