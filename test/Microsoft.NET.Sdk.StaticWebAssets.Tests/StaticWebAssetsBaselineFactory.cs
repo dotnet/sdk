@@ -319,6 +319,7 @@ public partial class StaticWebAssetsBaselineFactory
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
                 {
+                    _ when runtimeIdentifier is not null && string.Equals(segments[i], runtimeIdentifier, StringComparison.OrdinalIgnoreCase) => "${Rid}",
                     2 when segments[0] is "obj" or "bin" => "${Tfm}",
                     var last when i == segments.Length - 1 => RemovePossibleHash(segments[last]),
                     _ => segments[i]

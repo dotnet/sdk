@@ -378,7 +378,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\win-x64\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -402,7 +402,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\win-x64\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -426,7 +426,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\win-x64\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -450,7 +450,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\win-x64\\jsmodules\\jsmodules.build.manifest.json",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\jsmodules\\jsmodules.build.manifest.json",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
