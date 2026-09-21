@@ -199,8 +199,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(string, string, int)> LaunchedProcess = Create<(string, string, int)>("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, LogLevel.Debug);
     public static readonly MessageDescriptor<long> ManagedCodeChangesApplied = Create<long>("C# and Razor changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
     public static readonly MessageDescriptor<long> StaticAssetsChangesApplied = Create<long>("Static asset changes applied in {0}ms.", Emoji.HotReload, LogLevel.Information);
-    public static readonly MessageDescriptor<None> StaticWebAssetManifestNotFound = Create("Static web asset manifest not found.", Emoji.Warning, LogLevel.Warning);
-    public static readonly MessageDescriptor<string> ScopedCssBundleFileNotFound = Create<string>("Scoped CSS bundle file '{0}' not found.", Emoji.Warning, LogLevel.Warning);
+    public static readonly MessageDescriptor<None> StaticWebAssetManifestNotFound = Create(LogEvents.StaticWebAssetManifestNotFound, Emoji.Warning);
+    public static readonly MessageDescriptor<string> ScopedCssBundleFileNotFound = Create(LogEvents.ScopedCssBundleFileNotFound, Emoji.Warning);
     public static readonly MessageDescriptor<IEnumerable<ProjectRepresentation>> ChangesAppliedToProjectsNotification = CreateNotification<IEnumerable<ProjectRepresentation>>();
     public static readonly MessageDescriptor<int> SendingUpdateBatch = Create(LogEvents.SendingUpdateBatch, Emoji.HotReload);
     public static readonly MessageDescriptor<int> UpdateBatchCompleted = Create(LogEvents.UpdateBatchCompleted, Emoji.HotReload);
@@ -224,6 +224,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<string> ApplyUpdate_ChangingEntryPoint = Create<string>("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, LogLevel.Warning);
     public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("Configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> UsingBrowserRefreshMiddleware = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> BrowserToolsAssetsNotProducedByProject = Create("The project does not produce dotnet-watch browser tools assets. Browser tools are disabled for it.", Emoji.Watch, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> BrowserToolsUsingKeyFromBuild = Create("Using the dotnet-watch browser tools key produced by the build.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);
     public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is not supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);

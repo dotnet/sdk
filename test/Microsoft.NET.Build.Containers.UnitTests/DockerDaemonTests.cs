@@ -6,9 +6,6 @@ using Microsoft.NET.Build.Containers.Resources;
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
-// Mutates the process-global DOCKER_HOST environment variable, so it must not run
-// concurrently with other tests under method-level parallelization.
-[DoNotParallelize]
 public class DockerDaemonTests : IDisposable
 {
     private readonly TestLoggerFactory _loggerFactory;
@@ -27,6 +24,10 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
+    // Mutates the process-global DOCKER_HOST environment variable. Only this test needs to be
+    // serialized, so take the environment-variable resource lock instead of deferring the whole
+    // class out of method-level parallelization.
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DockerUnavailableCondition]
     [PodmanCliCondition] // podman is a local cli not meant for connecting to remote Docker daemons.
     public async Task Can_detect_when_no_daemon_is_running()

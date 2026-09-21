@@ -8,8 +8,12 @@ internal static class CliConstants
     public const string ServerOptionKey = "--server";
     public const string HelpOptionKey = "--help";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
+    public const string DotNetTestTransportOptionKey = "--dotnet-test-transport";
+    public const string DotNetTestHttpEndpointOptionKey = "--dotnet-test-http-endpoint";
+    public const string DotNetTestHttpTokenOptionKey = "--dotnet-test-http-token";
 
     public const string ServerOptionValue = "dotnettestcli";
+    public const string DotNetTestHttpTransportValue = "http";
     public const string ArtifactPostProcessingToolName = "internal-merge-artifacts";
     public const string ArtifactPostProcessingManifestOptionKey = "--manifest";
 
@@ -27,6 +31,12 @@ internal static class CliConstants
     public const string DLLExtension = ".dll";
 
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
+
+    /// <summary>
+    /// Overrides how long a relaunched artifact post-processing host may run, in seconds.
+    /// '0' removes the bound entirely. Absent, non-numeric or negative values keep the default.
+    /// </summary>
+    public const string TestArtifactPostProcessingTimeoutEnvVar = "DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS";
 }
 
 internal static class TestStates
@@ -75,6 +85,15 @@ internal static class HandshakeMessagePropertyNames
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
 
+    // Identifies the extension responsible for a test-host orchestrator. Optional and
+    // additive so older consumers can ignore it and newer consumers can recognize known
+    // orchestrators without rejecting unknown ones.
+    internal const byte OrchestratorFeature = 11;
+
+    // Reply-only capability that tells Microsoft.Testing.Platform where to open
+    // the reverse channel used for server-initiated session cancellation.
+    internal const byte ServerControlPipeName = 12;
+
     // Optional 1-based retry attempt number. Multiple test host instances, such as shards,
     // can belong to the same attempt. Older hosts omit it, so the SDK retains instance-based
     // retry inference as a compatibility fallback.
@@ -84,6 +103,8 @@ internal static class HandshakeMessagePropertyNames
     // supported by post-processors registered in the test application.
     internal const byte SupportedPostProcessorKinds = 14;
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
+    internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
+    internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -104,6 +125,7 @@ internal static class HandshakeMessageExecutionModes
 internal static class HandshakeMessageHostTypes
 {
     internal const string TestHost = "TestHost";
+    internal const string TestHostOrchestrator = "TestHostOrchestrator";
     internal const string ArtifactPostProcessor = "ArtifactPostProcessor";
 }
 
@@ -116,6 +138,11 @@ internal static class ProtocolConstants
     // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
     // it is a separate, larger feature that is out of scope here.
     internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";
+}
+
+internal static class ServerControlKinds
+{
+    internal const byte CancelSession = 1;
 }
 
 internal static class ProjectProperties
@@ -136,4 +163,8 @@ internal static class ProjectProperties
     internal const string BuildInParallel = "BuildInParallel";
     internal const string IsTraversal = "IsTraversal";
     internal const string ProjectReferenceItemName = "ProjectReference";
+    internal const string UseArtifactsOutput = "UseArtifactsOutput";
+    internal const string ArtifactsPath = "ArtifactsPath";
+    internal const string ArtifactsProjectName = "ArtifactsProjectName";
+    internal const string ArtifactsPivots = "ArtifactsPivots";
 }

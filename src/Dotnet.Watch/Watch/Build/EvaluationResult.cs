@@ -38,13 +38,11 @@ internal sealed class EvaluationResult(
             includeSubdirectories: true);
     }
 
-    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions)
+    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments)
     {
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
-        return BuildUtilities.ParseBuildProperties(buildArguments)
-            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
-            .SetItem(PropertyNames.DotNetWatchBuild, "true")
+        return BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments)
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
@@ -183,13 +181,9 @@ internal sealed class EvaluationResult(
             {
                 staticWebAssetManifestsBuilder.Add(projectInstance.GetId(), manifest);
 
-                // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
-                foreach (var (relativeUrl, filePath) in manifest.UrlToPathMap)
+                foreach (var (filePath, relativeUrl) in manifest.GetFilesToWatch())
                 {
-                    if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
-                    {
-                        AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
-                    }
+                    AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
                 }
             }
 

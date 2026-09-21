@@ -98,7 +98,7 @@ public partial class WorkloadInstallDetectorTests
                 Assert.IsNotNull(recordKey);
             }
 
-            var repository = new RegistryWorkloadInstallationRecordRepository(Registry.CurrentUser, basePath);
+            var repository = new ReadOnlyWindowsWorkloadInstallationRecordRepository(Registry.CurrentUser, basePath);
 
             var installed = repository.GetInstalledWorkloads(featureBand).ToList();
             Assert.HasCount(1, installed);

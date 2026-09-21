@@ -32,4 +32,30 @@
     </PropertyGroup>
   </Target>
 
+  <!-- The pinned WiX SDK uses this full constants expression as a WixBuild input. Serialize that
+       same evaluated value and add it to WiX's bind inputs so property-only changes invalidate
+       CoreCompile without maintaining a second property list. The compatibility test locks these
+       private WiX contracts to the pinned SDK. -->
+  <Target Name="IncludeTemplateMsiBuildProperties"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="GenerateUpgradeCode;SetInstallerInfo;_CreateProjectDefineConstants">
+    <WriteLinesToFile File="$(IntermediateOutputPath)template-msi-build.properties"
+                      Lines="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <_BindInputs Include="$(IntermediateOutputPath)template-msi-build.properties" />
+    </ItemGroup>
+  </Target>
+
+  <!-- The pinned Heat targets populate this private item before evaluating HarvestDirectory.
+       The completion stamp represents layout removals that current directory contents cannot infer. -->
+  <Target Name="IncludeTemplateMsiIncrementalInputs"
+          AfterTargets="GetHarvestDirectoryContent">
+    <ItemGroup>
+      <_HarvestDirectoryContent Include="$(TemplateLayoutCompletionStamp)"
+                               Condition="'$(TemplateLayoutCompletionStamp)' != ''" />
+    </ItemGroup>
+  </Target>
+
 </Project>

@@ -2,16 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Sockets;
 using System.Web;
 using System.Net.Http.Headers;
 using System.Collections.Specialized;
+using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.NET.Build.Containers.Tasks;
+using Moq;
 
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
     [TestClass]
-    // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE),
-    // so it must not run concurrently with other tests under method-level parallelization.
+    // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE) and
+    // shares AuthHandshakeMessageHandler's process-wide static credential cache, which is keyed by
+    // registry name - the same TestRegistryName for every test here. [DoNotParallelize] keeps
+    // these tests from running concurrently, making today's shared-cache behavior deterministic
+    // enough for the suite to pass. A [ResourceLock] (even with a custom key for the cache)
+    // would serialize these tests but cannot reset that private cache between tests, so later
+    // tests can reuse a cached Authorization header and skip the handshake. The real fix is to
+    // give each data row its own registry name; see
+    // https://github.com/dotnet/sdk/issues/55526.
     [DoNotParallelize]
     public class AuthHandshakeMessageHandlerTests
     {
@@ -66,7 +77,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 File.WriteAllText(authFile, authConf);
                 Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
 
-                var authHandler = new AuthHandshakeMessageHandler(TestRegistryName, isInsecureRegistry: false, new ServerMessageHandler(server), NullLogger.Instance, RegistryMode.Push);
+                var authHandler = new AuthHandshakeMessageHandler(TestRegistryName, new Uri(RequestUrl), isInsecureRegistry: false, new ServerMessageHandler(server), NullLogger.Instance, RegistryMode.Push);
                 using var httpClient = new HttpClient(authHandler);
 
                 var response = await httpClient.GetAsync(RequestUrl, TestContext.CancellationToken);
@@ -177,7 +188,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             {
                 "auths": {
                     "{{TestRegistryName}}": {
-                        "identitytoken": {{identityToken}},
+                        "identitytoken": "{{identityToken}}",
                         "auth": "{{GetUserPasswordBase64("__", "__")}}"
                     }
                 }
@@ -314,7 +325,743 @@ namespace Microsoft.NET.Build.Containers.UnitTests
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                return Task.FromResult(_server(request));
+                HttpResponseMessage response = _server(request);
+                response.RequestMessage ??= request;
+                return Task.FromResult(response);
+            }
+        }
+
+        private sealed class TrackingContent : HttpContent
+        {
+            public bool IsDisposed { get; private set; }
+
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => Task.CompletedTask;
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = 0;
+                return true;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                IsDisposed = disposing;
+                base.Dispose(disposing);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that Basic and Bearer challenges from a redirected request with a different
+        /// host, port, or DNS authority are rejected without sending registry credentials.
+        /// </summary>
+        [TestMethod]
+        [DataRow("Basic", "", "different-host", false)]
+        [DataRow("Basic", "", "different-port", false)]
+        [DataRow("Basic", "", "trailing-dot-host", false)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\"", "different-host", false)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\"", "different-port", false)]
+        [DataRow("Basic", "", "different-host", true)]
+        [DataRow("Basic", "", "different-port", true)]
+        [DataRow("Basic", "", "trailing-dot-host", true)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\"", "different-host", true)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\"", "different-port", true)]
+        [DataRow("Bearer", "realm=\"first\",realm=\"second\"", "different-host", false)]
+        [DataRow("Bearer", "realm=\"first\",realm=\"second\"", "different-host", true)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\",scope=\"first\",scope=\"second\"", "different-host", false)]
+        [DataRow("Bearer", "realm=\"https://external.invalid/token\",scope=\"first\",scope=\"second\"", "different-host", true)]
+        [DataRow("Bearer", "service=\"registry\"", "different-host", false)]
+        [DataRow("Bearer", "service=\"registry\"", "different-host", true)]
+        [DataRow("Bearer", "", "different-host", false)]
+        [DataRow("Bearer", "", "different-host", true)]
+        [DataRow("bEaReR", "realm=\"first\",realm=\"second\"", "different-host", true)]
+        [DataRow("bAsIc", "realm=\"first\",realm=\"second\"", "different-host", true)]
+        public async Task SendAsync_RejectsAuthenticationChallengeFromRedirectedOrigin(
+            string authenticationScheme,
+            string authenticationParameters,
+            string redirectedOrigin,
+            bool authenticateBeforeRedirect)
+        {
+            // Model a registry request whose final response URI has a different HTTP origin.
+            string registryName = $"auth-redirect-test-{Guid.NewGuid():N}.invalid";
+            Uri registryUri = new($"https://{registryName}");
+            Uri redirectedUri = redirectedOrigin switch
+            {
+                "different-host" => new Uri("https://external.invalid/v2"),
+                "different-port" => new UriBuilder(registryUri) { Port = 444 }.Uri,
+                "trailing-dot-host" => new UriBuilder(registryUri) { Host = $"{registryName}." }.Uri,
+                _ => throw new ArgumentOutOfRangeException(nameof(redirectedOrigin))
+            };
+            int requestCount = 0;
+            TrackingContent? responseContent = null;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                requestCount++;
+                Assert.AreEqual(registryUri, request.RequestUri);
+                if (authenticateBeforeRedirect && requestCount == 1)
+                {
+                    Assert.IsNull(request.Headers.Authorization);
+                    return CreateRequestAuthenticateResponse("Basic", "");
+                }
+
+                Assert.AreEqual(authenticateBeforeRedirect ? "Basic" : null, request.Headers.Authorization?.Scheme);
+                // Model the transport removing authorization when it follows the redirect.
+                request.Headers.Authorization = null;
+                request.RequestUri = redirectedUri;
+                HttpResponseMessage response = CreateRequestAuthenticateResponse(authenticationScheme, authenticationParameters);
+                response.Content = responseContent = new TrackingContent();
+                return response;
+            }
+
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                // Process the challenge with registry credentials available for lookup.
+                await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+                    () => httpClient.GetAsync(registryUri, TestContext.CancellationToken));
+            });
+
+            // There is no authentication retry after the different-origin challenge,
+            // and its response is disposed as part of the rejection.
+            Assert.AreEqual(authenticateBeforeRedirect ? 2 : 1, requestCount);
+            Assert.IsTrue(responseContent?.IsDisposed);
+        }
+
+        /// <summary>
+        /// Verifies with the default HTTP transport that a Basic challenge received after an
+        /// automatic cross-origin redirect is rejected without sending registry credentials.
+        /// </summary>
+        [TestMethod]
+        [DataRow(301, false)]
+        [DataRow(302, false)]
+        [DataRow(303, false)]
+        [DataRow(307, false)]
+        [DataRow(308, false)]
+        [DataRow(301, true)]
+        [DataRow(302, true)]
+        [DataRow(303, true)]
+        [DataRow(307, true)]
+        [DataRow(308, true)]
+        public async Task SendAsync_RejectsAuthenticationChallengeAfterAutomaticRedirect(int redirectStatus, bool authenticateBeforeRedirect)
+        {
+            // Use separate loopback ports to represent the configured registry and a
+            // different origin reached through an automatic redirect.
+            using TcpListener registryListener = new(IPAddress.Loopback, 0);
+            using TcpListener redirectedListener = new(IPAddress.Loopback, 0);
+            registryListener.Start();
+            redirectedListener.Start();
+
+            int registryPort = ((IPEndPoint)registryListener.LocalEndpoint).Port;
+            int redirectedPort = ((IPEndPoint)redirectedListener.LocalEndpoint).Port;
+            string registryName = $"127.0.0.1:{registryPort}";
+            Uri registryUri = new($"http://{registryName}");
+            Uri redirectedUri = new($"http://127.0.0.1:{redirectedPort}/v2");
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            Task<string> registryRequest = ServeRegistryAsync();
+
+            // The redirected origin responds with a Basic challenge after receiving the
+            // automatically redirected request.
+            Task<string> redirectedRequest = SendResponseAsync(
+                redirectedListener,
+                "HTTP/1.1 401 Unauthorized\r\n"
+                    + "WWW-Authenticate: Basic realm=\"registry\"\r\n"
+                    + "Content-Length: 0\r\n"
+                    + "Connection: close\r\n\r\n",
+                timeout.Token,
+                stopListenerAfterResponse: true);
+
+            // Exercise the real SocketsHttpHandler redirect path with credentials configured
+            // for the original registry.
+            InvalidAuthResponseException exception = await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: true,
+                    new SocketsHttpHandler { UseCookies = false, UseProxy = false },
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                return await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+                    () => httpClient.GetAsync(new Uri(registryUri, "/v2"), timeout.Token));
+            });
+
+            string initialRequestHeaders = await registryRequest;
+            string redirectedRequestHeaders = await redirectedRequest;
+
+            Assert.AreEqual(authenticateBeforeRedirect, initialRequestHeaders.Contains("Authorization: Basic ", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(redirectedRequestHeaders.Contains("Authorization:", StringComparison.OrdinalIgnoreCase));
+
+            // The failure identifies both the observed challenge origin and the configured
+            // registry origin to make the rejected workflow diagnosable.
+            Assert.Contains("CONTAINER1019", exception.Message);
+            Assert.Contains(redirectedUri.GetLeftPart(UriPartial.Authority), exception.Message);
+            Assert.Contains(registryUri.GetLeftPart(UriPartial.Authority), exception.Message);
+
+            async Task<string> ServeRegistryAsync()
+            {
+                if (authenticateBeforeRedirect)
+                {
+                    string unauthenticatedHeaders = await SendResponseAsync(
+                        registryListener,
+                        "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"registry\"\r\n"
+                            + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                        timeout.Token);
+                    Assert.IsFalse(unauthenticatedHeaders.Contains("Authorization:", StringComparison.OrdinalIgnoreCase));
+                }
+
+                return await SendResponseAsync(
+                    registryListener,
+                    $"HTTP/1.1 {redirectStatus} Redirect\r\nLocation: {redirectedUri.AbsoluteUri}\r\n"
+                        + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                    timeout.Token,
+                    stopListenerAfterResponse: true);
+            }
+        }
+
+        /// <summary>
+        /// The authenticated retry is not another authentication cycle. Same-origin challenges
+        /// and responses without a supported 401 challenge are returned unchanged.
+        /// </summary>
+        [TestMethod]
+        [DataRow(HttpStatusCode.Unauthorized, "Basic", true)]
+        [DataRow(HttpStatusCode.Unauthorized, "Bearer realm=\"https://auth.invalid/token\"", true)]
+        [DataRow(HttpStatusCode.Unauthorized, "Bearer realm=\"first\",realm=\"second\"", true)]
+        [DataRow(HttpStatusCode.OK, null, false)]
+        [DataRow(HttpStatusCode.Unauthorized, null, false)]
+        [DataRow(HttpStatusCode.Unauthorized, "Digest", false)]
+        [DataRow(HttpStatusCode.Forbidden, "Basic", false)]
+        public async Task SendAsync_ReturnsAuthenticatedRetryResponseWithoutFurtherAuthentication(
+            HttpStatusCode statusCode, string? challenge, bool sameOrigin)
+        {
+            string registryName = $"auth-retry-test-{Guid.NewGuid():N}.invalid";
+            Uri registryUri = new($"https://{registryName}");
+            int requestCount = 0;
+            var responseContent = new TrackingContent();
+            using var retryResponse = new HttpResponseMessage(statusCode) { Content = responseContent };
+            if (challenge is not null)
+            {
+                retryResponse.Headers.WwwAuthenticate.Add(AuthenticationHeaderValue.Parse(challenge));
+            }
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                requestCount++;
+                if (requestCount == 1)
+                {
+                    Assert.IsNull(request.Headers.Authorization);
+                    return CreateRequestAuthenticateResponse("Basic", "");
+                }
+
+                Assert.AreEqual(2, requestCount);
+                Assert.AreEqual("Basic", request.Headers.Authorization?.Scheme);
+                request.RequestUri = sameOrigin ? new Uri(registryUri, "/redirected") : new Uri("https://storage.invalid/blob");
+                return retryResponse;
+            }
+
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName, registryUri, isInsecureRegistry: false,
+                    new ServerMessageHandler(Server), NullLogger.Instance, RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+                using HttpResponseMessage response = await httpClient.GetAsync(registryUri, TestContext.CancellationToken);
+
+                Assert.AreSame(retryResponse, response);
+                Assert.IsFalse(responseContent.IsDisposed);
+                Assert.AreEqual(2, requestCount);
+            });
+        }
+
+        /// <summary>
+        /// Verifies that an HTTP authentication challenge is rejected for a registry configured
+        /// to use HTTPS, even when the host and effective port match.
+        /// </summary>
+        [TestMethod]
+        public async Task SendAsync_RejectsHttpAuthenticationChallengeForSecureRegistry()
+        {
+            // Model a secure registry whose request ends at HTTP on the same host and port.
+            string registryName = $"secure-scheme-test-{Guid.NewGuid():N}.invalid";
+            Uri registryUri = new($"https://{registryName}");
+            Uri redirectedUri = new($"http://{registryName}:443/v2");
+            int requestCount = 0;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                // Return the Basic challenge from the downgraded final URI.
+                requestCount++;
+                request.RequestUri = redirectedUri;
+                return CreateRequestAuthenticateResponse("Basic", "");
+            }
+
+            // Process the challenge with credentials configured for the HTTPS registry.
+            InvalidAuthResponseException exception = await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                return await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+                    () => httpClient.GetAsync(registryUri, TestContext.CancellationToken));
+            });
+
+            // A secure registry does not permit the insecure fallback exception, so the
+            // challenge is rejected without an authenticated retry.
+            Assert.AreEqual(1, requestCount);
+            Assert.Contains("CONTAINER1019", exception.Message);
+            Assert.Contains(redirectedUri.GetLeftPart(UriPartial.Authority), exception.Message);
+            Assert.Contains(registryUri.GetLeftPart(UriPartial.Authority), exception.Message);
+        }
+
+        /// <summary>
+        /// Verifies that a Basic challenge after a redirect within the configured registry origin
+        /// is accepted and the redirected request is retried with authorization.
+        /// </summary>
+        [TestMethod]
+        public async Task SendAsync_AllowsBasicChallengeFromSameOriginRedirect()
+        {
+            // Model a redirect that changes only the path within the configured registry origin.
+            string registryName = $"basic-same-origin-test-{Guid.NewGuid():N}.invalid";
+            Uri registryUri = new($"https://{registryName}");
+            Uri redirectedUri = new(registryUri, "/redirected");
+            int requestCount = 0;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                requestCount++;
+                if (requestCount == 1)
+                {
+                    // The first response represents a Basic challenge received after the
+                    // same-origin redirect.
+                    request.RequestUri = redirectedUri;
+                    return CreateRequestAuthenticateResponse("Basic", "");
+                }
+
+                // The accepted challenge causes a retry of the redirected URI with Basic auth.
+                Assert.AreEqual(redirectedUri, request.RequestUri);
+                Assert.AreEqual("Basic", request.Headers.Authorization?.Scheme);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            // Process the same-origin challenge with matching registry credentials available.
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                using HttpResponseMessage response = await httpClient.GetAsync(registryUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            });
+
+            // The workflow consists of the unauthenticated challenge followed by one
+            // authenticated retry.
+            Assert.AreEqual(2, requestCount);
+        }
+
+        /// <summary>
+        /// Verifies that an authorization header cached for the configured registry is not added
+        /// to a subsequent request targeting a different origin.
+        /// </summary>
+        [TestMethod]
+        public async Task SendAsync_DoesNotSendCachedCredentialsToDifferentOrigin()
+        {
+            // Use one handler for the configured registry and a later absolute request to
+            // a different origin, reproducing the point where cached auth could be reused.
+            string registryName = $"basic-cache-test-{Guid.NewGuid():N}.invalid";
+            Uri registryUri = new($"https://{registryName}");
+            Uri externalUri = new("https://storage.invalid/blob");
+            int registryRequestCount = 0;
+            AuthenticationHeaderValue? externalAuthorization = null;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                if (request.RequestUri == externalUri)
+                {
+                    // Capture any authorization attached before the different-origin request
+                    // reaches the inner transport.
+                    externalAuthorization = request.Headers.Authorization;
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+                }
+
+                // Challenge the first registry request, then accept its authenticated retry;
+                // this populates the handler's registry authorization cache.
+                registryRequestCount++;
+                return request.Headers.Authorization?.Scheme == "Basic"
+                    ? new HttpResponseMessage(HttpStatusCode.OK)
+                    : CreateRequestAuthenticateResponse("Basic", "");
+            }
+
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                // Authenticate to the configured registry to establish cached authorization.
+                using HttpResponseMessage registryResponse = await httpClient.GetAsync(registryUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, registryResponse.StatusCode);
+
+                // Send a subsequent request through the same handler to another origin.
+                using HttpResponseMessage externalResponse = await httpClient.GetAsync(externalUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, externalResponse.StatusCode);
+            });
+
+            // Registry authentication completes normally, but its cached header is not
+            // applied to the different-origin request.
+            Assert.AreEqual(2, registryRequestCount);
+            Assert.IsNull(externalAuthorization);
+        }
+
+        /// <summary>
+        /// Verifies that the composed authentication and fallback handlers authenticate an explicitly
+        /// insecure registry on port 80 when no port was configured, or on its explicitly configured port.
+        /// Subsequent HTTPS and HTTP requests reuse cached Basic authorization at the HTTP fallback origin.
+        /// </summary>
+        [TestMethod]
+        [DataRow("", 80)]
+        [DataRow(":443", 443)]
+        [DataRow(":5000", 5000)]
+        public async Task SendAsync_AllowsBasicChallengeAfterInsecureRegistryFallback(string registryPortSuffix, int expectedHttpPort)
+        {
+            // Isolate the static credential cache and distinguish an implicit HTTPS port
+            // from an explicitly configured port, including HTTPS's default port 443.
+            string registryHost = $"basic-insecure-test-{Guid.NewGuid():N}.invalid";
+            string registryName = $"{registryHost}{registryPortSuffix}";
+            Uri registryUri = new($"https://{registryName}");
+            Uri requestUri = new(registryUri, "/v2");
+            Uri fallbackUri = new($"http://{registryHost}:{expectedHttpPort}/v2");
+            int httpsRequestCount = 0;
+            int httpRequestCount = 0;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                if (request.RequestUri!.Scheme == Uri.UriSchemeHttps)
+                {
+                    // Simulate TLS failure; the real fallback handler must choose the HTTP URI.
+                    httpsRequestCount++;
+                    Assert.IsNull(request.Headers.Authorization);
+                    throw new HttpRequestException(HttpRequestError.SecureConnectionError);
+                }
+
+                Assert.AreEqual(fallbackUri, request.RequestUri);
+                httpRequestCount++;
+                if (httpRequestCount == 1)
+                {
+                    // The first HTTP request challenges authentication at the fallback origin.
+                    Assert.IsNull(request.Headers.Authorization);
+                    return CreateRequestAuthenticateResponse("Basic", "");
+                }
+
+                // Accept the authenticated retry and later requests using the cached header.
+                Assert.AreEqual("Basic", request.Headers.Authorization?.Scheme);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                // Use the production handler order; only the underlying transport is simulated.
+                var fallbackHandler = new FallbackToHttpMessageHandler(
+                    registryName, registryUri.Host, registryUri.Port, new ServerMessageHandler(Server), NullLogger.Instance);
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: true,
+                    fallbackHandler,
+                    NullLogger.Instance,
+                    RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                // Fail TLS, fall back to HTTP, then authenticate the registry's Basic challenge.
+                using HttpResponseMessage response = await httpClient.GetAsync(requestUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+                // A later HTTPS request uses both cached authorization and the remembered fallback.
+                using HttpResponseMessage cachedResponse = await httpClient.GetAsync(requestUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, cachedResponse.StatusCode);
+
+                // A direct request to the permitted HTTP origin also receives cached authorization.
+                using HttpResponseMessage httpResponse = await httpClient.GetAsync(fallbackUri, TestContext.CancellationToken);
+                Assert.AreEqual(HttpStatusCode.OK, httpResponse.StatusCode);
+            });
+
+            // Only the initial request attempts TLS; HTTP gets one challenge and three authorized requests.
+            Assert.AreEqual(1, httpsRequestCount);
+            Assert.AreEqual(4, httpRequestCount);
+        }
+
+        /// <summary>
+        /// Verifies that an insecure registry's HTTP fallback does not allow authentication at a
+        /// different host or port reached by a redirect, for implicit and explicitly configured ports.
+        /// </summary>
+        [TestMethod]
+        [DataRow("", 80, "different-host")]
+        [DataRow("", 80, "different-port")]
+        [DataRow(":443", 443, "different-host")]
+        [DataRow(":443", 443, "different-port")]
+        [DataRow(":5000", 5000, "different-host")]
+        [DataRow(":5000", 5000, "different-port")]
+        public async Task SendAsync_RejectsDifferentOriginChallengeAfterInsecureRegistryFallback(
+            string registryPortSuffix, int expectedHttpPort, string redirectedOrigin)
+        {
+            // Keep each credential-cache key unique and change only one part of the HTTP origin.
+            string registryHost = $"insecure-redirect-test-{Guid.NewGuid():N}.invalid";
+            string registryName = $"{registryHost}{registryPortSuffix}";
+            Uri registryUri = new($"https://{registryName}");
+            Uri requestUri = new(registryUri, "/v2");
+            Uri fallbackUri = new($"http://{registryHost}:{expectedHttpPort}/v2");
+            Uri redirectedUri = redirectedOrigin switch
+            {
+                "different-host" => new UriBuilder(fallbackUri) { Host = "external.invalid" }.Uri,
+                "different-port" => new UriBuilder(fallbackUri) { Port = expectedHttpPort + 1 }.Uri,
+                _ => throw new ArgumentOutOfRangeException(nameof(redirectedOrigin))
+            };
+            int requestCount = 0;
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                requestCount++;
+                Assert.IsNull(request.Headers.Authorization);
+                if (request.RequestUri!.Scheme == Uri.UriSchemeHttps)
+                {
+                    // Trigger the real fallback handler before simulating any redirect.
+                    throw new HttpRequestException(HttpRequestError.SecureConnectionError);
+                }
+
+                // The HTTP fallback reaches a different origin, which returns a Basic challenge.
+                Assert.AreEqual(fallbackUri, request.RequestUri);
+                request.RequestUri = redirectedUri;
+                return CreateRequestAuthenticateResponse("Basic", "");
+            }
+
+            InvalidAuthResponseException exception = await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var fallbackHandler = new FallbackToHttpMessageHandler(
+                    registryName, registryUri.Host, registryUri.Port, new ServerMessageHandler(Server), NullLogger.Instance);
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName, registryUri, isInsecureRegistry: true, fallbackHandler, NullLogger.Instance, RegistryMode.Push);
+                using var httpClient = new HttpClient(authHandler);
+
+                // Available registry credentials must not make the different-origin challenge acceptable.
+                return await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+                    () => httpClient.GetAsync(requestUri, TestContext.CancellationToken));
+            });
+
+            // Reject the challenge after TLS failure and HTTP fallback, without an authenticated retry.
+            Assert.AreEqual(2, requestCount);
+            Assert.Contains(redirectedUri.GetLeftPart(UriPartial.Authority), exception.Message);
+            Assert.Contains(registryUri.GetLeftPart(UriPartial.Authority), exception.Message);
+        }
+
+        /// <summary>
+        /// Verifies that a cross-origin Basic or Bearer challenge during base-image manifest retrieval
+        /// makes CreateNewImage fail with a structured CONTAINER1019 diagnostic, even when the
+        /// challenge parameters are malformed or missing.
+        /// </summary>
+        [TestMethod]
+        [DataRow(false, "Basic realm=\"registry\"")]
+        [DataRow(true, "Basic realm=\"registry\"")]
+        [DataRow(false, "Bearer realm=\"first\",realm=\"second\"")]
+        [DataRow(true, "Bearer realm=\"first\",realm=\"second\"")]
+        [DataRow(false, "Bearer")]
+        [DataRow(true, "Bearer")]
+        public async Task CreateNewImage_ReportsUnexpectedAuthOriginOnPull(bool authenticateBeforeRedirect, string challenge)
+        {
+            using TcpListener registryListener = new(IPAddress.Loopback, 0);
+            using TcpListener redirectedListener = new(IPAddress.Loopback, 0);
+            registryListener.Start();
+            redirectedListener.Start();
+            string registryName = $"127.0.0.1:{((IPEndPoint)registryListener.LocalEndpoint).Port}";
+            Uri redirectedUri = new($"http://127.0.0.1:{((IPEndPoint)redirectedListener.LocalEndpoint).Port}/v2/");
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            string runtimeGraphPath = Path.GetTempFileName();
+            string? originalInsecureRegistries = Environment.GetEnvironmentVariable("DOTNET_CONTAINER_INSECURE_REGISTRIES");
+            try
+            {
+                // The task constructs an HTTPS URI. Configure this local HTTP-only registry
+                // as insecure so the production transport can fall back before the redirect.
+                Environment.SetEnvironmentVariable("DOTNET_CONTAINER_INSECURE_REGISTRIES", registryName);
+                File.WriteAllText(runtimeGraphPath, "{}");
+                Task<string> registryRequest = ServeRegistryAsync();
+                Task<string> redirectedRequest = SendResponseAsync(
+                    redirectedListener,
+                    "HTTP/1.1 401 Unauthorized\r\n"
+                        + $"WWW-Authenticate: {challenge}\r\n"
+                        + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                    timeout.Token,
+                    stopListenerAfterResponse: true);
+
+                var errors = new List<BuildErrorEventArgs>();
+                var engine = new Mock<IBuildEngine>();
+                engine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>())).Callback<BuildErrorEventArgs>(errors.Add);
+                using var task = new CreateNewImage
+                {
+                    BuildEngine = engine.Object,
+                    BaseRegistry = registryName,
+                    BaseImageName = "base/image",
+                    BaseImageTag = "latest",
+                    OutputRegistry = "output.invalid",
+                    Repository = "test/image",
+                    ImageTags = ["latest"],
+                    PublishDirectory = Path.GetTempPath(),
+                    RuntimeIdentifierGraphPath = runtimeGraphPath,
+                    ContainerRuntimeIdentifier = "linux-x64",
+                };
+
+                // Manifest retrieval follows the registry's redirect and rejects the
+                // other origin's challenge before any image construction or publication.
+                bool succeeded = await WithRegistryCredentialsAsync(registryName, () => task.ExecuteAsync(timeout.Token));
+                await Task.WhenAll(registryRequest, redirectedRequest);
+
+                Assert.IsFalse(succeeded);
+                Assert.AreEqual(authenticateBeforeRedirect, registryRequest.Result.Contains("Authorization: Basic ", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(redirectedRequest.Result.Contains("Authorization:", StringComparison.OrdinalIgnoreCase));
+                Assert.HasCount(1, errors);
+                Assert.AreEqual("CONTAINER1019", errors[0].Code);
+                Assert.Contains($"https://{registryName}", errors[0].Message!);
+                Assert.Contains(redirectedUri.GetLeftPart(UriPartial.Authority), errors[0].Message!);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_CONTAINER_INSECURE_REGISTRIES", originalInsecureRegistries);
+                File.Delete(runtimeGraphPath);
+            }
+
+            async Task<string> ServeRegistryAsync()
+            {
+                // Reject the initial TLS handshake as an HTTP-only server would.
+                using (TcpClient client = await registryListener.AcceptTcpClientAsync(timeout.Token))
+                {
+                    using NetworkStream stream = client.GetStream();
+                    await stream.ReadExactlyAsync(new byte[5], timeout.Token);
+                    await stream.WriteAsync(
+                        "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"u8.ToArray(),
+                        timeout.Token);
+                }
+
+                if (authenticateBeforeRedirect)
+                {
+                    string unauthenticatedHeaders = await SendResponseAsync(
+                        registryListener,
+                        "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"registry\"\r\n"
+                            + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                        timeout.Token);
+                    Assert.IsFalse(unauthenticatedHeaders.Contains("Authorization:", StringComparison.OrdinalIgnoreCase));
+                }
+
+                return await SendResponseAsync(
+                    registryListener,
+                    $"HTTP/1.1 302 Found\r\nLocation: {redirectedUri.AbsoluteUri}\r\n"
+                        + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                    timeout.Token,
+                    stopListenerAfterResponse: true);
+            }
+        }
+
+        private static async Task<string> SendResponseAsync(
+            TcpListener listener,
+            string response,
+            CancellationToken cancellationToken,
+            bool stopListenerAfterResponse = false)
+        {
+            using TcpClient client = await listener.AcceptTcpClientAsync(cancellationToken);
+            using NetworkStream stream = client.GetStream();
+            string request = await ReadHttpHeadersAsync(stream, cancellationToken);
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(response), cancellationToken);
+
+            if (stopListenerAfterResponse)
+            {
+                listener.Stop();
+            }
+
+            return request;
+        }
+
+        private static async Task<string> ReadHttpHeadersAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[1024];
+            using MemoryStream request = new();
+            while (request.Length < 16 * 1024)
+            {
+                int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                request.Write(buffer, 0, bytesRead);
+                string requestText = Encoding.ASCII.GetString(request.GetBuffer(), 0, checked((int)request.Length));
+                if (requestText.Contains("\r\n\r\n", StringComparison.Ordinal))
+                {
+                    return requestText;
+                }
+            }
+
+            throw new InvalidDataException("HTTP request headers were incomplete.");
+        }
+
+        private static async Task WithRegistryCredentialsAsync(string registryName, Func<Task> action)
+        {
+            await WithRegistryCredentialsAsync(
+                registryName,
+                async () =>
+                {
+                    await action();
+                    return true;
+                });
+        }
+
+        private static async Task<T> WithRegistryCredentialsAsync<T>(string registryName, Func<Task<T>> action)
+        {
+            string authFile = Path.GetTempFileName();
+            string? originalAuthFileValue = Environment.GetEnvironmentVariable("REGISTRY_AUTH_FILE");
+            try
+            {
+                File.WriteAllText(
+                    authFile,
+                    $$"""
+                    {
+                        "auths": {
+                            "{{registryName}}": {
+                                "auth": "{{GetUserPasswordBase64("user", "pass")}}"
+                            }
+                        }
+                    }
+                    """);
+                Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
+                return await action();
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", originalAuthFileValue);
+                File.Delete(authFile);
             }
         }
 
@@ -563,6 +1310,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
 
             var authHandler = new AuthHandshakeMessageHandler(
                 registryName,
+                new Uri(requestUrl),
                 isInsecureRegistry: false,
                 new ServerMessageHandler(Server),
                 NullLogger.Instance,

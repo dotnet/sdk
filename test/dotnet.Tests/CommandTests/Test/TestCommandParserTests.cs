@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -112,6 +114,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
+        }
+
+        [TestMethod]
+        public void VSTestCommandUsesMicrosoftTestPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.VSTest();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying the Microsoft Test Platform banner");
+        }
+
+        [TestMethod]
         public void MTPCommandDoesNotDuplicateNoBannerOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -123,6 +141,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
         {
             string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
@@ -160,6 +179,123 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandParsesGlobalMaximumFailedTests()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", "5"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("Minimal", (int)OutputOptions.Minimal)]
+        [DataRow("Normal", (int)OutputOptions.Normal)]
+        [DataRow("Detailed", (int)OutputOptions.Detailed)]
+        public void MTPCommandParsesOutputPreset(string value, int expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--output", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be((OutputOptions)expected);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandDefaultsToNormalOutputPreset()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be(OutputOptions.Normal);
+        }
+
+        [TestMethod]
+        [DataRow("--maximum-failed-tests=5")]
+        [DataRow("--maximum-failed-tests:5")]
+        public void MTPCommandParsesInlineGlobalMaximumFailedTests(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+        }
+
+        [TestMethod]
+        [DataRow("0")]
+        [DataRow("-1")]
+        public void MTPCommandRejectsNonPositiveGlobalMaximumFailedTests(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("500ms", 500.0)]
+        [DataRow("2s", 2_000.0)]
+        [DataRow("1.5m", 90_000.0)]
+        public void MTPCommandParsesGlobalTimeout(string value, double expectedMilliseconds)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption)!.Value.TotalMilliseconds.Should().Be(expectedMilliseconds);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("--timeout=2s")]
+        [DataRow("--timeout:2s")]
+        public void MTPCommandParsesInlineGlobalTimeout(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromSeconds(2));
+        }
+
+        [TestMethod]
+        [DataRow("200")]
+        [DataRow("0s")]
+        [DataRow("-1s")]
+        [DataRow("50d")]
+        [DataRow("invalid")]
+        public void MTPCommandRejectsInvalidGlobalTimeout(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandForwardsPolicyOptionsAfterSeparator()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([
+                "--maximum-failed-tests", "5",
+                "--timeout", "1m",
+                "--",
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromMinutes(1));
+            parseResult.UnmatchedTokens.Should().Equal(
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s");
+        }
+
+        [TestMethod]
         [DataRow("text")]
         [DataRow("json")]
         public void MTPCommandAcceptsListTestsFormatValue(string format)
@@ -185,6 +321,405 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        [DataRow("--collect-test-map")]
+        [DataRow("--affected-tests")]
+        public void MTPCommandAcceptsAffectedTestOptions(string option)
+        {
+            WithAffectedTestsFeature(enabled: true, () =>
+            {
+                var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var parseResult = command.Parse([option]);
+
+                parseResult.Errors.Should().BeEmpty();
+                parseResult.HasOption(
+                    option == "--collect-test-map"
+                        ? command.CollectTestMapOption
+                        : command.AffectedTestsOption).Should().BeTrue();
+            });
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        public void MTPCommandRejectsAffectedTestOptionsTogether()
+        {
+            WithAffectedTestsFeature(enabled: true, () =>
+            {
+                var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var parseResult = command.Parse(["--collect-test-map", "--affected-tests"]);
+
+                parseResult.Errors.Should().ContainSingle()
+                    .Which.Message.Should().Contain("cannot be used together");
+            });
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        [DataRow("--collect-test-map")]
+        [DataRow("--affected-tests")]
+        public void MTPCommandRejectsAffectedTestOptionsWhenFeatureIsDisabled(string option)
+        {
+            WithAffectedTestsFeature(enabled: false, () =>
+            {
+                var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var parseResult = command.Parse([option]);
+
+                parseResult.Errors.Should().ContainSingle()
+                    .Which.Message.Should().Contain(TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable);
+                command.CollectTestMapOption.Hidden.Should().BeTrue();
+                command.AffectedTestsOption.Hidden.Should().BeTrue();
+            });
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        public void MTPCommandRejectsCollectTestMapWithParallelModules()
+        {
+            WithAffectedTestsFeature(enabled: true, () =>
+            {
+                var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var parseResult = command.Parse(["--collect-test-map", "--max-parallel-test-modules", "2"]);
+
+                parseResult.Errors.Should().ContainSingle()
+                    .Which.Message.Should().Contain("--max-parallel-test-modules");
+            });
+        }
+
+        [TestMethod]
+        public void MTPCommandNormalizesAffectedOptionsForwardedAfterDoubleDash()
+        {
+            var buildOptions = new BuildOptions(
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                TestApplicationArguments: ImmutableArray.Create("--collect-test-map", "--other", "--affected-tests"),
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            (BuildOptions normalized, bool collectTestMap, bool affectedTests) =
+                MicrosoftTestingPlatformTestCommand.NormalizeForwardedAffectedTestsOptions(buildOptions);
+
+            collectTestMap.Should().BeTrue();
+            affectedTests.Should().BeTrue();
+            normalized.TestApplicationArguments.Should().Equal("--collect-test-map", "--other", "--affected-tests");
+        }
+
+        [DataRow("-affected-tests", true)]
+        [DataRow("--Affected-Tests", true)]
+        [DataRow("-AFFECTED-TESTS=true", false)]
+        [DataRow("---affected-tests", false)]
+        [DataRow("----affected-tests", false)]
+        [TestMethod]
+        public void MTPCommandNormalizesForwardedAffectedOptionSpellings(string option, bool expectedAffectedTests)
+        {
+            var buildOptions = new BuildOptions(
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                TestApplicationArguments: ImmutableArray.Create(option),
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            (BuildOptions normalized, _, bool affectedTests) =
+                MicrosoftTestingPlatformTestCommand.NormalizeForwardedAffectedTestsOptions(buildOptions);
+
+            affectedTests.Should().Be(expectedAffectedTests);
+            normalized.TestApplicationArguments.Should().Equal(option);
+        }
+
+        [TestMethod]
+        public void MTPCommandDetectsAffectedOptionInForwardedResponseFile()
+        {
+            using var temp = new TempDirectory();
+            string responseFile = Path.Combine(temp.Path, "affected.rsp");
+            File.WriteAllText(responseFile, "--affected-tests");
+            var buildOptions = new BuildOptions(
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                TestApplicationArguments: ImmutableArray.Create($"@{responseFile}"),
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            (BuildOptions normalized, _, bool affectedTests) =
+                MicrosoftTestingPlatformTestCommand.NormalizeForwardedAffectedTestsOptions(buildOptions);
+
+            affectedTests.Should().BeFalse();
+            normalized.TestApplicationArguments.Should().Equal($"@{responseFile}");
+
+            (_, affectedTests, _) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    normalized.TestApplicationArguments,
+                    [null],
+                    Directory.GetCurrentDirectory());
+
+            affectedTests.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandDoesNotEnableAffectedTestsForValuedResponseFileOption()
+        {
+            using var temp = new TempDirectory();
+            string responseFile = Path.Combine(temp.Path, "affected.rsp");
+            File.WriteAllText(responseFile, "--affected-tests=false");
+            var buildOptions = new BuildOptions(
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                TestApplicationArguments: ImmutableArray.Create($"@{responseFile}"),
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            (_, _, bool affectedTests) =
+                MicrosoftTestingPlatformTestCommand.NormalizeForwardedAffectedTestsOptions(buildOptions);
+
+            affectedTests.Should().BeFalse();
+
+            (_, affectedTests, _) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    buildOptions.TestApplicationArguments,
+                    [null],
+                    Directory.GetCurrentDirectory());
+
+            affectedTests.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void MTPCommandDetectsAffectedOptionInQuotedNestedResponseFile()
+        {
+            using var temp = new TempDirectory();
+            string inner = Path.Combine(temp.Path, "inner.rsp");
+            string outer = Path.Combine(temp.Path, "outer.rsp");
+            File.WriteAllText(inner, "\"--affected-tests\"");
+            File.WriteAllText(outer, $"\"@{inner}\"");
+            var buildOptions = new BuildOptions(
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                TestApplicationArguments: ImmutableArray.Create($"@{outer}"),
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            (_, _, bool affectedTests) =
+                MicrosoftTestingPlatformTestCommand.NormalizeForwardedAffectedTestsOptions(buildOptions);
+
+            affectedTests.Should().BeFalse();
+
+            (_, affectedTests, _) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    buildOptions.TestApplicationArguments,
+                    [null],
+                    Directory.GetCurrentDirectory());
+
+            affectedTests.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsDifferentAffectedOperationsAcrossWorkingDirectories()
+        {
+            using var temp = new TempDirectory();
+            string affectedDirectory = Path.Combine(temp.Path, "affected");
+            string ordinaryDirectory = Path.Combine(temp.Path, "ordinary");
+            Directory.CreateDirectory(affectedDirectory);
+            Directory.CreateDirectory(ordinaryDirectory);
+            File.WriteAllText(Path.Combine(affectedDirectory, "options.rsp"), "--affected-tests");
+            File.WriteAllText(Path.Combine(ordinaryDirectory, "options.rsp"), "--filter TestClass");
+
+            Action action = () =>
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    ImmutableArray.Create("@options.rsp"),
+                    [ordinaryDirectory, affectedDirectory],
+                    temp.Path);
+
+            action.Should().Throw<GracefulException>()
+                .WithMessage("*same affected-test operation*");
+        }
+
+        [TestMethod]
+        public void MTPCommandMatchesMTPResponseFileQuoteBoundaries()
+        {
+            using var temp = new TempDirectory();
+            string responseFile = Path.Combine(temp.Path, "affected.rsp");
+            File.WriteAllText(responseFile, "\"--affected-tests\"\"--filter\"");
+
+            (_, bool affectedTests, _) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    ImmutableArray.Create("@affected.rsp"),
+                    [null],
+                    temp.Path);
+
+            affectedTests.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandDoesNotPartiallyActivateMalformedResponseFile()
+        {
+            using var temp = new TempDirectory();
+            string responseFile = Path.Combine(temp.Path, "affected.rsp");
+            File.WriteAllLines(responseFile, ["--affected-tests", "--filter \"unclosed"]);
+
+            (bool collectTestMap, bool affectedTests, bool minimumExpectedTests) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    ImmutableArray.Create("@affected.rsp"),
+                    [null],
+                    temp.Path);
+
+            collectTestMap.Should().BeFalse();
+            affectedTests.Should().BeFalse();
+            minimumExpectedTests.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsFeatureActivationWhenAnotherWorkingDirectoryCannotReadResponseFile()
+        {
+            using var temp = new TempDirectory();
+            string affectedDirectory = Path.Combine(temp.Path, "affected");
+            string missingDirectory = Path.Combine(temp.Path, "missing");
+            Directory.CreateDirectory(affectedDirectory);
+            Directory.CreateDirectory(missingDirectory);
+            File.WriteAllText(Path.Combine(affectedDirectory, "options.rsp"), "--affected-tests");
+
+            Action action = () =>
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    ImmutableArray.Create("@options.rsp"),
+                    [missingDirectory, affectedDirectory],
+                    temp.Path);
+
+            action.Should().Throw<GracefulException>()
+                .WithMessage("*same affected-test operation*");
+        }
+
+        [TestMethod]
+        public void MTPCommandDetectsMinimumExpectedTestsInResponseFile()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "options.rsp"),
+                "--collect-test-map --minimum-expected-tests=1");
+
+            (bool collectTestMap, _, bool minimumExpectedTests) =
+                MicrosoftTestingPlatformTestCommand.DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    ImmutableArray.Create("@options.rsp"),
+                    [null],
+                    temp.Path);
+
+            collectTestMap.Should().BeTrue();
+            minimumExpectedTests.Should().BeTrue();
+        }
+
+        [TestMethod]
+        [DataRow(false, false, 0, 0, true)]
+        [DataRow(true, false, 0, 0, false)]
+        [DataRow(false, false, 2, 2, false)]
+        [DataRow(false, true, 2, 2, true)]
+        [DataRow(true, true, 2, 2, true)]
+        [DataRow(true, false, 2, 2, false)]
+        [DataRow(true, true, 2, 1, false)]
+        public void MTPCommandFailsOnlyForDisallowedEmptyOrAllSkippedRuns(
+            bool isAffectedTestsMode,
+            bool failOnAllSkippedTests,
+            int totalTests,
+            int skippedTests,
+            bool expectedFailure)
+        {
+            MicrosoftTestingPlatformTestCommand.ShouldFailForNoExecutedTests(
+                isAffectedTestsMode,
+                failOnAllSkippedTests,
+                totalTests,
+                skippedTests).Should().Be(expectedFailure);
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsForwardedTestPolicies()
+        {
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy", "strict"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy=STRICT"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["-zero-tests-policy:strict"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy", "allow-skipped"]).Should().BeFalse();
+
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "8;9"],
+                environmentValue: null).Should().Be("8;9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "8"],
+                environmentValue: "9").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["-ignore-exit-code:8"],
+                environmentValue: "").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                [],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: "10",
+                configurationValue: "8").Should().Be("10");
+        }
+
+        [TestMethod]
+        [DataRow(8, null, 8)]
+        [DataRow(8, "8", 0)]
+        [DataRow(8, "2; +8 ;9", 0)]
+        [DataRow(8, "2;9", 8)]
+        [DataRow(9, "8", 9)]
+        public void MTPCommandAppliesIgnoreExitCodePolicy(
+            int exitCode,
+            string? ignoredExitCodes,
+            int expectedExitCode)
+        {
+            MicrosoftTestingPlatformTestCommand.ApplyExitCodeIgnorePolicy(
+                exitCode,
+                ignoredExitCodes).Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        public void MTPCommandRejectsCollectTestMapWithMinimumExpectedTests()
+        {
+            WithAffectedTestsFeature(enabled: true, () =>
+            {
+                var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var parseResult = command.Parse(["--collect-test-map", "--minimum-expected-tests", "1"]);
+
+                parseResult.Errors.Should().ContainSingle()
+                    .Which.Message.Should().Contain("--minimum-expected-tests");
+            });
+        }
+
+        [TestMethod]
         [DataRow("foo")]
         [DataRow("JSON")]
         [DataRow("TEXT")]
@@ -194,6 +729,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var parseResult = command.Parse(["--list-tests", format]);
 
             // Accepted values are constrained to the lowercase 'text'/'json' keys matching MTP.
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow(null, nameof(ResultsDirectoryLayout.Flat), false)]
+        [DataRow("flat", nameof(ResultsDirectoryLayout.Flat), true)]
+        [DataRow("per-module", nameof(ResultsDirectoryLayout.PerModule), true)]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected, bool expectedSpecified)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = value is null
+                ? command.Parse([])
+                : command.Parse(["--results-directory-layout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            PathOptions pathOptions = MSBuildUtility.GetBuildOptions(parseResult).PathOptions;
+            pathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+            pathOptions.ResultsDirectoryLayoutSpecified.Should().Be(expectedSpecified);
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsInvalidResultsDirectoryLayout()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
+
             parseResult.Errors.Should().NotBeEmpty();
         }
 
@@ -273,6 +834,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             command.Should().BeOfType<TestCommandDefinition.VSTest>(
                 "an empty global.json must not crash the CLI parser (regression for https://github.com/dotnet/sdk/issues/52384)");
+        }
+
+        private static void WithAffectedTestsFeature(bool enabled, Action action)
+        {
+            const string variable = TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable;
+            string? previousValue = Environment.GetEnvironmentVariable(variable);
+            try
+            {
+                Environment.SetEnvironmentVariable(variable, enabled ? "1" : null);
+                action();
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(variable, previousValue);
+            }
         }
 
         [TestMethod]

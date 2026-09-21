@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,66 +19,52 @@ namespace Aspire.Tools.Service;
 /// </summary>
 internal class SocketConnectionManager : IDisposable
 {
-    // Track a single connection per Dcp ID
-    private readonly object _socketConnectionsLock = new();
-    private readonly Dictionary<string, WebSocketConnection> _webSocketConnections = new(StringComparer.Ordinal);
+    // Track a single connection per DCP ID
+    private ImmutableDictionary<string, WebSocketConnection> _webSocketConnections =
+        ImmutableDictionary<string, WebSocketConnection>.Empty;
 
     private void CleanupSocketConnections()
     {
-        lock (_socketConnectionsLock)
-        {
-            foreach (var connection in _webSocketConnections)
-            {
-                connection.Value.Tcs.SetResult();
-                connection.Value.CancelTokenRegistration.Dispose();
-            }
+        var connections = Interlocked.Exchange(ref _webSocketConnections, ImmutableDictionary<string, WebSocketConnection>.Empty);
 
-            _webSocketConnections.Clear();
+        foreach (var (_, connection) in connections)
+        {
+            connection.Dispose();
         }
     }
 
     public void AddSocketConnection(WebSocket socket, TaskCompletionSource tcs, string dcpId, CancellationToken httpRequestAborted)
     {
-        // We only support one connection per DCP Id, therefore if there is
+        // We only support one connection per DCP ID, therefore if there is
         // already a connection, drop that one before adding this one
-        lock (_socketConnectionsLock)
+
+        var newConnection = new WebSocketConnection(socket, tcs, dcpId, httpRequestAborted);
+
+        var (oldConnections, _) = ImmutableInterlocked.Transform(ref _webSocketConnections, connections => connections.SetItem(dcpId, newConnection));
+
+        if (oldConnections.TryGetValue(dcpId, out var oldConnection))
         {
-            if (_webSocketConnections.TryGetValue(dcpId, out var existingConnection))
-            {
-                _webSocketConnections.Remove(dcpId);
-                existingConnection.Dispose();
-            }
-
-            // Register with the cancel token so that if the socket goes bad, we
-            // get notified and can remove it from our list. We need to track the registrations as well
-            // so we can dispose of it later
-            var newConnection = new WebSocketConnection(socket, tcs, dcpId, httpRequestAborted);
-            newConnection.CancelTokenRegistration = httpRequestAborted.Register(() =>
-            {
-                RemoveSocketConnection(newConnection);
-            });
-
-            _webSocketConnections[dcpId] = newConnection;
+            oldConnection.Dispose();
         }
+
+        // Hook up removal from tracked connections on abort after the connection has been added:
+        newConnection.RegisterCancellationCallback(RemoveSocketConnection);
     }
 
     public void RemoveSocketConnection(WebSocketConnection connection)
     {
-        lock (_socketConnectionsLock)
+        // If the connection is not in the dictionary, then it has already been removed and disposed or replaced with another connection.
+        if (ImmutableInterlocked.Update(ref _webSocketConnections,
+            connections => connections.TryGetValue(connection.DcpId, out var currentConnection) && currentConnection == connection
+                ? connections.Remove(connection.DcpId)
+                : connections))
         {
-            _webSocketConnections.Remove(connection.DcpId);
             connection.Dispose();
         }
     }
 
     public WebSocketConnection? GetSocketConnection(string dcpId)
-    {
-        lock (_socketConnectionsLock)
-        {
-            _webSocketConnections.TryGetValue(dcpId, out var connection);
-            return connection;
-        }
-    }
+        => _webSocketConnections.GetValueOrDefault(dcpId);
 
     public void Dispose()
     {

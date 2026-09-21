@@ -25,27 +25,56 @@ jobs:
           RANDOM_SEED:   ${{ github.aw.import-inputs.random_seed   }}
         shell: bash
         run: |
-          # Collect pool entries with non-empty secrets from COPILOT_PAT_0..COPILOT_PAT_9.
+          # Collect pool entries that authenticate successfully with GitHub.
           PAT_NUMBERS=()
           POOL_INDICATORS=(➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖)
+          CONFIGURED_PAT_COUNT=0
 
           for i in $(seq 0 9); do
             var="COPILOT_PAT_${i}"
             val="${!var}"
             if [ -n "$val" ]; then
-              PAT_NUMBERS+=(${i})
-              POOL_INDICATORS[${i}]="🟪"
+              CONFIGURED_PAT_COUNT=$((CONFIGURED_PAT_COUNT + 1))
+              if status=$(printf 'Authorization: Bearer %s\nAccept: application/vnd.github+json\nX-GitHub-Api-Version: 2022-11-28\n' "$val" | \
+                curl --silent --show-error \
+                  --output /dev/null \
+                  --write-out '%{http_code}' \
+                  --connect-timeout 5 \
+                  --max-time 15 \
+                  --proto '=https' \
+                  --tlsv1.2 \
+                  --header @- \
+                  https://api.github.com/user); then
+                if [ "$status" = 200 ]; then
+                  PAT_NUMBERS+=("${i}")
+                  POOL_INDICATORS[${i}]="🟪"
+                else
+                  POOL_INDICATORS[${i}]="❌"
+                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
+                fi
+              else
+                POOL_INDICATORS[${i}]="❔"
+                echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
+              fi
             fi
           done
 
           # If none of the entries in the pool have values, emit a warning
           # and do not set an output value. The consumer can fall back to
           # using COPILOT_GITHUB_TOKEN.
-          if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
+          if [ "$CONFIGURED_PAT_COUNT" -eq 0 ]; then
             warning_message="::warning::None of the PAT pool entries had values "
             warning_message+="(checked COPILOT_PAT_0 through COPILOT_PAT_9)"
             echo "$warning_message"
             exit 0
+          fi
+
+          if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
+            echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
+            echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
+            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::None of the configured PAT pool entries authenticated successfully"
+            exit 1
           fi
 
           # Select a random index using the seed if specified

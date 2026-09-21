@@ -44,11 +44,13 @@ internal static class SdkPaths
     private static string? s_sdkDirectory;
 
     /// <summary>
-    ///  The versioned SDK directory, resolved once and cached. Prefers the <c>Microsoft.DotNet.Sdk.Root</c>
-    ///  AppContext value (published by the AOT bridge); otherwise the directory of the SDK assembly, else
-    ///  <see cref="System.AppContext.BaseDirectory"/>.
+    ///  The versioned SDK directory, resolved once and cached. Prefers the
+    ///  <c>Microsoft.DotNet.Sdk.Root</c> AppContext value (published by the AOT bridge); otherwise the
+    ///  directory of the SDK assembly, falling back to <see cref="System.AppContext.BaseDirectory"/>.
     /// </summary>
     public static string SdkDirectory => s_sdkDirectory ??= ResolveSdkDirectory();
+
+    internal static void ClearSdkDirectoryCacheForTests() => s_sdkDirectory = null;
 
 #if NET
     [UnconditionalSuppressMessage("AOT", "IL3000",
@@ -63,7 +65,7 @@ internal static class SdkPaths
         // value; prefer it.
         if (AppContext.GetData(DataName) is string sdkRoot && sdkRoot.Length > 0)
         {
-            return sdkRoot;
+            return TrimEndingDirectorySeparator(sdkRoot);
         }
 
         // CoreUtils ships in the versioned SDK directory, so the location of this assembly is that
@@ -71,6 +73,22 @@ internal static class SdkPaths
         // Assembly.Location is empty (which is what the IL3000 analyzer flags); fall through to
         // AppContext.BaseDirectory in that case - the AOT bridge sets the AppContext value (preferred above).
         string? assemblyDirectory = Path.GetDirectoryName(typeof(SdkPaths).Assembly.Location);
-        return string.IsNullOrEmpty(assemblyDirectory) ? AppContext.BaseDirectory : assemblyDirectory;
+        return TrimEndingDirectorySeparator(
+            string.IsNullOrEmpty(assemblyDirectory) ? AppContext.BaseDirectory : assemblyDirectory);
+    }
+
+    private static string TrimEndingDirectorySeparator(string path)
+    {
+        if (path.Length == 0)
+        {
+            return path;
+        }
+
+        string? root = Path.GetPathRoot(path);
+        char last = path[path.Length - 1];
+        return path.Length > (root?.Length ?? 0)
+            && (last == Path.DirectorySeparatorChar || last == Path.AltDirectorySeparatorChar)
+                ? path.Substring(0, path.Length - 1)
+                : path;
     }
 }

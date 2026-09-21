@@ -2,7 +2,7 @@
 
 # Analyzer Configuration
 
-All the analyzer NuGet packages produced in this repo support _.editorconfig based analyzer configuration_. End users can configure the behavior of specific CA rule(s) OR all configurable CA rules by specifying supported key-value pair options in an `.editorconfig` file. You can read more about `.editorconfig` format [here](https://editorconfig.org/).
+The `Microsoft.CodeAnalysis.NetAnalyzers` analyzers support _.editorconfig based analyzer configuration_. End users can configure the behavior of specific CA rule(s) OR all configurable CA rules by specifying supported key-value pair options in an `.editorconfig` file. You can read more about `.editorconfig` format [here](https://editorconfig.org/).
 
 ## .editorconfig format
 
@@ -26,27 +26,9 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ## Enabling .editorconfig based configuration
 
-### VS2019 16.3 and later + Analyzer package version 3.3.x and later
+Create an `.editorconfig` file containing the options in the directory covering the scope you want — a document, folder, project, solution, or the whole repository. The same file can also carry `.editorconfig` based diagnostic severity entries; see [Configuration files for code analysis rules](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files) and [rule severity](https://learn.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity).
 
-End users can enable `.editorconfig` based configuration for individual documents, folders, projects, solution or entire repo by creating an `.editorconfig` file with the options in the corresponding directory. This file can also contain `.editorconfig` based diagnostic severity configuration entries. See [here](https://learn.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
-
-### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
-
-1. Per-project `.editorconfig` file: End users can enable `.editorconfig` based configuration for individual projects by just copying the `.editorconfig` file with the options to the project root directory.
-2. Shared `.editorconfig` file: If you would like to share a common `.editorconfig` file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
-
-```xml
-  <PropertyGroup>
-    <SkipDefaultEditorConfigAsAdditionalFile>true</SkipDefaultEditorConfigAsAdditionalFile>
-  </PropertyGroup>
-  <ItemGroup Condition="Exists('<%PathToSharedEditorConfig%>\.editorconfig')" >
-    <AdditionalFiles Include="<%PathToSharedEditorConfig%>\.editorconfig" />
-  </ItemGroup>
-```
-
-Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
-
-**The additional file based approach is no longer supported starting in Microsoft.CodeAnalysis.NetAnalyzers v5.0.4. It will be implicitly discovered (if the file is in the project's directory or any ancestor directory), or it should be converted into a 'globalconfig'. See [Configuration files for code analysis rules](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files).**
+Configuration is discovered implicitly from the project directory and its ancestors. The older `AdditionalFiles` based approach was removed in `Microsoft.CodeAnalysis.NetAnalyzers` v5.0.4; convert any remaining usage to an `.editorconfig` or a `.globalconfig`.
 
 ## Supported .editorconfig options
 
@@ -92,14 +74,11 @@ Configurable Rules:
 [CA1708](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708),
 [CA1710](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710),
 [CA1711](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711),
-[CA1714](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1714),
 [CA1715](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1715),
 [CA1716](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716),
-[CA1717](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1717),
 [CA1720](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1720),
 [CA1721](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1721),
 [CA1725](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1725),
-[CA1801](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801),
 [CA1802](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802),
 [CA1815](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815),
 [CA1819](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819),
@@ -714,7 +693,7 @@ Option Name: `analyzed_symbol_kinds`
 
 Configurable Rules: [CA1716](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716)
 
-Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
+Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://learn.microsoft.com/dotnet/api/microsoft.codeanalysis.symbolkind) as a comma separated list.
 
 Default Value: `Namespace, NamedType, Method, Property, Event, Parameter`
 

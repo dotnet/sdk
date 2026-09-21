@@ -1,5 +1,6 @@
 ﻿Microsoft.TemplateEngine.Abstractions.IExtendedTemplateLocator
 Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.PrereleaseModeKey = "Prerelease" -> string!
 Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.VulnerablePackage = 9 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
 Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!

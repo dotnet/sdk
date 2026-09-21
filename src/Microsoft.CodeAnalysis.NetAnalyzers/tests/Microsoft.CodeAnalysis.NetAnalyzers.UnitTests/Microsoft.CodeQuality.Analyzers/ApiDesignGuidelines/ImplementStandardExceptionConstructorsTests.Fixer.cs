@@ -20,222 +20,219 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task TestCSFixMissingTwoCtors_Case1Async()
         {
-            var code = @"
-using System;
-public class [|[|SomeException|]|] : Exception
-{
-    public SomeException()
-    {
-    }
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException()
-    {
-    }
+            var code = """
+                using System;
+                public class [|[|SomeException|]|] : Exception
+                {
+                    public SomeException()
+                    {
+                    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message) : base(message)
-    {
-    }
+                    public SomeException(string message) : base(message)
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-}
-";
+                    public SomeException(string message, Exception innerException) : base(message, innerException)
+                    {
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestCSFixMissingTwoCtors_Case2Async()
         {
-            var code = @"
-using System;
-public class [|[|SomeException|]|] : Exception
-{
-    public SomeException(string message)
-    {
-    }
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException(string message)
-    {
-    }
+            var code = """
+                using System;
+                public class [|[|SomeException|]|] : Exception
+                {
+                    public SomeException(string message)
+                    {
+                    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException(string message)
+                    {
+                    }
 
-    public SomeException()
-    {
-    }
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-}
-";
+                    public SomeException(string message, Exception innerException) : base(message, innerException)
+                    {
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestCSFixMissingTwoCtors_Case3Async()
         {
-            var code = @"
-using System;
-public class [|[|SomeException|]|] : Exception
-{
-    public SomeException(string message, Exception innerException)
-    {
-    }
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException(string message, Exception innerException)
-    {
-    }
+            var code = """
+                using System;
+                public class [|[|SomeException|]|] : Exception
+                {
+                    public SomeException(string message, Exception innerException)
+                    {
+                    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException(string message, Exception innerException)
+                    {
+                    }
 
-    public SomeException()
-    {
-    }
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message) : base(message)
-    {
-    }
-}
-";
+                    public SomeException(string message) : base(message)
+                    {
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestCSFixMissingOneCtor_Case1Async()
         {
-            var code = @"
-using System;
-public class [|SomeException|] : Exception
-{
-    public SomeException(string message): base(message)
-    {
-    }
+            var code = """
+                using System;
+                public class [|SomeException|] : Exception
+                {
+                    public SomeException(string message): base(message)
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+                    public SomeException(string message, Exception innerException) : base(message, innerException)
+                    {
+                    }
 
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException(string message): base(message)
-    {
-    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException(string message): base(message)
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+                    public SomeException(string message, Exception innerException) : base(message, innerException)
+                    {
+                    }
 
-    public SomeException()
-    {
-    }
-}
-";
+                    public SomeException()
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
         [TestMethod]
         public async Task TestCSFixMissingOneCtor_Case2Async()
         {
-            var code = @"
-using System;
-public class [|SomeException|] : Exception
-{
-    public SomeException()
-    {
-    }
+            var code = """
+                using System;
+                public class [|SomeException|] : Exception
+                {
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message)
-    {
-    }
+                    public SomeException(string message)
+                    {
+                    }
 
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException()
-    {
-    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message)
-    {
-    }
+                    public SomeException(string message)
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-}
-";
+                    public SomeException(string message, Exception innerException) : base(message, innerException)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
         [TestMethod]
         public async Task TestCSFixMissingOneCtor_Case3Async()
         {
-            var code = @"
-using System;
-public class [|SomeException|] : Exception
-{
-    public SomeException()
-    {
-    }
+            var code = """
+                using System;
+                public class [|SomeException|] : Exception
+                {
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException)
-    {
-    }
+                    public SomeException(string message, Exception innerException)
+                    {
+                    }
 
-}
-";
-            var fix = @"
-using System;
-public class SomeException : Exception
-{
-    public SomeException()
-    {
-    }
+                }
+                """;
+            var fix = """
+                using System;
+                public class SomeException : Exception
+                {
+                    public SomeException()
+                    {
+                    }
 
-    public SomeException(string message, Exception innerException)
-    {
-    }
+                    public SomeException(string message, Exception innerException)
+                    {
+                    }
 
-    public SomeException(string message) : base(message)
-    {
-    }
-}
-";
+                    public SomeException(string message) : base(message)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
@@ -247,186 +244,183 @@ public class SomeException : Exception
         [TestMethod]
         public async Task TestVBFixMissingTwoCtors_Case1Async()
         {
-            var code = @"
-Imports System
-Public Class [|[|SomeException|]|] : Inherits Exception
-    Public Sub New()
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New()
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|[|SomeException|]|] : Inherits Exception
+                    Public Sub New()
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String)
-        MyBase.New(message)
-    End Sub
+                    Public Sub New(message As String)
+                        MyBase.New(message)
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-        MyBase.New(message, innerException)
-    End Sub
-End Class
-";
+                    Public Sub New(message As String, innerException As Exception)
+                        MyBase.New(message, innerException)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestVBFixMissingTwoCtors_Case2Async()
         {
-            var code = @"
-Imports System
-Public Class [|[|SomeException|]|] : Inherits Exception
-    Public Sub New(message As String)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New(message As String)
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|[|SomeException|]|] : Inherits Exception
+                    Public Sub New(message As String)
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New(message As String)
+                    End Sub
 
-    Public Sub New()
-    End Sub
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-        MyBase.New(message, innerException)
-    End Sub
-End Class
-";
+                    Public Sub New(message As String, innerException As Exception)
+                        MyBase.New(message, innerException)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestVBFixMissingTwoCtors_Case3Async()
         {
-            var code = @"
-Imports System
-Public Class [|[|SomeException|]|] : Inherits Exception
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|[|SomeException|]|] : Inherits Exception
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
 
-    Public Sub New()
-    End Sub
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String)
-        MyBase.New(message)
-    End Sub
-End Class
-";
+                    Public Sub New(message As String)
+                        MyBase.New(message)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task TestVBFixMissingOneCtor_Case1Async()
         {
-            var code = @"
-Imports System
-Public Class [|SomeException|] : Inherits Exception
-    Public Sub New()
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|SomeException|] : Inherits Exception
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New()
-    End Sub
+                    Public Sub New(message As String)
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String)
-    End Sub
+                    Public Sub New(message As String)
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-        MyBase.New(message, innerException)
-    End Sub
-End Class
-";
+                    Public Sub New(message As String, innerException As Exception)
+                        MyBase.New(message, innerException)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
         [TestMethod]
         public async Task TestVBFixMissingOneCtor_Case2Async()
         {
-            var code = @"
-Imports System
-Public Class [|SomeException|] : Inherits Exception
-    Public Sub New()
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|SomeException|] : Inherits Exception
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New()
-    End Sub
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New()
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
 
-    Public Sub New(message As String)
-        MyBase.New(message)
-    End Sub
-End Class
-";
+                    Public Sub New(message As String)
+                        MyBase.New(message)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
         [TestMethod]
         public async Task TestVBFixMissingOneCtor_Case3Async()
         {
-            var code = @"
-Imports System
-Public Class [|SomeException|] : Inherits Exception
-    Public Sub New(message As String)
-    End Sub
+            var code = """
+                Imports System
+                Public Class [|SomeException|] : Inherits Exception
+                    Public Sub New(message As String)
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
-Public Class SomeException : Inherits Exception
-    Public Sub New(message As String)
-    End Sub
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
+                End Class
+                """;
+            var fix = """
+                Imports System
+                Public Class SomeException : Inherits Exception
+                    Public Sub New(message As String)
+                    End Sub
 
-    Public Sub New(message As String, innerException As Exception)
-    End Sub
+                    Public Sub New(message As String, innerException As Exception)
+                    End Sub
 
-    Public Sub New()
-    End Sub
-End Class
-";
+                    Public Sub New()
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
         #endregion

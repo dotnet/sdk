@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+#if NET
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Microsoft.DotNet.NativeWrapper
 {
@@ -27,6 +30,18 @@ namespace Microsoft.DotNet.NativeWrapper
             // so just pass empty string as executable directory for resolution. This means that
             // we expect the call to fail to resolve an SDK. Set up the error writer to avoid
             // output going to stderr. We reset it after the call.
+#if NET
+            var previousErrorWriter = Interop.hostfxr_set_error_writer(&SwallowErrors);
+            try
+            {
+                SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);
+                return result.GlobalJsonState;
+            }
+            finally
+            {
+                Interop.hostfxr_set_error_writer(previousErrorWriter);
+            }
+#else
             Interop.hostfxr_error_writer_fn swallowErrors = new(message => { });
             nint errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
             var previousErrorWriter = Interop.hostfxr_set_error_writer((delegate* unmanaged[Cdecl]<PlatformString, void>)errorWriter);
@@ -40,7 +55,18 @@ namespace Microsoft.DotNet.NativeWrapper
                 Interop.hostfxr_set_error_writer(previousErrorWriter);
                 GC.KeepAlive(swallowErrors);
             }
+#endif
         }
+
+#if NET
+        /// <summary>
+        ///  No-op error writer used to suppress hostfxr error output.
+        /// </summary>
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+        private static void SwallowErrors(PlatformString message)
+        {
+        }
+#endif
 
         public static string[] GetAvailableSdks(string? dotnetExeDirectory)
         {

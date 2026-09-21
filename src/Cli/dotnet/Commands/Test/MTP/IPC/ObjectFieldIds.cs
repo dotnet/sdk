@@ -92,6 +92,8 @@ internal static class SuccessfulTestResultMessageFieldsId
     public const ushort StandardOutput = 6;
     public const ushort ErrorOutput = 7;
     public const ushort SessionUid = 8;
+    public const ushort RetryAttemptNumber = 9;
+    public const ushort IsSuperseded = 10;
 }
 
 internal static class FailedTestResultMessageFieldsId
@@ -113,6 +115,8 @@ internal static class FailedTestResultMessageFieldsId
     // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
     public const ushort Expected = 10;
     public const ushort Actual = 11;
+    public const ushort RetryAttemptNumber = 12;
+    public const ushort IsSuperseded = 13;
 }
 
 internal static class ExceptionMessageFieldsId
@@ -140,6 +144,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort TestDisplayName = 5;
     public const ushort SessionUid = 6;
     public const ushort Kind = 7;
+    public const ushort InputArtifactPaths = 8;
 }
 
 internal static class TestSessionEventFieldsId
@@ -190,6 +195,14 @@ internal static class DisplayMessageFieldsId
     public const ushort Text = 4;
 }
 
-// NOTE: Serializer ids 13 (WaitForServerControlRequest) and 14 (ServerControlMessage) exist upstream
-// in testfx but are intentionally not vendored here yet: they belong to the reverse server-control pipe
-// / server-initiated cancellation feature (protocol 1.4.0), which is out of scope for this contract.
+internal static class WaitForServerControlRequestFieldsId
+{
+    public const int MessagesSerializerId = 13;
+}
+
+internal static class ServerControlMessageFieldsId
+{
+    public const int MessagesSerializerId = 14;
+
+    public const ushort Kind = 1;
+}
