@@ -4,16 +4,16 @@
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
-using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
-namespace Microsoft.DotNet.Cli.Test.Tests;
+namespace dotnet.Tests.CommandTests.Test;
 
 public class TerminalTestReporterTests
 {
     [Theory]
-    [InlineData(false, "Test run completed with non-success exit code: 5. The command-line arguments are invalid.")]
-    [InlineData(true, "Test discovery completed with non-success exit code: 5. The command-line arguments are invalid.")]
-    public void TestExecutionCompleted_WithKnownExitCode_PrintsDescription(bool isDiscovery, string expected)
+    [InlineData(false, 5, "Test run completed with non-success exit code: 5. The command-line arguments are invalid.")]
+    [InlineData(true, 5, "Test discovery completed with non-success exit code: 5. The command-line arguments are invalid.")]
+    [InlineData(false, 47, "Test run completed with non-success exit code: 47. The exit code is not recognized.")]
+    public void TestExecutionCompleted_WithExitCode_PrintsDescription(bool isDiscovery, int exitCode, string expected)
     {
         var output = new StringBuilder();
         var console = new Mock<IConsole>(MockBehavior.Loose);
@@ -24,14 +24,15 @@ public class TerminalTestReporterTests
 
         using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions
         {
-            UseAnsi = true,
-            UseCIAnsi = true,
             ShowProgress = false,
         });
 
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery, isHelp: false, isRetry: false);
-        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.InvalidCommandLine);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
 
-        output.ToString().Should().Contain(expected);
+        if (!TestContext.IsLocalized())
+        {
+            output.ToString().Should().Contain(expected);
+        }
     }
 }
