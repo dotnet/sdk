@@ -70,7 +70,9 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             var results = new List<SearchResultPackage>();
             foreach (IPackageSearchMetadata packageMetadata in metadata)
             {
-                IEnumerable<VersionInfo> versions = await packageMetadata.GetVersionsAsync().ConfigureAwait(false);
+                IEnumerable<VersionInfo> versions = nugetSearchApiParameter.IncludeVersions
+                    ? await packageMetadata.GetVersionsAsync().ConfigureAwait(false)
+                    : [];
                 results.Add(new SearchResultPackage(
                     new PackageId(packageMetadata.Identity.Id),
                     packageMetadata.Identity.Version.ToNormalizedString(),

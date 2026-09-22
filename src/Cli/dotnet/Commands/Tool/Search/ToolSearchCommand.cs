@@ -86,7 +86,8 @@ internal sealed class ToolSearchCommand
             searchTerm: _parseResult.GetValue(_definition.SearchTermArgument),
             skip: GetParsedResultAsInt(_definition.SkipOption),
             take: GetParsedResultAsInt(_definition.TakeOption),
-            prerelease: _parseResult.GetValue(_definition.PrereleaseOption));
+            prerelease: _parseResult.GetValue(_definition.PrereleaseOption),
+            includeVersions: _parseResult.GetValue(_definition.DetailOption));
 
     private async Task<SourceSearchResult> SearchSourceAsync(
         PackageSource source,
