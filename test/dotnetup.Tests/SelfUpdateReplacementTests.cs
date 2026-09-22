@@ -53,7 +53,7 @@ public class SelfUpdateReplacementTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles(executable: false);
         var paths = new SelfUpdatePaths(Path.Combine(files.Paths.DirectoryPath, name));
-        Assert.ThrowsExactly<IOException>(paths.Validate);
+        Assert.ThrowsExactly<SelfUpdateLocationException>(paths.Validate);
     }
 
     [TestMethod]
@@ -179,11 +179,11 @@ public class SelfUpdateReplacementTests : SdkTest
             if (location == "parent")
             {
                 var paths = new SelfUpdatePaths(Path.Combine(junction, "dotnetup.exe"));
-                Assert.ThrowsExactly<IOException>(paths.Validate);
+                Assert.ThrowsExactly<SelfUpdateLocationException>(paths.Validate);
             }
             else
             {
-                Assert.ThrowsExactly<IOException>(() => { using var file = SelfUpdatePaths.OpenFile(junction); });
+                Assert.ThrowsExactly<SelfUpdateLocationException>(() => { using var file = SelfUpdatePaths.OpenFile(junction); });
                 Assert.ThrowsExactly<DotnetInstallException>(files.Replacement.Replace);
             }
 
@@ -372,7 +372,7 @@ public class SelfUpdateReplacementTests : SdkTest
         File.Delete(path);
         File.CreateSymbolicLink(path, target);
         Assert.ThrowsExactly<DotnetInstallException>(files.Replacement.Replace);
-        Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.OpenFile(path));
+        Assert.ThrowsExactly<SelfUpdateLocationException>(() => SelfUpdatePaths.OpenFile(path));
         Assert.AreEqual("untouched", File.ReadAllText(target));
     }
 
@@ -394,7 +394,7 @@ public class SelfUpdateReplacementTests : SdkTest
             Assert.IsNull(competing);
             File.Delete(files.Paths.StagedPath);
             File.CreateSymbolicLink(files.Paths.StagedPath, files.Paths.InstalledPath);
-            Assert.ThrowsExactly<IOException>(() => SelfUpdatePaths.OpenFile(paths.StagedPath));
+            Assert.ThrowsExactly<SelfUpdateLocationException>(() => SelfUpdatePaths.OpenFile(paths.StagedPath));
         }
         finally
         {

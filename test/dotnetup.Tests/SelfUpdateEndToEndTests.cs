@@ -31,7 +31,7 @@ public class SelfUpdateEndToEndTests : SdkTest
         Assert.IsFalse(daily.Version.PrecedenceEquals(ReleaseVersion.Parse(originalVersion)),
             "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different semantic version.");
 
-        string output = Run(environment, executable, ["self", "update", "--no-progress"]);
+        string output = Run(environment, executable, ["self", "update", "--channel", "daily", "--no-progress"]);
         string updatedVersion = ReadVersion(environment, executable);
 
         Assert.AreNotEqual(originalVersion, updatedVersion, output);

@@ -115,14 +115,17 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
-    [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
-    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
-    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer))]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
+    [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), "preview")]
+    [DataRow("0.2.0-daily.1.26465.7", "0.2.0-daily.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "daily")]
+    [DataRow("0.2.0", "0.2.0", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "stable")]
     public void SelfUpdateCommandReportsNoUpdateToStandardError(
         string installedVersion,
         string availableVersion,
-        string messageResource)
+        string messageResource,
+        string defaultChannel)
     {
         using var files = new SelfUpdateTestFiles();
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
@@ -132,7 +135,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var available = ReleaseVersion.Parse(availableVersion);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(available, rid);
         string artifactName = BlobFeedUrlBuilder.GetDotnetupFileName(rid);
-        string channelUrl = $"https://aka.ms/dotnet/dotnetup/daily/{artifactName}";
+        // --channel is omitted, so the command must query the channel matching the loaded build.
+        string channelUrl = $"https://aka.ms/dotnet/dotnetup/{defaultChannel}/{artifactName}";
         var history = new List<string>();
         using var handler = new RecordingHandler(new()
         {

@@ -73,7 +73,15 @@ internal class SelfUpdateWorkflow
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable, Strings.SelfUpdateIdentityUnavailable, exception);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        catch (SelfUpdateLocationException exception)
+        {
+            throw exception.ToInstallException();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, Strings.SelfUpdateAccessFailed, exception);
+        }
+        catch (IOException exception)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, Strings.SelfUpdateAccessFailed, exception);
         }
