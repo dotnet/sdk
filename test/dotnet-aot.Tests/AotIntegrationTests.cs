@@ -240,6 +240,67 @@ public partial class AotIntegrationTests
         return environment;
     }
 
+    private static void UseHostCompatibleManagedFallbackSdk(Dictionary<string, string> environment)
+    {
+        string? sdkDirectory = Environment.GetEnvironmentVariable(
+            "DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY");
+        if (!string.IsNullOrEmpty(sdkDirectory))
+        {
+            environment["DOTNET_AOT_SDK_DIR"] = sdkDirectory;
+        }
+    }
+
+    private static Dictionary<string, string>? GetHostCompatibleManagedFallbackEnvironment()
+    {
+        string? sdkDirectory = Environment.GetEnvironmentVariable(
+            "DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY");
+        return string.IsNullOrEmpty(sdkDirectory)
+            ? null
+            : new Dictionary<string, string>
+            {
+                ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
+            };
+    }
+
+    private static void NormalizeCacheVersionsForCrossArchitectureHost(string successCachePath)
+    {
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(
+            "DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY")))
+        {
+            return;
+        }
+
+        // Cross-architecture setup uses the bootstrap CLI to build the host-runnable app. Align its
+        // cache metadata with the current AOT product so this test still reaches cached launch.
+        string? sdkDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_SDK_DIRECTORY");
+        Assert.IsFalse(string.IsNullOrEmpty(sdkDirectory));
+        using JsonDocument runtimeConfig = JsonDocument.Parse(
+            File.ReadAllText(Path.Join(sdkDirectory, "dotnet.runtimeconfig.json")));
+        string? runtimeVersion = runtimeConfig.RootElement
+            .GetProperty("runtimeOptions")
+            .GetProperty("framework")
+            .GetProperty("version")
+            .GetString();
+        Assert.IsFalse(string.IsNullOrEmpty(runtimeVersion));
+
+        RunFileBuildCacheEntry? cacheEntry;
+        using (FileStream stream = File.OpenRead(successCachePath))
+        {
+            cacheEntry = JsonSerializer.Deserialize(
+                stream,
+                RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+        }
+
+        Assert.IsNotNull(cacheEntry);
+        cacheEntry.SdkVersion = Product.Version;
+        cacheEntry.RuntimeVersion = runtimeVersion;
+        using FileStream output = File.Create(successCachePath);
+        JsonSerializer.Serialize(
+            output,
+            cacheEntry,
+            RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+    }
+
     [TestMethod]
     public void AotVersion_WithEnableAot_OutputsVersionAndExitsZero()
     {
@@ -642,6 +703,7 @@ public partial class AotIntegrationTests
             }
             File.SetLastWriteTimeUtc(entryPointPath, File.GetLastWriteTimeUtc(successCachePath).AddSeconds(2));
             byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
+            UseHostCompatibleManagedFallbackSdk(environment);
 
             var (fallbackExitCode, fallbackStdout, fallbackStderr) = RunDn(
                 [
@@ -718,6 +780,7 @@ public partial class AotIntegrationTests
             Assert.AreEqual("AOT_CACHED:v1::", setupOutput.Trim());
 
             string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
+            NormalizeCacheVersionsForCrossArchitectureHost(successCachePath);
             byte[] successCacheBeforeNativeLaunch = File.ReadAllBytes(successCachePath);
             environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
             environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
@@ -806,7 +869,10 @@ public partial class AotIntegrationTests
         SkipIfDnUnavailable();
 
         // With DOTNET_CLI_ENABLEAOT disabled, everything goes through managed fallback
-        var (exitCode, stdout, stderr) = RunDn(["--version"], enableAot: false);
+        var (exitCode, stdout, stderr) = RunDn(
+            ["--version"],
+            enableAot: false,
+            extraEnv: GetHostCompatibleManagedFallbackEnvironment());
 
         // Managed fallback requires dotnet.dll + all dependencies in the layout.
         // In a partial layout (e.g. local dev with only dn.exe published),
@@ -825,7 +891,10 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        var (exitCode, stdout, stderr) = RunDn(["--info"], enableAot: false);
+        var (exitCode, stdout, stderr) = RunDn(
+            ["--info"],
+            enableAot: false,
+            extraEnv: GetHostCompatibleManagedFallbackEnvironment());
 
         if (exitCode != 0 && stderr.Contains("dotnet.dll"))
         {

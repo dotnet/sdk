@@ -133,14 +133,14 @@ fi
 echo "Running AOT tests..."
 echo ""
 
-SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
+BOOTSTRAP_SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
     /^[[:space:]]*Base Path:/ {
         sub(/^[[:space:]]*Base Path:[[:space:]]*/, "")
         print
         exit
     }')
 
-if [[ -z "$SDK_DIRECTORY" ]]; then
+if [[ -z "$BOOTSTRAP_SDK_DIRECTORY" ]]; then
     echo "ERROR: Could not determine the bootstrap SDK directory."
     exit 1
 fi
@@ -155,10 +155,12 @@ RESOURCE_DOTNET_ROOT="$(dirname "$REDIST_SDK_ROOT")"
 RESOURCE_DOTNET_HOST="$RESOURCE_DOTNET_ROOT/dotnet"
 TEST_DOTNET_ROOT="$RESOURCE_DOTNET_ROOT"
 TEST_DOTNET_HOST="$RESOURCE_DOTNET_HOST"
-# Cross-architecture CI can contain a target-architecture redist host that the agent cannot execute.
+# Keep resource tests on the redist SDK, but use the bootstrap SDK for managed fallback when the
+# target-architecture redist host cannot execute on the agent.
 if ! "$RESOURCE_DOTNET_HOST" --info >/dev/null 2>&1; then
     TEST_DOTNET_ROOT="$REPO_ROOT/.dotnet"
     TEST_DOTNET_HOST="$DOTNET"
+    export DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY="$BOOTSTRAP_SDK_DIRECTORY"
 fi
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
