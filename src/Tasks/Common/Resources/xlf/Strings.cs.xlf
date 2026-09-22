@@ -551,6 +551,11 @@
         <target state="translated">NETSDK1025: Zadaný cílový manifest {0} nemá správný formát.</target>
         <note>{StrBegins="NETSDK1025: "}</note>
       </trans-unit>
+      <trans-unit id="InformationalVersionContainsTooManyComponents">
+        <source>NETSDK1247: The InformationalVersion '{0}' contains more than four dot-separated components, which cannot be represented in the generated Win32 product version. The generated product version may be 0.0.0.0. Set the Win32Resource property to a custom Win32 resource file to control the product version.</source>
+        <target state="new">NETSDK1247: The InformationalVersion '{0}' contains more than four dot-separated components, which cannot be represented in the generated Win32 product version. The generated product version may be 0.0.0.0. Set the Win32Resource property to a custom Win32 resource file to control the product version.</target>
+        <note>{StrBegins="NETSDK1247: "}{Locked="{0}"}{Locked="InformationalVersion"}{Locked="Win32Resource"}</note>
+      </trans-unit>
       <trans-unit id="InputAssemblyNotFound">
         <source>NETSDK1163: Input assembly '{0}' not found.</source>
         <target state="translated">NETSDK1163: Vstupní sestavení {0} se nenašlo.</target>
