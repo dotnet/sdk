@@ -14,61 +14,45 @@ public class NonSafeCommandGateTests
     [TestMethod]
     public void MatchingCommandsShareTheGateAndExcludeUpdates()
     {
-        var directory = Directory.CreateTempSubdirectory("dotnetup-gate-");
-        try
-        {
-            var paths = CreateExecutable(directory.FullName);
-            using var first = NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity);
-            using var second = NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity);
-            using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
-            Assert.IsNull(update);
-        }
-        finally
-        {
-            directory.Delete(true);
-        }
+        using var files = new SelfUpdateTestFiles();
+        using var first = NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion);
+        using var second = NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion);
+        using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        Assert.IsNull(update);
     }
 
     [TestMethod]
-    public void BusyGateFailsImmediately()
+    public void BusyGateFailsBeforeStartingVersionProbe()
     {
-        var directory = Directory.CreateTempSubdirectory("dotnetup-gate-");
-        try
-        {
-            var paths = CreateExecutable(directory.FullName);
-            using var updater = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalIdentity));
-            Assert.AreEqual(DotnetInstallErrorCode.DotnetupUpdateInProgress, exception.ErrorCode);
-            Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateInProgress, exception.Message);
-        }
-        finally
-        {
-            directory.Delete(true);
-        }
+        using var files = new SelfUpdateTestFiles();
+        using var updater = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupUpdateInProgress, exception.ErrorCode);
+        Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateInProgress, exception.Message);
+        Assert.IsFalse(File.Exists(files.Paths.InstalledPath + ".invocations"));
     }
 
     [TestMethod]
-    public void StaleImageIsRejectedEvenWhenTheLockWasFree()
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion)]
+    [DataRow(SelfUpdateTestFiles.OriginalVersion + "+different-build")]
+    public void StaleImageIsRejectedEvenWhenTheLockWasFree(string loadedVersion)
     {
-        var directory = Directory.CreateTempSubdirectory("dotnetup-gate-");
-        try
-        {
-            var paths = CreateExecutable(directory.FullName);
-            var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.ReplacementIdentity));
-            Assert.AreEqual(DotnetInstallErrorCode.DotnetupExecutableChanged, exception.ErrorCode);
-            using var update = ScopedLockFile.TryAcquireExclusive(paths.ActivityLockPath);
-            Assert.IsNotNull(update);
-        }
-        finally
-        {
-            directory.Delete(true);
-        }
+        using var files = new SelfUpdateTestFiles();
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => NonSafeCommandGate.Enter(files.Paths, loadedVersion));
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupExecutableChanged, exception.ErrorCode);
+        using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        Assert.IsNotNull(update);
     }
 
-    private static SelfUpdatePaths CreateExecutable(string directory)
+    [TestMethod]
+    public void InvalidVersionOutputReleasesActivityLock()
     {
-        var paths = new SelfUpdatePaths(Path.Combine(directory, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
-        SelfUpdateTestFiles.WriteIdentity(paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
-        return paths;
+        using var files = new SelfUpdateTestFiles(mode: "empty");
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
+        using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        Assert.IsNotNull(update);
     }
 }

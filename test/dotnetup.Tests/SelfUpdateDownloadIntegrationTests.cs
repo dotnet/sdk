@@ -169,8 +169,8 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
     private static void AssertOriginalUnchanged(NativeSelfUpdateFiles files, byte[] originalBytes)
     {
         Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
-        Assert.AreEqual(files.OriginalIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
-        Assert.StartsWith(files.OriginalIdentity.Split('|')[0], files.Run(["--version"]));
+        Assert.AreEqual(files.OriginalVersion, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
+        Assert.AreEqual(files.OriginalVersion, files.Run(["--version"]).Trim());
         Assert.IsEmpty(Directory.GetFiles(files.Paths.DirectoryPath, "dotnetup.exe.old.*"));
         AssertLocksAvailable(files.Paths);
     }
