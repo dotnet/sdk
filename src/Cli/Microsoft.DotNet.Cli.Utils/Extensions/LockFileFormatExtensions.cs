@@ -8,7 +8,10 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 public static class LockFileFormatExtensions
 {
-    public static async Task<LockFile> ReadWithLock(this LockFileFormat subject, string path)
+    public static async Task<LockFile> ReadWithLock(
+        this LockFileFormat subject,
+        string path,
+        CancellationToken cancellationToken)
     {
         return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
             path,
@@ -26,6 +29,6 @@ public static class LockFileFormatExtensions
 
                 return lockFile;
             },
-            CancellationToken.None);
+            cancellationToken);
     }
 }
