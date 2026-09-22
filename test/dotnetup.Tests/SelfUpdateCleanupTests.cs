@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -13,23 +13,28 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class SelfUpdateCleanupTests : SdkTest
 {
     private const int ExpiredBackupAgeDays = 8;
-    private const string Identity = "0.2.0-preview.1.26465.6|win-x64";
+    private const string Version = SelfUpdateTestFiles.OriginalVersion;
     private const int RetainedBackupAgeDays = 6;
     private DirectoryInfo _directory = null!;
     private string _installedPath = null!;
     private string _lockPath = null!;
+    private SelfUpdateTestFiles _files = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _directory = Directory.CreateTempSubdirectory("self-update-cleanup-");
+        _files = new SelfUpdateTestFiles();
+        _directory = new DirectoryInfo(_files.Paths.DirectoryPath);
         _installedPath = Path.Combine(_directory.FullName, "dotnetup.exe");
         _lockPath = Path.Combine(_directory.FullName, "dotnetup.update.lock");
-        File.WriteAllBytes(_installedPath, CreateRecord());
+        if (_installedPath != _files.Paths.InstalledPath)
+        {
+            File.Move(_files.Paths.InstalledPath, _installedPath);
+        }
     }
 
     [TestCleanup]
-    public void Cleanup() => _directory.Delete(recursive: true);
+    public void Cleanup() => _files.Dispose();
 
     [TestMethod]
     [DataRow(false)]
@@ -69,13 +74,13 @@ public class SelfUpdateCleanupTests : SdkTest
         using (var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath))
         {
             Assert.IsNotNull(updateLock);
-            SelfUpdateCleanup.TryRun(_installedPath, Identity);
+            SelfUpdateCleanup.TryRun(_installedPath, Version);
             Assert.IsTrue(File.Exists(backup));
             using var competingLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNull(competingLock);
         }
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
         Assert.IsFalse(File.Exists(backup));
         AssertUpdateLockAvailable();
     }
@@ -96,48 +101,38 @@ public class SelfUpdateCleanupTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow("missing", false)]
-    [DataRow("missing", true)]
-    [DataRow("truncated", false)]
-    [DataRow("truncated", true)]
-    [DataRow("malformed", false)]
-    [DataRow("malformed", true)]
-    [DataRow("duplicate", false)]
-    [DataRow("duplicate", true)]
-    public void InvalidCanonicalPreservesBackups(string kind, bool ownsUpdateLock)
+    [DataRow("empty", false)]
+    [DataRow("empty", true)]
+    [DataRow("wrong", false)]
+    [DataRow("wrong", true)]
+    [DataRow("nonzero", false)]
+    [DataRow("nonzero", true)]
+    public void InvalidVersionOutputPreservesBackups(string mode, bool ownsUpdateLock)
     {
         var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-        var record = CreateRecord();
-        var bytes = kind switch
-        {
-            "missing" => Array.Empty<byte>(),
-            "truncated" => record[..^1],
-            "malformed" => CreateRecord(new string('g', 64)),
-            "duplicate" => record.Concat(record).ToArray(),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
-        };
-        File.WriteAllBytes(_installedPath, bytes);
+        File.WriteAllText(_installedPath + ".mode", mode);
 
         RunCleanup(ownsUpdateLock);
 
         Assert.IsTrue(File.Exists(backup));
+        Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
         AssertUpdateLockAvailable();
     }
 
     [TestMethod]
-    [DataRow("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", false)]
-    [DataRow("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", true)]
+    [DataRow(Version + "+different-build", false)]
+    [DataRow(Version + "+different-build", true)]
     [DataRow("", false)]
     [DataRow("", true)]
     [DataRow("invalid", false)]
     [DataRow("invalid", true)]
-    [DataRow("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF", false)]
-    [DataRow("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF", true)]
-    public void DifferentOrMalformedLoadedIdentityPreservesBackups(string loadedIdentity, bool ownsUpdateLock)
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion, false)]
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion, true)]
+    public void DifferentOrMalformedLoadedVersionPreservesBackups(string loadedVersion, bool ownsUpdateLock)
     {
         var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
-        RunCleanup(ownsUpdateLock, loadedIdentity: loadedIdentity);
+        RunCleanup(ownsUpdateLock, loadedVersion: loadedVersion);
 
         Assert.IsTrue(File.Exists(backup));
         AssertUpdateLockAvailable();
@@ -162,6 +157,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow(true)]
     public void OnlyExactBackupNamesAreDeleted(bool ownsUpdateLock)
     {
+        var originalBytes = File.ReadAllBytes(_installedPath);
         var transaction = Guid.NewGuid().ToString("N")[..8];
         string[] names =
         [
@@ -197,7 +193,7 @@ public class SelfUpdateCleanupTests : SdkTest
             Assert.AreEqual("preserve", File.ReadAllText(Path.Combine(_directory.FullName, name)));
         }
 
-        Assert.AreSequenceEqual(CreateRecord(), File.ReadAllBytes(_installedPath));
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(_installedPath));
         Assert.AreEqual(0L, new FileInfo(_lockPath).Length);
     }
 
@@ -205,13 +201,13 @@ public class SelfUpdateCleanupTests : SdkTest
     public void UsesTheExactInstalledFileNameIncludingUnixNames()
     {
         var installedPath = Path.Combine(_directory.FullName, "dotnetup");
-        File.WriteAllBytes(installedPath, CreateRecord());
+        SelfUpdateTestFiles.WriteExecutable(installedPath, Version);
         var backup = installedPath + ".old." + Guid.NewGuid().ToString("N")[..8];
         File.WriteAllText(backup, "old");
         File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
         var otherBackup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
-        SelfUpdateCleanup.TryRun(installedPath, Identity);
+        SelfUpdateCleanup.TryRun(installedPath, Version);
 
         Assert.IsFalse(File.Exists(backup));
         Assert.IsTrue(File.Exists(otherBackup));
@@ -250,7 +246,7 @@ public class SelfUpdateCleanupTests : SdkTest
             File.SetLastWriteTimeUtc(entry.FullName, DateTime.UtcNow);
         }
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
 
         Assert.HasCount(80, Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
     }
@@ -265,7 +261,7 @@ public class SelfUpdateCleanupTests : SdkTest
 
         var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
 
         Assert.IsFalse(File.Exists(backup));
     }
@@ -280,7 +276,7 @@ public class SelfUpdateCleanupTests : SdkTest
         backupDirectory.LastWriteTimeUtc = DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays);
         var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
 
         Assert.AreEqual("preserve", File.ReadAllText(nestedBackup));
         Assert.IsFalse(File.Exists(backup));
@@ -293,7 +289,7 @@ public class SelfUpdateCleanupTests : SdkTest
         var other = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         using var handle = new FileStream(locked, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
 
         Assert.IsTrue(File.Exists(locked));
         Assert.IsFalse(File.Exists(other));
@@ -306,7 +302,7 @@ public class SelfUpdateCleanupTests : SdkTest
         var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         Directory.CreateDirectory(_lockPath);
 
-        SelfUpdateCleanup.TryRun(_installedPath, Identity);
+        SelfUpdateCleanup.TryRun(_installedPath, Version);
 
         Assert.IsTrue(File.Exists(backup));
     }
@@ -315,17 +311,17 @@ public class SelfUpdateCleanupTests : SdkTest
     public void InvalidOrMissingPathsAreSwallowedWithoutCreatingDirectories()
     {
         var missing = Path.Combine(_directory.FullName, "missing", "dotnetup.exe");
-        SelfUpdateCleanup.TryRun(missing, Identity);
-        SelfUpdateCleanup.RunWithUpdateLock(missing, Identity);
-        SelfUpdateCleanup.TryRun("\0", Identity);
-        SelfUpdateCleanup.RunWithUpdateLock("\0", Identity);
+        SelfUpdateCleanup.TryRun(missing, Version);
+        SelfUpdateCleanup.RunWithUpdateLock(missing, Version);
+        SelfUpdateCleanup.TryRun("\0", Version);
+        SelfUpdateCleanup.RunWithUpdateLock("\0", Version);
         Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(missing)));
     }
 
     [TestMethod]
     public void SkipsBackupFileAndDirectorySymlinks()
     {
-        var outside = Directory.CreateTempSubdirectory("self-update-cleanup-target-");
+        var outside = Directory.CreateDirectory(_directory.FullName + "-target");
         var fileLink = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8];
         var directoryLink = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8] + ".rejected";
         try
@@ -337,7 +333,7 @@ public class SelfUpdateCleanupTests : SdkTest
             CreateSymbolicLink(directoryLink, outside.FullName, isDirectory: true);
             var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
 
-            SelfUpdateCleanup.TryRun(_installedPath, Identity);
+            SelfUpdateCleanup.TryRun(_installedPath, Version);
 
             Assert.IsFalse(File.Exists(backup));
             Assert.AreEqual("preserve", File.ReadAllText(target));
@@ -363,7 +359,7 @@ public class SelfUpdateCleanupTests : SdkTest
     [DataRow("ancestor")]
     public void ResolvesDirectoryLinksButRejectsFileLinks(string kind)
     {
-        var outside = Directory.CreateTempSubdirectory("self-update-cleanup-target-");
+        var outside = Directory.CreateDirectory(_directory.FullName + "-target");
         var link = Path.Combine(_directory.FullName, "link");
         try
         {
@@ -372,7 +368,7 @@ public class SelfUpdateCleanupTests : SdkTest
             if (kind is "canonical" or "lock")
             {
                 var target = Path.Combine(outside.FullName, "target");
-                File.WriteAllBytes(target, CreateRecord());
+                SelfUpdateTestFiles.WriteExecutable(target, Version);
                 link = kind == "canonical" ? _installedPath : _lockPath;
                 File.Delete(link);
                 CreateSymbolicLink(link, target, isDirectory: false);
@@ -383,7 +379,7 @@ public class SelfUpdateCleanupTests : SdkTest
                     ? Directory.CreateDirectory(Path.Combine(outside.FullName, "nested")).FullName
                     : outside.FullName;
                 var target = Path.Combine(targetDirectory, "dotnetup.exe");
-                File.WriteAllBytes(target, CreateRecord());
+                SelfUpdateTestFiles.WriteExecutable(target, Version);
                 backup = target + ".old." + Guid.NewGuid().ToString("N")[..8];
                 File.WriteAllText(backup, "preserve");
                 File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
@@ -391,7 +387,7 @@ public class SelfUpdateCleanupTests : SdkTest
                 installedPath = kind == "ancestor" ? Path.Combine(link, "nested", "dotnetup.exe") : Path.Combine(link, "dotnetup.exe");
             }
 
-            SelfUpdateCleanup.TryRun(installedPath, Identity);
+            SelfUpdateCleanup.TryRun(installedPath, Version);
 
             if (!OperatingSystem.IsWindows() && kind is "directory" or "ancestor")
             {
@@ -432,7 +428,7 @@ public class SelfUpdateCleanupTests : SdkTest
             using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNotNull(updateLock);
 
-            SelfUpdateCleanup.RunWithUpdateLock(Path.Combine(link, Path.GetFileName(_installedPath)), Identity);
+            SelfUpdateCleanup.RunWithUpdateLock(Path.Combine(link, Path.GetFileName(_installedPath)), Version);
 
             Assert.IsFalse(File.Exists(backup));
             using var competingLock = ScopedLockFile.TryAcquireExclusive(Path.Combine(link, "dotnetup.update.lock"));
@@ -444,19 +440,44 @@ public class SelfUpdateCleanupTests : SdkTest
         }
     }
 
-    private void RunCleanup(bool ownsUpdateLock, string loadedIdentity = Identity)
+    private void RunCleanup(bool ownsUpdateLock, string loadedVersion = Version)
     {
         if (ownsUpdateLock)
         {
             using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNotNull(updateLock);
-            SelfUpdateCleanup.RunWithUpdateLock(_installedPath, loadedIdentity);
+            SelfUpdateCleanup.RunWithUpdateLock(_installedPath, loadedVersion);
             using var competingLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNull(competingLock);
         }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NoEligibleBackupsDoesNotStartVersionProbe(bool ownsUpdateLock)
+        {
+            CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
+            File.WriteAllText(_installedPath + ".mode", "timeout");
+
+            RunCleanup(ownsUpdateLock);
+
+            Assert.IsFalse(File.Exists(_installedPath + ".invocations"));
+        }
+
+        [TestMethod]
+        public void ManyEligibleBackupsUseOnlyOneVersionProbeWithParentUpdateLock()
+        {
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
+
+            RunCleanup(ownsUpdateLock: true);
+
+            Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
+            Assert.IsEmpty(Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
+        }
         else
         {
-            SelfUpdateCleanup.TryRun(_installedPath, loadedIdentity);
+            SelfUpdateCleanup.TryRun(_installedPath, loadedVersion);
         }
     }
 
@@ -473,9 +494,6 @@ public class SelfUpdateCleanupTests : SdkTest
         using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
         Assert.IsNotNull(updateLock);
     }
-
-    private static byte[] CreateRecord(string identity = Identity)
-        => Encoding.ASCII.GetBytes("DOTNETUP-VR-REC\0\u0001\0\0\0\0\0\0\0" + identity.PadRight(224, '\0') + "END-VER\0");
 
     private static void CreateSymbolicLink(string path, string target, bool isDirectory)
     {

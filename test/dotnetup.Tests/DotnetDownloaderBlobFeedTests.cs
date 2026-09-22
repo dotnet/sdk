@@ -91,7 +91,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
                 Out = new AnsiConsoleOutput(output),
             });
             AnsiConsole.Profile.Width = int.MaxValue;
-            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
             var arguments = new List<string> { "self", "update", "--channel", channel };
             if (noProgress)
             {
@@ -104,7 +104,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
 
             outputAtDownloadStart.Should().NotBeNull().And.Contain(warning);
             output.ToString().Split(warning, StringSplitOptions.None).Should().HaveCount(2);
-            SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath).Should().Be(SelfUpdateTestFiles.OriginalIdentity);
+            SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath).Should().Be(SelfUpdateTestFiles.OriginalVersion);
         }
         finally
         {
@@ -125,8 +125,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
-        string installedMetadata = DotnetupVersionMetadataReader.Format(installedVersion, rid);
-        SelfUpdateTestFiles.WriteIdentity(files.Paths.InstalledPath, installedMetadata);
+        SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
         var available = ReleaseVersion.Parse(availableVersion);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(available, rid);
         string artifactName = BlobFeedUrlBuilder.GetDotnetupFileName(rid);
@@ -147,7 +146,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = CreateConsole(stdout);
             Console.SetError(stderr);
-            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedMetadata);
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
             var result = Parser.Parse(["self", "update", "--no-progress"]);
 
             new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(0);
@@ -163,7 +162,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             stderr.ToString().Should().Be(expectedError + Environment.NewLine);
             stdout.ToString().Should().BeEmpty();
             history.Should().NotContain(location.ArchiveUrl);
-            SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath).Should().Be(installedMetadata);
+            SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath).Should().Be(installedVersion);
         }
         finally
         {

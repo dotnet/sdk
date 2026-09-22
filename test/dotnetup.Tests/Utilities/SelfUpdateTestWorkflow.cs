@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
 {
-    public SelfUpdateTestWorkflow(SelfUpdatePaths paths, string loadedIdentity, Func<ResolvedDownload> resolve,
+    public SelfUpdateTestWorkflow(SelfUpdatePaths paths, string loadedVersion, Func<ResolvedDownload> resolve,
         Action<ResolvedDownload, string> download, SelfUpdateCoordinator? coordinator = null)
-        : base(paths, loadedIdentity, resolve, download, coordinator)
+        : base(paths, loadedVersion, resolve, download, coordinator)
     {
     }
 
@@ -33,9 +33,10 @@ internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
         }
     }
 
-    protected override void Verify(string installedPath)
+    protected override void Verify(string installedPath, string expectedVersion)
     {
         VerificationCount++;
         VerifyAction?.Invoke(installedPath);
+        base.Verify(installedPath, expectedVersion);
     }
 }

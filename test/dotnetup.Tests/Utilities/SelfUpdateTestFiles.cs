@@ -16,7 +16,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     public const string OriginalVersion = "0.2.0-preview.1.26465.6";
     public const string ReplacementVersion = "0.2.0-preview.1.26465.7";
 
-    private static readonly ConcurrentDictionary<string, Lazy<string>> s_assetOutputs = new();
+    private static readonly ConcurrentDictionary<(string Version, string RuntimePath), Lazy<string>> s_assetOutputs = new();
     private readonly DirectoryInfo _directory;
 
     public SelfUpdateTestFiles(bool executable = true, string mode = "valid")
@@ -44,13 +44,14 @@ internal sealed class SelfUpdateTestFiles : IDisposable
     public string BackupPath { get; }
     public SelfUpdateReplacement Replacement { get; }
     public static string DotnetHostPath => ResolveDotnetHostPath();
-    public static string ProcessAssemblyPath => Directory.GetFiles(GetAssetOutput(OriginalVersion), "*.dll")
+    public static string ProcessAssemblyPath => Directory.GetFiles(GetAssetOutput(OriginalVersion,
+        Path.GetDirectoryName(typeof(SelfUpdateTestFiles).Assembly.Location)!), "*.dll")
         .Single(path => Path.GetFileName(path).StartsWith("SelfUpdateProcess", StringComparison.Ordinal));
 
     public static void WriteExecutable(string path, string version)
     {
-        var output = GetAssetOutput(version);
         var directory = Path.GetDirectoryName(path)!;
+        var output = GetAssetOutput(version, directory);
         foreach (var dependency in Directory.EnumerateFiles(output))
         {
             var destination = Path.Combine(directory, Path.GetFileName(dependency));
@@ -67,10 +68,14 @@ internal sealed class SelfUpdateTestFiles : IDisposable
 
     public void Dispose() => _directory.Delete(recursive: true);
 
-    private static string GetAssetOutput(string version)
-        => s_assetOutputs.GetOrAdd(version, static value => new Lazy<string>(() => BuildAsset(value))).Value;
+    private static string GetAssetOutput(string version, string directory)
+    {
+        var runtimePath = Path.GetRelativePath(ExecutablePathResolver.ResolveRealPath(directory)!, Path.GetDirectoryName(DotnetHostPath)!);
+        return s_assetOutputs.GetOrAdd((version, runtimePath), static value => new Lazy<string>(() =>
+            BuildAsset(value.Version, value.RuntimePath))).Value;
+    }
 
-    private static string BuildAsset(string version)
+    private static string BuildAsset(string version, string runtimePath)
     {
         var repoRoot = Path.GetFullPath(typeof(SelfUpdateTestFiles).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(attribute => attribute.Key == "RepoRoot").Value!);
@@ -83,11 +88,11 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         var startInfo = new ProcessStartInfo(dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         foreach (var argument in new[]
         {
-            // Copies live one directory below artifacts, like buildDirectory.
+            // The host is copied to the destination directory after publishing.
             "publish", Path.Combine(repoRoot!, "test", "TestAssets", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
             "--output", output,
             "/p:CurrentTargetFramework=net" + framework.Version.ToString(2),
-            "/p:AppHostRelativeDotNet=" + Path.GetRelativePath(buildDirectory, Path.GetDirectoryName(dotnetPath)!),
+            "/p:AppHostRelativeDotNet=" + runtimePath,
             "/p:AssemblyName=" + assemblyName,
             "/p:Version=" + version,
             "/p:InformationalVersion=" + version,

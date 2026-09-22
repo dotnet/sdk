@@ -47,7 +47,7 @@ public class SelfUpdateStartupTests : SdkTest
         {
             var resolver = (Lazy<ChannelVersionResolver>)resolverField.GetValue(command)!;
             Assert.IsFalse(resolver.IsValueCreated);
-            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
 
             Assert.AreEqual(1, command.Execute());
             Assert.IsFalse(resolver.IsValueCreated);
@@ -140,7 +140,7 @@ public class SelfUpdateStartupTests : SdkTest
         {
             activities.Clear();
             DotnetupTelemetry.Instance.IsShellStartupCommand = false;
-            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
             using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
             var parsed = Parser.Parse(args);
             Assert.IsEmpty(parsed.Errors, string.Join(' ', args));
@@ -186,7 +186,7 @@ public class SelfUpdateStartupTests : SdkTest
             }
 
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath,
-                busy ? SelfUpdateTestFiles.OriginalIdentity : SelfUpdateTestFiles.ReplacementIdentity);
+                busy ? SelfUpdateTestFiles.OriginalVersion : SelfUpdateTestFiles.ReplacementVersion);
             var root = new RootCommand();
             root.Options.Add(new Option<bool>("--flag"));
             var command = new SelfUpdateStartupCommand(root.Parse(["--flag"]));
@@ -216,7 +216,7 @@ public class SelfUpdateStartupTests : SdkTest
     public void EnvScriptConstructionDoesNotMarkShellStartupOrStartRootOperation()
     {
         using var files = new SelfUpdateTestFiles();
-        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
         var telemetry = DotnetupTelemetry.Instance;
         bool previous = telemetry.IsShellStartupCommand;
         try
@@ -239,7 +239,7 @@ public class SelfUpdateStartupTests : SdkTest
     {
         using var files = new SelfUpdateTestFiles();
         var previous = SelfUpdateInvocation.Current;
-        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
         using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
@@ -269,7 +269,7 @@ public class SelfUpdateStartupTests : SdkTest
         using var files = new SelfUpdateTestFiles();
         using var updater = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNotNull(updater);
-        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
 
         Assert.AreEqual(1, command.Execute());
@@ -280,7 +280,7 @@ public class SelfUpdateStartupTests : SdkTest
     public void StaleImageSuppressesCommandBodyAndReleasesActivityLease()
     {
         using var files = new SelfUpdateTestFiles();
-        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementIdentity);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.ReplacementVersion);
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
 
         Assert.AreEqual(1, command.Execute());
@@ -387,7 +387,7 @@ public class SelfUpdateStartupTests : SdkTest
 
         using var files = new SelfUpdateTestFiles();
         using var updater = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
-        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalIdentity);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
         var previousNoLogo = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
         var previousError = Console.Error;
         using var output = new StringWriter();
