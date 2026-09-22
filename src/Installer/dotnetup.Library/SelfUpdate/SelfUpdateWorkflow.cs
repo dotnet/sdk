@@ -110,6 +110,9 @@ internal class SelfUpdateWorkflow
         }
     }
 
+    // Precedence deliberately ignores build metadata: the feed version (from the download URL) never
+    // carries the "+<commit>" suffix that official builds append to --version, so an installed
+    // "X+<commit>" must be treated as up to date with an available "X" rather than re-downloaded.
     private static bool IsUpdateAvailable(ReleaseVersion installedVersion, ReleaseVersion availableVersion)
         => !HasSameSemanticChannel(installedVersion, availableVersion) ||
             availableVersion.ComparePrecedenceTo(installedVersion) > 0;
