@@ -20,11 +20,13 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
+    TestResultsDirectoryResolver resultsDirectoryResolver,
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
     private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TestResultsDirectoryResolver _resultsDirectoryResolver = resultsDirectoryResolver;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
@@ -189,7 +191,7 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
-        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        if (_resultsDirectoryResolver.Resolve(Module) is { } resultsDirectoryPath)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }

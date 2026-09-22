@@ -11,6 +11,9 @@ Options:
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
   --results-directory <RESULTS_DIR>               The directory where the test results will be placed.
                                                   The specified directory will be created if it does not exist.
+  --results-directory-layout <LAYOUT>             Specifies how test results are organized within the results directory.
+                                                  'flat' (the default) places the results of every test project directly in the results directory.
+                                                  'per-module' gives every test project its own '<project>/<target-framework>_<runtime>' subdirectory, so reports with the same file name cannot overwrite each other.
   --config-file <CONFIG_FILE>                     Specifies a testconfig.json file.
   --diagnostic-output-directory <DIAGNOSTIC_DIR>  Output directory of the diagnostic logging.
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
@@ -33,6 +36,7 @@ Options:
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
+  -nologo, --no-logo                              Run test(s), without displaying Microsoft Testplatform banner [default: False]
   --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
