@@ -177,14 +177,10 @@ internal static class GeneratorTestHarness
 
     private static ImmutableArray<MetadataReference> GetNet472References()
     {
-        string packages = GetAssemblyMetadata("NuGetPackageRoot");
         string framework = Path.Join(
-            packages,
-            "microsoft.netframework.referenceassemblies.net472",
-            "1.0.3",
-            "build",
-            ".NETFramework",
-            "v4.7.2");
+            AppContext.BaseDirectory,
+            "TestAssets",
+            "net472");
 
         return
         [
@@ -192,20 +188,6 @@ internal static class GeneratorTestHarness
             MetadataReference.CreateFromFile(Path.Join(framework, "System.dll")),
             MetadataReference.CreateFromFile(Path.Join(framework, "System.Core.dll"))
         ];
-    }
-
-    private static string GetAssemblyMetadata(string key)
-    {
-        foreach (AssemblyMetadataAttribute attribute in typeof(GeneratorTestHarness).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>())
-        {
-            if (attribute.Key == key && !string.IsNullOrEmpty(attribute.Value))
-            {
-                return attribute.Value;
-            }
-        }
-
-        throw new InvalidOperationException($"Assembly metadata '{key}' is unavailable.");
     }
 
     private const string Net472RuntimeStubs = """

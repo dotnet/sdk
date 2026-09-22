@@ -18,14 +18,15 @@
   <ItemGroup>
     <PackageDownload Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="[1.0.3]" />
 
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>ResxSourceGeneratorPackagePath</_Parameter1>
-      <_Parameter2>$(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>NuGetPackageRoot</_Parameter1>
-      <_Parameter2>$(NuGetPackageRoot)</_Parameter2>
-    </AssemblyAttribute>
+    <None Include="$(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.dll;
+                   $(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.dll"
+          Link="TestAssets\ResxSourceGenerator\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\mscorlib.dll;
+                   $(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\System.dll;
+                   $(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\System.Core.dll"
+          Link="TestAssets\net472\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,12 +12,13 @@ public class AotResourceManagerProviderTests
     public void ExternalNeutralPreflight_MissingOwnerFailsBeforeRegistration()
     {
         string directory = Directory.CreateTempSubdirectory("dotnet-aot-resource-preflight-").FullName;
+        bool wasConfigured = AotResourceManagerProvider.IsConfigured;
 
         try
         {
             Assert.ThrowsExactly<FileNotFoundException>(
                 () => AotResourceManagerProvider.ValidateExternalNeutralResources(directory));
-            Assert.IsFalse(AotResourceManagerProvider.IsConfigured);
+            Assert.AreEqual(wasConfigured, AotResourceManagerProvider.IsConfigured);
         }
         finally
         {

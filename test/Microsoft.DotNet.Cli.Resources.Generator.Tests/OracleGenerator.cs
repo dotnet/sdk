@@ -8,7 +8,6 @@ namespace Microsoft.DotNet.Cli.Resources.Generator.Tests;
 
 internal sealed class OracleGenerator : IDisposable
 {
-    private const string PackagePathMetadata = "ResxSourceGeneratorPackagePath";
     private readonly AssemblyLoadContext _loadContext;
 
     private OracleGenerator(AssemblyLoadContext loadContext, IIncrementalGenerator generator)
@@ -21,8 +20,10 @@ internal sealed class OracleGenerator : IDisposable
 
     internal static OracleGenerator Load()
     {
-        string packagePath = GetPackagePath();
-        string analyzerPath = Path.Combine(packagePath, "analyzers", "dotnet", "cs");
+        string analyzerPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "TestAssets",
+            "ResxSourceGenerator");
         AssemblyLoadContext loadContext = new(
             "Microsoft.DotNet.Cli.Resources.Generator.Oracle." + Guid.NewGuid(),
             isCollectible: true);
@@ -53,20 +54,6 @@ internal sealed class OracleGenerator : IDisposable
     {
         _loadContext.Resolving -= ResolveRoslyn;
         _loadContext.Unload();
-    }
-
-    private static string GetPackagePath()
-    {
-        foreach (AssemblyMetadataAttribute attribute in typeof(OracleGenerator).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>())
-        {
-            if (attribute.Key == PackagePathMetadata && !string.IsNullOrEmpty(attribute.Value))
-            {
-                return attribute.Value;
-            }
-        }
-
-        throw new InvalidOperationException("The Microsoft RESX generator package path is unavailable.");
     }
 
     private static Assembly? ResolveRoslyn(AssemblyLoadContext context, AssemblyName name)
