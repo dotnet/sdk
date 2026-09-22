@@ -229,6 +229,10 @@ namespace Microsoft.TemplateEngine.Cli
                 DisplayInstructionsForAction(action, useErrorOutput: true);
                 return PostActionExecutionStatus.Failure;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 Reporter.Error.WriteLine(LocalizableStrings.PostActionFailedInstructionHeader);

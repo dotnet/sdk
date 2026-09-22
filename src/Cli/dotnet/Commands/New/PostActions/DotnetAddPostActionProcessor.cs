@@ -174,6 +174,10 @@ internal class DotnetAddPostActionProcessor(
             }
             return succeeded;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception e)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
@@ -196,6 +200,10 @@ internal class DotnetAddPostActionProcessor(
                 Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Failed);
             }
             return succeeded;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception e)
         {
