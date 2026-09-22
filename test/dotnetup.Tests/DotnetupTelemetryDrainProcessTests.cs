@@ -88,20 +88,24 @@ public class DotnetupTelemetryDrainProcessTests
     [DataRow("dotnetup.exe")]
     public void SharedHostCheck_AcceptsRenamedDotnetupExecutable(string executableName)
     {
-        Assert.IsTrue(DotnetupProcessInfo.IsDotnetupExecutable(executableName, "dotnetup"));
+        Assert.IsTrue(DotnetupProcessInfo.IsDotnetupExecutable(executableName, "dotnetup", isDynamicCodeSupported: false));
     }
 
     [TestMethod]
-    [DataRow(null, "dotnetup")]
-    [DataRow("", "dotnetup")]
-    [DataRow("dotnet.exe", "dotnetup")]
-    [DataRow("dotnet", "dotnetup")]
-    [DataRow("DOTNET.EXE", "dotnetup")]
-    [DataRow("testhost.exe", "testhost")]
-    [DataRow("dotnetup.exe", "testhost")]
-    [DataRow("dotnetup.exe", null)]
-    public void SharedHostCheck_RejectsDotnetExecAndTestHosts(string? executablePath, string? entryAssemblyName)
+    [DataRow(null, "dotnetup", false)]
+    [DataRow("", "dotnetup", false)]
+    [DataRow("dotnet.exe", "dotnetup", false)]
+    [DataRow("dotnet", "dotnetup", false)]
+    [DataRow("DOTNET.EXE", "dotnetup", false)]
+    [DataRow("testhost.exe", "testhost", false)]
+    [DataRow("dotnetup.exe", "testhost", false)]
+    [DataRow("dotnetup.exe", null, false)]
+    [DataRow("dotnetup.exe", "dotnetup", true)]
+    public void SharedHostCheck_RejectsManagedApphostsDotnetExecAndTestHosts(
+        string? executablePath,
+        string? entryAssemblyName,
+        bool isDynamicCodeSupported)
     {
-        Assert.IsFalse(DotnetupProcessInfo.IsDotnetupExecutable(executablePath, entryAssemblyName));
+        Assert.IsFalse(DotnetupProcessInfo.IsDotnetupExecutable(executablePath, entryAssemblyName, isDynamicCodeSupported));
     }
 }
