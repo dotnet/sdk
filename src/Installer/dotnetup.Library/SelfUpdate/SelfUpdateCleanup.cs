@@ -15,7 +15,7 @@ internal static class SelfUpdateCleanup
     private const int EntryBudget = 32;
     private const string RejectedSuffix = ".rejected";
 
-    public static void TryRun(string installedPath, string loadedVersionMetadata)
+    public static void TryRun(string installedPath, string loadedVersion)
     {
         try
         {
@@ -35,7 +35,7 @@ internal static class SelfUpdateCleanup
             using var updateLock = ScopedLockFile.TryAcquireExclusive(lockPath);
             if (updateLock is not null)
             {
-                RunWithUpdateLock(installedPath, loadedVersionMetadata);
+                RunWithUpdateLock(installedPath, loadedVersion);
             }
         }
         catch (Exception)
@@ -44,7 +44,7 @@ internal static class SelfUpdateCleanup
     }
 
     /// <summary>Runs cleanup with the caller's update lock, without acquiring or releasing it.</summary>
-    public static void RunWithUpdateLock(string installedPath, string loadedVersionMetadata)
+    public static void RunWithUpdateLock(string installedPath, string loadedVersion)
     {
         try
         {
@@ -53,13 +53,6 @@ internal static class SelfUpdateCleanup
             var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
             // TryRun validates before acquiring the lock; repeat because the filesystem objects may have changed meanwhile.
             if (!IsPlainDirectoryPath(directory) || !IsPlainFile(installedPath))
-            {
-                return;
-            }
-
-            using var installedExecutable = new FileStream(installedPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
-            // A process loaded before a later update must not delete that update's recovery artifacts.
-            if (!string.Equals(DotnetupVersionMetadataReader.Read(installedExecutable), loadedVersionMetadata, StringComparison.Ordinal))
             {
                 return;
             }
@@ -73,6 +66,7 @@ internal static class SelfUpdateCleanup
                 IgnoreInaccessible = true,
             }).GetEnumerator();
 
+            var versionChecked = false;
             for (var visited = 0; visited < EntryBudget && entries.MoveNext(); visited++)
             {
                 try
@@ -90,7 +84,23 @@ internal static class SelfUpdateCleanup
                         continue;
                     }
 
+                    if (!versionChecked)
+                    {
+                        // --version bypasses cleanup and both locks. Keep the parent's update lock
+                        // through comparison and deletion; compare build metadata too.
+                        if (!string.Equals(SelfUpdateVerifier.ReadVersion(installedPath), loadedVersion, StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+
+                        versionChecked = true;
+                    }
+
                     File.Delete(entry.FullName);
+                }
+                catch (DotnetInstallException)
+                {
+                    return;
                 }
                 catch (Exception)
                 {
