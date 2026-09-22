@@ -54,11 +54,12 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         using var files = new SelfUpdateTestFiles();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
+        string availableVersion = SelfUpdateTestFiles.ReplacementVersion;
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         string artifactName = $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : "")}";
-        string artifactUrl = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/{artifactName}";
+        string artifactUrl = $"https://ci.dot.net/public/dotnetup/{availableVersion}/{artifactName}";
         string channelUrl = $"https://aka.ms/dotnet/dotnetup/{channel}/{artifactName}";
-        string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/{artifactName}.sha512";
+        string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{availableVersion}/{artifactName}.sha512";
         string warning = Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning;
         string? outputAtDownloadStart = null;
         using var handler = new RecordingHandler(new()

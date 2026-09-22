@@ -32,6 +32,16 @@ public class SelfUpdateVerifierTests : SdkTest
     }
 
     [TestMethod]
+    public void FullVersionIncludesBuildMetadata()
+    {
+        using var files = new SelfUpdateTestFiles();
+        const string version = SelfUpdateTestFiles.OriginalVersion + "+full-build.42";
+        SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, version);
+
+        Assert.AreEqual(version, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
+    }
+
+    [TestMethod]
     public async Task PublishedFixtureUsesRelativeRuntimeInsteadOfEnvironment()
     {
         using var files = new SelfUpdateTestFiles(executable: true);

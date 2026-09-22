@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -373,6 +374,77 @@ public class SelfUpdateStartupTests : SdkTest
         }
 
         Assert.AreEqual(invocations.Length, started);
+    }
+
+    [TestMethod]
+    public async Task ProgramPrivateVersionEncodingOverridesOptOutAndCodePage()
+    {
+        const string stdoutMarker = "version-stdout-é-日本語";
+        const string stderrMarker = "version-stderr-é-日本語";
+        if (Environment.GetEnvironmentVariable(SelfUpdateStartupTelemetryProcess.ChildEnvironmentVariable) != "1")
+        {
+            await SelfUpdateStartupTelemetryProcess.RunAsync(
+                typeof(SelfUpdateStartupTests).FullName + "." + nameof(ProgramPrivateVersionEncodingOverridesOptOutAndCodePage),
+                stdoutMarker, stderrMarker).ConfigureAwait(false);
+            return;
+        }
+
+        var originalEncoding = Console.OutputEncoding;
+        var originalOptOut = Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING");
+        var originalRequest = Environment.GetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable);
+        try
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING", "1");
+            foreach (var initialEncoding in new[] { Encoding.Latin1, Encoding.Unicode })
+            {
+                foreach (var privateRequest in new[] { false, true })
+                {
+                    Console.OutputEncoding = initialEncoding;
+                    Environment.SetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable, privateRequest ? "1" : null);
+                    var expectedCodePage = privateRequest ? Encoding.UTF8.CodePage : initialEncoding.CodePage;
+                    Assert.AreEqual(0, DotnetupProgram.InvokeCommand(["--version"], () => new StartupEncodingScope(() =>
+                    {
+                        Assert.AreEqual(expectedCodePage, Console.OutputEncoding.CodePage);
+                        if (privateRequest)
+                        {
+                            Assert.AreEqual(Encoding.UTF8.CodePage, Console.Out.Encoding.CodePage);
+                            Assert.AreEqual(Encoding.UTF8.CodePage, Console.Error.Encoding.CodePage);
+                            Assert.IsEmpty(Console.OutputEncoding.GetPreamble());
+                            Console.WriteLine(stdoutMarker);
+                        }
+                    })));
+                }
+
+                Console.OutputEncoding = initialEncoding;
+                Environment.SetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable, "1");
+                Assert.AreEqual(1, DotnetupProgram.InvokeCommand(["--version"], () => throw new IOException(stderrMarker)));
+            }
+        }
+        finally
+        {
+            Console.OutputEncoding = originalEncoding;
+            Environment.SetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING", originalOptOut);
+            Environment.SetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable, originalRequest);
+        }
+    }
+
+    [TestMethod]
+    public void ProductionVersionParserBypassesBothBusyLocksAndCleanup()
+    {
+        using var files = new SelfUpdateTestFiles(executable: false);
+        File.WriteAllText(files.BackupPath, "retained");
+        File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
+        using var locks = new SelfUpdateCoordinator().Acquire(files.Paths.UpdateLockPath, files.Paths.ActivityLockPath, TestContext.CancellationToken);
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
+
+        Assert.AreEqual(0, Parser.Invoke(["--version"]));
+
+        Assert.IsTrue(File.Exists(files.BackupPath));
+        Assert.IsFalse(File.Exists(files.Paths.InstalledPath + ".invocations"));
+        using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.UpdateLockPath);
+        using var activity = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        Assert.IsNull(update);
+        Assert.IsNull(activity);
     }
 
     [TestMethod]

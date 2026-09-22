@@ -41,7 +41,7 @@ internal static class NonSafeCommandGate
         catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable,
-            Strings.SelfUpdateIdentityUnavailable, exception);
+                Strings.SelfUpdateIdentityUnavailable, exception);
         }
         finally
         {

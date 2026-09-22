@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -10,9 +11,9 @@ internal static class SelfUpdateStartupTelemetryProcess
 {
     public const string ChildEnvironmentVariable = "DOTNETUP_STARTUP_TELEMETRY_CHILD";
 
-    public static async Task RunAsync(string testName)
+    public static async Task RunAsync(string testName, string? expectedUtf8Output = null, string? expectedUtf8Error = null)
     {
-        using var files = new SelfUpdateTestFiles();
+        using var files = new SelfUpdateTestFiles(executable: false);
         var startInfo = new ProcessStartInfo(Environment.ProcessPath!)
         {
             UseShellExecute = false,
@@ -38,13 +39,23 @@ internal static class SelfUpdateStartupTelemetryProcess
 
         using var process = Process.Start(startInfo);
         Assert.IsNotNull(process);
-        var output = process.StandardOutput.ReadToEndAsync();
-        var error = process.StandardError.ReadToEndAsync();
+        using var output = new MemoryStream();
+        using var error = new MemoryStream();
+        var stdout = process.StandardOutput.BaseStream.CopyToAsync(output);
+        var stderr = process.StandardError.BaseStream.CopyToAsync(error);
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-            await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
-            Assert.AreEqual(0, process.ExitCode, await output.ConfigureAwait(false) + await error.ConfigureAwait(false));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            await Task.WhenAll(process.WaitForExitAsync(timeout.Token), stdout, stderr).WaitAsync(timeout.Token).ConfigureAwait(false);
+            Assert.AreEqual(0, process.ExitCode, Encoding.UTF8.GetString(output.ToArray()) + Encoding.UTF8.GetString(error.ToArray()));
+            if (expectedUtf8Output is not null)
+            {
+                Assert.IsTrue(output.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Output)) >= 0);
+            }
+            if (expectedUtf8Error is not null)
+            {
+                Assert.IsTrue(error.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Error)) >= 0);
+            }
         }
         finally
         {

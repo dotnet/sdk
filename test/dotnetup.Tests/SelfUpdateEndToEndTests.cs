@@ -20,7 +20,7 @@ public class SelfUpdateEndToEndTests : SdkTest
     {
         using var environment = new TestEnvironment();
         string source = DotnetupTestUtilities.GetDotnetupExecutablePath();
-        string executable = Path.Combine(environment.TempRoot, "dotnetup" + DotnetupUtilities.ExeSuffix);
+        string executable = CreateExecutablePath(environment);
         File.Copy(source, executable);
         if (!OperatingSystem.IsWindows())
         {
@@ -37,7 +37,7 @@ public class SelfUpdateEndToEndTests : SdkTest
 
         Assert.AreNotEqual(originalVersion, updatedVersion, output);
         Assert.Contains(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
-        Assert.Contains(originalVersion, Directory.EnumerateFiles(environment.TempRoot, Path.GetFileName(executable) + ".old.*")
+        Assert.Contains(originalVersion, Directory.EnumerateFiles(Path.GetDirectoryName(executable)!, Path.GetFileName(executable) + ".old.*")
             .Select(SelfUpdateVerifier.ReadVersion), "The update must retain the original executable as a backup.");
         AssertDailyBecomesNoOp(environment, executable);
     }
@@ -49,7 +49,7 @@ public class SelfUpdateEndToEndTests : SdkTest
         using var environment = new TestEnvironment();
         var downloader = CreateDownloader(environment);
         var daily = downloader.ResolveDotnetupDownload(CurrentRid());
-        string executable = Path.Combine(environment.TempRoot, "dotnetup" + DotnetupUtilities.ExeSuffix);
+        string executable = CreateExecutablePath(environment);
         downloader.DownloadWithVerification(daily, executable);
         if (!OperatingSystem.IsWindows())
         {
@@ -115,6 +115,13 @@ public class SelfUpdateEndToEndTests : SdkTest
 
     private static DotnetDownloader CreateDownloader(TestEnvironment environment)
         => new(new ReleaseManifest(), cacheDirectory: Path.Combine(environment.TempRoot, "cache"));
+
+    private static string CreateExecutablePath(TestEnvironment environment)
+    {
+        string directory = Path.Combine(environment.TempRoot, "self-update-under-test");
+        Directory.CreateDirectory(directory);
+        return Path.Combine(directory, "dotnetup" + DotnetupUtilities.ExeSuffix);
+    }
 
     private static string CurrentRid()
         => DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());

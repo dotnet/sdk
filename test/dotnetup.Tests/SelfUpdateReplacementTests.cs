@@ -145,6 +145,57 @@ public class SelfUpdateReplacementTests : SdkTest
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow("canonical")]
+    [DataRow("staged")]
+    [DataRow("backup")]
+    [DataRow("parent")]
+    public void WindowsJunctionsAreRejectedWithoutTouchingTargets(string location)
+    {
+        using var files = new SelfUpdateTestFiles(executable: false);
+        var target = Directory.CreateDirectory(Path.Combine(files.Paths.DirectoryPath, "target"));
+        var marker = Path.Combine(target.FullName, "untouched");
+        File.WriteAllText(marker, "untouched");
+        var junction = location switch
+        {
+            "canonical" => files.Paths.InstalledPath,
+            "staged" => files.Paths.StagedPath,
+            "backup" => files.BackupPath,
+            _ => Path.Combine(files.Paths.DirectoryPath, "parent"),
+        };
+        File.Delete(junction);
+        var startInfo = new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"))
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            Arguments = $"/d /c mklink /J \"{junction}\" \"{target.FullName}\"",
+        };
+        using var process = Process.Start(startInfo);
+        Assert.IsNotNull(process);
+        Assert.IsTrue(process.WaitForExit(10_000));
+        Assert.AreEqual(0, process.ExitCode);
+        try
+        {
+            if (location == "parent")
+            {
+                var paths = new SelfUpdatePaths(Path.Combine(junction, "dotnetup.exe"));
+                Assert.ThrowsExactly<IOException>(paths.Validate);
+            }
+            else
+            {
+                Assert.ThrowsExactly<IOException>(() => { using var file = SelfUpdatePaths.OpenFile(junction); });
+                Assert.ThrowsExactly<DotnetInstallException>(files.Replacement.Replace);
+            }
+
+            Assert.AreEqual("untouched", File.ReadAllText(marker));
+        }
+        finally
+        {
+            Directory.Delete(junction);
+        }
+    }
+
+    [TestMethod]
     public void MissingStageDoesNotMutateInstallation()
     {
         using var files = new SelfUpdateTestFiles(executable: false);

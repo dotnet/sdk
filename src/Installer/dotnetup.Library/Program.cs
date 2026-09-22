@@ -42,6 +42,12 @@ public class DotnetupProgram
             // Start the root before language and console setup so startup failures are recorded,
             // including failures creating or disposing the encoding restorer.
             rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+            if (Environment.GetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable) == "1")
+            {
+                // Establish the private process contract before capturing the encoding, so even
+                // diagnostics printed after restoration (or failed setup) remain UTF-8.
+                ConfigureConsoleEncoding();
+            }
             processExitCode = ExecuteCommand(args, createEncodingRestorer, ref invocation);
             return processExitCode;
         }
