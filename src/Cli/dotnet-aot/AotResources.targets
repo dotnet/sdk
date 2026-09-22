@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <_DotnetAotResourceMode Condition="'$(_DotnetAotResourceMode)' == ''">Embedded</_DotnetAotResourceMode>
+    <DefineConstants Condition="'$(MSBuildProjectName)' == 'dotnet-aot'
+                                Or '$(PublishAotTests)' == 'true'">$(DefineConstants);DOTNET_AOT_NATIVE_RUNTIME</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="_ValidateDotnetAotResourceMode"
+          BeforeTargets="PrepareForBuild;ComputeIlcCompileInputs">
+    <Error Condition="'$(_DotnetAotResourceMode)' != 'Embedded'"
+           Text="Invalid _DotnetAotResourceMode '$(_DotnetAotResourceMode)'. Only Embedded is available." />
+  </Target>
+
+</Project>
