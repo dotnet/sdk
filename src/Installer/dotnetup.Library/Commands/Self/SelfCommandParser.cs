@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 /// <summary>Registers executable maintenance separately from SDK and runtime updates.</summary>
 internal static class SelfCommandParser
 {
-    internal static Option<string> ChannelOption { get; } = CreateChannelOption();
+    internal static Option<string?> ChannelOption { get; } = CreateChannelOption();
 
     public static Command GetCommand()
     {
@@ -21,12 +21,12 @@ internal static class SelfCommandParser
         return command;
     }
 
-    private static Option<string> CreateChannelOption()
+    private static Option<string?> CreateChannelOption()
     {
-        var option = new Option<string>("--channel")
+        // No default: SelfUpdateCommand derives the channel from the running build when omitted.
+        var option = new Option<string?>("--channel")
         {
             Description = Strings.SelfUpdateChannelOptionDescription,
-            DefaultValueFactory = _ => "daily",
         };
         option.AcceptOnlyFromAmong("daily", "preview", "stable");
         return option;
