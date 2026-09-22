@@ -151,7 +151,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
             foreach (var toolId in toolIds)
             {
-                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null);
+                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null, cancellationToken);
             }
             return 0;
         }
@@ -164,10 +164,10 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
+        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange, cancellationToken);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)
     {
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
@@ -196,7 +196,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
         if (oldPackage != null)
         {
-            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader, cancellationToken);
             _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
             _activity?.SetTag("tool.package.id", packageId);
             _activity?.SetTag("tool.package.version", nugetVersion);
@@ -225,6 +225,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
+                    cancellationToken: cancellationToken,
                     versionRange: versionRange,
                     targetFramework: _framework,
                     verbosity: _verbosity,
@@ -247,7 +248,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     framework = string.IsNullOrEmpty(_framework) ? null : NuGetFramework.Parse(_framework);
                 }
                 var shimActivity = Activities.Source.StartActivity("create-shell-shim");
-                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture).Result;
+                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(
+                    _architecture,
+                    framework,
+                    RuntimeInformation.ProcessArchitecture,
+                    cancellationToken).GetAwaiter().GetResult();
 
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();
@@ -268,11 +273,16 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return 0;
     }
 
-    private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
+    private NuGetVersion GetBestMatchNugetVersion(
+        PackageId packageId,
+        VersionRange? versionRange,
+        IToolPackageDownloader toolPackageDownloader,
+        CancellationToken cancellationToken)
     {
         return toolPackageDownloader.GetNuGetVersion(
             packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
             packageId: packageId,
+            cancellationToken: cancellationToken,
             versionRange: versionRange,
             verbosity: _verbosity,
             restoreActionConfig: restoreActionConfig

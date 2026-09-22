@@ -54,13 +54,14 @@ internal partial class WorkloadManifestUpdater : IWorkloadManifestUpdater
     }
 
     public Task UpdateAdvertisingManifestsAsync(
+        CancellationToken cancellationToken,
         bool includePreviews,
         bool useWorkloadSets = false,
         DirectoryPath? offlineCache = null)
-        => _advertisingUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache);
+        => _advertisingUpdater.UpdateAdvertisingManifestsAsync(cancellationToken, includePreviews, useWorkloadSets, offlineCache);
 
-    public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
-        => _advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+    public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(CancellationToken cancellationToken)
+        => _advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(cancellationToken);
 
     public void DeleteUpdatableWorkloadsFile()
         => _advertisingUpdater.DeleteUpdatableWorkloadsFile();
@@ -112,6 +113,7 @@ internal partial class WorkloadManifestUpdater : IWorkloadManifestUpdater
     }
 
     public async Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(
+        CancellationToken cancellationToken,
         bool includePreviews,
         SdkFeatureBand providedSdkFeatureBand,
         SdkFeatureBand installedSdkFeatureBand)
@@ -135,6 +137,7 @@ internal partial class WorkloadManifestUpdater : IWorkloadManifestUpdater
                     {
                         var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(
                             packageId,
+                            cancellationToken,
                             _packageSourceLocation,
                             includePreviews);
                         success = true;
@@ -151,7 +154,7 @@ internal partial class WorkloadManifestUpdater : IWorkloadManifestUpdater
                     _reporter.WriteLine(CliCommandStrings.ManifestPackageUrlNotResolved, providedPackageId);
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _reporter.WriteLine(CliCommandStrings.ManifestPackageUrlNotResolved, manifest.Id);
             }

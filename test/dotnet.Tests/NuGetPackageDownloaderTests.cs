@@ -27,11 +27,35 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader.Tests
             var versions = await downloader.GetLatestPackageVersions(
                 new ToolPackage.PackageId("Test.Package"),
                 numberOfResults: 0,
+                TestContext.CancellationToken,
                 sourceLocation,
                 includePreview: true);
 
             versions.Select(version => version.ToNormalizedString())
                 .Should().Equal("1.0.0-preview.2", "1.0.0-preview.1");
+        }
+
+        [TestMethod]
+        public async Task GetLatestPackageVersionsHonorsCancellation()
+        {
+            TestDirectory testDirectory = TestAssetsManager.CreateTestDirectory();
+            string feedDirectory = Path.Combine(testDirectory.Path, "feed");
+            Directory.CreateDirectory(feedDirectory);
+            CreatePackage(feedDirectory, "Test.Package", "1.0.0");
+
+            NuGetPackageDownloader downloader = new(
+                new DirectoryPath(Path.Combine(testDirectory.Path, "packages")),
+                currentWorkingDirectory: testDirectory.Path);
+            PackageSourceLocation sourceLocation = new(sourceFeedOverrides: [feedDirectory]);
+            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            await cancellationSource.CancelAsync();
+
+            await Assert.ThrowsExactlyAsync<TaskCanceledException>(
+                () => downloader.GetLatestPackageVersions(
+                    new ToolPackage.PackageId("Test.Package"),
+                    numberOfResults: 1,
+                    cancellationSource.Token,
+                    sourceLocation));
         }
 
         private static void CreatePackage(string feedDirectory, string packageId, string version)

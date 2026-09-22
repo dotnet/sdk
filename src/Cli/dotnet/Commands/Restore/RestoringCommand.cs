@@ -31,6 +31,7 @@ public class RestoringCommand : MSBuildForwardingApp
     public MSBuildForwardingApp? SeparateRestoreCommand { get; }
 
     private readonly bool AdvertiseWorkloadUpdates;
+    private readonly string _userProfileDir;
 
     public RestoringCommand(
         MSBuildArgs msbuildArgs,
@@ -40,8 +41,7 @@ public class RestoringCommand : MSBuildForwardingApp
         bool? advertiseWorkloadUpdates = null)
         : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
     {
-        userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
-        Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
+        _userProfileDir = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
         SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
         SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
@@ -229,6 +229,10 @@ public class RestoringCommand : MSBuildForwardingApp
 
     public override int Execute(CancellationToken cancellationToken)
     {
+        _ = Task.Run(
+            () => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(_userProfileDir, cancellationToken),
+            cancellationToken);
+
         int exitCode;
         if (SeparateRestoreCommand != null)
         {

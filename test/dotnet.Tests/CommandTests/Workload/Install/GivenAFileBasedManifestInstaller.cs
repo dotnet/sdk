@@ -73,7 +73,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installer = new FileBasedManifestInstaller(nugetDownloader, new DirectoryPath(testDirectory));
             var targetPath = Path.Combine(testDirectory, "target-manifest");
 
-            await installer.ExtractManifestAsync(Path.Combine(testDirectory, "fake.nupkg"), targetPath);
+            await installer.ExtractManifestAsync(
+                Path.Combine(testDirectory, "fake.nupkg"),
+                targetPath,
+                TestContext.CancellationToken);
 
             File.Exists(Path.Combine(targetPath, "WorkloadManifest.json")).Should().BeTrue();
         }
