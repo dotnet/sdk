@@ -261,6 +261,29 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        public void It_does_not_warn_when_custom_win32_resource_is_used()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource();
+
+            var command = new GetValuesCommand(testAsset, "InformationalVersion")
+            {
+                DependsOnTargets = "GetAssemblyAttributes",
+            };
+
+            command
+                .Execute(
+                    "/p:InformationalVersion=1.2.3-beta.1.2",
+                    "/p:IncludeSourceRevisionInInformationalVersion=false",
+                    "/p:Win32Resource=custom.res")
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1247");
+        }
+
+        [TestMethod]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
         [DataRow("net45")]
         public void It_respects_version_prefix(string targetFramework)
