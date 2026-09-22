@@ -440,6 +440,31 @@ public class SelfUpdateCleanupTests : SdkTest
         }
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void NoEligibleBackupsDoesNotStartVersionProbe(bool ownsUpdateLock)
+    {
+        CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
+        File.WriteAllText(_installedPath + ".mode", "timeout");
+
+        RunCleanup(ownsUpdateLock);
+
+        Assert.IsFalse(File.Exists(_installedPath + ".invocations"));
+    }
+
+    [TestMethod]
+    public void ManyEligibleBackupsUseOnlyOneVersionProbeWithParentUpdateLock()
+    {
+        CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
+
+        RunCleanup(ownsUpdateLock: true);
+
+        Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
+        Assert.IsEmpty(Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
+    }
+
     private void RunCleanup(bool ownsUpdateLock, string loadedVersion = Version)
     {
         if (ownsUpdateLock)
@@ -449,31 +474,6 @@ public class SelfUpdateCleanupTests : SdkTest
             SelfUpdateCleanup.RunWithUpdateLock(_installedPath, loadedVersion);
             using var competingLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNull(competingLock);
-        }
-
-        [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
-        public void NoEligibleBackupsDoesNotStartVersionProbe(bool ownsUpdateLock)
-        {
-            CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
-            File.WriteAllText(_installedPath + ".mode", "timeout");
-
-            RunCleanup(ownsUpdateLock);
-
-            Assert.IsFalse(File.Exists(_installedPath + ".invocations"));
-        }
-
-        [TestMethod]
-        public void ManyEligibleBackupsUseOnlyOneVersionProbeWithParentUpdateLock()
-        {
-            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
-
-            RunCleanup(ownsUpdateLock: true);
-
-            Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
-            Assert.IsEmpty(Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
         }
         else
         {

@@ -50,11 +50,11 @@ internal static class SelfUpdateStartupTelemetryProcess
             Assert.AreEqual(0, process.ExitCode, Encoding.UTF8.GetString(output.ToArray()) + Encoding.UTF8.GetString(error.ToArray()));
             if (expectedUtf8Output is not null)
             {
-                Assert.IsTrue(output.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Output)) >= 0);
+                Assert.IsGreaterThanOrEqualTo(0, output.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Output)));
             }
             if (expectedUtf8Error is not null)
             {
-                Assert.IsTrue(error.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Error)) >= 0);
+                Assert.IsGreaterThanOrEqualTo(0, error.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Error)));
             }
         }
         finally

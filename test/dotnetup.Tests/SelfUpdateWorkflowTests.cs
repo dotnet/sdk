@@ -86,6 +86,9 @@ public class SelfUpdateWorkflowTests : SdkTest
     [TestMethod]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6")]
     [DataRow("0.3.0", "0.2.0")]
+    [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7")]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit")]
+    [DataRow("0.2.0-preview.1.26465.7+build1", "0.2.0-preview.1.26465.7+build2")]
     public void SameChannelReleaseMustBeNewer(string installedVersion, string availableVersion)
     {
         using var files = new SelfUpdateTestFiles();
@@ -345,14 +348,15 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow("0.2.0-other")]
-    [DataRow(SelfUpdateTestFiles.ReplacementVersion + "+unexpected-build")]
-    public void DownloadedVersionMismatchRestoresOriginal(string unexpectedVersion)
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion, "0.2.0-other")]
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion + "+expected-build", SelfUpdateTestFiles.ReplacementVersion + "+unexpected-build")]
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion + "+expected-build", SelfUpdateTestFiles.ReplacementVersion)]
+    public void DownloadedVersionMismatchRestoresOriginal(string expectedVersion, string unexpectedVersion)
     {
         using var files = new SelfUpdateTestFiles();
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
-            () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
+            () => CreateWorkflowRelease(expectedVersion),
             (download, path) => SelfUpdateTestFiles.WriteExecutable(path, unexpectedVersion), CreateImmediateWorkflowCoordinator());
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
@@ -367,6 +371,25 @@ public class SelfUpdateWorkflowTests : SdkTest
             Assert.HasCount(1, rejected);
             Assert.AreEqual(unexpectedVersion, SelfUpdateVerifier.ReadVersion(rejected[0]));
         }
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion)]
+    [DataRow(SelfUpdateTestFiles.ReplacementVersion + "+0123456789abcdef0123456789abcdef01234567")]
+    public void ReleaseVerificationAcceptsInformationalSourceRevision(string releaseVersion)
+    {
+        const string informationalVersion = SelfUpdateTestFiles.ReplacementVersion + "+0123456789abcdef0123456789abcdef01234567";
+        using var files = new SelfUpdateTestFiles();
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+            () => CreateWorkflowRelease(releaseVersion),
+            (download, path) => SelfUpdateTestFiles.WriteExecutable(path, informationalVersion),
+            CreateImmediateWorkflowCoordinator());
+
+        Assert.AreEqual(releaseVersion, workflow.Execute());
+
+        Assert.AreEqual(1, workflow.VerificationCount);
+        Assert.AreEqual(informationalVersion, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
         AssertWorkflowLocksAvailable(files.Paths);
     }
 

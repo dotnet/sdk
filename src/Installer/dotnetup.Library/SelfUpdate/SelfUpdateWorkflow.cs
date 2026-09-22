@@ -85,7 +85,13 @@ internal class SelfUpdateWorkflow
 
     protected virtual void Verify(string installedPath, string expectedVersion)
     {
-        if (!string.Equals(SelfUpdateVerifier.ReadVersion(installedPath), expectedVersion, StringComparison.Ordinal))
+        var installedVersion = SelfUpdateVerifier.ReadVersion(installedPath);
+        var expectedRelease = ReleaseVersion.Parse(expectedVersion);
+        // The feed is keyed by Version, while official builds can append a source revision to
+        // AssemblyInformationalVersion. Require exact metadata only when the feed specifies it.
+        if (!ReleaseVersion.Parse(installedVersion).PrecedenceEquals(expectedRelease) ||
+            (!string.IsNullOrEmpty(expectedRelease.BuildMetadata) &&
+             !string.Equals(installedVersion, expectedVersion, StringComparison.Ordinal)))
         {
             throw new InvalidDataException("The updated dotnetup version does not match the expected release.");
         }
@@ -106,7 +112,7 @@ internal class SelfUpdateWorkflow
 
     private static bool IsUpdateAvailable(ReleaseVersion installedVersion, ReleaseVersion availableVersion)
         => !HasSameSemanticChannel(installedVersion, availableVersion) ||
-            availableVersion.CompareTo(installedVersion) > 0;
+            availableVersion.ComparePrecedenceTo(installedVersion) > 0;
 
     private static bool HasSameSemanticChannel(ReleaseVersion left, ReleaseVersion right)
         => string.Equals(GetSemanticChannel(left), GetSemanticChannel(right), StringComparison.OrdinalIgnoreCase);

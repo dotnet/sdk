@@ -45,7 +45,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             return;
         }
 
-        string message = result.InstalledVersion.CompareTo(result.AvailableVersion) > 0
+        string message = result.InstalledVersion.ComparePrecedenceTo(result.AvailableVersion) > 0
             ? Strings.SelfUpdateCurrentVersionNewer
             : Strings.SelfUpdateAlreadyUpToDate;
         Console.Error.WriteLine(string.Format(

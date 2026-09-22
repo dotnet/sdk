@@ -26,9 +26,12 @@ cleanup. The parent can therefore run it while holding either or both locks.
 
 [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs)
 uses version queries before and after acquiring the update locks to determine whether
-an update is needed. After replacement it requires the reported full version to match
-the selected release. This checks both startup and release consistency; an exit code
-alone is not sufficient. Staged files are not executed.
+an update is needed. After replacement it requires the reported version to match the
+selected release's SemVer precedence. When the feed specifies build metadata, the full
+version must match exactly; otherwise an informational-version source revision suffix
+is permitted. This accommodates official builds without confusing their commit suffix
+with the feed's release version. The check validates startup and release consistency;
+an exit code alone is not sufficient. Staged files are not executed.
 
 ## Coordination and recovery
 

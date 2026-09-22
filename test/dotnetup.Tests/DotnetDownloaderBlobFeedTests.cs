@@ -116,6 +116,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
 
     [TestMethod]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
+    [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate))]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer))]
     public void SelfUpdateCommandReportsNoUpdateToStandardError(
         string installedVersion,

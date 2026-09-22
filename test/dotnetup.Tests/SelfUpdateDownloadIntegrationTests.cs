@@ -72,8 +72,8 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         using var http = new HttpClient(handler);
         var downloader = CreateDownloader(files, http);
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        Assert.AreNotEqual(files.OriginalVersion, advertisedVersion);
-        Assert.AreNotEqual(files.ReplacementVersion, advertisedVersion);
+        Assert.AreNotEqual(advertisedVersion, files.OriginalVersion);
+        Assert.AreNotEqual(advertisedVersion, files.ReplacementVersion);
 
         var workflow = new SelfUpdateWorkflow(files.Paths, files.OriginalVersion,
             () => downloader.ResolveDotnetupDownload(files.Release.Rid),

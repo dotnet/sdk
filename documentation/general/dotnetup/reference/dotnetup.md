@@ -87,13 +87,16 @@ Self-update checks the published SHA-512 hash and the executable's `--version` o
 unsigned, emits an unsigned-source warning, and respects the unsigned-download
 policy. The selected release must publish the executable and checksum; no identity
 sidecar or custom embedded version record is needed. After replacement, `--version`
-must run successfully and report the selected release's full version within a bounded
-timeout. These unsigned checks do not authenticate release freshness.
+must run successfully and report the selected release's version within a bounded
+timeout. Build metadata must match exactly if the feed specifies it; otherwise a
+source revision suffix in the informational version is permitted. These unsigned checks
+do not authenticate release freshness.
 Signed version manifests and monotonic authorization are deferred to future stages. See the
 [verification limitations](../designs/self-update-verification.md#scope-and-limitations).
 
-The executable must be in a trusted, writable installation directory. Managed
-development hosts reject self-update. Other update callers wait for the current
+The executable must be in a trusted, writable installation directory. Running via the
+`dotnet` host rejects self-update; supported updates replace the published standalone
+executable, not a managed application's collection of files. Other update callers wait for the current
 update within a bounded timeout, but ordinary commands, including `--info`, fail
 if the activity gate is busy or their loaded build is stale. Retry those commands
 after the update completes. Automation should also retry transient file-not-found

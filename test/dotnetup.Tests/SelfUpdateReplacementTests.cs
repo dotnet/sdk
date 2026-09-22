@@ -351,11 +351,11 @@ public class SelfUpdateReplacementTests : SdkTest
         File.SetLastWriteTimeUtc(files.Paths.StagedPath, DateTime.UtcNow.AddDays(-30));
         var started = DateTime.UtcNow.AddSeconds(-2);
         files.Replacement.Replace();
-        Assert.IsTrue(File.GetLastWriteTimeUtc(files.BackupPath) >= started);
+        Assert.IsGreaterThanOrEqualTo(started, File.GetLastWriteTimeUtc(files.BackupPath));
         files.Replacement.Rollback();
         if (OperatingSystem.IsWindows())
         {
-            Assert.IsTrue(File.GetLastWriteTimeUtc(files.BackupPath + ".rejected") >= started);
+            Assert.IsGreaterThanOrEqualTo(started, File.GetLastWriteTimeUtc(files.BackupPath + ".rejected"));
         }
     }
 

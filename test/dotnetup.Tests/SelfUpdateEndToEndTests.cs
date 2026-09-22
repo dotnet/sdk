@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -29,8 +30,8 @@ public class SelfUpdateEndToEndTests : SdkTest
 
         string originalVersion = ReadVersion(environment, executable);
         var daily = CreateDownloader(environment).ResolveDotnetupDownload(CurrentRid());
-        Assert.AreNotEqual(daily.Version.ToString(), originalVersion,
-            "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different full version.");
+        Assert.IsFalse(daily.Version.PrecedenceEquals(ReleaseVersion.Parse(originalVersion)),
+            "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different semantic version.");
 
         string output = Run(environment, executable, ["self", "update", "--no-progress"]);
         string updatedVersion = ReadVersion(environment, executable);
@@ -56,7 +57,9 @@ public class SelfUpdateEndToEndTests : SdkTest
             File.SetUnixFileMode(executable, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
-        Assert.AreEqual(daily.Version.ToString(), ReadVersion(environment, executable));
+        var installedVersion = ReleaseVersion.Parse(ReadVersion(environment, executable));
+        Assert.IsTrue(daily.Version.PrecedenceEquals(installedVersion),
+            $"The feed advertised {daily.Version}, but the downloaded executable reported {installedVersion}.");
         AssertDailyBecomesNoOp(environment, executable);
     }
 
@@ -76,7 +79,7 @@ public class SelfUpdateEndToEndTests : SdkTest
                     System.Globalization.CultureInfo.InvariantCulture,
                     BootstrapperStrings.SelfUpdateAlreadyUpToDate,
                     version,
-                    version), output);
+                    version.Split('+')[0]), output);
                 Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(executable), "A no-op must not change the executable bytes.");
                 Assert.DoesNotContain(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
                 return;
