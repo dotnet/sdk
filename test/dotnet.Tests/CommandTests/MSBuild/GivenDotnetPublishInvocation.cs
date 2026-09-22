@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+                var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath);
 
                 command.SeparateRestoreCommand
                     .Should()
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string[] expectedAdditionalArgs)
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath);
 
             var restoreTokens =
                 command.SeparateRestoreCommand! // for this scenario, we expect a separate restore command
@@ -87,7 +87,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForNoBuild()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(
+                ["--no-build"],
+                TestContext.CancellationToken,
+                msbuildPath);
 
             command.SeparateRestoreCommand
                    .Should()
@@ -102,7 +105,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void CommandAcceptsMultipleCustomProperties()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(
+                ["/p:Prop1=prop1", "/p:Prop2=prop2"],
+                TestContext.CancellationToken,
+                msbuildPath);
 
             command.GetArgumentTokensToMSBuild()
                .Should()
@@ -110,4 +116,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-
