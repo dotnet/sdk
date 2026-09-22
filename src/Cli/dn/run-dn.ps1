@@ -28,6 +28,9 @@
 .PARAMETER Configuration
     Debug (default) or Release.
 
+.PARAMETER ResourceMode
+    NativeAOT resource mode: Embedded, ExternalLocalized, or ExternalAll.
+
 .PARAMETER Rid
     Runtime identifier. Auto-detected from the host when omitted.
 
@@ -62,6 +65,8 @@ param(
     [string]$Layout = "Flat",
     [switch]$SelfLocate,
     [string]$Configuration = "Debug",
+    [ValidateSet("Embedded", "ExternalLocalized", "ExternalAll")]
+    [string]$ResourceMode = "Embedded",
     [string]$Rid,
     [switch]$NoBuild
 )
@@ -86,6 +91,7 @@ Write-Host "Configuration: $Configuration"
 Write-Host "RID:           $Rid"
 Write-Host "Command:       dn $Command"
 Write-Host "Mode:          $Mode"
+Write-Host "Resources:     $ResourceMode"
 Write-Host ""
 
 function Resolve-PublishPath([string]$relativeGlob) {
@@ -96,7 +102,10 @@ function Resolve-PublishPath([string]$relativeGlob) {
 
 if (-not $NoBuild) {
     Write-Host "Publishing dotnet-aot (NativeAOT)..." -ForegroundColor Cyan
-    & $dotnet publish (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") -r $Rid -c $Configuration
+    & $dotnet publish (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") `
+        -r $Rid `
+        -c $Configuration `
+        -p:_DotnetAotResourceMode=$ResourceMode
     if ($LASTEXITCODE -ne 0) { throw "dotnet-aot publish failed." }
 
     Write-Host "Publishing dn host..." -ForegroundColor Cyan
@@ -126,6 +135,25 @@ if (-not $NoBuild) {
     Write-Host "Assembling layout into $sdkTargetDir ..." -ForegroundColor Cyan
     Copy-Item $aotDll $sdkTargetDir -Force
     Copy-Item (Join-Path $managedDir "*") $sdkTargetDir -Recurse -Force
+
+    $resourceOwnerProjects = @(
+        "Microsoft.DotNet.Cli.Definitions",
+        "Microsoft.DotNet.Cli.Utils",
+        "Microsoft.DotNet.Configurer",
+        "Microsoft.DotNet.ProjectTools",
+        "Microsoft.NET.Sdk.WorkloadManifestReader",
+        "System.CommandLine.StaticCompletions"
+    )
+    foreach ($projectName in $resourceOwnerProjects) {
+        $projectOutputRoot = Join-Path $repoRoot "artifacts/bin/$projectName/$Configuration"
+        $projectOutput = Get-ChildItem $projectOutputRoot -Directory -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1 -ExpandProperty FullName
+        if (-not $projectOutput) {
+            throw "Could not locate the $projectName output required by $ResourceMode."
+        }
+        Copy-Item (Join-Path $projectOutput "*") $sdkTargetDir -Recurse -Force
+    }
 }
 
 $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
@@ -144,6 +172,7 @@ $environmentVariableNames = @(
     "DOTNET_CLI_ENABLEAOT"
 )
 $previousEnvironment = @{}
+$commandExitCode = 0
 foreach ($variableName in $environmentVariableNames) {
     $environmentVariable = Get-Item "Env:\$variableName" -ErrorAction SilentlyContinue
     $previousEnvironment[$variableName] = [pscustomobject]@{
@@ -181,24 +210,34 @@ try {
         else {
             $env:DOTNET_CLI_ENABLEAOT = "false"
         }
-        & $dnExe @argList 2>&1
+        $output = @(& $dnExe @argList 2>&1)
+        [pscustomobject]@{
+            ExitCode = $LASTEXITCODE
+            Output = $output
+        }
     }
 
     switch ($Mode) {
         "Aot" {
             Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
-            Invoke-Dn $true
+            $result = Invoke-Dn $true
+            $result.Output | Write-Output
+            $commandExitCode = $result.ExitCode
         }
         "Managed" {
             Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT=false) =====" -ForegroundColor Green
-            Invoke-Dn $false
+            $result = Invoke-Dn $false
+            $result.Output | Write-Output
+            $commandExitCode = $result.ExitCode
         }
         "Compare" {
             $logDir = Join-Path $repoRoot "artifacts/log"
             New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
-            $aotOut = Invoke-Dn $true
-            $managedOut = Invoke-Dn $false
+            $aotResult = Invoke-Dn $true
+            $managedResult = Invoke-Dn $false
+            $aotOut = $aotResult.Output
+            $managedOut = $managedResult.Output
             $aotOut | Set-Content (Join-Path $logDir "dn-aot.txt")
             $managedOut | Set-Content (Join-Path $logDir "dn-managed.txt")
 
@@ -216,6 +255,17 @@ try {
             else {
                 Write-Host "IDENTICAL: AOT and managed output match line-for-line." -ForegroundColor Green
             }
+
+            if ($aotResult.ExitCode -ne $managedResult.ExitCode) {
+                Write-Host "EXIT CODE DIFFERENCE: AOT=$($aotResult.ExitCode), managed=$($managedResult.ExitCode)." -ForegroundColor Yellow
+            }
+            $commandExitCode = if ($aotResult.ExitCode -ne 0) {
+                $aotResult.ExitCode
+            } elseif ($managedResult.ExitCode -ne 0) {
+                $managedResult.ExitCode
+            } else {
+                0
+            }
         }
     }
 }
@@ -229,4 +279,6 @@ finally {
             Remove-Item "Env:\$variableName"
         }
     }
+
+    exit $commandExitCode
 }

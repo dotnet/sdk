@@ -18,6 +18,9 @@
 .PARAMETER RuntimeIdentifier
     The RID to publish for. Auto-detected if not specified.
 
+.PARAMETER ResourceMode
+    NativeAOT resource mode: Embedded, ExternalLocalized, or ExternalAll.
+
 .PARAMETER NoBuild
     Skip the publish step and run a previously published binary.
 
@@ -28,6 +31,9 @@
 .PARAMETER ResultsDirectory
     Directory for the TRX report when -Trx is specified.
 
+.PARAMETER Filter
+    Optional Microsoft.Testing.Platform test filter.
+
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
@@ -37,9 +43,12 @@
 param(
     [string]$Configuration = "Debug",
     [string]$RuntimeIdentifier,
+    [ValidateSet("Embedded", "ExternalLocalized", "ExternalAll")]
+    [string]$ResourceMode = "Embedded",
     [switch]$NoBuild,
     [switch]$Trx,
-    [string]$ResultsDirectory
+    [string]$ResultsDirectory,
+    [string]$Filter
 )
 
 $ErrorActionPreference = "Stop"
@@ -68,8 +77,8 @@ if (-not $RuntimeIdentifier) {
     }
 }
 
-$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
-$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier)
+$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier, $ResourceMode)
+$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier, $ResourceMode)
 $dnPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dn", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
 $aotLibraryName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.dll" }
@@ -83,6 +92,7 @@ $dnPath = Join-Path $dnPublishDir $dnName
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
 Write-Host "  RID:           $RuntimeIdentifier"
+Write-Host "  Resources:     $ResourceMode"
 Write-Host "  Publish dir:   $publishDir"
 Write-Host ""
 
@@ -94,6 +104,7 @@ if (-not $NoBuild) {
         -c $Configuration `
         -r $RuntimeIdentifier `
         -p:PublishAotTests=true `
+        -p:_DotnetAotResourceMode=$ResourceMode `
         -p:PublishDir=$publishDir
 
     if ($LASTEXITCODE -ne 0) {
@@ -104,6 +115,7 @@ if (-not $NoBuild) {
     & $dotnet publish $productProject `
         -c $Configuration `
         -r $RuntimeIdentifier `
+        -p:_DotnetAotResourceMode=$ResourceMode `
         -p:PublishDir=$aotPublishDir
 
     if ($LASTEXITCODE -ne 0) {
@@ -163,6 +175,25 @@ $sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
     }
 } | Select-Object -First 1
 
+$redistSdkRoot = [System.IO.Path]::Combine(
+    $repoRoot,
+    "artifacts",
+    "bin",
+    "redist",
+    $Configuration,
+    "dotnet",
+    "sdk")
+$resourceSdkDirectory = Get-ChildItem $redistSdkRoot -Directory -ErrorAction SilentlyContinue |
+    Sort-Object Name -Descending |
+    Select-Object -First 1 -ExpandProperty FullName
+if (-not $resourceSdkDirectory) {
+    Write-Host "ERROR: $ResourceMode requires a built $Configuration redist SDK containing managed owner assemblies and satellites." -ForegroundColor Red
+    exit 1
+}
+$sdkDirectory = $resourceSdkDirectory
+$resourceDotnetRoot = Split-Path $redistSdkRoot
+$resourceDotnetHost = Join-Path $resourceDotnetRoot $dotnetName
+
 if (-not $sdkDirectory) {
     Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
     exit 1
@@ -175,8 +206,9 @@ $environment = @{
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
     DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
-    DOTNET_HOST_PATH = $dotnet
-    DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
+    DOTNET_AOT_TEST_RESOURCE_MODE = $ResourceMode
+    DOTNET_HOST_PATH = $resourceDotnetHost
+    DOTNET_ROOT = $resourceDotnetRoot
 }
 $previousEnvironment = @{}
 foreach ($entry in $environment.GetEnumerator()) {
@@ -187,6 +219,9 @@ foreach ($entry in $environment.GetEnumerator()) {
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 $runArgs = @()
+if ($Filter) {
+    $runArgs += @("--filter", $Filter)
+}
 if ($Trx) {
     if (-not $ResultsDirectory) {
         $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)
