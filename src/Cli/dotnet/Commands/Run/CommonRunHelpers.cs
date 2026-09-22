@@ -1,37 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal static class CommonRunHelpers
 {
-    /// <summary>
-    /// Splits parsed application arguments at <c>--</c> and verifies that the parser preserved the suffix.
-    /// </summary>
-    /// <param name="parseResult">The parsed run invocation.</param>
-    /// <param name="applicationArguments">The parser's application arguments.</param>
-    /// <param name="argumentCountBeforeDoubleDash">Receives the number of application arguments before <c>--</c>.</param>
-    /// <param name="argumentsAfterDoubleDash">Receives the literal token values after <c>--</c>.</param>
-    /// <returns><see langword="true"/> when the token and argument views agree.</returns>
-    internal static bool TrySplitApplicationArgumentsAtDoubleDash(
-        ParseResult parseResult,
-        IReadOnlyList<string> applicationArguments,
-        out int argumentCountBeforeDoubleDash,
-        out string[] argumentsAfterDoubleDash)
-    {
-        int doubleDashIndex = parseResult.Tokens.ToList().FindIndex(static token => token.Type == TokenType.DoubleDash);
-        argumentsAfterDoubleDash = doubleDashIndex < 0
-            ? []
-            : [.. parseResult.Tokens.Skip(doubleDashIndex + 1).Select(static token => token.Value)];
-        argumentCountBeforeDoubleDash = applicationArguments.Count - argumentsAfterDoubleDash.Length;
-        return argumentCountBeforeDoubleDash >= 0 &&
-            applicationArguments.Skip(argumentCountBeforeDoubleDash).SequenceEqual(argumentsAfterDoubleDash, StringComparer.Ordinal);
-    }
-
     /// <summary>
     /// Creates a dictionary of global properties for MSBuild from the command line arguments.
     /// This includes properties that are passed via the command line, as well as some
