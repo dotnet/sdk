@@ -543,6 +543,26 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     [TestMethod]
+    public void RenamedExecutableCannotSelfUpdate()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var renamedPath = Path.Combine(files.Paths.DirectoryPath,
+            "dotnetup-renamed" + (OperatingSystem.IsWindows() ? ".exe" : string.Empty));
+        SelfUpdateTestFiles.WriteExecutable(renamedPath, SelfUpdateTestFiles.OriginalVersion);
+        var renamedBytes = File.ReadAllBytes(renamedPath);
+        var workflow = new SelfUpdateTestWorkflow(new SelfUpdatePaths(renamedPath), SelfUpdateTestFiles.OriginalVersion,
+            () => { Assert.Fail("A non-canonical executable must be rejected before resolving a release."); return null!; },
+            (download, path) => Assert.Fail("A non-canonical executable must not download."), CreateImmediateWorkflowCoordinator());
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
+
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupNonCanonicalExecutableName, exception.ErrorCode);
+        Assert.Contains(renamedPath, exception.Message);
+        Assert.AreSequenceEqual(renamedBytes, File.ReadAllBytes(renamedPath));
+        Assert.IsEmpty(Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*"));
+    }
+
+    [TestMethod]
     [DataRow("empty")]
     [DataRow("wrong")]
     [DataRow("nonzero")]
