@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -58,12 +59,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="CliStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Update="Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
-    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+    <EmbeddedResource Update="CliStrings.resx" LinkBase="Resources" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.DotNet.Cli" ClassName="Microsoft.DotNet.Cli.CliStrings" />
+    <EmbeddedResource Update="Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.DotNet.Cli.Commands" ClassName="Microsoft.DotNet.Cli.Commands.CliCommandStrings" />
+    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.NET.Build.Tasks" ClassName="Microsoft.NET.Build.Tasks.Strings" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
@@ -140,4 +146,6 @@
     </PropertyGroup>
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
+
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 </Project>
