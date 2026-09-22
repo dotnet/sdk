@@ -81,13 +81,6 @@ internal sealed class ProjectLauncher(
 
         var environmentBuilder = new Dictionary<string, string>();
 
-        // initialize with project settings:
-        foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
-        {
-            environmentBuilder[name] = value;
-        }
-
-        // override any project settings:
         environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
         environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 

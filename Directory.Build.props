@@ -12,6 +12,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- NU1903 is a NuGet audit warning; NuGet does not reliably honor WarningsNotAsErrors for
+         audit warnings, so use NoWarn (always honored for restore warnings) to keep it from
+         failing the build under TreatWarningsAsErrors. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
