@@ -140,7 +140,7 @@ public class Program
         TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
         if (parseResult.CanBeInvoked())
         {
-            return CommandInvocation.ExecuteInternalCommand(parseResult);
+            return CommandInvocation.ExecuteInternalCommand(parseResult, ProcessLifecycle.CancellationToken);
         }
 
         try
@@ -201,7 +201,7 @@ public class Program
         // parse as `dotnet run file.cs ..rest_of_args` instead.
         if (parseResult.TryParseFileBasedAppAsRun() is { } runParseResult)
         {
-            return CommandInvocation.ExecuteInternalCommand(runParseResult);
+            return CommandInvocation.ExecuteInternalCommand(runParseResult, ProcessLifecycle.CancellationToken);
         }
 
         return null;

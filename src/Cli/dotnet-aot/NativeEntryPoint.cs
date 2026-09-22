@@ -215,7 +215,7 @@ static unsafe partial class NativeEntryPoint
                         {
                             try
                             {
-                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
+                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult, ProcessLifecycle.CancellationToken);
                                 success = true;
                                 aotHandledInProcess = true;
                                 SendAotParserTelemetry(parseResult, globalJsonState);
