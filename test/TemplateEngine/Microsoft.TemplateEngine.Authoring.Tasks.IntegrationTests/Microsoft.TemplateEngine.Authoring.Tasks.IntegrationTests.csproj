@@ -1,7 +1,8 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <!-- Child dotnet/MSBuild processes can leave temporary directories locked under class-level parallelism. -->
+    <!-- Mitigates intermittent Windows cleanup failures where Directory.Delete observes locked temporary
+         directories under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222. -->
     <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
