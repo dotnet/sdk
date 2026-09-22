@@ -7,12 +7,15 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Smoke-tests executable startup with bounded output and execution time; it does not authenticate releases.</summary>
+/// <summary>Reads the full version via executable startup with bounded output and execution time; it does not authenticate releases.</summary>
 internal static class SelfUpdateVerifier
 {
+    internal const string Utf8EnvironmentVariable = "DOTNETUP_PRIVATE_VERSION_UTF8";
     private static readonly TimeSpan s_terminationTimeout = TimeSpan.FromSeconds(5);
 
-    public static void Verify(string installedPath, TimeSpan timeout)
+    public static string ReadVersion(string installedPath) => ReadVersion(installedPath, TimeSpan.FromSeconds(15));
+
+    public static string ReadVersion(string installedPath, TimeSpan timeout)
     {
         try
         {
@@ -21,19 +24,22 @@ internal static class SelfUpdateVerifier
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             }
 
-            var paths = new SelfUpdatePaths(installedPath);
-            paths.Validate();
-            VerifyAsync(paths.InstalledPath, timeout).GetAwaiter().GetResult();
+            installedPath = SelfUpdatePaths.ResolvePath(installedPath);
+            using (SelfUpdatePaths.OpenFile(installedPath))
+            {
+            }
+
+            return ReadVersionAsync(installedPath, timeout).GetAwaiter().GetResult();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or Win32Exception or
             InvalidOperationException or ArgumentException or NotSupportedException or OperationCanceledException)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.InstallFailed,
-                $"Could not verify the updated dotnetup executable '{installedPath}': {exception.Message}", exception);
+                $"Could not read the dotnetup version from executable '{installedPath}': {exception.Message}", exception);
         }
     }
 
-    private static async Task VerifyAsync(string installedPath, TimeSpan timeout)
+    private static async Task<string> ReadVersionAsync(string installedPath, TimeSpan timeout)
     {
         using var process = new Process
         {
@@ -48,6 +54,7 @@ internal static class SelfUpdateVerifier
         var stdoutTask = CaptureAsync(process.StandardOutput.BaseStream, 4096, cancellation.Token);
         var stderrTask = CaptureAsync(process.StandardError.BaseStream, 4096, cancellation.Token);
         Exception? failure = null;
+        string? version = null;
         try
         {
             process.StandardInput.Close();
@@ -61,6 +68,8 @@ internal static class SelfUpdateVerifier
                 var diagnostic = new string(stderr.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
                 throw new IOException($"Verification exited with code {process.ExitCode} or returned invalid version output. Stderr: {diagnostic}");
             }
+
+            version = stdout;
         }
         catch (OperationCanceledException exception)
         {
@@ -87,6 +96,8 @@ internal static class SelfUpdateVerifier
         {
             ExceptionDispatchInfo.Capture(failure).Throw();
         }
+
+        return version!;
     }
 
     private static ProcessStartInfo CreateStartInfo(string installedPath)
@@ -102,6 +113,7 @@ internal static class SelfUpdateVerifier
         startInfo.ArgumentList.Add("--version");
         startInfo.Environment["DOTNET_NOLOGO"] = "1";
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        startInfo.Environment[Utf8EnvironmentVariable] = "1";
         return startInfo;
     }
 
