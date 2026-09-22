@@ -10,12 +10,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 [TestClass]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
-    private readonly string _originalCwd = Directory.GetCurrentDirectory();
     private readonly string _testRoot = Path.Combine(AppContext.BaseDirectory, "rpfc_test_" + Guid.NewGuid().ToString("N"));
 
     public void Dispose()
     {
-        Directory.SetCurrentDirectory(_originalCwd);
         try { Directory.Delete(_testRoot, true); } catch { }
     }
 
@@ -26,13 +24,11 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// CWD: if path resolution were CWD-based, the task would log CouldNotLoadPlatformManifest.
     /// </summary>
     [TestMethod]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void PlatformManifest_ResolvesRelativePathAgainstProjectDir()
     {
         var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
 
-        var manifestRelPath = Path.Combine("manifests", "PlatformManifest.txt");
+        var manifestRelPath = Path.Combine("manifests_" + Guid.NewGuid().ToString("N"), "PlatformManifest.txt");
         var manifestPath = Path.Combine(projectDir, manifestRelPath);
         Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
         File.WriteAllText(manifestPath, "System.Runtime.dll|Platform.Package|9.0.0.0|9.0.0.0");
@@ -45,8 +41,6 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
             { "AssemblyVersion", "1.0.0.0" },
             { "FileVersion", "1.0.0.0" }
         });
-
-        Directory.SetCurrentDirectory(decoyDir);
 
         var engine = new MockBuildEngine();
         var task = CreateTask(engine);
@@ -66,7 +60,6 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     }
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void PlatformManifest_EmptyPathLogsAndSkips()
     {
         var projectDir = CreateTempDir();
@@ -86,20 +79,16 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
     /// </summary>
     [TestMethod]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void TargetFrameworkDirectories_RelativePathLogsNotRootedOriginalPath()
     {
         var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
 
-        var targetFrameworkRelPath = "refpack";
+        var targetFrameworkRelPath = "refpack_" + Guid.NewGuid().ToString("N");
         var expectedFrameworkListPath = Path.Combine(targetFrameworkRelPath, "RedistList", "FrameworkList.xml");
         CreateFrameworkList(Path.Combine(projectDir, targetFrameworkRelPath), "System.Runtime", "9.0.0.0");
 
         var referenceRelPath = Path.Combine("packages", "System.Runtime.dll");
         CreateFile(Path.Combine(projectDir, referenceRelPath));
-
-        Directory.SetCurrentDirectory(decoyDir);
 
         var engine = new MockBuildEngine();
         var task = CreateTask(engine);
