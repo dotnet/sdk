@@ -32,11 +32,11 @@ public class SelfCommandParserTests
     }
 
     [TestMethod]
-    [DataRow("self update", "daily")]
+    [DataRow("self update", null)]
     [DataRow("self update --channel daily", "daily")]
     [DataRow("self update --channel preview", "preview")]
     [DataRow("self update --channel stable", "stable")]
-    public void ParsesChannelOption(string commandLine, string expected)
+    public void ParsesChannelOption(string commandLine, string? expected)
     {
         var result = Parser.Parse(commandLine.Split(' '));
 
@@ -95,6 +95,9 @@ public class SelfCommandParserTests
     [DataRow(nameof(BootstrapperStrings.SelfUpdateVerificationFailed), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateAccessFailed), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateUnsupportedHost), 0)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateRequiresCanonicalName), 2)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateUnsupportedLocation), 1)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateDirectoryAccessDenied), 1)]
     public void ResourcesHaveExpectedFormatArguments(string key, int argumentCount)
     {
         var resources = new ResourceManager("Microsoft.DotNet.Tools.Bootstrapper.Strings", typeof(SelfUpdateCommand).Assembly);

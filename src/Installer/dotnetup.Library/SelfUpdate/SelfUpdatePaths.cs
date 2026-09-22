@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Names and opens self-update artifacts with consistent path validation and sharing.</summary>
@@ -50,9 +52,20 @@ internal sealed class SelfUpdatePaths
         return true;
     }
 
+    /// <summary>Validates a self-update target: the canonical name plus <see cref="ValidateExecutable"/>.</summary>
     public void Validate()
     {
         ValidateLocation();
+        ValidateExecutable();
+    }
+
+    /// <summary>
+    /// Validates that the executable and its directories exist without links or reparse points,
+    /// regardless of the executable's file name. The non-safe command gate uses this so renamed
+    /// executables can run ordinary commands; only self-update requires the canonical name.
+    /// </summary>
+    public void ValidateExecutable()
+    {
         using var executable = OpenFile(InstalledPath);
     }
 
@@ -60,9 +73,15 @@ internal sealed class SelfUpdatePaths
     {
         path = ResolvePath(path);
         ValidateDirectory(Path.GetDirectoryName(path)!);
-        if ((File.GetAttributes(path) & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
+        var attributes = File.GetAttributes(path);
+        if ((attributes & FileAttributes.ReparsePoint) != 0)
         {
-            throw new IOException($"Self-update requires a file without links or reparse points: '{path}'.");
+            throw UnsupportedLocation(path);
+        }
+
+        if ((attributes & (FileAttributes.Directory | FileAttributes.Device)) != 0)
+        {
+            throw new IOException($"Self-update requires a regular file: '{path}'.");
         }
 
         return new FileStream(path, FileMode.Open, access, FileShare.Read | FileShare.Delete);
@@ -99,7 +118,8 @@ internal sealed class SelfUpdatePaths
         var expectedName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
         if (!string.Equals(Path.GetFileName(InstalledPath), expectedName, comparison))
         {
-            throw new IOException("Self-update requires the canonical dotnetup executable name.");
+            throw new SelfUpdateLocationException(DotnetInstallErrorCode.DotnetupNonCanonicalExecutableName,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateRequiresCanonicalName, expectedName, InstalledPath));
         }
 
         ValidateDirectory(DirectoryPath);
@@ -124,9 +144,18 @@ internal sealed class SelfUpdatePaths
         }
 
         var attributes = File.GetAttributes(directoryPath);
-        if ((attributes & FileAttributes.Directory) == 0 || (attributes & FileAttributes.ReparsePoint) != 0)
+        if ((attributes & FileAttributes.ReparsePoint) != 0)
         {
-            throw new IOException("Self-update requires a directory path without links or reparse points.");
+            throw UnsupportedLocation(directoryPath);
+        }
+
+        if ((attributes & FileAttributes.Directory) == 0)
+        {
+            throw new IOException($"Self-update requires a directory: '{directoryPath}'.");
         }
     }
+
+    private static SelfUpdateLocationException UnsupportedLocation(string path)
+        => new(DotnetInstallErrorCode.DotnetupUnsupportedInstallLocation,
+            string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateUnsupportedLocation, path));
 }
