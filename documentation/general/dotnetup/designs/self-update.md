@@ -5,12 +5,14 @@ executable in place. Stage A is implemented; waiting and transparent forwarding 
 ordinary commands remain Stage B work. See [Stage A](#stage-a-success-criteria) and
 the [version-query contract](self-update-verification.md) for the current behavior and limitations.
 
-The command resolves the latest release for the selected RID from the `daily` channel
-by default. `--channel` can select `preview` or `stable`; `stable` is accepted so the
-command is ready when that channel starts publishing. Dotnetup does not currently persist
-the channel from which an executable was installed, so an omitted `--channel` cannot infer
-whether the running prerelease executable came from the `daily` or `preview` shortlink.
-See [command usage](../reference/dotnetup.md#self-update).
+The command resolves the latest release for the selected RID from the release channel. When
+`--channel` is omitted, [SelfUpdateDefaultChannel](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
+derives it from the running build's SemVer prerelease label: no label selects `stable`, a
+`preview` label selects `preview`, and any other label (including local development builds)
+selects `daily`. This requires daily and preview builds to carry distinct prerelease labels.
+`--channel` can select `daily`, `preview`, or `stable` explicitly; `stable` is accepted so the
+command is ready when that channel starts publishing. An explicit `--channel` is the only
+way to move between channels. See [command usage](../reference/dotnetup.md#self-update).
 
 `dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 
@@ -222,6 +224,8 @@ The check is placed before both locks rather than between steps 1.1 and 1.2 deli
 ###### Lock Acquisition for `N`
 
 **1.3 — `N` passes the gate.** The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
+
+The gate does not require the canonical executable name: a renamed executable, such as the RID-suffixed `dotnetup-win-x64.exe` served by the download links, runs ordinary commands using the locks in its own directory. Only `self update` requires the canonical name and fails with `DotnetupNonCanonicalExecutableName` otherwise. The gate still rejects links and reparse points in the executable path with `DotnetupUnsupportedInstallLocation`, and reports an installation directory where `A` cannot be opened or created as `PermissionDenied`. Both are user errors with guidance; `DotnetupIdentityUnavailable` remains for failures to query the installed version. See [NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs).
 
 `N` acquires `A` shared and holds `A` until `N` exits. In Stage A, if the open fails because `A` is busy, `N` fails immediately, reports that a self update is in progress, and instructs the caller to re-run the command after it completes. In Stage B, `N` instead backs off and retries for up to `X_N`, unless the caller has opted into immediate failure. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
 

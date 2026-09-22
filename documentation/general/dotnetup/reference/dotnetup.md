@@ -68,8 +68,10 @@ dotnetup self update --channel preview
 dotnetup self update --no-progress
 ```
 
-`--channel <daily|preview|stable>` selects the release channel. The default is
-`daily`. The `stable` value is accepted in preparation for that channel becoming
+`--channel <daily|preview|stable>` selects the release channel. When omitted, the
+channel is derived from the running build's prerelease label: a stable build uses
+`stable`, a `preview`-labeled build uses `preview`, and any other prerelease build uses
+`daily`. Pass `--channel` explicitly to switch channels. The `stable` value is accepted in preparation for that channel becoming
 available; until then, it reports that no stable build is available.
 `--no-progress` disables progress display, not warnings or the result message.
 The command resolves the latest build in the selected channel for the runtime
@@ -77,9 +79,7 @@ identifier and
 reports success without replacing the executable when the installed version
 already matches or when the available build is older on the same semantic channel.
 These no-op results return exit code `0` and write the installed and available versions,
-plus the reason no update was applied, to standard error. Dotnetup does not persist the channel used to install an
-executable, so omitting `--channel` does not infer `preview` or `daily` from the
-running executable.
+plus the reason no update was applied, to standard error.
 See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
 and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
 
@@ -94,7 +94,11 @@ do not authenticate release freshness.
 Signed version manifests and monotonic authorization are deferred to future stages. See the
 [verification limitations](../designs/self-update-verification.md#scope-and-limitations).
 
-The executable must be in a trusted, writable installation directory. Running via the
+The executable must be in a trusted, writable installation directory and must be named
+`dotnetup` (`dotnetup.exe` on Windows) for self-update. Renamed executables can run
+other commands but cannot update themselves. Commands fail with a specific error when
+the executable path contains a symbolic link, junction, or other reparse point, or when
+dotnetup cannot create its lock files in the installation directory. Running via the
 `dotnet` host rejects self-update; supported updates replace the published standalone
 executable, not a managed application's collection of files. Other update callers wait for the current
 update within a bounded timeout, but ordinary commands, including `--info`, fail
