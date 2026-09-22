@@ -252,7 +252,7 @@ internal static class DotnetupTestUtilities
                 {
                     DirectoryInfo? publishDirectory = Directory.GetParent(path);
                     return string.Equals(publishDirectory?.Name, "publish", StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(publishDirectory.Parent?.Name, rid, StringComparison.OrdinalIgnoreCase);
+                        && string.Equals(publishDirectory?.Parent?.Name, rid, StringComparison.OrdinalIgnoreCase);
                 })
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .ThenBy(path => path, StringComparer.OrdinalIgnoreCase)
