@@ -16,7 +16,7 @@ public class SelfUpdateEndToEndTests : SdkTest
 {
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void NativeCopyUpdatesToDailyAndChangesVersionMetadata()
+    public void NativeCopyUpdatesToDailyAndChangesVersion()
     {
         using var environment = new TestEnvironment();
         string source = DotnetupTestUtilities.GetDotnetupExecutablePath();
@@ -27,18 +27,18 @@ public class SelfUpdateEndToEndTests : SdkTest
             File.SetUnixFileMode(executable, File.GetUnixFileMode(source));
         }
 
-        string originalIdentity = ReadIdentity(environment, executable);
+        string originalVersion = ReadVersion(environment, executable);
         var daily = CreateDownloader(environment).ResolveDotnetupDownload(CurrentRid());
-        Assert.AreNotEqual(DotnetupVersionMetadataReader.Format(daily.Version.ToString(), daily.Rid), originalIdentity,
-            "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different version/RID identity.");
+        Assert.AreNotEqual(daily.Version.ToString(), originalVersion,
+            "This replacement test requires a distinct native build. Set DOTNETUP_TEST_EXECUTABLE to a self-update-capable development build with a different full version.");
 
         string output = Run(environment, executable, ["self", "update", "--no-progress"]);
-        string updatedIdentity = ReadIdentity(environment, executable);
+        string updatedVersion = ReadVersion(environment, executable);
 
-        Assert.AreNotEqual(originalIdentity, updatedIdentity, output);
+        Assert.AreNotEqual(originalVersion, updatedVersion, output);
         Assert.Contains(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
-        Assert.Contains(originalIdentity, Directory.EnumerateFiles(environment.TempRoot, Path.GetFileName(executable) + ".old.*")
-            .Select(SelfUpdatePaths.ReadVersionMetadata), "The update must retain the original executable as a backup.");
+        Assert.Contains(originalVersion, Directory.EnumerateFiles(environment.TempRoot, Path.GetFileName(executable) + ".old.*")
+            .Select(SelfUpdateVerifier.ReadVersion), "The update must retain the original executable as a backup.");
         AssertDailyBecomesNoOp(environment, executable);
     }
 
@@ -56,7 +56,7 @@ public class SelfUpdateEndToEndTests : SdkTest
             File.SetUnixFileMode(executable, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
-        Assert.AreEqual(DotnetupVersionMetadataReader.Format(daily.Version.ToString(), daily.Rid), ReadIdentity(environment, executable));
+        Assert.AreEqual(daily.Version.ToString(), ReadVersion(environment, executable));
         AssertDailyBecomesNoOp(environment, executable);
     }
 
@@ -65,13 +65,13 @@ public class SelfUpdateEndToEndTests : SdkTest
         const int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            string before = ReadIdentity(environment, executable);
+            string before = ReadVersion(environment, executable);
             byte[] originalBytes = File.ReadAllBytes(executable);
             string output = Run(environment, executable, ["self", "update", "--no-progress"]);
-            string after = ReadIdentity(environment, executable);
+            string after = ReadVersion(environment, executable);
             if (before == after)
             {
-                string version = before.Split('|')[0];
+                string version = before;
                 Assert.Contains(string.Format(
                     System.Globalization.CultureInfo.InvariantCulture,
                     BootstrapperStrings.SelfUpdateAlreadyUpToDate,
@@ -88,11 +88,11 @@ public class SelfUpdateEndToEndTests : SdkTest
         Assert.Fail($"Daily changed on all {maxAttempts} successful updates; no stable no-op was observed.");
     }
 
-    private static string ReadIdentity(TestEnvironment environment, string executable)
+    private static string ReadVersion(TestEnvironment environment, string executable)
     {
-        string metadata = SelfUpdatePaths.ReadVersionMetadata(executable);
-        Assert.StartsWith(metadata.Split('|')[0], Run(environment, executable, ["--version"]).Trim());
-        return metadata;
+        string version = Run(environment, executable, ["--version"]).Trim();
+        Assert.IsTrue(Microsoft.Deployment.DotNet.Releases.ReleaseVersion.TryParse(version, out _));
+        return version;
     }
 
     private static string Run(TestEnvironment environment, string executable, string[] args)

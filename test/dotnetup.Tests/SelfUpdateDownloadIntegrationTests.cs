@@ -64,7 +64,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void NativeWorkflowRejectsVersionMetadataMismatchDespiteValidHash()
+    public void NativeWorkflowRestoresOriginalOnVersionMismatchDespiteValidHash()
     {
         using var files = new NativeSelfUpdateFiles();
         const string advertisedVersion = "0.2.0-preview.1.99999.3";
@@ -72,20 +72,21 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         using var http = new HttpClient(handler);
         var downloader = CreateDownloader(files, http);
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        var advertisedMetadata = DotnetupVersionMetadataReader.Format(advertisedVersion, files.Release.Rid);
-        Assert.AreNotEqual(files.OriginalIdentity, advertisedMetadata);
-        Assert.AreNotEqual(files.ReplacementIdentity, advertisedMetadata);
+        Assert.AreNotEqual(files.OriginalVersion, advertisedVersion);
+        Assert.AreNotEqual(files.ReplacementVersion, advertisedVersion);
 
-        var workflow = new SelfUpdateWorkflow(files.Paths, files.OriginalIdentity,
+        var workflow = new SelfUpdateWorkflow(files.Paths, files.OriginalVersion,
             () => downloader.ResolveDotnetupDownload(files.Release.Rid),
             (release, destination) => downloader.DownloadWithVerification(release, destination));
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
-        Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupVerificationFailed, exception.ErrorCode);
         AssertPinnedRequests(handler);
-        AssertOriginalUnchanged(files, originalBytes);
-        Assert.AreSequenceEqual(File.ReadAllBytes(files.ReplacementPath), File.ReadAllBytes(files.Paths.StagedPath));
-        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.StagedPath));
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(files.Paths.InstalledPath));
+        var rejected = Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*.rejected");
+        Assert.HasCount(1, rejected);
+        Assert.AreSequenceEqual(File.ReadAllBytes(files.ReplacementPath), File.ReadAllBytes(rejected[0]));
+        Assert.IsFalse(File.Exists(files.Paths.StagedPath));
         Assert.IsFalse(File.Exists(files.Paths.StagedPath + ".download"));
     }
 
@@ -141,7 +142,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
         => new(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
 
     private static SelfUpdateWorkflow CreateWorkflow(NativeSelfUpdateFiles files, DotnetDownloader downloader, Action? afterResolution = null)
-        => new(files.Paths, files.OriginalIdentity, () =>
+        => new(files.Paths, files.OriginalVersion, () =>
         {
             var release = downloader.ResolveDotnetupDownload(files.Release.Rid);
             Assert.AreEqual(files.Release.Version, release.Version);
@@ -160,7 +161,7 @@ public class SelfUpdateDownloadIntegrationTests : SdkTest
     private static void AssertInstalledReplacement(NativeSelfUpdateFiles files)
     {
         Assert.AreSequenceEqual(File.ReadAllBytes(files.ReplacementPath), File.ReadAllBytes(files.Paths.InstalledPath));
-        Assert.AreEqual(files.ReplacementIdentity, SelfUpdatePaths.ReadVersionMetadata(files.Paths.InstalledPath));
+        Assert.AreEqual(files.ReplacementVersion, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
         Assert.StartsWith(files.Release.Version.ToString(), files.Run(["--version"]));
         Assert.Contains(files.Release.Version.ToString(), files.Run(["--info"]));
     }

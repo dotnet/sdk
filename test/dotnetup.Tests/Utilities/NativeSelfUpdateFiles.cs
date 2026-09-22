@@ -23,7 +23,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
         AssertNative(original);
         AssertNative(replacement);
 
-        _files = new SelfUpdateTestFiles();
+        _files = new SelfUpdateTestFiles(executable: false);
         try
         {
             ReplacementPath = Path.Combine(Paths.DirectoryPath, "replacement" + DotnetupUtilities.ExeSuffix);
@@ -36,16 +36,12 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
             }
 
             File.Delete(Paths.StagedPath);
-            OriginalIdentity = SelfUpdatePaths.ReadVersionMetadata(Paths.InstalledPath);
-            ReplacementIdentity = SelfUpdatePaths.ReadVersionMetadata(ReplacementPath);
-            var originalMetadata = OriginalIdentity.Split('|');
-            var metadata = ReplacementIdentity.Split('|');
-            Assert.AreEqual(originalMetadata[1], metadata[1], "Publish the two binaries for the same RID.");
-            Assert.AreNotEqual(originalMetadata[0], metadata[0], "Publish the two binaries with different full release versions.");
-            Assert.StartsWith(metadata[0], GetExecutableVersion(ReplacementPath));
-            var rid = metadata[1];
+            OriginalVersion = SelfUpdateVerifier.ReadVersion(Paths.InstalledPath);
+            ReplacementVersion = SelfUpdateVerifier.ReadVersion(ReplacementPath);
+            Assert.AreNotEqual(OriginalVersion, ReplacementVersion, "Publish the two binaries with different full release versions.");
+            var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
             Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup"), new string('0', 128),
-                rid, ReleaseVersion.Parse(metadata[0]));
+                rid, ReleaseVersion.Parse(ReplacementVersion));
         }
         catch
         {
@@ -56,8 +52,8 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
     public SelfUpdatePaths Paths => _files.Paths;
     public string ReplacementPath { get; }
-    public string OriginalIdentity { get; }
-    public string ReplacementIdentity { get; }
+    public string OriginalVersion { get; }
+    public string ReplacementVersion { get; }
     public ResolvedDownload Release { get; }
     public string StateDirectory => Path.Combine(Paths.DirectoryPath, "state");
 
@@ -79,7 +75,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
     }
 
     public SelfUpdateWorkflow CreateWorkflow(Action<ResolvedDownload, string>? download = null, SelfUpdateCoordinator? coordinator = null)
-        => new(Paths, OriginalIdentity, () => Release, download ?? CopyReplacement, coordinator);
+        => new(Paths, OriginalVersion, () => Release, download ?? CopyReplacement, coordinator);
 
     public void CopyReplacement(ResolvedDownload release, string destination)
     {
@@ -164,31 +160,6 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
     }
 
     public void Dispose() => _files.Dispose();
-
-    private static string GetExecutableVersion(string path)
-    {
-        var start = new ProcessStartInfo(path)
-        {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        start.ArgumentList.Add("--version");
-        start.Environment[Constants.Telemetry.TelemetryOptOutEnvVar] = "1";
-        start.Environment["DOTNET_NOLOGO"] = "1";
-        start.Environment["NO_COLOR"] = "1";
-        using var process = Process.Start(start);
-        Assert.IsNotNull(process);
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        Assert.IsTrue(process.WaitForExit(20_000), "Native dotnetup --version timed out.");
-        Assert.AreEqual(0, process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
-        Assert.AreEqual(string.Empty, stderr.GetAwaiter().GetResult());
-        var version = stdout.GetAwaiter().GetResult().Trim();
-        Assert.IsFalse(string.IsNullOrEmpty(version), "Native dotnetup --version returned no version.");
-        return version;
-    }
 
     private static void AssertNative(string path)
     {

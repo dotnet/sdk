@@ -5,24 +5,24 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Replaces and restores executables while the caller holds both update locks. Recovery never deletes artifacts.</summary>
 /// <remarks>
-/// One instance owns the paths and local version metadata for one update, including partial-failure recovery.
-/// A missing canonical path can also be recovered if the backup matches the original version metadata.
+/// One instance owns one transaction, including partial-failure recovery. The caller retains both locks
+/// and exclusive ownership of these paths; uncooperative external modifications are not supported.
+/// Recovery uses the retained backup and move state, never execution or inspection of a broken candidate.
 /// </remarks>
 internal sealed class SelfUpdateReplacement
 {
     private readonly SelfUpdatePaths _paths;
     private readonly string _backupPath;
-    private readonly string _originalMetadata;
-    private string? _replacementMetadata;
+    private bool _mutationStarted;
+    private bool _replacementCompleted;
+    private bool _restored;
 
-    public SelfUpdateReplacement(SelfUpdatePaths paths, string backupPath, string originalMetadata)
+    public SelfUpdateReplacement(SelfUpdatePaths paths, string backupPath)
     {
         ArgumentNullException.ThrowIfNull(paths);
         ArgumentException.ThrowIfNullOrEmpty(backupPath);
-        ArgumentException.ThrowIfNullOrEmpty(originalMetadata);
         _paths = paths;
         _backupPath = SelfUpdatePaths.ResolvePath(backupPath);
-        _originalMetadata = originalMetadata;
     }
 
     public void Replace()
@@ -31,14 +31,16 @@ internal sealed class SelfUpdateReplacement
     internal void Replace(Action<string, string, string> replaceFile)
     {
         ArgumentNullException.ThrowIfNull(replaceFile);
-        var mutationStarted = false;
+        if (_mutationStarted)
+        {
+            throw new InvalidOperationException("A replacement transaction cannot be reused.");
+        }
+
         try
         {
             _paths.Validate();
             _paths.ValidateBackupPath(_backupPath);
             SelfUpdatePaths.RequireAbsent(_backupPath);
-            RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
-            var replacementMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.StagedPath);
             using (var staged = SelfUpdatePaths.OpenFile(_paths.StagedPath, FileAccess.ReadWrite))
             {
                 staged.Flush(flushToDisk: true);
@@ -50,8 +52,7 @@ internal sealed class SelfUpdateReplacement
             File.SetLastWriteTimeUtc(_paths.InstalledPath, updateTime);
             File.SetLastWriteTimeUtc(_paths.StagedPath, updateTime);
 
-            _replacementMetadata = replacementMetadata;
-            mutationStarted = true;
+            _mutationStarted = true;
             if (OperatingSystem.IsWindows())
             {
                 replaceFile(_paths.StagedPath, _paths.InstalledPath, _backupPath);
@@ -61,10 +62,12 @@ internal sealed class SelfUpdateReplacement
                 File.CreateHardLink(_backupPath, _paths.InstalledPath);
                 File.Move(_paths.StagedPath, _paths.InstalledPath, overwrite: true);
             }
+
+            _replacementCompleted = true;
         }
         catch (Exception exception) when (IsFileFailure(exception))
         {
-            if (mutationStarted)
+            if (_mutationStarted)
             {
                 try
                 {
@@ -73,7 +76,11 @@ internal sealed class SelfUpdateReplacement
                         Rollback();
                     }
 
-                    RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
+                    using var original = SelfUpdatePaths.OpenFile(_paths.InstalledPath);
+                    if (!_restored && !SelfUpdatePaths.Exists(_paths.StagedPath))
+                    {
+                        throw new IOException("Replacement failed without a recoverable original executable.");
+                    }
                 }
                 catch (Exception recoveryException) when (IsFileFailure(recoveryException) || recoveryException is DotnetInstallException)
                 {
@@ -90,20 +97,34 @@ internal sealed class SelfUpdateReplacement
     {
         try
         {
+            if (_restored)
+            {
+                return;
+            }
+
+            if (!_mutationStarted)
+            {
+                throw new IOException("This transaction has not begun replacement.");
+            }
+
             _paths.ValidateLocation();
             _paths.ValidateBackupPath(_backupPath);
-            RequireVersionMetadata(_backupPath, _originalMetadata);
+            using (SelfUpdatePaths.OpenFile(_backupPath))
+            {
+            }
+
             if (SelfUpdatePaths.Exists(_paths.InstalledPath))
             {
-                var canonicalMetadata = SelfUpdatePaths.ReadVersionMetadata(_paths.InstalledPath);
-                if (string.Equals(canonicalMetadata, _originalMetadata, StringComparison.Ordinal))
+                using (SelfUpdatePaths.OpenFile(_paths.InstalledPath))
                 {
-                    return;
                 }
 
-                if (!string.Equals(_replacementMetadata, canonicalMetadata, StringComparison.Ordinal))
+                // If the stage still exists, the rename did not complete. On Unix the backup
+                // hard link may already exist; on Windows File.Replace can fail before switching.
+                if (!_replacementCompleted && SelfUpdatePaths.Exists(_paths.StagedPath))
                 {
-                    throw new IOException("The canonical executable is not the known replacement; rollback will not overwrite it.");
+                    _restored = true;
+                    return;
                 }
 
                 if (OperatingSystem.IsWindows())
@@ -123,19 +144,11 @@ internal sealed class SelfUpdateReplacement
                 File.Move(_backupPath, _paths.InstalledPath, overwrite: true);
             }
 
-            RequireVersionMetadata(_paths.InstalledPath, _originalMetadata);
+            _restored = true;
         }
         catch (Exception exception) when (IsFileFailure(exception))
         {
             throw Failure("Rollback failed; recovery artifacts were retained. Reinstall dotnetup if the canonical executable is unavailable.", exception);
-        }
-    }
-
-    private static void RequireVersionMetadata(string path, string metadata)
-    {
-        if (!string.Equals(SelfUpdatePaths.ReadVersionMetadata(path), metadata, StringComparison.Ordinal))
-        {
-            throw new IOException($"The version metadata of '{path}' does not match the expected transaction metadata.");
         }
     }
 
