@@ -484,6 +484,11 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </param>
     public void Flush(int exitCode)
     {
+        if (!Enabled)
+        {
+            return;
+        }
+
         if (_shouldSpawnDetachedDrainer)
         {
             ShutdownProviders(GetLocalShutdownBudgetMs(exitCode));
