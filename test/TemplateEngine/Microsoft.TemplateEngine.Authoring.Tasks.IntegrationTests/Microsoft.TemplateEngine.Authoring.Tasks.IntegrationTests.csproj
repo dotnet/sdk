@@ -1,9 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <!-- Mitigates intermittent Windows cleanup failures where Directory.Delete observes locked temporary
-         directories under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 
