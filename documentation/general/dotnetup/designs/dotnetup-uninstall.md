@@ -1,8 +1,12 @@
 # Proposal: predictable uninstall and relationship-based list output
 
-**Status:** Draft for discussion, revised September 21, 2026. This document
-describes proposed behavior, not the current command contract or a settled team
-decision. In particular, terminology and confirmation policy remain proposals.
+The relationship between an install spec and an installed version can be a source of confusion when using dotnetup.  Some of the main places this can happen are:
+
+- You might ask it to uninstall a specific version that is installed, and it gives you an error that there's no install spec matching that channel
+- You might ask it to uninstall a version or channel, and it successfully removes the spec but doesn't remove any installation, because it's referenced by other specs
+- You can see that an SDK is installed, but can’t tell what is keeping it installed.  Separate lists of specs and installations don’t show which channel or repository references the version you want to remove
+
+This proposal aims to improve this by improving the behavior of the uninstall commands and the output of `dotnetup list`.
 
 ## Experience we want
 
@@ -23,8 +27,9 @@ The proposed model is:
   report that it was kept and list the other specs currently selecting it.
   Do not offer to expand the operation to remove those specs.
 - If no spec matches an exact version, target that installed SDK directly.
-  Offer to remove the specs currently selecting that SDK, even if another
-  installed SDK could satisfy them. Do not reassign them to an older version.
+  Ask for confirmation before removing the specs currently selecting that SDK,
+  even if another installed SDK could satisfy them. Declining changes nothing.
+  Do not reassign them to an older version.
 - Leave specs selecting other versions unchanged. A spec is not a removal
   target merely because its version range could also accept the targeted SDK.
 - If no spec matches a channel, report an error. Do not guess an installed
@@ -33,8 +38,7 @@ The proposed model is:
   automatically. Their contents are authoritative, not a cached channel value.
 
 For now, do not add a separate `untrack` command or a repository-path form of
-`uninstall`. Confirmation for affected specs when targeting an installed
-version is considered in [Confirmation and undo](#confirmation-and-undo).
+`uninstall`. An undo operation is outside this proposal.
 
 ## User-facing terminology
 
@@ -399,35 +403,7 @@ Do not silently select a system installation, rewrite environment settings, or
 remove dotnetup itself. A separate last-SDK confirmation is a policy question,
 not assumed by the examples above.
 
-## Confirmation and undo
-
-**Working recommendation:** remove a matching spec without prompting, whether
-it names a channel or an exact version. If its SDK remains, explain why and
-list the remaining specs as in scenario 5; do not offer a broader action.
-When no standalone spec matches an installed exact version, ask before removing
-the specs or repository registrations currently selecting that installation.
-
-For that physical-version operation, automatic removal of affected specs
-remains an alternative to confirmation. The alternatives below do not expand
-matching-spec removal:
-
-| Policy | Benefit | Cost |
-| --- | --- | --- |
-| Confirm affected-spec removal when targeting an installed version | No prompts for matching-spec removal; repository impact is visible before physical-version removal. | Adds a decision when a physical-version uninstall requires spec removals. |
-| Automatically remove affected specs and report it | The requested SDK disappears with less interaction. | Can stop tracking repositories or channels the user did not realize were involved. |
-| Automatic removal with undo | Makes the fast path simple and offers recovery after seeing the impact. | Only safe to advertise if undo restores both specs and SDK content reliably; restoring just the manifest is not undo. |
-
-An undo design would need to specify retention of deleted content, cache and
-disk-space costs, availability of old/private builds if redownload is required,
-partial failures, and subsequent changes to specs or `global.json`. It must
-not overwrite newer repository contents or settings. Offline restoration is
-not guaranteed merely by remembering the removed SDK version.
-
-For physical-version removal in this iteration, show prompt-based examples and
-keep automatic removal plus undo open for comparison. Do not add a speculative
-undo command or promise reversibility before its behavior is defined.
-
-### Scripts and cancellation
+## Scripts and cancellation
 
 Spec-first removal behaves the same with or without an interactive terminal:
 remove the matching spec, then report any retained SDK and the specs selecting
@@ -632,7 +608,7 @@ that today's garbage collector already provides it.
 | Match a spec or version first? | Match saved standalone specs first, whether channel or exact version; fall back to an installed exact version only. |
 | Match repository-derived channel strings directly? | Not by default. Keep repository registrations independent and show them as additional effects. |
 | Roll back while retaining specs? | Outside this uninstall proposal. Offer to remove specs currently selecting the targeted SDK, not reassign them to an older installation. A rollback design should not depend on a previous version already being installed. |
-| Confirmation policy | Matching-spec removal never prompts or expands to other specs, including for exact-version specs. Physical-version removal prompts for affected specs; automatic removal and a genuinely recoverable undo design remain alternatives for that case. |
+| Noninteractive approval | Define how automation approves affected-spec removal for physical-version uninstall without changing matching-spec behavior. |
 | Scope of garbage collection | Scoped cleanup recommended; explicitly decide whether unrelated newly unused SDKs can also be removed. |
 | Remove one repository registration while keeping its files? | Defer a dedicated UI. File deletion/change is authoritative without confirmation. |
 | Existing `--source` behavior | Compatibility/migration policy still needs design; do not invent or silently change its meaning here. |
