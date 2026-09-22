@@ -69,11 +69,14 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             tempDgFilePath,
             projectFilePath);
 
-        var result = NuGetCommand.Run(args, isFileBasedApp);
-
-        DisposeTemporaryFile(tempDgFilePath);
-
-        return result;
+        try
+        {
+            return NuGetCommand.Run(args, cancellationToken, isFileBasedApp);
+        }
+        finally
+        {
+            DisposeTemporaryFile(tempDgFilePath);
+        }
     }
 
     private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath, bool isFileBasedApp, CancellationToken cancellationToken)

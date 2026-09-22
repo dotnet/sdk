@@ -69,6 +69,11 @@ internal class ForwardingAppImplementation
         return GetProcessStartInfo().Execute();
     }
 
+    public int Execute(CancellationToken cancellationToken)
+    {
+        return GetProcessStartInfo().Execute(cancellationToken);
+    }
+
     public ProcessStartInfo GetProcessStartInfo()
     {
         var processInfo = new ProcessStartInfo

@@ -463,7 +463,7 @@ public static class Parser
 
             if (IsInNuGetCommandTree(command))
             {
-                NuGetCommand.Run(context.ParseResult);
+                NuGetCommand.Run(context.ParseResult, ProcessLifecycle.CancellationToken);
             }
             else if (command is MSBuildCommandDefinition)
             {
