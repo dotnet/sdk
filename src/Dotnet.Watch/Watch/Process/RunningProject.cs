@@ -76,15 +76,16 @@ internal sealed class RunningProject(
         return process.TerminateAsync();
     }
 
-    public async Task CompleteApplyOperationAsync(Task applyTask)
+    public async Task<bool> CompleteApplyOperationAsync(Task<bool> applyTask)
     {
         try
         {
-            await applyTask;
+            return await applyTask;
         }
         catch (OperationCanceledException)
         {
             // Do not report error.
+            return false;
         }
         catch (Exception e)
         {
@@ -92,6 +93,7 @@ internal sealed class RunningProject(
             // it shouldn't prevent applying updates to other processes.
 
             ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", process.Id, e.ToString());
+            return false;
         }
     }
 

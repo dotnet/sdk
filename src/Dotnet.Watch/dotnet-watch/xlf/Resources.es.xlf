@@ -138,6 +138,15 @@ Ejemplos:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Trace">
+        <source>
+      Show trace output
+    </source>
+        <target state="translated">
+      Mostrar salida de seguimiento
+    </target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_Verbose">
         <source>
       Show verbose output

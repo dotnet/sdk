@@ -145,7 +145,9 @@ internal sealed class CommandLineOptions
         // -mt configures the MSBuild engine used by the builds watch runs on every change.
         buildArguments.AddRange(multiThreadedTokens);
 
-        var logLevel = parseResult.GetValue(definition.VerboseOption)
+        var logLevel = parseResult.GetValue(definition.TraceOption)
+            ? LogLevel.Trace
+            : parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
             : parseResult.GetValue(definition.QuietOption)
             ? LogLevel.Warning

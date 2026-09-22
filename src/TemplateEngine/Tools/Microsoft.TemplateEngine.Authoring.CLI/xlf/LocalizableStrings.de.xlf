@@ -41,7 +41,7 @@
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="translated">Fehler beim Generieren von Lokalisierungsdateien für eine Datei \"template.json\".
+        <target state="translated">Fehler beim Generieren von Lokalisierungsdateien für eine Datei "template.json".
 Ursache: {0}.
 Dateipfad: {1}.</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"

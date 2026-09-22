@@ -376,7 +376,7 @@
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
         <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
-        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <target state="translated">NETSDK1235: las herramientas de .NET no admiten el uso de un archivo .nuspec personalizado, pero se proporcionó el archivo nuspec "{0}". Las herramientas de .NET usan un diseño de paquete personalizado y una convención de identificador de paquete, y deben personalizarse solo mediante la lógica de MSBuild. Quite la propiedad NuspecFile de este proyecto para habilitar su empaquetado como una herramienta de .NET.</target>
         <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
@@ -528,7 +528,7 @@
       </trans-unit>
       <trans-unit id="IncludeAllContentForSelfExtractIsLegacy">
         <source>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</source>
-        <target state="new">NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</target>
+        <target state="translated">NETSDK1244: "IncludeAllContentForSelfExtract" habilita un modo de compatibilidad heredado que extrae todos los ensamblados administrados en el disco en el inicio. Para ello, se recomienda el comportamiento predeterminado de archivo único en memoria, así que quite la propiedad "IncludeAllContentForSelfExtract" de su proyecto.</target>
         <note>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</note>
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
         <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
-        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <target state="translated">NETSDK1237: el ensamblado '{0}' se enumeró en PublishReadyToRunPartialAssemblies, pero se está compilando en una imagen compuesta. La compilación parcial solo se admite para ensamblados compilados por separado. El ensamblado se compilará completamente en la imagen compuesta.</target>
         <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -883,7 +883,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RunCommandRequiresWindowsForNetFramework">
         <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
-        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <target state="translated">NETSDK1243: el proyecto '{0}' está destinado a .NET Framework, que solo se puede ejecutar en Windows. Ejecute el proyecto en Windows, cambie el TargetFramework a un TFM de .NET admitido (por ejemplo, net{1}) o establezca la propiedad RunCommand explícitamente. Para obtener más información, consulte https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
         <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
@@ -923,22 +923,22 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SdkFeatureBandDiscontinued">
         <source>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1240: el SDK de .NET actual ({0}) no tiene ninguna versión más reciente en su banda de características. Actualización a la versión {1}: https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionHasVulnerabilities">
         <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1238: el SDK de .NET actual ({0}) tiene vulnerabilidades conocidas ({1}).{2} Ver https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionIsEol">
         <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
-        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <target state="translated">NETSDK1239: el SDK de .NET actual ({0}) finaliza el ciclo de vida a partir de {1}. No recibirá más actualizaciones de seguridad: https://dotnet.microsoft.com/download</target>
         <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
       </trans-unit>
       <trans-unit id="SdkVersionUpdateRecommendation_Info">
         <source>Update to version {0}.</source>
-        <target state="new">Update to version {0}.</target>
+        <target state="translated">Actualizar a la versión {0}.</target>
         <note>{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
@@ -953,7 +953,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SingleFileBundleUnexpectedExclusion">
         <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
-        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <target state="translated">NETSDK1236: la tarea de generación de agrupación de archivos únicos excluyó los archivos que se esperaba incluir: {0}. Esto puede indicar un error de coincidencia entre la lógica de filtrado de agrupación del SDK y la tarea del empaquetador.</target>
         <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
@@ -970,7 +970,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="TargetFrameworkEmpty">
         <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
-        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <target state="translated">NETSDK1241: la propiedad TargetFramework está vacía. Especifique un valor para la propiedad TargetFramework en el archivo de proyecto.</target>
         <note>{StrBegins="NETSDK1241: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
@@ -1189,7 +1189,7 @@ Para instalar estas cargas de trabajo, ejecute el comando siguiente: dotnet work
       </trans-unit>
       <trans-unit id="MonoRuntimeNotSupportedForPlatform">
         <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
-        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <target state="translated">NETSDK1242: La compilación de proyectos {0} con el entorno de ejecución Mono no se admite en .NET 11.0 y versiones posteriores. Use el entorno de ejecución de CoreCLR o diríjase a .NET 10.0.</target>
         <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>

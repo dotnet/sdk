@@ -144,17 +144,19 @@ internal readonly struct UpdateResponse(IReadOnlyCollection<(string message, Age
     }
 }
 
-internal readonly struct ClientInitializationResponse(string capabilities) : IResponse
+internal readonly struct ClientInitializationResponse(int processId, string capabilities) : IResponse
 {
-    private const byte Version = 0;
+    private const byte Version = 1;
 
     public ResponseType Type => ResponseType.InitializationResponse;
 
     public string Capabilities { get; } = capabilities;
+    public int ProcessId { get; } = processId;
 
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
         await stream.WriteAsync(Version, cancellationToken);
+        await stream.WriteAsync(ProcessId, cancellationToken);
         await stream.WriteAsync(Capabilities, cancellationToken);
     }
 
@@ -166,8 +168,9 @@ internal readonly struct ClientInitializationResponse(string capabilities) : IRe
             throw new NotSupportedException($"Unsupported version {version}.");
         }
 
+        var processId = await stream.ReadInt32Async(cancellationToken);
         var capabilities = await stream.ReadStringAsync(cancellationToken);
-        return new ClientInitializationResponse(capabilities);
+        return new ClientInitializationResponse(processId, capabilities);
     }
 }
 

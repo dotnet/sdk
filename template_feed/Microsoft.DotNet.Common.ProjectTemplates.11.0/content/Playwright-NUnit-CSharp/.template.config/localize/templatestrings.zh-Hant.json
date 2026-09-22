@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "目標架構覆寫",
   "symbols/Framework/description": "專案的目標架構。",
   "symbols/Framework/displayName": "架構",
-  "symbols/Framework/choices/net11.0/description": "目標 net11.0",
+  "symbols/Framework/choices/net11.0/description": " 目標 net11.0",
   "symbols/EnablePack/description": "是否要啟用專案的封裝 (透過 \"dotnet pack\")。",
   "symbols/EnablePack/displayName": "啟用壓縮",
   "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。",
