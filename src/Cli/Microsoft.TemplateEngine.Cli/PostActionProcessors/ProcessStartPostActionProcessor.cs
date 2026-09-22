@@ -10,7 +10,19 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
     internal class ProcessStartPostActionProcessor : PostActionProcessorBase
     {
+        private readonly Func<Process, ICommand> _commandFactory;
+
         internal static readonly Guid ActionProcessorId = new("3A7C4B45-1F5D-4A30-959A-51B88E82B5D2");
+
+        public ProcessStartPostActionProcessor()
+            : this(process => new Command(process))
+        {
+        }
+
+        internal ProcessStartPostActionProcessor(Func<Process, ICommand> commandFactory)
+        {
+            _commandFactory = commandFactory;
+        }
 
         public override Guid Id => ActionProcessorId;
 
@@ -50,25 +62,27 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 Reporter.Output.WriteLine(LocalizableStrings.RunningCommand, command);
                 string resolvedExecutablePath = ResolveExecutableFilePath(environment.Host.FileSystem, executable, outputBasePath);
 
-                Process? commandResult = System.Diagnostics.Process.Start(new ProcessStartInfo
+                using Process process = new()
                 {
-                    RedirectStandardError = redirectStandardError,
-                    RedirectStandardOutput = redirectStandardOutput,
-                    UseShellExecute = false,
-                    CreateNoWindow = false,
-                    WorkingDirectory = outputBasePath,
-                    FileName = resolvedExecutablePath,
-                    Arguments = args
-                });
-
-                if (commandResult == null)
+                    StartInfo = new ProcessStartInfo
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = false,
+                        WorkingDirectory = outputBasePath,
+                        FileName = resolvedExecutablePath,
+                        Arguments = args
+                    }
+                };
+                ICommand commandToExecute = _commandFactory(process);
+                if (redirectStandardOutput)
                 {
-                    Reporter.Error.WriteLine(LocalizableStrings.CommandFailed);
-                    Reporter.Verbose.WriteLine("Unable to start sub-process.");
-                    return false;
+                    commandToExecute.CaptureStdOut();
                 }
-
-                commandResult.WaitForExit();
+                if (redirectStandardError)
+                {
+                    commandToExecute.CaptureStdErr();
+                }
+                CommandResult commandResult = commandToExecute.Execute(cancellationToken);
 
                 if (commandResult.ExitCode != 0)
                 {
@@ -82,6 +96,10 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     Reporter.Output.WriteLine(LocalizableStrings.CommandSucceeded);
                     return true;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
