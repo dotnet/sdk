@@ -222,8 +222,7 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Gets the path to the dotnetup executable for the current build configuration.
-    /// Prefers the AOT-published native binary if available, otherwise falls back to the managed build output.
+    /// Gets the path to the latest Native AOT dotnetup test executable.
     /// </summary>
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
@@ -239,94 +238,35 @@ internal static class DotnetupTestUtilities
             return Path.GetFullPath(explicitPath);
         }
 
-#if DEBUG
-        string configuration = "Debug";
-        string fallbackConfiguration = "Release";
-#else
-        string configuration = "Release";
-        string fallbackConfiguration = "Debug";
-#endif
-
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
+        string artifactsDirectory = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup");
+        return GetLatestNativeAotExecutablePath(artifactsDirectory, RuntimeInformation.RuntimeIdentifier, executableName);
+    }
 
-        // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
-        // the runtime was built with (e.g. "win-x64", "linux-musl-arm64"), which matches
-        // the RID used by `dotnet publish -r` output directories.
-        string rid = RuntimeInformation.RuntimeIdentifier;
-
-        // Try matching configuration first, then fall back to the other.
-        // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
-        string[] configurationsToSearch = [configuration, fallbackConfiguration];
-
-        foreach (string config in configurationsToSearch)
-        {
-            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
-
-            if (!Directory.Exists(configDir))
-            {
-                continue;
-            }
-
-            // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
-            // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
-            string[] tfmDirs = Directory.GetDirectories(configDir);
-            if (tfmDirs.Length > 1)
-            {
-                throw new InvalidOperationException(
-                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
-                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", tfmDirs)}");
-            }
-
-            foreach (string tfmDir in tfmDirs)
-            {
-                string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
-                if (File.Exists(publishedPath))
+    internal static string GetLatestNativeAotExecutablePath(string artifactsDirectory, string rid, string executableName)
+    {
+        string? latestExecutable = Directory.Exists(artifactsDirectory)
+            ? Directory.EnumerateFiles(artifactsDirectory, executableName, SearchOption.AllDirectories)
+                .Where(path =>
                 {
-                    if (config != configuration)
-                    {
-                        Console.WriteLine($"Note: Using AOT binary from '{config}' configuration (no '{configuration}' AOT binary found).");
-                    }
+                    DirectoryInfo? publishDirectory = Directory.GetParent(path);
+                    return string.Equals(publishDirectory?.Name, "publish", StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(publishDirectory.Parent?.Name, rid, StringComparison.OrdinalIgnoreCase);
+                })
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .ThenBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault()
+            : null;
 
-                    return Path.GetFullPath(publishedPath);
-                }
-            }
+        if (latestExecutable is null)
+        {
+            throw new FileNotFoundException(
+                $"No Native AOT dotnetup executable for RID '{rid}' was found under '{artifactsDirectory}'. " +
+                "Publish src/Installer/dotnetup/dotnetup.csproj with Native AOT enabled before running these tests.");
         }
 
-        // Fall back to managed build output (same search order)
-        foreach (string config in configurationsToSearch)
-        {
-            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
-
-            if (!Directory.Exists(configDir))
-            {
-                continue;
-            }
-
-            string[] fallbackTfmDirs = Directory.GetDirectories(configDir);
-            if (fallbackTfmDirs.Length > 1)
-            {
-                throw new InvalidOperationException(
-                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
-                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", fallbackTfmDirs)}");
-            }
-
-            foreach (string tfmDir in fallbackTfmDirs)
-            {
-                string managedPath = Path.Combine(tfmDir, executableName);
-                if (File.Exists(managedPath))
-                {
-                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
-                    return Path.GetFullPath(managedPath);
-                }
-            }
-        }
-
-        string primaryDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
-        throw new FileNotFoundException(
-            $"dotnetup executable not found under '{primaryDir}'. " +
-            $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
-            $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
+        return Path.GetFullPath(latestExecutable);
     }
 
     /// <summary>

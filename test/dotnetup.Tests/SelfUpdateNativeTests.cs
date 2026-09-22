@@ -202,6 +202,38 @@ public class SelfUpdateNativeTests : SdkTest
     }
 
     [TestMethod]
+    public void LatestNativeAotExecutableIsSelected()
+    {
+        var directory = Directory.CreateTempSubdirectory("dotnetup-native-selection-");
+        try
+        {
+            const string rid = "test-x64";
+            const string executableName = "dotnetup";
+            string older = Path.Combine(directory.FullName, "Debug", "net11.0", rid, "publish", executableName);
+            string latest = Path.Combine(directory.FullName, "Release", "net11.0", rid, "publish", executableName);
+            string managed = Path.Combine(directory.FullName, "Debug", "net11.0", executableName);
+            string otherRid = Path.Combine(directory.FullName, "Release", "net11.0", "other-x64", "publish", executableName);
+            foreach (string path in new[] { older, latest, managed, otherRid })
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, path);
+            }
+
+            DateTime latestWriteTime = DateTime.UtcNow;
+            File.SetLastWriteTimeUtc(older, latestWriteTime.AddMinutes(-1));
+            File.SetLastWriteTimeUtc(latest, latestWriteTime);
+            File.SetLastWriteTimeUtc(managed, latestWriteTime.AddMinutes(1));
+            File.SetLastWriteTimeUtc(otherRid, latestWriteTime.AddMinutes(2));
+
+            Assert.AreEqual(latest, DotnetupTestUtilities.GetLatestNativeAotExecutablePath(directory.FullName, rid, executableName));
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void NativeConfigurationIsOptInLocally()
     {
         Assert.ThrowsExactly<AssertInconclusiveException>(() => NativeSelfUpdateFiles.GetExecutablePaths(_ => null));
