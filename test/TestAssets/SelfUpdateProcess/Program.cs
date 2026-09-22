@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Text;
-using Microsoft.Dotnet.Installation.Internal;
 
 if (args is ["--wait"])
 {
@@ -13,17 +13,13 @@ if (args is ["--wait"])
 }
 
 var executable = Environment.ProcessPath!;
-string identity;
-using (var stream = File.OpenRead(executable))
-{
-    identity = DotnetupVersionMetadataReader.Read(stream);
-}
+var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
 if (args is ["--hold"])
 {
-    Console.WriteLine(identity);
+    Console.WriteLine(version);
     _ = Console.ReadLine();
-    Console.WriteLine(identity);
+    Console.WriteLine(version);
     return 0;
 }
 
@@ -32,9 +28,24 @@ if (args is not ["--version"])
     return 91;
 }
 
-var mode = File.ReadAllText(executable + ".mode");
-var version = identity.Split('|')[0];
+var mode = File.Exists(executable + ".mode") ? File.ReadAllText(executable + ".mode") : "valid";
+File.AppendAllText(executable + ".invocations", "--version\n");
 Console.Error.WriteLine($"SelfUpdateProcess mode: {mode}");
+if (mode == "stdin-eof")
+{
+    if (await Console.In.ReadToEndAsync() != string.Empty)
+    {
+        return 92;
+    }
+}
+
+if (mode == "private-contract" &&
+    (Environment.GetEnvironmentVariable("DOTNETUP_PRIVATE_VERSION_UTF8") != "1" ||
+    Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT") != "1" ||
+    Environment.GetEnvironmentVariable("DOTNET_NOLOGO") != "1"))
+{
+    return 93;
+}
 if (mode == "timeout")
 {
     File.WriteAllText(executable + ".pid", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
@@ -54,7 +65,7 @@ var output = mode switch
     "cr" => version + "\r",
     "none" => version,
     "flood" => new string('x', 4096 * 128) + version + Environment.NewLine,
-    "valid" or "stderr-flood" or "nonzero" => version + Environment.NewLine,
+    "valid" or "stderr-flood" or "nonzero" or "stdin-eof" or "private-contract" => version + Environment.NewLine,
     _ => throw new InvalidOperationException($"Unknown fixture mode: {mode}"),
 };
 
