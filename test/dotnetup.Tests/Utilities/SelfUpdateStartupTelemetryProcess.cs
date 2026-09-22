@@ -35,7 +35,7 @@ internal static class SelfUpdateStartupTelemetryProcess
         startInfo.Environment[Constants.Telemetry.EnablePerfTraceEnvVar] = "0";
         startInfo.Environment[Constants.Telemetry.DiskLogPathEnvVar] = string.Empty;
         startInfo.Environment[Constants.Telemetry.StoragePathEnvVar] = Path.Combine(files.Paths.DirectoryPath, "telemetry");
-        startInfo.Environment["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = Path.Combine(files.Paths.DirectoryPath, "data");
+        startInfo.Environment["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(files.Paths.DirectoryPath, "data");
 
         using var process = Process.Start(startInfo);
         Assert.IsNotNull(process);

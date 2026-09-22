@@ -422,8 +422,8 @@ Or open a new terminal.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateChannelOptionDescription">
-        <source>The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</source>
-        <target state="new">The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</target>
+        <source>The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</source>
+        <target state="new">The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</target>
         <note>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateCommandDescription">
@@ -435,6 +435,11 @@ Or open a new terminal.</target>
         <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</source>
         <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</target>
         <note>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateDirectoryAccessDenied">
+        <source>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateDownloading">
         <source>Downloading dotnetup</source>
@@ -456,6 +461,11 @@ Or open a new terminal.</target>
         <target state="new">A dotnetup self-update is in progress. Run the command again after the update completes.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateRequiresCanonicalName">
+        <source>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</source>
+        <target state="new">Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</target>
+        <note>{Locked="dotnetup"} {0} is the required executable file name. {1} is the full path of the running executable.</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateRollbackFailed">
         <source>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
         <target state="new">Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
@@ -475,6 +485,11 @@ Or open a new terminal.</target>
         <source>Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</source>
         <target state="new">Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</target>
         <note>{Locked="dotnetup"} Managed development hosts cannot update themselves.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateUnsupportedLocation">
+        <source>The dotnetup path '{0}' contains a symbolic link, junction, or other reparse point, so dotnetup cannot safely coordinate self-updates. Run dotnetup from a path without links, or reinstall it to such a directory from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">The dotnetup path '{0}' contains a symbolic link, junction, or other reparse point, so dotnetup cannot safely coordinate self-updates. Run dotnetup from a path without links, or reinstall it to such a directory from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the file or directory path that is a link or reparse point.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateVerificationFailed">
         <source>The updated dotnetup executable failed verification.</source>

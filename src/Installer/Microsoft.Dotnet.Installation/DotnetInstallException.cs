@@ -160,6 +160,12 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Self-update could not restore its original executable.</summary>
     DotnetupRollbackFailed,
+
+    /// <summary>The dotnetup executable path contains a symbolic link, junction, or other reparse point.</summary>
+    DotnetupUnsupportedInstallLocation,
+
+    /// <summary>Self-update was run from an executable that is not named dotnetup(.exe).</summary>
+    DotnetupNonCanonicalExecutableName,
 }
 
 /// <summary>

@@ -129,7 +129,7 @@
     <comment>{Locked="dotnetup"}</comment>
   </data>
   <data name="SelfUpdateChannelOptionDescription" xml:space="preserve">
-    <value>The dotnetup release channel to update from (daily, preview, or stable). The default is daily.</value>
+    <value>The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</value>
     <comment>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</comment>
   </data>
   <data name="SelfUpdateDownloading" xml:space="preserve">
@@ -187,6 +187,18 @@
   <data name="SelfUpdateUnsupportedHost" xml:space="preserve">
     <value>Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</value>
     <comment>{Locked="dotnetup"} Managed development hosts cannot update themselves.</comment>
+  </data>
+  <data name="SelfUpdateRequiresCanonicalName" xml:space="preserve">
+    <value>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</value>
+    <comment>{Locked="dotnetup"} {0} is the required executable file name. {1} is the full path of the running executable.</comment>
+  </data>
+  <data name="SelfUpdateUnsupportedLocation" xml:space="preserve">
+    <value>The dotnetup path '{0}' contains a symbolic link, junction, or other reparse point, so dotnetup cannot safely coordinate self-updates. Run dotnetup from a path without links, or reinstall it to such a directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the file or directory path that is a link or reparse point.</comment>
+  </data>
+  <data name="SelfUpdateDirectoryAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
   </data>
   <data name="InfoOptionDescription" xml:space="preserve">
     <value>Display dotnetup information.</value>
