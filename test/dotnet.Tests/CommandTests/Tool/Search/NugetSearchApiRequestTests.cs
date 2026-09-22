@@ -20,7 +20,9 @@ public class NugetSearchApiRequestTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
-    public async Task GetResultUsesPackageSearchResourceAndMapsTypedMetadata()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task GetResultUsesPackageSearchResourceAndMapsTypedMetadata(bool includeVersions)
     {
         var packageMetadata = new Mock<IPackageSearchMetadata>(MockBehavior.Strict);
         packageMetadata.SetupGet(metadata => metadata.Identity)
@@ -31,11 +33,14 @@ public class NugetSearchApiRequestTests
         packageMetadata.SetupGet(metadata => metadata.Authors).Returns("Author One, Author Two");
         packageMetadata.SetupGet(metadata => metadata.DownloadCount).Returns(12L);
         packageMetadata.SetupGet(metadata => metadata.PrefixReserved).Returns(true);
-        packageMetadata.Setup(metadata => metadata.GetVersionsAsync()).ReturnsAsync(
-            [
-                new VersionInfo(NuGetVersion.Parse("2.0.0"), 10),
-                new VersionInfo(NuGetVersion.Parse("1.0.0"), 2),
-            ]);
+        if (includeVersions)
+        {
+            packageMetadata.Setup(metadata => metadata.GetVersionsAsync()).ReturnsAsync(
+                [
+                    new VersionInfo(NuGetVersion.Parse("2.0.0"), 10),
+                    new VersionInfo(NuGetVersion.Parse("1.0.0"), 2),
+                ]);
+        }
 
         var resource = new CapturingPackageSearchResource([packageMetadata.Object]);
         var request = new NugetToolSearchApiRequest(
@@ -44,7 +49,7 @@ public class NugetSearchApiRequestTests
                 source.Should().BeSameAs(Source);
                 return Task.FromResult<PackageSearchResource?>(resource);
             });
-        var parameter = new NugetSearchApiParameter("sample", skip: 3, take: 4, prerelease: true);
+        var parameter = new NugetSearchApiParameter("sample", skip: 3, take: 4, prerelease: true, includeVersions);
 
         IReadOnlyCollection<SearchResultPackage> result = await request.GetResult(parameter, Source, CancellationToken.None);
 
@@ -65,7 +70,7 @@ public class NugetSearchApiRequestTests
         package.TotalDownloads.Should().Be(12);
         package.Verified.Should().BeTrue();
         package.Versions.Select(version => (version.Version, version.Downloads))
-            .Should().Equal(("2.0.0", 10L), ("1.0.0", 2L));
+            .Should().Equal(includeVersions ? [("2.0.0", 10L), ("1.0.0", 2L)] : []);
     }
 
     [TestMethod]

@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public List<string> DownloadCallResult = new();
 
-        public List<(PackageId id, int numberOfResults, PackageSourceLocation packageSourceLocation, bool includePreview)> GetLatestPackageVersionsCallParams = new();
+        public List<(PackageId id, int numberOfResults, PackageSourceLocation? packageSourceLocation, bool includePreview)> GetLatestPackageVersionsCallParams = new();
 
         public List<(string, DirectoryPath)> ExtractCallParams = new();
 

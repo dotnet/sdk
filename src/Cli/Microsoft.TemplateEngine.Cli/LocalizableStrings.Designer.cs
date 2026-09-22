@@ -403,7 +403,7 @@ namespace Microsoft.TemplateEngine.Cli {
                 return ResourceManager.GetString("CannotUseAddSourceWithSourceMapping", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Search failed: not enough information specified for search..
         /// </summary>
