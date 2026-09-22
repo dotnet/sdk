@@ -506,6 +506,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdNoCacheOptionDescription" xml:space="preserve">
     <value>Do not cache packages and http requests.</value>
   </data>
+  <data name="CmdNoDefaultExcludesDescription" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</value>
+  </data>
   <data name="CmdNoDependenciesOptionDescription" xml:space="preserve">
     <value>Do not restore project-to-project references and only restore the specified project.</value>
   </data>
@@ -564,7 +567,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
     <value>PROJECT_OR_SOLUTION_PATH</value>
@@ -1116,7 +1119,12 @@ The default is to publish a framework-dependent application.</value>
     <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="TestCmdNoLogo" xml:space="preserve">
-    <value>Run test(s), without displaying Microsoft Testplatform banner</value>
+    <value>Run test(s), without displaying the Microsoft Test Platform banner</value>
+    <comment>{Locked="Microsoft Test Platform"}</comment>
+  </data>
+  <data name="TestCmdMTPNoLogo" xml:space="preserve">
+    <value>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</value>
+    <comment>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</comment>
   </data>
   <data name="TestCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>

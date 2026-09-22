@@ -24,16 +24,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
-public class CA2237SerializableMissingAttr : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                        """
+
+                            using System;
+                            using System.Runtime.Serialization;
+                            public class CA2237SerializableMissingAttr : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -44,18 +46,20 @@ public class CA2237SerializableMissingAttr : ISerializable
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
+                        """
 
-[Serializable]
-public class CA2237SerializableMissingAttr : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                            using System;
+                            using System.Runtime.Serialization;
+
+                            [Serializable]
+                            public class CA2237SerializableMissingAttr : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 }
             }.RunAsync(CancellationToken.None);
@@ -66,19 +70,21 @@ public class CA2237SerializableMissingAttr : ISerializable
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
-Public Class CA2237SerializableMissingAttr
-    Implements ISerializable
+                        """
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            Imports System
+                            Imports System.Runtime.Serialization
+                            Public Class CA2237SerializableMissingAttr
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class",
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -89,21 +95,23 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
+                        """
 
-<Serializable>
-Public Class CA2237SerializableMissingAttr
-    Implements ISerializable
+                            Imports System
+                            Imports System.Runtime.Serialization
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            <Serializable>
+                            Public Class CA2237SerializableMissingAttr
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class"
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -118,24 +126,26 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
-public class First : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}
+                        """
 
-public class Second : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                            using System;
+                            using System.Runtime.Serialization;
+                            public class First : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+
+                            public class Second : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -147,27 +157,29 @@ public class Second : ISerializable
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.Serialization;
+                        """
 
-[Serializable]
-public class First : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}
+                            using System;
+                            using System.Runtime.Serialization;
 
-[Serializable]
-public class Second : ISerializable
-{
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                            [Serializable]
+                            public class First : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+
+                            [Serializable]
+                            public class Second : ISerializable
+                            {
+                                public void GetObjectData(SerializationInfo info, StreamingContext context)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 }
             }.RunAsync(CancellationToken.None);
@@ -182,30 +194,32 @@ public class Second : ISerializable
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
-Public Class First
-    Implements ISerializable
+                        """
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            Imports System
+                            Imports System.Runtime.Serialization
+                            Public Class First
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
 
-Public Class Second
-    Implements ISerializable
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            Public Class Second
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class",
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -217,33 +231,35 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-Imports System
-Imports System.Runtime.Serialization
+                        """
 
-<Serializable>
-Public Class First
-    Implements ISerializable
+                            Imports System
+                            Imports System.Runtime.Serialization
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            <Serializable>
+                            Public Class First
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
 
-<Serializable>
-Public Class Second
-    Implements ISerializable
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
 
-    Protected Sub New(context As StreamingContext, info As SerializationInfo)
-    End Sub
+                            <Serializable>
+                            Public Class Second
+                                Implements ISerializable
 
-    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-        throw new NotImplementedException()
-    End Sub
-End Class"
+                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
+                                End Sub
+
+                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+                                    throw new NotImplementedException()
+                                End Sub
+                            End Class
+                            """
                     },
                 },
             }.RunAsync(CancellationToken.None);

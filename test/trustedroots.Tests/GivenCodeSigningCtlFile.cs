@@ -41,6 +41,7 @@ namespace Microsoft.DotNet.Tests
         [DataRow("b676f2eddae8775cd36cb0f63cd1d4603961f49e6265ba013a2f0307b6d0b804")]  // CN=Certum Trusted Network CA 2, OU=Certum Certification Authority, O=Unizeto Technologies S.A., C=PL
         [DataRow("bfff8fd04433487d6a8aa60c1a29767a9fc2bbb05e420f713a13b992891d3893")]  // CN=GDCA TrustAUTH R5 ROOT, O="GUANG DONG CERTIFICATE AUTHORITY CO.,LTD.", C=CN
         [DataRow("c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4")]  // OU=Go Daddy Class 2 Certification Authority, O="The Go Daddy Group, Inc.", C=US
+        [DataRow("c40ebdcd75a90e4b7496abb23e789a48e33c03284f75d95130575ae6860ae13c")]  // CN=HARICA Code Signing RSA Root CA 2021, O=Hellenic Academic and Research Institutions CA, C=GR
         [DataRow("c766a9bef2d4071c863a31aa4920e813b2d198608cb7b7cfe21143b836df09ea")]  // CN=StartCom Certification Authority, OU=Secure Digital Certificate Signing, O=StartCom Ltd., C=IL
         [DataRow("cbb522d7b7f127ad6a0113865bdf1cd4102e7d0759af635a7cf4720dc963c53b")]  // CN=GlobalSign, O=GlobalSign, OU=GlobalSign Root CA - R3
         [DataRow("d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef4")]  // CN=AAA Certificate Services, O=Comodo CA Limited, L=Salford, S=Greater Manchester, C=GB

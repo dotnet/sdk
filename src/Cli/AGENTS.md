@@ -37,6 +37,11 @@ deps out of `Definitions`. In the managed CLI, code that isn't AOT-safe is exclu
 from the AOT build with `#if !CLI_AOT` (the AOT project links files from `dotnet` and
 compiles with `CLI_AOT` defined).
 
+`MSBuildRuntimeReference.targets` supplies the packaged MSBuild command-line assembly
+to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessible to the
+signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
+managed-only rather than introducing MSBuild dependencies into `Definitions`.
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the

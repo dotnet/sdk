@@ -46,6 +46,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [TestMethod]
+        [Ignore("https://github.com/dotnet/roslyn/issues/85132")]
         public void IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
             // Simulates building the same way VS does by setting BuildProjectReferences=false.

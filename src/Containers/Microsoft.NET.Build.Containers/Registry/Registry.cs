@@ -91,7 +91,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider)
     { }
 
     internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
@@ -100,7 +100,7 @@ internal sealed class Registry
 
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
@@ -458,7 +458,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidAuthResponseException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)

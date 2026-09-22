@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -130,7 +131,9 @@ internal static class ValidationUtility
         isSolution = CliConstants.SolutionExtensions.Contains(extension);
         projectOrSolutionFile = projectOrSolutionFileOrDirectory;
         // If it's not a directory, validate as a file path
-        if (!isSolution && !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        if (!isSolution &&
+            !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase) &&
+            !VirtualProjectBuilder.IsValidEntryPointPath(projectOrSolutionFileOrDirectory, requireFileToExist: false))
         {
             projectOrSolutionFile = null;
             isSolution = false;

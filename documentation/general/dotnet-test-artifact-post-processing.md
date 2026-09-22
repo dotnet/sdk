@@ -33,11 +33,12 @@ when any of the following is true:
 - `--list-tests` was requested (test discovery, not execution).
 - `--no-artifact-post-processing` was passed.
 - The run was cancelled with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
-- The run was cut short by `--maximum-failed-tests` or `--timeout`. A truncated run produced
-  the artifacts of a truncated run — modules that never started contributed nothing, and
-  modules killed mid-flight wrote whatever they had — so merging them into one
-  authoritative-looking report would hide the truncation. The per-module artifacts are left
-  as they are.
+
+Runs cut short by `--maximum-failed-tests` or `--timeout` are handled differently. The SDK
+plans only artifact groups whose processor explicitly advertised support for policy-truncated
+runs. Other groups remain untouched, preventing an authoritative merger such as TRX or coverage
+from making an incomplete run look complete while still allowing summary-style processors to
+describe the truncation accurately.
 
 Post-processing can never change the run's exit code; it only affects which artifacts are
 listed. See [Failure behavior](#failure-behavior).
@@ -55,10 +56,13 @@ The grouping and election logic lives in
 During its handshake, each MTP test application reports the post-processors registered inside
 it through two properties: `SupportedPostProcessorKinds` (reverse-DNS artifact *kinds*, e.g.
 `microsoft.testing.trx`) and `SupportedPostProcessorExtensionsLegacy` (lowercase file
-extensions, for producers that do not tag a kind). Both are semicolon-separated. An
-application that advertises neither simply never participates — it is neither a candidate to
-perform a merge nor a source of mergeable groups. The handshake property ids are defined in
-[`CliConstants`](../../src/Cli/dotnet/Commands/Test/CliConstants.cs).
+extensions, for producers that do not tag a kind). Both are semicolon-separated.
+`SupportedTruncatedRunPostProcessorKinds` and
+`SupportedTruncatedRunPostProcessorExtensionsLegacy` advertise the subsets whose processors
+can consume the incomplete set of complete artifacts observed before
+`--maximum-failed-tests` or `--timeout` stopped the run. An application that advertises no
+capability applicable to the current run does not participate. The handshake property ids are
+defined in [`CliConstants`](../../src/Cli/dotnet/Commands/Test/CliConstants.cs).
 
 ### Grouping
 
@@ -68,9 +72,10 @@ Artifacts are de-duplicated by path and then grouped:
 2. **Extension fallback.** Artifacts with no kind are grouped by lowercase file extension.
 
 A group is a merge candidate only if a compatible application advertised the matching kind or
-extension, and only if it has **at least two inputs** — merging a single file is pointless. (A
-kind group and a matching extension group that individually have one input each can still be
-merged together when a shared application supports both and the combined count reaches two.)
+extension for the current run's completeness, and only if it has **at least two inputs** —
+merging a single file is pointless. (A kind group and a matching extension group that
+individually have one input each can still be merged together when a shared application supports
+both and the combined count reaches two.)
 
 For binary code-coverage artifacts (kind `microsoft.codecoverage` / extension `.coverage`),
 an application is a candidate only when its architecture matches the inputs. Coverage blobs
@@ -99,10 +104,17 @@ and manifest option are defined in
 
 The SDK writes a JSON manifest listing the input artifacts (path, kind, producing module,
 target framework, architecture, execution id) and the output directory, then hands it to the
-relaunched tool. The merged artifacts flow **back over the same pipe** as ordinary
-file-artifact messages, so they re-enter the normal reporter path. In the summary, the SDK
-[removes the inputs it consumed and adds the merged output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
-in their place.
+relaunched tool. On a policy-truncated run, the manifest also contains `truncationReason` with
+the value `maximumFailedTests` or `timeout`; Microsoft.Testing.Platform exposes that through
+`ArtifactPostProcessingContext`.
+
+The processed artifacts flow **back over the same pipe** as ordinary
+file-artifact messages, together with the exact manifest input paths represented by each output,
+so they re-enter the normal reporter path. In the summary, the SDK
+[removes only those consumed inputs and adds the processed output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+in their place. This provenance keeps an unrelated artifact listed even when it happens to share
+the processed output's file extension. Older hosts that do not report provenance retain the
+previous kind-and-extension inference for compatibility.
 
 The original per-module artifacts are **never deleted from disk** — only the run summary
 changes. If you need the individual files (for example a per-module TRX), they are still where
@@ -131,12 +143,15 @@ per-module inputs and double-count tests.
 
 ## What currently merges
 
-Today only **TRX** consolidates: the only shipping post-processor is the one in the
-`Microsoft.Testing.Extensions.TrxReport` package. Code coverage and other formats will only be
-merged once a post-processor ships in the extension that produces them; until then those
-artifacts are listed individually, exactly as before. This is a capability question, not a
-configuration one — the SDK merges whatever the installed extensions advertise. The contract for
-adding a format is public; see [Extending it to another artifact format](#extending-it-to-another-artifact-format).
+Shipping Microsoft.Testing.Platform extensions provide post-processors for **TRX, Microsoft code
+coverage, JUnit, CTRF, and HTML reports**, as well as aggregated GitHub Actions and Azure DevOps
+summaries. The formats available to a run still depend on which extensions its test applications
+reference and enable; the SDK does not install a processor or infer mergeability from a file name.
+It merges whatever the installed extensions advertise.
+
+Other formats continue to be listed individually until their producing extension ships a
+post-processor. The contract for adding one is public; see
+[Extending it to another artifact format](#extending-it-to-another-artifact-format).
 
 ## Extending it to another artifact format
 
@@ -149,8 +164,9 @@ The relevant public types live in `Microsoft.Testing.Platform.Extensions.Artifac
 
 | Type | Role |
 |---|---|
-| `IArtifactPostProcessor` | The contract: `SupportedKinds`, `SupportedFileExtensionsFallback`, and `ProcessAsync(inputs, outputDirectory, cancellationToken)`. |
+| `IArtifactPostProcessor` | The contract: `SupportsTruncatedRuns`, `SupportedKinds`, `SupportedFileExtensionsFallback`, and `ProcessAsync(inputs, outputDirectory, context, cancellationToken)`. |
 | `IArtifactPostProcessingManager` | Registration, via `AddArtifactPostProcessor(Func<IServiceProvider, IArtifactPostProcessor>)`. |
+| `ArtifactPostProcessingContext` | Whether the run was truncated and whether the reason was `MaximumFailedTests` or `Timeout`. |
 | `InputArtifact` | One input: path, kind, producing test module, target framework, architecture, execution id. |
 | `ProcessedArtifact` | The merged result: path, kind, display name, description. |
 
@@ -168,13 +184,17 @@ internal sealed class MyArtifactPostProcessor : IArtifactPostProcessor
     public string DisplayName => "Contoso report merger";
     public string Description => "Merges Contoso reports.";
 
+    public bool SupportsTruncatedRuns => false;
     public IReadOnlyList<string> SupportedKinds { get; } = ["contoso.myreport"];
     public IReadOnlyList<string> SupportedFileExtensionsFallback { get; } = [".myreport"];
 
     public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
     public async Task<ProcessedArtifact?> ProcessAsync(
-        IReadOnlyList<InputArtifact> inputs, string outputDirectory, CancellationToken cancellationToken)
+        IReadOnlyList<InputArtifact> inputs,
+        string outputDirectory,
+        ArtifactPostProcessingContext context,
+        CancellationToken cancellationToken)
     {
         if (inputs.Count < 2)
         {
@@ -201,8 +221,13 @@ What `dotnet test` expects of a processor:
   a binary format cannot safely combine).
 - **Treat inputs as read-only** and write under the supplied `outputDirectory`. Never return one of
   the inputs as your output, and never delete a source file.
-- **Set `Kind` on the artifact you return.** That is what the SDK uses to decide which originals the
-  merged artifact replaced in the run summary.
+- **Set `Kind` on the artifact you return.** The MTP dispatcher pairs the result with the exact
+  inputs supplied to that processor, and the SDK uses that provenance to replace only those
+  originals in the run summary.
+- **Set `SupportsTruncatedRuns` only when the output can accurately describe an incomplete run.**
+  When enabled, inspect `context.TruncationReason` and make the truncation visible in the result.
+  The capability covers an incomplete set of complete artifacts, not malformed or partially
+  written files.
 - **Be deterministic**: the same set of inputs should produce the same output path.
 
 Two SDK behaviors are worth knowing about. The SDK relaunches the *fewest* test applications that

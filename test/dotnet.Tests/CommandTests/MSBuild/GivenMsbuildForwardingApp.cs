@@ -109,6 +109,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
         [DoNotParallelize]
         public void ItUsesSeededTelemetrySessionId()
         {
@@ -166,7 +167,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        [DoNotParallelize]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow(null, "0")]
         [DataRow("", "0")]
         [DataRow("0", "0")]

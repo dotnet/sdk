@@ -12,7 +12,7 @@ namespace EndToEnd.Tests
         [RequiresMSBuildVersion("17.0.0.32901")]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            string projectDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            string projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: nameof(GivenDotNetUsesMSBuild)).Path;
 
             string[] newArgs = ["console", "--no-restore"];
             new DotnetNewCommand(Log)
