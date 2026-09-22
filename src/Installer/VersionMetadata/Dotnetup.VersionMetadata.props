@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup Condition="'$(DotnetupMetadataRid)' != ''">
-    <IntermediateOutputPath>$(ArtifactsObjDir)$(MSBuildProjectName)\version-artifact\$(Configuration)\$(DotnetupMetadataRid)\</IntermediateOutputPath>
-    <OutputPath>$(ArtifactsBinDir)$(MSBuildProjectName)\version-artifact\$(Configuration)\$(DotnetupMetadataRid)\</OutputPath>
-  </PropertyGroup>
-</Project>

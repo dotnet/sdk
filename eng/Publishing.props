@@ -80,7 +80,7 @@
     to both files.
   -->
   <Target Name="SetDotnetupBlobPaths"
-          DependsOnTargets="GetDotnetupVersion;ValidateDotnetupPublishedMetadata"
+          DependsOnTargets="GetDotnetupVersion"
           AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
     <ItemGroup>
@@ -102,16 +102,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ValidateDotnetupPublishedMetadata" DependsOnTargets="GetDotnetupVersion" Condition="'@(_DotnetupPublishedBinary)' != ''">
-    <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj" Targets="BuildDotnetupMetadataTool">
-      <Output TaskParameter="TargetOutputs" PropertyName="_DotnetupMetadataPublishingTool" />
-    </MSBuild>
-    <MSBuild Projects="$(RepoRoot)src\Installer\VersionMetadata\Dotnetup.VersionMetadata.proj" Targets="Execute"
-             Properties="MetadataTaskAssembly=$(_DotnetupMetadataPublishingTool);MetadataOperation=validate;MetadataArtifact=%(_DotnetupPublishedBinary.Identity);MetadataVersion=$(DotnetupVersion);MetadataRid=$(TargetRid)" />
-  </Target>
-
   <Target Name="AddRelativeBlobPathToBlobArtifacts"
-          DependsOnTargets="GetNonStableProductVersion;ValidateDotnetupPublishedMetadata"
+          DependsOnTargets="GetNonStableProductVersion"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
           AfterTargets="GenerateChecksumsFromArtifacts">
     <ItemGroup>

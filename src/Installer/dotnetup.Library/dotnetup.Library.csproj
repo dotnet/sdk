@@ -70,14 +70,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj"
-              GlobalPropertiesToRemove="DotnetupMetadataRid;DotnetupMetadataVersion" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
   </ItemGroup>
 
-  <Import Project="..\VersionMetadata\Dotnetup.VersionMetadata.props" />
-  <Import Project="..\VersionMetadata\Dotnetup.VersionMetadata.targets" />
 </Project>

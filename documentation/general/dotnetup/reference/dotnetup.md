@@ -74,7 +74,7 @@ available; until then, it reports that no stable build is available.
 `--no-progress` disables progress display, not warnings or the result message.
 The command resolves the latest build in the selected channel for the runtime
 identifier and
-reports success without replacing the executable when the installed full version/RID
+reports success without replacing the executable when the installed version
 already matches or when the available build is older on the same semantic channel.
 These no-op results return exit code `0` and write the installed and available versions,
 plus the reason no update was applied, to standard error. Dotnetup does not persist the channel used to install an
@@ -83,13 +83,14 @@ running executable.
 See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
 and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
 
-Self-update checks the published SHA-512 hash and embedded full version/RID but is
+Self-update checks the published SHA-512 hash and the executable's `--version` output but is
 unsigned, emits an unsigned-source warning, and respects the unsigned-download
 policy. The selected release must publish the executable and checksum; no identity
-sidecar is needed. After replacement, `--version` provides a bounded startup smoke
-check. These unsigned checks do not authenticate freshness or prevent downgrades.
+sidecar or custom embedded version record is needed. After replacement, `--version`
+must run successfully and report the selected release's full version within a bounded
+timeout. These unsigned checks do not authenticate release freshness.
 Signed version manifests and monotonic authorization are deferred to future stages. See the
-[metadata limitations](../designs/version-metadata.md#scope-and-limitations).
+[verification limitations](../designs/self-update-verification.md#scope-and-limitations).
 
 The executable must be in a trusted, writable installation directory. Managed
 development hosts reject self-update. Other update callers wait for the current
