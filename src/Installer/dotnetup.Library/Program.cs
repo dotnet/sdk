@@ -20,7 +20,7 @@ public class DotnetupProgram
     public static int Main(string[] args)
     {
         _ = DotnetupProcessInfo.ExecutablePath;
-        _ = DotnetupProcessInfo.VersionMetadata;
+        _ = DotnetupProcessInfo.Version;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
@@ -97,7 +97,7 @@ public class DotnetupProgram
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
         if (DotnetupProcessInfo.IsDirectExecution && DotnetupProcessInfo.ExecutablePath is { } executablePath)
         {
-            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.VersionMetadata);
+            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.Version);
         }
 
         return Parser.Invoke(args);
@@ -145,9 +145,12 @@ public class DotnetupProgram
     /// </summary>
     private static void ConfigureConsoleEncoding()
     {
-        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
-            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        if (Environment.GetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable) == "1" ||
+            (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8()))
         {
+            // Private version probes require UTF-8 on both stdout and stderr, regardless of the
+            // inherited console code page or the interactive default-encoding opt-out.
             // Use UTF-8 without BOM to prevent corrupting piped output.
             // Encoding.UTF8 has encoderShouldEmitUTF8Identifier=true, which causes the
             // runtime to write a 3-byte BOM (0xEF 0xBB 0xBF) to stdout when the encoding

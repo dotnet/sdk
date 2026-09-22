@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -10,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal static class DotnetupProcessInfo
 {
     public static string? ExecutablePath { get; } = Environment.ProcessPath;
-    public static string VersionMetadata { get; } = DotnetupVersionMetadata.Current;
+    public static string Version { get; } = Parser.Version;
     public static bool IsDirectExecution { get; } = IsDotnetupExecutable(ExecutablePath, Assembly.GetEntryAssembly()?.GetName().Name);
 
     internal static bool IsDotnetupExecutable(string? executablePath, string? entryAssemblyName)
