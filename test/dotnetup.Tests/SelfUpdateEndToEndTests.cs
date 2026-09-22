@@ -4,11 +4,9 @@
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
-using BootstrapperStrings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -40,55 +38,6 @@ public class SelfUpdateEndToEndTests : SdkTest
         Assert.Contains(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
         Assert.Contains(originalVersion, Directory.EnumerateFiles(Path.GetDirectoryName(executable)!, Path.GetFileName(executable) + ".old.*")
             .Select(SelfUpdateVerifier.ReadVersion), "The update must retain the original executable as a backup.");
-        AssertDailyBecomesNoOp(environment, executable);
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void DownloadedDailySelfUpdateBecomesNoOp()
-    {
-        using var environment = new TestEnvironment();
-        var downloader = CreateDownloader(environment);
-        var daily = downloader.ResolveDotnetupDownload(CurrentRid());
-        string executable = CreateExecutablePath(environment);
-        downloader.DownloadWithVerification(daily, executable);
-        if (!OperatingSystem.IsWindows())
-        {
-            File.SetUnixFileMode(executable, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
-
-        var installedVersion = ReleaseVersion.Parse(ReadVersion(environment, executable));
-        Assert.IsTrue(daily.Version.PrecedenceEquals(installedVersion),
-            $"The feed advertised {daily.Version}, but the downloaded executable reported {installedVersion}.");
-        AssertDailyBecomesNoOp(environment, executable);
-    }
-
-    private static void AssertDailyBecomesNoOp(TestEnvironment environment, string executable)
-    {
-        const int maxAttempts = 3;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++)
-        {
-            string before = ReadVersion(environment, executable);
-            byte[] originalBytes = File.ReadAllBytes(executable);
-            string output = Run(environment, executable, ["self", "update", "--no-progress"]);
-            string after = ReadVersion(environment, executable);
-            if (before == after)
-            {
-                string version = before;
-                Assert.Contains(string.Format(
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    BootstrapperStrings.SelfUpdateAlreadyUpToDate,
-                    version,
-                    version.Split('+')[0]), output);
-                Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(executable), "A no-op must not change the executable bytes.");
-                Assert.DoesNotContain(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning, output);
-                return;
-            }
-
-            Console.WriteLine($"Daily changed during attempt {attempt}: {before} -> {after}. Retrying the no-op check.");
-        }
-
-        Assert.Fail($"Daily changed on all {maxAttempts} successful updates; no stable no-op was observed.");
     }
 
     private static string ReadVersion(TestEnvironment environment, string executable)

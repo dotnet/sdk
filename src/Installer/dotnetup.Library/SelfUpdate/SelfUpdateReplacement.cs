@@ -41,16 +41,7 @@ internal sealed class SelfUpdateReplacement
             _paths.Validate();
             _paths.ValidateBackupPath(_backupPath);
             SelfUpdatePaths.RequireAbsent(_backupPath);
-            using (var staged = SelfUpdatePaths.OpenFile(_paths.StagedPath, FileAccess.ReadWrite))
-            {
-                staged.Flush(flushToDisk: true);
-            }
-
-            // Backups and rejected candidates inherit these timestamps through renames/hard links.
-            // Stamp before replacement so a metadata failure cannot interrupt recovery afterward.
-            var updateTime = DateTime.UtcNow;
-            File.SetLastWriteTimeUtc(_paths.InstalledPath, updateTime);
-            File.SetLastWriteTimeUtc(_paths.StagedPath, updateTime);
+            PrepareFilesForReplacement();
 
             _mutationStarted = true;
             if (OperatingSystem.IsWindows())
@@ -91,6 +82,20 @@ internal sealed class SelfUpdateReplacement
 
             throw Failure("Replacement failed; the original executable and any recovery artifacts were retained.", exception);
         }
+    }
+
+    private void PrepareFilesForReplacement()
+    {
+        using (var staged = SelfUpdatePaths.OpenFile(_paths.StagedPath, FileAccess.ReadWrite))
+        {
+            staged.Flush(flushToDisk: true);
+        }
+
+        // Backups and rejected candidates inherit these timestamps through renames/hard links.
+        // Stamp before replacement so a metadata failure cannot interrupt recovery afterward.
+        var updateTime = DateTime.UtcNow;
+        File.SetLastWriteTimeUtc(_paths.InstalledPath, updateTime);
+        File.SetLastWriteTimeUtc(_paths.StagedPath, updateTime);
     }
 
     public void Rollback()

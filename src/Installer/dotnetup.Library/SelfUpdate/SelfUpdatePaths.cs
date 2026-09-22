@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Dotnet.Installation.Internal;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>Names and opens self-update artifacts with consistent path validation and sharing.</summary>

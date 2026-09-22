@@ -57,58 +57,63 @@ internal static class SelfUpdateCleanup
                 return;
             }
 
-            var cutoff = DateTime.UtcNow.AddDays(-BackupRetentionDays);
-            var prefix = Path.GetFileName(installedPath) + ".old.";
-            using var entries = directory.EnumerateFileSystemInfos(prefix + "*", new EnumerationOptions
-            {
-                RecurseSubdirectories = false,
-                AttributesToSkip = 0,
-                IgnoreInaccessible = true,
-            }).GetEnumerator();
-
-            var versionChecked = false;
-            for (var visited = 0; visited < EntryBudget && entries.MoveNext(); visited++)
-            {
-                try
-                {
-                    var entry = entries.Current;
-                    if (!IsBackupName(entry.Name, prefix))
-                    {
-                        continue;
-                    }
-
-                    entry.Refresh();
-                    if (!entry.Exists || (entry.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0 ||
-                        entry.LastWriteTimeUtc > cutoff)
-                    {
-                        continue;
-                    }
-
-                    if (!versionChecked)
-                    {
-                        // --version bypasses cleanup and both locks. Keep the parent's update lock
-                        // through comparison and deletion; compare build metadata too.
-                        if (!string.Equals(SelfUpdateVerifier.ReadVersion(installedPath), loadedVersion, StringComparison.Ordinal))
-                        {
-                            return;
-                        }
-
-                        versionChecked = true;
-                    }
-
-                    File.Delete(entry.FullName);
-                }
-                catch (DotnetInstallException)
-                {
-                    return;
-                }
-                catch (Exception)
-                {
-                }
-            }
+            DeleteExpiredBackups(installedPath, loadedVersion, directory);
         }
         catch (Exception)
         {
+        }
+    }
+
+    private static void DeleteExpiredBackups(string installedPath, string loadedVersion, DirectoryInfo directory)
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-BackupRetentionDays);
+        var prefix = Path.GetFileName(installedPath) + ".old.";
+        using var entries = directory.EnumerateFileSystemInfos(prefix + "*", new EnumerationOptions
+        {
+            RecurseSubdirectories = false,
+            AttributesToSkip = 0,
+            IgnoreInaccessible = true,
+        }).GetEnumerator();
+
+        var versionChecked = false;
+        for (var visited = 0; visited < EntryBudget && entries.MoveNext(); visited++)
+        {
+            try
+            {
+                var entry = entries.Current;
+                if (!IsBackupName(entry.Name, prefix))
+                {
+                    continue;
+                }
+
+                entry.Refresh();
+                if (!entry.Exists || (entry.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0 ||
+                    entry.LastWriteTimeUtc > cutoff)
+                {
+                    continue;
+                }
+
+                if (!versionChecked)
+                {
+                    // --version bypasses cleanup and both locks. Keep the parent's update lock
+                    // through comparison and deletion; compare build metadata too.
+                    if (!string.Equals(SelfUpdateVerifier.ReadVersion(installedPath), loadedVersion, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    versionChecked = true;
+                }
+
+                File.Delete(entry.FullName);
+            }
+            catch (DotnetInstallException)
+            {
+                return;
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 
