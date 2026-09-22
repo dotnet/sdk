@@ -24,7 +24,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
 
             _cancellationSource = new CancellationTokenSource();
 
-            Client.InitiateConnection(CancellationToken.None);
+            Client.InitiateConnection(environmentVariables: [], CancellationToken.None);
             var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
             var listener = new Listener(agentTransport, agent, log: _ => { });
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));

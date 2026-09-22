@@ -299,8 +299,7 @@ namespace Microsoft.NET.TestFramework
 
             while (directory is not null)
             {
-                var gitPath = Path.Combine(directory, ".git");
-                if (Directory.Exists(gitPath) || File.Exists(gitPath))
+                if (File.Exists(Path.Combine(directory, "sdk.slnx")))
                 {
                     // Found the repo root, which should either have a .git folder or, if the repo
                     // is part of a Git worktree, a .git file.
@@ -312,17 +311,7 @@ namespace Microsoft.NET.TestFramework
 
             return null;
         }
-        private static string FindOrCreateFolderInTree(string relativePath, string startPath)
-        {
-            string? ret = FindFolderInTree(relativePath, startPath, throwIfNotFound: false);
-            if (ret != null)
-            {
-                return ret;
-            }
-            ret = Path.Combine(startPath, relativePath);
-            Directory.CreateDirectory(ret);
-            return ret;
-        }
+
         private static string? FindFolderInTree(string relativePath, string startPath, bool throwIfNotFound = true)
         {
             string currentPath = startPath;
