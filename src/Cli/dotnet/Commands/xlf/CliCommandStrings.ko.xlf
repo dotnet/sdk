@@ -184,77 +184,77 @@
       </trans-unit>
       <trans-unit id="ExitCodeAtLeastOneTestFailedDescription">
         <source>At least one test failed.</source>
-        <target state="new">At least one test failed.</target>
+        <target state="translated">하나 이상의 테스트가 실패했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeCoverageThresholdFailedDescription">
         <source>One or more code coverage thresholds were not met.</source>
-        <target state="new">One or more code coverage thresholds were not met.</target>
+        <target state="translated">하나 이상의 코드 검사 임계값을 충족하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeDependentProcessExitedDescription">
         <source>A dependent process exited.</source>
-        <target state="new">A dependent process exited.</target>
+        <target state="translated">종속 프로세스가 종료되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeGenericFailureDescription">
         <source>An unexpected error occurred.</source>
-        <target state="new">An unexpected error occurred.</target>
+        <target state="translated">오류가 발생했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeIncompatibleProtocolVersionDescription">
         <source>The test platform protocol version is incompatible.</source>
-        <target state="new">The test platform protocol version is incompatible.</target>
+        <target state="translated">테스트 플랫폼 프로토콜 버전이 호환되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeInvalidCommandLineDescription">
         <source>The command-line arguments are invalid.</source>
-        <target state="new">The command-line arguments are invalid.</target>
+        <target state="translated">명령줄 인수가 잘못되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeInvalidPlatformSetupDescription">
         <source>The test platform setup or extension configuration is invalid.</source>
-        <target state="new">The test platform setup or extension configuration is invalid.</target>
+        <target state="translated">테스트 플랫폼 설정 또는 확장 구성이 잘못되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeMinimumExpectedTestsPolicyViolationDescription">
         <source>Fewer tests ran than required by the minimum expected tests policy.</source>
-        <target state="new">Fewer tests ran than required by the minimum expected tests policy.</target>
+        <target state="translated">최소 예상 테스트 정책에 필요한 것보다 적은 수의 테스트가 실행되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestAdapterTestSessionFailureDescription">
         <source>The test adapter reported a test session failure.</source>
-        <target state="new">The test adapter reported a test session failure.</target>
+        <target state="translated">테스트 어댑터에서 테스트 세션 실패를 보고했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestExecutionStoppedAtDeadlineDescription">
         <source>Test execution stopped because the configured deadline was approaching.</source>
-        <target state="new">Test execution stopped because the configured deadline was approaching.</target>
+        <target state="translated">구성된 마감일이 임박하여 테스트 실행이 중지되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestExecutionStoppedForMaxFailedTestsDescription">
         <source>Test execution stopped after reaching the maximum failed tests limit.</source>
-        <target state="new">Test execution stopped after reaching the maximum failed tests limit.</target>
+        <target state="translated">실패한 최대 테스트 한도에 도달한 후 테스트 실행이 중지되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestHostProcessExitedNonGracefullyDescription">
         <source>The test host process exited unexpectedly.</source>
-        <target state="new">The test host process exited unexpectedly.</target>
+        <target state="translated">테스트 호스트 프로세스가 예기치 않게 종료되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestSessionAbortedDescription">
         <source>The test session was aborted.</source>
-        <target state="new">The test session was aborted.</target>
+        <target state="translated">테스트 세션이 중단되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeUnknownDescription">
         <source>The exit code is not recognized.</source>
-        <target state="new">The exit code is not recognized.</target>
+        <target state="translated">종료 코드를 인식할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeZeroTestsDescription">
         <source>No tests ran.</source>
-        <target state="new">No tests ran.</target>
+        <target state="translated">테스트가 실행되지 않았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlakyAttempts">
@@ -3359,7 +3359,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="new">Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="translated">테스트 검색이 완료되었지만 성공하지 않은 종료 코드: {0}. {1} 참조: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
@@ -3379,7 +3379,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="new">Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="translated">테스트 실행이 성공하지 못한 종료 코드와 함께 완료되었습니다. {0}. {1} 참조: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">

@@ -184,77 +184,77 @@
       </trans-unit>
       <trans-unit id="ExitCodeAtLeastOneTestFailedDescription">
         <source>At least one test failed.</source>
-        <target state="new">At least one test failed.</target>
+        <target state="translated">Almeno un test non è riuscito.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeCoverageThresholdFailedDescription">
         <source>One or more code coverage thresholds were not met.</source>
-        <target state="new">One or more code coverage thresholds were not met.</target>
+        <target state="translated">Una o più soglie di copertura del codice non sono state raggiunte.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeDependentProcessExitedDescription">
         <source>A dependent process exited.</source>
-        <target state="new">A dependent process exited.</target>
+        <target state="translated">Un processo dipendente è terminato.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeGenericFailureDescription">
         <source>An unexpected error occurred.</source>
-        <target state="new">An unexpected error occurred.</target>
+        <target state="translated">Si è verificato un errore imprevisto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeIncompatibleProtocolVersionDescription">
         <source>The test platform protocol version is incompatible.</source>
-        <target state="new">The test platform protocol version is incompatible.</target>
+        <target state="translated">La versione del protocollo della piattaforma di test non è compatibile.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeInvalidCommandLineDescription">
         <source>The command-line arguments are invalid.</source>
-        <target state="new">The command-line arguments are invalid.</target>
+        <target state="translated">Gli argomenti della riga di comando non sono validi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeInvalidPlatformSetupDescription">
         <source>The test platform setup or extension configuration is invalid.</source>
-        <target state="new">The test platform setup or extension configuration is invalid.</target>
+        <target state="translated">L'installazione della piattaforma di test o la configurazione dell'estensione non è valida.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeMinimumExpectedTestsPolicyViolationDescription">
         <source>Fewer tests ran than required by the minimum expected tests policy.</source>
-        <target state="new">Fewer tests ran than required by the minimum expected tests policy.</target>
+        <target state="translated">È stato eseguito un numero di test inferiore a quello richiesto dal criterio minimo previsto per i test.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestAdapterTestSessionFailureDescription">
         <source>The test adapter reported a test session failure.</source>
-        <target state="new">The test adapter reported a test session failure.</target>
+        <target state="translated">L'adattatore di test ha segnalato un errore della sessione di test.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestExecutionStoppedAtDeadlineDescription">
         <source>Test execution stopped because the configured deadline was approaching.</source>
-        <target state="new">Test execution stopped because the configured deadline was approaching.</target>
+        <target state="translated">L'esecuzione dei test è stata arrestata perché la scadenza configurata si stava avvicinando.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestExecutionStoppedForMaxFailedTestsDescription">
         <source>Test execution stopped after reaching the maximum failed tests limit.</source>
-        <target state="new">Test execution stopped after reaching the maximum failed tests limit.</target>
+        <target state="translated">L'esecuzione dei test è stata interrotta dopo aver raggiunto il limite massimo di test non superati.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestHostProcessExitedNonGracefullyDescription">
         <source>The test host process exited unexpectedly.</source>
-        <target state="new">The test host process exited unexpectedly.</target>
+        <target state="translated">Il processo host di test è terminato in modo imprevisto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeTestSessionAbortedDescription">
         <source>The test session was aborted.</source>
-        <target state="new">The test session was aborted.</target>
+        <target state="translated">Sessione di test interrotta.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeUnknownDescription">
         <source>The exit code is not recognized.</source>
-        <target state="new">The exit code is not recognized.</target>
+        <target state="translated">Il codice di uscita non è riconosciuto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeZeroTestsDescription">
         <source>No tests ran.</source>
-        <target state="new">No tests ran.</target>
+        <target state="translated">Non sono stati eseguiti test.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlakyAttempts">
@@ -3359,7 +3359,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="new">Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="translated">Individuazione dei test completata con codice di uscita non riuscito: {0}. {1} Vedere: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
@@ -3379,7 +3379,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="new">Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="translated">Esecuzione dei test completata con codice di uscita non riuscito: {0}. {1} Vedere: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
