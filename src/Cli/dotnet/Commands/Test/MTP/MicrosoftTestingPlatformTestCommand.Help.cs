@@ -23,8 +23,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
             Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
             // This help-rendering path is invoked synchronously from System.CommandLine's HelpBuilder
-            // override, so no cancellation token flows in here; see DotnetHelpBuilder.Write in Parser.cs.
-            Run(context.ParseResult, isHelp: true, CancellationToken.None);
+            // override, so use the process-wide token that tracks Ctrl+C and process shutdown.
+            Run(context.ParseResult, isHelp: true, Utils.ProcessLifecycle.CancellationToken);
 
             if (_commandLineOptionNameToModuleNames.IsEmpty)
             {
