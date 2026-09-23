@@ -88,3 +88,9 @@ Code reachable from the logger must not assume `Program.Main` initialized proces
 state. Treat `BuildStarted`/`BuildFinished` as request boundaries; `Shutdown` ends one
 logger instance, not necessarily the process. The canonical details are in
 [`src/Cli/AGENTS.md`](../../src/Cli/AGENTS.md#sdk-process-entry-points).
+
+Managed and Native AOT command execution share
+[`ProcessLifecycle`](../../src/Cli/Microsoft.DotNet.Cli.Utils/ProcessLifecycle.cs) for
+Ctrl+C, SIGTERM, and process-exit cancellation.
+[`ProcessReaper`](../../src/Cli/Microsoft.DotNet.Cli.Utils/ProcessReaper.cs) separately
+coordinates signal forwarding and cleanup for child processes.
