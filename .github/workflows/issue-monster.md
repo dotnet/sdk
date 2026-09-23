@@ -31,6 +31,8 @@ on:
     - name: Search for candidate issues
       id: search
       uses: actions/github-script@v9.0.0
+      env:
+        ISSUE_NUMBER_INPUT: ${{ github.event.inputs.issue_number || '' }}
       with:
         script: |
           const searchIssueMonsterCandidates = require("./.github/scripts/issue-monster-search.js");
@@ -38,7 +40,7 @@ on:
             github,
             context,
             core,
-            requestedIssueNumberInput: `${{ github.event.inputs.issue_number || '' }}`,
+            requestedIssueNumberInput: process.env.ISSUE_NUMBER_INPUT,
           });
 
 
