@@ -405,11 +405,7 @@ static unsafe partial class NativeEntryPoint
                 {
                     return false;
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     exitCode = Parser.ExceptionHandler(exception, fileBasedRunParseResult);
                     success = false;
