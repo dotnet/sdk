@@ -35,21 +35,18 @@ public class HostingStartupTest
     }
 
     [TestMethod]
-    public async Task HotReloadSettings_IsForwardedToTheProvider()
+    public async Task HotReloadSettings_IsNotForwardedToTheProvider()
     {
         await using var provider = await StartProviderAsync();
         await using var application = await StartApplicationAsync(GetAddress(provider));
         using var client = new HttpClient { BaseAddress = GetAddress(application) };
 
         using var response = await client.GetAsync(
-            ApplicationPaths.BrowserToolsHotReloadSettings,
+            "/_framework/dotnet-browser-tools/hot-reload-settings.json",
             TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
-        Assert.AreEqual(
-            "{ \"hotReload\": true }",
-            await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual("application", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -60,7 +57,7 @@ public class HostingStartupTest
         using var client = new HttpClient { BaseAddress = GetAddress(application) };
 
         using var response = await client.GetAsync(
-            ApplicationPaths.BrowserToolsHotReloadSettings.Value!.ToUpperInvariant(),
+            "/_framework/dotnet-browser-tools/connect".ToUpperInvariant(),
             TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -135,7 +132,7 @@ public class HostingStartupTest
 
         var application = builder.Build();
         application.MapGet(
-            ApplicationPaths.BrowserToolsHotReloadSettings,
+            "/_framework/dotnet-browser-tools/hot-reload-settings.json",
             static () => Results.Text("{ \"hotReload\": true }", "application/json"));
 
         await application.StartAsync();

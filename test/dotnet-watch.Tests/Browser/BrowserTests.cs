@@ -10,6 +10,23 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class BrowserTests : DotNetWatchTestBase
 {
     [TestMethod]
+    public async Task GracefulShutdownDisablesBrowserToolsSettings()
+    {
+        var testAsset = CopyTestAsset("WatchRazorWithDeps");
+        var settingsPath = Path.Combine(
+            testAsset.Path, "RazorApp", "obj", "Debug", ToolsetInfo.CurrentTargetFramework,
+            BrowserToolsBuildOutputs.DirectoryName, BrowserToolsBuildOutputs.SettingsFileName);
+
+        App.Start(testAsset, [], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        Assert.AreEqual("{ \"hotReload\": true }" + Environment.NewLine, File.ReadAllText(settingsPath));
+
+        App.SendControlC();
+        await App.Process.WaitUntilOutputCompleted();
+        Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
+    }
+
+    [TestMethod]
     public async Task LaunchesBrowserOnStart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBrowserLaunchApp")

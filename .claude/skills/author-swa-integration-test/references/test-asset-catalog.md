@@ -17,6 +17,7 @@ Pick the simplest asset that has the project shape you need. Prefer reusing an e
 | Fingerprinting / endpoint manipulation | VanillaWasm |
 | Cross-targeting (multiple TFMs) | RazorComponentAppMultitarget |
 | Blazor WASM standalone | BlazorWasmMinimal |
+| Standalone WASM served by Blazor Gateway | BlazorWasmTestApp |
 | Blazor WASM with RCL | BlazorWasmWithLibrary |
 | Blazor WASM hosted behind server | BlazorHosted |
 | Legacy component library pack | RazorComponentLibrary |
@@ -110,6 +111,13 @@ Pick the simplest asset that has the project shape you need. Prefer reusing an e
 - **wwwroot**: `index.html`, `css/app.css`
 - **Used for**: Minimal WASM baseline, fingerprinting
 - **Test classes**: `StaticWebAssetsFingerprintingTest`
+
+### BlazorWasmTestApp
+- **SDK**: Microsoft.NET.Sdk.BlazorWebAssembly
+- **Project**: `BlazorWasmTestApp.csproj`
+- **wwwroot**: `index.html`, styles and scripts
+- **Used for**: Standalone development hosting through `Microsoft.AspNetCore.Components.Gateway` rather than the deprecated DevServer
+- **Test classes**: `DotNetWatchBrowserToolsIntegrationTest`, `VanillaWasmTests`
 
 ### BlazorWasmWithLibrary
 - **SDK**: BlazorWebAssembly (app) + Razor (library)
