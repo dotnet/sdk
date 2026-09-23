@@ -1590,13 +1590,13 @@ jobs:
                   https://api.github.com/user); then
                 if [ "$status" = 200 ]; then
                   PAT_NUMBERS+=("${i}")
-                  POOL_INDICATORS[${i}]="🟪"
+                  POOL_INDICATORS[i]="🟪"
                 else
-                  POOL_INDICATORS[${i}]="❌"
+                  POOL_INDICATORS[i]="❌"
                   echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
                 fi
               else
-                POOL_INDICATORS[${i}]="❔"
+                POOL_INDICATORS[i]="❔"
                 echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
               fi
             fi
@@ -1613,9 +1613,11 @@ jobs:
           fi
 
           if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
-            echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
-            echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
-            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "|0|1|2|3|4|5|6|7|8|9|"
+              echo "|-|-|-|-|-|-|-|-|-|-|"
+              (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n')
+            } >> "$GITHUB_STEP_SUMMARY"
             echo "::error::None of the configured PAT pool entries authenticated successfully"
             exit 1
           fi
@@ -1625,17 +1627,20 @@ jobs:
             RANDOM=$RANDOM_SEED
           fi
 
-          PAT_INDEX=$(( RANDOM % ${#PAT_NUMBERS[@]} ))
-          PAT_NUMBER="${PAT_NUMBERS[$PAT_INDEX]}"
-          POOL_INDICATORS[${PAT_NUMBER}]="✅"
+          PAT_COUNT=${#PAT_NUMBERS[@]}
+          PAT_INDEX=$(( RANDOM % PAT_COUNT ))
+          PAT_NUMBER="${PAT_NUMBERS[PAT_INDEX]}"
+          POOL_INDICATORS[PAT_NUMBER]="✅"
 
           echo "Pool size: ${#PAT_NUMBERS[@]}"
           echo "Selected PAT number ${PAT_NUMBER} (index: ${PAT_INDEX})"
 
           # Emit a markdown table of the pool entries to the step summary
-          echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
-          (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "|0|1|2|3|4|5|6|7|8|9|"
+            echo "|-|-|-|-|-|-|-|-|-|-|"
+            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n')
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # Set the PAT number as the output
           echo "copilot_pat_number=${PAT_NUMBER}" >> "$GITHUB_OUTPUT"
