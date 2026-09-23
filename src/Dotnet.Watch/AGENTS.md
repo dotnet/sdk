@@ -64,13 +64,8 @@ Reload).
   `false` on graceful shutdown so a subsequent run without building does not activate
   a missing provider. The response is non-executable,
   contains no key material, is uncompressed, and requests `Cache-Control: no-store`.
-  The ASP.NET Core development handler currently changes that response to `no-cache`
-  and can return a stale 304 for the build-time ETag after a settings change. The
-  initializer's `fetch` uses both `cache: 'no-store'` and a fresh random `If-None-Match`
-  validator on every request, so its own conditional lookup returns the current file
-  even when the host still has the build-time ETag. This does not fix stale 304s for
-  other clients. Preserving literal `no-store` and current conditional validators for
-  all clients requires an ASP.NET Core follow-up.
+  The initializer's `fetch` uses both `cache: 'no-store'` and a fresh random
+  `If-None-Match` validator on every request.
   It takes precedence over ASP.NET Core's older disabled fallback; removing that fallback
   belongs to dotnet/aspnetcore, not this repository. Hosted
   WebAssembly uses the client as the browser-tools project even though the server remains

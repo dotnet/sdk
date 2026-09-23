@@ -99,23 +99,16 @@ property defaults to `true` for Debug builds and is the only build-time generati
 the initializer first fetches
 `/_framework/dotnet-browser-tools/hot-reload-settings.json` from the application with
 `fetch`'s `cache: 'no-store'` option and a fresh UUID-based, non-matching
-`If-None-Match` validator on each settings request; it imports the configuration module only when the
-response contains `{ "hotReload": true }`. The build writes `{ "hotReload": false }` into
+`If-None-Match` validator on each settings request; it imports the configuration module
+only when the response contains `{ "hotReload": true }`. The build writes `{ "hotReload": false }` into
 the intermediate output; watch updates that same file to `true` after compilation and
 before each app launch or after an in-process watch rebuild, only if the bytes change.
 Graceful watch shutdown resets the file to `false`, including for a later
 `dotnet run --no-build`; a normal build likewise writes `false`.
 Neither mode modifies user source.
-The settings endpoint has order `-1001` to precede ASP.NET Core's disabled fallback;
-removing fallback endpoints in Gateway/Razor Components requires a separate dotnet/aspnetcore
-change. The SDK endpoint requests a `no-store` response, but the
-[ASP.NET Core development handler](https://github.com/dotnet/aspnetcore/blob/b6b5b439286d484f5a4c34c1f15350dd82573e44/src/StaticAssets/src/Development/StaticAssetDevelopmentRuntimeHandler.cs)
-rewrites it to `no-cache`, while the
-[static asset invoker](https://github.com/dotnet/aspnetcore/blob/b6b5b439286d484f5a4c34c1f15350dd82573e44/src/StaticAssets/src/StaticAssetsInvoker.cs)
-may answer conditional requests using the build-time ETag even after the file changes.
-The initializers' fresh validators avoid that stale 304 for their own requests; other
-clients remain affected. A separate dotnet/aspnetcore change is needed for literal
-response `no-store` and dynamic conditional validators for all clients.
+The settings endpoint emits `Cache-Control: no-store` metadata and has order `-1001`
+to precede ASP.NET Core's disabled fallback; removing fallback endpoints in Gateway/Razor
+Components requires a separate dotnet/aspnetcore change.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced

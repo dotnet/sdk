@@ -36,12 +36,8 @@ the configuration. A normal build writes `{ "hotReload": false }` under `obj/<co
 `dotnet watch` changes that file to `true` after compilation and before launch, only if the
 bytes differ. This settings asset is nonfingerprinted, uncompressed, build-only, emits
 `no-store` endpoint metadata, and has endpoint order `-1001` to precede host fallback
-routes. The ASP.NET Core development handler currently rewrites `no-store` to
-`no-cache` and can answer a conditional GET with the build-time ETag after the file
-changes. The Web and WebAssembly initializers each request settings with `cache: 'no-store'`
-and a new random, non-matching `If-None-Match` validator to receive the current bytes;
-other conditional clients still require a host-side fix. A host-side follow-up is also
-required before claiming literal response `no-store` semantics.
+routes. The Web and WebAssembly initializers each request settings with
+`cache: 'no-store'` and a new random `If-None-Match` validator.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output. Its generated watch initializer also initializes the SDK Hot
