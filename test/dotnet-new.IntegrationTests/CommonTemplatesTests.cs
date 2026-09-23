@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WorkingDirectory(workingDir)
                 .CaptureStdOut()
                 .CaptureStdErr()
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutMatching("^-rw-------.*nuget.config$", RegexOptions.Multiline);
