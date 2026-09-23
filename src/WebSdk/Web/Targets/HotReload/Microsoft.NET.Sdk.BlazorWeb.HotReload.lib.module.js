@@ -25,8 +25,6 @@ async function isHotReloadEnabled() {
     const timeout = setTimeout(() => controller.abort(), settingsRequestTimeoutMilliseconds);
 
     try {
-        // Development static assets can answer a cached build-time ETag with 304 before
-        // checking the current file. A fresh validator forces the current bytes to be sent.
         const response = await fetch(settingsPath, {
             cache: 'no-store',
             headers: { 'If-None-Match': `"browser-tools-${crypto.randomUUID()}"` },
