@@ -38,6 +38,11 @@ bytes differ. This settings asset is nonfingerprinted, uncompressed, build-only,
 `no-store` endpoint metadata, and has endpoint order `-1001` to precede host fallback
 routes. The Web and WebAssembly initializers each request settings with
 `cache: 'no-store'` and a new random `If-None-Match` validator.
+Each normal build also updates `hot-reload-settings.build.marker` after restoring
+`false`; this file is not an asset. Design-time builds expose it as an
+`UpToDateCheckBuilt` output whose `Original` is the settings file, so a later watch
+write schedules an ordinary build through Visual Studio's fast up-to-date check
+without making unchanged settings force repeated builds.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output. Its generated watch initializer also initializes the SDK Hot

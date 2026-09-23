@@ -106,6 +106,12 @@ before each app launch or after an in-process watch rebuild, only if the bytes c
 Graceful watch shutdown resets the file to `false`, including for a later
 `dotnet run --no-build`; a normal build likewise writes `false`.
 Neither mode modifies user source.
+The [build target](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
+touches a non-asset completion marker after writing disabled settings; on design-time
+evaluation, it pairs that marker as `UpToDateCheckBuilt` with the settings file in
+`Original`. Under the [Visual Studio fast up-to-date check](https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#transformed-files),
+a newer watch-updated settings file schedules an ordinary build, while a build
+restores the marker's newer timestamp without rewriting unchanged settings.
 The settings endpoint emits `Cache-Control: no-store` metadata and has order `-1001`
 to precede ASP.NET Core's disabled fallback; removing fallback endpoints in Gateway/Razor
 Components requires a separate dotnet/aspnetcore change.

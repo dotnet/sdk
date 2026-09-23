@@ -64,6 +64,9 @@ Reload).
   `false` on graceful shutdown so a subsequent run without building does not activate
   a missing provider. The response is non-executable,
   contains no key material, is uncompressed, and requests `Cache-Control: no-store`.
+  A build-owned marker written after the disabled settings is paired with the
+  settings file in the fast up-to-date check: a watch write makes the settings
+  newer than the marker so an ordinary Visual Studio build runs and resets it.
   The initializer's `fetch` uses both `cache: 'no-store'` and a fresh random
   `If-None-Match` validator on every request.
   It takes precedence over ASP.NET Core's older disabled fallback; removing that fallback

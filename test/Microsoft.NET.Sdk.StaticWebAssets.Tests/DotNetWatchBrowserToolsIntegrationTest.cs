@@ -34,6 +34,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js";
         private const string SettingsFileName = "hot-reload-settings.json";
+        private const string SettingsBuildMarkerFileName = "hot-reload-settings.build.marker";
         private const string SettingsRoute = "/_framework/dotnet-browser-tools/hot-reload-settings.json";
 
         // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
@@ -112,7 +113,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
 
             // The key files themselves are not static web assets.
-            manifest.Assets.Should().NotContain(a => a.RelativePath.Contains("browser-tools-key"));
+            manifest.Assets.Should().NotContain(a =>
+                a.RelativePath.Contains("browser-tools-key") || a.RelativePath.Contains(SettingsBuildMarkerFileName));
 
             Directory.GetFiles(
                 build.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
@@ -457,6 +459,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new DirectoryInfo(hostGenerated).Should().NotExist();
             new FileInfo(Path.Combine(clientGenerated, PublicKeyFileName)).Should().Exist();
             new FileInfo(Path.Combine(clientGenerated, PrivateKeyFileName)).Should().Exist();
+            new FileInfo(Path.Combine(clientGenerated, SettingsBuildMarkerFileName)).Should().Exist();
 
             var hostManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
@@ -497,6 +500,114 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             Assert.AreEqual(publicKeyThumbprint, FileThumbPrint.Create(publicKeyPath));
             Assert.AreEqual(privateKeyThumbprint, FileThumbPrint.Create(privateKeyPath));
             Assert.AreEqual(configThumbprint, FileThumbPrint.Create(configPath));
+        }
+
+        [TestMethod]
+        public void Rebuild_ResetsChangedSettingsWithoutRewritingUnchangedAssets()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            var generated = GeneratedDirectory(build);
+            var settingsPath = Path.Combine(generated, SettingsFileName);
+            var markerPath = Path.Combine(generated, SettingsBuildMarkerFileName);
+            var configPath = Path.Combine(generated, ConfigFileName);
+            var manifestPath = Path.Combine(build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "staticwebassets.build.json");
+            var originalSettings = File.ReadAllBytes(settingsPath);
+            var initialSettingsTime = File.GetLastWriteTimeUtc(settingsPath);
+            var originalConfigTime = File.GetLastWriteTimeUtc(configPath);
+
+            Assert.IsGreaterThanOrEqualTo(initialSettingsTime, File.GetLastWriteTimeUtc(markerPath));
+            File.WriteAllText(settingsPath, "{ \"hotReload\": true }" + Environment.NewLine);
+            Assert.IsGreaterThan(File.GetLastWriteTimeUtc(markerPath), File.GetLastWriteTimeUtc(settingsPath));
+
+            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
+
+            Assert.AreSequenceEqual(originalSettings, File.ReadAllBytes(settingsPath));
+            Assert.IsGreaterThan(initialSettingsTime, File.GetLastWriteTimeUtc(settingsPath));
+            Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+            Assert.AreEqual(originalConfigTime, File.GetLastWriteTimeUtc(configPath));
+            var resetManifest = File.ReadAllBytes(manifestPath);
+            var manifestAsset = StaticWebAssetsManifest.FromJsonBytes(resetManifest).Assets
+                .Single(asset => asset.Identity == settingsPath);
+            Assert.AreEqual(
+                File.GetLastWriteTimeUtc(settingsPath).Ticks / TimeSpan.TicksPerSecond,
+                manifestAsset.LastWriteTime.UtcDateTime.Ticks / TimeSpan.TicksPerSecond);
+
+            var resetSettingsTime = File.GetLastWriteTimeUtc(settingsPath);
+            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
+            Assert.AreSequenceEqual(originalSettings, File.ReadAllBytes(settingsPath));
+            Assert.AreEqual(resetSettingsTime, File.GetLastWriteTimeUtc(settingsPath));
+            Assert.IsGreaterThanOrEqualTo(resetSettingsTime, File.GetLastWriteTimeUtc(markerPath));
+            Assert.AreEqual(originalConfigTime, File.GetLastWriteTimeUtc(configPath));
+            Assert.AreSequenceEqual(resetManifest, File.ReadAllBytes(manifestPath));
+        }
+
+        [TestMethod]
+        [DataRow("RazorComponentApp", "ComponentApp.csproj")]
+        [DataRow("BlazorWasmTestApp", "BlazorWasmTestApp.csproj")]
+        public void DesignTimeBuild_TracksSettingsAgainstBuildMarkerForFastUpToDateCheck(
+            string testAsset, string projectName)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(project => project.Root.Add(new XElement("Target",
+                    new XAttribute("Name", "CollectUpToDateCheckBuiltDesignTime"))));
+            var build = CreateBuildCommand(projectDirectory, projectName);
+            ExecuteCommand(build).Should().Pass();
+
+            var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
+            var markerPath = Path.Combine(GeneratedDirectory(build), SettingsBuildMarkerFileName);
+
+            var designTimeBuild = new MSBuildCommand(
+                Log, "CollectUpToDateCheckBuiltDesignTime", build.FullPathProjectFile);
+            var result = designTimeBuild.Execute("-getItem:UpToDateCheckBuilt", "-nologo", "/p:DesignTimeBuild=true");
+            result.Should().Pass();
+
+            using var document = JsonDocument.Parse(result.StdOut);
+            var marker = document.RootElement.GetProperty("Items").GetProperty("UpToDateCheckBuilt")
+                .EnumerateArray().Single(item =>
+                    item.GetProperty("Identity").GetString()?.EndsWith(SettingsBuildMarkerFileName, StringComparison.Ordinal) == true);
+            var projectRoot = Path.GetDirectoryName(build.FullPathProjectFile);
+            Assert.AreEqual(markerPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Identity").GetString())));
+            Assert.AreEqual(settingsPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Original").GetString())));
+            Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+
+            File.WriteAllText(settingsPath, "{ \"hotReload\": true }" + Environment.NewLine);
+            Assert.IsGreaterThan(File.GetLastWriteTimeUtc(markerPath), File.GetLastWriteTimeUtc(settingsPath));
+
+            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
+            Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+        }
+
+        [TestMethod]
+        public void DesignTimeBuild_HostedWebAssembly_TracksTheClientSettingsOnly()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("BlazorHosted")
+                .WithProjectChanges(project => project.Root.Add(new XElement("Target",
+                    new XAttribute("Name", "CollectUpToDateCheckBuiltDesignTime"))));
+            ExecuteCommand(CreateBuildCommand(projectDirectory, "blazorhosted")).Should().Pass();
+
+            var clientProjectPath = Path.Combine(projectDirectory.TestRoot, "blazorwasm", "blazorwasm.csproj");
+            var serverProjectPath = Path.Combine(projectDirectory.TestRoot, "blazorhosted", "blazorhosted.csproj");
+
+            static string[] GetBuiltItems(MSBuildCommand command)
+            {
+                var result = command.Execute("-getItem:UpToDateCheckBuilt", "-nologo", "/p:DesignTimeBuild=true");
+                result.Should().Pass();
+                using var document = JsonDocument.Parse(result.StdOut);
+                return document.RootElement.GetProperty("Items").GetProperty("UpToDateCheckBuilt")
+                    .EnumerateArray().Select(item => item.GetProperty("Identity").GetString()).ToArray();
+            }
+
+            var clientItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", clientProjectPath));
+            clientItems.Should().ContainSingle(path =>
+                path != null && path.EndsWith($"dotnet-watch\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
+
+            var serverItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", serverProjectPath));
+            serverItems.Should().NotContain(path =>
+                path != null && path.EndsWith($"dotnet-watch\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -549,6 +660,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             publishManifest.Should().NotContain("DotNetWatch.BrowserTools");
             publishManifest.Should().NotContain("hot-reload-settings");
             new FileInfo(Path.Combine(publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(), SettingsFileName)).Should().NotExist();
+            Directory.GetFiles(
+                publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
+                SettingsBuildMarkerFileName,
+                SearchOption.AllDirectories).Should().BeEmpty();
 
             Directory.GetFiles(
                 publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
@@ -579,6 +694,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(generated, PublicKeyFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, PrivateKeyFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, SettingsFileName)).Should().NotExist();
+            new FileInfo(Path.Combine(generated, SettingsBuildMarkerFileName)).Should().NotExist();
         }
 
         /// <summary>
