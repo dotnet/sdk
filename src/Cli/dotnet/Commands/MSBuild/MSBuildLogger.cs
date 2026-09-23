@@ -403,7 +403,8 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     /// <remarks>
     /// MSBuild calls this method after it has emitted the final build telemetry event. This
-    /// method stops the build activity, waits for queued events, and writes the diagnostic
+    /// method waits for queued telemetry and identity enrichment, stops the build activity,
+    /// and writes the diagnostic
     /// log. If this logger initialized the telemetry client, it flushes the process-wide
     /// providers without shutting them down because a persistent server can run later
     /// builds. When the managed CLI runs MSBuild in the same process, the CLI controls the
@@ -411,23 +412,25 @@ public sealed class MSBuildLogger : INodeLogger
     /// </remarks>
     public void Shutdown()
     {
-        StopActivity();
-
+        _activity?.SetEndTime(DateTime.UtcNow);
         if (_telemetry is TelemetryClient telemetryClient)
         {
+            telemetryClient.WaitForPendingEvents();
+            TelemetryClient.WaitForInternalMicrosoftDetection();
+
             if (_initializedTelemetryClient)
             {
                 // A persistent MSBuild server creates a logger for each build. Flush this
                 // request without shutting down the process-wide providers needed by later
                 // builds in the same server process.
+                StopActivity();
                 TelemetryClient.ForceFlushProviders();
-            }
-            else
-            {
-                telemetryClient.WaitForPendingEvents();
+                TelemetryClient.WriteLogIfNecessary();
+                return;
             }
         }
 
+        StopActivity();
         TelemetryClient.WriteLogIfNecessary();
     }
 

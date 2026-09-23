@@ -133,6 +133,49 @@ Every telemetry event automatically includes these common properties:
 | **Libc Version** | Libc version information | Libc version number |
 | **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
 
+### Microsoft-internal user classification
+
+When telemetry is enabled, the CLI asynchronously determines whether the current user is
+internal to Microsoft and enriches trace activities with these tags:
+
+| Tag | Description |
+| --- | --- |
+| `dotnet.cli.is_microsoft_internal` | `true` when a probe finds Microsoft-internal evidence. It is `false` when detection completes without that evidence. |
+| `dotnet.cli.microsoft_internal_source` | The probe that found the evidence. Emitted only for a positive result. |
+| `dotnet.cli.microsoft_internal_alias` | A normalized local account alias when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+| `dotnet.cli.microsoft_internal_domain` | A normalized corporate domain when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+
+The detector first uses local OS and account evidence. Outside CI, it can also use
+existing GitHub CLI, Copilot CLI, or GitHub-token environment credentials to ask GitHub
+whether the authenticated account is a member of the `microsoft` organization. Tokens
+are sent only to GitHub's API for that check; they are not cached or added to telemetry.
+GitHub logins are not used as telemetry aliases. GitHub identity probes are skipped in
+CI, and alias and domain tags are suppressed in CI.
+
+The implementation of this classification is isolated in the AOT-compatible
+[`Microsoft.DotNet.Cli.InternalMicrosoft`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft)
+library. It does not reference OpenTelemetry or emit telemetry. Each detection mechanism
+implements
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetectionProvider.cs).
+The detector filters providers by platform and CI support, groups them into ordered
+stages, and owns orchestration, deadlines, result selection, and caching.
+
+The CLI telemetry adapter maps the classification result to tags on normal CLI
+activities. It does not emit separate detector-health activities.
+
+Results are cached for six hours under
+`~/.dotnet/internal-microsoft/detector.json` (relative to the configured .NET user
+profile). The cache contains the classification, source, CI mode, and timestamp. Outside
+CI, it can also contain an optional local alias and domain. The cache never contains
+credentials. Failed or timed-out detection is not cached. Probe execution, diagnostics,
+and shutdown waiting are bounded. Detection begins after telemetry-provider construction,
+is not synchronously awaited during startup, and cannot indefinitely delay command
+completion. See
+[`InternalMicrosoftDetector`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+and
+[`InternalMicrosoftTelemetry`](../../src/Cli/dotnet/Telemetry/InternalMicrosoft/InternalMicrosoftTelemetry.cs)
+for the separate detection and telemetry integration layers.
+
 ## Telemetry Events
 
 ### Core CLI Events

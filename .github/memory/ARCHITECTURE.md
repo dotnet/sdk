@@ -88,3 +88,20 @@ Code reachable from the logger must not assume `Program.Main` initialized proces
 state. Treat `BuildStarted`/`BuildFinished` as request boundaries; `Shutdown` ends one
 logger instance, not necessarily the process. The canonical details are in
 [`src/Cli/AGENTS.md`](../../src/Cli/AGENTS.md#sdk-process-entry-points).
+
+When telemetry is enabled, each entry point uses the process-wide
+[`InternalMicrosoftTelemetry`](../../src/Cli/dotnet/Telemetry/InternalMicrosoft/InternalMicrosoftTelemetry.cs)
+coordinator. The coordinator is a telemetry adapter over
+[`Microsoft.DotNet.Cli.InternalMicrosoft`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft),
+an AOT-compatible library that implements classification without referencing
+OpenTelemetry. Its
+[`InternalMicrosoftDetector`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+runs asynchronously. Individual mechanisms implement
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetectionProvider.cs);
+the detector filters and stages providers, then owns deadlines, result selection, and
+caching. The coordinator maps the result to telemetry tags, enriches completed activities
+without blocking them, and uses a bounded wait before each entry point ends its owning
+activity during normal completion. Signal shutdown skips the detector wait.
+The adapter does not emit separate detector-health activities. Managed and Native AOT
+hosts reference the detector assembly through their project dependency graphs; only the
+telemetry adapter remains in the AOT shared-source closure.
