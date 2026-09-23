@@ -94,6 +94,7 @@ function createWorkItemObservation(reference, workItem, consoleText, testResults
   const consoleSummary = summarizeHelixConsole(consoleText);
   const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
     || hasTimeoutEvidence(line)
+    || (classification.failureType === "timeout" && /\bhang[ \t]+timeout[ \t]*(?::|=)/i.test(line))
     || /still running|test host crashed|recovered \d+ test result|exit code/i.test(line));
   const mechanismLines = causalConsoleLines.length > 0
     ? causalConsoleLines

@@ -2,6 +2,15 @@ import {normalizeEvidenceText, splitNonEmptyLines} from "../evidence-utils.mjs";
 
 function hasTimeoutEvidenceLine(line)
 {
+  if (/(?:time[ \t_-]+out|timed[ \t_-]+out)\b[ \t]*(?:=|:)[ \t]*(?:false|no|0)\b/i.test(line)
+    || /\b(?:did|does|do|will|would|could|should|can|was|were|has|have|had)[ \t]+not[ \t]+(?:time[ \t_-]+out|timed[ \t_-]+out)\b/i.test(line)
+    || /\b(?:never|without)[ \t]+(?:timing[ \t_-]+out|time[ \t_-]+out|timed[ \t_-]+out)\b/i.test(line)
+    || /\bno[ \t]+timeout\b(?=[^\r\n]{0,120}\b(?:detected|happened|observed|occurred|reported)\b)/i.test(line)
+    || /\btimeout\b(?=[^\r\n]{0,80}\bdid[ \t]+not[ \t]+(?:happen|occur|trigger)\b)/i.test(line))
+  {
+    return false;
+  }
+
   return /(?:^|[^A-Za-z0-9])timed[ \t_-]+out\b(?![ \t]*=)/i.test(line)
     || /(?:^|[^A-Za-z0-9])time[ \t_-]+out\b(?![ \t]+of\b|[ \t]*=)/i.test(line)
     || /\b[A-Za-z]*Timeout[A-Za-z]*Exception\b(?=[ \t]*(?::|-|$))/i.test(line)

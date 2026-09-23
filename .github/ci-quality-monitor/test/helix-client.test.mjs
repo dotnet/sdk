@@ -124,6 +124,26 @@ test("preserves a teardown hang alongside a failed assertion", async () =>
   assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
 });
 
+test("preserves a corroborated hang timeout as the work-item mechanism", async () =>
+{
+  const trailingOutput = Array.from({length: 10}, (_, index) => `trailing output ${index}`).join("\n");
+  const observations = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {"https://files/results.trx": trxResult()},
+    consoleText: [
+      "Hang timeout: 00:10:00",
+      "Capturing dump of process tree for testhost",
+      "Hang dump written to tests_hang.dmp",
+      trailingOutput
+    ].join("\n"),
+    exitCode: 2
+  });
+
+  assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
+  assert.match(observations[1].mechanism, /Hang timeout: 00:10:00/);
+  assert.doesNotMatch(observations[1].mechanism, /trailing output/);
+});
+
 test("MSTest timeout parameter names do not create an independent timeout observation", async () =>
 {
   const message = "NuGet.Protocol.Core.Types.FatalProtocolException: An error occurred while retrieving package metadata.";
