@@ -86,7 +86,9 @@ turns that key into build-only static web assets under
 [browser-tools client](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.js),
 and a configuration module generated from a
 [checked-in template](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.config.js.template)
-that pins the public key and the fixed `/_framework/dotnet-browser-tools` route. The assets
+that pins the public key and the fixed `/_framework/dotnet-browser-tools` route, plus a
+nonfingerprinted and uncompressed settings asset at
+`/_framework/dotnet-browser-tools/hot-reload-settings.json`. The assets
 are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `FileWrites`
 (including both key files, so `Clean` removes key material), and are written only when their
 content changes so that the stable key keeps rebuilds incremental. Publish output contains
@@ -95,12 +97,25 @@ none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
 property defaults to `true` for Debug builds and is the only build-time generation gate;
 `dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
 the initializer first fetches
-`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
-semantics and imports the configuration module only when the response contains
-`{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
-runtime/host owns the disabled fallback for non-watch launches. The SDK and `dotnet watch`
-do not emit that fallback. Watch does not activate the client by mutating an application
-file.
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` from the application with
+`fetch`'s `cache: 'no-store'` option and a fresh UUID-based, non-matching
+`If-None-Match` validator on each settings request; it imports the configuration module only when the
+response contains `{ "hotReload": true }`. The build writes `{ "hotReload": false }` into
+the intermediate output; watch updates that same file to `true` after compilation and
+before each app launch or after an in-process watch rebuild, only if the bytes change.
+Graceful watch shutdown resets the file to `false`, including for a later
+`dotnet run --no-build`; a normal build likewise writes `false`.
+Neither mode modifies user source.
+The settings endpoint has order `-1001` to precede ASP.NET Core's disabled fallback;
+removing fallback endpoints in Gateway/Razor Components requires a separate dotnet/aspnetcore
+change. The SDK endpoint requests a `no-store` response, but the
+[ASP.NET Core development handler](https://github.com/dotnet/aspnetcore/blob/b6b5b439286d484f5a4c34c1f15350dd82573e44/src/StaticAssets/src/Development/StaticAssetDevelopmentRuntimeHandler.cs)
+rewrites it to `no-cache`, while the
+[static asset invoker](https://github.com/dotnet/aspnetcore/blob/b6b5b439286d484f5a4c34c1f15350dd82573e44/src/StaticAssets/src/StaticAssetsInvoker.cs)
+may answer conditional requests using the build-time ETag even after the file changes.
+The initializers' fresh validators avoid that stale 304 for their own requests; other
+clients remain affected. A separate dotnet/aspnetcore change is needed for literal
+response `no-store` and dynamic conditional validators for all clients.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced
@@ -135,14 +150,14 @@ installs through the hosting-startup path. The forwarder relays the provider's p
 HTTP error status for a rejected WebSocket handshake and reports 502 for everything else,
 including a provider that never answered. Standalone WebAssembly projects need both paths:
 [`BlazorWebAssemblyAppModel`](../../src/Dotnet.Watch/Watch/AppModels/BlazorWebAssemblyAppModel.cs)
-adds a gateway reverse-proxy route to the provider through `ReverseProxy__*`
+adds gateway reverse-proxy routes only for `/connect` and `/clear-cache` through `ReverseProxy__*`
 environment variables, because the Blazor Gateway is a separate YARP host that does not
 activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
 configuration because older target frameworks are served by `blazor-devserver`, an ordinary
 ASP.NET Core host.
 
-The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
-`/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
+The provider serves no JavaScript or activation settings. Its HTTP surface is the
+`/connect` WebSocket and `/clear-cache`;
 see
 [`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire

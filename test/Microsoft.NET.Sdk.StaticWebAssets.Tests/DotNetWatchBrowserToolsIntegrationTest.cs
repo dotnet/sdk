@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-
+using System.Diagnostics;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.TestFramework;
@@ -30,6 +33,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js";
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js";
+        private const string SettingsFileName = "hot-reload-settings.json";
+        private const string SettingsRoute = "/_framework/dotnet-browser-tools/hot-reload-settings.json";
 
         // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
@@ -116,7 +121,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         /// <summary>
-        /// The initializer checks provider availability before resolving the generated configuration
+        /// The initializer checks the application-hosted settings before resolving the generated configuration
         /// relative to itself.
         /// </summary>
         [TestMethod]
@@ -133,10 +138,195 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             initializer.Should().Contain($"const configModulePath = './{ConfigFileName}';");
             initializer.Should().Contain("settings?.hotReload === true");
             initializer.Should().Contain("cache: 'no-store'");
+            initializer.Should().Contain("'If-None-Match': `\"browser-tools-${crypto.randomUUID()}\"`");
             initializer.Should().Contain("signal: controller.signal");
             initializer.Should().Contain("isHotReloadEnabled");
             initializer.Should().NotContain("__SETTINGS_PATH__");
             initializer.Should().NotContain("__CONFIG_MODULE__");
+        }
+
+        [TestMethod]
+        public void Build_RegistersMutableSettingsWithoutFingerprintOrCompression()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset);
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:StaticWebAssetsFingerprintContent=true").Should().Pass();
+
+            var settingsFile = Path.Combine(GeneratedDirectory(build), SettingsFileName);
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsFile));
+
+            var intermediate = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediate, "staticwebassets.build.json")));
+            var settings = manifest.Assets.Where(a => a.RelativePath.Replace('\\', '/') == SettingsRoute.TrimStart('/')).ToArray();
+            settings.Should().ContainSingle();
+            settings[0].IsBuildOnly().Should().BeTrue();
+            settings[0].IsPrimaryAsset().Should().BeTrue();
+            manifest.Assets.Should().NotContain(a =>
+                a.IsAlternativeAsset() && a.RelatedAsset == settings[0].Identity);
+
+            var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(
+                File.ReadAllText(Path.Combine(intermediate, "staticwebassets.build.endpoints.json")));
+            var settingsEndpoints = endpoints.Endpoints.Where(e => e.Route == SettingsRoute.TrimStart('/')).ToArray();
+            settingsEndpoints.Should().ContainSingle();
+            settingsEndpoints[0].Order.Should().Be("-1001");
+            settingsEndpoints[0].Selectors.Should().BeEmpty();
+            settingsEndpoints[0].ResponseHeaders.Should().Contain(h => h.Name == "Cache-Control" && h.Value == "no-store");
+            endpoints.Endpoints.Should().NotContain(e =>
+                e.Route.Contains("hot-reload-settings.") && e.Route != SettingsRoute.TrimStart('/'));
+        }
+
+        [TestMethod]
+        [DataRow("RazorComponentApp", "ComponentApp.csproj", false)]
+        [DataRow("BlazorWasmTestApp", "BlazorWasmTestApp.csproj", true)]
+        public async Task DevelopmentHost_SeesSettingsChangesWithoutRebuildOrRestart(
+            string assetName, string projectName, bool gateway)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(assetName, identifier: "mutable-browser-settings");
+            if (!gateway)
+            {
+                File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "Program.cs"), """
+                    using Microsoft.AspNetCore.Builder;
+                    var builder = WebApplication.CreateBuilder(args);
+                    var app = builder.Build();
+                    app.MapStaticAssets();
+                    app.MapGet("/host-id", () => System.Environment.ProcessId.ToString());
+                    app.Run();
+                    """);
+            }
+
+            var build = CreateBuildCommand(projectDirectory, projectName);
+            ExecuteCommand(build).Should().Pass();
+            var settingsFile = Path.Combine(GeneratedDirectory(build), SettingsFileName);
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsFile));
+            var initializer = Path.Combine(
+                GeneratedDirectory(build),
+                gateway ? "Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js" : InitializerFileName);
+            File.ReadAllText(initializer).Should().Contain("'If-None-Match': `\"browser-tools-${crypto.randomUUID()}\"`");
+
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+
+            var start = new ProcessStartInfo(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
+            {
+                UseShellExecute = false,
+                WorkingDirectory = Path.GetDirectoryName(build.FullPathProjectFile),
+            };
+            start.ArgumentList.Add("run");
+            start.ArgumentList.Add("--no-build");
+            start.ArgumentList.Add("--no-launch-profile");
+            start.ArgumentList.Add("--project");
+            start.ArgumentList.Add(build.FullPathProjectFile);
+            start.ArgumentList.Add("--urls");
+            start.ArgumentList.Add($"http://127.0.0.1:{port}");
+            start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+            start.Environment["DOTNET_ENVIRONMENT"] = "Development";
+            start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
+            if (gateway)
+            {
+                const string cluster = "dotnet-browser-tools";
+                foreach (var route in new[] { "connect", "clear-cache" })
+                {
+                    var name = $"{cluster}-{route}";
+                    start.Environment[$"ReverseProxy__Routes__{name}__ClusterId"] = cluster;
+                    start.Environment[$"ReverseProxy__Routes__{name}__Order"] = "-1000";
+                    start.Environment[$"ReverseProxy__Routes__{name}__Match__Path"] = $"/_framework/dotnet-browser-tools/{route}";
+                }
+
+                start.Environment[$"ReverseProxy__Clusters__{cluster}__Destinations__provider__Address"] = "http://127.0.0.1:1/";
+            }
+
+            using var host = Process.Start(start);
+            Assert.IsNotNull(host);
+            try
+            {
+                using var http = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}") };
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                async Task AssertServedAsync(bool enabled)
+                {
+                    while (true)
+                    {
+                        if (host.HasExited)
+                        {
+                            Assert.Fail($"The development host exited with {host.ExitCode}");
+                        }
+                        try
+                        {
+                            using var request = new HttpRequestMessage(HttpMethod.Get, SettingsRoute);
+                            request.Headers.CacheControl = new CacheControlHeaderValue { NoStore = true };
+                            request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"browser-tools-{Guid.NewGuid():N}\""));
+                            using var response = await http.SendAsync(request, timeout.Token);
+                            if (response.StatusCode != HttpStatusCode.OK)
+                            {
+                                Assert.Fail($"Fresh validator received {(int)response.StatusCode} from the development host");
+                            }
+
+                            Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+                            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+                            Console.WriteLine($"Fresh: status={response.StatusCode}, body={body.Trim()}, cache={response.Headers.CacheControl}, etag={response.Headers.ETag}, modified={response.Content.Headers.LastModified}, host={host.Id}");
+                            Assert.AreEqual(
+                                enabled ? "{ \"hotReload\": true }" : "{ \"hotReload\": false }",
+                                body.Trim());
+                            return;
+                        }
+                        catch (HttpRequestException) when (!timeout.IsCancellationRequested)
+                        {
+                            await Task.Delay(200, timeout.Token);
+                        }
+                    }
+                }
+
+                await AssertServedAsync(false);
+                using var initialResponse = await http.GetAsync(SettingsRoute, timeout.Token);
+                var initialEtag = initialResponse.Headers.ETag;
+                Assert.IsNotNull(initialEtag);
+                Console.WriteLine($"Initial: status={initialResponse.StatusCode}, body={await initialResponse.Content.ReadAsStringAsync(timeout.Token)}, cache={initialResponse.Headers.CacheControl}, etag={initialEtag}, modified={initialResponse.Content.Headers.LastModified}");
+                var hostId = host.Id;
+                var applicationId = gateway ? null : await http.GetStringAsync("/host-id", timeout.Token);
+                var originalWriteTime = File.GetLastWriteTimeUtc(settingsFile);
+
+                await Task.Delay(100, timeout.Token);
+                File.WriteAllText(settingsFile, "{ \"hotReload\": true }" + Environment.NewLine);
+                await AssertServedAsync(true);
+                using var conditionalRequest = new HttpRequestMessage(HttpMethod.Get, SettingsRoute);
+                conditionalRequest.Headers.IfNoneMatch.Add(EntityTagHeaderValue.Parse(initialEtag.ToString()));
+                using var conditionalResponse = await http.SendAsync(conditionalRequest, timeout.Token);
+                var conditionalBody = await conditionalResponse.Content.ReadAsStringAsync(timeout.Token);
+                Console.WriteLine($"Conditional: status={conditionalResponse.StatusCode}, body={conditionalBody}, cache={conditionalResponse.Headers.CacheControl}, etag={conditionalResponse.Headers.ETag}, modified={conditionalResponse.Content.Headers.LastModified}");
+                Assert.AreEqual(HttpStatusCode.NotModified, conditionalResponse.StatusCode);
+                Assert.AreEqual("", conditionalBody);
+                var watchWriteTime = File.GetLastWriteTimeUtc(settingsFile);
+                Assert.AreNotEqual(originalWriteTime, watchWriteTime);
+
+                // BrowserToolsBuildOutputsTests covers watch's write-if-different operation.
+                Assert.AreEqual("{ \"hotReload\": true }" + Environment.NewLine, File.ReadAllText(settingsFile));
+                Assert.AreEqual(watchWriteTime, File.GetLastWriteTimeUtc(settingsFile));
+                await AssertServedAsync(true);
+
+                ExecuteCommand(CreateBuildCommand(projectDirectory, projectName)).Should().Pass();
+                await AssertServedAsync(false);
+                var runWriteTime = File.GetLastWriteTimeUtc(settingsFile);
+                ExecuteCommand(CreateBuildCommand(projectDirectory, projectName)).Should().Pass();
+                Assert.AreEqual(runWriteTime, File.GetLastWriteTimeUtc(settingsFile));
+                Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsFile));
+                await AssertServedAsync(false);
+                Assert.AreEqual(hostId, host.Id);
+                if (!gateway)
+                {
+                    Assert.AreEqual(applicationId, await http.GetStringAsync("/host-id", timeout.Token));
+                }
+                Assert.IsFalse(host.HasExited);
+            }
+            finally
+            {
+                if (!host.HasExited)
+                {
+                    host.Kill(entireProcessTree: true);
+                    host.WaitForExit();
+                }
+            }
         }
 
         [TestMethod]
@@ -358,6 +548,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             publishManifest.Should().NotContain("DotNetWatch.BrowserTools");
             publishManifest.Should().NotContain("hot-reload-settings");
+            new FileInfo(Path.Combine(publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(), SettingsFileName)).Should().NotExist();
 
             Directory.GetFiles(
                 publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
@@ -387,6 +578,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(generated, ConfigFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, PublicKeyFileName)).Should().NotExist();
             new FileInfo(Path.Combine(generated, PrivateKeyFileName)).Should().NotExist();
+            new FileInfo(Path.Combine(generated, SettingsFileName)).Should().NotExist();
         }
 
         /// <summary>

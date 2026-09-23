@@ -431,6 +431,30 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\hot-reload-settings.json",
+      "SourceId": "AppWithPackageAndP2PReference",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\hot-reload-settings.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\jsmodules\\jsmodules.build.manifest.json",
       "SourceId": "AppWithPackageAndP2PReference",
       "SourceType": "Computed",
@@ -2154,6 +2178,40 @@
         {
           "Name": "script-type",
           "Value": "module"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "Order": "-1001",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\dotnet-watch\\hot-reload-settings.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-store"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         }
       ]
     },

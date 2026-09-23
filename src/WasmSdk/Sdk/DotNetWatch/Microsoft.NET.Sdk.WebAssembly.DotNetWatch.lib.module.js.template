@@ -1,7 +1,7 @@
 // Activates the browser tools client. Added when Hot Reload build outputs are enabled.
 //
-// The provider reports its availability over a stable application route. The initializer does not
-// require the launcher to mutate application files or pass activation state through the build.
+// The build provides a stable settings asset. Watch enables it after compilation, without changing
+// application source or passing activation state through the build.
 
 // Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. True only when the target
 // framework's built-in WebAssembly Hot Reload agent has to be enabled explicitly.
@@ -98,7 +98,13 @@ async function isHotReloadEnabled() {
     const timeout = setTimeout(() => controller.abort(), settingsRequestTimeoutMilliseconds);
 
     try {
-        const response = await fetch(settingsPath, { cache: 'no-store', signal: controller.signal });
+        // Development static assets can answer a cached build-time ETag with 304 before
+        // checking the current file. A fresh validator forces the current bytes to be sent.
+        const response = await fetch(settingsPath, {
+            cache: 'no-store',
+            headers: { 'If-None-Match': `"browser-tools-${crypto.randomUUID()}"` },
+            signal: controller.signal
+        });
         if (!response.ok) {
             return false;
         }
