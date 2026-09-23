@@ -11,6 +11,7 @@ import {parseTestResultXml} from "../test-results.mjs";
 import
 {
   classifyWorkItem,
+  hasTimeoutEvidence,
   summarizeHelixConsole,
   summarizeSharedTestMechanism,
   summarizeTestMechanism
@@ -81,7 +82,7 @@ function classifyTestFailureType(errorMessage, outcome)
   if (`${outcome}`.toLowerCase() === "aborted") return "process-termination";
   if (isAuthenticationFailure(text)) return "authentication-failure";
   if (isNetworkFailure(text)) return "network-failure";
-  if (/\b(?:timed? ?out|timed_out|timeoutException)\b/i.test(text)) return "timeout";
+  if (hasTimeoutEvidence(text)) return "timeout";
   if (/segmentation fault|stack overflow|core dump|app_crash/i.test(text)) return "process-crash";
   if (/\bCS\d{4}\b/i.test(text)) return "compiler-error";
   return "test-assertion";
@@ -92,7 +93,8 @@ function createWorkItemObservation(reference, workItem, consoleText, testResults
   const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
   const consoleSummary = summarizeHelixConsole(consoleText);
   const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
-    || /still running|hang timeout|\b(?:timed? ?out|timed_out|timeoutException)\b|test host crashed|recovered \d+ test result|exit code/i.test(line));
+    || hasTimeoutEvidence(line)
+    || /still running|test host crashed|recovered \d+ test result|exit code/i.test(line));
   const mechanismLines = causalConsoleLines.length > 0
     ? causalConsoleLines
     : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
