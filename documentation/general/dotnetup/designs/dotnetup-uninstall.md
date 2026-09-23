@@ -25,8 +25,14 @@ to the same installation.
   specs currently resolving to it before uninstalling it.
 - If neither matches, report an error.
 
+Normal garbage collection still applies and may remove other installations
+no remaining spec requires.
+
 Repository specs remain independent: matching a channel or version does not
 directly match a `global.json` registration.
+
+Remove the existing `--source` option from the SDK and runtime uninstall
+commands as part of this proposal.
 
 `dotnetup list` shows specs alongside their resolved installations so users
 can see what is installed and why.
@@ -341,15 +347,19 @@ approved plan to remove a different SDK or forget an additional live repository.
 
 ## Make the relationships visible in dotnetup list
 
-Use one table for SDKs and runtimes with columns in this order: Component,
-Install spec, Source, Installed version. Keep one row per install spec, plus
-installation-only rows for components without their own specs. Repeating a
+Use one table for SDKs and separately installed runtimes with columns in this
+order: Component, Install spec, Source, Installed version. Do not list runtimes
+that are only included with an SDK. Keep one row per install spec, plus
+installation-only rows for installations no current spec resolves to. Repeating a
 component/version pair shows that multiple independent specs select the same
 installation. Column order does not change the sorting rules below.
 
 The component is part of the install spec, but is displayed separately from
 its channel/version and selection policy. A `global.json` path identifies the
 source of the requirement, not the spec itself.
+
+List and uninstall use the current, complete `global.json` requirements to
+determine which installation each spec resolves to.
 
 Use these source labels rather than `Explicit`:
 
@@ -362,178 +372,43 @@ Use these source labels rather than `Explicit`:
 Migration is a proposed distinct origin, not a claim about today's stored types.
 
 ```text
-Component        Install spec                                                  Source                      Installed version
----------------  ------------------------------------------------------------  --------------------------  -----------------
-SDK              10.0.100 (rollForward: latestPatch, allowPrerelease: false)   C:\src\app\global.json      10.0.105
-SDK              10.0.1xx                                                      Migration                   10.0.105
-SDK              10.0.103                                                      Command line                10.0.103
-SDK              10.0.300 (rollForward: disable)                               C:\src\other\global.json    Not installed
-SDK              Unavailable                                                   C:\src\tools\global.json    Unknown
-.NET Runtime     10.0                                                          Command line                10.0.5
-ASP.NET Core     10.0                                                          Command line                10.0.5
-Windows Desktop  10.0                                                          Command line                10.0.3
-.NET Runtime     9.0                                                           Command line                9.0.8
-ASP.NET Core     9.0                                                           Command line                9.0.8
+Component        Install spec                                                  Source                           Installed version
+---------------  ------------------------------------------------------------  -------------------------------  -----------------
+SDK              10.0.100 (rollForward: latestPatch, allowPrerelease: false)   C:\src\app\global.json           10.0.105
+SDK              10.0.1xx                                                      Migration                        10.0.105
+SDK              10.0.103                                                      Command line                     10.0.103
+SDK              -                                                             -                                9.0.304
+SDK              10.0.300 (rollForward: disable)                               C:\src\other\global.json         Not installed
+SDK              Unavailable                                                   C:\src\tools\global.json         Unknown
+.NET Runtime     10.0                                                          Command line                     10.0.5
+ASP.NET Core     10.0                                                          Command line                     10.0.5
+Windows Desktop  10.0                                                          Command line                     10.0.3
+.NET Runtime     9.0                                                           Command line                     9.0.8
+ASP.NET Core     9.0                                                           Command line                     9.0.8
 
-10 install specs; 7 installations (2 SDKs, 5 runtimes)
+10 install specs; 8 installations (3 SDKs, 5 runtimes)
 
 Warning: Cannot read C:\src\tools\global.json: access denied.
 ```
 
-For runtime specs, show `10.0`, not command-line syntax such as `runtime@10.0`:
-the Component column already says which runtime it applies to. For repository
-specs, show the version and relevant selection policy from the file in the
-Install spec column, and the file path in Source. Do not reduce a repository's
-minimum version and roll-forward policy to a lossy channel label.
+- **Sorting:** SDKs first, then all runtimes together; within each group, sort
+  by resolved version newest first using semantic version ordering. Runtime
+  ties use .NET Runtime, ASP.NET Core, Windows Desktop, then spec and source
+  alphabetically. SDK ties use spec and source. Put Not installed, then Unknown,
+  last within each group.
+- **Missing/error states:** Not installed means no matching installation;
+  Unknown means the requirement could not be evaluated. Show diagnostics below
+  the table, identifying the affected source or component.
+- **Installation-only rows:** When no current spec resolves to a managed SDK
+  or separately installed runtime, show `-` under both Install spec and Source.
+  These installations are eligible for garbage collection.
+- **Counts:** Count distinct component/version installations, not repeated rows.
+  Installation-only rows count toward installation totals, but not spec totals.
+- **Formatting:** Repeat shared version values on each row, avoid group
+  dividers, and wrap long cells rather than truncate them.
 
-Label repository policy values with their `global.json` property names:
-`rollForward: disable` means no SDK roll-forward, not a disabled install spec.
-Likewise, use `rollForward: latestPatch` and `allowPrerelease: false` rather
-than unlabeled abbreviations. Keep the values inline when they fit. Do not
-force each policy onto its own line; wrap within the same Install spec cell
-only when terminal width requires it. The example shows the wide-terminal
-layout, not a requirement to fit long specs and paths on one line everywhere.
-
-There is no separate Requirement / status column. Version-selection information
-belongs to the spec; installed-version availability belongs in Installed version.
-Show exceptional diagnostics below the table, identifying the affected source
-or component/version, rather than reserve a mostly empty column for them.
-
-The example deliberately gives the older SDK a command-line exact-version pin.
-The migrated `10.0.1xx` spec selects `10.0.105`, the latest installed patch in
-that feature band; it does not pin the originally migrated `10.0.103`.
-
-The Windows example includes the .NET, ASP.NET Core, and Windows Desktop
-runtimes. Only show components present in the managed installation; the table
-does not imply that all three runtime types are available on every platform.
-
-Group by ordering rather than adding divider lines or blank rows between every
-group. Use two top-level groups: SDKs first, then all runtimes together. Within
-each group, sort by resolved installed version, newest first, using semantic
-version ordering rather than alphabetical ordering.
-
-For runtimes with the same version, use a fixed component order: .NET Runtime,
-ASP.NET Core, Windows Desktop. Then break ties by install spec and source in
-ascending text order. This keeps runtime components from the same release
-together instead of separating them into component-first lists. The example
-shows both aligned runtime versions and a Windows Desktop runtime at a different
-patch level.
-
-Put specs with no usable resolution at the end of their respective SDK or
-runtime group: Not installed first, then Unknown, with the same component,
-spec, and source tie-breakers. Keep a header rule, but default to a compact
-body, especially when most groups contain only one row.
-
-Keep rows selecting the same component/version adjacent without hiding repeated
-values: do not merge cells, leave versions blank, or substitute ditto marks.
-Every row should remain meaningful when copied on its own. Whether sparse
-separators or subtle shading improve readability is worth trying with realistic
-small and large inventories; neither is required by this draft. Any styling
-must also remain readable without color.
-
-"Installed version" means the version selected from what is installed, not the
-latest version available to download. Resolve repository rows using the full
-`global.json` requirement, not just the abbreviated display. "Not installed"
-means no satisfying installation of that component was found; "Unknown" means
-the requirement could not be evaluated. Do not turn a read error into a claim
-that nothing is installed.
-
-The table describes current selection, not exclusive ownership or every
-potential match. In this example, `10.0.103` could also satisfy `10.0.1xx` and
-the app repository, but both currently select `10.0.105`, so neither gets
-another row for `10.0.103`. Uninstall uses these current selections to identify
-the affected specs; it does not plan alternative selections after removal.
-Long source paths and version-selection policies should wrap within their
-columns rather than be silently truncated.
-
-Count distinct component/version installations, not rows or version strings
-alone, in the total. For example, .NET Runtime `10.0.5` and ASP.NET Core
-`10.0.5` count separately, as do different versions of the same runtime
-component. This list presentation does not expand the SDK uninstall proposal
-into a runtime-command redesign.
-
-Do not hide installed components that have no selecting spec of their own.
-Add rows to the same table with `-` in the Install spec column. In Source, a
-runtime supplied by an SDK is labeled "Included with SDK <version>"; a managed
-SDK left after a repository deletion can be labeled "No current install specs."
-These are installation-only rows, not synthetic
-specs. They count toward installation totals but not spec totals.
-
-If a runtime is both supplied by an SDK and selected by a runtime spec, annotate
-the existing runtime row's Source with that shared relationship rather than count
-another installation. List SDK-supplied runtimes even without a standalone runtime
-install record, while keeping internal host and pack directories out of this
-SDK/runtime inventory. This requires deriving shared-component relationships,
-not just displaying the current manifest's top-level installation records.
-
-Do not call managed components without their own specs "untracked":
-`--untracked` already means files dotnetup does not manage. A confirmed-deleted
-repository disappears from the spec table; a malformed or unreadable file
-remains visible with Unavailable version information, Unknown resolution,
-and its parse or access error.
-This row does not represent an active reference that keeps an SDK installed;
-do not display its cached requirement as if it were current.
-
-Invalid installations mark the version as invalid and show the validation
-error below the table. With `--no-verify`, show an installation-health-unverified
-notice rather than implying installed files were checked.
-Listing reflects live repository requirements, but does not install or delete
-SDK content.
-
-### JSON and other output surfaces
-
-Keep `dotnetup list --format json` and its existing `installSpecs` and
-`installations` arrays. Adopting friendlier text labels does not require renaming
-those properties or flattening the JSON model into the text table's repeated
-version values.
-
-Relationship/status fields and migration provenance need a separately reviewed
-machine-readable contract, including stable identities. Migration-origin
-changes must account for existing consumers rather than being treated as a
-cosmetic text change. Likewise, exposing SDK-supplied runtimes needs an additive
-inventory representation rather than silently reinterpreting the existing
-`installations` array as including subcomponents. Other users of the shared
-installation lister should use the same user-facing labels and relationships.
-
-## Correctness prerequisites and cleanup scope
-
-Relationship calculation needs to be consistent across operations. Duplicate
-repository records are an existing correctness bug, not a new uninstall scenario.
-
-- Refresh repository requirements before matching specs or computing what
-  garbage collection would remove.
-- Keep one logical entry per registered repository file, not one per historical
-  derived channel. Consolidate legacy duplicates.
-- Apply the full SDK requirement, including version lower bounds, roll-forward,
-  and prerelease policy, when determining which installed SDK each spec
-  currently selects.
-- Keep malformed or unreadable repository registrations visible with diagnostics,
-  but exclude their cached requirements from SDK retention and uninstall blockers.
-- Use the same relationships in list, uninstall planning, and cleanup.
-
-This proposal preserves normal garbage collection across the managed
-installation. Cleanup may remove other SDKs no remaining spec keeps, including
-SDKs made unused by repository changes or deletion. It is not limited to the
-version or channel named in the uninstall command. Report the actual removals.
-
-## Remaining decisions
-
-| Decision | Current position in this draft |
-| --- | --- |
-| User-facing name | Try "Install spec" for both SDKs and runtimes; terminology remains open. |
-| List layout | Component, Install spec, Source, Installed version. SDKs first, then all runtimes; resolved version descending within each group, then component, spec, and source. Missing/unknown resolutions go last within their group. Include installation-only rows. |
-| Source labels | Command line, Migration, Repository. Migration creates a latest-patch channel spec, such as `10.0.1xx` for SDK `10.0.103`, with the same retention behavior as a command-line spec for that channel. |
-| Migration provenance | If a migrated spec is subsequently requested on the command line, preserve useful provenance without requiring duplicate uninstalls. Decide whether to retain multiple origin annotations or replace the displayed origin. |
-| Match a spec or version first? | Match saved standalone specs first, whether channel or exact version; fall back to an installed exact version only. |
-| Match repository-derived channel strings directly? | Not by default. Keep repository registrations independent and show them as additional effects. |
-| Roll back while retaining specs? | Outside this uninstall proposal. Offer to remove specs currently selecting the targeted SDK, not reassign them to an older installation. A rollback design should not depend on a previous version already being installed. |
-| Noninteractive approval | Define how automation approves affected-spec removal for physical-version uninstall without changing matching-spec behavior. |
-| Additional commands | A separate `untrack` command, repository-path uninstall syntax, and undo are outside this proposal. |
-| Remove one repository registration while keeping its files? | Defer a dedicated UI. File deletion/change is authoritative without confirmation. |
-| Existing `--source` behavior | Compatibility/migration policy still needs design; do not invent or silently change its meaning here. |
-| Custom paths and architecture UI | Outside this proposal. Omit architecture noise from ordinary messages. |
-| Runtime uninstall and bulk removal | Do not redesign these commands as part of the initial SDK proposal. |
-| Last-SDK warning | Report the resulting empty state; decide separately whether it warrants an additional prompt. |
+Preserve the existing JSON format; any additions needed to expose these
+relationships will be designed separately.
 
 ## Current behavior and supporting issues
 
@@ -565,6 +440,3 @@ already works:
 | [dotnet/sdk#56227](https://github.com/dotnet/sdk/issues/56227) | Preserve minimum versions, roll-forward, and prerelease semantics when determining satisfaction. |
 | [dotnet/sdk#53396](https://github.com/dotnet/sdk/issues/53396) | Prerelease-policy correctness as well as documentation. |
 | [dotnet/sdk#55312](https://github.com/dotnet/sdk/issues/55312) | Example of uninstall triggering collection of another unused SDK. Normal garbage collection is preserved by this proposal. |
-
-This revision changes only the proposal. Command reference, runtime messages,
-and implementation should change together once the behavior is agreed.
