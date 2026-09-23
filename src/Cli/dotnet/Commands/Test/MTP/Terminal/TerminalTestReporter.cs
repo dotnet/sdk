@@ -53,10 +53,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     private readonly bool _showActiveTests;
 
-    private int _handshakeFailuresCount;
-
-    private readonly object _handshakeFailuresLock = new();
-    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
+    private readonly ConcurrentQueue<HandshakeFailureRecord> _handshakeFailures = new();
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
@@ -70,7 +67,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private volatile bool _wasCancelled;
 
-    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+    public bool HasHandshakeFailure => !_handshakeFailures.IsEmpty;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
@@ -224,11 +221,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
-        lock (_handshakeFailuresLock)
-        {
-            _handshakeFailures.Clear();
-        }
-        _handshakeFailuresCount = 0;
+        _handshakeFailures.Clear();
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -294,7 +287,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int totalRetriedTests = 0;
         int totalRetriedExecutions = 0;
         int totalFlakyTests = 0;
-        bool anyAssemblyUnsuccessful = false;
         int failedAssembliesWithoutFailedTests = 0;
 
         foreach (TestProgressState assembly in assemblies)
@@ -308,7 +300,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             totalFlakyTests += assembly.FlakyTests;
             if (!assembly.Success)
             {
-                anyAssemblyUnsuccessful = true;
                 if (assembly.FailedTests == 0)
                 {
                     failedAssembliesWithoutFailedTests++;
@@ -316,49 +307,33 @@ internal sealed partial class TerminalTestReporter : IDisposable
             }
         }
 
-        bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
-        bool allTestsWereSkipped = (totalTests == 0 && !_options.AllowZeroTests)
-            || (totalTests > 0 && totalTests == totalSkippedTests);
-        bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = anyAssemblyUnsuccessful || HasHandshakeFailure;
-        bool unexpectedNonZeroExitCode = exitCode is not null
-            && exitCode != ExitCode.Success
-            && exitCode != ExitCode.ZeroTests
-            && exitCode != ExitCode.MinimumExpectedTestsPolicyViolation;
-        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || unexpectedNonZeroExitCode || _wasCancelled;
+        bool runFailed = exitCode is null || exitCode != ExitCode.Success;
+        bool zeroTestsFailure = exitCode == ExitCode.ZeroTests;
+        bool minimumExpectedTestsFailure = exitCode == ExitCode.MinimumExpectedTestsPolicyViolation;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
 
-        if (_wasCancelled)
+        if (!runFailed)
+        {
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+        }
+        else if (_wasCancelled)
         {
             terminal.Append(CliCommandStrings.Aborted);
         }
-        else if (notEnoughTests)
+        else if (minimumExpectedTestsFailure && _options.MinimumExpectedTests > 0)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
-        else if (anyTestFailed || HasHandshakeFailure || unexpectedNonZeroExitCode)
-        {
-            // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
-            // hand-shake we want the headline to reflect that the run failed, not that no tests ran
-            // (which would imply a benign empty run). We intentionally do NOT escalate the broader
-            // anyAssemblyFailed here, because a project that legitimately contains zero tests exits
-            // with ExitCodes.ZeroTests (non-zero) and would otherwise be misclassified as a failure.
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
-        }
-        else if (allTestsWereSkipped)
+        else if (zeroTestsFailure)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
-        else if (anyAssemblyFailed)
-        {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
-        }
         else
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
 
         if (!_options.ShowAssembly && assemblies.Count == 1)
@@ -393,7 +368,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In addition, failing to handshake is also considered as an error.
         // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
         // So, this line cannot be double-counting handshake failures twice.
-        int error = failedAssembliesWithoutFailedTests + _handshakeFailuresCount;
+        int error = failedAssembliesWithoutFailedTests + _handshakeFailures.Count;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -652,15 +627,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // diagnostic output before the summary — the user sees the actionable failure context
         // (assembly, exit code, stdout, stderr) at the end of the run rather than having to scroll
         // back. See https://github.com/dotnet/sdk/issues/51608.
-        HandshakeFailureRecord[] failures;
-        lock (_handshakeFailuresLock)
+        HandshakeFailureRecord[] failures = _handshakeFailures.ToArray();
+        if (failures.Length == 0)
         {
-            if (_handshakeFailures.Count == 0)
-            {
-                return;
-            }
-
-            failures = _handshakeFailures.ToArray();
+            return;
         }
 
         terminal.AppendLine();
@@ -1151,11 +1121,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        Interlocked.Increment(ref _handshakeFailuresCount);
-        lock (_handshakeFailuresLock)
-        {
-            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
-        }
+        _handshakeFailures.Enqueue(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {

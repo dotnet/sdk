@@ -246,7 +246,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var secondFinalFile = new FileInfo(secondFinalPath);
             secondFinalFile.Should().Exist();
             var secondBinManifest = File.ReadAllText(secondFinalPath);
-            secondBinManifest.Should().Be(binManifestContents);
+            // Rebuild cleans and regenerates the browser-tools key pair, changing the generated
+            // configuration module and its fingerprint in the runtime manifest.
+            secondBinManifest.Should().NotBe(binManifestContents);
 
             secondObjFile.LastWriteTimeUtc.Should().NotBe(originalObjFile.LastWriteTimeUtc);
             secondFinalFile.LastWriteTimeUtc.Should().NotBe(originalFile.LastWriteTimeUtc);
