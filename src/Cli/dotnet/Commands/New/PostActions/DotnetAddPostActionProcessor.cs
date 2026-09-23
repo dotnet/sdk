@@ -174,11 +174,7 @@ internal class DotnetAddPostActionProcessor(
             }
             return succeeded;
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
             return false;
@@ -201,11 +197,7 @@ internal class DotnetAddPostActionProcessor(
             }
             return succeeded;
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
             return false;

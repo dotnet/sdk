@@ -220,11 +220,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             cancellationToken.ThrowIfCancellationRequested();
             return exitCode;
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // MSBuild, like all well-behaved CLI tools, handles all exceptions. In the unlikely case
             // that something still escapes, we print the exception and fail the call. Non-localized

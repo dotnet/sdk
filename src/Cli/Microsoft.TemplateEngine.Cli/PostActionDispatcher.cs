@@ -229,11 +229,7 @@ namespace Microsoft.TemplateEngine.Cli
                 DisplayInstructionsForAction(action, useErrorOutput: true);
                 return PostActionExecutionStatus.Failure;
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 Reporter.Error.WriteLine(LocalizableStrings.PostActionFailedInstructionHeader);
                 Reporter.Verbose.WriteLine(LocalizableStrings.Generic_Details, e.ToString());
