@@ -605,6 +605,62 @@ public partial class NativeEntryPointTests
     }
 
     [TestMethod]
+    public void NativeEntryPoint_AotEnabled_PreCanceledExternalCommandIsNotLaunched()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            string toolDir = Path.Combine(Path.GetTempPath(), $"aot-canceled-tool-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDir);
+            string markerPath = Path.Combine(toolDir, "launched");
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    File.WriteAllText(
+                        Path.Combine(toolDir, "dotnet-aotcanceledtool.cmd"),
+                        $"@echo off{Environment.NewLine}echo launched>\"{markerPath}\"{Environment.NewLine}");
+                }
+                else
+                {
+                    string toolPath = Path.Combine(toolDir, "dotnet-aotcanceledtool");
+                    File.WriteAllText(
+                        toolPath,
+                        $"#!/bin/sh{Environment.NewLine}touch '{markerPath}'{Environment.NewLine}");
+                    File.SetUnixFileMode(
+                        toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDir + Path.PathSeparator + originalPath);
+                using var cancellationSource = new CancellationTokenSource();
+                cancellationSource.Cancel();
+
+                int exitCode = NativeEntryPoint.ExecuteCoreForNativeEntryPoint(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["aotcanceledtool"],
+                    cancellationToken: cancellationSource.Token);
+
+                Assert.AreEqual(1, exitCode);
+                Assert.IsFalse(File.Exists(markerPath));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                try { Directory.Delete(toolDir, recursive: true); } catch { }
+            }
+        });
+    }
+
+    [TestMethod]
     public void ExecuteCore_AotEnabled_ResolvableExternalCommand_EmitsParserAndResolutionTelemetry()
     {
         WithEnvRestore(() =>

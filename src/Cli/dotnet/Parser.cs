@@ -344,6 +344,10 @@ public static class Parser
     public static InvocationConfiguration InvocationConfiguration { get; } = new()
     {
         EnableDefaultExceptionHandler = false,
+        // ProcessLifecycle owns process-exit cancellation, while ProcessReaper owns forwarding
+        // Ctrl+C to child processes. Avoid a second System.CommandLine signal handler that would
+        // cancel an action while its child is handling Ctrl+C.
+        ProcessTerminationTimeout = null,
     };
 
     /// <summary>
@@ -473,16 +477,16 @@ public static class Parser
             }
             else if (command is VSTestCommandDefinition)
             {
-                new VSTestForwardingApp(["--help"]).Execute();
+                new VSTestForwardingApp(["--help"]).Execute(ProcessLifecycle.CancellationToken);
             }
             else if (command is FormatCommandDefinition format)
             {
                 var arguments = context.ParseResult.GetValue(format.Arguments) ?? [];
-                new FormatForwardingApp([.. arguments, "--help"]).Execute();
+                new FormatForwardingApp([.. arguments, "--help"]).Execute(ProcessLifecycle.CancellationToken);
             }
             else if (command is FsiCommandDefinition)
             {
-                new FsiForwardingApp(["--help"]).Execute();
+                new FsiForwardingApp(["--help"]).Execute(ProcessLifecycle.CancellationToken);
             }
             else if (command is ICustomHelp helpCommand)
             {
