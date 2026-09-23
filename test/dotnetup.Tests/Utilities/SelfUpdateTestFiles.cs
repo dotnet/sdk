@@ -66,7 +66,24 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         File.Copy(Path.Combine(output, assemblyName + (OperatingSystem.IsWindows() ? ".exe" : "")), path, overwrite: true);
     }
 
-    public void Dispose() => _directory.Delete(recursive: true);
+    public void Dispose()
+    {
+        const int maxAttempts = 10;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                _directory.Delete(recursive: true);
+                return;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException &&
+                attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+        }
+    }
 
     private static string GetAssetOutput(string version, string directory)
     {
