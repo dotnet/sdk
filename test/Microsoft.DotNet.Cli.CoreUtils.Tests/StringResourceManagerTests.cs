@@ -76,6 +76,36 @@ public sealed class StringResourceManagerTests
     }
 
     [TestMethod]
+    public void ValidSatellite_ReadsLocalizedStringsAndFallsBackToNeutral()
+    {
+        string assemblyDirectory = Path.GetDirectoryName(s_testAssembly.Location)
+            ?? throw new InvalidOperationException("The test assembly has no directory.");
+        string baseName = ResourceTestUtilities.NeutralBaseName;
+
+        SatelliteStringResourceManager fromSatelliteDirectory =
+            SatelliteStringResourceManager.FromSatelliteDirectory(
+                baseName,
+                assemblyDirectory,
+                s_testAssembly,
+                SatelliteStringResourceProbeMode.Strict);
+        SatelliteStringResourceManager fromAssemblyFiles =
+            SatelliteStringResourceManager.FromAssemblyFiles(
+                baseName,
+                s_testAssembly.Location,
+                assemblyDirectory,
+                SatelliteStringResourceProbeMode.Strict);
+
+        CultureInfo french = CultureInfo.GetCultureInfo("fr");
+        CultureInfo frenchCanadian = CultureInfo.GetCultureInfo("fr-CA");
+        Assert.AreEqual("Bonjour", fromSatelliteDirectory.GetString("Greeting", french));
+        Assert.AreEqual("Bonjour", fromSatelliteDirectory.GetString("Greeting", frenchCanadian));
+        Assert.AreEqual("Neutral", fromSatelliteDirectory.GetString("NeutralOnly", frenchCanadian));
+        Assert.AreEqual("Bonjour", fromAssemblyFiles.GetString("Greeting", french));
+        Assert.AreEqual("Bonjour", fromAssemblyFiles.GetString("Greeting", frenchCanadian));
+        Assert.AreEqual("Neutral", fromAssemblyFiles.GetString("NeutralOnly", frenchCanadian));
+    }
+
+    [TestMethod]
     public void FromSatelliteDirectory_FallbackOnFailure_SkipsMalformedCandidate()
     {
         using TestDirectory directory = new(TestRunDirectory);
