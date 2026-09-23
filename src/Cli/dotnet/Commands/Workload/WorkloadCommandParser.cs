@@ -60,7 +60,7 @@ internal static class WorkloadCommandParser
                 {
                     try
                     {
-                        msbuildServer.Shutdown();
+                        msbuildServer.Shutdown(cancellationToken);
                     }
                     catch (Exception e)
                     {

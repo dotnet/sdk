@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             bool shutdownAfterUpdate = false;
             var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
             msbuildServer
-                .Setup(server => server.Shutdown())
+                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
                 .Callback(() => shutdownAfterUpdate = updateFinished);
 
             int exitCode = ParseWorkloadUpdate(
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             exitCode.Should().Be(42);
             shutdownAfterUpdate.Should().BeTrue();
-            msbuildServer.Verify(server => server.Shutdown(), Times.Once);
+            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var expectedException = new InvalidOperationException("Update failed");
             var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
             msbuildServer
-                .Setup(server => server.Shutdown())
+                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
                 .Throws(new InvalidOperationException("Shutdown failed"));
 
             var actualException = Assert.ThrowsExactly<InvalidOperationException>(() =>
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     .Invoke(Parser.InvocationConfiguration));
 
             actualException.Should().BeSameAs(expectedException);
-            msbuildServer.Verify(server => server.Shutdown(), Times.Once);
+            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -83,14 +83,14 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
             msbuildServer
-                .Setup(server => server.Shutdown())
+                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
                 .Throws(new InvalidOperationException("Shutdown failed"));
 
             int exitCode = ParseWorkloadUpdate((_, _) => 42, msbuildServer.Object)
                 .Invoke(Parser.InvocationConfiguration);
 
             exitCode.Should().Be(42);
-            msbuildServer.Verify(server => server.Shutdown(), Times.Once);
+            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 .Invoke(Parser.InvocationConfiguration);
 
             exitCode.Should().Be(42);
-            msbuildServer.Verify(server => server.Shutdown(), Times.Never);
+            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         private static ParseResult ParseWorkloadUpdate(

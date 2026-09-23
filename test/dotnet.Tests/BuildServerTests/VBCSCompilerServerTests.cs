@@ -15,11 +15,13 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
     [TestClass]
     public class VBCSCompilerServerTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public void GivenAZeroExitShutdownDoesNotThrow()
         {
             var server = new VBCSCompilerServer(CreateCommandFactoryMock().Object);
-            server.Shutdown();
+            server.Shutdown(TestContext.CancellationToken);
         }
 
         [TestMethod]
@@ -29,7 +31,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             var server = new VBCSCompilerServer(CreateCommandFactoryMock(exitCode: 1, stdErr: ErrorMessage).Object);
 
-            Action a = () => server.Shutdown();
+            Action a = () => server.Shutdown(TestContext.CancellationToken);
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(
@@ -42,7 +44,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             var commandMock = new Mock<ICommand>(MockBehavior.Strict);
             commandMock.Setup(c => c.CaptureStdOut()).Returns(commandMock.Object);
             commandMock.Setup(c => c.CaptureStdErr()).Returns(commandMock.Object);
-            commandMock.Setup(c => c.Execute()).Returns(new CommandResult(null, exitCode, "", stdErr));
+            commandMock
+                .Setup(c => c.Execute(It.IsAny<CancellationToken>()))
+                .Returns(new CommandResult(null, exitCode, "", stdErr));
 
             var commandFactoryMock = new Mock<ICommandFactory>(MockBehavior.Strict);
             commandFactoryMock

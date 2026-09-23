@@ -50,7 +50,9 @@ internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdo
 
     public override int Execute(CancellationToken cancellationToken)
     {
-        var tasks = StartShutdown();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var tasks = StartShutdown(cancellationToken);
 
         if (tasks.Count == 0)
         {
@@ -61,10 +63,14 @@ internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdo
         bool success = true;
         while (tasks.Count > 0)
         {
-            var index = WaitForResult([.. tasks.Select(t => t.Item2)]);
+            var index = WaitForResult([.. tasks.Select(t => t.Item2)], cancellationToken);
             var (server, task) = tasks[index];
 
-            if (task.IsFaulted)
+            if (task.IsCanceled)
+            {
+                task.GetAwaiter().GetResult();
+            }
+            else if (task.IsFaulted)
             {
                 success = false;
                 WriteFailureMessage(server, task.Exception);
@@ -80,25 +86,25 @@ internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdo
         return success ? 0 : 1;
     }
 
-    private List<(IBuildServer, Task)> StartShutdown()
+    private List<(IBuildServer, Task)> StartShutdown(CancellationToken cancellationToken)
     {
         var tasks = new List<(IBuildServer, Task)>();
         foreach (var server in _serverProvider.EnumerateBuildServers(_enumerationFlags))
         {
             WriteShutdownMessage(server);
-            tasks.Add((server, Task.Run(() => server.Shutdown())));
+            tasks.Add((server, Task.Run(() => server.Shutdown(cancellationToken))));
         }
 
         return tasks;
     }
 
-    private int WaitForResult(Task[] tasks)
+    private int WaitForResult(Task[] tasks, CancellationToken cancellationToken)
     {
         if (_useOrderedWait)
         {
-            return Task.WaitAny(tasks.First());
+            return Task.WaitAny([tasks.First()], cancellationToken);
         }
-        return Task.WaitAny(tasks);
+        return Task.WaitAny(tasks, cancellationToken);
     }
 
     private void WriteShutdownMessage(IBuildServer server)
