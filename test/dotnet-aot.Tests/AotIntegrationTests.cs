@@ -262,7 +262,7 @@ public partial class AotIntegrationTests
             };
     }
 
-    private static void NormalizeCacheVersionsForCrossArchitectureHost(string successCachePath)
+    private void NormalizeCacheVersionsForCrossArchitectureHost(string successCachePath)
     {
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(
             "DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY")))
@@ -272,6 +272,12 @@ public partial class AotIntegrationTests
 
         // Cross-architecture setup uses the bootstrap CLI to build the host-runnable app. Align its
         // cache metadata with the current AOT product so this test still reaches cached launch.
+        var (versionExitCode, versionOutput, versionError) = RunDn(["--version"], enableAot: true);
+        Assert.AreEqual(0, versionExitCode, versionError);
+        string sdkVersion = versionOutput
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)[0]
+            .Trim();
+
         string? sdkDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_SDK_DIRECTORY");
         Assert.IsFalse(string.IsNullOrEmpty(sdkDirectory));
         using JsonDocument runtimeConfig = JsonDocument.Parse(
@@ -292,7 +298,7 @@ public partial class AotIntegrationTests
         }
 
         Assert.IsNotNull(cacheEntry);
-        cacheEntry.SdkVersion = Product.Version;
+        cacheEntry.SdkVersion = sdkVersion;
         cacheEntry.RuntimeVersion = runtimeVersion;
         using FileStream output = File.Create(successCachePath);
         JsonSerializer.Serialize(
@@ -384,7 +390,9 @@ public partial class AotIntegrationTests
 
             var (versionExitCode, versionOutput, _) = RunDn(["--version"], enableAot: true, extraEnv: env);
             Assert.AreEqual(0, versionExitCode);
-            Assert.AreEqual(expectedVersion, versionOutput.Trim());
+            Assert.AreEqual(
+                expectedVersion,
+                versionOutput.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)[0].Trim());
         }
         finally
         {
