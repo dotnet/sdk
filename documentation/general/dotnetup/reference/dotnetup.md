@@ -17,6 +17,7 @@ ms.date: 08/07/2026
 dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
+dotnetup self update [--channel <daily|preview|stable>] [--no-progress]
 ```
 
 ## Description
@@ -39,6 +40,7 @@ exists, it can start first-use onboarding.
 | [`init`](dotnetup-init.md) | Run interactive setup. |
 | [`env`](dotnetup-env.md) | Manage environment configuration. |
 | [`dotnet`](dotnetup-dotnet.md) | Run the dotnetup-managed `dotnet`. |
+| [`self update`](#self-update) | Update the dotnetup executable itself from a release channel. |
 
 ## Options
 
@@ -55,6 +57,60 @@ exists, it can start first-use onboarding.
 | --- | --- |
 | `--format <text\|json>` | Select text or JSON output. The default is `text`. |
 | `--no-list [<true\|false>]` | Omit tracked specifications and installations. Without this option, `--info` verifies installations. |
+
+## Self update
+
+Update the published NativeAOT dotnetup executable in place:
+
+```console
+dotnetup self update
+dotnetup self update --channel preview
+dotnetup self update --no-progress
+```
+
+`--channel <daily|preview|stable>` selects the release channel. When omitted, the
+channel is derived from the running build's prerelease label: a stable build uses
+`stable`, a `preview`-labeled build uses `preview`, and any other prerelease build uses
+`daily`. Pass `--channel` explicitly to switch channels. The `stable` value is accepted in preparation for that channel becoming
+available; until then, it reports that no stable build is available.
+`--no-progress` disables progress display, not warnings or the result message.
+The command resolves the latest build in the selected channel for the runtime
+identifier and
+reports success without replacing the executable when the installed version
+already matches or when the available build is older on the same semantic channel.
+These no-op results return exit code `0` and write the installed and available versions,
+plus the reason no update was applied, to standard error.
+See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
+and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
+
+Self-update checks the published SHA-512 hash and the executable's `--version` output but is
+unsigned, emits an unsigned-source warning, and respects the unsigned-download
+policy. The selected release must publish the executable and checksum; no identity
+sidecar or custom embedded version record is needed. After replacement, `--version`
+must run successfully and report the selected release's version within a bounded
+timeout. Build metadata must match exactly if the feed specifies it; otherwise a
+source revision suffix in the informational version is permitted. These unsigned checks
+do not authenticate release freshness.
+Signed version manifests and monotonic authorization are deferred to future stages. See the
+[verification limitations](../designs/self-update-verification.md#scope-and-limitations).
+
+The executable must be in a trusted, writable installation directory and must be named
+`dotnetup` (`dotnetup.exe` on Windows) for self-update. Renamed executables can run
+other commands but cannot update themselves. Commands fail with a specific error when
+the executable path contains a symbolic link, junction, or other reparse point, or when
+dotnetup cannot create its lock files in the installation directory. Running via the
+`dotnet` host rejects self-update; supported updates replace the published standalone
+executable, not a managed application's collection of files. Other update callers wait for the current
+update within a bounded timeout, but ordinary commands, including `--info`, fail
+if the activity gate is busy or their loaded build is stale. Retry those commands
+after the update completes. Automation should also retry transient file-not-found
+launch failures during Windows replacement before concluding that dotnetup is
+missing. See [coordination and recovery](../designs/self-update.md#properties-of-algorithms-1-and-2).
+
+Self-update does not update managed SDK/runtime installations; use
+[`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
+reinstallation after unrecoverable interruption, use the existing
+[installation guidance](https://aka.ms/dotnet/dotnetup).
 
 ## Examples
 

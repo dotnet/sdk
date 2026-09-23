@@ -21,6 +21,86 @@ public class DailyChannelResolverTests
         "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
     [TestMethod]
+    [DataRow("daily")]
+    [DataRow("preview")]
+    [DataRow("stable")]
+    public void ResolveDotnetupVersion_UsesRequestedChannel(string channel)
+    {
+        string shortlink = $"https://aka.ms/dotnet/dotnetup/{channel}/dotnetup-win-x64.exe";
+        const string target = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = target });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion(channel, "win-x64").ToString().Should().Be("0.1.0-preview.1");
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupVersion_RejectsUnknownChannel()
+    {
+        using var resolver = new DailyChannelResolver();
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(
+            () => resolver.ResolveDotnetupVersion("../daily", "win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidChannel);
+    }
+
+    [TestMethod]
+    [DataRow("https://example.test/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("http://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net:444/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://user@ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-arm64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe?other=1")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe#fragment")]
+    [DataRow("https://ci.dot.net/public/Sdk/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/latest/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/extra/dotnetup-win-x64.exe")]
+    public void ResolveDotnetupVersion_RejectsUntrustedOrUnpinnedLayout(string target)
+    {
+        using var handler = new RedirectHandler(new() { ["https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe"] = target });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestParseFailed);
+    }
+
+    [TestMethod]
+    [DataRow("", "application/octet-stream")]
+    [DataRow("https://www.bing.com/?ref=aka&shorturl=dotnetup", "application/octet-stream")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe", "text/html")]
+    public void ResolveDotnetupVersion_MissingDailyBuildFailsCleanly(string target, string contentType)
+    {
+        const string url = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(target.Length == 0 ? new() : new() { [url] = target }, new() { [url] = contentType });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("../win-x64")]
+    [DataRow("win-x64?redirect=evil")]
+    [DataRow("win-x64/extra")]
+    public void ResolveDotnetupVersion_RejectsRidPathInjection(string rid)
+    {
+        using var handler = new RedirectHandler(new());
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion(rid));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidArguments);
+    }
+
+    [TestMethod]
     public void Resolve_RuntimeComponent_ReturnsRuntimeVersionNotSdkVersion()
     {
         // Test that we correctly handle differences between SDK and Runtime versions

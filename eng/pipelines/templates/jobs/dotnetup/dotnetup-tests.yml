@@ -61,6 +61,18 @@ jobs:
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Windows)
       - powershell: |
+          $rid = & .\.dotnet\dotnet msbuild src\Installer\dotnetup\dotnetup.csproj -getProperty:TargetRid
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Keep fixture versions and intermediates separate from each other and the shipping publish.
+          foreach ($fixture in @(@{ Name = 'original'; Version = '0.2.0-native-test.1' }, @{ Name = 'replacement'; Version = '0.2.0-native-test.2' })) {
+            $root = "$(Build.SourcesDirectory)\artifacts\native-self-update\$($fixture.Name)"
+            & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r $rid "-p:Version=$($fixture.Version)" "-p:InformationalVersion=$($fixture.Version)" "-p:ArtifactsDir=$root\" "-p:PublishDir=$root\publish\" -p:EnforceCodeStyleInBuild=false
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+        displayName: 🔨 Publish native self-update fixtures (Windows)
+        env:
+          MSBUILDDISABLENODEREUSE: '1'
+      - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |
@@ -68,6 +80,10 @@ jobs:
           if (-not $testAssembly) { throw "Unable to find dotnetup.Tests.dll" }
           & .\.dotnet\dotnet $testAssembly --report-trx --report-trx-filename "dotnetup-tests.trx" --results-directory "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults"
         displayName: 🔍 Test Windows
+        env:
+          DOTNETUP_TEST_REQUIRE_NATIVE: 'true'
+          DOTNETUP_TEST_EXECUTABLE: $(Build.SourcesDirectory)\artifacts\native-self-update\original\publish\dotnetup.exe
+          DOTNETUP_TEST_REPLACEMENT: $(Build.SourcesDirectory)\artifacts\native-self-update\replacement\publish\dotnetup.exe
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
           ./restore.sh -projects $(Build.SourcesDirectory)/dotnetup.slnf
@@ -82,6 +98,20 @@ jobs:
       - script: |
           ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Unix)
+      - ${{ if eq(parameters.pool.os, 'linux') }}:
+        - script: |
+            set -eu
+            rid="$(./.dotnet/dotnet msbuild src/Installer/dotnetup/dotnetup.csproj -getProperty:TargetRid)"
+            # Isolate both full versions from each other and from shipping publish artifacts.
+            for fixture in original replacement; do
+              version=0.2.0-native-test.1
+              if [ "$fixture" = replacement ]; then version=0.2.0-native-test.2; fi
+              root="$(Build.SourcesDirectory)/artifacts/native-self-update/$fixture"
+              ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r "$rid" "-p:Version=$version" "-p:InformationalVersion=$version" "-p:ArtifactsDir=$root/" "-p:PublishDir=$root/publish/" -p:EnforceCodeStyleInBuild=false
+            done
+          displayName: 🔨 Publish native self-update fixtures (Linux)
+          env:
+            MSBUILDDISABLENODEREUSE: '1'
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 📁 Create test results directory (Unix)
@@ -93,6 +123,11 @@ jobs:
           fi
           ./.dotnet/dotnet "$test_assembly" --report-trx --report-trx-filename "dotnetup-tests.trx" --results-directory "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 🔎 Test (Unix)
+        ${{ if eq(parameters.pool.os, 'linux') }}:
+          env:
+            DOTNETUP_TEST_REQUIRE_NATIVE: 'true'
+            DOTNETUP_TEST_EXECUTABLE: $(Build.SourcesDirectory)/artifacts/native-self-update/original/publish/dotnetup
+            DOTNETUP_TEST_REPLACEMENT: $(Build.SourcesDirectory)/artifacts/native-self-update/replacement/publish/dotnetup
     - task: PublishTestResults@2
       displayName: 🚀 Publish test results
       condition: always()

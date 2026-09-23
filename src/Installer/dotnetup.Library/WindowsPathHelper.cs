@@ -593,7 +593,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
     public static void StartElevatedProcess(string operation, string dotnetDir)
     {
-        var processPath = Environment.ProcessPath;
+        var processPath = DotnetupProcessInfo.ExecutablePath;
         if (string.IsNullOrEmpty(processPath))
         {
             throw new InvalidOperationException("Unable to determine current process path.");

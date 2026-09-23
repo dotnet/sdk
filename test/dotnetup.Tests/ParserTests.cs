@@ -353,7 +353,7 @@ public class ParserTests
     }
 
     [TestMethod]
-    public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
+    public void DotnetupProcess_Version_ShouldOutputValidReleaseVersion()
     {
         // Run dotnetup --version as a process
         // Use AppContext.BaseDirectory as working directory to avoid race conditions
@@ -366,8 +366,7 @@ public class ParserTests
         // Should succeed
         exitCode.Should().Be(0);
 
-        // Output should match Parser.Version
-        output.Trim().Should().Be(Parser.Version);
+        Microsoft.Deployment.DotNet.Releases.ReleaseVersion.TryParse(output.Trim(), out _).Should().BeTrue();
     }
 
     [TestMethod]

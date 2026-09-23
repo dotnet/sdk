@@ -1,0 +1,58 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.CommandLine;
+using System.Globalization;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Spectre.Console;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
+
+/// <summary>Updates the canonical dotnetup executable from the requested release channel.</summary>
+internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result, "self/update")
+{
+    private readonly string? _channel = result.GetValue(SelfCommandParser.ChannelOption);
+    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
+
+    internal SelfUpdateCommand(ParseResult result, Func<DotnetDownloader> createDownloader) : this(result)
+    {
+        ArgumentNullException.ThrowIfNull(createDownloader);
+        _createDownloader = createDownloader;
+    }
+
+    protected override bool SafeDuringSelfUpdate => true;
+
+    protected override void ExecuteCore()
+    {
+        var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
+            DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
+        var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
+        var downloader = _createDownloader();
+        var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedVersion,
+            () => downloader.ResolveDotnetupDownload(channel, rid),
+            (release, destination) =>
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
+                SelfUpdateDownloadProgress.Run(_noProgress,
+                    progress => downloader.DownloadWithVerification(release, destination, progress));
+            });
+        var result = workflow.ExecuteWithResult(invocation.Retain);
+        if (result.WasUpdated)
+        {
+            AnsiConsole.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.SelfUpdateSucceeded, result.AvailableVersion));
+            return;
+        }
+
+        string message = result.InstalledVersion.ComparePrecedenceTo(result.AvailableVersion) > 0
+            ? Strings.SelfUpdateCurrentVersionNewer
+            : Strings.SelfUpdateAlreadyUpToDate;
+        Console.Error.WriteLine(string.Format(
+            CultureInfo.InvariantCulture,
+            message,
+            result.InstalledVersion,
+            result.AvailableVersion));
+    }
+}
