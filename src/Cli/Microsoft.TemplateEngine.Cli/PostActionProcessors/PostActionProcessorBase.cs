@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             ICreationEffects creationEffects,
             ICreationResult templateCreationResult,
             string outputBasePath,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(outputBasePath))
             {

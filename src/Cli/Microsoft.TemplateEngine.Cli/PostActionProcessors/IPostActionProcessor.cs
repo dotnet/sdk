@@ -20,6 +20,6 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         /// <param name="outputBasePath">the output directory the template was instantiated to.</param>
         /// <param name="cancellationToken">token observed while processing the post action.</param>
         /// <returns>true if the post action is executed successfully, false otherwise.</returns>
-        bool Process(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken = default);
+        bool Process(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken);
     }
 }
