@@ -159,7 +159,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
 
                 MarkArtifactsFolderUsed();
-                cancellationToken.ThrowIfCancellationRequested();
                 return 0;
             }
 
@@ -193,7 +192,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
 
-                    cancellationToken.ThrowIfCancellationRequested();
                     return result;
                 }
 
@@ -330,7 +328,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult, cancellationToken);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
             return exitCode;
         }
         catch (OperationCanceledException)
