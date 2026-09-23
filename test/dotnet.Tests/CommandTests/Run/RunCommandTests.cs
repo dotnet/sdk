@@ -37,6 +37,19 @@ public sealed class RunCommandTests : SdkTest
             environmentVariables: new Dictionary<string, string>());
 
     [TestMethod]
+    public void VirtualProjectBuildRejectsCancellationBeforeStarting()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        var sourceFile = Path.Join(testDirectory.Path, "Program.cs");
+        File.WriteAllText(sourceFile, "Console.WriteLine();");
+        var command = new VirtualProjectBuildingCommand(sourceFile, MSBuildArgs.FromOtherArgs([]));
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        cancellationSource.Cancel();
+
+        Assert.ThrowsExactly<OperationCanceledException>(() => command.Execute(cancellationSource.Token));
+    }
+
+    [TestMethod]
     public void EnvironmentVariableExpansion_Project()
     {
         var testAppName = "AppThatOutputsDotnetLaunchProfile";

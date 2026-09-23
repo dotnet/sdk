@@ -108,6 +108,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
@@ -157,6 +159,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
 
                 MarkArtifactsFolderUsed();
+                cancellationToken.ThrowIfCancellationRequested();
                 return 0;
             }
 
@@ -175,7 +178,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     CscArguments = cache.PreviousEntry?.CscArguments ?? [],
                     BuildResultFile = cache.PreviousEntry?.BuildResultFile,
                 }
-                .Execute(out bool fallbackToNormalBuild);
+                .Execute(cancellationToken, out bool fallbackToNormalBuild);
 
                 if (!fallbackToNormalBuild)
                 {
@@ -190,6 +193,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
                     return result;
                 }
 
@@ -211,6 +215,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         IDisposable? environmentScope = null;
+        bool buildStarted = false;
         try
         {
             environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
@@ -236,6 +241,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             };
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
+            buildStarted = true;
+            using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
+                static () => BuildManager.DefaultBuildManager.CancelAllSubmissions());
+            cancellationToken.ThrowIfCancellationRequested();
 
             int exitCode = 0;
             ProjectInstance? projectInstance = null;
@@ -247,7 +256,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore && !evalOnly)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, additionalGlobalProperties: GetAdditionalRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
+                    CreateProjectInstance(
+                        projectCollection,
+                        additionalGlobalProperties: GetAdditionalRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties),
+                        cancellationToken),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     // We don't include ClearCachesAfterBuild flag unlike MSBuild's implicit restore
@@ -256,6 +268,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
                     exitCode = 1;
@@ -272,13 +285,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     ? requestedTargets
                     : [Constants.Build, Constants.CoreCompile];
                 var buildRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection),
+                    CreateProjectInstance(projectCollection, additionalGlobalProperties: null, cancellationToken),
                     targetsToBuild: effectiveTargets,
                     hostServices: null,
                     // SkipNonexistentTargets: CoreCompile doesn't exist in the outer build of multi-target projects.
                     BuildRequestDataFlags.SkipNonexistentTargets);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
                     exitCode = 1;
@@ -299,7 +313,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                         CacheCscArguments(cache, buildResult);
                         WriteCscRsp(cache);
-                        CollectAdditionalSources(cache, buildRequest.ProjectInstance);
+                        CollectAdditionalSources(cache, buildRequest.ProjectInstance, cancellationToken);
 
                         MarkBuildSuccess(cache);
                     }
@@ -312,14 +326,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // Print build information.
             if (msbuildGet)
             {
-                projectInstance ??= CreateProjectInstance(projectCollection);
-                PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult);
+                projectInstance ??= CreateProjectInstance(projectCollection, additionalGlobalProperties: null, cancellationToken);
+                PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult, cancellationToken);
             }
 
-            BuildManager.DefaultBuildManager.EndBuild();
-            consoleLogger = null; // avoid double disposal which would throw
-
+            cancellationToken.ThrowIfCancellationRequested();
             return exitCode;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception e)
         {
@@ -330,6 +346,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         finally
         {
+            if (buildStarted)
+            {
+                BuildManager.DefaultBuildManager.EndBuild();
+                consoleLogger = null; // avoid double disposal which would throw
+            }
+
             environmentScope?.Dispose();
             if (binaryLogger?.IsValueCreated == true) binaryLogger.Value.ReallyShutdown();
             consoleLogger?.Shutdown();
@@ -492,16 +514,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-        void CollectAdditionalSources(FileBasedAppCacheInfo cache, ProjectInstance projectInstance)
+        void CollectAdditionalSources(FileBasedAppCacheInfo cache, ProjectInstance projectInstance, CancellationToken cancellationToken)
         {
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
+            cancellationToken.ThrowIfCancellationRequested();
 
             var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);
             Debug.Assert(entryPointFileDirectory != null);
 
             var mapping = Builder.GetItemMappingAsync(projectInstance.Wrap(), ErrorReporters.IgnoringReporter).AsTask().GetAwaiter().GetResult();
+            cancellationToken.ThrowIfCancellationRequested();
             foreach (var entry in mapping)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (string.Equals(entry.ItemType, "None", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -520,8 +546,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             cache.CurrentEntry.AdditionalSources.Remove(RunFileBuildCacheEntry.AdditionalSource.Create(Builder.EntryPointFileFullPath));
         }
 
-        void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
+        void PrintBuildInformation(
+            ProjectCollection projectCollection,
+            ProjectInstance projectInstance,
+            BuildResult? buildOrRestoreResult,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
 
             // If a single property is requested, don't print as JSON.
@@ -552,6 +583,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     foreach (var propertyName in MSBuildArgs.GetProperty)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
                     }
 
@@ -565,6 +597,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     foreach (var itemName in MSBuildArgs.GetItem)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         writer.WritePropertyName(itemName);
                         writer.WriteStartArray();
 
@@ -601,6 +634,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     foreach (var targetName in MSBuildArgs.GetTargetResult)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var targetResult = buildOrRestoreResult.ResultsByTarget[targetName];
 
                         writer.WritePropertyName(targetName);
@@ -770,12 +804,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
-        return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
+        return CreateProjectInstance(projectCollection, additionalGlobalProperties: null, cancellationToken: default);
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
+        return CreateProjectInstance(projectCollection, additionalGlobalProperties, cancellationToken: default);
+    }
+
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    private ProjectInstance CreateProjectInstance(
+        ProjectCollection projectCollection,
+        IDictionary<string, string>? additionalGlobalProperties,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         var projectCollectionWrapped = projectCollection.Wrap();
 
         var result = Builder.CreateProjectInstanceAsync(
@@ -783,6 +827,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ThrowingReporter,
             Directives,
             additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
+        cancellationToken.ThrowIfCancellationRequested();
 
         EvaluatedDirectives = result.EvaluatedDirectives;
 
