@@ -318,6 +318,99 @@ public class InternalMicrosoftDetectorTests : SdkTest
     }
 
     [TestMethod]
+    public async Task WslUserDnsDomainProbeDoesNotExpandEnvironmentValuesInCommand()
+    {
+        var invocations = new List<(string FileName, IReadOnlyList<string> Arguments)>();
+        var context = CreateTestContext(
+            isCI: false,
+            DefaultContextOptions with
+            {
+                IsLinux = true,
+                IsWsl = true,
+                CommandExists = command => command == "cmd.exe",
+                RunProcess = (fileName, arguments, _) =>
+                {
+                    invocations.Add((fileName, arguments));
+                    return Task.FromResult(new InternalMicrosoftProcessResult(
+                        "USERDNSDOMAIN=redmond.corp.microsoft.com\r\nUSERNAME=alias&echo injected\r\n",
+                        "",
+                        0,
+                        null));
+                }
+            });
+
+        var result = await new WslWindowsUserDnsDomainDetectionProvider()
+            .DetectAsync(context, TestContext.CancellationToken);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, null, "REDMOND"));
+        invocations.Should().ContainSingle();
+        invocations[0].FileName.Should().Be("cmd.exe");
+        invocations[0].Arguments.Should().Equal("/d", "/s", "/c", "set USERDNSDOMAIN&set USERNAME");
+    }
+
+    [TestMethod]
+    public async Task WslVisualStudioProbePassesLocalAppDataAsProcessArgument()
+    {
+        const string WindowsLocalAppData = """C:\Users\alias\AppData\Local&echo injected""";
+        var localAppDataPath = Path.Combine(_testDirectory, "windows-local-app-data");
+        var identityServicePath = Path.Combine(localAppDataPath, ".IdentityService");
+        Directory.CreateDirectory(identityServicePath);
+        await File.WriteAllTextAsync(
+            Path.Combine(identityServicePath, "V3AccountStore.json"),
+            """
+            [
+              {
+                "Stale": false,
+                "IsPersonalizationAccount": true,
+                "Properties": {
+                  "IdentityProvider": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                  "HomeTenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                  "IdTokenPayload": "{\"tid\":\"72f988bf-86f1-41af-91ab-2d7cd011db47\",\"iss\":\"https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0\",\"preferred_username\":\"alias@microsoft.com\"}"
+                }
+              }
+            ]
+            """,
+            TestContext.CancellationToken);
+        var invocations = new List<(string FileName, IReadOnlyList<string> Arguments)>();
+        var context = CreateTestContext(
+            isCI: false,
+            DefaultContextOptions with
+            {
+                IsLinux = true,
+                IsWsl = true,
+                CommandExists = command => command is "cmd.exe" or "wslpath",
+                RunProcess = (fileName, arguments, _) =>
+                {
+                    invocations.Add((fileName, arguments));
+                    return Task.FromResult(fileName switch
+                    {
+                        "cmd.exe" => new InternalMicrosoftProcessResult(
+                            $"LOCALAPPDATA={WindowsLocalAppData}\r\n",
+                            "",
+                            0,
+                            null),
+                        "wslpath" => new InternalMicrosoftProcessResult(
+                            localAppDataPath + Environment.NewLine,
+                            "",
+                            0,
+                            null),
+                        _ => throw new InvalidOperationException($"Unexpected process: {fileName}")
+                    });
+                }
+            });
+
+        var result = await new WslVisualStudioAccountDetectionProvider()
+            .DetectAsync(context, TestContext.CancellationToken);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, "alias", null));
+        invocations.Should().HaveCount(2);
+        invocations[0].FileName.Should().Be("cmd.exe");
+        invocations[0].Arguments.Should().Equal("/d", "/s", "/c", "set LOCALAPPDATA");
+        invocations[1].FileName.Should().Be("wslpath");
+        invocations[1].Arguments.Should().Equal("-u", WindowsLocalAppData);
+    }
+
+    [TestMethod]
     public async Task MissingPlatformCommandsAreCleanNegative()
     {
         var wslDetector = new InternalMicrosoftDetector(
@@ -397,6 +490,30 @@ public class InternalMicrosoftDetectorTests : SdkTest
     }
 
     [TestMethod]
+    public void VisualStudioAccountStoreRejectsLookalikeMicrosoftDomain()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            [
+              {
+                "Stale": false,
+                "IsPersonalizationAccount": true,
+                "Properties": {
+                  "IdentityProvider": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                  "HomeTenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                  "IdTokenPayload": "{\"tid\":\"72f988bf-86f1-41af-91ab-2d7cd011db47\",\"iss\":\"https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0\",\"preferred_username\":\"alias@evil-microsoft.com\"}"
+                }
+              }
+            ]
+            """);
+
+        var result = VisualStudioAccountDetectionParser.Parse(document.RootElement);
+
+        result.IsInternalMicrosoft.Should().BeFalse();
+        result.Alias.Should().BeNull();
+    }
+
+    [TestMethod]
     public void MacPlatformSsoValidatesTenantEndpointsAndIdentity()
     {
         var result = MacPlatformSsoDetectionProvider.Parse(
@@ -418,6 +535,33 @@ public class InternalMicrosoftDetectorTests : SdkTest
             """);
 
         result.Should().Be(new InternalMicrosoftProbeResult(true, "alias", "REDMOND"));
+    }
+
+    [TestMethod]
+    public void MacPlatformSsoRejectsUpnWithoutCorporateDomainBoundary()
+    {
+        var result = MacPlatformSsoDetectionProvider.Parse(
+            """
+            Device Configuration:
+            { "registrationCompleted": true }
+            Login Configuration:
+            {
+              "issuer": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/v2.0",
+              "keyEndpointURL": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/getkeydata",
+              "tokenEndpointURL": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/token"
+            }
+            User Configuration:
+            {
+              "kerberosStatus": [
+                { "realm": "redmond.corp.microsoft.com", "upn": "Alias@redmond.attacker.example" }
+              ]
+            }
+            """);
+
+        result.IsInternalMicrosoft.Should().BeFalse();
+        result.Failure.Should().Be(new InternalMicrosoftProbeFailure(
+            InternalMicrosoftProbeFailureCode.IdentityMismatch,
+            InternalMicrosoftProbeFailureStage.PlatformSsoIdentity));
     }
 
     [TestMethod]

@@ -105,7 +105,10 @@ internal sealed class MacPlatformSsoDetectionProvider : IInternalMicrosoftDetect
 
             var separator = upn.IndexOf('@');
             if (separator > 0 &&
-                upn[(separator + 1)..].StartsWith(realmDomain!, StringComparison.OrdinalIgnoreCase) &&
+                InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(
+                    upn[(separator + 1)..],
+                    out var upnDomain) &&
+                string.Equals(upnDomain, realmDomain, StringComparison.OrdinalIgnoreCase) &&
                 InternalMicrosoftDetectionUtilities.NormalizeAlias(upn[..separator]) is { } alias)
             {
                 return new InternalMicrosoftProbeResult(true, alias, realmDomain);
