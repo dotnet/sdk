@@ -42,7 +42,8 @@ Each normal build also updates `hot-reload-settings.build.marker` after restorin
 `false`; this file is not an asset. Design-time builds expose it as an
 `UpToDateCheckBuilt` output whose `Original` is the settings file, so a later watch
 write schedules an ordinary build through Visual Studio's fast up-to-date check
-without making unchanged settings force repeated builds.
+without making unchanged settings force repeated builds. The pair remains visible
+when either file is missing so an ordinary build can restore it.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output. Its generated watch initializer also initializes the SDK Hot

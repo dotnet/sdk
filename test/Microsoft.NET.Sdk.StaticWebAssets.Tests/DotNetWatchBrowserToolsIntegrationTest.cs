@@ -44,6 +44,29 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private string GeneratedDirectory(MSBuildCommand command)
             => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "dotnet-watch");
 
+        private static bool SettingsRequireBuild(string settingsPath, string markerPath)
+            => !File.Exists(settingsPath)
+                || !File.Exists(markerPath)
+                || File.GetLastWriteTimeUtc(settingsPath) > File.GetLastWriteTimeUtc(markerPath);
+
+        private void AssertDesignTimeSettingsBuiltItem(MSBuildCommand build, string settingsPath, string markerPath)
+        {
+            var designTimeBuild = new MSBuildCommand(
+                Log, "CollectUpToDateCheckBuiltDesignTime", build.FullPathProjectFile);
+            var result = designTimeBuild.Execute(
+                "-getItem:UpToDateCheckBuilt", "-nologo",
+                "/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true");
+            result.Should().Pass();
+
+            using var document = JsonDocument.Parse(result.StdOut);
+            var marker = document.RootElement.GetProperty("Items").GetProperty("UpToDateCheckBuilt")
+                .EnumerateArray().Single(item =>
+                    item.GetProperty("Identity").GetString()?.EndsWith(SettingsBuildMarkerFileName, StringComparison.Ordinal) == true);
+            var projectRoot = Path.GetDirectoryName(build.FullPathProjectFile);
+            Assert.AreEqual(markerPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Identity").GetString())));
+            Assert.AreEqual(settingsPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Original").GetString())));
+        }
+
         [TestMethod]
         public void Build_GeneratesKeyPairInDeterministicIntermediatePaths()
         {
@@ -547,7 +570,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         [TestMethod]
         [DataRow("RazorComponentApp", "ComponentApp.csproj")]
         [DataRow("BlazorWasmTestApp", "BlazorWasmTestApp.csproj")]
-        public void DesignTimeBuild_TracksSettingsAgainstBuildMarkerForFastUpToDateCheck(
+        public void VisualStudioFastUpToDateCheck_BuildsOnlyAfterSettingsChange(
             string testAsset, string projectName)
         {
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
@@ -559,26 +582,74 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
             var markerPath = Path.Combine(GeneratedDirectory(build), SettingsBuildMarkerFileName);
 
-            var designTimeBuild = new MSBuildCommand(
-                Log, "CollectUpToDateCheckBuiltDesignTime", build.FullPathProjectFile);
-            var result = designTimeBuild.Execute("-getItem:UpToDateCheckBuilt", "-nologo", "/p:DesignTimeBuild=true");
-            result.Should().Pass();
+            AssertDesignTimeSettingsBuiltItem(build, settingsPath, markerPath);
 
-            using var document = JsonDocument.Parse(result.StdOut);
-            var marker = document.RootElement.GetProperty("Items").GetProperty("UpToDateCheckBuilt")
-                .EnumerateArray().Single(item =>
-                    item.GetProperty("Identity").GetString()?.EndsWith(SettingsBuildMarkerFileName, StringComparison.Ordinal) == true);
-            var projectRoot = Path.GetDirectoryName(build.FullPathProjectFile);
-            Assert.AreEqual(markerPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Identity").GetString())));
-            Assert.AreEqual(settingsPath, Path.GetFullPath(Path.Combine(projectRoot, marker.GetProperty("Original").GetString())));
-            Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+            // Simulate the project-system check of the design-time UpToDateCheckBuilt/Original pair.
+            // Visual Studio skips MSBuild when the source is no newer than its built output.
+            var buildsScheduled = 0;
+            void BuildIfOutOfDate()
+            {
+                if (!SettingsRequireBuild(settingsPath, markerPath))
+                {
+                    return;
+                }
+
+                ExecuteCommand(
+                    CreateBuildCommand(projectDirectory, projectName),
+                    "/p:BuildingInsideVisualStudio=true").Should().Pass();
+                buildsScheduled++;
+            }
+
+            BuildIfOutOfDate();
+            Assert.AreEqual(0, buildsScheduled);
+            var unchangedSettingsTime = File.GetLastWriteTimeUtc(settingsPath);
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
 
             File.WriteAllText(settingsPath, "{ \"hotReload\": true }" + Environment.NewLine);
             Assert.IsGreaterThan(File.GetLastWriteTimeUtc(markerPath), File.GetLastWriteTimeUtc(settingsPath));
 
-            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
+            BuildIfOutOfDate();
+            Assert.AreEqual(1, buildsScheduled);
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
+            Assert.IsGreaterThan(unchangedSettingsTime, File.GetLastWriteTimeUtc(settingsPath));
+            Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+
+            var resetSettingsTime = File.GetLastWriteTimeUtc(settingsPath);
+            BuildIfOutOfDate();
+            Assert.AreEqual(1, buildsScheduled);
+            Assert.AreEqual(resetSettingsTime, File.GetLastWriteTimeUtc(settingsPath));
+            Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void VisualStudioFastUpToDateCheck_RebuildsWhenSettingsOrMarkerIsMissing(bool removeMarker)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset, identifier: removeMarker.ToString())
+                .WithProjectChanges(project => project.Root.Add(new XElement("Target",
+                    new XAttribute("Name", "CollectUpToDateCheckBuiltDesignTime"))));
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            var settingsPath = Path.Combine(GeneratedDirectory(build), SettingsFileName);
+            var markerPath = Path.Combine(GeneratedDirectory(build), SettingsBuildMarkerFileName);
+            File.Delete(removeMarker ? markerPath : settingsPath);
+
+            AssertDesignTimeSettingsBuiltItem(build, settingsPath, markerPath);
+
+            var built = false;
+            if (SettingsRequireBuild(settingsPath, markerPath))
+            {
+                ExecuteCommand(CreateBuildCommand(projectDirectory), "/p:BuildingInsideVisualStudio=true").Should().Pass();
+                built = true;
+            }
+
+            Assert.IsTrue(built);
             Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
             Assert.IsGreaterThanOrEqualTo(File.GetLastWriteTimeUtc(settingsPath), File.GetLastWriteTimeUtc(markerPath));
+            Assert.IsFalse(SettingsRequireBuild(settingsPath, markerPath));
+            AssertDesignTimeSettingsBuiltItem(build, settingsPath, markerPath);
         }
 
         [TestMethod]

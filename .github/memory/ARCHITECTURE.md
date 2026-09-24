@@ -111,7 +111,8 @@ touches a non-asset completion marker after writing disabled settings; on design
 evaluation, it pairs that marker as `UpToDateCheckBuilt` with the settings file in
 `Original`. Under the [Visual Studio fast up-to-date check](https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#transformed-files),
 a newer watch-updated settings file schedules an ordinary build, while a build
-restores the marker's newer timestamp without rewriting unchanged settings.
+restores the marker's newer timestamp without rewriting unchanged settings. The
+design-time pair stays visible if either file is missing, so a build can recreate it.
 The settings endpoint emits `Cache-Control: no-store` metadata and has order `-1001`
 to precede ASP.NET Core's disabled fallback; removing fallback endpoints in Gateway/Razor
 Components requires a separate dotnet/aspnetcore change.

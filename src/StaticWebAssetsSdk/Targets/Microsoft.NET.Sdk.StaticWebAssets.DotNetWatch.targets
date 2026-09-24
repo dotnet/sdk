@@ -269,7 +269,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- Design-time reference resolution may not report the hosted WebAssembly client.
-       Only the browser-facing project has the marker created by its build. -->
+       Only the browser-facing project has these files. Keep the pair when either file
+       is missing so the fast up-to-date check schedules a build to restore it. -->
   <Target Name="_CollectDotNetWatchBrowserToolsSettingsBuiltDesignTime"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration"
           BeforeTargets="CollectUpToDateCheckBuiltDesignTime"
@@ -279,7 +280,8 @@ Copyright (c) .NET Foundation. All rights reserved.
             and '$(JSModulesEnabled)' == 'true'
             and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
             and '@(WebAssemblyProjectReference)' == ''
-            and Exists('$(IntermediateOutputPath)dotnet-watch\hot-reload-settings.build.marker')">
+            and (Exists('$(IntermediateOutputPath)dotnet-watch\hot-reload-settings.json')
+              or Exists('$(IntermediateOutputPath)dotnet-watch\hot-reload-settings.build.marker'))">
     <ItemGroup>
       <UpToDateCheckBuilt
         Include="$(IntermediateOutputPath)dotnet-watch\hot-reload-settings.build.marker"
