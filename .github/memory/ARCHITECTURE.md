@@ -97,7 +97,7 @@ an AOT-compatible library that implements classification without referencing
 OpenTelemetry. Its
 [`InternalMicrosoftDetector`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
 runs asynchronously. Individual mechanisms implement
-[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetectionProvider.cs);
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectionProvider.cs);
 the detector filters and stages providers, then owns deadlines, result selection, and
 caching. The coordinator maps the result to telemetry tags, enriches completed activities
 without blocking them, and uses a bounded wait before each entry point ends its owning

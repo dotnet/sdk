@@ -156,7 +156,7 @@ The implementation of this classification is isolated in the AOT-compatible
 [`Microsoft.DotNet.Cli.InternalMicrosoft`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft)
 library. It does not reference OpenTelemetry or emit telemetry. Each detection mechanism
 implements
-[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetectionProvider.cs).
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectionProvider.cs).
 The detector filters providers by platform and CI support, groups them into ordered
 stages, and owns orchestration, deadlines, result selection, and caching.
 

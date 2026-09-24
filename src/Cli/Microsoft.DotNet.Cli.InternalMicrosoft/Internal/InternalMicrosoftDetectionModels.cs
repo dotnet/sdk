@@ -6,32 +6,6 @@ using System.Text.Json.Serialization;
 namespace Microsoft.DotNet.Cli.InternalMicrosoft;
 
 /// <summary>
-/// Classifies whether the current environment has Microsoft-internal evidence.
-/// Consumers normally create one implementation for the process lifetime.
-/// </summary>
-internal interface IInternalMicrosoftDetector
-{
-    /// <summary>
-    /// Resolves one classification result or returns the cached result.
-    /// </summary>
-    Task<InternalMicrosoftDetectionResult> IsInternalMicrosoftMachineAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Describes the final classification, cache state, and provider diagnostics from one detector run.
-/// </summary>
-internal sealed record InternalMicrosoftDetectionResult(
-    bool IsInternalMicrosoft,
-    string? Source,
-    string? Alias,
-    string? Domain,
-    bool IsCIEnvironment,
-    string Outcome,
-    string CacheStatus,
-    TimeSpan Duration,
-    IReadOnlyList<InternalMicrosoftProbeDiagnostic> ProbeDiagnostics);
-
-/// <summary>
 /// Represents one named detection operation created from a provider for a detector run.
 /// </summary>
 internal sealed record InternalMicrosoftProbe(
@@ -52,27 +26,6 @@ internal sealed record InternalMicrosoftProbeResult(
     public static InternalMicrosoftProbeResult Failed(InternalMicrosoftProbeFailure failure) =>
         new(false, null, null, failure);
 }
-
-/// <summary>
-/// Records non-sensitive health information for one completed probe.
-/// </summary>
-internal sealed record InternalMicrosoftProbeDiagnostic(
-    string Source,
-    string Outcome,
-    TimeSpan Duration,
-    bool HasAlias,
-    bool HasDomain,
-    InternalMicrosoftProbeFailure? Failure = null);
-
-/// <summary>
-/// Describes a probe failure without retaining exception messages or credentials.
-/// </summary>
-internal sealed record InternalMicrosoftProbeFailure(
-    string Code,
-    string Stage,
-    string? ExceptionType = null,
-    int? ProcessExitCode = null,
-    int? HttpStatusCode = null);
 
 /// <summary>
 /// Captures the bounded output and status of one child-process probe.
