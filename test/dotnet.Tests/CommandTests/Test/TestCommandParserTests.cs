@@ -114,6 +114,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
+        }
+
+        [TestMethod]
+        public void VSTestCommandUsesMicrosoftTestPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.VSTest();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying the Microsoft Test Platform banner");
+        }
+
+        [TestMethod]
         public void MTPCommandDoesNotDuplicateNoBannerOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();

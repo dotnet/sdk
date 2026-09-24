@@ -7,6 +7,12 @@
        continue matching against the next segment, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
        If we don't find a match, we apply the fingerprint before the first extension, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
   -->
+  <ItemDefinitionGroup>
+    <StaticWebAssetFingerprintPattern>
+      <Visible>false</Visible>
+    </StaticWebAssetFingerprintPattern>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <StaticWebAssetFingerprintPattern Include="Initializer" Pattern="*.lib.module.js" Expression="#[.{fingerprint}]!" />
     <StaticWebAssetFingerprintPattern Include="MvcJsModule" Pattern="*.cshtml.js" />

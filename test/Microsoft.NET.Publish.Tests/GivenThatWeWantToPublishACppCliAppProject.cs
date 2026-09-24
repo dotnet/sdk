@@ -10,7 +10,6 @@ namespace Microsoft.NET.Build.Tests
     {
         [TestMethod]
         [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         public void It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager
@@ -18,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource();
 
             new PublishCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest.sln"))
-                .Execute("/p:NoBuild=true")
+                .Execute("/p:NoBuild=true", "-p:EnableManagedPackageReferenceSupport=false")
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
