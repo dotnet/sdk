@@ -298,6 +298,8 @@ public partial class AotIntegrationTests
             {
                 ["DOTNET_AOT_SDK_DIR"] = sdkSubDir,
                 ["DOTNET_AOT_LIBRARY_DIR"] = sdkSubDir,
+                // Telemetry's SDK-resolution probe can print installed SDKs to stdout on Windows.
+                ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
             };
             if (selfLocate)
             {
