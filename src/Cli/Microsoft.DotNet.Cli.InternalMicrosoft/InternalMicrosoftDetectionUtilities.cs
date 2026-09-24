@@ -65,6 +65,20 @@ internal static partial class InternalMicrosoftDetectionUtilities
         !string.IsNullOrWhiteSpace(value) &&
         GitHubTokenRegex().IsMatch(value.Trim());
 
+    internal static string? GetEnvironmentVariableFromSetOutput(string output, string variableName)
+    {
+        var prefix = variableName + "=";
+        foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return line[prefix.Length..];
+            }
+        }
+
+        return null;
+    }
+
     internal static bool TryGetString(JsonElement element, string propertyName, out string value)
     {
         value = string.Empty;

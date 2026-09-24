@@ -49,24 +49,23 @@ internal sealed class WslWindowsUserDnsDomainDetectionProvider : IInternalMicros
     {
         var output = await context.RunProcessProbeAsync(
             "cmd.exe",
-            ["/d", "/s", "/c", "echo %USERDNSDOMAIN%&echo %USERNAME%"],
+            ["/d", "/s", "/c", "set USERDNSDOMAIN&set USERNAME"],
             cancellationToken).ConfigureAwait(false);
         if (output.Failure is not null)
         {
             return InternalMicrosoftProbeResult.Failed(output.Failure);
         }
 
-        var lines = output.StandardOutput
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (lines.Length == 0)
-        {
-            return InternalMicrosoftProbeResult.NotDetected;
-        }
-
-        return InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(lines[0], out var corporateDomain)
+        var domain = InternalMicrosoftDetectionUtilities.GetEnvironmentVariableFromSetOutput(
+            output.StandardOutput,
+            "USERDNSDOMAIN");
+        return InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(domain, out var corporateDomain)
             ? new InternalMicrosoftProbeResult(
                 true,
-                InternalMicrosoftDetectionUtilities.NormalizeAlias(lines.ElementAtOrDefault(1)),
+                InternalMicrosoftDetectionUtilities.NormalizeAlias(
+                    InternalMicrosoftDetectionUtilities.GetEnvironmentVariableFromSetOutput(
+                        output.StandardOutput,
+                        "USERNAME")),
                 corporateDomain)
             : InternalMicrosoftProbeResult.NotDetected;
     }

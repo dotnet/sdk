@@ -44,32 +44,41 @@ internal sealed class WslVisualStudioAccountDetectionProvider : IInternalMicroso
         InternalMicrosoftDetectionContext context,
         CancellationToken cancellationToken)
     {
-        var processResult = await context.RunProcessProbeAsync(
+        var environmentResult = await context.RunProcessProbeAsync(
             "cmd.exe",
-            ["/d", "/s", "/c", "if exist \"%LOCALAPPDATA%\\.IdentityService\\V3AccountStore.json\" type \"%LOCALAPPDATA%\\.IdentityService\\V3AccountStore.json\""],
+            ["/d", "/s", "/c", "set LOCALAPPDATA"],
             cancellationToken).ConfigureAwait(false);
-        if (processResult.Failure is not null)
+        if (environmentResult.Failure is not null)
         {
-            return InternalMicrosoftProbeResult.Failed(processResult.Failure);
+            return InternalMicrosoftProbeResult.Failed(environmentResult.Failure);
         }
 
-        if (string.IsNullOrWhiteSpace(processResult.StandardOutput))
+        var localAppData = InternalMicrosoftDetectionUtilities.GetEnvironmentVariableFromSetOutput(
+            environmentResult.StandardOutput,
+            "LOCALAPPDATA");
+        if (string.IsNullOrEmpty(localAppData))
         {
             return InternalMicrosoftProbeResult.NotDetected;
         }
 
-        try
+        var pathResult = await context.RunProcessProbeAsync(
+            "wslpath",
+            ["-u", localAppData],
+            cancellationToken).ConfigureAwait(false);
+        if (pathResult.Failure is not null)
         {
-            using var document = JsonDocument.Parse(processResult.StandardOutput);
-            return VisualStudioAccountDetectionParser.Parse(document.RootElement);
+            return InternalMicrosoftProbeResult.Failed(pathResult.Failure);
         }
-        catch (JsonException exception)
+
+        var localAppDataPath = pathResult.StandardOutput.Trim();
+        if (localAppDataPath.Length == 0)
         {
-            return InternalMicrosoftProbeResult.Failed(
-                InternalMicrosoftDetectionUtilities.CreateExceptionFailure(
-                    exception,
-                    InternalMicrosoftProbeFailureStage.Parse));
+            return InternalMicrosoftProbeResult.NotDetected;
         }
+
+        return await VisualStudioAccountDetectionParser.ReadAccountStoreAsync(
+            Path.Combine(localAppDataPath, ".IdentityService", "V3AccountStore.json"),
+            cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -292,7 +301,8 @@ internal static class VisualStudioAccountDetectionParser
         }
 
         var suffix = username[(separator + 1)..];
-        if (!suffix.EndsWith("microsoft.com", StringComparison.OrdinalIgnoreCase))
+        if (!suffix.Equals("microsoft.com", StringComparison.OrdinalIgnoreCase) &&
+            !suffix.EndsWith(".microsoft.com", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
