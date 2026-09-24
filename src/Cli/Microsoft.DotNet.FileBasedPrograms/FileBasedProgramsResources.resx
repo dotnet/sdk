@@ -222,8 +222,8 @@
     <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="'.'"}</comment>
   </data>
   <data name="InvalidIncludeExcludeMappingItemType" xml:space="preserve">
-    <value>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</value>
-    <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}</comment>
+    <value>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a valid MSBuild item type name. The item type '{0}' in entry '{1}' is invalid. {2}</value>
+    <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"} {2} is the inner error message (can be empty).</comment>
   </data>
   <data name="EmptyTempPath" xml:space="preserve">
     <value>Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</value>

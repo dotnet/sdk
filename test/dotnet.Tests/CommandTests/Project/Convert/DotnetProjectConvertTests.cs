@@ -1771,6 +1771,120 @@ public sealed class DotnetProjectConvertTests : SdkTest
             .And.HaveStdOut(expectedOutput);
     }
 
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata(bool defaultItems, bool externalFiles)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var appDirectory = Path.Join(testInstance.Path, "app");
+        var dataDirectory = externalFiles ? Path.Join(testInstance.Path, "data") : appDirectory;
+        Directory.CreateDirectory(appDirectory);
+        Directory.CreateDirectory(dataDirectory);
+        File.WriteAllText(Path.Join(dataDirectory, "data file.json"), "first");
+        File.WriteAllText(Path.Join(dataDirectory, "second.json"), "second");
+        File.WriteAllText(Path.Join(dataDirectory, "excluded.json"), "excluded");
+        File.WriteAllText(Path.Join(appDirectory, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultNoneItems=false\n#:property EnableDefaultCompileItems=false")}}
+            #:property CopyBehavior=PreserveNewest
+            #:include Program.cs Note=entry
+            #:include {{(externalFiles ? "../data/" : "")}}*.json CopyToOutputDirectory=$(CopyBehavior) Note="a & b \"quoted\" %24%28Literal%29" Empty=""
+            #:exclude {{(externalFiles ? "../data/" : "")}}excluded.json
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "data file.json")));
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "second.json")));
+            Console.WriteLine(File.Exists(Path.Join(AppContext.BaseDirectory, "excluded.json")));
+            """);
+
+        var expectedOutput = $"first{Environment.NewLine}second{Environment.NewLine}False";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(appDirectory, "Program");
+        var operation = defaultItems ? "Update" : "Include";
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                  <ItemGroup>
+                    <Compile {operation}="Program.cs">
+                      <Note>entry</Note>
+                    </Compile>
+                    <None {operation}="data file.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <Note>a &amp; b &quot;quoted&quot; %24%28Literal%29</Note>
+                      <Empty></Empty>
+                    </None>
+                    <None {operation}="second.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <Note>a &amp; b &quot;quoted&quot; %24%28Literal%29</Note>
+                      <Empty></Empty>
+                    </None>
+                  </ItemGroup>
+                """)
+            .And.NotContain(VirtualProjectBuilder.FromIncludeDirectiveMetadataName)
+            .And.NotContain(VirtualProjectBuilder.IncludeDirectiveMetadataNames);
+
+        File.Exists(Path.Join(outputDirectory, "excluded.json")).Should().BeFalse();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata_DuplicateItems(bool defaultItems)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "data.json"), "data");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultNoneItems=false")}}
+            #:include data.json CopyToOutputDirectory=PreserveNewest TargetPath=first.json
+            #:include data.json CopyToOutputDirectory=PreserveNewest TargetPath=second.json
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "first.json")) +
+                File.ReadAllText(Path.Join(AppContext.BaseDirectory, "second.json")));
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("datadata");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(testInstance.Path, "Program");
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                  <ItemGroup>
+                    <None {(defaultItems ? "Update" : "Include")}="data.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <TargetPath>first.json</TargetPath>
+                    </None>
+                    <None Include="data.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <TargetPath>second.json</TargetPath>
+                    </None>
+                  </ItemGroup>
+                """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("datadata");
+    }
+
     [TestMethod]
     public void Directives_IncludeDll()
     {
@@ -2690,14 +2804,16 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_InvalidMetadataName()
+    [DataRow("#:package P1@1.0.0")]
+    [DataRow("#:include file.json")]
+    public void Directives_InvalidMetadataName(string directive)
     {
         // A quote forces the strict (new) form, so the metadata name is validated.
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:package P1@1.0.0 1Invalid="value"
+            inputCSharp: $"""
+                {directive} 1Invalid="value"
                 """,
             expectedErrors:
             [
@@ -2706,13 +2822,15 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_EmptyMetadataName()
+    [DataRow("#:package P1@1.0.0")]
+    [DataRow("#:include file.json")]
+    public void Directives_EmptyMetadataName(string directive)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:package P1@1.0.0 ="value"
+            inputCSharp: $"""
+                {directive} ="value"
                 """,
             expectedErrors:
             [
@@ -2739,6 +2857,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
     [DataRow("#:package P1@1.0.0 Note=a note=b", "note")]
     [DataRow("#:project Lib.csproj Private=false private=true", "private")]
     [DataRow("#:ref Lib.cs Alias=a Alias=b", "Alias")]
+    [DataRow("#:include data.json Note=a note=b", "note")]
     public void Directives_DuplicateMetadata(string directive, string duplicateName)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2756,7 +2875,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     // strict (new) form; otherwise the extra tokens would be accepted verbatim as a legacy single value.
     [DataRow("#:sdk MySdk Extra=\"a b\"", "sdk")]
     [DataRow("#:property Name=\"v\" Extra=\"a b\"", "property")]
-    [DataRow("#:include \"a.cs\" Extra=\"a b\"", "include")]
     [DataRow("#:exclude \"a.cs\" Extra=\"a b\"", "exclude")]
     public void Directives_MetadataOnUnsupportedKind(string directive, string kind)
     {
@@ -2767,6 +2885,21 @@ public sealed class DotnetProjectConvertTests : SdkTest
             expectedErrors:
             [
                 (1, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, kind)),
+            ]);
+    }
+
+    [TestMethod]
+    [DataRow("filebasedprogramsfromincludedirective")]
+    [DataRow("filebasedprogramsincludedirectivemetadatanames")]
+    public void Directives_IncludeMetadata_ReservedName(string name)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: $"#:include data.json {name}=false",
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name)),
             ]);
     }
 

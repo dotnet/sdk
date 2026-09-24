@@ -93,8 +93,8 @@ internal static class FileBasedProgramDirectiveQuoting
 
         return kind switch
         {
-            "property" or "sdk" or "include" or "exclude" => true,
-            "package" or "project" or "ref" => !AllValidMetadata(tokens, start: 1),
+            "property" or "sdk" or "exclude" => true,
+            "package" or "project" or "ref" or "include" => !AllValidMetadata(tokens, start: 1),
             _ => false,
         };
     }
