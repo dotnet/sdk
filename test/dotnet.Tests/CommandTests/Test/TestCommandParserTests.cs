@@ -296,6 +296,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("--project", ".csproj", false)]
+        [DataRow("--project", ".csproj", true)]
+        [DataRow("--solution", ".sln", false)]
+        [DataRow("--solution", ".sln", true)]
+        [DataRow("--test-modules", ".dll", false)]
+        [DataRow("--test-modules", ".dll", true)]
+        public void MTPCommandDoesNotValidateForwardedPathsWhenBuildPathIsExplicit(
+            string buildPathOption,
+            string fileExtension,
+            bool useArgumentSeparator)
+        {
+            using var temp = new TempDirectory();
+            string selectedPath = Path.Combine(temp.Path, $"Selected{fileExtension}");
+            string forwardedPath = Path.Combine(temp.Path, $"Forwarded{fileExtension}");
+            File.WriteAllText(selectedPath, string.Empty);
+            File.WriteAllText(forwardedPath, string.Empty);
+
+            List<string> arguments =
+            [
+                buildPathOption, selectedPath,
+            ];
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(["--extension-option", forwardedPath]);
+
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([.. arguments]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).TestApplicationArguments.Should().Equal(
+                "--extension-option",
+                forwardedPath);
+        }
+
+        [TestMethod]
         [DataRow("text")]
         [DataRow("json")]
         public void MTPCommandAcceptsListTestsFormatValue(string format)
