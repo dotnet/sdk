@@ -63,7 +63,26 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectSdkHotReloadAgent, bool expectRuntimeHotReloadAgent)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
-                .WithTargetFramework(targetFramework);
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    if (targetFramework == ToolsetInfo.CurrentTargetFramework)
+                    {
+                        return;
+                    }
+
+                    // browser-wasm apps are self-contained, so by default the SDK restores the latest
+                    // down-level runtime and targeting packs it knows about. Ahead of a servicing release
+                    // those versions are not published yet, and this test does not depend on the patch
+                    // version, so pin the down-level packs to the GA release.
+                    var gaVersion = targetFramework.Substring("net".Length) + ".0";
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "ItemGroup",
+                        new XElement(ns + "FrameworkReference",
+                            new XAttribute("Update", "Microsoft.NETCore.App"),
+                            new XAttribute("TargetingPackVersion", gaVersion),
+                            new XAttribute("RuntimeFrameworkVersion", gaVersion))));
+                });
 
             var build = CreateBuildCommand(ProjectDirectory);
 
