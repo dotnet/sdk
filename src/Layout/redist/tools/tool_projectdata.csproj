@@ -10,11 +10,21 @@
     <PackageReference Include="Microsoft.NET.ProjectData.Tasks" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="$(PkgMicrosoft_NET_ProjectData_Tasks)/lib/netstandard2.0/Microsoft.NET.ProjectData.Schema.props;
-                      $(PkgMicrosoft_NET_ProjectData_Tasks)/lib/netstandard2.0/Microsoft.NET.ProjectData.targets"
+  <!-- Roslyn packs these files next to the task assembly under lib/<tfm>/, and that TFM differs
+       between the Microsoft and source-only builds, so don't hardcode the folder name. -->
+  <ItemGroup Condition="'$(PkgMicrosoft_NET_ProjectData_Tasks)' != ''">
+    <_ProjectDataContent Include="$(PkgMicrosoft_NET_ProjectData_Tasks)/lib/*/Microsoft.NET.ProjectData.Schema.props;
+                                  $(PkgMicrosoft_NET_ProjectData_Tasks)/lib/*/Microsoft.NET.ProjectData.targets" />
+    <Content Include="@(_ProjectDataContent)"
              Link="%(Filename)%(Extension)"
              CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Sdk.targets imports Microsoft.NET.ProjectData.targets only if it exists, so a missing file would
+       silently disable the feature instead of failing the build. -->
+  <Target Name="_ValidateProjectDataContent" BeforeTargets="Build">
+    <Error Condition="'@(_ProjectDataContent->Count())' != '2'"
+           Text="Expected exactly one Microsoft.NET.ProjectData.Schema.props and one Microsoft.NET.ProjectData.targets under lib/&lt;tfm&gt;/ in the Microsoft.NET.ProjectData.Tasks package ('$(PkgMicrosoft_NET_ProjectData_Tasks)'), but found: '@(_ProjectDataContent)'." />
+  </Target>
 
 </Project>
