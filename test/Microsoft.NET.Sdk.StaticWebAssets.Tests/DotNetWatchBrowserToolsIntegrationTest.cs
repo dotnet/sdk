@@ -212,9 +212,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             {
                 File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "Program.cs"), """
                     using Microsoft.AspNetCore.Builder;
+                    using Microsoft.Extensions.DependencyInjection;
+                    using ComponentApp.Components;
                     var builder = WebApplication.CreateBuilder(args);
+                    builder.Services.AddRazorComponents();
                     var app = builder.Build();
                     app.MapStaticAssets();
+                    app.MapRazorComponents<App>();
                     app.MapGet("/host-id", () => System.Environment.ProcessId.ToString());
                     app.Run();
                     """);
@@ -248,6 +252,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             start.ArgumentList.Add($"http://127.0.0.1:{port}");
             start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
             start.Environment["DOTNET_ENVIRONMENT"] = "Development";
+            // Keep the existing host fallbacks active to verify the SWA endpoint wins.
+            start.Environment["DOTNET_WATCH"] = "0";
             start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
             if (gateway)
             {
