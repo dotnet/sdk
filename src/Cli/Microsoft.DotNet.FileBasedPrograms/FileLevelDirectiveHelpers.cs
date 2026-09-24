@@ -98,8 +98,8 @@ internal static class FileLevelDirectiveHelpers
         for (var index = 0; index < triviaList.Count; index++)
         {
             var trivia = triviaList[index];
-            // Stop when the trivia contains an error (e.g., because it's after #if).
-            if (trivia.ContainsDiagnostics)
+            // Inactive directives after #if may have no diagnostics, but must not affect the project.
+            if (trivia.ContainsDiagnostics || trivia.IsKind(SyntaxKind.IfDirectiveTrivia))
             {
                 break;
             }

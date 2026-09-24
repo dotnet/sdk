@@ -458,7 +458,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidAuthResponseException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)
