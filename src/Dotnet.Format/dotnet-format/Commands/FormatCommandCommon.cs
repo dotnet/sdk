@@ -34,6 +34,10 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             Description = Resources.Doesnt_execute_an_implicit_restore_before_formatting,
         };
+        internal static readonly Option<bool> NoCacheOption = new("--no-cache")
+        {
+            Description = Resources.Disables_the_on_disk_formatting_cache,
+        };
         internal static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
         {
             HelpName = "framework",
@@ -119,6 +123,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(NoRestoreOption);
+            command.Options.Add(NoCacheOption);
             command.Options.Add(FrameworkOption);
             command.Options.Add(VerifyNoChanges);
             command.Options.Add(IncludeOption);
@@ -173,6 +178,11 @@ namespace Microsoft.CodeAnalysis.Tools
             if (parseResult.GetValue(NoRestoreOption))
             {
                 formatOptions = formatOptions with { NoRestore = true };
+            }
+
+            if (parseResult.GetValue(NoCacheOption))
+            {
+                formatOptions = formatOptions with { NoCache = true };
             }
 
             if (parseResult.GetValue(VerifyNoChanges))
