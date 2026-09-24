@@ -187,6 +187,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunWithProjectPathForwardedAsTestApplicationOptionValue_ShouldNotTreatItAsPositionalProject(bool useArgumentSeparator)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string testProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
+            var arguments = new List<string>
+            {
+                "--project", "TestProject.csproj",
+            };
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(
+            [
+                "--filter", "TestProject.csproj",
+                "--ignore-exit-code", ExitCodes.ZeroTests.ToString(),
+            ]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute([.. arguments]);
+
+            result.Should().Pass();
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("total: 0");
+                result.StdErr.Should().NotContain(CliCommandStrings.TestCommandUseProject);
+            }
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
