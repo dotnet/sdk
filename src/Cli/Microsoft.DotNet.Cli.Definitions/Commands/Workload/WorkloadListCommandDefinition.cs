@@ -26,7 +26,7 @@ internal sealed class WorkloadListCommandDefinition : WorkloadCommandDefinitionB
 
     public override NuGetRestoreOptions RestoreOptions { get; } = new(hidden: true);
 
-    public readonly Option<string> ConfigOption = CreateConfigOption().Hide();
+    public readonly Option<FileInfo> ConfigOption = CreateConfigOption().Hide();
 
     public readonly Option<string[]> SourceOption = CreateSourceOption().Hide();
 

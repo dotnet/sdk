@@ -241,6 +241,104 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
+        public void Search_CanParseSourceSelectionOptions()
+        {
+            string configFile = typeof(SearchTests).Assembly.Location;
+            string command = $"new search source --source https://one.test/index.json --source https://two.test/index.json --configfile \"{configFile}\" --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive";
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsEmpty(parseResult.Errors);
+            Assert.AreEqual(configFile, args.ConfigFile);
+            Assert.IsNotNull(args.Sources);
+            Assert.HasCount(2, args.Sources!);
+            Assert.Contains("https://one.test/index.json", args.Sources!);
+            Assert.Contains("https://two.test/index.json", args.Sources!);
+            Assert.IsNotNull(args.AddSources);
+            Assert.HasCount(2, args.AddSources!);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+            Assert.Contains("https://add2.test/index.json", args.AddSources!);
+            Assert.IsTrue(args.Interactive);
+        }
+
+        [TestMethod]
+        public void Search_ConfigFileMustExist()
+        {
+            string configFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.config");
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse($"new search source --configfile \"{configFile}\"");
+
+            Assert.HasCount(1, parseResult.Errors);
+            Assert.Contains(configFile, parseResult.Errors[0].Message);
+        }
+
+        [TestMethod]
+        [DataRow("new search --add-source https://add1.test/index.json console")]
+        public void Search_AddSourceOption_DoesNotConsumePositionalName(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.AddSources);
+            Assert.HasCount(1, args.AddSources!);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+            Assert.AreEqual("console", args.SearchNameCriteria);
+        }
+
+        [TestMethod]
+        [DataRow("new search source -s https://one.test/index.json")]
+        public void Search_CanParseSourceOptionShortAlias(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.Sources);
+            Assert.HasCount(1, args.Sources!);
+            Assert.Contains("https://one.test/index.json", args.Sources!);
+        }
+
+        [TestMethod]
+        [DataRow("new search source --nuget-source https://add1.test/index.json")]
+        public void Search_CanParseAddSourceOptionAlias(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.AddSources);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+        }
+
+        [TestMethod]
+        [DataRow("new --search source --source https://one.test/index.json")]
+        [DataRow("new --search source --configfile my-nuget.config")]
+        [DataRow("new --search source --add-source https://add1.test/index.json")]
+        [DataRow("new --search source --interactive")]
+        public void Search_Legacy_CannotParseSourceSelectionOptions(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+            command = command.Replace("my-nuget.config", typeof(SearchTests).Assembly.Location);
+
+            ParseResult parseResult = myCommand.Parse(command);
+
+            Assert.IsNotEmpty(parseResult.Errors);
+        }
+
+        [TestMethod]
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));

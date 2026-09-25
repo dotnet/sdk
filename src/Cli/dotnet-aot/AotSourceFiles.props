@@ -319,16 +319,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\ToolSearchCommand.cs" Link="Commands\Tool\Search\ToolSearchCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\SearchResultPrinter.cs" Link="Commands\Tool\Search\SearchResultPrinter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\NugetSearchSerializables.cs" Link="Commands\Tool\Search\NugetSearchSerializables.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\AuthorsConverter.cs" Link="NugetSearch\AuthorsConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\INugetToolSearchApiRequest.cs" Link="NugetSearch\INugetToolSearchApiRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiParameter.cs" Link="NugetSearch\NugetSearchApiParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiRequestException.cs" Link="NugetSearch\NugetSearchApiRequestException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiResultDeserializer.cs" Link="NugetSearch\NugetSearchApiResultDeserializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetToolSearchApiRequest.cs" Link="NugetSearch\NugetToolSearchApiRequest.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiAuthorsSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiAuthorsSerializable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiContainerSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiContainerSerializable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiPackageSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiPackageSerializable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiVersionSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiVersionSerializable.cs" />
   </ItemGroup>
 
 </Project>

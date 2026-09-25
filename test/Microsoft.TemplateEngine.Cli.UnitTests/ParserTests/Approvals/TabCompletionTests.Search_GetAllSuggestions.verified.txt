@@ -1,5 +1,12 @@
 ﻿[
   {
+    Label: --add-source,
+    Kind: Keyword,
+    SortText: --add-source,
+    InsertText: --add-source,
+    Detail: Specifies a NuGet source to use.
+  },
+  {
     Label: --author,
     Kind: Keyword,
     SortText: --author,
@@ -21,11 +28,25 @@
     Detail: Displays all columns in the output.
   },
   {
+    Label: --configfile,
+    Kind: Keyword,
+    SortText: --configfile,
+    InsertText: --configfile,
+    Detail: The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior
+  },
+  {
     Label: --diagnostics,
     Kind: Keyword,
     SortText: --diagnostics,
     InsertText: --diagnostics,
     Detail: Enables diagnostic output.
+  },
+  {
+    Label: --interactive,
+    Kind: Keyword,
+    SortText: --interactive,
+    InsertText: --interactive,
+    Detail: Allows the command to stop and wait for user input or action (for example to complete authentication).
   },
   {
     Label: --language,
@@ -35,11 +56,25 @@
     Detail: Filters templates based on language.
   },
   {
+    Label: --nuget-source,
+    Kind: Keyword,
+    SortText: --nuget-source,
+    InsertText: --nuget-source,
+    Detail: Specifies a NuGet source to use.
+  },
+  {
     Label: --package,
     Kind: Keyword,
     SortText: --package,
     InsertText: --package,
     Detail: Filters the templates based on NuGet package ID.
+  },
+  {
+    Label: --source,
+    Kind: Keyword,
+    SortText: --source,
+    InsertText: --source,
+    Detail: The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.
   },
   {
     Label: --tag,
@@ -75,6 +110,13 @@
     SortText: -lang,
     InsertText: -lang,
     Detail: Filters templates based on language.
+  },
+  {
+    Label: -s,
+    Kind: Keyword,
+    SortText: -s,
+    InsertText: -s,
+    Detail: The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.
   },
   {
     Label: -v,

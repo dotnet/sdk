@@ -118,7 +118,9 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         {
             MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
-            var parseResult = Parser.Parse("dotnet workload search version --source myfeed --configfile mynuget.config --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
+            var configFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "mynuget.config");
+            File.WriteAllText(configFile, "<configuration />");
+            var parseResult = Parser.Parse($"dotnet workload search version --source myfeed --configfile \"{configFile}\" --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
             MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
             _reporter.Clear();

@@ -267,6 +267,13 @@ internal static class CommonOptions
         => CreateInteractiveOption(acceptArgument: true)
            .ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
+    public static Option<FileInfo> CreateConfigFileOption(string description, string helpName)
+        => new Option<FileInfo>("--configfile")
+        {
+            Description = description,
+            HelpName = helpName
+        }.AcceptExistingOnly();
+
     public static Option<bool> CreateDisableBuildServersOption() =>
         new Option<bool>("--disable-build-servers")
         {

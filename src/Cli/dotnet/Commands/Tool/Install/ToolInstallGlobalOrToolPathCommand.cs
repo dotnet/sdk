@@ -69,7 +69,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
 
-        _configFilePath = parseResult.GetValue(Definition.ConfigOption);
+        _configFilePath = parseResult.GetValue(Definition.ConfigOption)?.FullName;
         _framework = parseResult.GetValue(Definition.FrameworkOption);
         _source = parseResult.GetValue(Definition.SourceOption);
         _addSource = parseResult.GetValue(Definition.AddSourceOption);
@@ -96,7 +96,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
         var tempDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        string? configOption = parseResult.GetValue(Definition.ConfigOption)?.FullName;
         var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: _source, additionalSourceFeeds: _addSource, basePath: _currentWorkingDirectory);
 
         restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(parseResult);
@@ -172,11 +172,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
         _activity?.SetTag("tool.package.id", packageId);
-
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(string.Format(CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist, Path.GetFullPath(_configFilePath)));
-        }
 
         DirectoryPath? toolPath = null;
         if (!string.IsNullOrEmpty(_toolPath))
@@ -295,17 +290,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                         oldPackage.Version.ToNormalizedString())
                 ],
                 isUserError: false);
-        }
-    }
-
-    private void ValidateArguments()
-    {
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(_configFilePath)));
         }
     }
 
