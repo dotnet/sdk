@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
+    <InternalsVisibleTo Include="sdk-tasks.Tests" Key="$(MicrosoftAspNetCorePublicKey)" />
   </ItemGroup>
 
   <ItemGroup>
