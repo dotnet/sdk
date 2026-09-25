@@ -86,12 +86,19 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
 
-            while (!_process.WaitForExit(milliseconds: 100))
+            if (cancellationToken is null)
             {
-                if (cancellationToken?.IsCancellationRequested == true)
+                _process.WaitForExit();
+            }
+            else
+            {
+                while (!_process.WaitForExit(milliseconds: 100))
                 {
-                    TerminateProcess(reaper, _process);
-                    break;
+                    if (cancellationToken.Value.IsCancellationRequested)
+                    {
+                        TerminateProcess(reaper, _process);
+                        break;
+                    }
                 }
             }
 
