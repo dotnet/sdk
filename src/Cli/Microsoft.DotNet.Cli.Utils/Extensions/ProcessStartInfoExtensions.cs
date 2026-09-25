@@ -16,7 +16,7 @@ internal static class ProcessStartInfoExtensions
             StartInfo = startInfo
         };
 
-        return new Command(process).Execute(cancellationToken).ExitCode;
+        return new Command(process).WithoutProcessLogging().Execute(cancellationToken).ExitCode;
     }
 
     public static int ExecuteAndCaptureOutput(
@@ -31,6 +31,7 @@ internal static class ProcessStartInfoExtensions
         };
 
         CommandResult result = new Command(process)
+            .WithoutProcessLogging()
             .CaptureStdOut()
             .CaptureStdErr()
             .Execute(cancellationToken);
