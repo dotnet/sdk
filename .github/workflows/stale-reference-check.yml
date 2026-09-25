@@ -1,0 +1,148 @@
+name: Check potentially stale references
+
+on:
+  schedule:
+    - cron: '23 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview tracking issues without writing issues or production cache.
+        type: boolean
+        default: true
+      refresh_cache:
+        description: Reinterpret source rather than reuse cached interpretations.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stale-reference-check
+  cancel-in-progress: false
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  collect:
+    if: github.repository == 'dotnet/sdk' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      has_misses: ${{ steps.collect.outputs.has_misses }}
+      input_artifact_id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .stale-reference-check/state/cache.json
+          key: stale-reference-v1-${{ github.repository_id }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            stale-reference-v1-${{ github.repository_id }}-${{ github.ref_name }}-
+      - name: Collect source context and cache misses
+        id: collect
+        env:
+          REFRESH_CACHE: ${{ inputs.refresh_cache == true }}
+        run: node .github/stale-reference-check/cli.mjs collect
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: upload
+        with:
+          name: stale-reference-input-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .stale-reference-check/input
+          if-no-files-found: error
+          retention-days: 7
+
+  interpret:
+    needs: collect
+    if: github.repository == 'dotnet/sdk' && github.ref == 'refs/heads/main' && needs.collect.outputs.has_misses == 'true'
+    permissions:
+      # The compiler declares this for its disabled conclusion job. Executing
+      # interpreter jobs explicitly retain read-only Actions permissions.
+      actions: write
+      contents: read
+      copilot-requests: write
+    uses: ./.github/workflows/stale-reference-interpret.lock.yml
+    with:
+      input_artifact_id: ${{ needs.collect.outputs.input_artifact_id }}
+    secrets:
+      COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+      COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+      COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+      COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+      COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+      COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+      COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+      COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+      COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+      COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+
+  finalize:
+    needs: [collect, interpret]
+    if: >-
+      always() && !cancelled() &&
+      github.repository == 'dotnet/sdk' && github.ref == 'refs/heads/main' &&
+      needs.collect.result == 'success' &&
+      (needs.collect.outputs.has_misses != 'true' || needs.interpret.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      TARGET_BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ needs.collect.outputs.input_artifact_id }}
+          merge-multiple: true
+          path: .stale-reference-check/input
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: needs.interpret.result == 'success'
+        with:
+          name: stale-reference-interpretations-${{ needs.collect.outputs.input_artifact_id }}
+          path: .stale-reference-check/results
+      - name: Download complete workflow model usage
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: needs.interpret.result == 'success'
+        with:
+          name: stale-reference-workflow-runtime-${{ needs.collect.outputs.input_artifact_id }}
+          path: .stale-reference-check/results
+      - name: Validate, check references, and file bounded follow-ups
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const path = require('node:path');
+            const { finish } = await import(pathToFileURL(path.resolve('.github/stale-reference-check/workflow.mjs')));
+            await finish({
+              github,
+              repository: `${context.repo.owner}/${context.repo.repo}`,
+              targetBranch: process.env.TARGET_BRANCH,
+              repoRoot: process.env.GITHUB_WORKSPACE,
+              dryRun: process.env.DRY_RUN === 'true',
+              logger: core,
+            });
+      - name: Save validated interpretations
+        if: always() && env.DRY_RUN != 'true' && hashFiles('.stale-reference-check/state/cache.json') != ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .stale-reference-check/state/cache.json
+          key: stale-reference-v1-${{ github.repository_id }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Retain decision report
+        if: always() && hashFiles('.stale-reference-check/report.json') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stale-reference-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .stale-reference-check/report.json
+          retention-days: 30
