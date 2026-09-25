@@ -48,7 +48,23 @@ public static class ResultNavigationExtensions
     /// </summary>
     public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, string name)
     {
-        if (parseResult.GetResult(name) is OptionResult optionResult // only return a value if there _is_ a value - default or otherwise
+        Option? option = null;
+        for (CommandResult? commandResult = parseResult.CommandResult;
+            commandResult is not null && option is null;
+            commandResult = commandResult.Parent as CommandResult)
+        {
+            foreach (Option candidate in commandResult.Command.Options)
+            {
+                if (candidate.Name == name || candidate.Aliases.Contains(name))
+                {
+                    option = candidate;
+                    break;
+                }
+            }
+        }
+
+        if (option is not null
+            && parseResult.GetResult(option) is OptionResult optionResult // only return a value if there _is_ a value - default or otherwise
             && !parseResult.Errors.Any(e => e.SymbolResult == optionResult) // only return a value if this isn't a parsing error
             && optionResult.Option.ValueType.IsAssignableTo(typeof(T))) // only return a value if coercing the type won't error
         {
@@ -56,7 +72,7 @@ public static class ResultNavigationExtensions
             // be resistant to errors
             try
             {
-                return optionResult.GetValue<T>(name);
+                return optionResult.GetValueOrDefault<T>();
             }
             catch
             {

@@ -109,7 +109,10 @@ public static class ParseResultExtensions
     }
 
     public static string[] GetArguments(this ParseResult parseResult) =>
-        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
+        [.. parseResult.Tokens
+            .SkipWhile(static token => token.Type != TokenType.Command)
+            .Skip(1)
+            .Select(static token => token.Value)];
 
     public static string[] GetSubArguments(this string[] args)
     {
@@ -132,13 +135,16 @@ public static class ParseResultExtensions
     }
 
     public static bool CanBeInvoked(this ParseResult parseResult) =>
-        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
-        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
-        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
+        parseResult.IsDotnetBuiltInCommand()
+        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive);
 
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
+    {
+        string rootSubCommand = parseResult.RootSubCommandResult();
+        return string.IsNullOrEmpty(rootSubCommand)
+            || parseResult.RootCommandResult.Children.OfType<CommandResult>()
+                .Any(result => result.Command.Name.Equals(rootSubCommand, StringComparison.OrdinalIgnoreCase));
+    }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {

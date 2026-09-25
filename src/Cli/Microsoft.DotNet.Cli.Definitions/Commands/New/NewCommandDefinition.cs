@@ -167,6 +167,12 @@ public sealed class NewCommandDefinition : Command
         Subcommands.Add(LegacyShowAliasCommand);
     }
 
+    internal static bool IsGenericHelpInvocation(string[] args)
+        => args is [Name, var helpOption] && IsHelpOption(helpOption)
+            || args is [Name, NewCreateCommandDefinition.Name, var createHelpOption] && IsHelpOption(createHelpOption);
+
+    private static bool IsHelpOption(string option) => option is "-h" or "/h" or "--help" or "-?" or "/?";
+
     public static Option<bool> CreateDebugRebuildCacheOption() => new("--debug:rebuild-cache", "--debug:rebuildcache")
     {
         Description = CommandDefinitionStrings.Option_Debug_RebuildCache,

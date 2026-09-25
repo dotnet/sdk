@@ -67,6 +67,19 @@ public class TelemetryCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void DotnetNewHelpShouldBeSentToTelemetry()
+    {
+        Cli.Program.ProcessArgsAndExecute(["new", "--help"]);
+
+        _fakeTelemetry.LogEntries.Should().Contain(e =>
+            e.EventName == "toplevelparser/command"
+            && e.Properties.ContainsKey("verb")
+            && e.Properties["verb"] == Sha256Hasher.Hash("NEW")
+            && e.Properties.ContainsKey("help")
+            && e.Properties["help"] == Sha256Hasher.Hash("TRUE"));
+    }
+
+    [TestMethod]
     public void DotnetHelpCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "something";
