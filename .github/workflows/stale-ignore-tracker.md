@@ -60,7 +60,9 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [issues, pull_requests, repos, search]
-    min-integrity: approved
+    # This workflow must read the state of arbitrary public references embedded
+    # in test source, including references outside dotnet/sdk.
+    min-integrity: none
   bash:
     - git
     - rg
@@ -86,6 +88,7 @@ safe-outputs:
     max: 3
     title-prefix: "[AI stale Ignore] "
     labels: [agentic-workflows, cookie, "Test Debt"]
+    allowed-labels: []
     deduplicate-by-title: true
   noop:
     report-as-issue: false
@@ -112,7 +115,7 @@ Search tracked C# files under `test/` for `[Ignore(...)]` or `[IgnoreAttribute(.
 attributes whose message contains at least one full GitHub issue or pull request URL:
 
 ```bash
-rg -n --glob '*.cs' '\[Ignore(Attribute)?\s*\(' test
+rg -n -U --glob '*.cs' '\[Ignore(Attribute)?\s*\(' test
 ```
 
 Inspect enough surrounding source to identify:
@@ -122,6 +125,9 @@ Inspect enough surrounding source to identify:
 - the fully qualified test name (`Namespace.Class.Method`), or `Namespace.Class.*` for a
   class-level ignore
 - every GitHub issue or pull request URL in the Ignore message
+
+The attribute and its message may span multiple lines. Inspect the complete attribute
+before deciding whether it contains a reference.
 
 Ignore attributes without a concrete full GitHub URL. Do not treat a URL in a nearby
 comment as part of the Ignore unless it is also inside the attribute message.
@@ -170,12 +176,15 @@ reason and stop.
 
 ## 5. Create one issue per ignored test
 
-Create a separate issue for each selected candidate. Use this title, without the automatic
-prefix:
+Create a separate issue for each selected candidate. Use a title no longer than 100
+characters, without the automatic prefix:
 
 ```text
-Revalidate <fully-qualified-test-name> after its tracking reference was resolved
+Revalidate stale Ignore: <fully-qualified-test-name>
 ```
+
+If that title would exceed 100 characters, truncate only the fully qualified test name.
+The body and durable marker must still contain the complete name.
 
 Use this body:
 
@@ -187,8 +196,7 @@ Use this body:
 - **Ignore reference:** <original GitHub URL or URLs>
 - **Why it appears unblocked:** <state the issue is closed as completed or the pull request
   was merged; include each reference's final state>
-
-<!-- stale-ignore-id: <source-path>|<fully-qualified-test-name> -->
+- **Tracking ID:** `stale-ignore-id: <source-path>|<fully-qualified-test-name>`
 
 ## Revalidation
 
@@ -200,7 +208,7 @@ failure here and address that failure before re-enabling the test.
 Resolving the original reference does not prove that the test now passes.
 ```
 
-Keep the marker on one line and reproduce the original GitHub URLs exactly. Do not assign
-the issue, mention users, add extra labels, or propose unrelated cleanup. The workflow
-automatically applies `agentic-workflows`, `Test Debt`, and `cookie`; `cookie` makes the
-bounded revalidation task eligible for Issue Monster.
+Keep the visible marker on one line and reproduce the original GitHub URLs exactly. Do not
+assign the issue, mention users, add extra labels, or propose unrelated cleanup. The
+workflow automatically applies `agentic-workflows`, `Test Debt`, and `cookie`; `cookie`
+makes the bounded revalidation task eligible for Issue Monster.
