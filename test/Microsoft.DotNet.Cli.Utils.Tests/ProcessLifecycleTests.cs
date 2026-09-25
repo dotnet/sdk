@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Utils.TestApp;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests;
@@ -9,8 +10,6 @@ namespace Microsoft.DotNet.Cli.Utils.Tests;
 [TestClass]
 public class ProcessLifecycleTests : SdkTest
 {
-    private const string ChildModeEnvironmentVariable = "DOTNET_CLI_PROCESS_LIFECYCLE_TEST_CHILD";
-    private const string MarkerPathEnvironmentVariable = "DOTNET_CLI_PROCESS_LIFECYCLE_TEST_MARKER";
     private static readonly TimeSpan s_waitTimeout = TimeSpan.FromSeconds(30);
 
     [TestMethod]
@@ -18,34 +17,24 @@ public class ProcessLifecycleTests : SdkTest
     public void SigTermCancelsTokenAndForcesTerminationWhenCancellationIsIgnored()
         => VerifyCancellationSignal(
             PosixSignal.SIGTERM,
-            expectedForcedExitCode: 143,
-            nameof(SigTermCancelsTokenAndForcesTerminationWhenCancellationIsIgnored));
+            expectedForcedExitCode: 143);
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigIntCancelsTokenAndForcesTerminationWhenCancellationIsIgnored()
         => VerifyCancellationSignal(
             PosixSignal.SIGINT,
-            expectedForcedExitCode: 130,
-            nameof(SigIntCancelsTokenAndForcesTerminationWhenCancellationIsIgnored));
+            expectedForcedExitCode: 130);
 
     private void VerifyCancellationSignal(
         PosixSignal signal,
-        int expectedForcedExitCode,
-        string testMethodName)
+        int expectedForcedExitCode)
     {
-        if (Environment.GetEnvironmentVariable(ChildModeEnvironmentVariable) is { } childMode)
-        {
-            RunChild(childMode);
-            return;
-        }
-
         var testDirectory = TestAssetsManager.CreateTestDirectory();
 
         using (Process cooperativeChild = StartChild(
             "cooperative",
-            testDirectory.Path,
-            testMethodName))
+            testDirectory.Path))
         {
             WaitForMarker(testDirectory.Path, "ready");
             cooperativeChild.SafeHandle.Signal(signal).Should().BeTrue();
@@ -56,8 +45,7 @@ public class ProcessLifecycleTests : SdkTest
 
         using (Process uncooperativeChild = StartChild(
             "uncooperative",
-            testDirectory.Path,
-            testMethodName))
+            testDirectory.Path))
         {
             WaitForMarker(testDirectory.Path, "ready");
             uncooperativeChild.SafeHandle.Signal(signal).Should().BeTrue();
@@ -70,18 +58,11 @@ public class ProcessLifecycleTests : SdkTest
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
-        if (Environment.GetEnvironmentVariable(ChildModeEnvironmentVariable) is { } childMode)
-        {
-            RunChild(childMode);
-            return;
-        }
-
         var testDirectory = TestAssetsManager.CreateTestDirectory();
 
         using Process reaperParent = StartChild(
             "reaper-parent",
-            testDirectory.Path,
-            nameof(SigTermIsForwardedToReapedChild));
+            testDirectory.Path);
 
         WaitForMarker(testDirectory.Path, "reaper-ready");
         reaperParent.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
@@ -91,8 +72,7 @@ public class ProcessLifecycleTests : SdkTest
 
         using Process uncooperativeReaperParent = StartChild(
             "uncooperative-reaper-parent",
-            testDirectory.Path,
-            nameof(SigTermIsForwardedToReapedChild));
+            testDirectory.Path);
 
         WaitForMarker(testDirectory.Path, "reaper-ready");
         uncooperativeReaperParent.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
@@ -100,93 +80,20 @@ public class ProcessLifecycleTests : SdkTest
         uncooperativeReaperParent.ExitCode.Should().NotBe(0);
     }
 
-    private static void RunChild(string childMode)
-    {
-        string markerPath = Environment.GetEnvironmentVariable(MarkerPathEnvironmentVariable)!;
-
-        if (childMode is "reaper-parent" or "uncooperative-reaper-parent")
-        {
-            RunReaperParent(markerPath, childMode);
-            return;
-        }
-
-        if (childMode == "signal-child")
-        {
-            RunSignalChild(markerPath);
-            return;
-        }
-
-        if (childMode == "ignoring-signal-child")
-        {
-            RunIgnoringSignalChild(markerPath);
-            return;
-        }
-
-        CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
-        File.WriteAllText(markerPath, "ready");
-
-        if (childMode == "uncooperative")
-        {
-            Thread.Sleep(Timeout.Infinite);
-        }
-
-        cancellationToken.WaitHandle.WaitOne();
-        File.WriteAllText(markerPath, "cancelled");
-    }
-
-    private static void RunReaperParent(string markerPath, string childMode)
-    {
-        string testDirectory = Path.GetDirectoryName(markerPath)!;
-        using Process signalChild = CreateChildProcess(
-            childMode == "reaper-parent" ? "signal-child" : "ignoring-signal-child",
-            testDirectory,
-            nameof(SigTermIsForwardedToReapedChild));
-        using ProcessReaper reaper = ProcessReaper.Create(signalChild);
-
-        signalChild.Start();
-        reaper.NotifyProcessStarted();
-        WaitForMarker(testDirectory, "grandchild-ready");
-        File.WriteAllText(markerPath, "reaper-ready");
-        Thread.Sleep(Timeout.Infinite);
-    }
-
-    private static void RunIgnoringSignalChild(string markerPath)
-    {
-        using PosixSignalRegistration registration = PosixSignalRegistration.Create(
-            PosixSignal.SIGTERM,
-            context => context.Cancel = true);
-
-        File.WriteAllText(markerPath, "grandchild-ready");
-        Thread.Sleep(Timeout.Infinite);
-    }
-
-    private static void RunSignalChild(string markerPath)
-    {
-        using PosixSignalRegistration registration = PosixSignalRegistration.Create(
-            PosixSignal.SIGTERM,
-            context =>
-            {
-                context.Cancel = true;
-                File.WriteAllText(markerPath, "forwarded");
-                Environment.Exit(43);
-            });
-
-        File.WriteAllText(markerPath, "grandchild-ready");
-        Thread.Sleep(Timeout.Infinite);
-    }
-
-    private static Process StartChild(string childMode, string testDirectory, string testMethodName)
+    private static Process StartChild(string childMode, string testDirectory)
     {
         string markerPath = Path.Combine(testDirectory, "signal-marker");
         File.Delete(markerPath);
-        Process process = CreateChildProcess(childMode, testDirectory, testMethodName);
+        Process process = CreateChildProcess(childMode, testDirectory);
         process.Start();
         return process;
     }
 
-    private static Process CreateChildProcess(string childMode, string testDirectory, string testMethodName)
+    private static Process CreateChildProcess(string childMode, string testDirectory)
     {
         string markerPath = Path.Combine(testDirectory, "signal-marker");
+        string testAssemblyPath = typeof(ProcessLifecycleTests).Assembly.Location;
+        string helperAssemblyPath = typeof(ProcessLifecycleTestApp).Assembly.Location;
         ProcessStartInfo startInfo = new(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
         {
             UseShellExecute = false,
@@ -194,11 +101,17 @@ public class ProcessLifecycleTests : SdkTest
         };
 
         startInfo.ArgumentList.Add("exec");
-        startInfo.ArgumentList.Add(typeof(ProcessLifecycleTests).Assembly.Location);
-        startInfo.ArgumentList.Add("--filter");
-        startInfo.ArgumentList.Add($"FullyQualifiedName={typeof(ProcessLifecycleTests).FullName}.{testMethodName}");
-        startInfo.Environment[ChildModeEnvironmentVariable] = childMode;
-        startInfo.Environment[MarkerPathEnvironmentVariable] = markerPath;
+        startInfo.ArgumentList.Add("--runtimeconfig");
+        startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".runtimeconfig.json"));
+        startInfo.ArgumentList.Add("--depsfile");
+        startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".deps.json"));
+        startInfo.ArgumentList.Add(helperAssemblyPath);
+        startInfo.ArgumentList.Add(childMode);
+        startInfo.ArgumentList.Add(markerPath);
+        startInfo.ArgumentList.Add(startInfo.FileName);
+        startInfo.ArgumentList.Add(helperAssemblyPath);
+        startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".runtimeconfig.json"));
+        startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".deps.json"));
 
         return new Process { StartInfo = startInfo };
     }
