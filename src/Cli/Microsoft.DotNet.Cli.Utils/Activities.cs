@@ -3,6 +3,8 @@
 
 #if NET
 
+using System.Diagnostics.Metrics;
+
 namespace Microsoft.DotNet.Cli.Utils;
 
 /// <summary>
@@ -16,6 +18,36 @@ public static class Activities
     /// consumers to easily filter and trace CLI activities.
     /// </summary>
     public static ActivitySource Source { get; } = new("dotnet-cli", Product.Version);
+
+    private static readonly Meter s_meter = new(Source.Name, Product.Version);
+    private static readonly Histogram<double> s_activityDuration = s_meter.CreateHistogram<double>(
+        "dotnet.cli.activity.duration",
+        unit: "s",
+        description: "Duration of a dotnet CLI activity.");
+
+    private static readonly ActivityListener s_metricsListener = new()
+    {
+        ShouldListenTo = source => source.Name == Source.Name,
+        // Collect timings on demand without marking otherwise unsampled traces as recorded.
+        Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
+            s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+        SampleUsingParentId = (ref ActivityCreationOptions<string> _) =>
+            s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+        ActivityStopped = activity =>
+        {
+            if (s_activityDuration.Enabled)
+            {
+                s_activityDuration.Record(
+                    activity.Duration.TotalSeconds,
+                    new KeyValuePair<string, object?>("activity.name", activity.OperationName));
+            }
+        },
+    };
+
+    static Activities()
+    {
+        ActivitySource.AddActivityListener(s_metricsListener);
+    }
 
     /// <summary>
     /// The environment variable used to transfer the chain of parent activity IDs.

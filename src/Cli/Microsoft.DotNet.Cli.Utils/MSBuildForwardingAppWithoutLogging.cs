@@ -182,6 +182,44 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     public int Execute()
     {
+        using var activity = Activities.Source.StartActivity("msbuild-submission");
+        if (activity is not { IdFormat: ActivityIdFormat.W3C })
+        {
+            return ExecuteCore();
+        }
+
+        // The forwarding app shares this dictionary. Refresh the context at execution,
+        // when the submission activity exists, including for persistent MSBuild servers.
+        bool hadTraceParent = _msbuildRequiredEnvironmentVariables.TryGetValue(Activities.TRACEPARENT, out string? traceParent);
+        bool hadTraceState = _msbuildRequiredEnvironmentVariables.TryGetValue(Activities.TRACESTATE, out string? traceState);
+        _msbuildRequiredEnvironmentVariables[Activities.TRACEPARENT] = activity.Id;
+        _msbuildRequiredEnvironmentVariables[Activities.TRACESTATE] = activity.TraceStateString;
+
+        try
+        {
+            return ExecuteCore();
+        }
+        finally
+        {
+            Restore(Activities.TRACEPARENT, hadTraceParent, traceParent);
+            Restore(Activities.TRACESTATE, hadTraceState, traceState);
+        }
+
+        void Restore(string name, bool existed, string? value)
+        {
+            if (existed)
+            {
+                _msbuildRequiredEnvironmentVariables[name] = value;
+            }
+            else
+            {
+                _msbuildRequiredEnvironmentVariables.Remove(name);
+            }
+        }
+    }
+
+    private int ExecuteCore()
+    {
         if (_forwardingApp != null)
         {
             return GetProcessStartInfo().Execute();
