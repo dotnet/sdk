@@ -30,7 +30,7 @@ With selection options, it includes only the requested parts.
 | Option | Description |
 | --- | --- |
 | `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the script syntax. If omitted, detect the current shell. |
-| `-d`, `--dotnet-install-path <PATH>` | Use a specific .NET installation root. The default is the default dotnetup hive. |
+| `-d`, `--dotnet-install-path <PATH>` | Use a specific .NET installation root. The default is the default dotnetup-managed installation root. |
 | `--dotnet` | Add the selected .NET root to `PATH` and set `DOTNET_ROOT`. |
 | `--dotnetup` | Add the directory that contains `dotnetup` to `PATH`. |
 | `-?`, `-h`, `--help` | Show command help. |

@@ -47,7 +47,7 @@ Installation-path precedence is:
 
 1. `--install-path`.
 1. The first `sdk.paths` entry in the nearest `global.json`.
-1. The default dotnetup hive.
+1. The default dotnetup-managed .NET installation root.
 
 ## Keep repository files current
 

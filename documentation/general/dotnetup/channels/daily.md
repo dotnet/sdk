@@ -68,8 +68,8 @@ Garbage collection removes older files that no remaining specification needs.
 
 ## Isolate daily builds
 
-Use a separate hive when you do not want daily builds to share files with your
-default managed installation:
+Use a separate installation root when you do not want daily builds to share
+files with your default managed installation:
 
 ```dotnetcli
 dotnetup sdk install 11.0.1xx-daily --install-path .\.dotnet-daily
@@ -77,5 +77,6 @@ dotnetup sdk install 11.0.1xx-daily --install-path .\.dotnet-daily
 ```
 
 The `dotnetup dotnet` forwarding command does not automatically select an
-arbitrary custom hive. To run a custom hive directly, use its `dotnet`
-executable or activate it with `dotnetup env script --dotnet-install-path`.
+arbitrary custom installation root. To use a custom installation directly,
+run its `dotnet` executable or activate it with
+`dotnetup env script --dotnet-install-path`.

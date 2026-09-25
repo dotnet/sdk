@@ -1,14 +1,14 @@
 ---
-title: Manage custom dotnetup hives
+title: Manage custom dotnetup installation roots
 description: Install and manage .NET in custom roots and isolated manifests.
 ms.topic: how-to
 ms.date: 08/07/2026
 ---
 
-# Manage custom dotnetup hives
+# Manage custom dotnetup installation roots
 
-A custom hive can isolate repository, test, or tool installations from the
-default dotnetup root.
+A custom installation root can isolate repository, test, or tool installations
+from the default dotnetup-managed .NET installation root.
 
 ## Track a custom root in the default manifest
 
@@ -46,9 +46,9 @@ dotnetup sdk install 10.0 \
 
 Repeat `--manifest-path` for later list, update, and uninstall operations.
 This option applies to one command. It does not move the dotnetup configuration
-file or change the default hive.
+file or change the default installation root.
 
-## Run the custom hive
+## Run the custom installation
 
 Run its executable directly, or activate it for the current shell:
 
