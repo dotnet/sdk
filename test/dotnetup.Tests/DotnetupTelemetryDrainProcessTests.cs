@@ -11,6 +11,33 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 [TestClass]
 public class DotnetupTelemetryDrainProcessTests
 {
+    public TestContext TestContext { get; set; } = null!;
+    [TestMethod]
+    public async Task RunAsync_DoesNotStartAnotherExporterWhenDirectoryIsLocked()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var directoryLock = DotnetupTelemetryDrainProcess.TryAcquireDirectoryLock(directory);
+            Assert.IsNotNull(directoryLock);
+            await DotnetupTelemetryDrainProcess.RunAsync("invalid connection", directory, TimeSpan.FromMinutes(3), TestContext.CancellationToken);
+            using var secondLock = DotnetupTelemetryDrainProcess.TryAcquireDirectoryLock(directory);
+            Assert.IsNull(secondLock);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task RunAsync_ZeroLifetimeDoesNotCreateStorage()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        await DotnetupTelemetryDrainProcess.RunAsync("invalid connection", directory, TimeSpan.Zero, TestContext.CancellationToken);
+        Assert.IsFalse(Directory.Exists(directory));
+    }
+
     [TestMethod]
     public void ResolveTelemetryStorageDirectory_HonorsEnvOverride()
     {

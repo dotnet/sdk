@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.DotNet.Cli.Telemetry;
+using Azure.Monitor.OpenTelemetry.Exporter;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -43,8 +43,7 @@ internal static class DotnetupTelemetryDrainProcess
             var storageDirectory = DotnetupPaths.ResolveTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
             var connectionString = DotnetupTelemetry.ResolveConnectionString(Environment.GetEnvironmentVariable);
 
-            PersistentStorageTelemetryDrainer
-                .RunAsync(connectionString, storageDirectory, s_drainerLifetime)
+            RunAsync(connectionString, storageDirectory, s_drainerLifetime)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -53,6 +52,46 @@ internal static class DotnetupTelemetryDrainProcess
 
         }
         return true;
+    }
+
+    internal static async Task RunAsync(string connectionString, string storageDirectory, TimeSpan lifetime, CancellationToken cancellationToken = default)
+    {
+        if (lifetime <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        using var directoryLock = TryAcquireDirectoryLock(storageDirectory);
+        if (directoryLock is null)
+        {
+            return;
+        }
+
+        var options = new AzureMonitorExporterOptions();
+        DotnetupTelemetry.ConfigureAzureExporter(options, connectionString, storageDirectory);
+        using var exporter = new AzureMonitorLogExporter(options);
+        using var process = Process.GetCurrentProcess();
+        TelemetryTestHooks.TryWriteFile(Constants.Telemetry.TestDrainerProcessPathEnvVar,
+            $"{process.Id}:{process.StartTime.ToUniversalTime().Ticks}");
+        await Task.Delay(lifetime, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static FileStream? TryAcquireDirectoryLock(string storageDirectory)
+    {
+        try
+        {
+            Directory.CreateDirectory(storageDirectory);
+            return new FileStream(Path.Combine(storageDirectory, ".drain.lock"), FileMode.OpenOrCreate,
+                FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -76,13 +115,12 @@ internal static class DotnetupTelemetryDrainProcess
             var startInfo = new ProcessStartInfo
             {
                 FileName = executablePath,
-                UseShellExecute = false,
+                UseShellExecute = OperatingSystem.IsWindows(),
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
-                // Give the child fresh stdio pipes instead of inheriting this process's console/redirect handles
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
+                RedirectStandardOutput = !OperatingSystem.IsWindows(),
+                RedirectStandardError = !OperatingSystem.IsWindows(),
+                RedirectStandardInput = !OperatingSystem.IsWindows(),
             };
             startInfo.ArgumentList.Add(Constants.Telemetry.DrainCommand);
 
