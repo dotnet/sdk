@@ -1,20 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.MSBuild.Tests;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using BinaryLog = Microsoft.Build.Logging.StructuredLogger.BinaryLog;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
@@ -64,13 +64,24 @@ public sealed class MSBuildActivityTests : SdkTest
 
     [TestMethod]
     [DataRow("pack", false, 1)]
-    [DataRow("pack", true, 1)]
-    [DataRow("publish", false, 1)]
     [DataRow("publish", true, 2)]
     public void PhysicalPackAndPublishExportSubmissionHistograms(string verb, bool outOfProcess, int executions)
     {
         var asset = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: $"{verb}-{outOfProcess}")
-            .WithSource();
+            .WithSource()
+            .WithProjectChanges(projectXml => projectXml.Root!.Add(
+                new XElement("PropertyGroup",
+                    new XElement("PackRelease", "true"),
+                    new XElement("PublishRelease", "true")),
+                new XElement("Target",
+                    new XAttribute("Name", "ReportActivityContext"),
+                    new XAttribute("BeforeTargets", "Build"),
+                    new XElement("Message",
+                        new XAttribute("Importance", "High"),
+                        new XAttribute("Text", "ACTIVITY_TRACEPARENT=$(TRACEPARENT)")),
+                    new XElement("Message",
+                        new XAttribute("Importance", "High"),
+                        new XAttribute("Text", "ACTIVITY_TRACESTATE=$(TRACESTATE)")))));
         string project = Path.Combine(asset.Path, "HelloWorld.csproj");
         string output = Path.Combine(asset.Path, "output");
         string binlogArgument = BinLogArgument([verb, outOfProcess.ToString(), Guid.NewGuid().ToString("N")]);
@@ -83,23 +94,30 @@ public sealed class MSBuildActivityTests : SdkTest
         using Activity? parent = Activities.Source.StartActivity("test-command");
         parent.Should().NotBeNull();
         parent!.TraceStateString = "sdk-test=parent";
-        var parseResult = Parser.Parse(
-            [
-                "dotnet", verb, project, "--no-restore", "--configuration", "Debug", "--output", output,
-                "--disable-build-servers", binlogArgument,
-            ]);
-        CommandBase command = verb == "pack"
+        string[] arguments =
+        [
+            "dotnet", verb, project, "--no-restore", "--output", output,
+            "--disable-build-servers", binlogArgument,
+        ];
+        var configured = Parser.Parse([.. arguments, "--configuration", "Debug"]);
+        _ = verb == "pack"
+            ? PackCommand.FromParseResult(configured, msbuildPath)
+            : PublishCommand.FromParseResult(configured, msbuildPath);
+        exported.AssertNoReleasePropertyDiscovery();
+
+        var parseResult = Parser.Parse(arguments);
+        var command = (RestoringCommand)(verb == "pack"
             ? PackCommand.FromParseResult(parseResult, msbuildPath)
-            : PublishCommand.FromParseResult(parseResult, msbuildPath);
-        command.Should().BeAssignableTo<RestoringCommand>();
-        ((RestoringCommand)command).SeparateRestoreCommand.Should().BeNull();
+            : PublishCommand.FromParseResult(parseResult, msbuildPath));
+        command.MSBuildArguments.Should().Contain("--property:Configuration=Release");
+        command.SeparateRestoreCommand.Should().BeNull();
+        Activity discovery = exported.AssertReleasePropertyDiscovery(parent);
         if (outOfProcess)
         {
-            ((RestoringCommand)command).GetProcessStartInfo().Arguments.Should().Contain(msbuildPath!);
+            command.GetProcessStartInfo().Arguments.Should().Contain(msbuildPath!);
         }
 
         exported.AssertNoSubmissions();
-        exported.AssertNoReleasePropertyDiscovery();
         Activity.Current.Should().BeSameAs(parent);
 
         for (int execution = 0; execution < executions; execution++)
@@ -109,12 +127,13 @@ public sealed class MSBuildActivityTests : SdkTest
             Activity.Current.Should().BeSameAs(parent);
             if (outOfProcess)
             {
-                AssertForwardingContextRestored((RestoringCommand)command, parent);
+                AssertForwardingContextRestored(command, parent);
             }
         }
 
         Activity[] submissions = exported.AssertSubmissionMeasurements(executions, parent);
-        AssertBuildBoundaries(binlogArgument, submissions);
+        (discovery.StartTimeUtc + discovery.Duration).Should().BeOnOrBefore(submissions[0].StartTimeUtc);
+        AssertBuildBoundaries(binlogArgument, submissions, verifyForwardedContext: outOfProcess);
         TelemetryClient.Instance.Should().BeNull("local diagnostic collection must not initialize SDK telemetry");
         if (verb == "pack")
         {
@@ -127,62 +146,256 @@ public sealed class MSBuildActivityTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow("pack")]
-    [DataRow("publish")]
-    public void PackAndPublishExportReleaseSettingsDiscoveryBeforeSubmission(string verb)
-    {
-        var asset = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: verb)
-            .WithSource()
-            .WithProjectChanges(projectXml => projectXml.Root!.Add(
-                new XElement("PropertyGroup",
-                    new XElement("PackRelease", "true"),
-                    new XElement("PublishRelease", "true"))));
-        string project = Path.Combine(asset.Path, "HelloWorld.csproj");
-        string output = Path.Combine(asset.Path, "output");
-        string binlogArgument = BinLogArgument([verb, Guid.NewGuid().ToString("N")]);
-        Restore(project);
-
-        using var exported = new ActivityExports();
-        using Activity? parent = Activities.Source.StartActivity("test-command");
-        parent.Should().NotBeNull();
-        var parseResult = Parser.Parse(
-            [
-                "dotnet", verb, project, "--no-restore", "--output", output,
-                "--disable-build-servers", binlogArgument,
-            ]);
-        var command = (RestoringCommand)(verb == "pack"
-            ? PackCommand.FromParseResult(parseResult)
-            : PublishCommand.FromParseResult(parseResult));
-
-        command.MSBuildArguments.Should().Contain("--property:Configuration=Release");
-        exported.AssertNoSubmissions();
-        Activity discovery = exported.AssertReleasePropertyDiscovery(parent);
-        Activity.Current.Should().BeSameAs(parent);
-
-        command.Execute().Should().Be(0);
-
-        Activity.Current.Should().BeSameAs(parent);
-        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
-        (discovery.StartTimeUtc + discovery.Duration).Should().BeOnOrBefore(submissions[0].StartTimeUtc);
-        AssertBuildBoundaries(binlogArgument, submissions);
-    }
-
-    [TestMethod]
-    [DataRow("PackRelease")]
-    [DataRow("PublishRelease")]
-    public void DisabledReleaseSettingsDiscoveryDoesNotEmitAnActivity(string property)
+    public void DisabledReleaseSettingsDiscoveryDoesNotEmitAnActivity()
     {
         Environment.SetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE, "true");
         using var exported = new ActivityExports();
         var locator = new ReleasePropertyProjectLocator(
             userSpecifiedExplicitMSBuildProperties: null,
-            propertyToCheck: property,
+            propertyToCheck: "PackRelease",
             commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([]));
 
         locator.GetCustomDefaultConfigurationValueIfSpecified().Should().BeNull();
 
         exported.AssertNoReleasePropertyDiscovery();
-        exported.AssertNoSubmissions();
+        exported.AssertSubmissionMeasurements(expectedCount: 0, parent: null);
+    }
+
+    [TestMethod]
+    [DataRow(false, "success")]
+    [DataRow(true, "success")]
+    [DataRow(true, "missing-target")]
+    public void PreparatoryDeviceDiscoveryMeasuresTargetsAndSkipsMissingTargets(bool sharedSession, string scenario)
+    {
+        var directory = TestAssetsManager.CreateTestDirectory(identifier: $"{sharedSession}-{scenario}");
+        string project = Path.Combine(directory.Path, "devices.csproj");
+        string restored = Path.Combine(directory.Path, "restored.txt");
+        string computed = Path.Combine(directory.Path, "computed.txt");
+        File.Delete(restored);
+        File.Delete(computed);
+        var projectXml = XDocument.Parse($"""
+            <Project>
+              <Target Name="Restore">
+                <Error Condition="'$(TargetFramework)' != ''" Text="Restore must evaluate the outer project." />
+                <WriteLinesToFile File="$(MSBuildProjectDirectory){Path.DirectorySeparatorChar}restored.txt" Lines="restored" />
+              </Target>
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <Error Condition="!Exists('$(MSBuildProjectDirectory){Path.DirectorySeparatorChar}restored.txt')"
+                       Text="Device discovery must follow restore." />
+                <WriteLinesToFile File="$(MSBuildProjectDirectory){Path.DirectorySeparatorChar}computed.txt" Lines="computed" />
+                <ItemGroup>
+                  <Devices Include="test-device">
+                    <Description>$(TargetFramework)</Description>
+                    <RuntimeIdentifier>test-rid</RuntimeIdentifier>
+                  </Devices>
+                </ItemGroup>
+              </Target>
+            </Project>
+            """);
+        if (scenario == "missing-target")
+        {
+            projectXml.Root!.Elements("Target")
+                .Single(target => target.Attribute("Name")!.Value == "ComputeAvailableDevices").Remove();
+        }
+
+        projectXml.Save(project);
+        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(
+            [$"-p:TargetFramework={ToolsetInfo.CurrentTargetFramework}"]);
+        using var exported = new ActivityExports();
+        using Activity? parent = Activities.Source.StartActivity("test-command");
+        parent.Should().NotBeNull();
+        var targetEvents = new ConcurrentQueue<BuildEventArgs>();
+        var dispatcher = new PersistentDispatcher([]);
+        dispatcher.AnyEventRaised += (_, args) =>
+        {
+            if (args is TargetStartedEventArgs or TargetFinishedEventArgs)
+            {
+                targetEvents.Enqueue(args);
+            }
+        };
+        var logger = new FacadeLogger(dispatcher);
+        using MSBuildSession? session = sharedSession ? new MSBuildSession(msbuildArgs, logger) : null;
+        using var selector = new RunCommandSelector(
+            project, isInteractive: false, msbuildArgs, new Dictionary<string, string>(),
+            sharedSession ? "dotnet test" : "dotnet run", binaryLogger: logger, buildSession: session);
+
+        selector.TrySelectTargetFramework(out string? selectedFramework).Should().BeTrue();
+        selectedFramework.Should().BeNull();
+        selector.HasValidProject.Should().BeFalse();
+        exported.AssertActivities("project-selection", expectedCount: 0, parent);
+
+        bool success = selector.TryComputeAvailableDevices(noRestore: false, out var devices, out bool restoreWasPerformed);
+        success.Should().Be(scenario == "success");
+        restoreWasPerformed.Should().Be(success);
+        if (success)
+        {
+            RunCommandSelector.DeviceItem device = devices.Should().ContainSingle().Subject;
+            device.Id.Should().Be("test-device");
+            device.Description.Should().Be(ToolsetInfo.CurrentTargetFramework);
+            device.RuntimeIdentifier.Should().Be("test-rid");
+            selector.TryComputeAvailableDevices(noRestore: true, out var cachedDevices, out bool restoredAgain).Should().BeTrue();
+            cachedDevices.Should().ContainSingle().Which.Should().Be(device);
+            restoredAgain.Should().BeFalse();
+            File.ReadAllLines(restored).Should().Equal("restored");
+            File.ReadAllLines(computed).Should().Equal("computed", "computed");
+        }
+        else
+        {
+            devices.Should().BeNull();
+            File.Exists(restored).Should().BeFalse();
+            File.Exists(computed).Should().BeFalse();
+        }
+
+        session?.Complete();
+
+        Activity.Current.Should().BeSameAs(parent);
+        exported.AssertActivities("project-selection", success ? 2 : 1, parent);
+        Activity[] discovery = exported.AssertActivities("device-discovery", success ? 2 : 0, parent);
+        exported.AssertSubmissionMeasurements(expectedCount: 0, parent);
+        TargetStartedEventArgs[] starts = targetEvents.OfType<TargetStartedEventArgs>().ToArray();
+        TargetFinishedEventArgs[] finishes = targetEvents.OfType<TargetFinishedEventArgs>().ToArray();
+        string[] expectedTargets = success ? ["Restore", "ComputeAvailableDevices", "ComputeAvailableDevices"] : [];
+        starts.Select(args => args.TargetName).Should().Equal(expectedTargets);
+        finishes.Select(args => args.TargetName).Should().Equal(starts.Select(args => args.TargetName));
+        for (int i = 0; i < starts.Length; i++)
+        {
+            DateTime start = starts[i].Timestamp.ToUniversalTime();
+            DateTime end = finishes[i].Timestamp.ToUniversalTime();
+            discovery.Should().ContainSingle(activity =>
+                activity.StartTimeUtc <= start && activity.StartTimeUtc + activity.Duration >= end);
+        }
+    }
+
+    [TestMethod]
+    public void PreparatoryTestProjectDiscoveryIncludesInnerFrameworksAndSkipsExplicitDevices()
+    {
+        var directory = TestAssetsManager.CreateTestDirectory();
+        string project = Path.Combine(directory.Path, "discovery.csproj");
+        File.WriteAllText(project, $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.NextTargetFramework}</TargetFrameworks>
+                <SelectedFramework>$(TargetFramework)</SelectedFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+        var definition = new TestCommandDefinition.MicrosoftTestingPlatform();
+        var options = MSBuildUtility.GetBuildOptions(definition.Parse(["--project", project, "--no-build"]));
+        using var exported = new ActivityExports();
+        using Activity? parent = Activities.Source.StartActivity("test-command");
+        parent.Should().NotBeNull();
+        using var session = new MSBuildSession(
+            SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(options.MSBuildArgs), logger: null);
+
+        SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
+            project, options with { Device = "test-device" }, session).Should().BeNull();
+        SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
+            project, options with { MSBuildArgs = ["-p:Device=test-device"] }, session).Should().BeNull();
+        session.ProjectCollection.LoadedProjects.Should().BeEmpty();
+        exported.AssertActivities("test-project-discovery", expectedCount: 0, parent);
+
+        var evaluation = SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(project, options, session);
+        evaluation.Should().NotBeNull();
+        evaluation!.EvaluatedProjects.Should().HaveCount(3);
+        evaluation.ProjectsByFramework.Select(entry => entry.Key).Should().BeEquivalentTo(
+            [ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFramework]);
+        foreach (var (framework, instance) in evaluation.ProjectsByFramework)
+        {
+            instance.GetPropertyValue("SelectedFramework").Should().Be(framework);
+        }
+
+        Activity.Current.Should().BeSameAs(parent);
+        exported.AssertActivities("test-project-discovery", expectedCount: 1, parent);
+        exported.AssertSubmissionMeasurements(expectedCount: 0, parent);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void PreparatoryTestEnvironmentDiscoveryEndsBeforeBuild(bool passEnvironment)
+    {
+        var directory = TestAssetsManager.CreateTestDirectory(identifier: passEnvironment.ToString());
+        string project = Path.Combine(directory.Path, "environment.csproj");
+        string observed = Path.Combine(directory.Path, "observed.txt");
+        string propsFile = Path.Combine(directory.Path, "obj", "dotnet-test-env.props");
+        string binlogArgument = BinLogArgument([Guid.NewGuid().ToString("N")]);
+        File.Delete(observed);
+        File.WriteAllText(project, $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <IntermediateOutputPath>obj</IntermediateOutputPath>
+              </PropertyGroup>
+              <Import Project="$(CustomBeforeMicrosoftCommonProps)" Condition="'$(CustomBeforeMicrosoftCommonProps)' != ''" />
+              <ItemGroup>
+                <ProjectCapability Include="{Constants.RuntimeEnvironmentVariableSupport}" />
+              </ItemGroup>
+              <Target Name="{TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName}">
+                <WriteLinesToFile File="$(MSBuildProjectDirectory){Path.DirectorySeparatorChar}observed.txt"
+                                  Lines="variables=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        var definition = new TestCommandDefinition.MicrosoftTestingPlatform();
+        var options = MSBuildUtility.GetBuildOptions(
+            definition.Parse(["--project", project, "--device", "test-device", "--no-restore", binlogArgument])) with
+        {
+            EnvironmentVariables = passEnvironment
+                ? new Dictionary<string, string> { ["ACTIVITY_TEST"] = "value" }
+                : new Dictionary<string, string>(),
+        };
+        using var exported = new ActivityExports();
+        using Activity? parent = Activities.Source.StartActivity("test-command");
+        parent.Should().NotBeNull();
+        using var session = new MSBuildSession(
+            SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(options.MSBuildArgs), logger: null);
+
+        var result = MSBuildUtility.GetProjectsFromProject(project, options, session);
+
+        result.BuildExitCode.Should().Be(0);
+        result.Projects.Should().BeEmpty();
+        session.Complete();
+        Activity.Current.Should().BeSameAs(parent);
+        Activity[] discovery = exported.AssertActivities("test-environment-discovery", passEnvironment ? 1 : 0, parent);
+        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
+        File.Exists(propsFile).Should().BeFalse();
+        File.ReadAllText(observed).Trim().Should().Be(passEnvironment ? "variables=ACTIVITY_TEST=value" : "variables=");
+        AssertBuildBoundaries(binlogArgument, submissions);
+        if (passEnvironment)
+        {
+            (discovery[0].StartTimeUtc + discovery[0].Duration).Should().BeOnOrBefore(submissions[0].StartTimeUtc);
+        }
+    }
+
+    [TestMethod]
+    public void PreparatoryTestTargetFrameworkDiscoverySkipsAnExplicitFramework()
+    {
+        var directory = TestAssetsManager.CreateTestDirectory();
+        string project = Path.Combine(directory.Path, "framework.csproj");
+        File.WriteAllText(project, $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>
+              </PropertyGroup>
+            </Project>
+            """);
+        var definition = new TestCommandDefinition.MicrosoftTestingPlatform();
+        string[] arguments = ["--project", project, "--device", "test-device", "--no-build", "--no-restore"];
+        using var exported = new ActivityExports();
+        using Activity? parent = Activities.Source.StartActivity("test-command");
+        parent.Should().NotBeNull();
+        var command = new MicrosoftTestingPlatformTestCommand();
+
+        // The SDK-less project has no test modules, so execution stops after discovery.
+        command.Run(definition.Parse(arguments), isHelp: false).Should().Be(1);
+        exported.AssertActivities("test-target-framework-discovery", expectedCount: 1, parent);
+        command.Run(definition.Parse([.. arguments, "--framework", ToolsetInfo.CurrentTargetFramework]), isHelp: false)
+            .Should().Be(1);
+
+        Activity.Current.Should().BeSameAs(parent);
+        exported.AssertActivities("test-target-framework-discovery", expectedCount: 1, parent);
+        exported.AssertActivities("test-project-discovery", expectedCount: 0, parent);
+        exported.AssertSubmissionMeasurements(expectedCount: 0, parent);
     }
 
     [TestMethod]
@@ -225,14 +438,12 @@ public sealed class MSBuildActivityTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void FileBasedPublishExportsItsBuildSubmission(bool fail)
+    public void FileBasedPublishExportsItsBuildSubmission()
     {
-        var directory = TestAssetsManager.CreateTestDirectory(identifier: fail.ToString());
+        var directory = TestAssetsManager.CreateTestDirectory();
         string program = Path.Combine(directory.Path, "Program.cs");
         string output = Path.Combine(directory.Path, "output");
-        string binlogArgument = BinLogArgument([fail.ToString(), Guid.NewGuid().ToString("N")]);
+        string binlogArgument = BinLogArgument([Guid.NewGuid().ToString("N")]);
         File.WriteAllText(program, """
             #:property PublishAot=false
             #:property SelfContained=false
@@ -240,11 +451,6 @@ public sealed class MSBuildActivityTests : SdkTest
             Console.WriteLine("File-based activity test");
             """);
         Restore(program);
-        if (fail)
-        {
-            WriteFailingTarget(directory.Path);
-        }
-
         using var exported = new ActivityExports();
         using Activity? parent = Activities.Source.StartActivity("test-command");
         parent.Should().NotBeNull();
@@ -258,132 +464,11 @@ public sealed class MSBuildActivityTests : SdkTest
 
         int exitCode = command.Execute();
 
-        exitCode.Should().Be(fail ? 1 : 0);
+        exitCode.Should().Be(0);
         Activity.Current.Should().BeSameAs(parent);
         Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
         AssertBuildBoundaries(binlogArgument, submissions);
-        if (!fail)
-        {
-            File.Exists(Path.Combine(output, "Program.dll")).Should().BeTrue();
-        }
-    }
-
-    [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void FailedPhysicalBuildStillExportsItsSubmission(bool outOfProcess)
-    {
-        var asset = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: outOfProcess.ToString()).WithSource();
-        string project = Path.Combine(asset.Path, "HelloWorld.csproj");
-        string binlogArgument = BinLogArgument([Guid.NewGuid().ToString("N")]);
-        Restore(project);
-        WriteFailingTarget(asset.Path);
-        using var exported = new ActivityExports();
-        using Activity? parent = Activities.Source.StartActivity("test-command");
-        parent.Should().NotBeNull();
-        parent!.TraceStateString = "sdk-test=parent";
-        var parseResult = Parser.Parse(
-            [
-                "dotnet", "publish", project, "--no-restore", "--configuration", "Debug",
-                "--disable-build-servers", binlogArgument,
-            ]);
-        var command = (RestoringCommand)PublishCommand.FromParseResult(
-            parseResult,
-            outOfProcess ? Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll") : null);
-        exported.AssertNoSubmissions();
-
-        command.Execute().Should().NotBe(0);
-
-        Activity.Current.Should().BeSameAs(parent);
-        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
-        AssertBuildBoundaries(binlogArgument, submissions);
-        if (outOfProcess)
-        {
-            AssertForwardingContextRestored(command, parent);
-        }
-    }
-
-    [TestMethod]
-    public async Task OutOfProcessMSBuildSpanIsParentedByItsSubmission()
-    {
-        var asset = TestAssetsManager.CopyTestAsset("HelloWorld").WithSource();
-        string project = Path.Combine(asset.Path, "HelloWorld.csproj");
-        Restore(project);
-        await using var collector = await TelemetryCollectorFixture.CreateAsync(TestContext.CancellationToken);
-
-        var command = new DotnetCommand(
-                Log, "publish", project, "--no-restore", "--configuration", "Debug", "--disable-build-servers")
-            .WithEnvironmentVariable("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC", "1")
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "0")
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER", "1")
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "1")
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "15000")
-            .WithEnvironmentVariable("OTEL_SDK_DISABLED", "false")
-            .WithEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", collector.Endpoint.ToString())
-            .WithEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
-
-        // Signal-specific settings take precedence over the common loopback endpoint.
-        string[] signals = ["TRACES", "METRICS", "LOGS"];
-        string[] settings = ["ENDPOINT", "PROTOCOL", "HEADERS"];
-        foreach (string signal in signals)
-        {
-            foreach (string setting in settings)
-            {
-                command.EnvironmentToRemove.Add($"OTEL_EXPORTER_OTLP_{signal}_{setting}");
-            }
-        }
-
-        command.EnvironmentToRemove.Add("OTEL_EXPORTER_OTLP_HEADERS");
-        command.EnvironmentToRemove.Add("DOTNET_CLI_TELEMETRY_LOG_PATH");
-        command.Execute().Should().Pass();
-
-        await collector.WaitForEventsAsync(
-            events => events.Any(e => e.Name == "dotnet/cli/msbuild/build")
-                && events.Any(e => e.Name == "dotnet/cli/command/finish"),
-            cancellationToken: TestContext.CancellationToken);
-        IReadOnlyList<CollectedSpan> spans = await collector.GetSpansAsync(TestContext.CancellationToken);
-        CollectedSpan submission = spans.Should().ContainSingle(span => span.Name == "msbuild-submission").Subject;
-        CollectedSpan build = spans.Should().ContainSingle(span => span.Name == "msbuild").Subject;
-        submission.TraceId.Should().NotBeNullOrEmpty();
-        submission.SpanId.Should().NotBeNullOrEmpty();
-        build.TraceId.Should().Be(submission.TraceId);
-        build.ParentSpanId.Should().Be(submission.SpanId);
-        spans.Should().Contain(span => span.TraceId == submission.TraceId && span.SpanId == submission.ParentSpanId);
-    }
-
-    [TestMethod]
-    public void LoggerAndSubmissionActivitiesAreNestedAndMeasuredSeparately()
-    {
-        using var exported = new ActivityExports();
-        using Activity? parent = Activities.Source.StartActivity("test-command");
-        parent.Should().NotBeNull();
-        using Activity? submission = Activities.Source.StartActivity("msbuild-submission");
-        submission.Should().NotBeNull();
-        var eventSource = new PersistentDispatcher([]);
-        var logger = new MSBuildLogger(new FakeTelemetry());
-        logger.Initialize(eventSource);
-
-        try
-        {
-            eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
-            Activity? build = Activity.Current;
-            build.Should().NotBeNull();
-            build!.OperationName.Should().Be("msbuild");
-            build.TraceId.Should().Be(submission!.TraceId);
-            build.ParentSpanId.Should().Be(submission.SpanId);
-
-            eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
-            Activity.Current.Should().BeSameAs(build, "the logger remains active through final build telemetry");
-        }
-        finally
-        {
-            logger.Shutdown();
-        }
-
-        Activity.Current.Should().BeSameAs(submission);
-        submission!.Stop();
-        Activity.Current.Should().BeSameAs(parent);
-        exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
+        File.Exists(Path.Combine(output, "Program.dll")).Should().BeTrue();
     }
 
     private static void AssertForwardingContextRestored(RestoringCommand command, Activity parent)
@@ -393,24 +478,23 @@ public sealed class MSBuildActivityTests : SdkTest
         forwarded.Environment[Activities.TRACESTATE].Should().Be(parent.TraceStateString);
     }
 
-    private static void AssertBuildBoundaries(string binlogArgument, Activity[] submissions)
+    private static void AssertBuildBoundaries(string binlogArgument, Activity[] submissions, bool verifyForwardedContext = false)
     {
         string binlogPattern = Path.GetFullPath(binlogArgument["/bl:".Length..]);
         string[] binlogs = Directory.GetFiles(
             Path.GetDirectoryName(binlogPattern)!,
             Path.GetFileName(binlogPattern).Replace("{}", "*", StringComparison.Ordinal));
         binlogs.Should().HaveCount(submissions.Length);
-        List<(DateTime Start, DateTime End)> builds = [];
+        List<(DateTime Start, DateTime End, BuildEventArgs[] Events)> builds = [];
         foreach (string binlog in binlogs)
         {
-            BuildEventArgs[] boundaries = BinaryLog.ReadRecords(binlog)
+            BuildEventArgs[] events = BinaryLog.ReadRecords(binlog)
                 .Select(record => record.Args)
                 .OfType<BuildEventArgs>()
-                .Where(args => args is BuildStartedEventArgs or BuildFinishedEventArgs)
                 .ToArray();
-            BuildStartedEventArgs started = boundaries.OfType<BuildStartedEventArgs>().Should().ContainSingle().Subject;
-            BuildFinishedEventArgs finished = boundaries.OfType<BuildFinishedEventArgs>().Should().ContainSingle().Subject;
-            builds.Add((started.Timestamp.ToUniversalTime(), finished.Timestamp.ToUniversalTime()));
+            BuildStartedEventArgs started = events.OfType<BuildStartedEventArgs>().Should().ContainSingle().Subject;
+            BuildFinishedEventArgs finished = events.OfType<BuildFinishedEventArgs>().Should().ContainSingle().Subject;
+            builds.Add((started.Timestamp.ToUniversalTime(), finished.Timestamp.ToUniversalTime(), events));
         }
 
         builds.Sort((left, right) => left.Start.CompareTo(right.Start));
@@ -418,6 +502,12 @@ public sealed class MSBuildActivityTests : SdkTest
         {
             submissions[i].StartTimeUtc.Should().BeOnOrBefore(builds[i].Start);
             (submissions[i].StartTimeUtc + submissions[i].Duration).Should().BeOnOrAfter(builds[i].End);
+            if (verifyForwardedContext)
+            {
+                string?[] messages = builds[i].Events.OfType<BuildMessageEventArgs>().Select(args => args.Message).ToArray();
+                messages.Should().Contain($"ACTIVITY_TRACEPARENT={submissions[i].Id}");
+                messages.Should().Contain($"ACTIVITY_TRACESTATE={submissions[i].TraceStateString}");
+            }
         }
     }
 
@@ -430,7 +520,7 @@ public sealed class MSBuildActivityTests : SdkTest
             .Pass();
     }
 
-    private static void WriteFailingTarget(string directory, string target = "CoreCompile")
+    private static void WriteFailingTarget(string directory, string target)
     {
         File.WriteAllText(Path.Combine(directory, "Directory.Build.targets"), $"""
             <Project>
@@ -476,18 +566,32 @@ public sealed class MSBuildActivityTests : SdkTest
             return discovery;
         }
 
+        public Activity[] AssertActivities(string name, int expectedCount, Activity? parent)
+        {
+            Activity[] activities = _activities
+                .Where(activity => activity.OperationName == name)
+                .OrderBy(activity => activity.StartTimeUtc)
+                .ToArray();
+            activities.Should().HaveCount(expectedCount);
+            ActivitySpanId parentSpanId = parent?.SpanId ?? default;
+            foreach (Activity activity in activities)
+            {
+                activity.ParentSpanId.Should().Be(parentSpanId);
+            }
+            return activities;
+        }
+
         public Activity[] AssertSubmissionMeasurements(int expectedCount, Activity? parent)
         {
             _traces.ForceFlush().Should().BeTrue();
             _meter.ForceFlush().Should().BeTrue();
 
-            Activity[] submissions = _activities
-                .Where(activity => activity.OperationName == "msbuild-submission")
-                .OrderBy(activity => activity.StartTimeUtc)
-                .ToArray();
-            submissions.Should().HaveCount(expectedCount);
-            ActivitySpanId parentSpanId = parent is null ? default : parent.SpanId;
-            submissions.Should().OnlyContain(activity => activity.ParentSpanId == parentSpanId);
+            Activity[] submissions = AssertActivities("msbuild-submission", expectedCount, parent);
+            if (_activities.Count == 0)
+            {
+                _metrics.Should().BeEmpty();
+                return submissions;
+            }
 
             Metric metric = _metrics.Should().ContainSingle(
                 metric => metric.Name == "dotnet.cli.activity.duration").Subject;

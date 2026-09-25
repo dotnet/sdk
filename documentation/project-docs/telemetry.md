@@ -130,6 +130,23 @@ configuration. It ends before the subsequent MSBuild submission. When release-pr
 discovery is disabled or the configuration is explicitly supplied, that work is skipped
 and no discovery activity is emitted.
 
+Run and Microsoft.Testing.Platform test commands also use MSBuild before their main
+build invocation. Those paths have the following activities:
+
+| Activity | Measured work |
+| --- | --- |
+| `project-selection` | The shared run/test selector loads and, when necessary, evaluates a project, then creates the project instance used for framework, device, or capability checks. Cached project-instance snapshots are included too. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results, when that target exists. Interactive device prompts are outside this activity. |
+| `test-project-discovery` | MTP evaluates the outer project and relevant target-framework-specific projects before automatic device selection. An explicitly supplied device skips this discovery. |
+| `test-target-framework-discovery` | MTP evaluates framework properties for an explicit `--device` when no framework was supplied. Interactive framework prompts are outside this activity. |
+| `test-environment-discovery` | MTP evaluates environment-variable support and prepares the corresponding properties file before forwarding a project build. No activity is emitted when that check is unnecessary. |
+
+These are command phases, not a classification of engine ownership or a fixed position
+in the command: preparation can itself execute MSBuild targets, and shared discovery
+helpers can also run after a build or with `--no-build`. Do not assume that all MSBuild
+work is inside `msbuild-submission`, or that every `project-selection` measurement
+represents a fresh evaluation.
+
 The `msbuild-submission` activity covers the synchronous MSBuild invocation, including
 waiting for an out-of-process or server build to finish. CLI argument parsing, project
 discovery, and Pack/Publish release-setting discovery happen outside this scope. Separate restore and

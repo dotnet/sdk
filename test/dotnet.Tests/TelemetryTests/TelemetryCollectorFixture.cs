@@ -63,18 +63,34 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
     public async Task<IReadOnlyList<CollectedEvent>> GetEventsAsync(
         CancellationToken cancellationToken = default)
     {
-        using JsonDocument document = await ReadSpansAsync(cancellationToken);
-        List<CollectedEvent> events = [];
-        foreach (JsonElement span in EnumerateSpans(document))
-        {
-            if (!span.TryGetProperty("events", out JsonElement spanEvents))
-            {
-                continue;
-            }
+        using HttpResponseMessage response = await _httpClient.GetAsync(ApiEndpoint, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-            foreach (JsonElement spanEvent in spanEvents.EnumerateArray())
+        await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using JsonDocument document = await JsonDocument.ParseAsync(
+            content,
+            cancellationToken: cancellationToken);
+
+        List<CollectedEvent> events = [];
+        foreach (JsonElement resourceSpans in document.RootElement
+            .GetProperty("data")
+            .GetProperty("resourceSpans")
+            .EnumerateArray())
+        {
+            foreach (JsonElement scopeSpans in resourceSpans.GetProperty("scopeSpans").EnumerateArray())
             {
-                events.Add(ParseEvent(spanEvent));
+                foreach (JsonElement span in scopeSpans.GetProperty("spans").EnumerateArray())
+                {
+                    if (!span.TryGetProperty("events", out JsonElement spanEvents))
+                    {
+                        continue;
+                    }
+
+                    foreach (JsonElement spanEvent in spanEvents.EnumerateArray())
+                    {
+                        events.Add(ParseEvent(spanEvent));
+                    }
+                }
             }
         }
 
@@ -88,22 +104,6 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
                     e => e)
                 .Select(group => group.First())
         ];
-    }
-
-    public async Task<IReadOnlyList<CollectedSpan>> GetSpansAsync(CancellationToken cancellationToken = default)
-    {
-        using JsonDocument document = await ReadSpansAsync(cancellationToken);
-        List<CollectedSpan> spans = [];
-        foreach (JsonElement span in EnumerateSpans(document))
-        {
-            spans.Add(new CollectedSpan(
-                ReadRequiredString(span, "name"),
-                ReadRequiredString(span, "traceId"),
-                ReadRequiredString(span, "spanId"),
-                span.TryGetProperty("parentSpanId", out JsonElement parent) ? parent.GetString() : null));
-        }
-
-        return [.. spans.GroupBy(span => (span.TraceId, span.SpanId)).Select(group => group.First())];
     }
 
     public async Task<IReadOnlyList<CollectedEvent>> WaitForEventsAsync(
@@ -151,32 +151,6 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
         await _process.WaitForExitAsync();
         _process.Dispose();
     }
-
-    private async Task<JsonDocument> ReadSpansAsync(CancellationToken cancellationToken)
-    {
-        using HttpResponseMessage response = await _httpClient.GetAsync(ApiEndpoint, cancellationToken);
-        response.EnsureSuccessStatusCode();
-        await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        return await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
-    }
-
-    private static IEnumerable<JsonElement> EnumerateSpans(JsonDocument document)
-    {
-        foreach (JsonElement resourceSpans in document.RootElement.GetProperty("data").GetProperty("resourceSpans").EnumerateArray())
-        {
-            foreach (JsonElement scopeSpans in resourceSpans.GetProperty("scopeSpans").EnumerateArray())
-            {
-                foreach (JsonElement span in scopeSpans.GetProperty("spans").EnumerateArray())
-                {
-                    yield return span;
-                }
-            }
-        }
-    }
-
-    private static string ReadRequiredString(JsonElement element, string propertyName) =>
-        element.GetProperty(propertyName).GetString()
-            ?? throw new InvalidDataException($"An OTLP span did not contain '{propertyName}'.");
 
     private static async Task<string> GetAspirePathAsync(CancellationToken cancellationToken)
     {
@@ -469,9 +443,3 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
 internal sealed record CollectedEvent(
     string Name,
     IReadOnlyDictionary<string, string?> Attributes);
-
-internal sealed record CollectedSpan(
-    string Name,
-    string TraceId,
-    string SpanId,
-    string? ParentSpanId);
