@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.VSTest;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -33,6 +34,16 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             {
                 Environment.SetEnvironmentVariable(vsTestConsolePath, originalVsTestConsolePath);
             }
+        }
+
+        [TestMethod]
+        public void ItDoesNotLaunchVsTestWhenCancellationIsAlreadyRequested()
+        {
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(() =>
+                VSTestCommand.Run(Parser.Parse(["vstest"]), cancellationSource.Token));
         }
     }
 }

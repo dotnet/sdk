@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
+    private readonly IDisposable _processLifecycleCancellationSuppression;
 
 #if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
@@ -67,6 +68,17 @@ internal class ProcessReaper : IDisposable
             {
                 _job = AssignProcessToJobObject((HANDLE)_process.Handle);
             }
+        }
+
+        public override void TerminateProcess()
+        {
+            if (_job is not null &&
+                PInvoke.TerminateJobObject((HANDLE)_job.DangerousGetHandle(), uint.MaxValue))
+            {
+                return;
+            }
+
+            base.TerminateProcess();
         }
 
         private static SafeWaitHandle? AssignProcessToJobObject(HANDLE process)
@@ -192,7 +204,14 @@ internal class ProcessReaper : IDisposable
                         _process.SafeHandle.Signal(PosixSignal.SIGTERM);
                     }
 
-                    // If SIGTERM was ignored by the target, then we'll still wait.
+                    if (ProcessLifecycle.IsSignalTerminationRequested &&
+                        !_process.WaitForExit((int)ProcessLifecycle.SignalTerminationTimeout.TotalMilliseconds))
+                    {
+                        TerminateProcess();
+                    }
+
+                    // For non-signal process exits, preserve the existing behavior of waiting
+                    // for the child after forwarding SIGTERM.
                     _process.WaitForExit();
 
                     Environment.ExitCode = _process.ExitCode;
@@ -238,6 +257,10 @@ internal class ProcessReaper : IDisposable
     private ProcessReaper(Process process)
     {
         _process = process;
+        // The reaper forwards termination signals to the child, so the process-wide lifecycle
+        // token must not race that forwarding and terminate a child that is shutting down
+        // cooperatively.
+        _processLifecycleCancellationSuppression = ProcessLifecycle.SuppressTerminationCancellation();
 
         // The tests need the event handlers registered prior to spawning the child to prevent a race
         // where the child writes output the test expects before the intermediate dotnet process
@@ -250,9 +273,19 @@ internal class ProcessReaper : IDisposable
     /// </summary>
     public virtual void NotifyProcessStarted() { }
 
+    public virtual void TerminateProcess()
+    {
+#if NET
+        _process.Kill(entireProcessTree: true);
+#else
+        _process.Kill();
+#endif
+    }
+
     public virtual void Dispose()
     {
         Console.CancelKeyPress -= HandleCancelKeyPress;
+        _processLifecycleCancellationSuppression.Dispose();
     }
 
     private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)

@@ -36,10 +36,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _interactive = parseResult.GetValue(Definition.InteractiveOption);
     }
 
-    public override int Execute() => ExecuteAsync().AsTask().GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
 
-    public async ValueTask<int> ExecuteAsync()
+    public async ValueTask<int> ExecuteAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Check the entry point file path.
         string file = Path.GetFullPath(_file);
         if (!VirtualProjectBuilder.IsValidEntryPointPath(file))

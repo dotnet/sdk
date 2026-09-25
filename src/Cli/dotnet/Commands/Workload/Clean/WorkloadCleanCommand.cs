@@ -46,15 +46,16 @@ internal sealed class WorkloadCleanCommand : WorkloadCommandBase<WorkloadCleanCo
         _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
-        ExecuteGarbageCollection();
+        ExecuteGarbageCollection(cancellationToken);
         return 0;
     }
 
-    private void ExecuteGarbageCollection()
+    private void ExecuteGarbageCollection(CancellationToken cancellationToken)
     {
         _workloadInstaller.GarbageCollect(workloadVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadVersion),
+            cancellationToken,
             cleanAllPacks: _cleanAll);
 
         DisplayUninstallableVSWorkloads();

@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
 internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<PackageListCommandDefinitionBase>(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
@@ -35,15 +35,15 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             ReportOutputFormat formatOption = _parseResult.GetValue(Definition.FormatOption);
             bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
-            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp, cancellationToken);
         }
 
         return restoreExitCode == 0
-            ? NuGetCommand.Run(TransformArgs(projectFile), isFileBasedApp)
+            ? NuGetCommand.Run(TransformArgs(projectFile), cancellationToken, isFileBasedApp)
             : restoreExitCode;
     }
 
-    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp)
+    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp, CancellationToken cancellationToken)
     {
         CommandBase command;
         if (isFileBasedApp)
@@ -83,9 +83,10 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
 
         try
         {
-            exitCode = command.Execute();
+            cancellationToken.ThrowIfCancellationRequested();
+            exitCode = command.Execute(cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             exitCode = 1;
         }

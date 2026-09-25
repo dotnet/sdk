@@ -45,7 +45,8 @@ internal class ToolPackageRestorer
 
     public ToolRestoreResult InstallPackage(
         ToolManifestPackage package,
-        FilePath? configFile)
+        FilePath? configFile,
+        CancellationToken cancellationToken)
     {
         string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
@@ -68,6 +69,7 @@ internal class ToolPackageRestorer
                         sourceFeedOverrides: _overrideSources,
                         rootConfigDirectory: package.FirstEffectDirectory),
                     package.PackageId,
+                    cancellationToken,
                     verbosity: _verbosity,
                     ToVersionRangeWithOnlyOneVersion(package.Version),
                     targetFramework,
@@ -84,7 +86,7 @@ internal class ToolPackageRestorer
             }
 
             // Check for newer versions and prepare warning message
-            string warning = CheckForNewerVersion(package, configFile);
+            string warning = CheckForNewerVersion(package, configFile, cancellationToken);
 
             return ToolRestoreResult.Success(
                 saveToCache:
@@ -133,7 +135,10 @@ internal class ToolPackageRestorer
                && _fileSystem.File.Exists(toolCommand.Executable.Value);
     }
 
-    private string CheckForNewerVersion(ToolManifestPackage package, FilePath? configFile)
+    private string CheckForNewerVersion(
+        ToolManifestPackage package,
+        FilePath? configFile,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -147,6 +152,7 @@ internal class ToolPackageRestorer
                     sourceFeedOverrides: _overrideSources,
                     rootConfigDirectory: package.FirstEffectDirectory),
                 package.PackageId,
+                cancellationToken,
                 _verbosity,
                 latestVersionRange,
                 _restoreActionConfig);
@@ -162,7 +168,7 @@ internal class ToolPackageRestorer
                 }
             }
         }
-        catch
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // If we can't check for newer versions, don't show a warning
             // This could happen due to network issues, package source problems, etc.
@@ -185,4 +191,3 @@ internal class ToolPackageRestorer
             includeMaxVersion: true);
     }
 }
-

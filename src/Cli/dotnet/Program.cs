@@ -20,9 +20,7 @@ namespace Microsoft.DotNet.Cli;
 public class Program
 {
     private static readonly Activity? s_mainActivity;
-    private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
-    private static readonly PosixSignalRegistration s_sigTermRegistration;
     private static readonly string? s_globalJsonState;
 
     public static ITelemetryClient TelemetryInstance { get; private set; }
@@ -30,9 +28,7 @@ public class Program
     static Program()
     {
         var preTelemetry = DateTime.UtcNow;
-        s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
-        s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
-        s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
+        s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, _ => Shutdown());
 
         // Note: This TelemetryClient instance needs to be created prior to calculating ActivityKind and ParentActivityContext,
         // used in the main activity creation below.
@@ -75,11 +71,8 @@ public class Program
 
     public static int Main(string[] args)
     {
-        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
-        // See https://github.com/dotnet/docs/issues/46226.
-        using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));
-
-        using AutomaticEncodingRestorer _ = new();
+        _ = ProcessLifecycle.CancellationToken;
+        using AutomaticEncodingRestorer encodingRestorer = new();
 
         if (Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1"
             // Setting output encoding is not available on those platforms
@@ -124,7 +117,7 @@ public class Program
         finally
         {
             TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
-            Shutdown(default!);
+            Shutdown();
             TelemetryClient.WriteLogIfNecessary();
         }
     }
@@ -140,12 +133,12 @@ public class Program
         TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
         if (parseResult.CanBeInvoked())
         {
-            return CommandInvocation.ExecuteInternalCommand(parseResult);
+            return CommandInvocation.ExecuteInternalCommand(parseResult, ProcessLifecycle.CancellationToken);
         }
 
         try
         {
-            return ExecuteExternalCommand(args, parseResult);
+            return ExecuteExternalCommand(args, parseResult, ProcessLifecycle.CancellationToken);
         }
         catch (CommandUnknownException e)
         {
@@ -171,7 +164,10 @@ public class Program
         }
     }
 
-    private static int ExecuteExternalCommand(string[] args, ParseResult parseResult)
+    internal static int ExecuteExternalCommand(
+        string[] args,
+        ParseResult parseResult,
+        CancellationToken cancellationToken)
     {
         string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         CommandSpec? resolvedCommandSpec = null;
@@ -192,7 +188,7 @@ public class Program
 
         var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
         using var __ = Activities.Source.StartActivity("execute-extensible-command");
-        return resolvedCommand.Execute().ExitCode;
+        return resolvedCommand.Execute(cancellationToken).ExitCode;
     }
 
     private static int? TryRunFileBasedApp(ParseResult parseResult)
@@ -201,17 +197,15 @@ public class Program
         // parse as `dotnet run file.cs ..rest_of_args` instead.
         if (parseResult.TryParseFileBasedAppAsRun() is { } runParseResult)
         {
-            return CommandInvocation.ExecuteInternalCommand(runParseResult);
+            return CommandInvocation.ExecuteInternalCommand(runParseResult, ProcessLifecycle.CancellationToken);
         }
 
         return null;
     }
 
-    public static void Shutdown(PosixSignalContext context)
+    public static void Shutdown()
     {
-        s_sigIntRegistration.Dispose();
         s_sigQuitRegistration.Dispose();
-        s_sigTermRegistration.Dispose();
         if (TelemetryInstance is TelemetryClient telemetryClient)
         {
             telemetryClient.WaitForPendingEvents();

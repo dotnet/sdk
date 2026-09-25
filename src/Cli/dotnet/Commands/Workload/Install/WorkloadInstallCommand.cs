@@ -120,7 +120,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         var filteredWorkloadIds = GetValidWorkloadIds();
@@ -140,7 +140,13 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
             var existingWorkloads = GetInstalledWorkloads(false);
             var workloadsToDownload = existingWorkloads.Union(filteredWorkloadIds.Select(id => new WorkloadId(id))).ToList();
 
-            var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
+            var packageUrls = GetPackageDownloadUrlsAsync(
+                workloadsToDownload,
+                cancellationToken,
+                _skipManifestUpdate,
+                _includePreviews,
+                NullReporter.Instance,
+                packageDownloader).GetAwaiter().GetResult();
 
             Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
@@ -156,9 +162,14 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
                 var existingWorkloads = GetInstalledWorkloads(false);
                 var workloadsToDownload = existingWorkloads.Union(filteredWorkloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
+                DownloadToOfflineCacheAsync(
+                    workloadsToDownload,
+                    new DirectoryPath(_downloadToCacheOption),
+                    cancellationToken,
+                    _skipManifestUpdate,
+                    _includePreviews).GetAwaiter().GetResult();
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 throw new GracefulException(string.Format(CliCommandStrings.WorkloadInstallWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
@@ -193,15 +204,15 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
                     recorder.Run(() =>
                     {
-                        InstallWorkloads(recorder, filteredWorkloadIds);
+                        InstallWorkloads(recorder, filteredWorkloadIds, cancellationToken);
                     });
                 }
                 else
                 {
-                    InstallWorkloads(null, filteredWorkloadIds);
+                    InstallWorkloads(null, filteredWorkloadIds, cancellationToken);
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 if (_shouldShutdownInstaller)
                 {
@@ -221,7 +232,10 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         return _workloadInstaller.ExitCode;
     }
 
-    private void InstallWorkloads(WorkloadHistoryRecorder recorder, IReadOnlyCollection<string> filteredWorkloadIds)
+    private void InstallWorkloads(
+        WorkloadHistoryRecorder recorder,
+        IReadOnlyCollection<string> filteredWorkloadIds,
+        CancellationToken cancellationToken)
     {
         //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
         //  set version specified, and we might install that workload version, then we don't do that check here, because we might not have the right
@@ -258,7 +272,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
                 {
                     Reporter.WriteLine(CliCommandStrings.CheckForUpdatedWorkloadManifests);
                 }
-                UpdateWorkloadManifests(recorder, context, offlineCache);
+                UpdateWorkloadManifests(recorder, context, cancellationToken, offlineCache);
             }
 
             // Exit early if no valid workloads to install (e.g., only aspire was requested)
@@ -277,7 +291,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
             workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
             workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
 
-            _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
+            _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, cancellationToken, offlineCache);
 
             //  Write workload installation records
             var recordRepo = _workloadInstaller.GetWorkloadInstallationRecordRepository();
@@ -298,7 +312,13 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
                     }
                 });
 
-            TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+            TryRunGarbageCollection(
+                _workloadInstaller,
+                Reporter,
+                Verbosity,
+                workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                cancellationToken,
+                offlineCache);
 
             Reporter.WriteLine();
             Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadInstallInstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
@@ -307,13 +327,19 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         });
     }
 
-    internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null)
+    internal static void TryRunGarbageCollection(
+        IInstaller workloadInstaller,
+        IReporter reporter,
+        VerbosityOptions verbosity,
+        Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
         try
         {
-            workloadInstaller.GarbageCollect(getResolverForWorkloadSet, offlineCache);
+            workloadInstaller.GarbageCollect(getResolverForWorkloadSet, cancellationToken, offlineCache);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             // Garbage collection failed, warn user
             reporter.WriteLine(string.Format(CliCommandStrings.GarbageCollectionFailed,
@@ -321,25 +347,38 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }
     }
 
-    private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview,
+    private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(
+        IEnumerable<WorkloadId> workloadIds,
+        CancellationToken cancellationToken,
+        bool skipManifestUpdate,
+        bool includePreview,
         IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
     {
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
-        var downloads = await GetDownloads(workloadIds, skipManifestUpdate, includePreview, reporter: reporter, packageDownloader: packageDownloader);
+        var downloads = await GetDownloads(workloadIds, cancellationToken, skipManifestUpdate, includePreview, reporter: reporter, packageDownloader: packageDownloader);
 
         var urls = new List<string>();
         foreach (var download in downloads)
         {
-            urls.Add(await packageDownloader.GetPackageUrl(new PackageId(download.NuGetPackageId), new NuGetVersion(download.NuGetPackageVersion), _packageSourceLocation));
+            urls.Add(await packageDownloader.GetPackageUrl(
+                new PackageId(download.NuGetPackageId),
+                cancellationToken,
+                new NuGetVersion(download.NuGetPackageVersion),
+                _packageSourceLocation));
         }
 
         return urls;
     }
 
-    private Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
+    private Task DownloadToOfflineCacheAsync(
+        IEnumerable<WorkloadId> workloadIds,
+        DirectoryPath offlineCache,
+        CancellationToken cancellationToken,
+        bool skipManifestUpdate,
+        bool includePreviews)
     {
-        return GetDownloads(workloadIds, skipManifestUpdate, includePreviews, offlineCache.Value);
+        return GetDownloads(workloadIds, cancellationToken, skipManifestUpdate, includePreviews, offlineCache.Value);
     }
 
     private void RunInNewTransaction(Action<ITransactionContext> a)

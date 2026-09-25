@@ -128,7 +128,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             Setup();
             WorkloadListCommand.UpdateAvailableEntry[] result =
-                _workloadListCommand.GetUpdateAvailable(new List<WorkloadId> { new("xamarin-android") }).ToArray();
+                _workloadListCommand.GetUpdateAvailable(
+                    new List<WorkloadId> { new("xamarin-android") },
+                    TestContext.CancellationToken).ToArray();
 
             result.Should().NotBeEmpty();
             result[0].WorkloadId.Should().Be(InstallingWorkload, "Only should installed workload");
@@ -141,7 +143,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void ItShouldGetListOfWorkloadWithCurrentSdkVersionBand()
         {
             Setup();
-            _workloadListCommand.Execute();
+            _workloadListCommand.Execute(CancellationToken.None);
             _reporter.Lines.Should().Contain(c => c.Contains("\"installed\":[\"xamarin-android\"]"));
         }
 
@@ -161,7 +163,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 dotnetDir: _dotnetRoot,
                 workloadRecordRepo: new MockMatchingFeatureBandInstallationRecordRepository());
 
-            Action a = () => _workloadListCommand.Execute();
+            Action a = () => _workloadListCommand.Execute(CancellationToken.None);
             a.Should().Throw<ArgumentException>();
         }
 
@@ -181,7 +183,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 dotnetDir: _dotnetRoot,
                 workloadRecordRepo: new MockMatchingFeatureBandInstallationRecordRepository());
 
-            Action a = () => _workloadListCommand.Execute();
+            Action a = () => _workloadListCommand.Execute(CancellationToken.None);
             a.Should().NotThrow();
         }
 

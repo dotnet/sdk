@@ -39,4 +39,9 @@ public class ForwardingApp(
     {
         return _implementation.Execute();
     }
+
+    public int Execute(CancellationToken cancellationToken)
+    {
+        return _implementation.Execute(cancellationToken);
+    }
 }

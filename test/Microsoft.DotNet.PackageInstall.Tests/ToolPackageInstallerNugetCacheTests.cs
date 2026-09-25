@@ -41,6 +41,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                 IToolPackage toolPackage = installer.InstallPackage(
                     packageId: TestPackageId,
+                    cancellationToken: TestContext.CancellationToken,
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
@@ -81,6 +82,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             IToolPackage toolPackage = installer.InstallPackage(
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),

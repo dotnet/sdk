@@ -15,7 +15,7 @@ internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBas
 {
     private readonly PackageRemoveCommandDefinitionBase _definition = (PackageRemoveCommandDefinitionBase)parseResult.CommandResult.Command;
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var arguments = _parseResult.GetValue(_definition.CmdPackageArgument) ?? [];
 
@@ -50,7 +50,7 @@ internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBas
             projectFilePath = Path.GetFullPath(projectFilePath);
         }
 
-        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), isFileBasedApp);
+        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), cancellationToken, isFileBasedApp);
 
         return result;
     }

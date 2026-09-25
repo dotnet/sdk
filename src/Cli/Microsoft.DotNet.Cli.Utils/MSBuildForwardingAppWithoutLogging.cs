@@ -180,17 +180,17 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// <summary>
     /// Run the MSBuild arguments that have been previously specified.
     /// </summary>
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
         if (_forwardingApp != null)
         {
-            return GetProcessStartInfo().Execute();
+            return GetProcessStartInfo().Execute(cancellationToken);
         }
         else
         {
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
-                return ExecuteInProc(GetAllArguments());
+                return ExecuteInProc(GetAllArguments(), cancellationToken);
             }
             else
             {
@@ -205,15 +205,22 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
     /// </summary>
     [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
-    public int ExecuteInProc(string[] arguments)
+    public int ExecuteInProc(string[] arguments, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var _ = SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+        using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
+            static () => Build.Execution.BuildManager.DefaultBuildManager.CancelAllSubmissions());
+
         try
         {
             // Execute MSBuild in the current process by calling its Main method.
-            return Build.CommandLine.MSBuildApp.Main(arguments);
+            int exitCode = Build.CommandLine.MSBuildApp.Main(arguments);
+            cancellationToken.ThrowIfCancellationRequested();
+            return exitCode;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // MSBuild, like all well-behaved CLI tools, handles all exceptions. In the unlikely case
             // that something still escapes, we print the exception and fail the call. Non-localized

@@ -48,7 +48,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -80,7 +80,10 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     localToolsResolverCache,
                     new FileSystemWrapper());
 
-                var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
+                var restoreResult = toolPackageRestorer.InstallPackage(
+                    toolManifestPackage,
+                    _configFile == null ? null : new FilePath(_configFile),
+                    cancellationToken);
 
                 if (!restoreResult.IsSuccess)
                 {
@@ -100,7 +103,12 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _toolManifestFinder,
                     localToolsResolverCache);
 
-                return ToolRunCommand.ExecuteCommand(localToolsCommandResolver, toolManifestPackage.CommandNames.Single().Value, _forwardArguments, _allowRollForward);
+                return ToolRunCommand.ExecuteCommand(
+                    localToolsCommandResolver,
+                    toolManifestPackage.CommandNames.Single().Value,
+                    _forwardArguments,
+                    _allowRollForward,
+                    cancellationToken);
             }
         }
 
@@ -109,7 +117,13 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource);
 
-        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(
+            packageLocation,
+            packageId,
+            cancellationToken,
+            _verbosity,
+            versionRange,
+            _restoreActionConfig);
         toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
         toolLocationActivity?.Stop();
 
@@ -130,6 +144,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,
                 packageId: packageId,
+                cancellationToken: cancellationToken,
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion, true, bestVersion, true),
                 isGlobalToolRollForward: false,
@@ -142,7 +157,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         toolExecuteActivity?.SetTag("tool.runner", toolPackage.Command.Runner);
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
-        var result = command.Execute();
+        var result = command.Execute(cancellationToken);
         return result.ExitCode;
     }
 }

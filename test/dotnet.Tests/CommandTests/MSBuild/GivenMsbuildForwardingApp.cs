@@ -192,5 +192,34 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 Environment.SetEnvironmentVariable("MSBUILDUSESERVER", originalMSBuildUseServer);
             }
         }
+
+        [TestMethod]
+        public void ItDoesNotStartOutOfProcessMSBuildAfterCancellation()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var forwardingApp = new MSBuildForwardingAppWithoutLogging(
+                MSBuildArgs.FromOtherArgs(),
+                msbuildPath: "<msbuildpath>",
+                forceOutOfProc: true);
+
+            Action execute = () => forwardingApp.Execute(cancellationTokenSource.Token);
+
+            execute.Should().Throw<OperationCanceledException>();
+        }
+
+        [TestMethod]
+        public void ItDoesNotStartInProcessMSBuildAfterCancellation()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var forwardingApp = new MSBuildForwardingAppWithoutLogging(MSBuildArgs.FromOtherArgs());
+
+            Action execute = () => forwardingApp.ExecuteInProc([], cancellationTokenSource.Token);
+
+            execute.Should().Throw<OperationCanceledException>();
+        }
     }
 }

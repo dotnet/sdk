@@ -55,12 +55,13 @@ public class ReleasePropertyProjectLocatorTests : SdkTest
         Assert.IsEmpty(secondResult);
     }
 
-    private static IReadOnlyDictionary<string, string>? DiscoverPackProperties(string projectOrSolutionPath)
+    private IReadOnlyDictionary<string, string>? DiscoverPackProperties(string projectOrSolutionPath)
     {
         var locator = new ReleasePropertyProjectLocator(
             userSpecifiedExplicitMSBuildProperties: null,
             propertyToCheck: "PackRelease",
-            commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([projectOrSolutionPath]));
+            commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([projectOrSolutionPath]),
+            TestContext.CancellationToken);
 
         return locator.GetCustomDefaultConfigurationValueIfSpecified();
     }

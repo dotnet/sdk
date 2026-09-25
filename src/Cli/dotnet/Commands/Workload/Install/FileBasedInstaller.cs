@@ -100,8 +100,13 @@ internal class FileBasedInstaller : IInstaller
         return packs;
     }
 
-    public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
+    public WorkloadSet InstallWorkloadSet(
+        ITransactionContext context,
+        string workloadSetVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var workloadSetPackageVersion);
         var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
@@ -109,7 +114,7 @@ internal class FileBasedInstaller : IInstaller
 
         try
         {
-            InstallPackage(workloadSetPackageId, workloadSetPackageVersion, workloadSetPath, context, offlineCache);
+            InstallPackage(workloadSetPackageId, workloadSetPackageVersion, workloadSetPath, context, cancellationToken, offlineCache);
             context.Run(
                 action: () =>
                 {
@@ -120,7 +125,7 @@ internal class FileBasedInstaller : IInstaller
                     RemoveWorkloadSetInstallationRecord(workloadSetVersion, workloadSetFeatureBand, _sdkFeatureBand);
                 });
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new Exception(string.Format(CliCommandStrings.FailedToInstallWorkloadSet, workloadSetVersion, ex.Message), ex);
         }
@@ -128,25 +133,40 @@ internal class FileBasedInstaller : IInstaller
         return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
     }
 
-    public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => GetWorkloadSetContentsAsync(workloadSetVersion).GetAwaiter().GetResult();
+    public WorkloadSet GetWorkloadSetContents(string workloadSetVersion, CancellationToken cancellationToken)
+        => GetWorkloadSetContentsAsync(workloadSetVersion, cancellationToken).GetAwaiter().GetResult();
 
-    public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
+    public async Task<WorkloadSet> GetWorkloadSetContentsAsync(
+        string workloadSetVersion,
+        CancellationToken cancellationToken)
     {
         var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var workloadSetPackageVersion);
         var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
-                            new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
+                            cancellationToken, new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
         var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
-        await ExtractManifestAsync(packagePath, tempExtractionDir);
+        await ExtractManifestAsync(packagePath, tempExtractionDir, cancellationToken);
         return WorkloadSet.FromWorkloadSetFolder(tempExtractionDir, workloadSetVersion, _sdkFeatureBand);
     }
 
-    public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+    public void InstallWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
-        InstallWorkloads(workloadIds, sdkFeatureBand, transactionContext, overwriteExistingPacks: false, offlineCache);
+        InstallWorkloads(workloadIds, sdkFeatureBand, transactionContext, cancellationToken, overwriteExistingPacks: false, offlineCache);
     }
 
-    public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, bool overwriteExistingPacks, DirectoryPath? offlineCache = null)
+    public void InstallWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        bool overwriteExistingPacks,
+        DirectoryPath? offlineCache = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var packInfos = GetPacksInWorkloads(workloadIds);
         List<PackInfo> packsToInstall = [];
         foreach (var packInfo in packInfos)
@@ -169,6 +189,7 @@ internal class FileBasedInstaller : IInstaller
             {
                 var packagePath = _nugetPackageDownloader
                     .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                        cancellationToken,
                         new NuGetVersion(packInfo.Version),
                         _packageSourceLocation).GetAwaiter().GetResult();
                 tempFilesToDelete.Add(packagePath);
@@ -215,7 +236,10 @@ internal class FileBasedInstaller : IInstaller
                         }
 
                         Directory.CreateDirectory(tempExtractionDir);
-                        var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
+                        var packFiles = _nugetPackageDownloader.ExtractPackageAsync(
+                            packagePath,
+                            new DirectoryPath(tempExtractionDir),
+                            cancellationToken).GetAwaiter().GetResult();
 
                         if (overwriteExistingPacks && Directory.Exists(packInfo.Path))
                         {
@@ -265,9 +289,19 @@ internal class FileBasedInstaller : IInstaller
         }
     }
 
-    public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+    public void RepairWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
-        CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, overwriteExistingPacks: true, offlineCache));
+        CliTransaction.RunNew(context => InstallWorkloads(
+            workloadIds,
+            sdkFeatureBand,
+            context,
+            cancellationToken,
+            overwriteExistingPacks: true,
+            offlineCache));
     }
 
     string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)
@@ -275,8 +309,13 @@ internal class FileBasedInstaller : IInstaller
         return Path.Combine(_workloadRootDir, "sdk-manifests", sdkFeatureBand);
     }
 
-    public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+    public void InstallWorkloadManifest(
+        ManifestVersionUpdate manifestUpdate,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
 
         _reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion));
@@ -285,7 +324,7 @@ internal class FileBasedInstaller : IInstaller
         {
             var newManifestPackageId = GetManifestPackageId(manifestUpdate.ManifestId, new SdkFeatureBand(manifestUpdate.NewFeatureBand));
 
-            InstallPackage(newManifestPackageId, manifestUpdate.NewVersion.ToString(), newManifestPath, transactionContext, offlineCache);
+            InstallPackage(newManifestPackageId, manifestUpdate.NewVersion.ToString(), newManifestPath, transactionContext, cancellationToken, offlineCache);
 
             transactionContext.Run(
                 action: () =>
@@ -297,13 +336,19 @@ internal class FileBasedInstaller : IInstaller
                     RemoveManifestInstallationRecord(manifestUpdate.ManifestId, manifestUpdate.NewVersion, new SdkFeatureBand(manifestUpdate.NewFeatureBand), _sdkFeatureBand);
                 });
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             throw new Exception(string.Format(CliCommandStrings.FailedToInstallWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion, e.Message), e);
         }
     }
 
-    void InstallPackage(PackageId packageId, string packageVersion, string targetFolder, ITransactionContext transactionContext, DirectoryPath? offlineCache)
+    void InstallPackage(
+        PackageId packageId,
+        string packageVersion,
+        string targetFolder,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         string packagePath = null;
         string tempBackupDir = null;
@@ -315,7 +360,7 @@ internal class FileBasedInstaller : IInstaller
                 if (offlineCache == null || !offlineCache.HasValue)
                 {
                     packagePath = _nugetPackageDownloader.DownloadPackageAsync(packageId,
-                        new NuGetVersion(packageVersion), _packageSourceLocation).GetAwaiter().GetResult();
+                        cancellationToken, new NuGetVersion(packageVersion), _packageSourceLocation).GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -337,7 +382,7 @@ internal class FileBasedInstaller : IInstaller
                     FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(targetFolder, tempBackupDir));
                 }
 
-                ExtractManifestAsync(packagePath, targetFolder).GetAwaiter().GetResult();
+                ExtractManifestAsync(packagePath, targetFolder, cancellationToken).GetAwaiter().GetResult();
 
             },
             rollback: () =>
@@ -394,8 +439,13 @@ internal class FileBasedInstaller : IInstaller
         return [.. packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version))];
     }
 
-    public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
+    public void GarbageCollect(
+        Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null,
+        bool cleanAllPacks = false)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
 
         var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir,
@@ -654,8 +704,11 @@ internal class FileBasedInstaller : IInstaller
     public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         => _manifestInstaller.GetManifestPackageId(manifestId, featureBand);
 
-    public Task ExtractManifestAsync(string nupkgPath, string targetPath)
-        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath);
+    public Task ExtractManifestAsync(
+        string nupkgPath,
+        string targetPath,
+        CancellationToken cancellationToken)
+        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath, cancellationToken);
 
     private bool PackIsInstalled(PackInfo packInfo)
     {

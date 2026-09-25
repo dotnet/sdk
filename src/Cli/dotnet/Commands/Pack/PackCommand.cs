@@ -23,13 +23,19 @@ public class PackCommand(
     string? msbuildPath = null
     ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath)
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(
+        string[] args,
+        CancellationToken cancellationToken,
+        string? msbuildPath = null)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
-        return FromParseResult(parseResult, msbuildPath);
+        return FromParseResult(parseResult, cancellationToken, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(
+        ParseResult parseResult,
+        CancellationToken cancellationToken,
+        string? msbuildPath = null)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -68,7 +74,8 @@ public class PackCommand(
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             otherArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
-                        )
+                        ),
+                    cancellationToken
                 );
                 return msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
             });
@@ -134,7 +141,7 @@ public class PackCommand(
         return 0;
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -149,6 +156,6 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, cancellationToken).Execute(cancellationToken);
     }
 }

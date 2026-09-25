@@ -21,16 +21,40 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private readonly bool _trimTrailingNewlines = trimTrailingNewlines;
 
+    private bool _logProcess = true;
+
     public CommandResult Execute()
     {
         return Execute(null);
     }
-    public CommandResult Execute(Action<Process>? processStarted)
+
+    public CommandResult Execute(CancellationToken cancellationToken)
     {
-        Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.RunningFileNameArguments,
-            _process.StartInfo.FileName,
-            _process.StartInfo.Arguments));
+        cancellationToken.ThrowIfCancellationRequested();
+        CommandResult result = Execute(processStarted: null, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    public CommandResult Execute(Action<Process>? processStarted) =>
+        Execute(processStarted, cancellationToken: null);
+
+    internal Command WithoutProcessLogging()
+    {
+        ThrowIfRunning();
+        _logProcess = false;
+        return this;
+    }
+
+    private CommandResult Execute(Action<Process>? processStarted, CancellationToken? cancellationToken)
+    {
+        if (_logProcess)
+        {
+            Reporter.Verbose.WriteLine(string.Format(
+                LocalizableStrings.RunningFileNameArguments,
+                _process.StartInfo.FileName,
+                _process.StartInfo.Arguments));
+        }
 
         ThrowIfRunning();
 
@@ -39,7 +63,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         _process.EnableRaisingEvents = true;
 
         Stopwatch? sw = null;
-        if (CommandLoggingContext.IsVerbose)
+        if (_logProcess && CommandLoggingContext.IsVerbose)
         {
             sw = Stopwatch.StartNew();
 
@@ -52,21 +76,40 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             processStarted?.Invoke(_process);
             reaper.NotifyProcessStarted();
 
-            Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.ProcessId,
-                _process.Id));
+            if (_logProcess)
+            {
+                Reporter.Verbose.WriteLine(string.Format(
+                    LocalizableStrings.ProcessId,
+                    _process.Id));
+            }
 
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
-            _process.WaitForExit();
+
+            if (cancellationToken is null)
+            {
+                _process.WaitForExit();
+            }
+            else
+            {
+                while (!_process.WaitForExit(milliseconds: 100))
+                {
+                    if (cancellationToken.Value.IsCancellationRequested)
+                    {
+                        TerminateProcess(reaper, _process);
+                        break;
+                    }
+                }
+            }
 
             taskOut?.Wait();
             taskErr?.Wait();
         }
 
+        cancellationToken?.ThrowIfCancellationRequested();
         var exitCode = _process.ExitCode;
 
-        if (CommandLoggingContext.IsVerbose)
+        if (_logProcess && CommandLoggingContext.IsVerbose)
         {
             Debug.Assert(sw is not null);
             var message = string.Format(
@@ -89,6 +132,24 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             exitCode,
             _stdOut?.CapturedOutput,
             _stdErr?.CapturedOutput);
+    }
+
+    private static void TerminateProcess(ProcessReaper reaper, Process process)
+    {
+        try
+        {
+            reaper.TerminateProcess();
+        }
+        catch (InvalidOperationException) when (process.HasExited)
+        {
+            // The process exited before termination reached it.
+        }
+        catch (System.ComponentModel.Win32Exception) when (process.HasExited)
+        {
+            // The process exited while its process tree was being enumerated.
+        }
+
+        process.WaitForExit();
     }
 
     public ICommand WorkingDirectory(string? projectDirectory)
