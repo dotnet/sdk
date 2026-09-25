@@ -74,6 +74,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GetAssemblyAttributes"
           DependsOnTargets="GetAssemblyVersion;InitializeSourceControlInformation;AddSourceRevisionToInformationalVersion">
+    <NETSdkWarning
+      Condition="'$(InformationalVersion)' != '' and '$(GenerateAssemblyInformationalVersionAttribute)' == 'true' and '$(Win32Resource)' == '' and $(InformationalVersion.Split('.').Length) &gt; 4"
+      ResourceName="InformationalVersionContainsTooManyComponents"
+      FormatArguments="$([MSBuild]::Escape('$(InformationalVersion)'))" />
+
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyCompanyAttribute" Condition="'$(Company)' != '' and '$(GenerateAssemblyCompanyAttribute)' == 'true'">
         <_Parameter1>$(Company)</_Parameter1>

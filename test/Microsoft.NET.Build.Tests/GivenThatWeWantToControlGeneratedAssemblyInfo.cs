@@ -234,6 +234,56 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        [DataRow("1.2.3", false)]
+        [DataRow("1.2.3-beta.1", false)]
+        [DataRow("1.2.3-beta.1.2", true)]
+        public void It_warns_when_informational_version_has_too_many_components(string informationalVersion, bool shouldWarn)
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: informationalVersion)
+                .WithSource();
+
+            var result = new BuildCommand(testAsset)
+                .Execute(
+                    $"/p:InformationalVersion={informationalVersion}",
+                    "/p:IncludeSourceRevisionInInformationalVersion=false");
+
+            result.Should().Pass();
+
+            if (shouldWarn)
+            {
+                result.Should().HaveStdOutContaining("NETSDK1247");
+            }
+            else
+            {
+                result.Should().NotHaveStdOutContaining("NETSDK1247");
+            }
+        }
+
+        [TestMethod]
+        public void It_does_not_warn_when_custom_win32_resource_is_used()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource();
+
+            var command = new GetValuesCommand(testAsset, "InformationalVersion")
+            {
+                DependsOnTargets = "GetAssemblyAttributes",
+            };
+
+            command
+                .Execute(
+                    "/p:InformationalVersion=1.2.3-beta.1.2",
+                    "/p:IncludeSourceRevisionInInformationalVersion=false",
+                    "/p:Win32Resource=custom.res")
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1247");
+        }
+
+        [TestMethod]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
         [DataRow("net45")]
         public void It_respects_version_prefix(string targetFramework)
