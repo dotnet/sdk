@@ -17,15 +17,15 @@
 #     gh-aw's importable field set; the engine identifier in particular is
 #     always inherited from the importing workflow.
 #
-# Editing any block below changes BOTH workflows. Use the v0.87.1 compiler
+# Editing any block below changes BOTH workflows. Use the v0.89.15 compiler
 # and matching SHA-pinned setup runtime: this release retries
 # connection resets when installing Copilot and AWF (dotnet/sdk#56224;
 # github/gh-aw#53112 and github/gh-aw#53154). Regenerate both locks with:
 # gh aw compile build-failure-analysis build-failure-analysis-command
 #   --strict --approve --no-check-update --schedule-seed dotnet/sdk
-#   --action-mode action --action-tag 423b3dc04bbf1b1797194a4a75aa5cf5d0d4f5b3
+#   --action-mode action --action-tag 045beb2d14bda8d0c1f2e83b41527f63770d2855
 #   --validate --actionlint
-# An explicit SHA preserves the setup pins used by other workflow versions.
+# The explicit SHA keeps the setup runtime immutable.
 
 description: "Shared body for build-failure-analysis workflows"
 
