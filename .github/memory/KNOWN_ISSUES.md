@@ -78,6 +78,58 @@ promote only intentional output to `*.verified.*`. See the
 [root generated-file guardrails](../../AGENTS.md#do-not-hand-edit-generated-files)
 and [`snapshot-based-testing.md`](../../documentation/project-docs/snapshot-based-testing.md).
 
+## `gh aw compile` Must Run on Linux or macOS, Never Windows
+
+**Affected area:** gh-aw workflows with a custom `safe-outputs.jobs` entry alongside
+`safe-outputs.threat-detection` (e.g. `.github/workflows/stale-reference-interpret.md`)
+
+**Description:** gh-aw's secret-redaction validation for the generated token-usage
+artifact path uses Go's `filepath.Join`, which emits the host OS's path separator.
+Compiling on Windows produces backslash paths (e.g.
+`\tmp\gh-aw\sandbox\firewall\logs\api-proxy-logs\token-usage.jsonl`) that do not match
+the forward-slash runtime paths the redaction check expects, so `gh aw compile` fails
+with "artifact paths not covered by secret redaction" whenever threat detection and a
+custom `safe-outputs.jobs` entry are combined. Compiling the identical workflow source
+on Linux (forward-slash `filepath.Join`) succeeds. This is the root cause behind
+[github/gh-aw#62458](https://github.com/github/gh-aw/issues/62458); an unmerged
+upstream fix ([github/gh-aw#62484](https://github.com/github/gh-aw/pull/62484))
+replaces `filepath.Join` with the OS-independent `path.Join`.
+
+A prior workaround in this repository (moving the recorder out of
+`safe-outputs.jobs` into a plain top-level job) avoided the compile failure, but was
+later found to be unnecessary and unrelated to a separate first-request HTTP 400 issue
+that was happening at the same time (see below). Several Copilot CLI version pins
+(1.0.85, 1.0.83, 1.0.80) were also tried and discarded chasing that unrelated symptom;
+none were the real fix for either issue. Both the safe-outputs restructuring and the
+version pins were reverted once each issue's actual, independent root cause was
+confirmed.
+
+**Workaround:** Always run `gh aw compile` for this workflow on Linux or macOS (e.g.
+WSL on a Windows dev machine), never native Windows PowerShell/cmd. Do not remove the
+real custom `safe-outputs.jobs` design or add a Copilot CLI version pin to work around
+this; both are unnecessary once compilation happens on a POSIX host. Revisit once a
+released gh-aw version includes the `path.Join` fix.
+
+## Pinning an Unsupported Copilot Model Causes an Immediate HTTP 400
+
+**Affected area:** gh-aw workflows using `engine.model` with the `copilot` engine
+(e.g. `.github/workflows/stale-reference-interpret.md`)
+
+**Description:** Pinning `engine.model` to `gpt-5.6-luna` caused every agent request
+to fail immediately (~1.2s, 0 tokens consumed) with
+`failureClass=http_400_response_error` / `isHTTP400ResponseError=true`, and the
+harness did not retry ("persistent request validation/state failure"). This was
+initially conflated with the unrelated Windows-compile issue above and with the
+discarded `safe-outputs.jobs` restructuring, because all three were being debugged
+around the same time. Removing the `model:` pin (falling back to the CLI's `'auto'`
+default via `COPILOT_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT ||
+vars.GH_AW_DEFAULT_MODEL_COPILOT || 'auto' }}`) resolved the failure in a live
+end-to-end test run.
+
+**Workaround:** Do not pin `engine.model` for the `copilot` engine to a model ID that
+has not been confirmed to work end-to-end for the target repository/entitlement. Prefer
+leaving it unset (CLI default) unless a specific model has been verified.
+
 ## Redist Requires Correct Outer-Build Ordering
 
 **Affected area:** `src/Layout/redist`
