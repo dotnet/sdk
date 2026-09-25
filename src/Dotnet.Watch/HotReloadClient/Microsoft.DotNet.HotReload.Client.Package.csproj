@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <!--
-      Used in in-proc VS and VS Code.
+      Used in in-proc VS and in DevKit Project System.
       We also need to target $(SdkTargetFramework) to allow tests to run.
     -->
-    <TargetFrameworks>$(VisualStudioServiceTargetFramework);$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
