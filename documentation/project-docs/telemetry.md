@@ -117,11 +117,18 @@ The CLI bridges completed activities from its `dotnet-cli` activity source to a
 | `dotnet-cli` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
 
 Each stopped activity records one measurement equal to its `Activity.Duration.TotalSeconds`.
-The `activity.name` tag contains the operation name, such as `main`, `parse`, `invocation`,
-or `msbuild-submission`, rather than the display name or command-line arguments.
+The `activity.name` tag contains the operation name, such as `main`, `first-time-use`,
+`parse`, `invocation`, `release-property-discovery`, or `msbuild-submission`, rather than
+the display name or command-line arguments.
 The bridge requests activities only while a metric collector enables the histogram.
 Existing trace listeners can independently request activities. Metric collection does
 not mark otherwise unsampled traces as recorded.
+
+The `release-property-discovery` activity covers project or solution discovery,
+evaluation, and reading `PackRelease` or `PublishRelease` to select the default
+configuration. It ends before the subsequent MSBuild submission. When release-property
+discovery is disabled or the configuration is explicitly supplied, that work is skipped
+and no discovery activity is emitted.
 
 The `msbuild-submission` activity covers the synchronous MSBuild invocation, including
 waiting for an out-of-process or server build to finish. CLI argument parsing, project

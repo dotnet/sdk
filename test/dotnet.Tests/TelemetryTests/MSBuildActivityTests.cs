@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli;
@@ -38,6 +39,7 @@ public sealed class MSBuildActivityTests : SdkTest
             ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
             ["DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE"] = "true",
             [EnvironmentVariableNames.SDK_VULNERABILITY_CHECK_DISABLE] = "true",
+            [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "false",
             ["MSBUILDUSESERVER"] = "0",
             ["MSBUILDDISABLENODEREUSE"] = "1",
             ["DOTNET_HOST_PATH"] = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
@@ -97,6 +99,7 @@ public sealed class MSBuildActivityTests : SdkTest
         }
 
         exported.AssertNoSubmissions();
+        exported.AssertNoReleasePropertyDiscovery();
         Activity.Current.Should().BeSameAs(parent);
 
         for (int execution = 0; execution < executions; execution++)
@@ -121,6 +124,65 @@ public sealed class MSBuildActivityTests : SdkTest
         {
             File.Exists(Path.Combine(output, "HelloWorld.dll")).Should().BeTrue();
         }
+    }
+
+    [TestMethod]
+    [DataRow("pack")]
+    [DataRow("publish")]
+    public void PackAndPublishExportReleaseSettingsDiscoveryBeforeSubmission(string verb)
+    {
+        var asset = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: verb)
+            .WithSource()
+            .WithProjectChanges(projectXml => projectXml.Root!.Add(
+                new XElement("PropertyGroup",
+                    new XElement("PackRelease", "true"),
+                    new XElement("PublishRelease", "true"))));
+        string project = Path.Combine(asset.Path, "HelloWorld.csproj");
+        string output = Path.Combine(asset.Path, "output");
+        string binlogArgument = BinLogArgument([verb, Guid.NewGuid().ToString("N")]);
+        Restore(project);
+
+        using var exported = new ActivityExports();
+        using Activity? parent = Activities.Source.StartActivity("test-command");
+        parent.Should().NotBeNull();
+        var parseResult = Parser.Parse(
+            [
+                "dotnet", verb, project, "--no-restore", "--output", output,
+                "--disable-build-servers", binlogArgument,
+            ]);
+        var command = (RestoringCommand)(verb == "pack"
+            ? PackCommand.FromParseResult(parseResult)
+            : PublishCommand.FromParseResult(parseResult));
+
+        command.MSBuildArguments.Should().Contain("--property:Configuration=Release");
+        exported.AssertNoSubmissions();
+        Activity discovery = exported.AssertReleasePropertyDiscovery(parent);
+        Activity.Current.Should().BeSameAs(parent);
+
+        command.Execute().Should().Be(0);
+
+        Activity.Current.Should().BeSameAs(parent);
+        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
+        (discovery.StartTimeUtc + discovery.Duration).Should().BeOnOrBefore(submissions[0].StartTimeUtc);
+        AssertBuildBoundaries(binlogArgument, submissions);
+    }
+
+    [TestMethod]
+    [DataRow("PackRelease")]
+    [DataRow("PublishRelease")]
+    public void DisabledReleaseSettingsDiscoveryDoesNotEmitAnActivity(string property)
+    {
+        Environment.SetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE, "true");
+        using var exported = new ActivityExports();
+        var locator = new ReleasePropertyProjectLocator(
+            userSpecifiedExplicitMSBuildProperties: null,
+            propertyToCheck: property,
+            commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([]));
+
+        locator.GetCustomDefaultConfigurationValueIfSpecified().Should().BeNull();
+
+        exported.AssertNoReleasePropertyDiscovery();
+        exported.AssertNoSubmissions();
     }
 
     [TestMethod]
@@ -402,6 +464,17 @@ public sealed class MSBuildActivityTests : SdkTest
 
         public void AssertNoSubmissions() =>
             _activities.Should().NotContain(activity => activity.OperationName == "msbuild-submission");
+
+        public void AssertNoReleasePropertyDiscovery() =>
+            _activities.Should().NotContain(activity => activity.OperationName == "release-property-discovery");
+
+        public Activity AssertReleasePropertyDiscovery(Activity? parent)
+        {
+            Activity discovery = _activities.Should().ContainSingle(
+                activity => activity.OperationName == "release-property-discovery").Subject;
+            discovery.ParentSpanId.Should().Be(parent?.SpanId ?? default);
+            return discovery;
+        }
 
         public Activity[] AssertSubmissionMeasurements(int expectedCount, Activity? parent)
         {
