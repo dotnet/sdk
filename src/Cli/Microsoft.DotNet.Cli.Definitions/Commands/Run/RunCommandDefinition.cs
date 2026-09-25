@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -17,10 +18,24 @@ internal sealed class RunCommandDefinition : Command
 
     public readonly TargetPlatformOptions TargetPlatformOptions = new(CommandDefinitionStrings.RunRuntimeOptionDescription);
 
-    public readonly Option<string> ProjectOption = new("--project")
+    public readonly Option<string?> ProjectOption = new("--project", "-p")
     {
         Description = CommandDefinitionStrings.CmdProjectDescriptionFormat,
-        HelpName = CommandDefinitionStrings.CommandOptionProjectHelpName
+        HelpName = CommandDefinitionStrings.CommandOptionProjectHelpName,
+        Arity = ArgumentArity.ZeroOrMore,
+        AllowMultipleArgumentsPerToken = false,
+        CustomParser = static result =>
+        {
+            foreach (var token in result.Tokens)
+            {
+                if (!token.Value.Contains('='))
+                {
+                    return token.Value;
+                }
+            }
+
+            return null;
+        }
     };
 
     public readonly Option<string> FileOption = new("--file")
@@ -29,7 +44,7 @@ internal sealed class RunCommandDefinition : Command
         HelpName = CommandDefinitionStrings.CommandOptionFileHelpName,
     };
 
-    public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.CreatePropertyOption();
+    public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.CreatePropertyOption(includeShortAlias: false);
 
     public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
@@ -125,5 +140,81 @@ internal sealed class RunCommandDefinition : Command
         Options.Add(EnvOption);
 
         Arguments.Add(ApplicationArguments);
+    }
+
+    /// <summary>
+    /// Separates <c>--project</c> and <c>-p</c> values into project paths and MSBuild property arguments.
+    /// A <c>-p</c> value that contains <c>=</c> is a property. <c>--project</c> values are always project paths.
+    /// </summary>
+    internal static (IReadOnlyList<string> Projects, IReadOnlyList<string> PropertyArguments) SplitProjectOption(ParseResult parseResult)
+    {
+        if (parseResult.CommandResult.Command is not RunCommandDefinition definition)
+        {
+            return ([], []);
+        }
+
+        List<string> projects = [];
+        List<string> propertyArguments = [];
+
+        foreach (var result in parseResult.CommandResult.Children.OfType<OptionResult>())
+        {
+            if (result.Option != definition.ProjectOption)
+            {
+                continue;
+            }
+
+            var identifier = result.IdentifierToken?.Value ?? string.Empty;
+            var shortForm = identifier.Length == 0
+                || identifier == "-p"
+                || identifier.StartsWith("-p:", StringComparison.Ordinal)
+                || identifier.StartsWith("-p=", StringComparison.Ordinal);
+
+            if (result.Tokens.Count == 0 && shortForm && TryGetAttachedOptionValue(identifier, "-p", out var attachedValue))
+            {
+                ClassifyShortProjectArgument(attachedValue, projects, propertyArguments);
+                continue;
+            }
+
+            foreach (var token in result.Tokens)
+            {
+                if (shortForm)
+                {
+                    ClassifyShortProjectArgument(token.Value, projects, propertyArguments);
+                }
+                else
+                {
+                    projects.Add(token.Value);
+                }
+            }
+        }
+
+        return (projects, propertyArguments);
+
+        static bool TryGetAttachedOptionValue(string identifier, string optionName, out string value)
+        {
+            if (identifier.StartsWith(optionName + ":", StringComparison.Ordinal) ||
+                identifier.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = identifier[(optionName.Length + 1)..];
+                return true;
+            }
+
+            value = string.Empty;
+            return false;
+        }
+
+        static void ClassifyShortProjectArgument(string argument, List<string> projects, List<string> propertyArguments)
+        {
+            if (!argument.Contains('='))
+            {
+                projects.Add(argument);
+                return;
+            }
+
+            foreach (var (key, propertyValue) in MSBuildPropertyParser.ParseProperties(argument))
+            {
+                propertyArguments.Add($"--property:{key}={propertyValue}");
+            }
+        }
     }
 }

@@ -20,15 +20,18 @@ internal static class CommonOptions
         Hidden = hidden
     };
 
-    public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption() =>
-        // these are all of the forms that the property switch can be understood by in MSBuild
-        new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
-        {
-            Hidden = true,
-            Arity = ArgumentArity.ZeroOrMore,
-            CustomParser = ParseMSBuildTokensIntoDictionary
-        }.ForwardAsMSBuildProperty()
-         .AllowSingleArgPerToken();
+    public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption(bool includeShortAlias = true)
+    {
+        // these are all of the forms that the property switch can be understood by in MSBuild.
+        var option = includeShortAlias
+            ? new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
+            : new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "--p");
+
+        option.Hidden = true;
+        option.Arity = ArgumentArity.ZeroOrMore;
+        option.CustomParser = ParseMSBuildTokensIntoDictionary;
+        return option.ForwardAsMSBuildProperty().AllowSingleArgPerToken();
+    }
 
     /// <summary>
     /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)

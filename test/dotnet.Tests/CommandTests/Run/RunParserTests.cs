@@ -28,6 +28,18 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
+        public void ShortProjectOptionSelectsTheProject()
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            Directory.SetCurrentDirectory(Directory.GetParent(testAsset.Path)!.FullName);
+
+            var runCommand = RunCommand.FromArgs(["-p", testAsset.Path]);
+
+            runCommand.ProjectFileFullPath.Should().Be(Path.Combine(testAsset.Path, "HelloWorld.csproj"));
+        }
+
+        [TestMethod]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
             var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));

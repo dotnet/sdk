@@ -195,40 +195,6 @@ public static class ParseResultExtensions
         return 1;
     }
 
-    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
-        parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));
-
-    public static IEnumerable<string> GetRunCommandPropertyValues(this ParseResult parseResult)
-    {
-        var shorthandProperties = parseResult.GetRunPropertyOptions(true)?.Where(property => property.Contains("="));
-        var longhandProperties = parseResult.GetRunPropertyOptions(false);
-        return (shorthandProperties, longhandProperties) switch
-        {
-            (null, null) => Enumerable.Empty<string>(),
-            (null, var longhand) => longhand,
-            (var shorthand, null) => shorthand,
-            (var shorthand, var longhand) => shorthand.Concat(longhand)
-        };
-    }
-
-    private static IEnumerable<string>? GetRunPropertyOptions(this ParseResult parseResult, bool shorthand)
-    {
-        var optionString = shorthand ? "-p" : "--property";
-        var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
-        var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
-        return propertyValues;
-
-        static Token? GetOptionTokenOrDefault(SymbolResult symbolResult)
-        {
-            if (symbolResult is not OptionResult optionResult)
-            {
-                return null;
-            }
-
-            return optionResult.IdentifierToken ?? new Token($"--{optionResult.Option.Name}", TokenType.Option, optionResult.Option);
-        }
-    }
-
 #if !CLI_AOT
     [Conditional("DEBUG")]
     public static void HandleDebugSwitch(this ParseResult parseResult)

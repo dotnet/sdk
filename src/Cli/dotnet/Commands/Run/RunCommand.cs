@@ -897,10 +897,10 @@ public class RunCommand
     {
         var definition = (RunCommandDefinition)parseResult.CommandResult.Command;
 
-        if (UsingRunCommandShorthandProjectOption(parseResult))
+        var (projects, shortPropertyArguments) = RunCommandDefinition.SplitProjectOption(parseResult);
+        if (projects.Count > 1)
         {
-            Reporter.Output.WriteLine(CliCommandStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
-            parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
+            throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
         }
 
         // If the application arguments contain any MSBuild-only switches then we need to remove them from the
@@ -913,6 +913,11 @@ public class RunCommand
         SeparateMSBuildAndApplicationArguments(parseResult, applicationArguments, out var msbuildOnlyArgs, out var applicationArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
+        if (shortPropertyArguments.Count > 0)
+        {
+            msbuildProperties.AddRange(shortPropertyArguments);
+        }
+
         if (msbuildOnlyArgs.Length > 0)
         {
             msbuildProperties.AddRange(msbuildOnlyArgs);
@@ -924,7 +929,7 @@ public class RunCommand
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
-        string? projectOption = parseResult.GetValue(definition.ProjectOption);
+        string? projectOption = projects.Count == 0 ? null : projects[0];
         string? fileOption = parseResult.GetValue(definition.FileOption);
 
         if (projectOption != null && fileOption != null)
@@ -1056,23 +1061,6 @@ public class RunCommand
             LoggerUtility.SeparateMSBuildArguments(applicationArguments.Take(countBeforeDoubleDash), out msbuildOnlyArgs, out var applicationArgsBeforeDoubleDash);
             applicationArgs = [.. applicationArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
         }
-
-        bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
-        {
-            if (parseResult.HasOption(definition.PropertyOption) && parseResult.GetValue(definition.PropertyOption)!.Any())
-            {
-                var projVals = parseResult.GetRunCommandShorthandProjectValues();
-                if (projVals?.Any() is true)
-                {
-                    if (projVals.Count() != 1 || parseResult.HasOption(definition.ProjectOption))
-                    {
-                        throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 
     public static int Run(ParseResult parseResult)
@@ -1080,55 +1068,6 @@ public class RunCommand
         parseResult.HandleDebugSwitch();
 
         return FromParseResult(parseResult).Execute();
-    }
-
-    public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)
-    {
-        // we know the project is going to be one of the following forms:
-        //   -p:project
-        //   -p project
-        // so try to find those and filter them out of the arguments array
-        var possibleProject = parseResult.GetRunCommandShorthandProjectValues()!.FirstOrDefault()!; // ! are ok because of precondition check in method called before this.
-        var tokensMinusProject = new List<string>();
-        var nextTokenMayBeProject = false;
-        foreach (var token in parseResult.Tokens)
-        {
-            if (token.Value == "-p")
-            {
-                // skip this token, if the next token _is_ the project then we'll skip that too
-                // if the next token _isn't_ the project then we'll backfill
-                nextTokenMayBeProject = true;
-                continue;
-            }
-            else if (token.Value == possibleProject && nextTokenMayBeProject)
-            {
-                // skip, we've successfully stripped this option and value entirely
-                nextTokenMayBeProject = false;
-                continue;
-            }
-            else if (token.Value.StartsWith("-p") && token.Value.EndsWith(possibleProject))
-            {
-                // both option and value in the same token, skip and carry on
-            }
-            else
-            {
-                if (nextTokenMayBeProject)
-                {
-                    //we skipped a -p, so backfill it
-                    tokensMinusProject.Add("-p");
-                }
-                nextTokenMayBeProject = false;
-            }
-
-            tokensMinusProject.Add(token.Value);
-        }
-
-        tokensMinusProject.Add("--project");
-        tokensMinusProject.Add(possibleProject);
-
-        var tokensToParse = tokensMinusProject.ToArray();
-        var newParseResult = Parser.Parse(tokensToParse);
-        return newParseResult;
     }
 
     /// <summary>

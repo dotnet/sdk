@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [TestMethod]
-        public void ItWarnsWhenShortFormOfProjectArgumentIsUsed()
+        public void ItRunsWhenShortFormOfProjectArgumentIsUsed()
         {
             var testAppName = "MSBuildTestApp";
             var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute($"-p", projectFile)
                 .Should().Pass()
                          .And.HaveStdOutContaining("Hello World!")
-                         .And.HaveStdOutContaining(CliCommandStrings.RunCommandProjectAbbreviationDeprecated);
+                         .And.NotHaveStdOutContaining(CliCommandStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
         [TestMethod]
