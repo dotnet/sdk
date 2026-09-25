@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             XElement createImagesTarget = targets.Root!
                 .Elements(ns + "Target")
-                .Single(target => target.Attribute("Name")!.Value == "_CreateR2RImages");
+                .Single(target => target.Attribute("Name")?.Value == "_CreateR2RImages");
 
             string inputs = createImagesTarget.Attribute("Inputs")!.Value;
             inputs.Should().Contain("@(CrossgenTool)");
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             XElement createSymbolsTarget = targets.Root!
                 .Elements(ns + "Target")
-                .Single(target => target.Attribute("Name")!.Value == "_CreateR2RSymbols");
+                .Single(target => target.Attribute("Name")?.Value == "_CreateR2RSymbols");
 
             createImagesTarget.Elements(ns + "RunReadyToRunCompiler").Single()
                 .Attribute("Crossgen2ExtraCommandLineArgs")!.Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
