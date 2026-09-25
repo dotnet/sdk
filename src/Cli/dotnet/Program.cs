@@ -124,7 +124,7 @@ public class Program
         finally
         {
             TelemetryInstance.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
-            Shutdown(default!);
+            Shutdown(null);
             TelemetryClient.WriteLogIfNecessary();
         }
     }
@@ -207,14 +207,19 @@ public class Program
         return null;
     }
 
-    public static void Shutdown(PosixSignalContext context)
+    public static void Shutdown(PosixSignalContext? context)
     {
+        s_mainActivity?.SetEndTime(DateTime.UtcNow);
         s_sigIntRegistration.Dispose();
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
         if (TelemetryInstance is TelemetryClient telemetryClient)
         {
             telemetryClient.WaitForPendingEvents();
+        }
+        if (context is null)
+        {
+            TelemetryClient.WaitForInternalMicrosoftDetection();
         }
         s_mainActivity?.Stop();
         TelemetryClient.FlushProviders();
