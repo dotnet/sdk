@@ -331,8 +331,11 @@ public sealed class MSBuildActivityTests : SdkTest
                 <ProjectCapability Include="{Constants.RuntimeEnvironmentVariableSupport}" />
               </ItemGroup>
               <Target Name="{TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName}">
+                <PropertyGroup>
+                  <_ObservedEnvironmentVariables>@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')</_ObservedEnvironmentVariables>
+                </PropertyGroup>
                 <WriteLinesToFile File="$(MSBuildProjectDirectory){Path.DirectorySeparatorChar}observed.txt"
-                                  Lines="variables=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" Overwrite="true" />
+                                  Lines="variables=$(_ObservedEnvironmentVariables)" Overwrite="true" />
               </Target>
             </Project>
             """);
