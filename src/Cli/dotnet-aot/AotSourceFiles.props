@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandServices.cs" Link="CommandServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
