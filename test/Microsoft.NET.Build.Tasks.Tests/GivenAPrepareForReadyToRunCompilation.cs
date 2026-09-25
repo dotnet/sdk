@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Elements(ns + "Target")
                 .Single(target => target.Attribute("Name")?.Value == "_CreateR2RImages");
 
-            string inputs = createImagesTarget.Attribute("Inputs")!.Value;
+            string inputs = GetRequiredAttributeValue(createImagesTarget, "Inputs");
             inputs.Should().Contain("@(CrossgenTool)");
             inputs.Should().Contain("@(Crossgen2Tool)");
             inputs.Should().Contain("@(_ReadyToRunCompilerInputs)");
@@ -87,10 +87,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Elements(ns + "Target")
                 .Single(target => target.Attribute("Name")?.Value == "_CreateR2RSymbols");
 
-            createImagesTarget.Elements(ns + "RunReadyToRunCompiler").Single()
-                .Attribute("Crossgen2ExtraCommandLineArgs")!.Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
-            createSymbolsTarget.Elements(ns + "RunReadyToRunCompiler").Single()
-                .Attribute("Crossgen2ExtraCommandLineArgs")!.Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
+            GetRequiredAttributeValue(
+                createImagesTarget.Elements(ns + "RunReadyToRunCompiler").Single(),
+                "Crossgen2ExtraCommandLineArgs").Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
+            GetRequiredAttributeValue(
+                createSymbolsTarget.Elements(ns + "RunReadyToRunCompiler").Single(),
+                "Crossgen2ExtraCommandLineArgs").Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
         }
 
         private static PrepareForReadyToRunCompilation CreateTask(string outputPath, string containerFormat, bool composite, params ITaskItem[] assemblies)
@@ -119,5 +121,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             item.SetMetadata(MetadataKeys.RelativePath, relativePath);
             return item;
         }
+
+        private static string GetRequiredAttributeValue(XElement element, string attributeName) =>
+            element.Attribute(attributeName)?.Value ?? throw new InvalidOperationException($"Expected {element.Name} to have a {attributeName} attribute.");
     }
 }
