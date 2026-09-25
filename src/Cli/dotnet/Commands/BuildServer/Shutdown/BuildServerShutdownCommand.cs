@@ -72,15 +72,21 @@ internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdo
             }
             else if (task.IsFaulted)
             {
-                AggregateException exception = task.Exception;
-                if (exception.Flatten().InnerExceptions is [OperationCanceledException cancellationException] &&
+                try
+                {
+                    task.Wait();
+                }
+                catch (AggregateException exception) when (
+                    exception.Flatten().InnerExceptions is [OperationCanceledException cancellationException] &&
                     cancellationException.CancellationToken == cancellationToken)
                 {
                     throw cancellationException;
                 }
-
-                success = false;
-                WriteFailureMessage(server, exception);
+                catch (AggregateException exception)
+                {
+                    success = false;
+                    WriteFailureMessage(server, exception);
+                }
             }
             else
             {
