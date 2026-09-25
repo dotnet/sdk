@@ -74,23 +74,23 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             XDocument targets = XDocument.Load(targetsPath);
             XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
 
-            XElement createImagesTarget = targets.Root
+            XElement createImagesTarget = targets.Root!
                 .Elements(ns + "Target")
-                .Single(target => (string)target.Attribute("Name") == "_CreateR2RImages");
+                .Single(target => target.Attribute("Name")!.Value == "_CreateR2RImages");
 
-            string inputs = (string)createImagesTarget.Attribute("Inputs");
+            string inputs = createImagesTarget.Attribute("Inputs")!.Value;
             inputs.Should().Contain("@(CrossgenTool)");
             inputs.Should().Contain("@(Crossgen2Tool)");
             inputs.Should().Contain("@(_ReadyToRunCompilerInputs)");
 
-            XElement createSymbolsTarget = targets.Root
+            XElement createSymbolsTarget = targets.Root!
                 .Elements(ns + "Target")
-                .Single(target => (string)target.Attribute("Name") == "_CreateR2RSymbols");
+                .Single(target => target.Attribute("Name")!.Value == "_CreateR2RSymbols");
 
             createImagesTarget.Elements(ns + "RunReadyToRunCompiler").Single()
-                .Attribute("Crossgen2ExtraCommandLineArgs").Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
+                .Attribute("Crossgen2ExtraCommandLineArgs")!.Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
             createSymbolsTarget.Elements(ns + "RunReadyToRunCompiler").Single()
-                .Attribute("Crossgen2ExtraCommandLineArgs").Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
+                .Attribute("Crossgen2ExtraCommandLineArgs")!.Value.Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
         }
 
         private static PrepareForReadyToRunCompilation CreateTask(string outputPath, string containerFormat, bool composite, params ITaskItem[] assemblies)
