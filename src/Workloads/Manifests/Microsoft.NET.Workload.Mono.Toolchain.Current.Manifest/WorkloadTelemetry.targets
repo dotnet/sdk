@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <Target Name="_WorkloadTelemetry"
-          Condition="'$(_MonoWorkloadTargetsMobile)' == 'true' and '$(TargetsCurrent)' == 'true'"
+          Condition="'$(_MonoWorkloadTargetsMobile)' == 'true' and ('$(TargetsCurrent)' == 'true' or '$(TargetsNet11)' == 'true')"
           AfterTargets="Publish"
           DependsOnTargets="$(WorkloadTelemetryDependsOn)">
 
