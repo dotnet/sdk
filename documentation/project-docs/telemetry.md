@@ -98,6 +98,13 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   leases, and response handling belong to Azure. Blobs written directly into the storage root by the previous
   SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
   untouched; this migration does not delete old telemetry files.
+
+  Azure names each storage sub directory from the instrumentation key, user name, process name, and
+  `AppContext.BaseDirectory`. The base directory differs between `dotnet.dll` and `dotnet-aot`, so without an
+  override each entry point would drain only its own backlog. The SDK sets the
+  `Azure.Monitor.OpenTelemetry.Exporter.StorageSubDirectory` AppContext value to `dotnet-cli` (see
+  [Azure/azure-sdk-for-net#62997](https://github.com/Azure/azure-sdk-for-net/issues/62997)). Every entry point
+  for a given user then shares one sub directory and drains telemetry that the others persisted.
 3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
   calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
   wait budget is five seconds, shared across trace and metric providers. A positive
