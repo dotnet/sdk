@@ -1484,6 +1484,49 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     }
 
     [TestMethod]
+    [DataRow("data.json CopyToOutputDirectory=PreserveNewest TargetPath=output.json", "data.json", "output.json")]
+    [DataRow("\"data file.json\" CopyToOutputDirectory = PreserveNewest TargetPath = \"output & file.json\"", "data file.json", "output & file.json")]
+    public void IncludeDirective_Metadata(string value, string path, string targetPath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, path), "included content");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
+            #:include {value}
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "{targetPath}")));
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("included content");
+    }
+
+    [TestMethod]
+    public void IncludeDirective_Metadata_Transitive()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var libDirectory = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDirectory);
+        File.WriteAllText(Path.Join(libDirectory, "data.json"), "included content");
+        File.WriteAllText(Path.Join(libDirectory, "Util.cs"), """
+            #:include data.json CopyToOutputDirectory=PreserveNewest TargetPath=data.json
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:include lib/Util.cs
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "data.json")));
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("included content");
+    }
+
+    [TestMethod]
     public void IncludeDirective_CustomMapping_ParseErrors()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1540,7 +1583,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, "", ".cs=")}
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, "", ".cs=", "")}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -1559,6 +1602,59 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
                 {CliCommandStrings.RunCommandException}
                 """);
+    }
+
+    [TestMethod, CombinatorialData]
+    public void IncludeDirective_CustomMapping_InvalidItemType(
+        [CombinatorialValues("include", "exclude")] string kind,
+        [CombinatorialValues("", " ", "1Compile", "Compile Items", "ns:Compile", "Compile<Items", "Compile>Items", "Compile/Items", "Compile&Items")] string itemType)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var mapping = $".cs={itemType}";
+        var errorMessage = itemType switch
+        {
+            "" or " " => "",
+            "1Compile" => "Name cannot begin with the '1' character, hexadecimal value 0x31.",
+            "Compile Items" => "The ' ' character, hexadecimal value 0x20, cannot be included in a name.",
+            "ns:Compile" => "The ':' character, hexadecimal value 0x3A, cannot be included in a name.",
+            "Compile<Items" => "The '<' character, hexadecimal value 0x3C, cannot be included in a name.",
+            "Compile>Items" => "The '>' character, hexadecimal value 0x3E, cannot be included in a name.",
+            "Compile/Items" => "The '/' character, hexadecimal value 0x2F, cannot be included in a name.",
+            "Compile&Items" => "The '&' character, hexadecimal value 0x26, cannot be included in a name.",
+            _ => throw new InvalidOperationException($"Unexpected item type '{itemType}'."),
+        };
+        File.WriteAllText(programPath, $"""
+            #:property FileBasedProgramsItemMapping="{mapping}"
+            #:{kind} *.cs
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType.Trim(), mapping, errorMessage)}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+    }
+
+    [TestMethod]
+    [DataRow("Compile")]
+    [DataRow("  Custom_Item2  ")]
+    [DataRow("Custom.Item")]
+    [DataRow("Custom-Item")]
+    [DataRow("_Item")]
+    [DataRow("\u00c9l\u00e9ment")]
+    public void IncludeDirective_CustomMapping_ValidItemType(string itemType)
+    {
+        var mapping = CSharpDirective.IncludeOrExclude.ParseMapping($".cs={itemType}",
+            sourceFile: default,
+            VirtualProjectBuildingCommand.ThrowingReporter);
+
+        mapping.Should().Equal((".cs", itemType.Trim()));
     }
 
     /// <summary>
