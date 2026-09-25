@@ -2,6 +2,7 @@
 <Project>
   <PropertyGroup>
     <WasiNativeWorkloadAvailable Condition="'$(TargetsCurrent)' == 'true'">$(WasiNativeWorkload10)</WasiNativeWorkloadAvailable>
+    <WasiNativeWorkloadAvailable Condition="'$(TargetsNet11)' == 'true'">$(WasiNativeWorkload10)</WasiNativeWorkloadAvailable>
     <WasiNativeWorkloadAvailable Condition="'$(TargetsNet9)' == 'true'">$(WasiNativeWorkload9)</WasiNativeWorkloadAvailable>
     <WasiNativeWorkloadAvailable Condition="'$(WasiNativeWorkloadAvailable)' == '' or '$(WasiNativeWorkload)' == 'false'">false</WasiNativeWorkloadAvailable>
     <WasiNativeWorkload>$(WasiNativeWorkloadAvailable)</WasiNativeWorkload>

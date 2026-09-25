@@ -136,6 +136,15 @@ dependency-flow process so versions, manifests, and feeds remain consistent.
 - Retarget default templates to `netN.0`.
 - Update build-time analyzer and package-generation commands that explicitly select the
   current TFM.
+- Author workload manifests for the new TFM:
+  - Move the Mono toolchain and Emscripten `.Current` workload manifests to `netN`.
+  - Create `net(N-1)` Mono toolchain and Emscripten manifest snapshots from the
+    `.Current` manifests, not from the older versioned manifests, so net(N-1) keeps any
+    changes made while it was current.
+  - Register the new versioned manifests in
+    [`BundledManifests.targets`](../../src/Layout/redist/targets/BundledManifests.targets).
+  - If net(N-1) is still prerelease, temporarily freeze its workload pack versions to the
+    exact flowed versions and replace them with `VersionFeature...ForWorkloads` after GA.
 
 Use `PreviousTargetFramework` for tests that must temporarily remain on `N-1`. Mark
 temporary transition changes with `NetTFMUpdate` so they can be found and removed later.
