@@ -112,6 +112,11 @@
         <target state="translated">Определение форматируемых файлов.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Disables_the_on_disk_formatting_cache">
+        <source>Disables the on-disk formatting cache.</source>
+        <target state="new">Disables the on-disk formatting cache.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
         <source>Doesn't execute an implicit restore before formatting.</source>
         <target state="translated">Не выполняет неявное восстановление перед форматированием.</target>
@@ -125,6 +130,11 @@
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
         <target state="translated">Не удалось сохранить изменения форматирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Failed_to_save_the_formatting_cache_to_0_with_1">
+        <source>Failed to save the formatting cache to '{0}': {1}</source>
+        <target state="new">Failed to save the formatting cache to '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_end_of_line_marker">
@@ -157,6 +167,11 @@
         <target state="translated">Исправление диагностики…</target>
         <note />
       </trans-unit>
+      <trans-unit id="Format_cache_is_corrupt_and_will_be_recreated">
+        <source>The formatting cache at '{0}' is corrupt and will be recreated: {1}</source>
+        <target state="new">The formatting cache at '{0}' is corrupt and will be recreated: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">
         <source>Format complete in {0}ms.</source>
         <target state="translated">Форматирование завершено. Время выполнения: {0} мс.</target>
@@ -180,6 +195,11 @@
       <trans-unit id="Formatted_0_of_1_files">
         <source>Formatted {0} of {1} files.</source>
         <target state="translated">Отформатировано файлов: {0} из {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Formatting_cache_saved_to_0">
+        <source>Formatting cache saved to '{0}'.</source>
+        <target state="new">Formatting cache saved to '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_file_0">
