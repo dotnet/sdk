@@ -202,6 +202,31 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [TestMethod]
+        public void GivenServerShutdownThrowsMatchingCancellationItPropagates()
+        {
+            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            var server = new Mock<IBuildServer>(MockBehavior.Strict);
+            server.SetupGet(s => s.ProcessId).Returns(0);
+            server.SetupGet(s => s.Name).Returns("server");
+            server
+                .Setup(s => s.Shutdown(cancellationSource.Token))
+                .Throws(new OperationCanceledException(cancellationSource.Token));
+
+            var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
+            provider
+                .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.All))
+                .Returns([server.Object]);
+
+            var command = CreateCommand(serverProvider: provider.Object);
+
+            var exception = Assert.ThrowsExactly<OperationCanceledException>(
+                () => command.Execute(cancellationSource.Token));
+
+            exception.CancellationToken.Should().Be(cancellationSource.Token);
+            server.Verify(s => s.Shutdown(cancellationSource.Token), Times.Once);
+        }
+
+        [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/3684")]
         public void GivenARunningRazorServerItShutsDownSuccessfully()
         {
