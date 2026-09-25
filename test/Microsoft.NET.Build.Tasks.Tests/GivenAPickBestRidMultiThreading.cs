@@ -17,12 +17,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }";
 
-        // Only this test mutates the process-wide current directory (to prove the task resolves
-        // paths via TaskEnvironment, not Environment.CurrentDirectory). Lock it so it doesn't race
-        // other classes' tests that read or set the current directory; the other two tests below
-        // never touch it and can run in parallel with the rest of the assembly.
+        // Other tests read the process-wide current directory without declaring a shared resource
+        // lock, so run only this mutating test in the serial tail.
         [TestMethod]
-        [ResourceLock(WellKnownResources.CurrentDirectory)]
+        [DoNotParallelize]
         public void ItResolvesRelativeRuntimeGraphPathAgainstProjectDirectory()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "pickbestrid-relpath-" + Guid.NewGuid().ToString("N"));
