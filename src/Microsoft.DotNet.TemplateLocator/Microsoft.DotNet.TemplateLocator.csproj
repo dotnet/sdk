@@ -13,6 +13,8 @@
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)'">5.0.100.0</AssemblyVersion>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!-- Internalize linked implementation types while preserving the workload APIs consumed by Visual Studio. -->
+    <DefineConstants>$(DefineConstants);INTERNALIZE_SHARED_TYPES;TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API</DefineConstants>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
@@ -47,7 +49,9 @@
        2 different ways of doing things
   -->
   <ItemGroup>
-    <Compile Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
+    <Compile Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs"
+             Exclude="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\PublicExports.cs"
+             LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
     <Compile Include="..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
@@ -62,6 +66,15 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
 </Project>

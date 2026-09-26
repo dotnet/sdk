@@ -3,7 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
+    partial struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
     {
         private string _id;
 

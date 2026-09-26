@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public struct SdkFeatureBand : IEquatable<SdkFeatureBand>, IComparable<SdkFeatureBand>
+    partial struct SdkFeatureBand : IEquatable<SdkFeatureBand>, IComparable<SdkFeatureBand>
     {
         private ReleaseVersion _featureBand;
 

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public class EnvironmentProvider
+    partial class EnvironmentProvider
     {
         private static readonly char[] s_invalidPathChars = Path.GetInvalidPathChars();
 
