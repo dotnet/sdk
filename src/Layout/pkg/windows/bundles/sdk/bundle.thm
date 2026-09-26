@@ -40,7 +40,8 @@
       <Label Name="WelcomeHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="000000">#(loc.WelcomeHeader)</Label>
 
       <!-- Separate elements are needed to ensure tab stops function correctly. -->
-      <Hypertext Name="WelcomeText" X="148" Y="124" Width="-12" Height="144" FontId="DefaultFont" TabStop="yes" HexStyle="000000">#(loc.WelcomeDescription)&#xA;&#xA;#(loc.VisualStudioWarning)</Hypertext>
+      <Label Name="WelcomeText" X="148" Y="124" Width="-12" Height="96" FontId="DefaultFont" HexStyle="000000">#(loc.WelcomeDescription)</Label>
+      <Hypertext Name="VisualStudioWarning" X="148" Y="220" Width="-12" Height="48" FontId="DefaultFont" TabStop="yes" HexStyle="000000">#(loc.VisualStudioWarning)</Hypertext>
 
       <!-- Align the label with the top of the logo on the left. -->
       <Label Name="LicenseTermsAndPolicies" X="148" Y="288" Width="-12" Height="32" FontId="DefaultFont" HexStyle="000000">#(loc.LicenseAssent)</Label>
@@ -81,7 +82,7 @@
       </Button>
     </Page>
     <Page Name="Success">
-      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
+      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
         <!-- Default text to display if none of the conditions are true. -->
         <Text>#(loc.SuccessHeader)</Text>
         <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
