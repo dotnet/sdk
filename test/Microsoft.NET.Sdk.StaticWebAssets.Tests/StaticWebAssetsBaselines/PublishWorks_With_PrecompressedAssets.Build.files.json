@@ -7,6 +7,7 @@
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\hot-reload-settings.json",
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css",
   "${OutputPath}\\wwwroot\\AppWithP2PReference.styles.css",

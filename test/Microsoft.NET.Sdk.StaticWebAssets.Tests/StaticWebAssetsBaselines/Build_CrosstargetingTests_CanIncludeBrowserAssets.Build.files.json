@@ -6,5 +6,6 @@
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\hot-reload-settings.json",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json"
 ]

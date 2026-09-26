@@ -51,6 +51,10 @@ internal sealed class ProjectLauncher(
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
 
         var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
+        if (appModel is WebApplicationAppModel webAppModel && clients.BrowserRefreshServer != null)
+        {
+            webAppModel.EnableBrowserToolsSettings(clientLogger);
+        }
 
         var processSpec = new ProcessSpec
         {
