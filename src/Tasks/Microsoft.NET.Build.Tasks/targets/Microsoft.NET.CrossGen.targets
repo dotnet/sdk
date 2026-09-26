@@ -35,7 +35,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and '$(_IsIOSLikeRid)' == 'true'">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
 
-    <!-- The CoreCLR WebAssembly runtime does not consume R2R inlining or debug info. IL bodies are kept for wasm because methods that are not precompiled fall back to the interpreter. -->
     <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and ('$(_IsIOSLikeRid)' == 'true' or '$(_IsWasmRid)' == 'true')">true</PublishReadyToRunStripInliningInfo>
 
     <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and ('$(_IsIOSLikeRid)' == 'true' or '$(_IsWasmRid)' == 'true')">true</PublishReadyToRunStripDebugInfo>
