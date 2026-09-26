@@ -382,6 +382,133 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
+        [TestMethod]
+        public void TestProjectTemplate_WithCentralPackageManagement_OmitsInlinePackageVersions()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // Enable Central Package Management above the generated project. With CPM active,
+            // the template's post-actions run `dotnet add package --no-restore`, which must not
+            // pin a Version attribute on the PackageReference (that would produce NETSDK1071/NU1008).
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().NotContain("Include=\"NUnit\" Version=");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        public void TestProjectTemplate_WithAnotherProjectInOutputDirectory_StillAddsPackageReferences()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // A second project in the output directory makes the add-reference post actions
+            // ambiguous unless they name the generated project through "targetFiles". Without
+            // that they fail to resolve a project file, and because they run with
+            // continueOnError the command still exits 0 while the generated project silently
+            // ends up with no package references at all.
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Existing.csproj"),
+                $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().Contain("Include=\"NUnit3TestAdapter\"");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        [DataRow("c#", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("c#", "VSTest", "xunit.v3.mtp-off")]
+        [DataRow("f#", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("f#", "VSTest", "xunit.v3.mtp-off")]
+        [DataRow("vb", "Microsoft.Testing.Platform", "xunit.v3.mtp-v2")]
+        [DataRow("vb", "VSTest", "xunit.v3.mtp-off")]
+        public void XUnitV3Template_WithCentralPackageManagement_OmitsInlinePackageVersions(string language, string testRunner, string expectedPackage)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // Under CPM an inline Version attribute on a PackageReference fails the restore with
+            // NU1008, which is the failure this template conversion exists to remove. xUnit v3 was
+            // the one package set still declared inline in the project template.
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"xunit -n {testProjectName} -o {outputDirectory} -lang {language} --xunit-version v3 --test-runner {testRunner}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string extension = language switch { "f#" => "fsproj", "vb" => "vbproj", _ => "csproj" };
+            string projectFile = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.{extension}"));
+
+            projectFile.Should().Contain($"Include=\"{expectedPackage}\"");
+            projectFile.Should().NotContain($"Include=\"{expectedPackage}\" Version=");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
         {
             var fsproj = Path.Combine(outputDirectory, $"{projectName}.fsproj");
