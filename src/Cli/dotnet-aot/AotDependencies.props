@@ -47,6 +47,18 @@
   <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets"
           Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets')" />
 
+    <!-- NativeAOT automatically includes package and current-project satellites, but project-reference
+      satellites arrive without AssetType=resources. Promote the Configurer satellites explicitly so
+      localized first-run resources are compiled into the native image instead of merely copied beside it. -->
+    <Target Name="IncludeConfigurerSatelliteAssembliesInIlc"
+          AfterTargets="_ComputeIlcCompileInputs">
+    <ItemGroup>
+      <IlcSatelliteAssembly
+      Include="@(ReferenceSatellitePaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('Filename', 'Microsoft.DotNet.Configurer.resources')->Distinct())"
+          Exclude="@(IlcSatelliteAssembly)" />
+    </ItemGroup>
+  </Target>
+
   <!-- 'dotnet sdk check' command dependency. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
