@@ -37,6 +37,21 @@
          RunAlways:    Conditions under which the scope always runs regardless of changed files.
                        Supported values: CI (non-PR builds). -->
   <ItemGroup>
+    <ConditionalTestScope Include="CliResources">
+      <Mechanism>project</Mechanism>
+      <TestProjects>
+        test/Microsoft.DotNet.Cli.CoreUtils.Tests/Microsoft.DotNet.Cli.CoreUtils.Tests.csproj;
+        test/Microsoft.DotNet.Cli.Resources.Generator.Tests/Microsoft.DotNet.Cli.Resources.Generator.Tests.csproj
+      </TestProjects>
+      <TriggerPaths>
+        src/Cli/Microsoft.DotNet.Cli.CoreUtils/Resources/**;
+        src/Cli/Microsoft.DotNet.Cli.Resources.Generator/**;
+        test/Microsoft.DotNet.Cli.CoreUtils.Tests/**;
+        test/Microsoft.DotNet.Cli.Resources.Generator.Tests/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
     <ConditionalTestScope Include="ApiCompat">
       <Mechanism>project</Mechanism>
       <TestProjects>test/Compatibility/**/*.csproj</TestProjects>

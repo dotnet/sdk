@@ -1,5 +1,8 @@
 <Project>
 
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
+  <Import Project="$(MSBuildThisFileDirectory)AotResources.targets" />
+
   <!--
     Dependencies and runtime configuration shared by the Native AOT product and tests.
     Keep AotSourceFiles.props limited to source and resource inputs.
@@ -54,8 +57,13 @@
 
   <!-- 'dotnet sln' command dependencies. -->
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 </Project>

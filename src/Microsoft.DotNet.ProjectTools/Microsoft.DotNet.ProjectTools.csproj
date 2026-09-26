@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.ProjectTools" />
+    <EmbeddedResource Update="Resources.resx" LinkBase="Resources" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.DotNet.ProjectTools" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cli\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <ProjectReference Include="..\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet-aot" />
     <InternalsVisibleTo Include="dotnet-aot.Tests" />
@@ -41,4 +47,12 @@
   </ItemGroup>
 
   <Import Project="..\Cli\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Update="$(RepoRoot)src\Cli\Microsoft.DotNet.FileBasedPrograms\FileBasedProgramsResources.resx"
+                      Generator="Microsoft.DotNet.Cli.Resources"
+                      ClassName="Microsoft.DotNet.FileBasedPrograms.FileBasedProgramsResources" />
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 </Project>

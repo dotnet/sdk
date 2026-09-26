@@ -7,8 +7,9 @@
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
-#   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] [--no-build] \
-#                      [--trx] [--results-directory <DIR>]
+#   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] \
+#                      [--resource-mode Embedded|ExternalLocalized|ExternalAll] \
+#                      [--no-build] [--trx] [--results-directory <DIR>] [--filter <EXPR>]
 
 set -euo pipefail
 
@@ -20,21 +21,30 @@ PRODUCT_PROJECT="$REPO_ROOT/src/Cli/dotnet-aot/dotnet-aot.csproj"
 DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
 
 CONFIGURATION="Debug"
+RESOURCE_MODE="Embedded"
 RID=""
 NO_BUILD=false
 TRX=false
 RESULTS_DIRECTORY=""
+FILTER=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --configuration|-c) CONFIGURATION="$2"; shift 2 ;;
         --rid|-r) RID="$2"; shift 2 ;;
+        --resource-mode) RESOURCE_MODE="$2"; shift 2 ;;
         --no-build) NO_BUILD=true; shift ;;
         --trx) TRX=true; shift ;;
         --results-directory) RESULTS_DIRECTORY="$2"; shift 2 ;;
+        --filter) FILTER="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+case "$RESOURCE_MODE" in
+    Embedded|ExternalLocalized|ExternalAll) ;;
+    *) echo "Invalid resource mode: $RESOURCE_MODE"; exit 1 ;;
+esac
 
 # Auto-detect RID
 if [[ -z "$RID" ]]; then
@@ -55,9 +65,9 @@ if [[ -z "$RID" ]]; then
     fi
 fi
 
-PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID"
+PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID/$RESOURCE_MODE"
 EXE_PATH="$PUBLISH_DIR/dotnet-aot.Tests"
-AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID"
+AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID/$RESOURCE_MODE"
 DN_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dn/$CONFIGURATION/$RID"
 case "$RID" in
     win-*) AOT_LIBRARY_NAME="dotnet-aot.dll"; DN_NAME="dn.exe" ;;
@@ -70,6 +80,7 @@ DN_PATH="$DN_PUBLISH_DIR/$DN_NAME"
 echo "=== dotnet-aot NativeAOT Test Runner ==="
 echo "  Configuration: $CONFIGURATION"
 echo "  RID:           $RID"
+echo "  Resources:     $RESOURCE_MODE"
 echo "  Publish dir:   $PUBLISH_DIR"
 echo ""
 
@@ -81,11 +92,13 @@ if [[ "$NO_BUILD" == false ]]; then
         -c "$CONFIGURATION" \
         -r "$RID" \
         -p:PublishAotTests=true \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$PUBLISH_DIR"
 
     "$DOTNET" publish "$PRODUCT_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$AOT_PUBLISH_DIR"
 
     "$DOTNET" publish "$DN_PROJECT" \
@@ -120,19 +133,38 @@ fi
 echo "Running AOT tests..."
 echo ""
 
-SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
+BOOTSTRAP_SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
     /^[[:space:]]*Base Path:/ {
         sub(/^[[:space:]]*Base Path:[[:space:]]*/, "")
         print
         exit
     }')
 
-if [[ -z "$SDK_DIRECTORY" ]]; then
+if [[ -z "$BOOTSTRAP_SDK_DIRECTORY" ]]; then
     echo "ERROR: Could not determine the bootstrap SDK directory."
     exit 1
 fi
 
+REDIST_SDK_ROOT="$REPO_ROOT/artifacts/bin/redist/$CONFIGURATION/dotnet/sdk"
+SDK_DIRECTORY="$({ find "$REDIST_SDK_ROOT" -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null || true; } | sort -r | head -1)"
+if [[ -z "$SDK_DIRECTORY" ]]; then
+    echo "ERROR: $RESOURCE_MODE requires a built $CONFIGURATION redist SDK containing managed owner assemblies and satellites."
+    exit 1
+fi
+RESOURCE_DOTNET_ROOT="$(dirname "$REDIST_SDK_ROOT")"
+RESOURCE_DOTNET_HOST="$RESOURCE_DOTNET_ROOT/dotnet"
+TEST_DOTNET_ROOT="$RESOURCE_DOTNET_ROOT"
+TEST_DOTNET_HOST="$RESOURCE_DOTNET_HOST"
+# Keep resource tests on the redist SDK, but use the bootstrap SDK for managed fallback when the
+# target-architecture redist host cannot execute on the agent.
+if ! "$RESOURCE_DOTNET_HOST" --info >/dev/null 2>&1; then
+    TEST_DOTNET_ROOT="$REPO_ROOT/.dotnet"
+    TEST_DOTNET_HOST="$DOTNET"
+    export DOTNET_AOT_TEST_MANAGED_FALLBACK_SDK_DIRECTORY="$BOOTSTRAP_SDK_DIRECTORY"
+fi
+
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
+export DOTNET_AOT_TEST_RESOURCE_MODE="$RESOURCE_MODE"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
 MANAGED_TEST_MODULE="$(find "$REPO_ROOT/artifacts/bin/dotnet-aot.Tests/$CONFIGURATION" -path "*/$RID/dotnet-aot.Tests.dll" -print -quit)"
 if [[ -z "$MANAGED_TEST_MODULE" ]]; then
@@ -143,8 +175,8 @@ export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
 export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
 export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
-export DOTNET_HOST_PATH="$DOTNET"
-export DOTNET_ROOT="$REPO_ROOT/.dotnet"
+export DOTNET_HOST_PATH="$TEST_DOTNET_HOST"
+export DOTNET_ROOT="$TEST_DOTNET_ROOT"
 
 chmod +x "$EXE_PATH"
 chmod +x "$DN_PATH"
@@ -152,6 +184,9 @@ chmod +x "$DN_PATH"
 # When --trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 RUN_ARGS=()
+if [[ -n "$FILTER" ]]; then
+    RUN_ARGS+=(--filter "$FILTER")
+fi
 if [[ "$TRX" == true ]]; then
     if [[ -z "$RESULTS_DIRECTORY" ]]; then
         RESULTS_DIRECTORY="$REPO_ROOT/artifacts/TestResults/$CONFIGURATION"

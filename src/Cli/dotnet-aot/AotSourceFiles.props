@@ -26,6 +26,8 @@
 
   <!-- Common AOT scaffolding: shared by every AOT command. Reuse, do not duplicate. -->
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AotResourceCatalog.cs" Link="AotResourceCatalog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AotResourceManagerProvider.cs" Link="AotResourceManagerProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliUsage.cs" Link="CliUsage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliSchema.cs" Link="CliSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
@@ -128,9 +130,9 @@
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
-    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Namespace="Microsoft.NET.Build.Tasks" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.DotNet.Cli" ClassName="Microsoft.DotNet.Cli.CliStrings" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.DotNet.Cli.Commands" ClassName="Microsoft.DotNet.Cli.Commands.CliCommandStrings" />
+    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Generator="Microsoft.DotNet.Cli.Resources" Namespace="Microsoft.NET.Build.Tasks" ClassName="Microsoft.NET.Build.Tasks.Strings" />
   </ItemGroup>
 
   <!-- File-based run cache and launch contracts shared with the managed CLI. -->
