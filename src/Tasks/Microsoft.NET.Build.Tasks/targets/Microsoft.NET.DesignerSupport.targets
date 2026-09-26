@@ -124,8 +124,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_GatherDesignerShadowCopyFiles">
-    <ItemGroup>
+  <Target Name="_GatherDesignerShadowCopyFiles"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(UseWinFormsOutOfProcDesigner)' == 'true'">
+
+    <!-- In a multi-targeted project (e.g. net8.0-windows;net48) that opts in to UseWinFormsOutOfProcDesigner
+         for every TargetFramework, $(TargetFrameworks) keeps its full, project-level value during each inner
+         build, while $(TargetFramework) is set to that inner build's single TFM.  We use that to detect the
+         .NET Framework inner build of such a project so its classic-framework assets are not shadow-copied
+         into the out-of-process designer's UserAppData; the modern TFM leg still produces its shadow-copy
+         output normally, and single-targeted net48 projects are unaffected. -->
+    <PropertyGroup>
+      <_IsDesignerNetFrameworkMultiTargetingInnerBuild
+        Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(TargetFrameworks)' != '' and '$(TargetFrameworks)' != '$(TargetFramework)'"
+        >true</_IsDesignerNetFrameworkMultiTargetingInnerBuild>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_IsDesignerNetFrameworkMultiTargetingInnerBuild)' != 'true'">
       <_DesignerShadowCopy Include="@(ReferenceCopyLocalPaths)" />
 
       <!-- For .NET Core, we do not include NuGet package assets, as the designer will load these from the NuGet cache. -->
