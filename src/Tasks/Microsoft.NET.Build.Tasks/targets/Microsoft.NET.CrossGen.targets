@@ -30,12 +30,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <_IsIOSLikeRid Condition="$(RuntimeIdentifier.StartsWith('ios-')) or $(RuntimeIdentifier.StartsWith('tvos-')) or $(RuntimeIdentifier.StartsWith('iossimulator-')) or $(RuntimeIdentifier.StartsWith('tvossimulator-')) or $(RuntimeIdentifier.StartsWith('maccatalyst-'))">true</_IsIOSLikeRid>
 
+    <_IsWasmRid Condition="$(RuntimeIdentifier.StartsWith('browser-')) or $(RuntimeIdentifier.StartsWith('wasi-'))">true</_IsWasmRid>
+
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and '$(_IsIOSLikeRid)' == 'true'">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
 
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripInliningInfo>
+    <!-- The CoreCLR WebAssembly runtime does not consume R2R inlining or debug info. IL bodies are kept for wasm because methods that are not precompiled fall back to the interpreter. -->
+    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and ('$(_IsIOSLikeRid)' == 'true' or '$(_IsWasmRid)' == 'true')">true</PublishReadyToRunStripInliningInfo>
 
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripDebugInfo>
+    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and ('$(_IsIOSLikeRid)' == 'true' or '$(_IsWasmRid)' == 'true')">true</PublishReadyToRunStripDebugInfo>
 
     <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripILBodies>
 
