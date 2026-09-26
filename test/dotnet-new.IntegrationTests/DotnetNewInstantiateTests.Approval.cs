@@ -519,6 +519,28 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        public void DoesNotShowWarningIfPackageIsAvailableFromBuiltInSources_WhenNoUpdateCheckOption()
+        {
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ItemTemplates@6.0.100", "--force")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should().Pass();
+
+            new DotnetNewCommand(_log, "gitignore", "--no-update-check")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("is available in the '.NET SDK' provider")
+                .And.NotHaveStdOutContaining("To use built-in template package");
+        }
+
+        [TestMethod]
         public Task CanShowError_OnTemplatesWithSameShortName()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
