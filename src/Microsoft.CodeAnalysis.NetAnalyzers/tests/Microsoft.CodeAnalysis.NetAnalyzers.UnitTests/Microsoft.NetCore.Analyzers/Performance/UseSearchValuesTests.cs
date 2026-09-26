@@ -1132,6 +1132,44 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixAsync(LanguageVersion.CSharp9, source, expected, topLevelStatements: true);
         }
 
+        [TestMethod]
+        public async Task TwoViolationsInOneType_FixAllCreatesDistinctFieldsAndOneImport_CSharpAsync()
+        {
+            string source =
+                """
+                using System.Buffers;
+
+                internal sealed class Test
+                {
+                    private void TestMethod(string text)
+                    {
+                        _ = text.IndexOfAny([|"aeiouA".ToCharArray()|]);
+                        _ = text.IndexOfAny([|"xyzwvu".ToCharArray()|]);
+                    }
+                }
+                """;
+
+            string expected =
+                """
+                using System.Buffers;
+                using System;
+
+                internal sealed class Test
+                {
+                    private static readonly SearchValues<char> s_myChars1 = SearchValues.Create("xyzwvu");
+                    private static readonly SearchValues<char> s_myChars = SearchValues.Create("aeiouA");
+
+                    private void TestMethod(string text)
+                    {
+                        _ = text.AsSpan().IndexOfAny(s_myChars);
+                        _ = text.AsSpan().IndexOfAny(s_myChars1);
+                    }
+                }
+                """;
+
+            await VerifyCodeFixAsync(LanguageVersion.CSharp7_3, source, expected);
+        }
+
         private static async Task VerifyAnalyzerAsync(LanguageVersion languageVersion, string source) =>
             await VerifyCodeFixAsync(languageVersion, source, expected: null);
 

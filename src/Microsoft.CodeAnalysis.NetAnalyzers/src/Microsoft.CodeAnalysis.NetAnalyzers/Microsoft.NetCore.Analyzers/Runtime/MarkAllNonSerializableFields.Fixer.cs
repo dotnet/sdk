@@ -55,8 +55,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> AddNonSerializedAttributeAsync(Document document, SyntaxNode fieldNode, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(
-                editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNonSerializedAttribute)));
+            if (!editor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNonSerializedAttribute, out INamedTypeSymbol? nonSerializedAttributeType))
+            {
+                return document;
+            }
+
+            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(nonSerializedAttributeType));
             editor.AddAttribute(fieldNode, attr);
             return editor.GetChangedDocument();
         }
@@ -66,12 +70,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SymbolEditor editor = SymbolEditor.Create(document);
             await editor.EditOneDeclarationAsync(type, (docEditor, declaration) =>
             {
-                SyntaxNode serializableAttr = docEditor.Generator.Attribute(docEditor.Generator.TypeExpression(
-                    docEditor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
+                if (!docEditor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute, out INamedTypeSymbol? serializableAttributeType))
+                {
+                    return;
+                }
+
+                SyntaxNode serializableAttr = docEditor.Generator.Attribute(docEditor.Generator.TypeExpression(serializableAttributeType));
                 docEditor.AddAttribute(declaration, serializableAttr);
             }, cancellationToken).ConfigureAwait(false);
 
-            return editor.GetChangedDocuments().First();
+            return editor.GetChangedDocuments().FirstOrDefault() ?? document;
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

@@ -197,7 +197,10 @@ public sealed class CSharpAssemblyDocumentGenerator
 
     private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
     {
-        IEnumerable<ISymbol> members = namedType.GetMembers().Where(_options.SymbolFilter.Include);
+        INamedTypeSymbol[] extensionBlocks = [.. namedType.GetTypeMembers().Where(static type => string.IsNullOrEmpty(type.Name))];
+        IEnumerable<ISymbol> members = namedType.GetMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Where(member => !IsExtensionBlockImplementation(member, extensionBlocks));
 
         // If it's a value type
         if (namedType.TypeKind == TypeKind.Struct)
@@ -276,6 +279,129 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return namedTypeNode;
     }
+
+    private bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
+    {
+        if (member is not IMethodSymbol implementation)
+        {
+            return false;
+        }
+
+        foreach (INamedTypeSymbol extensionBlock in extensionBlocks)
+        {
+            foreach (ISymbol extensionMember in extensionBlock.GetMembers())
+            {
+                if (extensionMember is IMethodSymbol extensionMethod &&
+                    IsMatchingExtensionMethod(implementation, extensionMethod, extensionBlock))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol extensionProperty &&
+                    IsMatchingExtensionPropertyAccessor(implementation, extensionProperty, extensionBlock, isSetter: false))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol propertyWithSetter &&
+                    IsMatchingExtensionPropertyAccessor(implementation, propertyWithSetter, extensionBlock, isSetter: true))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsMatchingExtensionMethod(
+        IMethodSymbol implementation,
+        IMethodSymbol extensionMethod,
+        INamedTypeSymbol extensionBlock)
+    {
+        int receiverParameterCount = extensionMethod.IsStatic ? 0 : 1;
+        if (implementation.Name != extensionMethod.Name ||
+            implementation.Arity != extensionBlock.Arity + extensionMethod.Arity ||
+            implementation.Parameters.Length != extensionMethod.Parameters.Length + receiverParameterCount ||
+        !HasMatchingType(implementation.ReturnType, extensionMethod.ReturnType) ||
+        !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
+        {
+            return false;
+        }
+
+        return extensionMethod.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
+    }
+
+    private bool IsMatchingExtensionPropertyAccessor(
+        IMethodSymbol implementation,
+        IPropertySymbol extensionProperty,
+        INamedTypeSymbol extensionBlock,
+        bool isSetter)
+    {
+        IMethodSymbol? accessor = isSetter ? extensionProperty.SetMethod : extensionProperty.GetMethod;
+        int receiverParameterCount = extensionProperty.IsStatic ? 0 : 1;
+        if (accessor is null ||
+            implementation.Name != accessor.Name ||
+            implementation.Arity != extensionBlock.Arity ||
+            implementation.Parameters.Length != receiverParameterCount + accessor.Parameters.Length ||
+            !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
+        {
+            return false;
+        }
+
+        bool hasMatchingParameters = accessor.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
+
+        return hasMatchingParameters && (isSetter
+            ? implementation.ReturnsVoid
+            : HasMatchingType(implementation.ReturnType, extensionProperty.Type));
+    }
+
+    private bool HasMatchingReceiver(
+        IMethodSymbol implementation,
+        INamedTypeSymbol extensionBlock,
+        int receiverParameterCount)
+    {
+        if (receiverParameterCount == 0)
+        {
+            return true;
+        }
+
+        return _syntaxGenerator.Declaration(extensionBlock) is ExtensionBlockDeclarationSyntax { ParameterList.Parameters: [var receiver] } &&
+            receiver.Type is not null &&
+            GetRefKind(receiver) == implementation.Parameters[0].RefKind &&
+            SyntaxFactory.AreEquivalent(receiver.Type, _syntaxGenerator.TypeExpression(implementation.Parameters[0].Type));
+    }
+
+    private static RefKind GetRefKind(ParameterSyntax parameter)
+    {
+        if (parameter.Modifiers.Any(SyntaxKind.OutKeyword))
+        {
+            return RefKind.Out;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.InKeyword))
+        {
+            return RefKind.In;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.RefKeyword))
+        {
+            return parameter.Modifiers.Any(SyntaxKind.ReadOnlyKeyword) ? RefKind.RefReadOnly : RefKind.Ref;
+        }
+
+        return RefKind.None;
+    }
+
+    private static bool HasMatchingParameter(IParameterSymbol first, IParameterSymbol second) =>
+        first.RefKind == second.RefKind && HasMatchingType(first.Type, second.Type);
+
+    private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>
+        SymbolEqualityComparer.Default.Equals(first, second) ||
+        first.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == second.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
     {

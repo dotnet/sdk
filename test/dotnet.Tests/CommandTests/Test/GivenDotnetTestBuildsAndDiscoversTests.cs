@@ -107,6 +107,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void DiscoverTestProjectWithTestsInJsonFormat_EmitsMachineReadableJson(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--list-tests", "json", "-c", configuration);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            // The discovery JSON is emitted as a single object. Extract it from stdout (which may also
+            // contain restore/build output) and assert the versioned, container-grouped shape.
+            string stdout = result.StdOut!;
+            int start = stdout.IndexOf('{');
+            int end = stdout.LastIndexOf('}');
+            start.Should().BeGreaterThanOrEqualTo(0, $"expected a JSON document in the output. Full output:{Environment.NewLine}{stdout}");
+            end.Should().BeGreaterThan(start);
+
+            using var document = System.Text.Json.JsonDocument.Parse(stdout.Substring(start, end - start + 1));
+            System.Text.Json.JsonElement root = document.RootElement;
+
+            root.GetProperty("version").GetString().Should().Be("1.0");
+
+            System.Text.Json.JsonElement containers = root.GetProperty("testContainers");
+            containers.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+
+            bool foundTest0 = containers.EnumerateArray()
+                .SelectMany(c => c.GetProperty("tests").EnumerateArray())
+                .Any(t => t.GetProperty("uid").GetString() == "Test0");
+
+            foundTest0.Should().BeTrue("the discovered test 'Test0' should appear in the JSON output.");
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())

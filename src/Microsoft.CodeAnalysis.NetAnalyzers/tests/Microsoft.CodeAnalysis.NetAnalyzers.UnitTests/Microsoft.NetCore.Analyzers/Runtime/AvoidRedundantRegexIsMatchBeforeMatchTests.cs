@@ -2865,6 +2865,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
+        [TestMethod]
+        public async Task NestedIfStatements_FixAllRewritesBoth()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string other)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                            Match n;
+                            if ([|Regex.IsMatch(other, @"\w+")|])
+                            {
+                                n = Regex.Match(other, @"\w+");
+                                System.Console.WriteLine(m.Value + n.Value);
+                            }
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string other)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                            if (Regex.Match(other, @"\w+") is { Success: true } n)
+                            {
+                                System.Console.WriteLine(m.Value + n.Value);
+                            }
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
         #endregion
     }
 }

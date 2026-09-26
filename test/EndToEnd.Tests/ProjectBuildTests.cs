@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
@@ -13,7 +14,7 @@ namespace EndToEnd.Tests
         [TestMethod]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            var directory = TestAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: nameof(ProjectBuildTests));
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -55,7 +56,7 @@ namespace EndToEnd.Tests
         [TestMethod]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
-            var directory = TestAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: nameof(ProjectBuildTests));
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -87,7 +88,7 @@ namespace EndToEnd.Tests
         [DataRow("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
         {
-            var directory = TestAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: $"{targetFramework}-{selfContained}");
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -127,7 +128,7 @@ namespace EndToEnd.Tests
         [DataRow("current", false)]
         public void ItCanPublishArm64Wpf(string targetFramework, bool selfContained)
         {
-            var directory = TestAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: $"{targetFramework}-{selfContained}");
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -416,9 +417,16 @@ namespace EndToEnd.Tests
             throw new Exception("Unsupported version of SDK");
         }
 
-        private void TestTemplateCreateAndBuild(string templateName, bool build = true, bool selfContained = false, string language = "", string framework = "", bool deleteTestDirectory = false)
+        private void TestTemplateCreateAndBuild(
+            string templateName,
+            bool build = true,
+            bool selfContained = false,
+            string language = "",
+            string framework = "",
+            bool deleteTestDirectory = false,
+            [CallerMemberName] string testName = "")
         {
-            var directory = InstantiateProjectTemplate(templateName, language);
+            var directory = InstantiateProjectTemplate(templateName, language, testName: testName);
             string projectDirectory = directory.Path;
 
             XDocument GetProjectXml()
@@ -485,7 +493,12 @@ namespace EndToEnd.Tests
             }
         }
 
-        private TestDirectory InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true, string itemName = "")
+        private TestDirectory InstantiateProjectTemplate(
+            string templateName,
+            string language = "",
+            bool withNoRestore = true,
+            string itemName = "",
+            [CallerMemberName] string testName = "")
         {
             var identifier = templateName;
             if (!string.IsNullOrWhiteSpace(language))
@@ -496,7 +509,7 @@ namespace EndToEnd.Tests
             {
                 identifier += $"({itemName})";
             }
-            var directory = TestAssetsManager.CreateTestDirectory(identifier: identifier);
+            var directory = TestAssetsManager.CreateTestDirectory(testName, identifier);
             string projectDirectory = directory.Path;
 
             string[] newArgs = [

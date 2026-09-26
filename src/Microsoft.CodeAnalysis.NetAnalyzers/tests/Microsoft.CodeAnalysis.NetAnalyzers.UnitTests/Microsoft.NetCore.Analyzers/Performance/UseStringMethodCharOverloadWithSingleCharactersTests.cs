@@ -554,6 +554,62 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
+        [TestMethod]
+        public async Task CS_NestedIndexOf_FixAllRewritesBoth()
+        {
+            var testCode = """
+                using System;
+
+                public class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        "test".IndexOf{|CA1865:("a", "abc".IndexOf{|CA1865:("b", StringComparison.Ordinal)|}, StringComparison.Ordinal)|};
+                    }
+                }
+                """;
+
+            var fixedCode = """
+                using System;
+
+                public class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        "test".IndexOf('a', "abc".IndexOf('b'));
+                    }
+                }
+                """;
+
+            await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
+        }
+
+        [TestMethod]
+        public async Task VB_NestedIndexOf_FixAllRewritesBoth()
+        {
+            var testCode = """
+                Imports System
+
+                Public Class TestClass
+                    Public Sub TestMethod()
+                        Dim a = "test".IndexOf{|CA1865:("a", "abc".IndexOf{|CA1865:("b", StringComparison.Ordinal)|}, StringComparison.Ordinal)|}
+                    End Sub
+                End Class
+                """;
+
+            var fixedCode = """
+                Imports System
+
+                Public Class TestClass
+                    Public Sub TestMethod()
+                        Dim a = "test".IndexOf("a"c, "abc".IndexOf("b"c))
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
+        }
+
         private static async Task VerifyCSAsync(
             string source,
             ReferenceAssemblies referenceAssemblies,

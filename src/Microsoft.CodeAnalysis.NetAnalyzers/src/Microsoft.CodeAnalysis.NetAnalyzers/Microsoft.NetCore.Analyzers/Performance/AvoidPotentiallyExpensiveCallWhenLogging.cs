@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -82,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 // Check if the log level exceeds the configured maximum threshold.
                 if (logLevel != LogLevelPassedAsParameter &&
-                    logLevel < LogLevelCritical &&
+                    logLevel <= LogLevelCritical &&
                     logLevel > ParseLogLevel(context.Options.GetStringOptionValue(EditorConfigOptionNames.MaxLogLevel, Rule, invocation.Syntax.SyntaxTree, context.Compilation)))
                 {
                     return;
@@ -110,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return null;
             }
 
-            if (ICollectionExpressionOperationWrapper.IsInstance(operation))
+            if (operation is ICollectionExpressionOperation)
             {
                 return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression;
             }
@@ -235,7 +234,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (method.Name == nameof(Stopwatch.GetTimestamp) &&
                     method.IsStatic &&
                     method.Parameters.IsEmpty &&
-                    method.ContainingType?.ToDisplayString() == "System.Diagnostics.Stopwatch")
+                    SymbolEqualityComparer.Default.Equals(
+                        method.ContainingType,
+                        WellKnownTypeProvider.GetOrCreate(invocationOperation.SemanticModel!.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsStopwatch)))
                 {
                     return true;
                 }

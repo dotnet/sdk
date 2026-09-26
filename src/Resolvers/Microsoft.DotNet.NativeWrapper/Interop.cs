@@ -11,7 +11,6 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop
     {
-        public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #if NET
         private static readonly string? s_hostFxrPath;
 #endif
@@ -19,7 +18,7 @@ namespace Microsoft.DotNet.NativeWrapper
         static Interop()
         {
 #if NET
-            if (!RunningOnWindows)
+            if (!OperatingSystem.IsWindows())
             {
                 s_hostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
                 System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.ResolvingUnmanagedDll += HostFxrResolver;
@@ -68,14 +67,26 @@ namespace Microsoft.DotNet.NativeWrapper
                 return IntPtr.Zero;
             }
 
-            if (string.IsNullOrEmpty(s_hostFxrPath))
+            string? hostFxrPath = s_hostFxrPath;
+
+            // The host only publishes the HOSTFXR_PATH runtime property for first-class SDK
+            // commands (e.g. `dotnet build`). When the SDK is launched via `dotnet exec dotnet.dll`
+            // (as the `dnx` script does), the property is absent. On glibc the bare `libhostfxr`
+            // load succeeds against the already-loaded library so this resolver never runs, but on
+            // musl it does not, so fall back to locating hostfxr under the running .NET root.
+            if (string.IsNullOrEmpty(hostFxrPath))
+            {
+                hostFxrPath = HostFxrLocator.ResolveHostFxrPath();
+            }
+
+            if (string.IsNullOrEmpty(hostFxrPath))
             {
                 throw new HostFxrRuntimePropertyNotSetException();
             }
 
-            if (!NativeLibrary.TryLoad(s_hostFxrPath, out var handle))
+            if (!NativeLibrary.TryLoad(hostFxrPath, out var handle))
             {
-                throw new HostFxrNotFoundException(s_hostFxrPath);
+                throw new HostFxrNotFoundException(hostFxrPath);
             }
 
             return handle;
@@ -279,8 +290,10 @@ namespace Microsoft.DotNet.NativeWrapper
         ///   or custom logging scenarios.
         ///  </para>
         /// </remarks>
+#if !NET
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void hostfxr_error_writer_fn(PlatformString message);
+#endif
 
         /// <summary>
         ///  Sets a callback for receiving error messages from the hosting layer.

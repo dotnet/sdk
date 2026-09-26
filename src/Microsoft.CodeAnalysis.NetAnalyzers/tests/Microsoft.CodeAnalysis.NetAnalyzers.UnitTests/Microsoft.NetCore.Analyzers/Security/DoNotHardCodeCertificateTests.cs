@@ -16,273 +16,301 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task Test_Source_ContantByteArray_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[]", "void TestClass.TestMethod(string path)"));
         }
 
         [TestMethod]
         public async Task Test_Source_ConvertFromBase64String_WithConstantString_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path)
-    {
-        byte[] bytes = Convert.FromBase64String(""AAAAAaazaoensuth"");
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path)
+                    {
+                        byte[] bytes = Convert.FromBase64String("AAAAAaazaoensuth");
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(string path)"));
         }
 
         [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithConstantString_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path)
-    {
-        byte[] bytes = new ASCIIEncoding().GetBytes(""AAAAAaazaoensuth"");
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}",
+                using System.IO;
+                using System.Text;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path)
+                    {
+                        byte[] bytes = new ASCIIEncoding().GetBytes("AAAAAaazaoensuth");
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(string path)"));
         }
 
         [TestMethod]
         public async Task Test_Source_EncodingUTF8GetBytes_WithConstantString_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(""AAAAAaazaoensuth"");
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}",
+                using System.IO;
+                using System.Text;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path)
+                    {
+                        byte[] bytes = Encoding.UTF8.GetBytes("AAAAAaazaoensuth");
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(string path)"));
         }
 
         [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(byte[] bytes, string path)
-    {
-        new ASCIIEncoding().GetBytes(""AAAAAaazaoensuth"", 0, 3, bytes, 0);
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}",
+                using System.IO;
+                using System.Text;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(byte[] bytes, string path)
+                    {
+                        new ASCIIEncoding().GetBytes("AAAAAaazaoensuth", 0, 3, bytes, 0);
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 38, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(byte[] bytes, string path)", "string chars", "int ASCIIEncoding.GetBytes(string chars, int charIndex, int charCount, byte[] bytes, int byteIndex)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path, password, keyStorageFlags);
-    }
-}",
+                using System.IO;
+                using System.Security;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path, password, keyStorageFlags);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName, SecureString password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password, keyStorageFlags);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password, keyStorageFlags);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndStringParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, string password)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, string password)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndSecureStringParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, SecureString password)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password);
-    }
-}",
+                using System.IO;
+                using System.Security;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, SecureString password)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(byte[] rawData, SecureString password)", "void TestClass.TestMethod(string path, SecureString password)", "byte[]", "void TestClass.TestMethod(string path, SecureString password)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password, keyStorageFlags);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password, keyStorageFlags);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, SecureString password)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password);
-    }
-}",
+                using System.IO;
+                using System.Security;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, SecureString password)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(byte[] rawData, SecureString password)", "void TestClass.TestMethod(string path, SecureString password)", "byte[]", "void TestClass.TestMethod(string path, SecureString password)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayParameter_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, string password)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, string password)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] data)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndStringParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path, string password)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(bytes, password);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path, string password)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(bytes, password);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
         [TestMethod]
         public async Task Test_X509Certificates2_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(string path)
-    {
-        byte[] bytes = new byte[] {1, 2, 3};
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate2(path);
-    }
-}",
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void TestMethod(string path)
+                    {
+                        byte[] bytes = new byte[] {1, 2, 3};
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate2(path);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate2.X509Certificate2(string fileName)", "void TestClass.TestMethod(string path)", "byte[]", "void TestClass.TestMethod(string path)"));
         }
 
@@ -290,157 +318,164 @@ class TestClass
         [TestMethod]
         public async Task Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Runtime.Serialization;
+                using System.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod(SerializationInfo info, StreamingContext context)
-    {
-        new X509Certificate(info, context);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(SerializationInfo info, StreamingContext context)
+                    {
+                        new X509Certificate(info, context);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Test_Source_NotContantByteArray_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod(byte[] bytes, string path)
-    {
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(byte[] bytes, string path)
+                    {
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod(string s, string path)
-    {
-        byte[] bytes = Convert.FromBase64String(s);
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(string s, string path)
+                    {
+                        byte[] bytes = Convert.FromBase64String(s);
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Test_X509Certificate2_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod(byte[] bytes, string path)
-    {
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate2(path);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(byte[] bytes, string path)
+                    {
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate2(path);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Text;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Text;
 
-using System.Security.Cryptography.X509Certificates;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod(byte[] bytes, string path)
-    {
-        char[] chars = new char[] {'1', '2', '3'};
-        new ASCIIEncoding().GetBytes(chars, 0, 3, bytes, 0);
-        File.WriteAllBytes(path, bytes);
-        new X509Certificate(path);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(byte[] bytes, string path)
+                    {
+                        char[] chars = new char[] {'1', '2', '3'};
+                        new ASCIIEncoding().GetBytes(chars, 0, 3, bytes, 0);
+                        File.WriteAllBytes(path, bytes);
+                        new X509Certificate(path);
+                    }
+                }
+                """);
         }
 
         // Didn't find out what causes NRE.
         [TestMethod, WorkItem(3012, "https://github.com/dotnet/roslyn-analyzers/issues/3012")]
         public async Task Test_ExampleCodeFromTheIssue_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
-using System.IO;
-using System.Security;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Globalization;
+                using System.IO;
+                using System.Security;
+                using System.Security.Cryptography;
+                using System.Security.Cryptography.X509Certificates;
+                using System.Text;
+                using System.Text.RegularExpressions;
 
-class Constants
-{
-    public static Regex UnhashedNameIdRegex = new Regex(@""^[a-zA-Z0-9]\d{2}[a-zA-Z0-9](-\d{3}){2}[A-Za-z0-9]$"");
-}
+                class Constants
+                {
+                    public static Regex UnhashedNameIdRegex = new Regex(@"^[a-zA-Z0-9]\d{2}[a-zA-Z0-9](-\d{3}){2}[A-Za-z0-9]$");
+                }
 
-class TestClass
-{
-    public static string Calculate(string unhashedNameId)
-    {
-        if (string.IsNullOrWhiteSpace(unhashedNameId))
-        {
-            throw new ArgumentNullException(nameof(unhashedNameId), $""{ nameof(unhashedNameId)} must not be null, empty or whitespace."");
-        }
+                class TestClass
+                {
+                    public static string Calculate(string unhashedNameId)
+                    {
+                        if (string.IsNullOrWhiteSpace(unhashedNameId))
+                        {
+                            throw new ArgumentNullException(nameof(unhashedNameId), $"{ nameof(unhashedNameId)} must not be null, empty or whitespace.");
+                        }
 
-        if (!Constants.UnhashedNameIdRegex.IsMatch(unhashedNameId))
-        {
-            throw new ArgumentException($""{ nameof(unhashedNameId)} does not match '{Constants.UnhashedNameIdRegex}'."", nameof(unhashedNameId));
-        }
+                        if (!Constants.UnhashedNameIdRegex.IsMatch(unhashedNameId))
+                        {
+                            throw new ArgumentException($"{ nameof(unhashedNameId)} does not match '{Constants.UnhashedNameIdRegex}'.", nameof(unhashedNameId));
+                        }
 
-        using (var sha = new SHA256Managed())
-        {
-            byte[] textData = Encoding.UTF8.GetBytes(unhashedNameId);
-            byte[] crypto = sha.ComputeHash(textData);
+                        using (var sha = new SHA256Managed())
+                        {
+                            byte[] textData = Encoding.UTF8.GetBytes(unhashedNameId);
+                            byte[] crypto = sha.ComputeHash(textData);
 
-            var nameId = new StringBuilder();
-            foreach (byte hash in crypto)
-            {
-                nameId.Append(hash.ToString(""x2"", CultureInfo.InvariantCulture));
-            }
+                            var nameId = new StringBuilder();
+                            foreach (byte hash in crypto)
+                            {
+                                nameId.Append(hash.ToString("x2", CultureInfo.InvariantCulture));
+                            }
 
-            return nameId.ToString();
-        }
-    }
-}");
+                            return nameId.ToString();
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Test_NullCfg_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class TestClass
-{
-    public static string ContentName => ""Satya"";
+                public class TestClass
+                {
+                    public static string ContentName => "Satya";
 
-    public static readonly byte[] ByteArray = Convert.FromBase64String(""Some strings."");
-}");
+                    public static readonly byte[] ByteArray = Convert.FromBase64String("Some strings.");
+                }
+                """);
         }
     }
 }

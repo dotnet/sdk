@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.Build.Traversal/4.1.82">
+  <ItemGroup>
+    <!-- Nested traversal project. -->
+    <ProjectReference Include="sub\dirs.proj" />
+    <!-- SharedTestProject is also referenced by sub\dirs.proj, forming a diamond. It must be tested only once. -->
+    <ProjectReference Include="SharedTestProject\SharedTestProject.csproj" />
+  </ItemGroup>
+</Project>

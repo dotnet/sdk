@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode declaration = generator.GetDeclaration(nodeToFix);
+            SyntaxNode? declaration = generator.GetDeclaration(nodeToFix);
             if (declaration == null)
             {
                 return;
@@ -165,19 +165,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return document;
             }
 
+            var editFailed = false;
             await editor.EditAllDeclarationsAsync(symbolToChange, (docEditor, declaration) =>
             {
                 SyntaxNode newDeclaration = declaration;
                 foreach (ISymbol implementedMember in explicitImplementations)
                 {
                     SyntaxNode interfaceTypeNode = docEditor.Generator.TypeExpression(implementedMember.ContainingType);
-                    newDeclaration = docEditor.Generator.AsPublicInterfaceImplementation(newDeclaration, interfaceTypeNode);
+                    if (docEditor.Generator.AsPublicInterfaceImplementation(newDeclaration, interfaceTypeNode) is not SyntaxNode publicImplementation)
+                    {
+                        editFailed = true;
+                        return;
+                    }
+
+                    newDeclaration = publicImplementation;
                 }
 
                 docEditor.ReplaceNode(declaration, newDeclaration);
             }, cancellationToken).ConfigureAwait(false);
 
-            return editor.GetChangedDocuments().First();
+            return editFailed ? document : editor.GetChangedDocuments().First();
         }
 
         private static IEnumerable<ISymbol>? GetExplicitImplementations(ISymbol? symbol)

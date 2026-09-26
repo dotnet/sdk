@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="*" PrivateAssets="all" IsImplicitlyDefined="true"/>
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.Tasks" Version="*" PrivateAssets="all" IsImplicitlyDefined="true"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -50,8 +50,15 @@
         Update="Microsoft.NETCore.App"
         TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler"
-        ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <!-- Exact pack RID matches do not require the distro-specific RID to be in the portable RID graph. -->
+    <KnownFrameworkReference Update="Microsoft.NETCore.App"
+        Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">
+      <RuntimePackRuntimeIdentifiers>%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
+    </KnownFrameworkReference>
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
+      <ILCompilerPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</ILCompilerPackVersion>
+      <ILCompilerRuntimeIdentifiers Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">%(ILCompilerRuntimeIdentifiers);$(TargetRid)</ILCompilerRuntimeIdentifiers>
+    </KnownILCompilerPack>
     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks"
         ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack"
@@ -64,6 +71,7 @@
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</LatestRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetRid)' != ''">%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
       <TargetingPackVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</TargetingPackVersion>
       <DefaultRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>

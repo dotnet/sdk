@@ -20,18 +20,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [DataRow("LifetimeValidator = [|(a, b, c, d)")]
         public async Task TestLambdaDiagnostic(string declaration)
         {
-            string code = @$"
-using System;
-using Microsoft.IdentityModel.Tokens;
+            string code = $$"""
+                using System;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{{
-    public void TestMethod()
-    {{
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.{declaration} => {{ return true; }}|];
-    }}
-}}";
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.{{declaration}} => { return true; }|];
+                    }
+                }
+                """;
 
             await VerifyCSharpAnalyzerAsync(code);
         }
@@ -41,18 +42,19 @@ class TestClass
         [DataRow("LifetimeValidator = [|(a, b, c, d)")]
         public async Task TestLambdaWithLiteralValueDiagnostic(string declaration)
         {
-            string code = @$"
-using System;
-using Microsoft.IdentityModel.Tokens;
+            string code = $$"""
+                using System;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{{
-    public void TestMethod()
-    {{
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.{declaration} => true|];
-    }}
-}}";
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.{{declaration}} => true|];
+                    }
+                }
+                """;
             await VerifyCSharpAnalyzerAsync(code);
         }
 
@@ -61,187 +63,195 @@ class TestClass
         [DataRow("LifetimeValidator")]
         public async Task TestAnonymousMethodDiagnostic(string declaration)
         {
-            string code = @$"
-using System;
-using Microsoft.IdentityModel.Tokens;
+            string code = $$"""
+                using System;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{{
-    public void TestMethod()
-    {{
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.{declaration} = [|delegate {{ return true; }}|];
-    }}
-}}";
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.{{declaration}} = [|delegate { return true; }|];
+                    }
+                }
+                """;
             await VerifyCSharpAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnostic_LifetimeValidator()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.LifetimeValidator = [|new LifetimeValidator(AcceptAllLifetimes)|];
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.LifetimeValidator = [|new LifetimeValidator(AcceptAllLifetimes)|];
 
-        bool AcceptAllLifetimes(
-            DateTime? start,
-            DateTime? end,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return true;
-        }
-    }
-}");
+                        bool AcceptAllLifetimes(
+                            DateTime? start,
+                            DateTime? end,
+                            SecurityToken securityToken,
+                            TokenValidationParameters validationParameters)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnostic_AudienceValidator()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
 
-        bool AcceptAllAudiences(
-            IEnumerable<string> audiences,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return true;
-        }
-    }
-}");
+                        bool AcceptAllAudiences(
+                            IEnumerable<string> audiences,
+                            SecurityToken securityToken,
+                            TokenValidationParameters validationParameters)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationDiagnostic_LifetimeValidator()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    bool AcceptAllLifetimes(
-        DateTime? start,
-        DateTime? end,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    bool AcceptAllLifetimes(
+                        DateTime? start,
+                        DateTime? end,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        return true;
+                    }
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.LifetimeValidator = [|new LifetimeValidator(AcceptAllLifetimes)|];
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.LifetimeValidator = [|new LifetimeValidator(AcceptAllLifetimes)|];
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationDiagnostic_AudienceValidator()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        return true;
+                    }
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaDiagnostic_AudienceValidator()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters) => true;
+                class TestClass
+                {
+                    bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters) => true;
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = [|new AudienceValidator(AcceptAllAudiences)|];
+                    }
+                }
+                """);
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
         [TestMethod]
         public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnostic()
         {
-            string source1 = @"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            string source1 = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-namespace AcceptAllAudiencesNamespace
-{
-    public class AcceptAllAudiencesClass
-    {
-        public static bool AcceptAllAudiences(
-            IEnumerable<string> audiences,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return true;
-        }
-    }
-}";
+                namespace AcceptAllAudiencesNamespace
+                {
+                    public class AcceptAllAudiencesClass
+                    {
+                        public static bool AcceptAllAudiences(
+                            IEnumerable<string> audiences,
+                            SecurityToken securityToken,
+                            TokenValidationParameters validationParameters)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """;
 
-            var source2 = @"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
-using AcceptAllAudiencesNamespace;
+            var source2 = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
+                using AcceptAllAudiencesNamespace;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = new AudienceValidator(AcceptAllAudiencesClass.AcceptAllAudiences);
-    }
-}";
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = new AudienceValidator(AcceptAllAudiencesClass.AcceptAllAudiences);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -271,47 +281,49 @@ class TestClass
         [TestMethod]
         public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnostic()
         {
-            string source1 = @"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            string source1 = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-namespace AcceptAllAudiencesNamespace
-{
-    public class AcceptAllAudiencesClass
-    {
-        public static bool AcceptAllAudiences2(
-            IEnumerable<string> audiences,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return true;
-        }
-    }
-}";
+                namespace AcceptAllAudiencesNamespace
+                {
+                    public class AcceptAllAudiencesClass
+                    {
+                        public static bool AcceptAllAudiences2(
+                            IEnumerable<string> audiences,
+                            SecurityToken securityToken,
+                            TokenValidationParameters validationParameters)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """;
 
-            var source2 = @"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
-using AcceptAllAudiencesNamespace;
+            var source2 = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
+                using AcceptAllAudiencesNamespace;
 
-class TestClass
-{
-    public bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        return AcceptAllAudiencesClass.AcceptAllAudiences2(audiences, securityToken, validationParameters);
-    }
+                class TestClass
+                {
+                    public bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        return AcceptAllAudiencesClass.AcceptAllAudiences2(audiences, securityToken, validationParameters);
+                    }
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = new AudienceValidator(AcceptAllAudiences);
-    }
-}";
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = new AudienceValidator(AcceptAllAudiences);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -340,207 +352,215 @@ class TestClass
         [TestMethod]
         public async Task TestLambdaNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = (a, b, c) => { if(a != null) {return true;} return false;};
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = (a, b, c) => { if(a != null) {return true;} return false;};
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestLambdaWithLiteralValueNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator = (a, b, c) => false;
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator = (a, b, c) => false;
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestAnonymousMethodNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator += delegate { return false; };
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator += delegate { return false; };
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationLocalFunctionNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
 
-        bool AcceptAllAudiences(
-            IEnumerable<string> audiences,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            if(audiences != null)
-            {
-                return true;
-            }
+                        bool AcceptAllAudiences(
+                            IEnumerable<string> audiences,
+                            SecurityToken securityToken,
+                            TokenValidationParameters validationParameters)
+                        {
+                            if(audiences != null)
+                            {
+                                return true;
+                            }
 
-            return false;
-        }
-    }
-}");
+                            return false;
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        if(audiences != null)
-        {
-            return true;
-        }
+                class TestClass
+                {
+                    public bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        if(audiences != null)
+                        {
+                            return true;
+                        }
 
-        return false;
-    }
+                        return false;
+                    }
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic2()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        if(audiences != null)
-        {
-            return true;
-        }
+                class TestClass
+                {
+                    public bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        if(audiences != null)
+                        {
+                            return true;
+                        }
 
-        return false;
-    }
+                        return false;
+                    }
 
-    public void TestMethod()
-    {
-    }
-}");
+                    public void TestMethod()
+                    {
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters) => false;
+                class TestClass
+                {
+                    public bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters) => false;
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
+                    }
+                }
+                """);
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
         [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocalNoDiagnostic()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.IdentityModel.Tokens;
 
-class TestClass
-{
-    public bool AcceptAllAudiences2(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    public bool AcceptAllAudiences2(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        return true;
+                    }
 
-    public bool AcceptAllAudiences(
-        IEnumerable<string> audiences,
-        SecurityToken securityToken,
-        TokenValidationParameters validationParameters)
-    {
-        return AcceptAllAudiences2(
-          audiences,
-          securityToken,
-          validationParameters);
-    }
+                    public bool AcceptAllAudiences(
+                        IEnumerable<string> audiences,
+                        SecurityToken securityToken,
+                        TokenValidationParameters validationParameters)
+                    {
+                        return AcceptAllAudiences2(
+                          audiences,
+                          securityToken,
+                          validationParameters);
+                    }
 
-    public void TestMethod()
-    {
-        TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        TokenValidationParameters parameters = new TokenValidationParameters();
+                        parameters.AudienceValidator  = new AudienceValidator(AcceptAllAudiences);
+                    }
+                }
+                """);
         }
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)

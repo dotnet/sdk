@@ -11,11 +11,11 @@
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.PackageValidation\\Microsoft.DotNet.PackageValidation.csproj",
       "src\\Compatibility\\Microsoft.DotNet.ApiSymbolExtensions\\Microsoft.DotNet.ApiSymbolExtensions.csproj",
       "src\\Tasks\\sdk-tasks\\sdk-tasks.csproj",
-      "test\\Microsoft.DotNet.ApiCompat.IntegrationTests\\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj",
-      "test\\Microsoft.DotNet.ApiCompat.Tests\\Microsoft.DotNet.ApiCompat.Tests.csproj",
-      "test\\Microsoft.DotNet.ApiCompatibility.Tests\\Microsoft.DotNet.ApiCompatibility.Tests.csproj",
-      "test\\Microsoft.DotNet.ApiSymbolExtensions.Tests\\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj",
-      "test\\Microsoft.DotNet.PackageValidation.Tests\\Microsoft.DotNet.PackageValidation.Tests.csproj",
+      "test\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.IntegrationTests\\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj",
+      "test\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Tests\\Microsoft.DotNet.ApiCompat.Tests.csproj",
+      "test\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompatibility.Tests\\Microsoft.DotNet.ApiCompatibility.Tests.csproj",
+      "test\\Compatibility\\Microsoft.DotNet.ApiSymbolExtensions.Tests\\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj",
+      "test\\Compatibility\\ApiCompat\\Microsoft.DotNet.PackageValidation.Tests\\Microsoft.DotNet.PackageValidation.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"
     ]
   }

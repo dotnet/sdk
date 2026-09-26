@@ -9,9 +9,10 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
+internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession buildSession) : ITestHandler
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly MSBuildSession _buildSession = buildSession;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
@@ -26,8 +27,8 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
         }
 
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions) :
-            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions);
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions, _buildSession) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions, _buildSession);
 
         LogProjectProperties(projects);
 
@@ -78,6 +79,13 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
 
         return actionQueue.CompleteEnqueueAndWait();
     }
+
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
+    public IEnumerable<string?> GetTestApplicationWorkingDirectories()
+        => _testApplications.SelectMany(static group => group)
+            .Select(static module => module.RunProperties.WorkingDirectory);
 
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {

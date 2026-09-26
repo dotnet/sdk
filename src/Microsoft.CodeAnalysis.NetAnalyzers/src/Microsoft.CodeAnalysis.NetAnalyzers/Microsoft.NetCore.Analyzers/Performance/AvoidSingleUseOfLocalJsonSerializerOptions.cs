@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(s_Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(s_Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -331,7 +331,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     if (operation.Parent is IAssignmentOperation assignment)
                     {
-                        foreach (IOperation children in assignment.Children)
+                        foreach (IOperation children in assignment.ChildOperations)
                         {
                             if (children is IFieldReferenceOperation or IPropertyReferenceOperation)
                             {

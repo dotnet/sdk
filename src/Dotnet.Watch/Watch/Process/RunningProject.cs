@@ -10,6 +10,13 @@ namespace Microsoft.DotNet.Watch;
 
 internal delegate ValueTask RestartOperation(CancellationToken cancellationToken);
 
+/// <summary>
+/// Represents a project that is launched and creates one or more processes.
+/// </summary>
+/// <param name="clients">
+/// The primary client, if any, is associated with the primary project represented by <paramref name="projectNode"/> and with <paramref name="process"/>.
+/// Secondary client, if any, is associated with a project referenced by the primary project.
+/// </param>
 internal sealed class RunningProject(
     ProjectGraphNode projectNode,
     ProjectOptions options,
@@ -69,15 +76,16 @@ internal sealed class RunningProject(
         return process.TerminateAsync();
     }
 
-    public async Task CompleteApplyOperationAsync(Task applyTask)
+    public async Task<bool> CompleteApplyOperationAsync(Task<bool> applyTask)
     {
         try
         {
-            await applyTask;
+            return await applyTask;
         }
         catch (OperationCanceledException)
         {
             // Do not report error.
+            return false;
         }
         catch (Exception e)
         {
@@ -85,6 +93,7 @@ internal sealed class RunningProject(
             // it shouldn't prevent applying updates to other processes.
 
             ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", process.Id, e.ToString());
+            return false;
         }
     }
 

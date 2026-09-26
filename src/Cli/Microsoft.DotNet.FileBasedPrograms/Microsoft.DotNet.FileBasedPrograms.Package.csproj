@@ -5,10 +5,11 @@
       Used in dotnet cli and Roslyn Features layer
     -->
     <TargetFrameworks>$(VisualStudioServiceTargetFramework);netstandard2.0</TargetFrameworks>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
+    <RootNamespace>Microsoft.DotNet.FileBasedPrograms</RootNamespace>
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
@@ -28,7 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Encoding.CodePages" VersionOverride="$(SystemTextEncodingCodePagesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
   </ItemGroup>
@@ -55,7 +55,7 @@
     </Compile>
   </ItemGroup>
 
-  <Import Project="..\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+  <Import Project=".\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
 
   <!-- Include resx and xlf files in the package (once, not per-TFM) -->
   <ItemGroup>

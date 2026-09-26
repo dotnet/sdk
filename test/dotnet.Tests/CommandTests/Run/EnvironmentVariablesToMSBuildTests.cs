@@ -10,8 +10,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
+// ProjectCollection caches MSBuild toolset paths, so initialize SdkTestContext before using it.
 [TestClass]
-public sealed class EnvironmentVariablesToMSBuildTests
+public sealed class EnvironmentVariablesToMSBuildTests : SdkTest
 {
     [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_ReturnsTrue_WhenCapabilityIsPresent()
@@ -136,6 +137,48 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
 
         EnvironmentVariablesToMSBuild.ReadFromItems(project).Should().BeEquivalentTo(environmentVariables);
+    }
+
+    [TestMethod]
+    public void CreatePropsFile_WritesWellFormedEnvironmentVariableItems()
+    {
+        string testDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string? propsFile = null;
+
+        try
+        {
+            propsFile = EnvironmentVariablesToMSBuild.CreatePropsFile(
+                Path.Combine(testDirectory, "TestProject.csproj"),
+                new Dictionary<string, string>
+                {
+                    ["FOO"] = "BAR",
+                    ["ANOTHER"] = "VALUE",
+                },
+                "dotnet-test-env.props");
+
+            propsFile.Should().NotBeNull();
+            var document = new XmlDocument();
+            document.Load(propsFile!);
+
+            document.SelectNodes($"/Project/ItemGroup/{Constants.RuntimeEnvironmentVariable}")!
+                .Cast<XmlElement>()
+                .Select(element => new KeyValuePair<string, string>(
+                    element.GetAttribute("Include"),
+                    element.GetAttribute("Value")))
+                .Should().BeEquivalentTo(new Dictionary<string, string>
+                {
+                    ["FOO"] = "BAR",
+                    ["ANOTHER"] = "VALUE",
+                });
+        }
+        finally
+        {
+            EnvironmentVariablesToMSBuild.DeletePropsFile(propsFile);
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, recursive: true);
+            }
+        }
     }
 
     private static ProjectInstance CreateProjectInstance(string projectXml)

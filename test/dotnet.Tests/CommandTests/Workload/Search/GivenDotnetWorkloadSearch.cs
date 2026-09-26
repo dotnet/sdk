@@ -36,6 +36,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 
         [TestMethod]
         [DataRow("--invalidArgument")]
+        [DataRow("-foo bar")]
         [DataRow("notAVersion")]
         [DataRow("1.2")] // too short
         [DataRow("1.2.3.4.5")] // too long
@@ -47,7 +48,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "9.0.100", workloadResolver);
             var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Should().Throw<CommandParsingException>();
+            command.Should().Throw<CommandParsingException>()
+                .WithMessage(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, argument));
         }
 
         [TestMethod]
@@ -109,6 +111,37 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             command.Execute();
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Single().Should().Be("9.0.101");
+        }
+
+        [TestMethod]
+        public void GivenWorkloadSearchVersionWithNuGetOptionsItPassesThemToTheDownloader()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version --source myfeed --configfile mynuget.config --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            var packageSourceLocation = nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation;
+            packageSourceLocation.Should().NotBeNull();
+            packageSourceLocation.SourceFeedOverrides.Should().ContainSingle().Which.Should().EndWith("myfeed");
+            packageSourceLocation.NugetConfig.Value.Value.Should().Contain("mynuget.config");
+        }
+
+        [TestMethod]
+        public void GivenWorkloadSearchVersionWithoutNuGetOptionsNoPackageSourceLocationIsUsed()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation.Should().BeNull();
         }
 
         [TestMethod]

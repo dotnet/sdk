@@ -692,7 +692,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            foreach (var child in operation.Children)
+            foreach (var child in operation.ChildOperations)
             {
                 if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
                 {
@@ -757,7 +757,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            foreach (var child in unwrapped.Children)
+            foreach (var child in unwrapped.ChildOperations)
             {
                 if (ContainsTrackedSymbolReference(child, symbols))
                 {

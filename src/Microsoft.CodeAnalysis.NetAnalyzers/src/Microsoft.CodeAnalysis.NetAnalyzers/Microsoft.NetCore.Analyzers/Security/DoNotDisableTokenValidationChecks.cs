@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     public sealed class DoNotDisableTokenValidationChecks : DiagnosticAnalyzer
     {
         // Set of properties on Microsoft.IdentityModel.Tokens.TokenValidationParameters which shouldn't be set to false.
-        private ImmutableArray<string> PropertiesWhichShouldNotBeFalse = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> PropertiesWhichShouldNotBeFalse = ImmutableArray.Create(
             "RequireExpirationTime",
             "ValidateAudience",
             "ValidateIssuer",

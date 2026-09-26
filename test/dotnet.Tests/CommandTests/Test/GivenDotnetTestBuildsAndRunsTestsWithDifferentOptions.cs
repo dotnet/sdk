@@ -55,6 +55,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [TestMethod]
+        public void RunWithSolutionPath_ShouldUseConfigurationEnvironmentVariable()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("Configuration", TestingConstants.Release)
+                                    .Execute("--solution", "MultiTestProjectSolutionWithTests.sln");
+
+            Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Release), result.StdOut);
+            Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Release), result.StdOut);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
         [TestMethod, CombinatorialData]
         public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnExitCodeGenericFailure(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
@@ -170,6 +185,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.StdErr.Should().Contain(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunWithProjectPathForwardedAsTestApplicationOptionValue_ShouldNotTreatItAsPositionalProject(bool useArgumentSeparator)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string testProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
+            List<string> arguments =
+            [
+                "--project", "TestProject.csproj",
+            ];
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(
+            [
+                "--filter", "TestProject.csproj",
+                "--ignore-exit-code", ExitCodes.ZeroTests.ToString(),
+            ]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute([.. arguments]);
+
+            result.Should().Pass();
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("total: 0");
+                result.StdErr.Should().NotContain(CliCommandStrings.TestCommandUseProject);
+            }
         }
 
         [DataRow(TestingConstants.Debug)]

@@ -149,13 +149,13 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return (string.Empty, string.Empty);
         }
         var architecture = configJson["architecture"]?.ToString();
-        if (architecture is null)
+        if (string.IsNullOrEmpty(architecture))
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
             return (string.Empty, string.Empty);
         } 
         var os = configJson["os"]?.ToString();
-        if (os is null)
+        if (string.IsNullOrEmpty(os))
         {
             Log.LogError(Strings.ImageConfigMissingOs);
             return (string.Empty, string.Empty);

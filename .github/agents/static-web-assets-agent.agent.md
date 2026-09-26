@@ -13,9 +13,8 @@ You are a senior engineer specializing in the Static Web Assets (SWA) SDK within
 
 - **Full repo build:** `.\build.cmd` (~4 min, produces the redist SDK at `artifacts/bin/redist/Debug/dotnet/`)
 - **Build tasks only:** `cd src/StaticWebAssetsSdk/Tasks; dotnet build` (~15 s, inner loop)
-- **Build test project:** `.\artifacts\bin\redist\Debug\dotnet\dotnet.exe build test\Microsoft.NET.Sdk.StaticWebAssets.Tests\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj -c Debug --no-restore`
-- **Run filtered tests:** `.\artifacts\bin\redist\Debug\dotnet\dotnet.exe test artifacts\bin\Microsoft.NET.Sdk.StaticWebAssets.Tests\Debug\net11.0\Microsoft.NET.Sdk.StaticWebAssets.Tests.dll --no-build --filter "FullyQualifiedName~ClassName"`
-- **Run all unit tests:** `.\artifacts\bin\redist\Debug\dotnet\dotnet.exe test artifacts\bin\Microsoft.NET.Sdk.StaticWebAssets.Tests\Debug\net11.0\Microsoft.NET.Sdk.StaticWebAssets.Tests.dll --no-build --filter "FullyQualifiedName!~IntegrationTest"`
+- **Run filtered tests:** `.\.dotnet\dotnet.exe scripts\RunTests.cs -- --project test\Microsoft.NET.Sdk.StaticWebAssets.Tests\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj --filter "FullyQualifiedName~ClassName"`
+- **Run all unit tests:** `.\.dotnet\dotnet.exe scripts\RunTests.cs -- --project test\Microsoft.NET.Sdk.StaticWebAssets.Tests\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj --filter "FullyQualifiedName!~IntegrationTest"`
 - **Test with a real project:** `.\artifacts\bin\redist\Debug\dotnet\dotnet.exe build <project> -bl`
 
 ## Project Knowledge
@@ -32,7 +31,7 @@ Read `src/StaticWebAssetsSdk/AGENTS.md` at the start of every session — it has
 
 ## Boundaries
 
-- ✅ **Always do:** Read AGENTS.md at session start, patch instead of full-building when only SWA files changed, use `--filter` during development, build the test project before running tests after code changes, validate through the full process before declaring done.
+- ✅ **Always do:** Read AGENTS.md at session start, patch instead of full-building when only SWA files changed, use `run-tests` with a filter during development, validate through the full process before declaring done.
 - ⚠️ **Ask first:** Before running `.\build.cmd`, before editing files outside `src/StaticWebAssetsSdk/` and `test/Microsoft.NET.Sdk.StaticWebAssets.Tests/`, before running the full unfiltered test suite, before modifying shared test asset projects.
 - 🚫 **Never do:** Modify the system-installed dotnet SDK, push commits, run `git clean -xdff` without reviewing unstaged files or `git reset --hard`, skip steps in the process, run integration tests during the inner development loop.
 
@@ -65,9 +64,8 @@ This is the fast feedback cycle. Do not write or run tests during this phase.
 
 Once the change works manually, run tests. The goal is fast regression detection while avoiding slow integration and baseline tests.
 
-1. **Build the test project** — required after any code change so the test DLL picks up the new code.
-2. **Run affected unit test classes** — unit tests live in `StaticWebAssets/` and do not extend SDK base classes. Filter to the specific class you changed or added.
-3. **Run all unit tests** — use the `!~IntegrationTest` filter to run every unit test without triggering integration or baseline tests. This catches regressions outside the class you focused on.
+1. **Run affected unit test classes** — `run-tests` builds the test project first so the test DLL is current. Unit tests live in `StaticWebAssets/` and do not extend SDK base classes. Filter to the specific class you changed or added.
+2. **Run all unit tests** — use the `!~IntegrationTest` filter to run every unit test without triggering integration or baseline tests. This catches regressions outside the class you focused on.
 
 Fix any failures before proceeding.
 

@@ -740,7 +740,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(shippedFile, line, kind)),
                                 isShippedFile: true);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
@@ -750,7 +750,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
                             var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(unshippedFile, line, kind)),
                                 isShippedFile: false);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
@@ -889,6 +889,11 @@ namespace GenerateDocumentationAndConfigFiles
                 }
             }
         }
+
+        private static string InvalidEntryMessage(string file, TextLine line, InvalidEntryKind kind)
+            => kind == InvalidEntryKind.HelpLink
+                ? $"Documentation link does not match the rule ID in {file} at {line.LineNumber}: '{line}'. Expected '{ReleaseTrackingHelper.HelpLinkPrefix}' followed by the lowercased rule ID."
+                : $"Invalid entry in {file} at {line.LineNumber}: '{line}'";
 
         private static void CreateRuleset(
             string analyzerRulesetsDir,

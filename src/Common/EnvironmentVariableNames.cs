@@ -34,6 +34,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_CLI_TELEMETRY_LOG_PATH = nameof(DOTNET_CLI_TELEMETRY_LOG_PATH);
     public static readonly string DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT = nameof(DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     public static readonly string DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER = nameof(DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER);
+    public static readonly string DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS = nameof(DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS);
     // Standard OpenTelemetry OTLP exporter environment variables. Presence of any of these
     // signals that the user has configured the OTLP exporter and intends to enable it.
     // See https://opentelemetry.io/docs/specs/otel/protocol/exporter/ for the full spec.

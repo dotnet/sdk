@@ -148,7 +148,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 serviceUriBuilder.Path = msddepaxd;
             }
 
-            // user did not explicityly set the scheme
+            // user did not explicitly set the scheme
             if (serviceUrl.IndexOf(serviceUriBuilder.Scheme, StringComparison.OrdinalIgnoreCase) == -1)
             {
                 serviceUriBuilder.Scheme = https;

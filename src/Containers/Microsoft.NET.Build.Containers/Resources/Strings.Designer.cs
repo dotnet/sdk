@@ -421,6 +421,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to authentication challenge origin &apos;{0}&apos; does not match registry origin &apos;{1}&apos;.
+        /// </summary>
+        internal static string InvalidAuthResponse_UnexpectedAuthOrigin {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_UnexpectedAuthOrigin", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1019: The registry &apos;{0}&apos; returned an invalid authentication response: {1}.
         /// </summary>
         internal static string InvalidRegistryAuthResponse {
@@ -498,6 +507,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string ImageLoadFailed_ContainerdStoreDisabled {
             get {
                 return ResourceManager.GetString("ImageLoadFailed_ContainerdStoreDisabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry..
+        /// </summary>
+        internal static string ImageLoadFailed_WslcMultiArchUnsupported {
+            get {
+                return ResourceManager.GetString("ImageLoadFailed_WslcMultiArchUnsupported", resourceCulture);
             }
         }
 
@@ -750,6 +768,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string Registry_ManifestUploaded {
             get {
                 return ResourceManager.GetString("Registry_ManifestUploaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads..
+        /// </summary>
+        internal static string Registry_ManifestExists {
+            get {
+                return ResourceManager.GetString("Registry_ManifestExists", resourceCulture);
             }
         }
 

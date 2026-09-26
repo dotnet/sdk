@@ -10,7 +10,6 @@ namespace Microsoft.NET.Build.Tests
     {
         [TestMethod]
         [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         public void When_referenced_by_csharp_project_it_publishes_and_runs()
         {
             var testAsset = TestAssetsManager

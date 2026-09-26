@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -13,7 +14,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             testOutputHelper = log;
             string home = Utilities.CreateTemporaryFolder("home");
-            dotnetNewTestExecutionDir = Utilities.GetTestExecutionTempFolder();
+            dotnetNewTestExecutionDir = Utilities.CreateTemporaryFolder(nameof(TemplateDiscoveryTool));
             string toolManifestPath = Path.Combine(dotnetNewTestExecutionDir, "dotnet-tools.json");
             if (!File.Exists(toolManifestPath))
             {
@@ -53,6 +54,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         public void Dispose()
         {
+            if (!PathUtility.TryDeleteDirectory(dotnetNewTestExecutionDir))
+            {
+                testOutputHelper.WriteLine($"Failed to delete temporary directory '{dotnetNewTestExecutionDir}'.");
+            }
         }
     }
 }

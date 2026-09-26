@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -23,16 +22,11 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProjectName}.dll",
                 $"{testProjectName}.pdb",
                 $"{testProjectName}.deps.json",
-                $"{testProjectName}.runtimeconfig.json"
+                $"{testProjectName}.runtimeconfig.json",
+                // Debug builds always generate a runtimeconfig.dev.json file (probing paths for pre-net6.0
+                // target frameworks and Hot Reload runtime options for net6.0+).
+                $"{testProjectName}.runtimeconfig.dev.json"
             };
-
-            if (!string.IsNullOrEmpty(targetFramework))
-            {
-                var parsedTargetFramework = NuGetFramework.Parse(targetFramework);
-
-                if (parsedTargetFramework.Version.Major < 6)
-                    expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
-            }
 
             return expectedFiles.ToArray();
         }

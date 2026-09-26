@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.DotNet.NativeWrapper;
 
 #if NETFRAMEWORK
 using Microsoft.VisualStudio.Setup.Configuration;
@@ -25,11 +24,6 @@ namespace Microsoft.DotNet.DotNetSdkResolver
         private VSSettings()
         {
 #if NETFRAMEWORK
-            if (!Interop.RunningOnWindows)
-            {
-                return;
-            }
-
             string instanceId;
             string installationVersion;
             bool isPrerelease;

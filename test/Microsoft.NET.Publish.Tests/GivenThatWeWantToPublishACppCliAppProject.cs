@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource();
 
             new PublishCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest.sln"))
-                .Execute("/p:NoBuild=true")
+                .Execute("/p:NoBuild=true", "-p:EnableManagedPackageReferenceSupport=false")
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);

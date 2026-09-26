@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 public static class SymbolFilterFactory
 {
     /// <summary>
-    /// Creates a composite filter to exclude APIs using the DocIDs provided in the specifed file paths.
+    /// Creates a composite filter to exclude APIs using the DocIDs provided in the specified file paths.
     /// </summary>
     /// <param name="apiExclusionFilePaths">A collection of paths where the exclusion files should be searched.</param>
     /// <param name="accessibilitySymbolFilter">An optional custom accessibility symbol filter to use.</param>
@@ -38,7 +38,7 @@ public static class SymbolFilterFactory
     }
 
     /// <summary>
-    /// Creates a composite filter to exclude APIs using the DocIDs provided in the specifed list.
+    /// Creates a composite filter to exclude APIs using the DocIDs provided in the specified list.
     /// </summary>
     /// <param name="apiExclusionList">A collection of exclusion list.</param>
     /// <param name="accessibilitySymbolFilter">An optional custom accessibility symbol filter to use.</param>

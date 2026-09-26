@@ -143,10 +143,21 @@ partial class CreateNewImage
     public string ContainerUser { get; set; }
 
     /// <summary>
+    /// The Unix timestamp used to make generated container artifacts reproducible.
+    /// </summary>
+    public string SourceDateEpoch { get; set; }
+
+    /// <summary>
     /// If true, the tooling may create labels on the generated images.
     /// </summary>
     [Required]
     public bool GenerateLabels { get; set; }
+
+    /// <summary>
+    /// If true, the tooling will generate the OCI image and artifact creation labels.
+    /// </summary>
+    [Required]
+    public bool GenerateCreatedLabels { get; set; }
 
     /// <summary>
     /// If true, the tooling will generate an <c>org.opencontainers.image.base.digest</c> label on the generated images containing the digest of the chosen base image.
@@ -165,6 +176,11 @@ partial class CreateNewImage
     /// If true, the tooling will skip the publishing step.
     /// </summary>
     public bool SkipPublishing { get; set; }
+
+    /// <summary>
+    /// If true, the tooling will upload the image without checking whether its manifest already exists in the destination registry.
+    /// </summary>
+    public bool NoCache { get; set; }
 
     [Output]
     public string GeneratedContainerManifest { get; set; }
@@ -212,6 +228,7 @@ partial class CreateNewImage
         RuntimeIdentifierGraphPath = "";
         LocalRegistry = "";
         ContainerUser = "";
+        SourceDateEpoch = "";
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
@@ -222,6 +239,7 @@ partial class CreateNewImage
         GeneratedDigestLabel = null;
 
         GenerateLabels = false;
+        GenerateCreatedLabels = false;
         GenerateDigestLabel = false;
 
         TaskResources = Resource.Manager;

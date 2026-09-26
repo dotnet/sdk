@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.HotReload;
 using Microsoft.DotNet.Test.MSTest.Utilities;
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+namespace Microsoft.DotNet.HotReload.UnitTests;
 
 [TestClass]
 public class HotReloadClientTests
@@ -27,7 +26,7 @@ public class HotReloadClientTests
 
             _cancellationSource = new CancellationTokenSource();
 
-            Client.InitiateConnection(CancellationToken.None);
+            Client.InitiateConnection(environmentVariables: [], CancellationToken.None);
             var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
             var listener = new Listener(agentTransport, agent, log: _ => { });
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token), testContext.CancellationToken);

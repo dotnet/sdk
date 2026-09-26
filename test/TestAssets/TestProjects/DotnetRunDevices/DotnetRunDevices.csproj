@@ -96,4 +96,9 @@
     <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
 
+  <Target Name="_AssertDotnetHostPath"
+          BeforeTargets="ComputeAvailableDevices;DeployToDevice;ComputeRunArguments">
+    <Error Condition="'$(DOTNET_HOST_PATH)' == ''" Text="DOTNET_HOST_PATH was not set during direct MSBuild target execution." />
+  </Target>
+
 </Project>

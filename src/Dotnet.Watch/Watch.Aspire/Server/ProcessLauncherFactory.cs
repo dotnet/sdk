@@ -24,7 +24,7 @@ internal sealed class ProcessLauncherFactory(
     {
         // Connect to control pipe if provided
         var controlReader = controlPipeName != null
-            ? new WatchControlReader(controlPipeName, projectLauncher.CompilationHandler, projectLauncher.Logger)
+            ? new WatchControlReader(controlPipeName, projectLauncher)
             : null;
 
         return new Launcher(serverPipeName, controlReader, projectLauncher, statusWriter, launchProfile, shutdownCancellationToken);

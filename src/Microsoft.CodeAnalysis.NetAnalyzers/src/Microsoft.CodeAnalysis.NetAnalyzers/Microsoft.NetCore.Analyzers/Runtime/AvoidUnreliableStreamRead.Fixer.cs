@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA2022: <inheritdoc cref="AvoidUnreliableStreamReadTitle"/>
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class AvoidUnreliableStreamReadFixer : CodeFixProvider
+    public sealed class AvoidUnreliableStreamReadFixer : SyntaxEditorBasedCodeFixProvider
     {
         private const string Async = nameof(Async);
         private const string ReadExactly = nameof(ReadExactly);
@@ -32,100 +32,95 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(AvoidUnreliableStreamReadAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
-        }
-
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
+            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
-            if (node is null)
+            if (GetReadInvocation(semanticModel, root.FindNode(context.Span, getInnermostNodeForTie: true), context.CancellationToken) is null)
             {
                 return;
             }
 
-            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            var operation = semanticModel.GetOperation(node, context.CancellationToken);
+            RegisterCodeFix(context, AvoidUnreliableStreamReadCodeFixTitle, nameof(AvoidUnreliableStreamReadCodeFixTitle));
+        }
 
-            if (operation is not IInvocationOperation invocation ||
+        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+
+            if (GetReadInvocation(semanticModel, node, cancellationToken) is not IInvocationOperation invocation)
+            {
+                return;
+            }
+
+            var arguments = invocation.Arguments.GetArgumentsInParameterOrder();
+            var isAsyncInvocation = invocation.TargetMethod.Name.EndsWith(Async, StringComparison.Ordinal);
+
+            var instance = invocation.Instance!.Syntax;
+            ImmutableArray<SyntaxNode> replacementArguments = CanUseSpanOverload()
+                ? isAsyncInvocation && arguments.Length == 4
+                    // Stream.ReadExactlyAsync(buffer, ct)
+                    ? ImmutableArray.Create(arguments[0].Syntax, arguments[3].Syntax)
+                    // Stream.ReadExactly(buffer) and Stream.ReadExactlyAsync(buffer)
+                    : ImmutableArray.Create(arguments[0].Syntax)
+                : invocation.Arguments.Where(a => !a.IsImplicit).Select(a => a.Syntax).ToImmutableArray();
+
+            editor.TrackNode(instance);
+
+            foreach (SyntaxNode argument in replacementArguments)
+            {
+                editor.TrackNode(argument);
+            }
+
+            // The receiver and the arguments are carried over from inside the node being replaced, so they have
+            // to be read back off the current node rather than off the original tree.
+            editor.ReplaceNode(invocation.Syntax, (currentNode, generator) =>
+            {
+                var methodExpression = generator.MemberAccessExpression(
+                    currentNode.GetCurrentNode(instance) ?? instance,
+                    isAsyncInvocation ? ReadExactlyAsync : ReadExactly);
+
+                return generator.InvocationExpression(methodExpression, replacementArguments.Select(argument => currentNode.GetCurrentNode(argument) ?? argument))
+                    .WithTriviaFrom(currentNode);
+            });
+
+            bool CanUseSpanOverload()
+            {
+                return arguments.Length >= 3 &&
+                    arguments[2].Value is IPropertyReferenceOperation propertyRef &&
+                    propertyRef.Property.Name.Equals(WellKnownMemberNames.LengthPropertyName, StringComparison.Ordinal) &&
+                    AreSameInstance(arguments[0].Value, propertyRef.Instance);
+            }
+
+            static bool AreSameInstance(IOperation? operation1, IOperation? operation2)
+            {
+                return (operation1, operation2) switch
+                {
+                    (IFieldReferenceOperation fieldRef1, IFieldReferenceOperation fieldRef2) => fieldRef1.Member == fieldRef2.Member,
+                    (IPropertyReferenceOperation propRef1, IPropertyReferenceOperation propRef2) => propRef1.Member == propRef2.Member,
+                    (IParameterReferenceOperation paramRef1, IParameterReferenceOperation paramRef2) => paramRef1.Parameter == paramRef2.Parameter,
+                    (ILocalReferenceOperation localRef1, ILocalReferenceOperation localRef2) => localRef1.Local == localRef2.Local,
+                    _ => false,
+                };
+            }
+        }
+
+        private static IInvocationOperation? GetReadInvocation(SemanticModel semanticModel, SyntaxNode? node, CancellationToken cancellationToken)
+        {
+            if (node is null ||
+                semanticModel.GetOperation(node, cancellationToken) is not IInvocationOperation invocation ||
                 invocation.Instance is null)
             {
-                return;
+                return null;
             }
 
-            var compilation = semanticModel.Compilation;
-            var streamType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream);
+            var streamType = semanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream);
 
-            if (streamType is null)
-            {
-                return;
-            }
-
-            var readExactlyMethods = streamType.GetMembers(ReadExactly)
-                .OfType<IMethodSymbol>()
-                .ToImmutableArray();
-
-            if (readExactlyMethods.IsEmpty)
-            {
-                return;
-            }
-
-            var codeAction = CodeAction.Create(
-                AvoidUnreliableStreamReadCodeFixTitle,
-                ct => ReplaceWithReadExactlyCall(context.Document, ct),
-                nameof(AvoidUnreliableStreamReadCodeFixTitle));
-
-            context.RegisterCodeFix(codeAction, context.Diagnostics);
-
-            async Task<Document> ReplaceWithReadExactlyCall(Document document, CancellationToken cancellationToken)
-            {
-                var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-                var generator = editor.Generator;
-                var arguments = invocation.Arguments.GetArgumentsInParameterOrder();
-
-                var isAsyncInvocation = invocation.TargetMethod.Name.EndsWith(Async, StringComparison.Ordinal);
-                var methodExpression = generator.MemberAccessExpression(
-                    invocation.Instance.Syntax,
-                    isAsyncInvocation ? ReadExactlyAsync : ReadExactly);
-                var methodInvocation = CanUseSpanOverload()
-                    ? generator.InvocationExpression(
-                        methodExpression,
-                        isAsyncInvocation && arguments.Length == 4
-                            // Stream.ReadExactlyAsync(buffer, ct)
-                            ?[arguments[0].Syntax, arguments[3].Syntax]
-                            // Stream.ReadExactly(buffer) and Stream.ReadExactlyAsync(buffer)
-                            :[arguments[0].Syntax])
-                    : generator.InvocationExpression(
-                        methodExpression,
-                        invocation.Arguments.Where(a => !a.IsImplicit).Select(a => a.Syntax));
-
-                editor.ReplaceNode(invocation.Syntax, methodInvocation.WithTriviaFrom(invocation.Syntax));
-
-                return document.WithSyntaxRoot(editor.GetChangedRoot());
-
-                bool CanUseSpanOverload()
-                {
-                    return arguments.Length >= 3 &&
-                        arguments[2].Value is IPropertyReferenceOperation propertyRef &&
-                        propertyRef.Property.Name.Equals(WellKnownMemberNames.LengthPropertyName, StringComparison.Ordinal) &&
-                        AreSameInstance(arguments[0].Value, propertyRef.Instance);
-                }
-
-                static bool AreSameInstance(IOperation? operation1, IOperation? operation2)
-                {
-                    return (operation1, operation2) switch
-                    {
-                        (IFieldReferenceOperation fieldRef1, IFieldReferenceOperation fieldRef2) => fieldRef1.Member == fieldRef2.Member,
-                        (IPropertyReferenceOperation propRef1, IPropertyReferenceOperation propRef2) => propRef1.Member == propRef2.Member,
-                        (IParameterReferenceOperation paramRef1, IParameterReferenceOperation paramRef2) => paramRef1.Parameter == paramRef2.Parameter,
-                        (ILocalReferenceOperation localRef1, ILocalReferenceOperation localRef2) => localRef1.Local == localRef2.Local,
-                        _ => false,
-                    };
-                }
-            }
+            return streamType is not null && streamType.GetMembers(ReadExactly).OfType<IMethodSymbol>().Any()
+                ? invocation
+                : null;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
@@ -30,8 +31,8 @@ public static class ParseResultExtensions
     /// <remarks>
     /// The managed CLI resolves these via external command resolution or its file-based run pipeline
     /// (see <c>Program.ExecuteExternalCommand</c>/<c>TryRunFileBasedApp</c>). The NativeAOT entry
-    /// point cannot do either, so it uses this to defer such invocations to the managed CLI rather
-    /// than running the root command's usage action.
+    /// point first tries its external resolver set, then handles its narrow file-based launch shape,
+    /// and otherwise defers rather than running the root command's usage action.
     /// </remarks>
     public static bool RequiresManagedCommandResolution(this ParseResult parseResult) =>
         parseResult.CommandResult.Command.Equals(Parser.RootCommand)
@@ -45,39 +46,36 @@ public static class ParseResultExtensions
     /// <remarks>
     /// This detection is shared between the managed CLI - which re-dispatches these invocations as
     /// <c>dotnet run --file app.cs</c> (see <c>Program.TryRunFileBasedApp</c>) - and the NativeAOT
-    /// entry point, which cannot run file-based apps itself and so defers them to the managed CLI.
+    /// entry point, which uses the same re-dispatch before applying its conservative run gate.
     /// </remarks>
     public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
         parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
             ? unmatchedCommandOrFile
             : null;
 
-    // duplicated from VirtualProjectBuilder to temporarily avoid MSBuild dlls on AOT codepath
-    private static bool IsValidEntryPointPath(string entryPointFilePath)
+    /// <summary>
+    /// Reparses an implicit file-based application invocation as an explicit <c>run --file</c> invocation.
+    /// </summary>
+    /// <param name="parseResult">The root parse result.</param>
+    /// <returns>The reparsed run invocation, or <see langword="null"/> when the root token is not a file-based application.</returns>
+    internal static ParseResult? TryParseFileBasedAppAsRun(this ParseResult parseResult)
     {
-        if (!File.Exists(entryPointFilePath))
+        if (parseResult.GetFileBasedAppEntryPointToken() is not { } unmatchedCommandOrFile)
         {
-            return false;
+            return null;
         }
 
-        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+        foreach (Token token in parseResult.Tokens)
         {
-            return true;
+            if (token.Type != TokenType.Argument || token != unmatchedCommandOrFile)
+            {
+                otherTokens.Add(token.Value);
+            }
         }
 
-        // Check if the first two characters are #!
-        try
-        {
-            using var stream = File.OpenRead(entryPointFilePath);
-            int first = stream.ReadByte();
-            int second = stream.ReadByte();
-            return first == '#' && second == '!';
-        }
-        catch
-        {
-            return false;
-        }
+        return Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
     }
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch

@@ -5,6 +5,7 @@
 
 using System.IO.Compression;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.NET.Sdk.WebAssembly;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
@@ -1645,9 +1646,119 @@ public class TestReference
         [DataRow("/p:BlazorFingerprintBlazorJs=false")]
         public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
         {
-            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer", identifier: string.IsNullOrEmpty(publishArg) ? "HostedWasmFp" : "HostedWasmNoFp");
             var publishCommand = CreatePublishCommand(testInstance, "Server");
             ExecuteCommand(publishCommand, publishArg).Should().Pass();
+
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand);
+            AssertHostedBlazorWasmCompressedHtmlMatchesRewrittenHtml(publishCommand);
+            AssertClientBuildManifestKeepsWasmResourcesAsBuildAssets(testInstance);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
+        [DataRow("")]
+        [DataRow("/p:BlazorFingerprintBlazorJs=false")]
+        public void Publish_BlazorWasmReferencedByAspNetCoreServer_NoBuild_RewritesHtml(string publishArg)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer", identifier: string.IsNullOrEmpty(publishArg) ? "HostedWasmNoBuildFp" : "HostedWasmNoBuildNoFp");
+
+            var buildCommand = CreateBuildCommand(testInstance, "Server");
+            ExecuteCommand(buildCommand, publishArg).Should().Pass();
+
+            // Publish with NoBuild must produce the rewritten HTML from the build manifest alone. Delete any
+            // publish output first so the assertions can't be satisfied by leftovers from a previous publish.
+            var publishCommand = CreatePublishCommand(testInstance, "Server");
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
+            if (Directory.Exists(publishDirectory))
+            {
+                Directory.Delete(publishDirectory, recursive: true);
+            }
+
+            ExecuteCommand(publishCommand, publishArg, "/p:NoBuild=true").Should().Pass();
+
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand);
+            AssertHostedBlazorWasmCompressedHtmlMatchesRewrittenHtml(publishCommand);
+        }
+
+        private void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand)
+        {
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
+            var wwwroot = Path.Combine(publishDirectory, "wwwroot");
+            var indexHtmlPath = Path.Combine(wwwroot, "index.html");
+            var content = File.ReadAllText(indexHtmlPath);
+
+            content.Should().NotContain("<script type=\"importmap\"></script>");
+            content.Should().Contain("<script type=\"importmap\">");
+            content.Should().NotContain("#[.{fingerprint}]");
+
+            using var endpointsDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(publishDirectory, "Server.staticwebassets.endpoints.json")));
+            var endpoints = endpointsDocument.RootElement.GetProperty("Endpoints").EnumerateArray().ToArray();
+
+            var blazorJsEndpoint = endpoints
+                .Single(endpoint => endpoint.GetProperty("Route").GetString() == "_framework/blazor.webassembly.js" &&
+                    endpoint.GetProperty("Selectors").GetArrayLength() == 0);
+            var blazorJsPath = blazorJsEndpoint.GetProperty("AssetFile").GetString();
+
+            blazorJsPath.Should().NotBeNull();
+            content.Should().Contain($"src=\"{blazorJsPath}\"");
+            new FileInfo(Path.Combine(wwwroot, blazorJsPath!)).Should().Exist();
+
+            // The preload placeholder is replaced with concrete preload links for the WebAssembly resources
+            // rather than simply being dropped from the document.
+            var dotnetJsEndpoint = endpoints
+                .Single(endpoint => endpoint.GetProperty("Route").GetString() == "_framework/dotnet.js" &&
+                    endpoint.GetProperty("Selectors").GetArrayLength() == 0);
+            var dotnetJsPath = dotnetJsEndpoint.GetProperty("AssetFile").GetString();
+
+            content.Should().NotContain("id=\"webassembly\"");
+            content.Should().Contain($"<link href=\"{dotnetJsPath}\" rel=\"preload\" as=\"script\"");
+
+            // The import map must actually map the framework assets, not just be non-empty.
+            var importMapJson = Regex.Match(content, "<script type=\"importmap\">(?<map>.*?)</script>", RegexOptions.Singleline).Groups["map"].Value;
+            using var importMapDocument = JsonDocument.Parse(importMapJson);
+            var imports = importMapDocument.RootElement.GetProperty("imports");
+
+            imports.GetProperty("./_framework/dotnet.js").GetString().Should().Be($"./{dotnetJsPath}");
+        }
+
+        private void AssertHostedBlazorWasmCompressedHtmlMatchesRewrittenHtml(PublishCommand publishCommand)
+        {
+            var wwwroot = Path.Combine(publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot");
+            var expected = File.ReadAllText(Path.Combine(wwwroot, "index.html"));
+
+            // Compression must run against the rewritten HTML, not against the retained placeholder source.
+            ReadCompressed(Path.Combine(wwwroot, "index.html.gz"), stream => new GZipStream(stream, CompressionMode.Decompress)).Should().Be(expected);
+            ReadCompressed(Path.Combine(wwwroot, "index.html.br"), stream => new BrotliStream(stream, CompressionMode.Decompress)).Should().Be(expected);
+
+            static string ReadCompressed(string path, Func<Stream, Stream> decompress)
+            {
+                new FileInfo(path).Should().Exist();
+                using var decompressed = decompress(File.OpenRead(path));
+                using var reader = new StreamReader(decompressed);
+                return reader.ReadToEnd();
+            }
+        }
+
+        private void AssertClientBuildManifestKeepsWasmResourcesAsBuildAssets(TestAsset testInstance)
+        {
+            // Retagging the HTML placeholder source as a publish asset must not leak that metadata onto unrelated
+            // assets. When it did, the WebAssembly resources were duplicated at publish time and GenerateWasmBootJson
+            // failed with "An item with the same key has already been added".
+            var manifestPath = Path.Combine(testInstance.Path, "Client", "obj", "Debug", DefaultTfm, "staticwebassets.build.json");
+            new FileInfo(manifestPath).Should().Exist();
+
+            using var manifest = JsonDocument.Parse(File.ReadAllBytes(manifestPath));
+            var assets = manifest.RootElement.GetProperty("Assets").EnumerateArray().ToArray();
+
+            assets.Where(asset => asset.GetProperty("AssetTraitName").GetString() == "WasmResource")
+                .Select(asset => asset.GetProperty("AssetKind").GetString())
+                .Should().NotBeEmpty()
+                .And.OnlyContain(kind => kind == "Build");
+
+            // Only the HTML placeholder source is retagged as a publish asset.
+            assets.Where(asset => asset.GetProperty("AssetKind").GetString() == "Publish")
+                .Should().OnlyContain(asset => asset.GetProperty("RelativePath").GetString() == "index.html");
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)

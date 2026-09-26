@@ -317,14 +317,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetBuildCompressAllAssets Condition="'$(StaticWebAssetBuildCompressAllAssets)' == ''">false</StaticWebAssetBuildCompressAllAssets>
     </PropertyGroup>
 
+    <!-- Publish-only assets are excluded here, mirroring the '%(AssetKind)' != 'Build' filter that
+         ResolvePublishCompressedStaticWebAssetsConfiguration applies. Build compression only needs to
+         produce the assets the build output serves; publish compresses its own assets into
+         '$(IntermediateOutputPath)compressed\publish'. Compressing publish-only assets during build is
+         wasted work, and it breaks for assets that publish rewrites or drops (such as the HTML
+         placeholder source), because the compressed asset is left without a related asset or endpoints. -->
     <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' == 'true'">
-      <_CandidateAssetsForBuild Include="@(StaticWebAsset)" />
+      <_CandidateAssetsForBuild Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish'" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' != 'true'">
       <_CandidateAssetsForBuild
         Include="@(StaticWebAsset)"
-        Condition="'%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed'" />
+        Condition="'%(AssetKind)' != 'Publish' and ('%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed')" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(CompressDiscoveredAssetsDuringBuild)' != 'true'">

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+    <!-- Keep each integration-test class serial because TemplateDiscoveryTests methods pack into
+         shared package output locations and invoke tools against class-local hives. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

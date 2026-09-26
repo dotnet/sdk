@@ -399,5 +399,33 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """;
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
+
+        [TestMethod]
+        public async Task Diagnostic_NestedCombineAndJoinCalls_FixAllRewritesBoth()
+        {
+            var csCode = """
+                using System.IO;
+
+                public class Test
+                {
+                    public void M()
+                    {
+                        string path = [|Path.Combine(Path.Combine("a", "b"), [|Path.Join(Path.Join("c", "d"), "e")|])|];
+                    }
+                }
+                """;
+            var fixedCode = """
+                using System.IO;
+
+                public class Test
+                {
+                    public void M()
+                    {
+                        string path = Path.Combine("a", "b", Path.Join("c", "d", "e"));
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
+        }
     }
 }

@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -84,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                var reportedLocations = new ConcurrentDictionary<Location, bool>();
+                ConcurrentDictionary<Location, bool>? reportedLocations = null;
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
                     if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
@@ -147,7 +145,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // and avoiding duplicates.
                         foreach (var diagnostic in notDisposedDiagnostics.Concat(mayBeNotDisposedDiagnostics))
                         {
-                            if (reportedLocations.TryAdd(diagnostic.Location, true))
+                            LazyInitializer.EnsureInitialized(ref reportedLocations);
+
+                            if (reportedLocations!.TryAdd(diagnostic.Location, true))
                             {
                                 operationBlockContext.ReportDiagnostic(diagnostic);
                             }

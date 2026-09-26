@@ -5,6 +5,9 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.LocalDaemons;
 
+/// <summary>
+/// Writes built images to a local archive instead of loading them into a container runtime.
+/// </summary>
 internal class ArchiveFileRegistry : ILocalRegistry
 {
     public string ArchiveOutputPath { get; private set; }
@@ -48,20 +51,24 @@ internal class ArchiveFileRegistry : ILocalRegistry
         await writeStreamFunc(image, sourceReference, destinationReference, fileStream, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken) 
         => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
-            DockerCli.WriteImageToStreamAsync);
+            ContainerArchive.WriteImageToStreamAsync);
 
+    /// <inheritdoc />
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken) 
         => await LoadAsync(multiArchImage, sourceReference, destinationReference, cancellationToken,
-            DockerCli.WriteMultiArchOciImageToStreamAsync);
+            ContainerArchive.WriteMultiArchOciImageToStreamAsync);
 
+    /// <inheritdoc />
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
+    /// <inheritdoc />
     public bool IsAvailable() => true;
 
     public override string ToString()

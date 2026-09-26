@@ -1,15 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Performance;
 
@@ -58,30 +58,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             }
         }
 
-        protected override CodeAction CreateCodeAction(Document document, SyntaxNode argumentListNode, char sourceCharLiteral)
-        {
-            return new CSharpReplaceStringLiteralWithCharLiteralCodeAction(document, argumentListNode, sourceCharLiteral);
-        }
+        protected override ImmutableArray<SyntaxNode> GetArguments(SyntaxNode argumentListNode)
+            => ((ArgumentListSyntax)argumentListNode).Arguments.Cast<SyntaxNode>().ToImmutableArray();
 
-        private sealed class CSharpReplaceStringLiteralWithCharLiteralCodeAction(
-            Document document, SyntaxNode argumentListNode, char sourceCharLiteral)
-            : ReplaceStringLiteralWithCharLiteralCodeAction(document, argumentListNode, sourceCharLiteral)
-        {
-            protected override void ApplyFix(
-                DocumentEditor editor,
-                SemanticModel model,
-                SyntaxNode oldArgumentListNode,
-                char c)
-            {
-                var argumentNode = (ArgumentSyntax)editor.Generator.Argument(editor.Generator.LiteralExpression(c));
-                var arguments = new[] { argumentNode }.Concat(((ArgumentListSyntax)oldArgumentListNode).Arguments
-                        .Select(arg => (arg, operation: model.GetOperation(arg) as IArgumentOperation))
-                        .Where(t => PreserveArgument(t.operation))
-                        .Select(t => t.arg));
-                var argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
-
-                editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode));
-            }
-        }
+        protected override SyntaxNode CreateArgumentList(IEnumerable<SyntaxNode> arguments)
+            => SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments.Cast<ArgumentSyntax>()));
     }
 }

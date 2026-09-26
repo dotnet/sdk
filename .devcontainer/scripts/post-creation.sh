@@ -1,5 +1,8 @@
 #! /usr/bin/env sh
 
+# Install prerequisites for NativeAOT/dotnet-aot builds
+sudo apt-get update && sudo apt-get install -y --no-install-recommends clang && sudo rm -rf /var/lib/apt/lists/*
+
 # Install SDK and tool dependencies before container starts
 # Also run the full restore on the repo so that go-to definition
 # and other language features will be available in C# files

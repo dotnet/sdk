@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.Build.Traversal/4.1.82">
+  <ItemGroup>
+    <!-- Level 1: a test project, a non-test class library (must be silently skipped),
+         and a deeper nested traversal project. -->
+    <ProjectReference Include="..\Level2TestProject\Level2TestProject.csproj" />
+    <ProjectReference Include="..\NonTestLibrary\NonTestLibrary.csproj" />
+    <ProjectReference Include="level3\dirs.proj" />
+  </ItemGroup>
+</Project>

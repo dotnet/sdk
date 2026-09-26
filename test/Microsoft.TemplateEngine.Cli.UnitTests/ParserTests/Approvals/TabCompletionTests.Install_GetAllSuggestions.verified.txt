@@ -35,6 +35,13 @@
     Detail: Specifies a NuGet source to use.
   },
   {
+    Label: --prerelease,
+    Kind: Keyword,
+    SortText: --prerelease,
+    InsertText: --prerelease,
+    Detail: Allows prerelease template packages to be installed when no version is specified.
+  },
+  {
     Label: --verbosity,
     Kind: Keyword,
     SortText: --verbosity,

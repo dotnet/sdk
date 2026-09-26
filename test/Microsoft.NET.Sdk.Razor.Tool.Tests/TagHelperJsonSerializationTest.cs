@@ -5,6 +5,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -56,6 +57,35 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Assert.AreEqual("TestNamespace.TestTagHelper", roundTripped[0].TypeName);
             Assert.ContainsSingle(roundTripped[0].TagMatchingRules);
             Assert.AreEqual("test-tag", roundTripped[0].TagMatchingRules[0].TagName);
+        }
+
+        [TestMethod]
+        public void RoundTrip_AssetPathMetadata_PreservesData()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Name": "AssetPathTagHelper",
+                        "AssemblyName": "TestAssembly",
+                        "TypeName": "TestNamespace.AssetPathTagHelper",
+                        "MetadataKind": 8,
+                        "Metadata": {
+                            "Element": "img",
+                            "Attribute": "src"
+                        }
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            var metadata = (AssetPathMetadata)roundTripped[0].Metadata;
+            Assert.AreEqual("img", metadata.Element);
+            Assert.AreEqual("src", metadata.Attribute);
         }
 
         [TestMethod]
@@ -296,6 +326,76 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Assert.AreEqual(TagHelperKind.Component, result.Kind);
             Assert.AreEqual(RuntimeKind.IComponent, result.RuntimeKind);
             Assert.AreEqual("MyComponent", result.Name);
+        }
+
+        [TestMethod]
+        public void RoundTrip_AssetPathTagHelper_PreservesMetadata()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Kind": 11,
+                        "Name": "img[src]",
+                        "AssemblyName": "Microsoft.AspNetCore.Components",
+                        "TypeName": "Microsoft.AspNetCore.Components.AssetPathAttributes",
+                        "MetadataKind": 8,
+                        "Metadata": {
+                            "Element": "img",
+                            "Attribute": "src"
+                        }
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual(TagHelperKind.AssetPath, roundTripped[0].Kind);
+            Assert.IsInstanceOfType<AssetPathMetadata>(roundTripped[0].Metadata);
+            var metadata = (AssetPathMetadata)roundTripped[0].Metadata;
+            Assert.AreEqual("img", metadata.Element);
+            Assert.AreEqual("src", metadata.Attribute);
+        }
+
+        [TestMethod]
+        public void RoundTrip_ComponentPropertyAcceptingAssetPath_PreservesMetadata()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Name": "MyComponent",
+                        "AssemblyName": "ComponentAssembly",
+                        "TypeName": "ComponentNamespace.MyComponent",
+                        "BoundAttributes": [
+                            {
+                                "Flags": 0,
+                                "Name": "source",
+                                "PropertyName": "Source",
+                                "TypeName": "System.String",
+                                "DisplayName": "Source",
+                                "MetadataKind": 2,
+                                "Metadata": {
+                                    "AcceptsAssetPath": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            Assert.ContainsSingle(roundTripped[0].BoundAttributes);
+            Assert.IsInstanceOfType<PropertyMetadata>(roundTripped[0].BoundAttributes[0].Metadata);
+            var metadata = (PropertyMetadata)roundTripped[0].BoundAttributes[0].Metadata;
+            Assert.IsTrue(metadata.AcceptsAssetPath);
         }
 
         [TestMethod]

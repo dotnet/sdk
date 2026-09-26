@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Composition;
+using System.Linq;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -15,6 +16,25 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpUseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFix : UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFix
     {
+        protected override SyntaxNode? GetIndexOfInvocation(SyntaxNode comparison)
+        {
+            if (comparison is not BinaryExpressionSyntax binaryExpression)
+            {
+                return null;
+            }
+
+            return binaryExpression.Left as InvocationExpressionSyntax ?? binaryExpression.Right as InvocationExpressionSyntax;
+        }
+
+        protected override SyntaxNode GetInstance(SyntaxNode invocation)
+            => ((MemberAccessExpressionSyntax)((InvocationExpressionSyntax)invocation).Expression).Expression;
+
+        protected override SyntaxNode[] GetArguments(SyntaxNode invocation)
+            => ((InvocationExpressionSyntax)invocation).ArgumentList.Arguments.ToArray();
+
+        protected override SyntaxNode GetArgumentExpression(SyntaxNode argument)
+            => ((ArgumentSyntax)argument).Expression;
+
         protected override SyntaxNode AppendElasticMarker(SyntaxNode replacement)
             => replacement.WithTrailingTrivia(SyntaxFactory.ElasticMarker);
 

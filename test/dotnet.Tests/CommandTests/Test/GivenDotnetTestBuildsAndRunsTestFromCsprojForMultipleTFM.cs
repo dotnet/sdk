@@ -131,6 +131,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/55263")]
         public void ItCanTestAMultiTFMProjectWithImplicitRestore()
         {
             var testInstance = TestAssetsManager.CopyTestAsset(

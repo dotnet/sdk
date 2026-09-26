@@ -34,7 +34,9 @@ public class ImageIndexGeneratorTests
                 Config = "",
                 Manifest = "",
                 ManifestDigest = "",
-                ManifestMediaType = "unsupported"
+                ManifestMediaType = "unsupported",
+                Architecture = "unknown",
+                OS = "unknown"
             }
         ];
 
@@ -55,13 +57,17 @@ public class ImageIndexGeneratorTests
                 Manifest = "",
                 ManifestDigest = "",
                 ManifestMediaType = supportedMediaType,
+                Architecture = "unknown",
+                OS = "unknown"
             },
             new BuiltImage
             {
                 Config = "",
                 Manifest = "",
                 ManifestDigest = "",
-                ManifestMediaType = "anotherMediaType"
+                ManifestMediaType = "anotherMediaType",
+                Architecture = "unknown",
+                OS = "unknown"
             }
         ];
 

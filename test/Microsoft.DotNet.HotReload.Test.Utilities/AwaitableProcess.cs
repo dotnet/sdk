@@ -234,14 +234,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
+                Logger.Log($"Killing process tree for process {Id}");
                 Process.Kill(entireProcessTree: true);
+                Logger.Log($"Killed process tree for process {Id}");
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Log($"Failed to kill process tree for process {Id}: {e}");
             }
 
-            // ensure process has exited
-            await _processExitAwaiter;
+            // ensure process has exited without allowing cleanup to hang indefinitely
+            if (await Task.WhenAny(_processExitAwaiter, Task.Delay(TimeSpan.FromSeconds(30))) != _processExitAwaiter)
+            {
+                Logger.Log($"Process {Id} did not exit within 30 seconds after kill");
+            }
 
             Process.Dispose();
 

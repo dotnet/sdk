@@ -45,13 +45,6 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <None Include="$(GeneratedRulesetsDir)/**/*" Pack="true" PackagePath="/rulesets" Visible="false" />
-    <None Include="$(GeneratedEditorconfigsDir)/**/*" Pack="true" PackagePath="/editorconfig" Visible="false" />
-    <None Include="$(GeneratedGlobalAnalyzerConfigsDir)/**/*" Pack="true" PackagePath="/buildTransitive/config" Visible="false" />
-    <None Include="$(PackagePropsTargetsFileDir)/**/*" Pack="true" PackagePath="/buildTransitive" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" PackAsAnalyzer="true" />
     <ProjectReference Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" PackAsAnalyzer="true" />
     <ProjectReference Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" PackAsAnalyzer="true" />
@@ -73,7 +66,6 @@
 
       <AnalyzerDocumentationFileDir>$(NetAnalyzersRootDir)src</AnalyzerDocumentationFileDir>
       <AnalyzerSarifFileDir>$(NetAnalyzersRootDir)src</AnalyzerSarifFileDir>
-      <AnalyzerConfigurationFileDir>$(NetAnalyzersRootDir)docs</AnalyzerConfigurationFileDir>
 
       <PackagePropsFileName>$(PackageId).props</PackagePropsFileName>
       <PackageTargetsFileName>$(PackageId).targets</PackageTargetsFileName>
@@ -81,7 +73,6 @@
       <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
       <AnalyzerSarifFileName>$(PackageId).sarif.template</AnalyzerSarifFileName>
       <AnalyzerSarifTemplateProperties>AnalyzerVersion=$(VersionPrefix)</AnalyzerSarifTemplateProperties>
-      <AnalyzerConfigurationFileName>analyzer-configuration.md</AnalyzerConfigurationFileName>
 
       <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
       <ValidateOnlyFlag>false</ValidateOnlyFlag>
@@ -103,6 +94,17 @@
       OutputPath="$(GeneratedSarifFilePath)" />
 
     <Exec Command='"$(DotNetTool)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:$(ValidateOnlyFlag)" "$(GeneratedRulesetsDir)" "$(GeneratedEditorconfigsDir)" "$(GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "$(TargetFramework)" "@(AnalyzerNupkgAssembly)" "$(PackagePropsTargetsFileDir)" "$(PackagePropsFileName)" "$(PackagePropsTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerDocumentationFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(PackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) $(ReleaseTrackingOptOut) $(_ValidateOffline)' />
+  </Target>
+
+  <Target Name="IncludeGeneratedFilesInPackage"
+          BeforeTargets="$(GenerateNuspecDependsOn)"
+          DependsOnTargets="GenerateAnalyzerConfigAndDocumentationFiles">
+    <ItemGroup>
+      <None Include="$(GeneratedRulesetsDir)/**/*" Pack="true" PackagePath="/rulesets" Visible="false" />
+      <None Include="$(GeneratedEditorconfigsDir)/**/*" Pack="true" PackagePath="/editorconfig" Visible="false" />
+      <None Include="$(GeneratedGlobalAnalyzerConfigsDir)/**/*" Pack="true" PackagePath="/buildTransitive/config" Visible="false" />
+      <None Include="$(PackagePropsTargetsFileDir)/**/*" Pack="true" PackagePath="/buildTransitive" Visible="false" />
+    </ItemGroup>
   </Target>
 
 </Project>

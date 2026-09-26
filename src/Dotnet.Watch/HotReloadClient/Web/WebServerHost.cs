@@ -8,13 +8,16 @@ using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> endPoints, string virtualDirectory) : IDisposable
+internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> endPoints, ImmutableArray<string> httpEndPoints) : IDisposable
 {
     public ImmutableArray<string> EndPoints
         => endPoints;
 
-    public string VirtualDirectory
-        => virtualDirectory;
+    /// <summary>
+    /// Loopback HTTP addresses the browser tools provider listens on.
+    /// </summary>
+    public ImmutableArray<string> HttpEndPoints
+        => httpEndPoints;
 
     public void Dispose()
         => listener.Dispose();
