@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-uninstall" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-new-uninstall" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet new uninstall
 .PP
@@ -70,21 +70,16 @@ Note that the version for the NuGet package should not be specified.
 Enables diagnostic output.
 Available since .NET SDK 7.0.100.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]-h|--help\f[B]\f[R]
-.RS 2
 .PP
-Prints out help for the uninstall command.
-Available since .NET SDK 7.0.100.
-.RE
-.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.PP
+Prints out a description of how to use the command.
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
-Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], and \f[V]diag[nostic]\f[R].
-Available since .NET SDK 7.0.100.
-.RE
+Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .SH EXAMPLES
 .IP \[bu] 2
 List the installed templates and details about them, including how to uninstall them:
@@ -114,4 +109,4 @@ dotnet new list command
 .IP \[bu] 2
 dotnet new search command
 .IP \[bu] 2
-Custom templates for dotnet new
+\&.NET templates for authors

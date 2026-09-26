@@ -34,6 +34,11 @@
     <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_ExpectedSdkVersion Condition="'$(StabilizePackageVersion)' == 'true'">$(VersionPrefix)</_ExpectedSdkVersion>
+    <_ExpectedSdkVersion Condition="'$(_ExpectedSdkVersion)' == ''">$(Version)</_ExpectedSdkVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>AspireCliVersion</_Parameter1>
@@ -53,7 +58,7 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>SdkVersion</_Parameter1>
-      <_Parameter2>$(Version)</_Parameter2>
+      <_Parameter2>$(_ExpectedSdkVersion)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
