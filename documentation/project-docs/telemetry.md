@@ -5,6 +5,7 @@
 - [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
   - [Table of Contents](#table-of-contents)
   - [How to Control Telemetry](#how-to-control-telemetry)
+  - [CLI Activity Duration Metrics](#cli-activity-duration-metrics)
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
@@ -105,6 +106,69 @@ log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable i
 - **First Time Use**: Telemetry is only collected after the first-time-use notice has been shown and accepted (tracked via sentinel file)
 
 - **Event Namespace**: All telemetry events are automatically prefixed with `dotnet/cli/`
+
+## CLI Activity Duration Metrics
+
+The CLI bridges completed activities from its `dotnet-cli` activity source to a
+`System.Diagnostics.Metrics` histogram:
+
+| Meter | Instrument | Unit | Tag |
+| --- | --- | --- | --- |
+| `dotnet-cli` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
+
+Each stopped activity records one measurement equal to its `Activity.Duration.TotalSeconds`.
+The `activity.name` tag contains the operation name, such as `main`, `first-time-use`,
+`parse`, `invocation`, `release-property-discovery`, or `msbuild-submission`, rather than
+the display name or command-line arguments.
+The bridge requests activities only while a metric collector enables the histogram.
+Existing trace listeners can independently request activities. Metric collection does
+not mark otherwise unsampled traces as recorded.
+
+The `release-property-discovery` activity covers project or solution discovery,
+evaluation, and reading `PackRelease` or `PublishRelease` to select the default
+configuration. It ends before the subsequent MSBuild submission. When release-property
+discovery is disabled or the configuration is explicitly supplied, that work is skipped
+and no discovery activity is emitted.
+
+Run and Microsoft.Testing.Platform test commands also use MSBuild before their main
+build invocation. Those paths have the following activities:
+
+| Activity | Measured work |
+| --- | --- |
+| `project-selection` | The shared run/test selector loads and, when necessary, evaluates a project, then creates the project instance used for framework, device, or capability checks. Cached project-instance snapshots are included too. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results, when that target exists. Interactive device prompts are outside this activity. |
+| `test-project-discovery` | MTP evaluates the outer project and relevant target-framework-specific projects before automatic device selection. An explicitly supplied device skips this discovery. |
+| `test-target-framework-discovery` | MTP evaluates framework properties for an explicit `--device` when no framework was supplied. Interactive framework prompts are outside this activity. |
+| `test-environment-discovery` | MTP evaluates environment-variable support and prepares the corresponding properties file before forwarding a project build. No activity is emitted when that check is unnecessary. |
+
+These are command phases, not a classification of engine ownership or a fixed position
+in the command: preparation can itself execute MSBuild targets, and shared discovery
+helpers can also run after a build or with `--no-build`. Do not assume that all MSBuild
+work is inside `msbuild-submission`, or that every `project-selection` measurement
+represents a fresh evaluation.
+
+The `msbuild-submission` activity covers the synchronous MSBuild invocation, including
+waiting for an out-of-process or server build to finish. CLI argument parsing, project
+discovery, and Pack/Publish release-setting discovery happen outside this scope. Separate restore and
+build invocations produce separate activities. For file-based projects, the activity
+starts immediately before `BuildManager.BeginBuild` and remains open through
+`BuildManager.EndBuild`; paths that skip MSBuild, such as an up-to-date file-based
+application, do not emit it. Failed invocations also stop and record their activity.
+
+The CLI's existing metric provider collects this meter. To export measurements, use the
+[OTLP exporter configuration](#opentelemetry-otlp-exporter), with CLI telemetry enabled.
+The provider flushes the final measurements during shutdown. An explicitly attached
+metric collector can also subscribe without enabling the CLI's telemetry exporters;
+the instrumentation itself does not configure an exporter or send network requests.
+
+Activity durations are inclusive: `invocation` includes its `msbuild-submission`
+children, and a submission can contain the logger's separate `msbuild` activity.
+Do not add these nested durations together. Subtracting non-overlapping submission
+durations from their enclosing command measures work outside those submissions,
+including work afterward or between submissions, not strictly time before the first
+submission. The `main` activity includes process startup, whereas `invocation` excludes
+earlier initialization and argument parsing. Compute differences for matching
+invocations before aggregation; subtracting independent percentiles is not equivalent.
 
 ## Common Properties Collected
 

@@ -301,6 +301,7 @@ internal static class MSBuildUtility
             if (buildOptions.EnvironmentVariables.Count > 0 &&
                 Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
             {
+                using var activity = Activities.Source.StartActivity("test-environment-discovery");
                 var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(parsedMSBuildArgs);
                 using var collection = new ProjectCollection(globalProperties);
                 var project = ProjectInstance.FromFile(filePath, new ProjectOptions

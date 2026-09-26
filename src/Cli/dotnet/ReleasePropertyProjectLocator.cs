@@ -63,6 +63,8 @@ internal sealed class ReleasePropertyProjectLocator(
         if (commandOptions.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
+        using var activity = Activities.Source.StartActivity("release-property-discovery");
+
         // The Shared policy is chosen because release-property discovery is short-lived and the context is discarded before the subsequent MSBuild invocation.
         EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
