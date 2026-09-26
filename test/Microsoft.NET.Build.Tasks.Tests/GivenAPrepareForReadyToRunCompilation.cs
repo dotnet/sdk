@@ -20,11 +20,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             task.ReadyToRunCompileList.Should().ContainSingle()
-                .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, "sub", "Library.wasm"));
+                .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, "sub/Library.wasm"));
 
             ITaskItem fileToPublish = task.ReadyToRunFilesToPublish.Should().ContainSingle().Which;
-            fileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "sub", "Library.wasm"));
-            fileToPublish.GetMetadata(MetadataKeys.RelativePath).Should().Be(Path.Combine("sub", "Library.wasm"));
+            fileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "sub/Library.wasm"));
+            fileToPublish.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Library.wasm");
             fileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
         }
 
@@ -37,13 +37,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            string compilerOutput = Path.Combine(outputPath, "sub", "Library.o");
+            string compilerOutput = Path.Combine(outputPath, "sub/Library.o");
             task.ReadyToRunCompileList.Should().ContainSingle()
                 .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(compilerOutput);
 
             ITaskItem fileToPublish = task.ReadyToRunFilesToPublish.Should().ContainSingle().Which;
-            fileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "sub", "Library.dylib"));
-            fileToPublish.GetMetadata(MetadataKeys.RelativePath).Should().Be(Path.Combine("sub", "Library.dylib"));
+            fileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "sub/Library.dylib"));
+            fileToPublish.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Library.dylib");
             fileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().Be("true");
             fileToPublish.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().Be(compilerOutput);
         }
@@ -58,13 +58,41 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             ITaskItem componentFileToPublish = task.ReadyToRunFilesToPublish
-                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == Path.Combine("sub", "Component.dll"));
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "sub/Component.dll");
             componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.dll"));
             componentFileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
             componentFileToPublish.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
 
             task.ReadyToRunCompositeBuildInput.Should().ContainSingle()
-                .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be(Path.Combine("sub", "Component.dll"));
+                .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Component.dll");
+        }
+
+        [TestMethod]
+        public void It_uses_wasm_paths_for_the_composite_owner_without_changing_components()
+        {
+            string outputPath = Path.Combine("obj", "r2r");
+            TaskItem component = CreateAssemblyItem("sub/Component.dll");
+            PrepareForReadyToRunCompilation task = CreateTask(outputPath, "wasm", composite: true, component);
+            string ownerRelativePath = Path.ChangeExtension(Path.GetFileName(task.MainAssembly.ItemSpec), ".r2r.wasm");
+
+            task.Execute().Should().BeTrue();
+
+            task.ReadyToRunCompileList.Should().ContainSingle()
+                .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, ownerRelativePath));
+
+            ITaskItem owner = task.ReadyToRunFilesToPublish
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == ownerRelativePath);
+            owner.ItemSpec.Should().Be(Path.Combine(outputPath, ownerRelativePath));
+            owner.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
+            owner.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
+
+            ITaskItem componentFileToPublish = task.ReadyToRunFilesToPublish
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "sub/Component.dll");
+            componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.dll"));
+            componentFileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
+            componentFileToPublish.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
+            task.ReadyToRunCompositeBuildInput.Should().ContainSingle()
+                .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Component.dll");
         }
 
         [TestMethod]
