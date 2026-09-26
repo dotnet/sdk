@@ -38,6 +38,7 @@
   <ItemGroup>
     <None Include="*.deps.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="LockFiles\*.project.lock.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.CrossGen.targets" LinkBase="SdkTargets" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Tasks\Common\Resources\Strings.resx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
