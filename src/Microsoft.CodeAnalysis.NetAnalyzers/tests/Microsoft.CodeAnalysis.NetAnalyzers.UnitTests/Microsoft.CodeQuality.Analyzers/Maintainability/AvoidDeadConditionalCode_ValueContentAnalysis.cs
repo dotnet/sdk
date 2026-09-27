@@ -3074,6 +3074,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
+        public async Task LocalFunctionInvocation_RepeatedSafeStaticLocalCallsAsync()
+        {
+            await VerifyCSharp8AnalyzerAsync("""
+                class Test
+                {
+                    void M(int input)
+                    {
+                        int captured = 1;
+                        void Local(int value)
+                        {
+                            static int Identity(int v) => v;
+                            captured = Identity(value);
+                        }
+                        Local(2);
+                        if (captured == 2) { }
+                        Local(input);
+                        if (captured == 2) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(12, 13, "captured == 2", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
         public async Task LocalFunctionInvocation_StaticLocalReturnsOrdinaryMethodFieldAliasAsync()
         {
             await VerifyCSharpContextSensitiveAnalyzerAsync("""
