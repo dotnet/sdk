@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -20,6 +21,80 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected virtual IEnumerable<string> AdditionalCSharpSources { get; }
 
         protected virtual IEnumerable<string> AdditionalVisualBasicSources { get; }
+
+        protected static string RepeatedByteArraySourcesWithoutReachableSink()
+        {
+            string calls = string.Concat(Enumerable.Repeat("            Bytes(1, 2, 3, 4, 5, 6, 7, 8);\n", 64));
+            return $$"""
+                class Encoder
+                {
+                    private void Bytes(params byte[] values) { }
+
+                    public void Emit()
+                    {
+                {{calls}}
+                        var aes = System.Security.Cryptography.Aes.Create();
+                        aes.CreateEncryptor();
+                        var certificate = new System.Security.Cryptography.X509Certificates.X509Certificate2();
+                    }
+
+                    public void Unrelated(byte[] bytes)
+                    {
+                        using (var aes = System.Security.Cryptography.Aes.Create())
+                        {
+                            aes.Key = bytes;
+                        }
+
+                        var certificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(bytes);
+                    }
+                }
+                """;
+        }
+
+        protected static string RepeatedWebInputWithoutReachableSink()
+        {
+            string calls = string.Concat(Enumerable.Repeat("        Bytes(1, 2, 3, 4, 5, 6, 7, 8);\n", 64));
+            return $$"""
+                using System.Data;
+
+                class WebForm : System.Web.UI.Page
+                {
+                    private void Bytes(params byte[] values) { }
+
+                    protected int Emit()
+                    {
+                        string input = Request.Form["in"];
+                {{calls}}
+                        return input.Length;
+                    }
+
+                    protected void Unrelated(IDbCommand command, string text)
+                    {
+                        command.CommandText = text;
+                        Response.Write(text);
+                    }
+                }
+                """;
+        }
+
+        protected const string WebInputWithSinkReachedThroughMethod = """
+            using System.Data;
+
+            class WebForm : System.Web.UI.Page
+            {
+                protected void Emit(IDbCommand command)
+                {
+                    string input = Request.Form["in"];
+                    UseInput(command, input);
+                }
+
+                private void UseInput(IDbCommand command, string input)
+                {
+                    command.CommandText = input;
+                    Response.Write(input);
+                }
+            }
+            """;
 
         protected DiagnosticResult GetCSharpResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
         {

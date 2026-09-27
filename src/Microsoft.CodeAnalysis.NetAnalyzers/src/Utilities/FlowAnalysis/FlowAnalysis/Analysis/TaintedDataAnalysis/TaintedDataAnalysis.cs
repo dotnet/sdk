@@ -32,12 +32,13 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             DiagnosticDescriptor rule,
             TaintedDataSymbolMap<SourceInfo> taintedSourceInfos,
             TaintedDataSymbolMap<SanitizerInfo> taintedSanitizerInfos,
-            TaintedDataSymbolMap<SinkInfo> taintedSinkInfos)
+            TaintedDataSymbolMap<SinkInfo> taintedSinkInfos,
+            bool performValueContentAnalysis)
         {
             var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                 analyzerOptions, rule, cfg, compilation, InterproceduralAnalysisKind.ContextSensitive);
             return TryGetOrComputeResult(cfg, compilation, containingMethod, analyzerOptions, taintedSourceInfos,
-                taintedSanitizerInfos, taintedSinkInfos, interproceduralAnalysisConfig);
+                taintedSanitizerInfos, taintedSinkInfos, interproceduralAnalysisConfig, performValueContentAnalysis);
         }
 
         private static TaintedDataAnalysisResult? TryGetOrComputeResult(
@@ -48,7 +49,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             TaintedDataSymbolMap<SourceInfo> taintedSourceInfos,
             TaintedDataSymbolMap<SanitizerInfo> taintedSanitizerInfos,
             TaintedDataSymbolMap<SinkInfo> taintedSinkInfos,
-            InterproceduralAnalysisConfiguration interproceduralAnalysisConfig)
+            InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
+            bool performValueContentAnalysis)
         {
             if (cfg == null)
             {
@@ -60,7 +62,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             ValueContentAnalysisResult? valueContentAnalysisResult = null;
             CopyAnalysisResult? copyAnalysisResult = null;
             PointsToAnalysisResult? pointsToAnalysisResult = null;
-            if (taintedSourceInfos.RequiresValueContentAnalysis || taintedSanitizerInfos.RequiresValueContentAnalysis || taintedSinkInfos.RequiresValueContentAnalysis)
+            if (performValueContentAnalysis &&
+                (taintedSourceInfos.RequiresValueContentAnalysis || taintedSanitizerInfos.RequiresValueContentAnalysis || taintedSinkInfos.RequiresValueContentAnalysis))
             {
                 valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                     cfg,

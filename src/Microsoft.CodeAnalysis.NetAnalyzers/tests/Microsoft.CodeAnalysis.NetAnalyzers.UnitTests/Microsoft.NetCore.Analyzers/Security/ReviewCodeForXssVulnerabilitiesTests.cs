@@ -15,6 +15,51 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForXssVulnerabilities.Rule;
 
         [TestMethod]
+        public async Task AutoPropertyInitializer_CSharp_DiagnosticAsync()
+        {
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.Web;
+                using System.Web.UI;
+
+                class RequestText : ITextControl
+                {
+                    public string Text { get; set; } = HttpContext.Current.Request.Form["text"];
+                }
+                """,
+                GetCSharpResultAt(6, 38, 6, 40, "string RequestText.Text", "string RequestText.Text", "NameValueCollection HttpRequest.Form", "string RequestText.Text"));
+        }
+
+        [TestMethod]
+        public async Task AutoPropertyInitializer_VB_DiagnosticAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System.Web
+                Imports System.Web.UI
+
+                Public Class RequestText
+                    Implements ITextControl
+
+                    Public Property Text As String = HttpContext.Current.Request.Form("text") Implements ITextControl.Text
+                End Class
+                """,
+                GetBasicResultAt(7, 36, 7, 38, "Property RequestText.Text As String", "Property RequestText.Text As String", "Property HttpRequest.Form As NameValueCollection", "Property RequestText.Text As String"));
+        }
+
+        [TestMethod]
+        public async Task RepeatedWebInputWithoutReachableSinkAsync()
+        {
+            await VerifyCSharpWithDependenciesAsync(RepeatedWebInputWithoutReachableSink());
+        }
+
+        [TestMethod]
+        public async Task WebInputWithSinkReachedThroughMethodAsync()
+        {
+            await VerifyCSharpWithDependenciesAsync(
+                WebInputWithSinkReachedThroughMethod,
+                GetCSharpResultAt(14, 9, 7, 24, "void HttpResponse.Write(string s)", "void WebForm.UseInput(IDbCommand command, string input)", "NameValueCollection HttpRequest.Form", "void WebForm.Emit(IDbCommand command)"));
+        }
+
+        [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test

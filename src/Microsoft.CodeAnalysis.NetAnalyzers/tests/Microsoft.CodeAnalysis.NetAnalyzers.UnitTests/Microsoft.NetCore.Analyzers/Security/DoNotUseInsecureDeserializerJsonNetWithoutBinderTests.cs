@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -23,6 +24,74 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             DoNotUseInsecureDeserializerJsonNetWithoutBinder.DefinitelyInsecureSerializer;
         private static readonly DiagnosticDescriptor MaybeRule =
             DoNotUseInsecureDeserializerJsonNetWithoutBinder.MaybeInsecureSerializer;
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task SafeConstructorWithUnrelatedByteArrays_CSharp_NoDiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            string calls = string.Concat(Enumerable.Repeat("Bytes(1, 2, 3, 4);\n", 64));
+            await VerifyCSharpWithJsonNetAsync(version, $$"""
+                using Newtonsoft.Json;
+
+                class C
+                {
+                    static void Bytes(params byte[] values) { }
+
+                    void Method()
+                    {
+                        {{calls}}
+                        JsonSerializer serializer = new JsonSerializer();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task TypeNameHandlingSetInHelper_CSharp_DiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            await VerifyCSharpWithJsonNetAsync(version, """
+                using Newtonsoft.Json;
+
+                class C
+                {
+                    static void Configure(JsonSerializer serializer)
+                    {
+                        serializer.TypeNameHandling = TypeNameHandling.All;
+                    }
+
+                    object Method(JsonReader reader)
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        Configure(serializer);
+                        return serializer.Deserialize(reader);
+                    }
+                }
+                """,
+                GetCSharpResultAt(14, 16, DefinitelyRule));
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task TypeNameHandlingSetInHelper_VB_DiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            await VerifyBasicWithJsonNetAsync(version, """
+                Imports Newtonsoft.Json
+
+                Public Class C
+                    Private Shared Sub Configure(serializer As JsonSerializer)
+                        serializer.TypeNameHandling = TypeNameHandling.All
+                    End Sub
+
+                    Public Function Method(reader As JsonReader) As Object
+                        Dim serializer As New JsonSerializer()
+                        Configure(serializer)
+                        Return serializer.Deserialize(reader)
+                    End Function
+                End Class
+                """,
+                GetBasicResultAt(11, 16, DefinitelyRule));
+        }
 
         [TestMethod]
         [CombinatorialData]
