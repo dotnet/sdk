@@ -2575,6 +2575,784 @@ public static class C
             }.RunAsync(CancellationToken.None);
         }
 
+        private static async Task VerifyCSharp8AnalyzerAsync(string source, params DiagnosticResult[] expected)
+        {
+            var test = new VerifyCS.Test
+            {
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
+
+                        [*]
+                        dotnet_code_quality.copy_analysis = true
+                        """) },
+                },
+            };
+
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        private static async Task VerifyCSharpContextSensitiveAnalyzerAsync(string source)
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
+
+                        [*]
+                        dotnet_code_quality.copy_analysis = true
+                        dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive
+                        """) },
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_PreservesCapturedAndUnrelatedValuesAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M(int input)
+                    {
+                        int captured = 1;
+                        int unrelated = 7;
+                        int Update(int value)
+                        {
+                            captured = value;
+                            return captured;
+                        }
+                        Update(2);
+                        if (captured == 2) { }
+                        if (unrelated == 7) { }
+                        Update(input);
+                        if (captured == 2) { }
+                        if (unrelated == 7) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(13, 13, "captured == 2", "true"),
+                GetCSharpResultAt(14, 13, "unrelated == 7", "true"),
+                GetCSharpResultAt(17, 13, "unrelated == 7", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task NestedLocalFunctionInvocation_PreservesCapturedValueAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        int captured = 1;
+                        int unrelated = 7;
+                        void Outer()
+                        {
+                            void Inner() => captured = 2;
+                            Inner();
+                        }
+                        Outer();
+                        if (captured == 2) { }
+                        if (unrelated == 7) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(13, 13, "captured == 2", "true"),
+                GetCSharpResultAt(14, 13, "unrelated == 7", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task SiblingLocalFunctionInvocation_UpdatesCapturedValueAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        int captured = 1;
+                        void Increment() => captured++;
+                        void Invoke() => Increment();
+                        Invoke();
+                        if (captured == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(9, 13, "captured == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesCapturedObjectFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public int Value; }
+
+                    void M()
+                    {
+                        var box = new Box();
+                        var alias = box;
+                        box.Value = 1;
+                        void Local() => box.Value++;
+                        Local();
+                        if (alias.Value == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(12, 13, "alias.Value == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UnknownCapturedObjectFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public int Value; }
+
+                    void M(int input)
+                    {
+                        var box = new Box();
+                        box.Value = 1;
+                        void Local() => box.Value = input;
+                        Local();
+                        if (box.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UnknownCapturedObjectChainFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public Box Next; public int Value; }
+
+                    void M(int input)
+                    {
+                        var box = new Box();
+                        box.Next = new Box();
+                        box.Next.Value = 1;
+                        void Local() => box.Next.Value = input;
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesCapturedObjectChainFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public Box Next; public int Value; }
+
+                    void M()
+                    {
+                        var box = new Box();
+                        box.Next = new Box();
+                        box.Next.Value = 1;
+                        void Local() => box.Next.Value++;
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(12, 13, "box.Next.Value == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesCapturedArrayElementAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        var values = new int[1];
+                        values[0] = 1;
+                        void Local() => values[0]++;
+                        Local();
+                        if (values[0] == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(9, 13, "values[0] == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UnknownCapturedJaggedArrayElementAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M(int input)
+                    {
+                        var values = new[] { new int[1] };
+                        values[0][0] = 1;
+                        void Local() => values[0][0] = input;
+                        Local();
+                        if (values[0][0] == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_ConstructorCallbacks_DoNotInferCapturedValuesAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+
+                class Runner { public Runner(Action callback) { callback(); } }
+
+                class Test
+                {
+                    void Known()
+                    {
+                        int captured = 1;
+                        void Increment() => captured++;
+                        void Local() => new Runner(Increment);
+                        Local();
+                        if (captured == 1) { }
+                    }
+
+                    void Unknown(int input)
+                    {
+                        int captured = 1;
+                        void Update() => captured = input;
+                        void Local() => new Runner(Update);
+                        Local();
+                        if (captured == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalCallbackUpdatesCapturedValueAsync()
+        {
+            await VerifyCSharp8AnalyzerAsync("""
+                using System;
+
+                class Test
+                {
+                    void M()
+                    {
+                        int captured = 1;
+                        void Increment() => captured++;
+                        static void Invoke(object callback) => ((Action)callback)();
+                        void Local() => Invoke((Action)Increment);
+                        Local();
+                        if (captured == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(12, 13, "captured == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesStaticFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    static int value;
+
+                    void M()
+                    {
+                        value = 1;
+                        void Local() => value++;
+                        Local();
+                        if (value == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(10, 13, "value == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesStaticObjectFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public int Value; }
+                    static Box box;
+
+                    void M()
+                    {
+                        box = new Box();
+                        box.Value = 1;
+                        void Local() => box.Value++;
+                        Local();
+                        if (box.Value == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(12, 13, "box.Value == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UnknownStaticObjectChainFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    class Box { public Box Next; public int Value; }
+                    static Box box;
+
+                    void M(int input)
+                    {
+                        box = new Box();
+                        box.Next = new Box();
+                        box.Next.Value = 1;
+                        void Local() => box.Next.Value = input;
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalUpdatesStaticObjectChainFieldAsync()
+        {
+            await VerifyCSharp8AnalyzerAsync("""
+                class Test
+                {
+                    class Box { public Box Next; public int Value; }
+                    static Box box;
+
+                    void M(int input)
+                    {
+                        box = new Box();
+                        box.Next = new Box();
+                        box.Next.Value = 1;
+                        static void Set(int value) => box.Next.Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalReturnsOrdinaryMethodFieldAliasAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public Box GetNext() => Next;
+                }
+
+                class Test
+                {
+                    static Box Root { get; set; }
+
+                    void M(int input)
+                    {
+                        Root = new Box { Next = new Box() };
+                        Root.Next.Value = 1;
+                        static Box Get() => Root.GetNext();
+                        void Local()
+                        {
+                            var next = Get();
+                            next.Value = input;
+                        }
+                        Local();
+                        if (Root.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalUsesOrdinaryMethodFieldAliasAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public Box GetNext() => Next;
+                }
+
+                class Test
+                {
+                    static Box Root { get; set; }
+
+                    void M(int input)
+                    {
+                        Root = new Box { Next = new Box() };
+                        Root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        if (Root.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalUsesUntrackedStaticAliasesAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public int[] Values;
+                    public Box GetNext() => Next;
+                    public int[] GetValues() => Values;
+                }
+
+                class Test
+                {
+                    static Box Root { get; } = new Box();
+
+                    static bool Field(int input)
+                    {
+                        Root.Next = new Box();
+                        Root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        return Root.Next.Value == 1;
+                    }
+
+                    static bool Array(int input)
+                    {
+                        Root.Values = new int[1];
+                        Root.Values[0] = 1;
+                        static void Set(int value) => Root.GetValues()[0] = value;
+                        void Local() => Set(input);
+                        Local();
+                        return Root.Values[0] == 1;
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalUsesCallerAliasesAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public Box GetNext() => Next;
+                }
+
+                class Test
+                {
+                    static Box Root { get; } = new Box();
+                    static Box GetRoot() => Root;
+                    static void GetRoot(out Box root) => root = Root;
+                    static void SetRoot(ref Box root) => root = Root;
+
+                    class Holder
+                    {
+                        public Box Box;
+                        public Holder() { Box = Root; }
+                    }
+
+                    static bool ViaReturn(int input)
+                    {
+                        var root = GetRoot();
+                        root.Next = new Box();
+                        root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        return root.Next.Value == 1;
+                    }
+
+                    static bool ViaOut(int input)
+                    {
+                        GetRoot(out var root);
+                        root.Next = new Box();
+                        root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        return root.Next.Value == 1;
+                    }
+
+                    static bool ViaRef(int input)
+                    {
+                        Box root = null;
+                        SetRoot(ref root);
+                        root.Next = new Box();
+                        root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        return root.Next.Value == 1;
+                    }
+
+                    static bool ViaConstructor(int input)
+                    {
+                        var root = new Holder().Box;
+                        root.Next = new Box();
+                        root.Next.Value = 1;
+                        static void Set(int value) => Root.GetNext().Value = value;
+                        void Local() => Set(input);
+                        Local();
+                        return root.Next.Value == 1;
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_StaticLocalReturnsOrdinaryMethodArrayAliasAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public int[] Values;
+                    public int[] GetValues() => Values;
+                }
+
+                class Test
+                {
+                    static Box Root { get; set; }
+
+                    void M(int input)
+                    {
+                        Root = new Box { Values = new int[1] };
+                        Root.Values[0] = 1;
+                        static int[] Get() => Root.GetValues();
+                        void Local()
+                        {
+                            var values = Get();
+                            values[0] = input;
+                        }
+                        Local();
+                        if (Root.Values[0] == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_OrdinaryMethodReturnsObjectChainAliasAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public Box GetNext() => Next;
+                }
+
+                class Test
+                {
+                    void M(int input)
+                    {
+                        var box = new Box { Next = new Box() };
+                        box.Next.Value = 1;
+                        void Local()
+                        {
+                            var next = box.GetNext();
+                            next.Value = input;
+                        }
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_OrdinaryMethodMutatesCapturedObjectChainAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box
+                {
+                    public Box Next;
+                    public int Value;
+                    public void Set(int value) => Next.Value = value;
+                }
+
+                class Test
+                {
+                    void M(int input)
+                    {
+                        var box = new Box { Next = new Box() };
+                        box.Next.Value = 1;
+                        void Local() => box.Set(input);
+                        Local();
+                        if (box.Next.Value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UnknownStaticFieldAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    static int value;
+
+                    void M(int input)
+                    {
+                        value = 1;
+                        void Local() => value = input;
+                        Local();
+                        if (value == 1) { }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task DelegateInvocationInLocalFunction_UpdatesCapturedValueAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                class Test
+                {
+                    void M()
+                    {
+                        int captured = 1;
+                        void Increment() => captured++;
+                        Action callback = Increment;
+                        void Invoke() => callback();
+                        Invoke();
+                        if (captured == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(11, 13, "captured == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task DelegateParameterInLocalFunction_UpdatesCapturedValueAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                class Test
+                {
+                    void M()
+                    {
+                        int captured = 1;
+                        void Increment() => captured++;
+                        void Run(Action callback) => callback();
+                        void Invoke() => Run(Increment);
+                        Invoke();
+                        if (captured == 1) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(11, 13, "captured == 1", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_UpdatesRefArgumentWithoutLosingOtherValuesAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        int value = 1;
+                        int unrelated = 7;
+                        void Update(ref int argument) => argument = 2;
+                        Update(ref value);
+                        if (value == 2) { }
+                        if (unrelated == 7) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(9, 13, "value == 2", "true"),
+                GetCSharpResultAt(10, 13, "unrelated == 7", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionOnlyComparison_NoDiagnosticAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        void Local()
+                        {
+                            int value = 0;
+                            if (value == 0) { }
+                        }
+                        Local();
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LambdaOnlyComparison_Basic_NoDiagnosticAsync()
+        {
+            await VerifyBasicAnalyzerAsync("""
+                Module Test
+                    Sub M()
+                        Dim callback As System.Action = Sub()
+                            Dim value As Integer = 0
+                            If value = 0 Then
+                            End If
+                        End Sub
+                        callback()
+                    End Sub
+                End Module
+                """);
+        }
+
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
         public async Task PredicateAnalysisWithCastAsync()
