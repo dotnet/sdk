@@ -29,6 +29,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
     {
         private ImmutableHashSet<ISymbol>? _referencedStaticMembers;
         private bool _hasPotentialCallerAliases;
+        private Dictionary<ControlFlowGraph, (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess)>? _referencedMembersByCfg;
+        private HashSet<(ControlFlowGraph Cfg, bool CheckReturnedAliases, bool HasStaticState)>? _safeIndirectCapturePaths;
 
         protected AnalysisEntityDataFlowOperationVisitor(TAnalysisContext analysisContext)
             : base(analysisContext)
@@ -506,18 +508,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             using var processedPointsToValues = PooledHashSet<PointsToAbstractValue>.GetInstance();
             using var childWorklistEntities = PooledHashSet<AnalysisEntity>.GetInstance();
             using var intermediateEntities = PooledHashSet<AnalysisEntity>.GetInstance();
-            using var referencedMembers = PooledHashSet<ISymbol>.GetInstance();
 
             // All tracked entities are candidates to be retained for initial interprocedural
             // analysis data.
             AddTrackedEntities(candidateEntitiesBuilder, forInterproceduralAnalysis: true);
             var candidateEntitiesCount = candidateEntitiesBuilder.Count;
 
-            var hasArrayAccess = false;
-            using (var visitedMethods = PooledHashSet<IMethodSymbol>.GetInstance())
-            {
-                CollectReferencedMembers(invokedCfg, referencedMembers, visitedMethods, ref hasArrayAccess);
-            }
+            var (referencedMembers, hasArrayAccess) = GetReferencedMembers(invokedCfg);
 
             // Members without values in this analysis can still lead to tracked members
             // through points-to values when they are referenced by the callee.
@@ -734,11 +731,39 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             ControlFlowGraph invokedCfg,
             IDictionary<AnalysisEntity, PointsToAbstractValue> pointsToValues)
         {
-            using var activeMethods = PooledHashSet<IMethodSymbol>.GetInstance();
-            using var safeMethods = PooledHashSet<IMethodSymbol>.GetInstance();
             var hasStaticState = pointsToValues.Keys.Any(entity => entity.Symbol?.IsStatic == true);
-            return HasIndirectCapturePaths(invokedCfg, activeMethods, safeMethods, GetReferencedStaticMembers(),
-                checkReturnedAliases: true, hasStaticState);
+            var referencedStaticMembers = GetReferencedStaticMembers();
+            var key = (Cfg: invokedCfg, CheckReturnedAliases: true, HasStaticState: hasStaticState);
+            if (_safeIndirectCapturePaths?.Contains(key) == true)
+            {
+                return false;
+            }
+
+            using var activeMethods = PooledHashSet<IMethodSymbol>.GetInstance();
+            if (HasIndirectCapturePaths(invokedCfg, activeMethods, referencedStaticMembers,
+                checkReturnedAliases: true, hasStaticState))
+            {
+                return true;
+            }
+
+            (_safeIndirectCapturePaths ??= new()).Add(key);
+            return false;
+        }
+
+        private (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess) GetReferencedMembers(ControlFlowGraph invokedCfg)
+        {
+            if (_referencedMembersByCfg?.TryGetValue(invokedCfg, out var cached) == true)
+            {
+                return cached;
+            }
+
+            using var members = PooledHashSet<ISymbol>.GetInstance();
+            using var visitedMethods = PooledHashSet<IMethodSymbol>.GetInstance();
+            var hasArrayAccess = false;
+            CollectReferencedMembers(invokedCfg, members, visitedMethods, ref hasArrayAccess);
+            var result = (ImmutableHashSet.CreateRange(SymbolEqualityComparer.Default, members), hasArrayAccess);
+            (_referencedMembersByCfg ??= new()).Add(invokedCfg, result);
+            return result;
         }
 
         private ImmutableHashSet<ISymbol> GetReferencedStaticMembers()
@@ -813,7 +838,6 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private bool HasIndirectCapturePaths(
             ControlFlowGraph invokedCfg,
             PooledHashSet<IMethodSymbol> activeMethods,
-            PooledHashSet<IMethodSymbol> safeMethods,
             ImmutableHashSet<ISymbol> referencedStaticMembers,
             bool checkReturnedAliases,
             bool hasStaticState)
@@ -846,19 +870,26 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                             return true;
                         }
 
-                        if (!safeMethods.Contains(target))
+                        var targetCfg = DataFlowAnalysisContext.GetLocalFunctionControlFlowGraph(target);
+                        if (targetCfg is null)
                         {
-                            var targetCfg = DataFlowAnalysisContext.GetLocalFunctionControlFlowGraph(target);
-                            if (targetCfg is null ||
-                                HasIndirectCapturePaths(targetCfg, activeMethods, safeMethods, referencedStaticMembers,
-                                    checkReturnedAliases: hasStaticState || _hasPotentialCallerAliases ||
-                                        target.ReturnType.IsReferenceType && !target.ReturnType.IsPrimitiveType(),
-                                    hasStaticState))
+                            return true;
+                        }
+
+                        var targetCheckReturnedAliases = hasStaticState || _hasPotentialCallerAliases ||
+                            target.ReturnType.IsReferenceType && !target.ReturnType.IsPrimitiveType();
+                        var key = (Cfg: targetCfg, CheckReturnedAliases: targetCheckReturnedAliases, HasStaticState: hasStaticState);
+                        if (_safeIndirectCapturePaths?.Contains(key) != true)
+                        {
+                            if (HasIndirectCapturePaths(targetCfg, activeMethods, referencedStaticMembers,
+                                targetCheckReturnedAliases, hasStaticState))
                             {
                                 return true;
                             }
 
-                            safeMethods.Add(target);
+                            // Safe scans depend on the caller's static-state condition and the
+                            // returned-alias check, not just the local function's symbol.
+                            (_safeIndirectCapturePaths ??= new()).Add(key);
                         }
 
                         activeMethods.Remove(target);
