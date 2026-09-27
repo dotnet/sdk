@@ -315,16 +315,27 @@ public partial class AotParserTests
     [DataRow("package --help")]
     [DataRow("package update --help")]
     [DataRow("package add --help")]
-    [DataRow("nuget --help")]
-    [DataRow("nuget why --help")]
-    public void InvokeNuGetContributedHelp_FallsBackToManaged(string commandLine)
+    public void InvokePackageHelp_FallsBackToManaged(string commandLine)
     {
-        // The managed CLI adds NuGet-contributed subcommands (`package update`, `nuget why`) that are
+        // The managed CLI adds NuGet-contributed `package` subcommands (e.g. `package update`) that are
         // absent from the static AOT tree. Requesting help suppresses the unknown-subcommand parse
-        // error, so help for these subtrees must defer to the managed CLI to list and describe them.
+        // error, so help for the `package` subtree must defer to the managed CLI to list and describe them.
         var result = Parser.Parse(commandLine.Split(' '));
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void ParseNuGetWhyHelp_ResolvesToNuGetTreeForForwarding()
+    {
+        // `nuget why` is contributed only by the managed CLI, but help for anything in the `nuget` tree
+        // is forwarded to the NuGet CLI (which knows `why`) in both modes, so AOT must not need the
+        // subcommand statically. Verify the parse lands in the `nuget` tree with the tokens preserved.
+        var result = Parser.Parse(["nuget", "why", "--help"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreSame(Parser.RootCommand.NuGetCommand, result.CommandResult.Command);
+        Assert.AreSequenceEqual(new[] { "why", "--help" }, result.GetArguments());
     }
 
     [TestMethod]

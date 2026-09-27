@@ -130,9 +130,10 @@ public static class Parser
                 //     short-name/args usage line, the Arguments section, and per-template options.
                 //   * `test` (Microsoft.Testing.Platform mode) builds and forwards `--help` to the test
                 //     application, which contributes the "Extension Options:" section and per-extension options.
-                //   * `package` and `nuget` gain NuGet-contributed subcommands (`package update`, `nuget why`)
-                //     only in the managed CLI. Help suppresses the parse error for the unknown subcommand, so
-                //     without this the static parent's help would be printed and omit those subcommands.
+                //   * `package` gains NuGet-contributed subcommands (e.g. `package update`) only in the managed
+                //     CLI. Help suppresses the parse error for the unknown subcommand, so without this the
+                //     static parent's help would be printed and omit those subcommands. (`nuget why` needs no
+                //     entry: help for the `nuget` tree is forwarded to the NuGet CLI in both modes.)
                 // Rendering the static definition's help here would omit all of that, so defer help for those
                 // subtrees to the managed CLI to keep the output in parity.
                 helpOption.Action = new AotPrintHelpAction(
@@ -140,8 +141,7 @@ public static class Parser
                     DotnetHelpBuilder.Instance.Value,
                     rootCommand.NewCommand,
                     rootCommand.TestCommand,
-                    rootCommand.PackageCommand,
-                    rootCommand.NuGetCommand);
+                    rootCommand.PackageCommand);
 #else
                 helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
 #endif
