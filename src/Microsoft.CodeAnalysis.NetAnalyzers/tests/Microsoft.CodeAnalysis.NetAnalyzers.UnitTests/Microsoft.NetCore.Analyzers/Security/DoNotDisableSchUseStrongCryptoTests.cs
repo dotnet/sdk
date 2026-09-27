@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -16,6 +17,76 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     [TestClass]
     public class DoNotDisableSchUseStrongCryptoTests
     {
+        [TestMethod]
+        public async Task UnrelatedSwitchOrBenignValue_CSharp_NoDiagnosticAsync()
+        {
+            string calls = string.Concat(Enumerable.Repeat("Bytes(1, 2, 3, 4);\n", 64));
+            await VerifyCS.VerifyAnalyzerAsync($$"""
+                using System;
+
+                class TestClass
+                {
+                    static void Bytes(params byte[] bytes) { }
+
+                    void Method(string name, bool enabled)
+                    {
+                        {{calls}}
+                        AppContext.SetSwitch("unrelated.switch", enabled);
+                        AppContext.SetSwitch(name, false);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task UnrelatedSwitchOrBenignValue_VB_NoDiagnosticAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+
+                Public Class TestClass
+                    Public Sub Method(name As String, enabled As Boolean)
+                        AppContext.SetSwitch("unrelated.switch", enabled)
+                        AppContext.SetSwitch(name, False)
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        public async Task KnownSwitchWithComputedValue_CSharp_DiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+
+                class TestClass
+                {
+                    void Method()
+                    {
+                        bool enabled = true;
+                        AppContext.SetSwitch("Switch.System.Net.DontEnableSchUseStrongCrypto", enabled);
+                    }
+                }
+                """,
+                GetCSharpResultAt(8, 9, "SetSwitch"));
+        }
+
+        [TestMethod]
+        public async Task KnownSwitchWithComputedValue_VB_DiagnosticAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+
+                Public Class TestClass
+                    Public Sub Method()
+                        Dim enabled = True
+                        AppContext.SetSwitch("Switch.System.Net.DontEnableSchUseStrongCrypto", enabled)
+                    End Sub
+                End Class
+                """,
+                GetBasicResultAt(6, 9, "SetSwitch"));
+        }
+
         [TestMethod]
         public async Task DocSample1_CSharp_ViolationAsync()
         {

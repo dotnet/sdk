@@ -8,12 +8,49 @@ using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseSharedAccessProtocolHttpsOnly,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.UseSharedAccessProtocolHttpsOnly,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
     [TestClass]
     public class UseSharedAccessProtocolHttpsOnlyTests
     {
+        [TestMethod]
+        [DataRow("HttpsOrHttp", true)]
+        [DataRow("HttpsOnly", false)]
+        public async Task DirectProtocol_VB_Async(string protocol, bool expectDiagnostic)
+        {
+            var test = new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAzureStorage,
+                TestState =
+                {
+                    Sources =
+                    {
+                        $$"""
+                        Imports Microsoft.WindowsAzure.Storage
+                        Imports Microsoft.WindowsAzure.Storage.File
+
+                        Public Class TestClass
+                            Public Sub Method(file As CloudFile)
+                                file.GetSharedAccessSignature(Nothing, Nothing, Nothing, SharedAccessProtocol.{{protocol}}, Nothing)
+                            End Sub
+                        End Class
+                        """
+                    },
+                },
+            };
+
+            if (expectDiagnostic)
+            {
+                test.ExpectedDiagnostics.Add(GetBasicResultAt(6, 9));
+            }
+
+            await test.RunAsync(CancellationToken.None);
+        }
+
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
             var csharpTest = new VerifyCS.Test
@@ -295,6 +332,12 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
 #pragma warning disable RS0030 // Do not use banned APIs
            => VerifyCS.Diagnostic()
+               .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not use banned APIs
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not use banned APIs
+           => VerifyVB.Diagnostic()
                .WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
     }

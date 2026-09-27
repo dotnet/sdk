@@ -128,6 +128,20 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             if (protocolsArgumentOperation != null)
                             {
+                                IOperation protocolValue = protocolsArgumentOperation.Value.WalkDownConversion(
+                                    conversion => conversion.OperatorMethod is null);
+                                if (protocolValue.Type?.Equals(sharedAccessProtocolTypeSymbol) == true &&
+                                    protocolValue.ConstantValue.HasValue &&
+                                    protocolValue.ConstantValue.Value is int protocol)
+                                {
+                                    if (protocol != SharedAccessProtocolHttpsOnly)
+                                    {
+                                        operationAnalysisContext.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule));
+                                    }
+
+                                    return;
+                                }
+
                                 if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                 {
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
