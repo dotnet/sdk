@@ -312,6 +312,22 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    [DataRow("package --help")]
+    [DataRow("package update --help")]
+    [DataRow("package add --help")]
+    [DataRow("nuget --help")]
+    [DataRow("nuget why --help")]
+    public void InvokeNuGetContributedHelp_FallsBackToManaged(string commandLine)
+    {
+        // The managed CLI adds NuGet-contributed subcommands (`package update`, `nuget why`) that are
+        // absent from the static AOT tree. Requesting help suppresses the unknown-subcommand parse
+        // error, so help for these subtrees must defer to the managed CLI to list and describe them.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
     public void InvokeTestModulesWithoutMatches_IsHandledInAot()
     {
         string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
