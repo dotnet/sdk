@@ -821,9 +821,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
         }
 
-        [Theory]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
+        [DataRow("net7.0")]
+        [DataRow("net6.0")]
+        [TestMethod]
         public void It_does_not_warn_for_ckb_locale(string tfm)
         {
             // 'ckb' (Central Kurdish) is a valid ISO 639-3 code. CultureInfo may remap it to 'ku'
