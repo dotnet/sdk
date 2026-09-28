@@ -48,7 +48,8 @@ public static class PersistentStorageLoggerOptionsExtensions
             connectionString.InstrumentationKey,
             connectionString.TrackUri,
             telemetryOptions.LeasePeriodMilliseconds,
-            telemetryOptions.MaxBlobsPerDrain);
+            telemetryOptions.MaxBlobsPerDrain,
+            telemetryOptions.StartBackgroundDrain);
         return options.AddProcessor(new SimpleLogRecordExportProcessor(exporter));
     }
 }

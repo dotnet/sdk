@@ -1,0 +1,89 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+/// <summary>
+/// Shared constants for the dotnetup application.
+/// </summary>
+internal static class Constants
+{
+    /// <summary>
+    /// Mutex names used for synchronization.
+    /// </summary>
+    public static class MutexNames
+    {
+        /// <summary>
+        /// Mutex used during the final installation phase to protect the manifest file and extracting folder(s).
+        /// Mutex names MUST be valid file names on Unix. https://learn.microsoft.com/dotnet/api/system.threading.mutex.openexisting?view=net-9.0
+        /// </summary>
+        public const string ModifyInstallationStates = "Global\\DotnetupManifest";
+    }
+
+    /// <summary>
+    /// Unicode symbols used in console output.
+    /// </summary>
+    public static class Symbols
+    {
+        public const string RightArrow = "\u2192"; // →
+        public const string UpArrow = "\u2191"; // ↑
+        public const string DownArrow = "\u2193"; // ↓
+        public const string UpTriangle = "\u25B2"; // ▲
+        public const string DownTriangle = "\u25BC"; // ▼
+        public const string Bullet = "\u2022"; // •
+    }
+
+    /// <summary>
+    /// Telemetry constants: ActivitySource names, Application Insights
+    /// connection string, and environment variable names. Centralized so
+    /// any rename happens in one place.
+    /// </summary>
+    public static class Telemetry
+    {
+        /// <summary>
+        /// Name of the bootstrapper (dotnetup) <see cref="System.Diagnostics.ActivitySource"/>.
+        /// Shared between the command <c>ActivitySource</c>, the OTel logger
+        /// category, and the tracer's <c>AddSource</c> registration.
+        /// </summary>
+        public const string BootstrapperSourceName = "Microsoft.Dotnet.Bootstrapper";
+
+        /// <summary>
+        /// Connection string for Application Insights.
+        /// </summary>
+        public const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
+
+        public const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
+        public const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";
+        public const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
+        public const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
+        public const string EnableOtlpExporterEnvVar = "DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER";
+        public const string ForceLocalDeliveryEnvVar = "DOTNETUP_TELEMETRY_FORCE_LOCAL_DELIVERY";
+
+        /// <summary>
+        /// Opt-in env var that enables network export of OTel spans via the
+        /// AzMonitor + OTLP trace exporters (Aspire-style perf debugging).
+        /// Default-off because data-x ingests only the AppInsights <c>traces</c>
+        /// table (fed by ILogger), not the span-fed tables; keeping spans
+        /// in-process saves bandwidth, batch overhead, and offline retry blobs.
+        /// </summary>
+        public const string EnablePerfTraceEnvVar = "DOTNETUP_CLI_GET_PERF_TRACE";
+
+        /// <summary>
+        /// Override for the on-exit flush budget, in milliseconds.
+        /// </summary>
+        public const string FlushTimeoutOverrideEnvVar = "DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS";
+
+        /// <summary>
+        /// Override (ms) for the CI shutdown budget that bounds telemetry export POST wait time.
+        /// </summary>
+        public const string ShutdownTimeoutOverrideEnvVar = "DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS";
+
+        /// <summary>
+        /// Internal argument that launches dotnetup's detached telemetry drainer fast path.
+        /// </summary>
+        public const string DrainCommand = "--drain-telemetry";
+
+        internal const string E2EConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
+        internal const string TestShutdownBudgetPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_SHUTDOWN_BUDGET_PATH";
+    }
+}

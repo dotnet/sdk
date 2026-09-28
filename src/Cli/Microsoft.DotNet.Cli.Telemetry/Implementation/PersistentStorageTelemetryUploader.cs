@@ -5,10 +5,10 @@ using System.Diagnostics;
 namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 
 /// <summary>
-/// Phase 2 of the persist-then-drain pipeline: an in-process background worker that leases
+/// Phase 2 of the persist-then-drain pipeline: an uploader that leases
 /// persisted telemetry blobs and POSTs them to Azure Monitor. Because a CLI process is
-/// short-lived it will usually exit before draining its <em>own</em> telemetry; that data is
-/// delivered by a subsequent CLI invocation (eventual consistency across invocations).
+/// short-lived it may exit before draining all of its own telemetry; remaining data is delivered
+/// by a later export or subsequent CLI invocation (eventual consistency across invocations).
 ///
 /// The drain is best-effort and must never affect the CLI: every failure is swallowed, the
 /// work runs on a background thread that is abandoned on process exit, and blobs that fail to
@@ -45,9 +45,12 @@ internal sealed class PersistentStorageTelemetryUploader
     /// Leases, uploads, and deletes persisted blobs. Blobs that fail to upload are left for a
     /// later retry. This method never throws.
     /// </summary>
-    public async Task DrainAsync(CancellationToken cancellationToken)
+    public async Task<TelemetryDrainResult> DrainAsync(CancellationToken cancellationToken)
     {
         var processed = 0;
+        var deletedBlobCount = 0;
+        var shouldBackOff = false;
+        TimeSpan? retryAfter = null;
         // Retriable remainders from partially-accepted uploads. Persisted AFTER the enumeration
         // completes so we never mutate the storage collection while iterating it.
         List<byte[]>? retriableRemainders = null;
@@ -92,6 +95,8 @@ internal sealed class PersistentStorageTelemetryUploader
                         {
                             (retriableRemainders ??= []).Add(remainder);
                         }
+                        shouldBackOff = true;
+                        retryAfter = result.RetryAfter;
                         deleted = blob.TryDelete();
                         break;
 
@@ -99,9 +104,17 @@ internal sealed class PersistentStorageTelemetryUploader
                         deleted = blob.TryDelete();
                         break;
 
+                    case TelemetryUploadOutcome.PermanentlyRejected:
+                        // Retrying cannot succeed. Delete this poison blob so later telemetry
+                        // in the storage directory can continue draining.
+                        deleted = blob.TryDelete();
+                        break;
+
                     case TelemetryUploadOutcome.Rejected:
                         // Leave the blob in place; its lease will expire and a later invocation
                         // will retry it.
+                        shouldBackOff = true;
+                        retryAfter = result.RetryAfter;
                         break;
                 }
             }
@@ -113,15 +126,30 @@ internal sealed class PersistentStorageTelemetryUploader
             }
             catch (Exception e)
             {
-                // Swallow per-blob failures and keep going; the blob is retried later.
-                Debug.Fail(e.ToString());
+                // Network and storage failures are normally transient. Stop this pass and let the
+                // caller back off before trying the blob again rather than moving immediately to
+                // the rest of the backlog.
+                Debug.WriteLine($"Telemetry upload failed: {e}");
+                shouldBackOff = true;
             }
             finally
             {
-                if (leased && !deleted)
+                if (deleted)
+                {
+                    deletedBlobCount++;
+                }
+                else if (leased)
                 {
                     blob.TryRelease();
                 }
+            }
+
+            if (shouldBackOff)
+            {
+                // A retryable response normally indicates service throttling or a transient
+                // failure. Stop this pass rather than submitting every remaining blob to a
+                // service that has already asked us to retry.
+                break;
             }
         }
 
@@ -132,5 +160,7 @@ internal sealed class PersistentStorageTelemetryUploader
                 _storage.TryPersist(remainder);
             }
         }
+
+        return new TelemetryDrainResult(deletedBlobCount, shouldBackOff, retryAfter);
     }
 }
