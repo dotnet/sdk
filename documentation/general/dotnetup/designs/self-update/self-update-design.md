@@ -6,13 +6,13 @@ ordinary commands remain Stage B work. See [Stage A](self-update-stages.md#stage
 the [version-query contract](self-update-verification.md) for the current behavior and limitations.
 
 The command resolves the latest release for the selected RID from the release channel. When
-`--channel` is omitted, [SelfUpdateDefaultChannel](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
+`--channel` is omitted, [SelfUpdateDefaultChannel](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
 derives it from the running build's SemVer prerelease label: no label selects `stable`, a
 `preview` label selects `preview`, and any other label (including local development builds)
 selects `daily`. This requires daily and preview builds to carry distinct prerelease labels.
 `--channel` can select `daily`, `preview`, or `stable` explicitly; `stable` is accepted so the
 command is ready when that channel starts publishing. An explicit `--channel` is the only
-way to move between channels. See [command usage](../reference/dotnetup.md#self-update).
+way to move between channels. See [command usage](../../reference/dotnetup.md#self-update).
 
 `dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 

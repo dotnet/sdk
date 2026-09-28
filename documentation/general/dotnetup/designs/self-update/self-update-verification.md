@@ -3,19 +3,19 @@
 Self-update obtains the installed version by running `dotnetup --version`.
 There is no custom embedded version/RID record, build-identity digest, identity
 sidecar, or record-generation/publish-validation tool. Normal assembly version
-information remains: [Parser.Version](../../../../src/Installer/dotnetup.Library/Parser.cs)
+information remains: [Parser.Version](../../../../../src/Installer/dotnetup.Library/Parser.cs)
 reads the loaded library's informational version without launching a process.
 
 ## Version queries and startup verification
 
-[SelfUpdateVerifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs)
+[SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs)
 runs the canonical executable with `--version`, disables telemetry and the first-run
 banner, closes redirected stdin, and drains stdout and stderr concurrently. A query
 requires exit code zero and nonempty, parseable version output within 15 seconds.
 Output capture and termination waits are bounded.
 
 The private verification invocation requests UTF-8 from
-[Program](../../../../src/Installer/dotnetup.Library/Program.cs), and the parent
+[Program](../../../../../src/Installer/dotnetup.Library/Program.cs), and the parent
 decodes UTF-8. This does not rely on inherited console code pages or the normal
 `DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING` preference. Normal interactive invocations
 retain their existing encoding policy.
@@ -24,7 +24,7 @@ The built-in version action executes normal startup and command-line handling bu
 bypasses the command gate, acquires neither self-update lock, and does not trigger
 cleanup. The parent can therefore run it while holding either or both locks.
 
-[SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs)
+[SelfUpdateWorkflow](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs)
 uses version queries before and after acquiring the update locks to determine whether
 an update is needed. After replacement it requires the reported version to match the
 selected release's SemVer precedence. When the feed specifies build metadata, the full
@@ -35,18 +35,18 @@ an exit code alone is not sufficient. Staged files are not executed.
 
 ## Coordination and recovery
 
-[NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs)
+[NonSafeCommandGate](../../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs)
 holds the shared activity lock while comparing the installed executable's reported
 version with the parent's loaded version. Equality is ordinal equality of the full
 version, including build metadata, not just SemVer precedence.
 
-[SelfUpdateCleanup](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs)
+[SelfUpdateCleanup](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs)
 queries the installed version only when eligible aged backups exist. It retains the
 exclusive update lock through the query and deletion, and skips cleanup if the child
 fails, times out, produces invalid output, or reports a different full version.
 The query child does not acquire the parent's locks or recursively clean up.
 
-[SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs)
+[SelfUpdateReplacement](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs)
 uses transaction state, its retained backup, and the existing lock contract for
 recovery. Rollback neither executes the rejected candidate nor needs its version.
 The parent holds both locks through replacement, verification, and recovery.
