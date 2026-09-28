@@ -148,6 +148,14 @@
     <value>Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</value>
     <comment>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</comment>
   </data>
+  <data name="SelfUpdateSignatureInvalid" xml:space="preserve">
+    <value>The downloaded dotnetup executable does not have a valid Microsoft Authenticode signature, so dotnetup was not updated. {0}</value>
+    <comment>{Locked="dotnetup"} {Locked="Authenticode"} {0} is the operating system's signature verification error.</comment>
+  </data>
+  <data name="SelfUpdateCertificateChainPolicyUnavailable" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
+    <comment>{0} is the name of the certificate chain policy.</comment>
+  </data>
   <data name="SelfUpdateForceOptionDescription" xml:space="preserve">
     <value>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</value>
     <comment>{Locked="dotnetup"}</comment>

@@ -187,6 +187,16 @@ internal class SelfUpdateWorkflow
         SelfUpdateCleanup.RunWithUpdateLock(_paths.InstalledPath, _loadedVersion);
         _download(release, _paths.StagedPath);
 
+        try
+        {
+            SelfUpdateSignature.VerifyReplacement(_paths.InstalledPath, _paths.StagedPath);
+        }
+        catch (DotnetInstallException)
+        {
+            ClearStagingFile(_paths.StagedPath);
+            throw;
+        }
+
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(_paths.StagedPath, File.GetUnixFileMode(_paths.InstalledPath));

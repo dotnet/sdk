@@ -421,6 +421,11 @@ Or open a new terminal.</target>
         <target state="new">Dotnetup is busy with another self-update. Try again after it completes.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateCertificateChainPolicyUnavailable">
+        <source>The requested certificate chain policy could not be checked: {0}</source>
+        <target state="new">The requested certificate chain policy could not be checked: {0}</target>
+        <note>{0} is the name of the certificate chain policy.</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateChannelOptionDescription">
         <source>The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</source>
         <target state="new">The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</target>
@@ -485,6 +490,11 @@ Or open a new terminal.</target>
         <source>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
         <target state="new">Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
         <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateSignatureInvalid">
+        <source>The downloaded dotnetup executable does not have a valid Microsoft Authenticode signature, so dotnetup was not updated. {0}</source>
+        <target state="new">The downloaded dotnetup executable does not have a valid Microsoft Authenticode signature, so dotnetup was not updated. {0}</target>
+        <note>{Locked="dotnetup"} {Locked="Authenticode"} {0} is the operating system's signature verification error.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateStagedIdentityMismatch">
         <source>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</source>

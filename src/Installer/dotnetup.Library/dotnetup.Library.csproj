@@ -77,4 +77,11 @@
     <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
   </ItemGroup>
 
+  <!-- Authenticode verification of self-update replacements reuses the workload MSI signature checks. -->
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <AdditionalFiles Include="NativeMethods.txt" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\Security\Signature.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

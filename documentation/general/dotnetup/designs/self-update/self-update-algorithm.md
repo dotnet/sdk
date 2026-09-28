@@ -144,7 +144,7 @@ Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an o
 
 ###### Stage and validate the replacement
 
-**2.3 — `P` stages and validates the replacement.** `P` writes downloaded or cached bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`.
+**2.3 — `P` stages and validates the replacement.** `P` writes downloaded or cached bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`. On Windows, if the installed executable is Authenticode-signed, `P` then requires `D/dotnetup.exe.new` to have a valid Authenticode signature chaining to a Microsoft root; otherwise `P` deletes it and fails before step 2.4.
 
 Both staging paths are inside `D/` to keep the eventual replacement on the destination volume. Unvalidated bytes remain under `.new.download`; hash-validated bytes become `.new`. Step 2.2 clears both stale staging names when an update is needed. These protections require a trusted installation directory and stable paths; staging names alone are not a security boundary.
 
