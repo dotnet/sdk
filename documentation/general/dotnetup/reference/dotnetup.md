@@ -72,7 +72,9 @@ dotnetup self update --no-progress
 `--channel <daily|preview|stable>` selects the release channel. When omitted, the
 channel is derived from the running build's prerelease label: a stable build uses
 `stable`, a `preview`-labeled build uses `preview`, and any other prerelease build uses
-`daily`. Pass `--channel` explicitly to switch channels. The `stable` value is accepted in preparation for that channel becoming
+`daily`. Official daily builds currently carry the same `preview` label as preview builds,
+so they also default to `preview`. When that default finds an older build than the one
+running, the command suggests `--channel daily`. Pass `--channel` explicitly to switch channels. The `stable` value is accepted in preparation for that channel becoming
 available; until then, it reports that no stable build is available.
 `--no-progress` disables progress display, not warnings or the result message.
 The command resolves the latest build in the selected channel for the runtime

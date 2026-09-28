@@ -10,9 +10,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// from the running build's SemVer prerelease label.
 /// </summary>
 /// <remarks>
-/// Assumes daily and preview builds carry distinct prerelease labels. A build without a
-/// prerelease label is stable, a <c>preview</c> label is the preview channel, and any other
-/// label (including local development builds) or an unparseable version is daily.
+/// A build without a prerelease label is stable, a <c>preview</c> label is the preview channel, and
+/// any other label (including local development builds) or an unparseable version is daily.
+/// Official daily builds currently carry the same <c>preview</c> label as preview builds, because a
+/// preview is a promoted daily build rather than a rebuild, so they default to the preview channel.
 /// </remarks>
 internal static class SelfUpdateDefaultChannel
 {

@@ -52,7 +52,8 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             return;
         }
 
-        string message = result.InstalledVersion.ComparePrecedenceTo(result.AvailableVersion) > 0
+        bool currentIsNewer = result.InstalledVersion.ComparePrecedenceTo(result.AvailableVersion) > 0;
+        string message = currentIsNewer
             ? Strings.SelfUpdateCurrentVersionNewer
             : Strings.SelfUpdateAlreadyUpToDate;
         Console.Error.WriteLine(string.Format(
@@ -60,5 +61,12 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             message,
             result.InstalledVersion,
             result.AvailableVersion));
+
+        // Official daily builds share the preview label, so a daily build newer than the preview
+        // channel defaults to that channel; point it at --channel daily instead.
+        if (currentIsNewer && _channel is null && channel == SelfUpdateDefaultChannel.Preview)
+        {
+            Console.Error.WriteLine(Strings.SelfUpdateMaybeDailyBuild);
+        }
     }
 }

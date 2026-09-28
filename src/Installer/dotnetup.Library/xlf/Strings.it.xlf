@@ -471,6 +471,11 @@ Or open a new terminal.</target>
         <target state="new">A dotnetup self-update is in progress. Run the command again after the update completes.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateMaybeDailyBuild">
+        <source>Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</source>
+        <target state="new">Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</target>
+        <note>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateRequiresCanonicalName">
         <source>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</source>
         <target state="new">Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</target>

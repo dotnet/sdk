@@ -100,6 +100,7 @@ public class SelfCommandParserTests
     [DataRow(nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), 2)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateForceOptionDescription), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateForcedWarning), 2)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateMaybeDailyBuild), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateSucceeded), 1)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateInProgress), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateExecutableChanged), 0)]

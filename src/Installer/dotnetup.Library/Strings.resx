@@ -144,6 +144,10 @@
     <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</value>
     <comment>{Locked="Dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
   </data>
+  <data name="SelfUpdateMaybeDailyBuild" xml:space="preserve">
+    <value>Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</comment>
+  </data>
   <data name="SelfUpdateForceOptionDescription" xml:space="preserve">
     <value>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</value>
     <comment>{Locked="dotnetup"}</comment>

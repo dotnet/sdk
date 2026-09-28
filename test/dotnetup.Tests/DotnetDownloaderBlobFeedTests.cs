@@ -172,6 +172,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), "preview")]
+    // An official daily build (preview label) that is newer than the promoted preview build.
+    [DataRow("0.2.0-preview.1.26465.1+464b0684076d09f9fbe582ade1f674b078f87c63", "0.2.0-preview.1.26410.1", nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), "preview")]
     [DataRow("0.2.0-daily.1.26465.7", "0.2.0-daily.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "daily")]
     [DataRow("0.2.0", "0.2.0", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "stable")]
     public void SelfUpdateCommandReportsNoUpdateToStandardError(
@@ -219,6 +221,11 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
                 format,
                 installedVersion,
                 availableVersion);
+            if (messageResource == nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer) && defaultChannel == "preview")
+            {
+                expectedError += Environment.NewLine + BootstrapperStrings.SelfUpdateMaybeDailyBuild;
+            }
+
             stderr.ToString().Should().Be(expectedError + Environment.NewLine);
             stdout.ToString().Should().BeEmpty();
             history.Should().NotContain(location.ArchiveUrl);
