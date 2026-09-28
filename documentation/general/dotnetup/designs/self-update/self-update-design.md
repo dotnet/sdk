@@ -77,6 +77,33 @@ Dotnetup stages on the destination volume and uses `File.Replace`, avoiding a cr
 
 `VS Code` - VS Code's installed Windows updater combines a singleton main process, an [in-process update state machine](https://github.com/microsoft/vscode/blob/main/src/vs/platform/update/electron-main/abstractUpdateService.ts), native application/setup/updating/ready mutexes, staged versioned files, and [Inno Setup](https://github.com/microsoft/vscode/blob/main/build/win32/code.iss). This serializes Windows installers and blocks application startup during the final switch. The statement does not apply uniformly to every distribution: macOS delegates to Electron's updater, while ordinary Linux packages generally delegate installation to the package manager or download page. Dotnetup does not require VS Code's UI state machine or installer framework, but it adopts the narrower invariant that only one self-update transaction may modify its executable at a time.
 
+## Linux:
+
+Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.8 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same `--version` query as Windows, not device/inode identity.
+
+Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replacement, and `D/dotnetup.old.<t>` the backup.
+
+`P` stages and validates `D/dotnetup.new` per step 2.3, preserves the installed executable's Unix mode, and flushes `D/dotnetup.new` to disk. `P` rejects unexpected symbolic links observed during pathname validation and operates on the canonical install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --version` per step 2.6; on smoke-check failure `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` on later launches, including exclusive nonblocking acquisition of `U`.
+
+A same-directory hard link preserves the old inode before replacement. Both the backup and the staged path must be on the same mounted filesystem as the installed executable.
+The implemented operations are in [SelfUpdateReplacement](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs). Rollback validates transaction state and paths before restoring the backup with `File.Move(backupPath, installedPath, overwrite: true)`. It does not execute the rejected candidate or compare embedded records.
+
+On a supported local Linux filesystem, new openers observe either the complete old inode or the complete new inode, while already-running processes continue using the old inode. The implementation flushes the staged file but does not perform a containing-directory durability sync or claim persistence across power loss.
+
+Cross-filesystem `File.Move` may degrade to copy/delete behavior. Keeping all transaction files as siblings in a stable directory avoids that scenario; this is a layout requirement, not a custom native rename guarantee.
+
+The rollback move restores the old executable. Step 1.4 permits an `N` with the matching full loaded version to proceed and rejects or forwards one loaded from a different rejected version, exactly as on Windows.
+
+#### Unix locking caveats
+
+`A` and `U` do not carry the same weight on Unix as on Windows, and Algorithm 1 is correspondingly weaker there.
+
+`FileShare` is mandatory on Windows and enforced by the kernel at `CreateFile`. On Unix, .NET implements `FileShare` with advisory `flock`, which binds only cooperating processes and can be disabled outright by the `System.IO.DisableFileLocking` AppContext switch or the `DOTNET_SYSTEM_IO_DISABLEFILELOCKING` environment variable. Dotnetup accepts the same locking compatibility as the .NET runtime: it uses `FileStream` sharing directly, does not take an additional native `flock`, and does not detect or compensate for disabled or ineffective runtime locking. The concurrency guarantees assume working runtime locking and cooperating processes.
+
+The reason `FileShare.Delete` is never requested does not carry to Unix either. Unlinking an open file is always permitted on Unix, so the hazard the rule exists to prevent — deleting a lock file and recreating it, leaving two processes holding "exclusive" access to different inodes — cannot be prevented by share mode. The mitigation is that `A` and `U` live in a directory owned by the current user and dotnetup never deletes them.
+
+`flock` over NFS is historically unreliable. A `D/` on a network filesystem can silently degrade the gate.
+
 # Update As a Version Swap Mechanism
 
 Explicit version selection, downgrade commands, and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts `self update`, `--channel`, and `--no-progress`. Self-update prevents equal-version replacement and downgrades within one semantic channel, while allowing explicit transitions between semantic channels. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for older versions.
