@@ -395,7 +395,7 @@ public class CliSchemaTests : SdkTest
           "defaultValue": false,
           "arity": {
             "minimum": 0,
-            "maximum": 0
+            "maximum": 1
           },
           "required": false,
           "recursive": false
@@ -588,7 +588,7 @@ public class CliSchemaTests : SdkTest
       "defaultValue": false,
       "arity": {
         "minimum": 0,
-        "maximum": 0
+        "maximum": 1
       },
       "required": false,
       "recursive": false
