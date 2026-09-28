@@ -190,15 +190,3 @@ Successful rollback restores the original executable at the canonical path. An `
 Cleanup makes one nonblocking attempt to acquire `U` exclusively. If ownership cannot be established, cleanup is skipped without retrying, reporting contention, or failing the command. No participant opens `U` shared. A successful attempt retains `U` through enumeration, the canonical-version query, and deletion, so no cooperating self-update transaction can create or use a backup during cleanup. Cleanup never acquires or waits for additional locks. Its `--version` child is safe, takes neither lock, and does not recurse into cleanup.
 
 Only when eligible aged backups exist does cleanup query the canonical executable's `--version` under `U` and require ordinal equality with its own loaded full version, including build metadata. If the executable is absent, cannot run, times out, produces invalid output, or reports a different version, cleanup leaves the backups untouched. This conservative check preserves recovery artifacts when the canonical version cannot be confirmed; acquiring `U` alone does not prove that an earlier transaction completed successfully. The same check applies to backup deletion in step 2.2.
-
-##### Properties of Algorithms 1 and 2
-
-**The canonical path may be briefly unavailable during step 2.4.** Windows measurements observed file-not-found during `File.Replace`. The replacement uses one forward call instead of deliberately splitting it into moves, but the [ReplaceFileW contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#return-value) does not guarantee gapless concurrent opens. Measurement timing is not a platform guarantee.
-
-Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem moves use the runtime's rename behavior on supported local filesystems, not a power-loss-durable transaction; macOS behavior remains unverified in this implementation handoff.
-
-Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only when its ownership and canonical-build checks permit it.
-
-A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.9 tolerates that rather than failing, and consumers decide how to surface it to the user.
-
-After a crash, forced termination, or power loss, use the [get-dotnetup scripts](https://aka.ms/dotnet/dotnetup) to reinstall when the canonical executable is unavailable. Recovery still requires a writable, functioning filesystem; the protocol does not guarantee automatic recovery from every interruption.

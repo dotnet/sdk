@@ -161,6 +161,18 @@ Cleanup checks at most 32 directory entries matching the installed executable's 
 
 Cleanup resolves the containing directory using the same path logic as replacement, skips failed deletions rather than retrying them, and rejects symbolic links or reparse points at the executable, lock, and backup filenames. It releases `U` as soon as cleanup finishes or is skipped, including on failure, before continuing command execution. The exception is cleanup within `P`, where `P` retains its existing locks for the transaction. Failure to delete a locked backup is not a command or transaction failure, because a process started before the transaction may still be executing that image. These rules also apply to Unix cleanup, subject to the runtime locking compatibility boundary; cleanup skips failed lock acquisition but does not independently probe lock enforcement.
 
+##### Properties of Algorithms 1 and 2
+
+**The canonical path may be briefly unavailable during step 2.4.** Windows measurements observed file-not-found during `File.Replace`. The replacement uses one forward call instead of deliberately splitting it into moves, but the [ReplaceFileW contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#return-value) does not guarantee gapless concurrent opens. Measurement timing is not a platform guarantee.
+
+Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem moves use the runtime's rename behavior on supported local filesystems, not a power-loss-durable transaction; macOS behavior remains unverified in this implementation handoff.
+
+Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only when its ownership and canonical-build checks permit it.
+
+A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.9 tolerates that rather than failing, and consumers decide how to surface it to the user.
+
+After a crash, forced termination, or power loss, use the [get-dotnetup scripts](https://aka.ms/dotnet/dotnetup) to reinstall when the canonical executable is unavailable. Recovery still requires a writable, functioning filesystem; the protocol does not guarantee automatic recovery from every interruption.
+
 ## Unix replacement
 
 See the design's [Linux replacement behavior](self-update-design.md#linux)
