@@ -46,6 +46,19 @@ public class SelfCommandParserTests
     }
 
     [TestMethod]
+    [DataRow("self update", false)]
+    [DataRow("self update --force", true)]
+    [DataRow("self update --force --channel daily", true)]
+    public void ParsesForceOption(string commandLine, bool expected)
+    {
+        var result = Parser.Parse(commandLine.Split(' '));
+
+        result.Errors.Should().BeEmpty();
+        result.GetValue(SelfCommandParser.ForceOption).Should().Be(expected);
+        result.CommandResult.Command.Options.Should().Contain(SelfCommandParser.ForceOption);
+    }
+
+    [TestMethod]
     [DataRow("self update --no-progress invalid")]
     [DataRow("self update --channel servicing")]
     [DataRow("self update --unknown")]
@@ -74,6 +87,7 @@ public class SelfCommandParserTests
 
         output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateCommandDescription)
             .And.Contain("--channel")
+            .And.Contain("--force")
             .And.Contain("--no-progress");
     }
 
@@ -84,6 +98,8 @@ public class SelfCommandParserTests
     [DataRow(nameof(BootstrapperStrings.SelfUpdateDownloading), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), 2)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), 2)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateForceOptionDescription), 0)]
+    [DataRow(nameof(BootstrapperStrings.SelfUpdateForcedWarning), 2)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateSucceeded), 1)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateInProgress), 0)]
     [DataRow(nameof(BootstrapperStrings.SelfUpdateExecutableChanged), 0)]

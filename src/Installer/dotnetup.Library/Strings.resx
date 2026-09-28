@@ -141,8 +141,16 @@
     <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
   </data>
   <data name="SelfUpdateCurrentVersionNewer" xml:space="preserve">
-    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</value>
-    <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</value>
+    <comment>{Locked="Dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateForceOptionDescription" xml:space="preserve">
+    <value>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateForcedWarning" xml:space="preserve">
+    <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
+    <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
   </data>
   <data name="SelfUpdateSucceeded" xml:space="preserve">
     <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>

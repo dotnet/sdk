@@ -25,6 +25,15 @@ internal class SelfUpdateWorkflow
         _coordinator = coordinator ?? new SelfUpdateCoordinator();
     }
 
+    /// <summary>Installs the channel's release even when it is not newer than the installed version.</summary>
+    public bool Force { get; init; }
+
+    /// <summary>
+    /// Invoked under both locks, before staging, when <see cref="Force"/> is the only reason to replace
+    /// the installed version. Receives the installed and the channel's versions.
+    /// </summary>
+    public Action<ReleaseVersion, ReleaseVersion>? OnForcedUpdate { get; init; }
+
     public string? Execute(Action<IDisposable> retainUntilExit)
     {
         var result = ExecuteWithResult(retainUntilExit);
@@ -43,7 +52,7 @@ internal class SelfUpdateWorkflow
             try
             {
                 var installedVersion = GetInstalledVersion();
-                if (!IsUpdateAvailable(installedVersion, release.Version))
+                if (!Force && !IsUpdateAvailable(installedVersion, release.Version))
                 {
                     return new SelfUpdateResult(installedVersion, release.Version, WasUpdated: false);
                 }
@@ -58,7 +67,7 @@ internal class SelfUpdateWorkflow
 
             _paths.Validate();
             var originalVersion = GetInstalledVersion();
-            if (!IsUpdateAvailable(originalVersion, release.Version))
+            if (!ShouldReplace(originalVersion, release.Version))
             {
                 return new SelfUpdateResult(originalVersion, release.Version, WasUpdated: false);
             }
@@ -116,6 +125,22 @@ internal class SelfUpdateWorkflow
             throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable,
                 Strings.SelfUpdateIdentityUnavailable, exception);
         }
+    }
+
+    /// <summary>The authoritative step 2.1 decision, made under both locks.</summary>
+    private bool ShouldReplace(ReleaseVersion installedVersion, ReleaseVersion availableVersion)
+    {
+        if (IsUpdateAvailable(installedVersion, availableVersion))
+        {
+            return true;
+        }
+
+        if (Force)
+        {
+            OnForcedUpdate?.Invoke(installedVersion, availableVersion);
+        }
+
+        return Force;
     }
 
     // Precedence deliberately ignores build metadata: the feed version (from the download URL) never

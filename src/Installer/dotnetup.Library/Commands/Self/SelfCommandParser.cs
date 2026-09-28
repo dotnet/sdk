@@ -10,11 +10,17 @@ internal static class SelfCommandParser
 {
     internal static Option<string?> ChannelOption { get; } = CreateChannelOption();
 
+    internal static Option<bool> ForceOption { get; } = new("--force")
+    {
+        Description = Strings.SelfUpdateForceOptionDescription,
+    };
+
     public static Command GetCommand()
     {
         var command = new Command("self", Strings.SelfCommandDescription);
         var update = new Command("update", Strings.SelfUpdateCommandDescription);
         update.Options.Add(ChannelOption);
+        update.Options.Add(ForceOption);
         update.Options.Add(CommonOptions.NoProgressOption);
         update.SetAction(result => new SelfUpdateCommand(result).Execute());
         command.Subcommands.Add(update);

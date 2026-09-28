@@ -1,6 +1,6 @@
 # Self Update
 
-`dotnetup self update [--channel <daily|preview|stable>] [--no-progress]` updates the published NativeAOT `dotnetup` executable in place.
+`dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]` updates the published NativeAOT `dotnetup` executable in place.
 
 The command resolves the latest release for the selected RID from the release channel.
 
@@ -107,7 +107,7 @@ The reason `FileShare.Delete` is never requested does not carry to Unix either. 
 
 # Update As a Version Swap Mechanism
 
-Explicit version selection, downgrade commands, and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts `self update`, `--channel`, and `--no-progress`. Self-update prevents equal-version replacement and downgrades within one semantic channel, while allowing explicit transitions between semantic channels. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for older versions.
+Explicit version selection and `self install` are future design possibilities, not registered CLI surfaces. The current parser accepts `self update`, `--channel`, `--force`, and `--no-progress`. Self-update prevents equal-version replacement and downgrades within one semantic channel unless `--force` is passed, while allowing explicit transitions between semantic channels. `--force` installs only the selected channel's latest build and prints a warning; it is still subject to the unsigned-download policy. Use the existing [installation guidance](https://aka.ms/dotnet/dotnetup) for other older versions.
 
 # Release Stable VS Preview
 

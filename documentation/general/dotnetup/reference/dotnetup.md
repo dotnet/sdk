@@ -17,7 +17,7 @@ ms.date: 08/07/2026
 dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
-dotnetup self update [--channel <daily|preview|stable>] [--no-progress]
+dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]
 ```
 
 ## Description
@@ -65,6 +65,7 @@ Update the published NativeAOT dotnetup executable in place:
 ```console
 dotnetup self update
 dotnetup self update --channel preview
+dotnetup self update --channel preview --force
 dotnetup self update --no-progress
 ```
 
@@ -80,6 +81,10 @@ reports success without replacing the executable when the installed version
 already matches or when the available build is older on the same semantic channel.
 These no-op results return exit code `0` and write the installed and available versions,
 plus the reason no update was applied, to standard error.
+`--force` installs the selected channel's latest build even when it is not newer than
+the installed version, which can downgrade or reinstall dotnetup. A forced update writes a
+warning before downloading and uses the same download, hash, unsigned-download policy,
+replacement, and verification steps as any other update.
 See [SelfCommandParser](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfCommandParser.cs)
 and [SelfUpdateCommand](../../../../src/Installer/dotnetup.Library/Commands/Self/SelfUpdateCommand.cs).
 

@@ -432,9 +432,9 @@ Or open a new terminal.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateCurrentVersionNewer">
-        <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</source>
-        <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer.</target>
-        <note>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
+        <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</source>
+        <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</target>
+        <note>{Locked="Dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateDirectoryAccessDenied">
         <source>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</source>
@@ -450,6 +450,16 @@ Or open a new terminal.</target>
         <source>The dotnetup executable has changed. Run the command again to use the updated executable.</source>
         <target state="new">The dotnetup executable has changed. Run the command again to use the updated executable.</target>
         <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateForceOptionDescription">
+        <source>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</source>
+        <target state="new">Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateForcedWarning">
+        <source>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</source>
+        <target state="new">Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</target>
+        <note>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateIdentityUnavailable">
         <source>The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>

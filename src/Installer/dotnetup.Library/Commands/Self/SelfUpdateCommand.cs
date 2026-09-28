@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result, "self/update")
 {
     private readonly string? _channel = result.GetValue(SelfCommandParser.ChannelOption);
+    private readonly bool _force = result.GetValue(SelfCommandParser.ForceOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
     private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
 
@@ -38,7 +39,12 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
                 SelfUpdateDownloadProgress.Run(_noProgress,
                     progress => downloader.DownloadWithVerification(release, destination, progress));
-            });
+            })
+        {
+            Force = _force,
+            OnForcedUpdate = (installed, available) => AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(
+                CultureInfo.CurrentCulture, Strings.SelfUpdateForcedWarning, installed, available).EscapeMarkup())),
+        };
         var result = workflow.ExecuteWithResult(invocation.Retain);
         if (result.WasUpdated)
         {

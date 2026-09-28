@@ -78,7 +78,7 @@ Because `S` holds neither lock, a self update can complete underneath it. `S` mu
 
 ###### Check for an available update
 
-**1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the version reported by the canonical executable's `--version` command. For versions in the same semantic channel—the first prerelease identifier, or stable when there is no prerelease identifier—the resolved version must be newer. A version from a different semantic channel is eligible even when its SemVer precedence is lower, so an explicit channel transition is not mistaken for a downgrade. If no update is eligible, `P` exits successfully without acquiring `U` or `A`.
+**1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the version reported by the canonical executable's `--version` command. For versions in the same semantic channel—the first prerelease identifier, or stable when there is no prerelease identifier—the resolved version must be newer. A version from a different semantic channel is eligible even when its SemVer precedence is lower, so an explicit channel transition is not mistaken for a downgrade. If no update is eligible, `P` exits successfully without acquiring `U` or `A`. With `--force`, `P` skips this early exit and continues to step 1.1.
 
 The canonical version query is advisory: it is never the basis for replacing or deleting an executable.
 
@@ -134,7 +134,7 @@ Parsing must not read the manifest, enumerate `D/`, or touch the network.
 
 Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2. `P` performs replacement and recovery itself; children only query the installed version or verify startup.
 
-**2.1 — `P` determines whether an update is required.** `P` queries `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded version. It repeats the semantic-channel and version-ordering check from step 1.0. If no update is eligible, the command reports no update needed and exits successfully; the invocation releases acquired locks after telemetry flush.
+**2.1 — `P` determines whether an update is required.** `P` queries `V_installed` from the canonical executable under both locks and compares it with `V_channel`, not with `P`'s own loaded version. It repeats the semantic-channel and version-ordering check from step 1.0. If no update is eligible, the command reports no update needed and exits successfully; the invocation releases acquired locks after telemetry flush. With `--force`, `P` instead writes a warning that the channel's release is not newer and continues to step 2.2, allowing a same-channel downgrade or reinstall.
 
 Step 2.1 is the authoritative check and is performed even when step 1.0 already reported an available update, because a peer `self update` can complete a transaction between step 1.0 and step 1.2. Reading `V_installed` from the canonical executable rather than from the loaded image of `P` is what lets `P` observe that peer's work and exit successfully instead of repeating it.
 

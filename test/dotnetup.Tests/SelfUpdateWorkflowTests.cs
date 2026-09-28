@@ -123,6 +123,58 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.6")]
+    [DataRow("0.3.0", "0.2.0")]
+    [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7")]
+    public void ForceInstallsSameChannelReleaseThatIsNotNewer(string installedVersion, string availableVersion)
+    {
+        using var files = new SelfUpdateTestFiles();
+        SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
+        var release = CreateWorkflowRelease(availableVersion);
+        var forced = new List<(string Installed, string Available)>();
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedVersion, () => release,
+            (download, path) =>
+            {
+                Assert.HasCount(1, forced, "The forced-update warning must precede the download.");
+                SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download));
+            },
+            CreateImmediateWorkflowCoordinator())
+        {
+            Force = true,
+            OnForcedUpdate = (installed, available) =>
+            {
+                AssertWorkflowLocksHeld(files.Paths);
+                forced.Add((installed.ToString(), available.ToString()));
+            },
+        };
+
+        Assert.AreEqual(availableVersion, workflow.Execute());
+        Assert.HasCount(1, forced);
+        Assert.AreEqual((installedVersion, availableVersion), forced[0]);
+        Assert.AreEqual(1, workflow.VerificationCount);
+        Assert.AreEqual(ReleaseVersionString(release), SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
+    public void ForceDoesNotWarnWhenReleaseIsNewer()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var release = CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion);
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion, () => release,
+            (download, path) => SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download)),
+            CreateImmediateWorkflowCoordinator())
+        {
+            Force = true,
+            OnForcedUpdate = (installed, available) => Assert.Fail("A newer release is not a forced update."),
+        };
+
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementVersion, workflow.Execute());
+        Assert.AreEqual(1, workflow.VerificationCount);
+        AssertWorkflowLocksAvailable(files.Paths);
+    }
+
+    [TestMethod]
     public void DownloadFailureDoesNotReplaceInstalledExecutable()
     {
         using var files = new SelfUpdateTestFiles();

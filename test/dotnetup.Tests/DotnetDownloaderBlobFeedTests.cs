@@ -115,6 +115,59 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     }
 
     [TestMethod]
+    public void SelfUpdateCommandWithForceWarnsBeforeDowngradeDownload()
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        string installedVersion = SelfUpdateTestFiles.ReplacementVersion;
+        string availableVersion = SelfUpdateTestFiles.OriginalVersion;
+        SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(ReleaseVersion.Parse(availableVersion), rid);
+        string channelUrl = $"https://aka.ms/dotnet/dotnetup/preview/{BlobFeedUrlBuilder.GetDotnetupFileName(rid)}";
+        string? outputAtDownloadStart = null;
+        using var handler = new RecordingHandler(new()
+        {
+            [channelUrl] = (HttpStatusCode.OK, ""),
+            [location.ChecksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
+            [location.ArchiveUrl] = (HttpStatusCode.OK, "Deliberate hash mismatch to stop before executable replacement."),
+        }, new(), new() { [channelUrl] = location.ArchiveUrl })
+        {
+            OnRequest = url =>
+            {
+                if (url == location.ArchiveUrl)
+                {
+                    outputAtDownloadStart = output.ToString();
+                }
+            },
+        };
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var originalConsole = AnsiConsole.Console;
+        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
+        try
+        {
+            UnsignedSourcePolicy.OverrideForTesting = () => false;
+            AnsiConsole.Console = CreateConsole(output);
+            AnsiConsole.Profile.Width = int.MaxValue;
+            using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
+            var result = Parser.Parse(["self", "update", "--channel", "preview", "--force", "--no-progress"]);
+
+            new SelfUpdateCommand(result, () => downloader).Execute().Should().Be(1);
+
+            string warning = string.Format(CultureInfo.CurrentCulture, BootstrapperStrings.SelfUpdateForcedWarning,
+                installedVersion, availableVersion);
+            outputAtDownloadStart.Should().NotBeNull().And.Contain(warning);
+            SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath).Should().Be(installedVersion);
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
+        }
+    }
+
+    [TestMethod]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
     [DataRow("0.2.0-preview.1.26465.7+commit", "0.2.0-preview.1.26465.7", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
     [DataRow("0.2.0-preview.1.26465.7", "0.2.0-preview.1.26465.7+commit", nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), "preview")]
