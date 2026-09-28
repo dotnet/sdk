@@ -1,13 +1,13 @@
 # Self-update Algorithm Implementations
 
 This document records implementation-specific details for the
-[self-update algorithm](self-update-algorithm.md). Links use stable semantic anchors so
+[self-update algorithm](self-update-algorithm.md). Links use semantic Markdown headings so
 the algorithm can be reordered or renumbered without changing this document.
 
 ## Lock files
 
-See the algorithm's [lock definitions](self-update-algorithm.md#self-update-definitions)
-and [lock-acquisition protocol](self-update-algorithm.md#lock-acquisition-algorithm).
+See the algorithm's [lock definitions](self-update-algorithm.md#definitions)
+and [lock-acquisition protocol](self-update-algorithm.md#lock-acquisition-and-the-non-safe-gate).
 
 A shared lock is held via:
 
@@ -43,7 +43,7 @@ The gate does not require the canonical executable name: a renamed executable, s
 
 ## Contention diagnostics
 
-See the algorithm's [contention reporting behavior](self-update-algorithm.md#contention-reporting).
+See the algorithm's [contention reporting behavior](self-update-algorithm.md#reporting-contention).
 
 Best-effort identification of processes using the lock file is deferred to a separate implementation improvement, not a Stage A prerequisite or a requirement for Stage B waiting/forwarding. A future implementation must remain diagnostic-only: missing or stale holder details must not affect lock acquisition, timeout, or recovery decisions. No Restart Manager interop or PID registry is needed in the current implementation.
 
@@ -51,13 +51,13 @@ Holder identification is deferred on all platforms. Dotnetup does not parse Linu
 
 ## Update transaction lifetime
 
-See the algorithm's [update transaction](self-update-algorithm.md#update-transaction-algorithm).
+See the algorithm's [update transaction](self-update-algorithm.md#update-transaction).
 
 `Execute` requires a non-null lease-owner callback. Ownership transfers when that callback returns successfully; if it throws, the workflow disposes the acquired locks. Tests that need locks released when execution ends use the test-only [SelfUpdateTestWorkflow.ExecuteAndReleaseLocks](../../../../../test/dotnetup.Tests/Utilities/SelfUpdateTestWorkflow.cs) wrapper. Production has no optional workflow-scoped lock lifetime.
 
 ## Staging and path validation
 
-See the algorithm's [staging and validation behavior](self-update-algorithm.md#stage-and-validate-replacement).
+See the algorithm's [staging and validation behavior](self-update-algorithm.md#stage-and-validate-the-replacement).
 
 Permissions use ordinary runtime filesystem behavior, as SDK/runtime extraction does in [DotnetArchiveExtractor](../../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetArchiveExtractor.cs). On Windows, new staging files inherit their directory's permissions, and `File.Replace` preserves the installed executable's ACL. On Unix, archive extraction preserves archive modes; the raw dotnetup download has no archive mode, so `SelfUpdateWorkflow` copies the installed executable's mode with `File.GetUnixFileMode` and `File.SetUnixFileMode` rather than assigning a new fixed mode. Self-update does not add an owner whitelist, reject group-writable installs, or rewrite directory permissions.
 
@@ -75,7 +75,7 @@ The workflow creates one `SelfUpdateReplacement` instance with the paths and bac
 
 ## Replacement verification
 
-See the algorithm's [replacement smoke test](self-update-algorithm.md#smoke-test-replacement).
+See the algorithm's [replacement smoke test](self-update-algorithm.md#smoke-test-the-replacement).
 
 The built-in `--version` action runs during `ParseResult.Invoke` and returns before any `CommandBase` is constructed, so it never reaches the gate. That is load-bearing rather than incidental: `P` holds both `A` and `U` exclusively while the child runs, so a gated child would block on its own opens and every transaction would fail. If the verification path ever becomes a subcommand, that subcommand must be classified `safe`.
 
@@ -83,7 +83,7 @@ The verifier disables telemetry and suppresses the first-run banner in the child
 
 ## Rollback
 
-See the algorithm's [rollback behavior](self-update-algorithm.md#rollback-replacement).
+See the algorithm's [rollback behavior](self-update-algorithm.md#roll-back).
 
 [Workflow tests](../../../../../test/dotnetup.Tests/SelfUpdateWorkflowTests.cs) inject a reported kill error or termination timeout through the existing verification hook and exercise real file rollback and lock retention. This tests the recovery policy without launching an unkillable process; it does not test an operating-system termination failure itself.
 
@@ -113,7 +113,7 @@ Cleanup resolves the containing directory using the same path logic as replaceme
 
 ## Unix replacement
 
-See the algorithm's [Linux replacement behavior](self-update-algorithm.md#linux-replacement)
+See the algorithm's [Linux replacement behavior](self-update-algorithm.md#linux)
 and [Unix locking caveats](self-update-algorithm.md#unix-locking-caveats).
 
 The Unix forward switch uses the same managed `File.CreateHardLink` and `File.Move` APIs available to the rest of the installer. No dotnetup-specific `libc` imports or platform-specific native metadata layouts are needed.
