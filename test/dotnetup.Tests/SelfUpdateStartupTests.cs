@@ -265,6 +265,20 @@ public class SelfUpdateStartupTests : SdkTest
     }
 
     [TestMethod]
+    public void NonSafeCommandDoesNotCleanUpExpiredBackups()
+    {
+        using var files = new SelfUpdateTestFiles();
+        File.WriteAllText(files.BackupPath, "retained");
+        File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
+        var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
+
+        Assert.AreEqual(0, command.Execute());
+        Assert.IsTrue(command.Ran);
+        Assert.IsTrue(File.Exists(files.BackupPath));
+    }
+
+    [TestMethod]
     public void BusyGateSuppressesCommandBody()
     {
         using var files = new SelfUpdateTestFiles();

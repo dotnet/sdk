@@ -417,8 +417,8 @@ Or open a new terminal.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateBusyUpdate">
-        <source>Dotnetup is busy with another self-update or cleanup. Try again after it completes.</source>
-        <target state="new">Dotnetup is busy with another self-update or cleanup. Try again after it completes.</target>
+        <source>Dotnetup is busy with another self-update. Try again after it completes.</source>
+        <target state="new">Dotnetup is busy with another self-update. Try again after it completes.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateChannelOptionDescription">

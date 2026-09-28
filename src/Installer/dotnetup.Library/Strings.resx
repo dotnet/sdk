@@ -161,7 +161,7 @@
     <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
   </data>
   <data name="SelfUpdateBusyUpdate" xml:space="preserve">
-    <value>Dotnetup is busy with another self-update or cleanup. Try again after it completes.</value>
+    <value>Dotnetup is busy with another self-update. Try again after it completes.</value>
     <comment>{Locked="Dotnetup"}</comment>
   </data>
   <data name="SelfUpdateBusyCommand" xml:space="preserve">

@@ -39,21 +39,21 @@ Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of 
 | Lock | Shared ownership means | Exclusive ownership means |
 | --- | --- | --- |
 | `A` | "a `non-safe` command is running" | "no `non-safe` command is running, and none may start from the current executable" |
-| `U` | unused; `U` is only ever opened exclusively | "a self-update transaction or best-effort cleanup owns the update artifacts" |
+| `U` | unused; `U` is only ever opened exclusively | "a self-update transaction owns the update artifacts" |
 
 
-Lock ownership during command execution and cleanup:
+Lock ownership during command execution:
 
 | Participant | Lock | Mode | Held for |
 | --- | --- | --- | --- |
 | `N` | `A` | shared | from the post-parse gate through command completion and telemetry flush |
-| `N` | `U` | exclusive | optional cleanup only, after passing the gate and version check; one nonblocking attempt |
+| `N` | `U` | — | never acquired |
 | `P` | `U` | exclusive | acquired transaction through verification/recovery and telemetry flush |
 | `P` | `A` | exclusive | acquired transaction through verification/recovery and telemetry flush |
 | `S` | `A` | — | never acquired; skips the gate |
-| `S` | `U` | none | current safe commands do not perform cleanup |
+| `S` | `U` | — | never acquired |
 
-`A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.9.
+`A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions against each other. `N` never acquires `U`, and only `P` cleans up backups, under step 2.9.
 
 Because `S` holds neither lock, a self update can complete underneath it. `S` must cache image-derived values at startup, particularly the executable path and loaded version.
 
@@ -61,20 +61,18 @@ Because `S` holds neither lock, a self update can complete underneath it. `S` mu
 
 **Algorithm 1**
 
-**Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its version check, it may also hold `U` briefly for cleanup under step 2.9.
+**Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update`. `N` acquires only `A`.
 
-**Rule 2 — no hold-and-wait during acquisition.** `P` never blocks on `A` while holding `U`. If the acquisition of `A` fails, `P` releases `U`, backs off, and retries the pair from step 1.1. An `N` waiting at the gate holds neither lock. An `N` that already holds `A` may try to acquire `U` once for cleanup, but skips cleanup immediately if that attempt fails. Cleanup never acquires or waits for additional locks while holding `U`, and releases `U` before continuing command execution.
+**Rule 2 — no hold-and-wait during acquisition.** `P` never blocks on `A` while holding `U`. If the acquisition of `A` fails, `P` releases `U`, backs off, and retries the pair from step 1.1. An `N` waiting at the gate holds neither lock, and an `N` never acquires `U`.
 
 **Rule 3 — asymmetric timeouts.**
 
 | Timeout | Applies to | Magnitude |
 | --- | --- | --- |
-| `X_U` | `P` waiting on `U` held by a peer `self update` or cleanup | one minute of cumulative contention |
+| `X_U` | `P` waiting on `U` held by a peer `self update` | one minute of cumulative contention |
 | `X_A` | `P` waiting on `A` held by `N` | two seconds of cumulative contention |
 | `X_N` | `N` waiting at the gate during a self update (Stage B only) | the length of a typical update |
 | `X_V` | any installed-version query or the verification child of step 2.6 | 15 seconds |
-
-Cleanup does not use these retry timeouts: it makes one nonblocking attempt to acquire `U` and skips cleanup if ownership cannot be established.
 
 ###### Lock Acquisition for `P`
 
@@ -88,9 +86,9 @@ Querying the canonical version without holding `U` is acceptable here and is not
 
 Step 1.0 exists because the common invocation is a poll that finds nothing to do. Without it, every such poll takes `A` exclusively, excludes every `N` on the machine for the duration of the channel lookup, and can fail with `DotnetupBusyWithAnotherCommand` having accomplished nothing. A `self update` run with no network connectivity likewise fails without blocking any other command.
 
-The check is placed before both locks rather than between steps 1.1 and 1.2 deliberately. Resolving `V_channel` is a network operation, so performing it while holding `U` would stretch the interval between acquiring `U` and acquiring `A` from two file opens to a network round trip. More `N` processes would accumulate in that interval, `P` would fail step 1.2 more often and restart the pair under rule 2, and the longer hold on `U` would cause the single nonblocking cleanup attempt of step 2.9 to be skipped more often.
+The check is placed before both locks rather than between steps 1.1 and 1.2 deliberately. Resolving `V_channel` is a network operation, so performing it while holding `U` would stretch the interval between acquiring `U` and acquiring `A` from two file opens to a network round trip. More `N` processes would accumulate in that interval, and `P` would fail step 1.2 more often and restart the pair under rule 2.
 
-**1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` or cleanup holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required after acquiring both locks. `P` does not fail immediately for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithUpdateOrCleanup` and reports that another update or cleanup is busy, with guidance to retry after it completes. Holder identification is deferred under step 1.7.
+**1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required after acquiring both locks. `P` does not fail immediately for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithUpdateOrCleanup` and reports that another update is busy, with guidance to retry after it completes. Holder identification is deferred under step 1.7.
 
 **1.2 — `P` acquires `A` exclusively.** A busy `A` means at least one `N` is running. Per rule 2, `P` releases `U`, backs off, and retries the pair from step 1.1 for up to `X_A`. On expiry of `X_A`, `P` fails with `DotnetupBusyWithAnotherCommand` and reports that another dotnetup command is running, with guidance to retry after it completes.
 
@@ -122,13 +120,13 @@ Command constructors must not access installation state or start network work.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
 
-`N` must not perform cleanup before passing both the gate and the version check, or on a path that fails or forwards instead of executing its command body.
+`N` never performs backup cleanup; only `P` does, inside its locked transaction.
 
 ###### Common to `P` and `N`
 
 ###### Reporting contention
 
-**1.7 — Reporting contention; holder identification deferred.** `P` and `N` report the contention category and retry guidance. They do not query operating-system process information or append process names/PIDs. Optional cleanup skips contention silently.
+**1.7 — Reporting contention; holder identification deferred.** `P` and `N` report the contention category and retry guidance. They do not query operating-system process information or append process names/PIDs.
 
 ##### Update transaction
 
@@ -181,12 +179,12 @@ The two renames are not atomic together: the canonical path is absent between th
 
 If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
 
-Successful rollback restores the original executable at the canonical path. An `N` whose loaded full version matches that executable's `--version` output takes the matching branch of step 1.4; an `N` loaded from a different rejected version instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.9.
+Successful rollback restores the original executable at the canonical path. An `N` whose loaded full version matches that executable's `--version` output takes the matching branch of step 1.4; an `N` loaded from a different rejected version instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup of a later self update under step 2.9.
 
 ###### Deferred cleanup
 
-**2.9 — Deferred cleanup.** On later launches, `P` or `N` may remove `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the version-matches branch of step 1.4, retaining `A` throughout cleanup. Current safe commands perform no optional cleanup; `P` performs it only within the locked transaction, and `--version` never performs cleanup.
+**2.9 — Deferred cleanup.** A later `P` may remove `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback, as part of step 2.2. Cleanup runs only inside that locked transaction: `N`, safe commands, and `--version` never perform cleanup, and a `self update` that finds no eligible update does not clean up.
 
-Cleanup makes one nonblocking attempt to acquire `U` exclusively. If ownership cannot be established, cleanup is skipped without retrying, reporting contention, or failing the command. No participant opens `U` shared. A successful attempt retains `U` through enumeration, the canonical-version query, and deletion, so no cooperating self-update transaction can create or use a backup during cleanup. Cleanup never acquires or waits for additional locks. Its `--version` child is safe, takes neither lock, and does not recurse into cleanup.
+Cleanup uses the transaction's existing ownership of `U` and `A`; it never acquires, releases, or waits for a lock. Holding `U` through enumeration, the canonical-version query, and deletion means no cooperating self-update transaction can create or use a backup during cleanup. Its `--version` child is safe, takes neither lock, and does not recurse into cleanup.
 
-Only when eligible aged backups exist does cleanup query the canonical executable's `--version` under `U` and require ordinal equality with its own loaded full version, including build metadata. If the executable is absent, cannot run, times out, produces invalid output, or reports a different version, cleanup leaves the backups untouched. This conservative check preserves recovery artifacts when the canonical version cannot be confirmed; acquiring `U` alone does not prove that an earlier transaction completed successfully. The same check applies to backup deletion in step 2.2.
+Only when eligible aged backups exist does cleanup query the canonical executable's `--version` and require ordinal equality with `P`'s own loaded full version, including build metadata. If the executable is absent, cannot run, times out, produces invalid output, or reports a different version, cleanup leaves the backups untouched. This conservative check preserves recovery artifacts when the canonical version cannot be confirmed; acquiring `U` alone does not prove that an earlier transaction completed successfully.

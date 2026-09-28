@@ -31,12 +31,6 @@ internal sealed class SelfUpdateInvocation : IDisposable
             Retain(NonSafeCommandGate.Enter(Paths, LoadedVersion));
             _passedGate = true;
         }
-
-        if (!safe)
-        {
-            SelfUpdateCleanup.TryRun(Paths.InstalledPath, LoadedVersion);
-        }
-
     }
 
     public void Retain(IDisposable lease) => _leases.Add(lease);

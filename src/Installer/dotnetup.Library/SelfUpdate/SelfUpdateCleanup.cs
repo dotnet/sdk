@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Dotnet.Installation.Internal;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>
 /// Best-effort deletion of aged self-update backups in a caller-owned installation directory.
-/// Cooperating updaters must retain the update lock and keep directory paths stable.
+/// Only the self-update transaction runs cleanup, while it retains the update and activity locks.
 /// </summary>
 internal static class SelfUpdateCleanup
 {
@@ -15,43 +13,13 @@ internal static class SelfUpdateCleanup
     private const int EntryBudget = 32;
     private const string RejectedSuffix = ".rejected";
 
-    public static void TryRun(string installedPath, string loadedVersion)
-    {
-        try
-        {
-            installedPath = SelfUpdatePaths.ResolvePath(installedPath);
-            var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
-            if (!IsPlainDirectoryPath(directory))
-            {
-                return;
-            }
-
-            var lockPath = Path.Combine(directory.FullName, "dotnetup.update.lock");
-            if (!IsPlainLockPath(lockPath))
-            {
-                return;
-            }
-
-            using var updateLock = ScopedLockFile.TryAcquireExclusive(lockPath);
-            if (updateLock is not null)
-            {
-                RunWithUpdateLock(installedPath, loadedVersion);
-            }
-        }
-        catch (Exception)
-        {
-        }
-    }
-
     /// <summary>Runs cleanup with the caller's update lock, without acquiring or releasing it.</summary>
     public static void RunWithUpdateLock(string installedPath, string loadedVersion)
     {
         try
         {
-            // Normalize independently because callers that already own the update lock bypass TryRun.
             installedPath = SelfUpdatePaths.ResolvePath(installedPath);
             var directory = new DirectoryInfo(Path.GetDirectoryName(installedPath)!);
-            // TryRun validates before acquiring the lock; repeat because the filesystem objects may have changed meanwhile.
             if (!IsPlainDirectoryPath(directory) || !IsPlainFile(installedPath))
             {
                 return;
@@ -148,16 +116,4 @@ internal static class SelfUpdateCleanup
 
     private static bool IsPlainFile(string path)
         => (File.GetAttributes(path) & (FileAttributes.Directory | FileAttributes.ReparsePoint)) == 0;
-
-    private static bool IsPlainLockPath(string path)
-    {
-        try
-        {
-            return IsPlainFile(path);
-        }
-        catch (FileNotFoundException)
-        {
-            return true;
-        }
-    }
 }

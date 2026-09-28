@@ -149,7 +149,7 @@ public enum DotnetInstallErrorCode
     /// <summary>The installed executable's identity cannot be established.</summary>
     DotnetupIdentityUnavailable,
 
-    /// <summary>An update or cleanup held the update lock beyond its timeout.</summary>
+    /// <summary>Another self-update held the update lock beyond its timeout.</summary>
     DotnetupBusyWithUpdateOrCleanup,
 
     /// <summary>A non-safe command held the activity lock beyond its timeout.</summary>
