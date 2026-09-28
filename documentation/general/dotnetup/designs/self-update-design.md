@@ -2,7 +2,7 @@
 
 `dotnetup self update [--channel <daily|preview|stable>] [--no-progress]` updates the published NativeAOT `dotnetup`
 executable in place. Stage A is implemented; waiting and transparent forwarding of
-ordinary commands remain Stage B work. See [Stage A](#stage-a-success-criteria) and
+ordinary commands remain Stage B work. See [Stage A](self-update-stages.md#stage-a-success-criteria) and
 the [version-query contract](self-update-verification.md) for the current behavior and limitations.
 
 The command resolves the latest release for the selected RID from the release channel. When
@@ -34,7 +34,7 @@ Because replacing the still-running destination with `MoveFileExW` cannot be rel
 
 `File.Replace(stagedPath, installedPath, backupPath)` maps to the Windows `ReplaceFileW` API. It combines replacement of the canonical path and creation of a backup in one operating-system call. Windows permits this operation while the old executable image is running when existing handles allow delete sharing; the running process continues executing the old image while future launches resolve the replacement.
 
-This avoids deliberately splitting the forward replacement into two `File.Move` calls; it does not guarantee an uninterrupted canonical name. Windows measurements observed a brief file-not-found interval even within `File.Replace`, so consumers must retry transient launch failures. It is not an ACID or power-loss-safe transaction: `ReplaceFileW` documents partial failure states, and its `REPLACEFILE_WRITE_THROUGH` flag is unsupported. The staged executable is flushed before replacement, and recovery accounts for the staged, canonical, and backup paths after failure. See [replacement properties](#properties-of-algorithms-1-and-2).
+This avoids deliberately splitting the forward replacement into two `File.Move` calls; it does not guarantee an uninterrupted canonical name. Windows measurements observed a brief file-not-found interval even within `File.Replace`, so consumers must retry transient launch failures. It is not an ACID or power-loss-safe transaction: `ReplaceFileW` documents partial failure states, and its `REPLACEFILE_WRITE_THROUGH` flag is unsupported. The staged executable is flushed before replacement, and recovery accounts for the staged, canonical, and backup paths after failure. See [replacement properties](self-update-algorithm.md#properties-of-algorithms-1-and-2).
 
 
 ### Cross Update Boundary Trade-Offs

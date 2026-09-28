@@ -52,7 +52,7 @@ recovery. Rollback neither executes the rejected candidate nor needs its version
 The parent holds both locks through replacement, verification, and recovery.
 These guarantees require cooperating processes and stable paths in a trusted
 installation directory; they do not identify arbitrary external file substitutions.
-See the [self-update design](self-update.md) for partial failures and platform behavior.
+See the [self-update design](self-update-algorithm.md) for partial failures and platform behavior.
 
 ## Scope and limitations
 

@@ -105,7 +105,7 @@ update within a bounded timeout, but ordinary commands, including `--info`, fail
 if the activity gate is busy or their loaded build is stale. Retry those commands
 after the update completes. Automation should also retry transient file-not-found
 launch failures during Windows replacement before concluding that dotnetup is
-missing. See [coordination and recovery](../designs/self-update.md#properties-of-algorithms-1-and-2).
+missing. See [coordination and recovery](../designs/self-update-algorithm.md#properties-of-algorithms-1-and-2).
 
 Self-update does not update managed SDK/runtime installations; use
 [`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
