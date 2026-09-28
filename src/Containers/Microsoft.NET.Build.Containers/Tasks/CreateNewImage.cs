@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -121,8 +121,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
 
         (string message, object[] parameters) = SkipPublishing ?
-            ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
-            ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
+            (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+            (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
         // forcibly change the media type if required
@@ -160,14 +160,16 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
             }
         }
-
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
+        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
         imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
+        string? baseImageLabel = null;
+        string? baseImageDigest = null;
         if (GenerateLabels)
         {
             foreach (ITaskItem label in Labels)
@@ -177,7 +179,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
             if (GenerateDigestLabel)
             {
-                imageBuilder.AddBaseImageDigestLabel();
+                (baseImageLabel, baseImageDigest) = imageBuilder.AddBaseImageDigestLabel();
             }
         }
         else
@@ -213,13 +215,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
+        if (baseImageLabel is not null && baseImageDigest is not null)
+        {
+            var labelItem = new Microsoft.Build.Utilities.TaskItem(baseImageLabel);
+            labelItem.SetMetadata("Value", baseImageDigest);
+            GeneratedDigestLabel = labelItem;
+        }
 
         if (!SkipPublishing)
         {
             await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
         }
-        
+
         return !Log.HasLoggedErrors;
     }
 

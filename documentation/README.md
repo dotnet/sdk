@@ -9,6 +9,7 @@ Documents Index
 - [Roadmap and OS support](https://github.com/dotnet/core/blob/main/roadmap.md)
 - [Comprehensive CLI documentation](https://docs.microsoft.com/en-us/dotnet/articles/core/preview3/tools/)
 - [ASP.NET Core Command Line Tools](general/aspnetcore-tools.md)
+- [Guidelines for how to introduce a new diagnostic or breaking change](project-docs/breaking-change-guidelines.md)
 
 ## Working with the CLI repo
 

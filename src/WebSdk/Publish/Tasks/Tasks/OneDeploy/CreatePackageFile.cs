@@ -24,21 +24,21 @@ public class CreatePackageFile : Task
     }
 
     [Required]
-    public string ContentToPackage { get; set; }
+    public string? ContentToPackage { get; set; }
 
     [Required]
-    public string ProjectName { get; set; }
+    public string? ProjectName { get; set; }
 
     [Required]
-    public string IntermediateTempPath { get; set; }
+    public string? IntermediateTempPath { get; set; }
 
     [Output]
-    public string CreatedPackageFilePath { get; set; }
+    public string? CreatedPackageFilePath { get; set; }
 
     /// <inheritdoc/>
     public override bool Execute()
     {
-        if (string.IsNullOrEmpty(ContentToPackage)
+        if (ContentToPackage is null || ContentToPackage.Length == 0
             || string.IsNullOrEmpty(ProjectName)
             || string.IsNullOrEmpty(IntermediateTempPath))
         {

@@ -13,25 +13,25 @@ public partial class OneDeploy
     private const string ContinuousWebJobApiPath = "continuouswebjobs";
     private const string TriggeredWebJobsApiPath = "triggeredwebjobs";
 
-    public string WebJobName { get; set; }
+    public string? WebJobName { get; set; }
 
-    public string WebJobType { get; set; }
+    public string? WebJobType { get; set; }
 
     /// <summary>
     /// Whether the name is a non-empty value and type is either 'Continuous' or 'Triggered'.
     /// </summary>
-    private bool IsWebJobProject(string webjobName, string webjobType) =>
+    private bool IsWebJobProject(string? webjobName, string? webjobType) =>
         !string.IsNullOrEmpty(webjobName) &&
         (string.Equals(ContinuousWebJobType, webjobType, StringComparison.OrdinalIgnoreCase) ||
          string.Equals(TriggeredWebJobType, webjobType, StringComparison.OrdinalIgnoreCase));
 
-    private async Task<IHttpResponse> DeployWebJobAsync(
+    private async Task<IHttpResponse?> DeployWebJobAsync(
         IHttpClient httpClient,
         Uri publishUri,
-        string username,
-        string password,
-        string userAgent,
-        string fileToPublish,
+        string? username,
+        string? password,
+        string? userAgent,
+        string? fileToPublish,
         FileStream fileToPublishStream,
         CancellationToken cancellationToken)
     {
@@ -41,7 +41,7 @@ public partial class OneDeploy
         return response;
     }
 
-    private bool GetWebJobPublishUri(string publishUrl, string webjobName, string webjobType, out Uri publishUri)
+    private bool GetWebJobPublishUri(string publishUrl, string? webjobName, string? webjobType, out Uri publishUri)
     {
         // action path differs by WebJob type
         var path = string.Equals(ContinuousWebJobType, webjobType, StringComparison.OrdinalIgnoreCase)

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -25,14 +27,12 @@ namespace Microsoft.DotNet.Tests
 
             var command = new DotnetCommand(log)
                 .WithWorkingDirectory(TestDirectory)
-                .WithEnvironmentVariable("HOME", testNuGetHome)
-                .WithEnvironmentVariable("USERPROFILE", testNuGetHome)
                 .WithEnvironmentVariable("APPDATA", testNuGetHome)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER", cliTestFallbackFolder)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_LINUX_PROFILED_PATH", profiled)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH", pathsd)
                 .WithEnvironmentVariable("SkipInvalidConfigurations", "true")
-                .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, "");
+                .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, testNuGetHome);
 
             NugetFallbackFolder = new DirectoryInfo(cliTestFallbackFolder);
             DotDotnetFolder = new DirectoryInfo(Path.Combine(testNuGetHome, ".dotnet"));
@@ -103,12 +103,12 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
+        [Fact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
             var expectedVersion = GetDotnetVersion();
-            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
@@ -116,6 +116,30 @@ namespace Microsoft.DotNet.Tests
                     expectedVersion))
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation)
                 .And.NotContain("Restore completed in");
+        }
+
+        [WindowsOnlyFact]
+        public void FirstRunExperienceMessagesShouldGoToStdErr()
+        {
+            // This test ensures that first-run experience messages go to stderr, 
+            // not stdout, to avoid interfering with completion commands and other
+            // tools that parse stdout. See: https://github.com/dotnet/sdk/issues/50444
+            var expectedVersion = GetDotnetVersion();
+            
+            // StdErr should contain first-run messages
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
+                .Should()
+                .ContainVisuallySameFragment(string.Format(
+                    Configurer.LocalizableStrings.FirstTimeMessageWelcome,
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
+                    expectedVersion))
+                .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
+                
+            // StdOut should NOT contain first-run messages (they should only be in stderr)
+            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+                .Should()
+                .NotContain("Welcome to .NET")
+                .And.NotContain("Write your first app");
         }
 
         [Fact]
@@ -151,7 +175,7 @@ namespace Microsoft.DotNet.Tests
             homeFolder.Should().NotExist();
         }
 
-        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
+        [WindowsOnlyFact]
         public void ItShowsTheTelemetryNoticeWhenInvokingACommandAfterInternalReportInstallSuccessHasBeenInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();
@@ -164,7 +188,7 @@ namespace Microsoft.DotNet.Tests
 
             var expectedVersion = GetDotnetVersion();
 
-            result.StdOut
+            result.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,

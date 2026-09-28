@@ -55,4 +55,4 @@ ls docs-main/docs/core/tools/dotnet*.md | while read -r file;
       "$file" -o "${command_name}"."${man_page_section}"
 done
 
-# rm -rf docs-main
+rm -rf docs-main

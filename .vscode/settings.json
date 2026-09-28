@@ -1,0 +1,4 @@
+{
+    "dotnet.testWindow.disableAutoDiscovery": true,
+    "dotnet.defaultSolution": "sdk.slnx"
+}

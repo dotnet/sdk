@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItDoesNotReturnNullDotnetRootOnExtraPathSeparator()
         {
-            File.Create(Path.Combine(Directory.GetCurrentDirectory(), "dotnet.exe"));
+            File.Create(Path.Combine(Directory.GetCurrentDirectory(), "dotnet.exe")).Close();
             Func<string, string> getPathEnvVarFunc = (input) => input.Equals("PATH") ? $"fake{Path.PathSeparator}" : string.Empty;
             var result = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(getPathEnvVarFunc);
             result.Should().NotBeNullOrWhiteSpace();

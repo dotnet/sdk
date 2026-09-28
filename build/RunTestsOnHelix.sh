@@ -9,8 +9,7 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
-export TestExecutionDirectory=$(pwd)/testExecutionDirectory
-mkdir $TestExecutionDirectory
+export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 
 # Azure Linux 3 is missing zlib-devel, so the linker can't find -lz for NativeAOT.
 # Create a symlink in a local directory and add it to LIBRARY_PATH so clang/ld finds it.
@@ -30,11 +29,11 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
 export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
+export DOTNET_SDK_TEST_TEMPLATE_PACKAGES_DIRECTORY=$TestExecutionDirectory/template_feed
 
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-# We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
@@ -43,6 +42,12 @@ dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirector
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source richnav --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source vs-impl --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-libraries-transport --configfile $TestExecutionDirectory/NuGet.config

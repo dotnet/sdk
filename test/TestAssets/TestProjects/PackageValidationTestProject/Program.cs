@@ -7,8 +7,8 @@ namespace PackageValidationTestProject
 {
     public class Program
     {
-#if ForceValidationProblem && !NET6_0
-      public void SomeAPINotIn6_0()
+#if ForceValidationProblem && !NET
+      public void SomeAPINotInCore()
       {
       }
 #endif

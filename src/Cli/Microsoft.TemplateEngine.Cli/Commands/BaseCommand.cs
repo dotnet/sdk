@@ -6,16 +6,18 @@ using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseCommand : CliCommand
+    internal abstract class BaseCommand : Command
     {
         private readonly Func<ParseResult, ITemplateEngineHost> _hostBuilder;
 
@@ -96,9 +98,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Reporter.Output.WriteLine();
         }
 
-        protected static void PrintDeprecationMessage<TDepr, TNew>(ParseResult parseResult, CliOption? additionalOption = null)
-            where TDepr : CliCommand
-            where TNew : CliCommand
+        protected static void PrintDeprecationMessage<TDepr, TNew>(ParseResult parseResult, Option? additionalOption = null)
+            where TDepr : Command
+            where TNew : Command
         {
             var newCommandExample = Example.For<TNew>(parseResult);
             if (additionalOption != null)
@@ -120,17 +122,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         protected abstract TArgs ParseContext(ParseResult parseResult);
 
-        protected virtual CliOption GetFilterOption(FilterOptionDefinition def)
+        protected virtual Option GetFilterOption(FilterOptionDefinition def)
         {
             return def.OptionFactory();
         }
 
-        protected IReadOnlyDictionary<FilterOptionDefinition, CliOption> SetupFilterOptions(IReadOnlyList<FilterOptionDefinition> filtersToSetup)
+        protected IReadOnlyDictionary<FilterOptionDefinition, Option> SetupFilterOptions(IReadOnlyList<FilterOptionDefinition> filtersToSetup)
         {
-            Dictionary<FilterOptionDefinition, CliOption> options = new();
+            Dictionary<FilterOptionDefinition, Option> options = new();
             foreach (FilterOptionDefinition filterDef in filtersToSetup)
             {
-                CliOption newOption = GetFilterOption(filterDef);
+                Option newOption = GetFilterOption(filterDef);
                 Options.Add(newOption);
                 options[filterDef] = newOption;
             }
@@ -220,7 +222,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Reporter.Output.WriteLine();
         }
 
-        private sealed class CommandAction : AsynchronousCliAction
+        private sealed class CommandAction : AsynchronousCommandLineAction
         {
             private readonly BaseCommand<TArgs> _command;
 

@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
-  <Import Project="$(RepoRoot)\src\Layout\redist\targets\PublishDotnetWatch.targets" />
+  <Import Project="..\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -12,15 +13,24 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
-    <Nullable>enable</Nullable>
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <!--
+      Disable CS9057 in source-only dev/ci builds. This is necessary because dotnet-watch distributes some ASP.NET Core
+      analyzers. These analyzers get built with a dependency on the live version of Microsoft.CodeAnalysis. In a dev/ci
+      build, the assembly version associated with Microsoft.CodeAnalysis in that case is 42.42.42.4242, set by Arcade in
+      dev/ci builds. So when building dotnet-watch with its analyzer dependencies, it will cause CS9057 because the 
+      analyzer assembly version is not the same as the compiler assembly version being used by the sdk that the project
+      is being built with. But this is fine because the analyzer is just being used here to distribute it with the tool.
+    -->
+    <NoWarn Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(OfficialBuild)' != 'true'">$(NoWarn);CS9057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
-    <Content Include="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Watch\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,13 +41,9 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
-
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
@@ -45,17 +51,71 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
 
-    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
 
-    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <TargetPath>hotreload\net6.0\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
 
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
+    </ProjectReference>
+
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
+      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
   </ItemGroup>
 
-  <!--
-    Publish the dotnet-watch binaries to the redist directory (artifacts\bin\redist\{config}\dotnet\sdk\{version}\DotnetTools).
-    These files are used for layout generation in redist project.
-    Tests are also running dotnet.exe from redist artifacts.
-  -->
-  <Target Name="PublishToRedist" DependsOnTargets="PublishDotnetWatchToRedist" BeforeTargets="AfterBuild" />
+  <!-- Publish dotnet-watch files to the redist testhost folder so that in innerloop, redist doesn't need to be built again. -->
+  <Target Name="PublishDotnetWatchToTestHost" BeforeTargets="AfterBuild">
+    <ItemGroup>
+      <!--
+        To reduce the size of the SDK, we use the compiler dependencies that are located in the `Roslyn/bincore` location
+        instead of shipping our own copies in the dotnet-watch tool. These assemblies will be resolved by path in the
+        dotnet-watch executable.
+
+        We make an exception for the Microsoft.CodeAnalysis binaries deployed with the MSBuildWorkspace BuildHosts, since those don't
+        have any logic to pick up Roslyn from another location. Those can be addressed a different way which tracked in
+        https://github.com/dotnet/roslyn/issues/70945.
+
+        Keep excluded files in sync with the list in GenerateLayout.targets.
+      -->
+      <_DotnetWatchInputFile Include="$(TargetDir)**"
+                             Condition="('%(Filename)' != 'Microsoft.CodeAnalysis' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or
+                                        $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
 </Project>

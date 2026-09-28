@@ -6,8 +6,8 @@ function InitializeCustomSDKToolset {
   fi
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in source build.
-  if [[ $properties == *"ArcadeBuildFromSource=true"* || $product_build == true || $properties == *"DotNetBuildRepo=true"* ]]; then
+  # Do not attempt to install them when building in the VMR.
+  if [[ $from_vmr == true ]]; then
     return
   fi
 
@@ -20,14 +20,11 @@ function InitializeCustomSDKToolset {
   fi
 
   InitializeDotNetCli true
-  
-  InstallDotNetSharedFramework "2.1.0"
-  InstallDotNetSharedFramework "2.2.8"
-  InstallDotNetSharedFramework "3.1.0"
-  InstallDotNetSharedFramework "5.0.0"
+
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScript
 }
@@ -35,7 +32,7 @@ function InitializeCustomSDKToolset {
 # Installs additional shared frameworks for testing purposes
 function InstallDotNetSharedFramework {
   local version=$1
-  local dotnet_root=$DOTNET_INSTALL_DIR 
+  local dotnet_root=$DOTNET_INSTALL_DIR
   local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
 
   if [[ ! -d "$fx_dir" ]]; then
@@ -64,6 +61,7 @@ export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_INSTALL_DIR
 
 export PATH=$DOTNET_INSTALL_DIR:\$PATH
 export NUGET_PACKAGES=$NUGET_PACKAGES
+export DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 "
 
   echo "$scriptContents" > ${scriptPath}

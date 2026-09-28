@@ -351,8 +351,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
         }
 
-        [WindowsOnlyFact]
-        public void ItShouldOnlyReturnTopLevelPackages()
+        [WindowsOnlyTheory]
+        [InlineData("latestNet")]
+        [InlineData("net6.0")]
+        public void ItShouldOnlyReturnTopLevelPackages(string alias)
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
@@ -360,11 +362,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");
             string projectCacheAssetsJsonPath = Path.Combine(testRoot, "projectassets.cache");
             // project.assets.json
-            File.WriteAllText(projectAssetsJsonPath, CreateBasicProjectAssetsFile(testRoot));
+            File.WriteAllText(projectAssetsJsonPath, CreateBasicProjectAssetsFile(testRoot, alias: alias));
             var task = InitializeTask(testRoot, out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
             task.ProjectAssetsCacheFile = projectCacheAssetsJsonPath;
-            task.TargetFramework = "net6.0";
+            task.TargetFramework = alias;
             task.Execute();
 
             // Verify all top packages are listed here
@@ -404,7 +406,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         /// </c>
         /// dependent.package2 has an error message, and dependent.package3 has a warning.
         /// </remarks>
-        private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package")
+        private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package", string alias = "net6.0")
         {
             var json =
 """
@@ -586,11 +588,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             "C:\\configDir3\\Microsoft.VisualStudio.Offline.config"
           ],
           "originalTargetFrameworks": [
-            "net6.0"
+            "TFM_ALIAS"
           ],
           "frameworks": {
             "net6.0": {
-              "targetAlias": "net6.0",
+              "targetAlias": "TFM_ALIAS",
               "projectReferences": {}
             }
           },
@@ -602,7 +604,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     },
       "frameworks" : {
           "net6.0": {
-              "targetAlias" : "net6.0",
+              "targetAlias" : "TFM_ALIAS",
               "dependencies" : {
                   "top.package1" : {
                       "target" : "Package",
@@ -620,7 +622,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
       "message": "some warning message",
       "libraryId": "dependent.package2",
       "targetGraphs": [
-        "net6.0"
+        "TFM_ALIAS"
       ]
     },
     {
@@ -630,7 +632,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
       "message": "some warning message",
       "libraryId": "dependent.package3",
       "targetGraphs": [
-        "net6.0"
+        "TFM_ALIAS"
       ]
     }
   ]
@@ -638,6 +640,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 """;
             return json.Replace("PACKAGE2_TYPE", package2Type)
                        .Replace("PACKAGE3_TYPE", package3Type)
+                       .Replace("TFM_ALIAS", alias)
                        .Replace(@"C:\\.nuget", $@"{testRoot.Replace("\\", "\\\\")}\\.nuget");
         }
         private ResolvePackageAssets InitializeTask(string testRoot, out IEnumerable<PropertyInfo> inputProperties)

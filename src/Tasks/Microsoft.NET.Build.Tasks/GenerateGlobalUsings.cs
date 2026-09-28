@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -46,8 +48,7 @@ namespace Microsoft.NET.Build.Tasks
                         .Append(" = ");
                 }
 
-                lineBuilder.Append("global::")
-                    .Append(@using.Namespace)
+                lineBuilder.Append(@using.Namespace)
                     .Append(';');
 
                 lines[index++] = lineBuilder.ToString();

@@ -109,7 +109,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             const string http = "http://";
             const string msddepaxd = "msdeploy.axd";
 
-            System.UriBuilder serviceUriBuilder = null;
+            UriBuilder serviceUriBuilder;
 
             // We want to try adding https:// if there is no schema. However abc:123 is parsed as a schema=abc and path=123
             // so the goal is to isolate this case and add the https:// but allow for http if the user chooses to

@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-update" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-tool-update" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet tool update
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-tool-update - Updates the specified .NET tool on your machine.
@@ -27,27 +27,27 @@ dotnet-tool-update - Updates the specified .NET tool on your machine.
 .nf
 \f[C]
 dotnet tool update <PACKAGE_ID> -g|--global
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
-    [--no-cache] [--prerelease]
+    [--no-cache] [--prerelease] [--source <SOURCE>]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --tool-path <PATH>
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive] 
-    [--no-cache] [--prerelease]
+    [--no-cache] [--prerelease] [--source <SOURCE>]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --local
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
-    [--no-cache] [--prerelease]
+    [--no-cache] [--prerelease] [--source <SOURCE>]
     [--tool-manifest <PATH>]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
@@ -71,40 +71,41 @@ To update a local tool, use the \f[V]--local\f[R] option.
 .RS 2
 .PP
 Name/ID of the NuGet package that contains the .NET global tool to update.
+.PP
+Starting in .NET 10.0.100 SDK, use the name/ID, and version separated by \f[V]\[at]\f[R] to update a .NET tool.
+.PP
 You can find the package name using the dotnet tool list command.
 .RE
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--add-source <SOURCE>\f[B]\f[R]
-.RS 2
 .PP
 Adds an additional NuGet package source to use during installation.
 Feeds are accessed in parallel, not sequentially in some order of precedence.
 If the same package and version is in multiple feeds, the fastest feed wins.
 For more information, see What happens when a NuGet package is installed?.
-.RE
 .IP \[bu] 2
-\f[B]\f[VB]--allow-downgrade\f[B]\f[R]
+\f[B]\f[VB]--all\f[B]\f[R]
 .RS 2
+.PP
+Update all tools.
+.RE
+.PP
+\f[B]\f[VB]--allow-downgrade\f[B]\f[R]
 .PP
 Allow package downgrade when installing or updating a .NET tool package.
 Suppresses the warning, \[lq]The requested version x.x.x is lower than existing version x.x.x.\[rq]
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
-.RS 2
 .PP
 The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--disable-parallel\f[B]\f[R]
-.RS 2
 .PP
-Prevent restoring multiple projects in parallel.
-.RE
+\f[B]\f[VB]--disable-parallel\f[B]\f[R]
+.PP
+Prevents restoring multiple projects in parallel.
 .IP \[bu] 2
 \f[B]\f[VB]--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
@@ -119,25 +120,21 @@ Specifies that the update is for a user-wide tool.
 Can\[cq]t be combined with the \f[V]--tool-path\f[R] option.
 Omitting both \f[V]--global\f[R] and \f[V]--tool-path\f[R] specifies that the tool to be updated is a local tool.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--ignore-failed-sources\f[B]\f[R]
 .RS 2
 .PP
 Treat package source failures as warnings.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--local\f[B]\f[R]
 .RS 2
@@ -157,6 +154,10 @@ Do not cache packages and HTTP requests.
 .PP
 Include prerelease versions.
 .RE
+.PP
+\f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
+.PP
+Specifies the source for NuGet packages.
 .IP \[bu] 2
 \f[B]\f[VB]--tool-manifest <PATH>\f[B]\f[R]
 .RS 2
@@ -172,14 +173,12 @@ PATH can be absolute or relative.
 Can\[cq]t be combined with the \f[V]--global\f[R] option.
 Omitting both \f[V]--global\f[R] and \f[V]--tool-path\f[R] specifies that the tool to be updated is a local tool.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--version <VERSION>\f[B]\f[R]
 .RS 2
@@ -222,10 +221,16 @@ Updates the dotnetsay (https://www.nuget.org/packages/dotnetsay/) local tool ins
 Updates the dotnetsay (https://www.nuget.org/packages/dotnetsay/) global tool to the latest patch version, with a major version of \f[V]2\f[R], and a minor version of \f[V]0\f[R].
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]dotnet tool update -g dotnetsay --version (2.0.*,2.1.4)\f[B]\f[R]
+\f[B]\f[VB]dotnet tool update -g dotnetsay\[at]2.1.7*\f[B]\f[R]
 .RS 2
 .PP
-Updates the dotnetsay (https://www.nuget.org/packages/dotnetsay/) global tool to the lowest version within the specified range \f[V](> 2.0.0 && < 2.1.4)\f[R], version \f[V]2.1.0\f[R] would be installed.
+Updates the dotnetsay (https://www.nuget.org/packages/dotnetsay/) global tool to the latest patch version, 2.1.7.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool update -g dotnetsay --version (2.0.0,2.1.7)\f[B]\f[R]
+.RS 2
+.PP
+Updates the dotnetsay (https://www.nuget.org/packages/dotnetsay/) global tool to the lowest version within the specified range \f[V](> 2.0.0 && < 2.1.7)\f[R], version \f[V]2.1.0\f[R] would be installed.
 For more information on semantic versioning ranges, see NuGet packaging version ranges.
 .RE
 .SH SEE ALSO

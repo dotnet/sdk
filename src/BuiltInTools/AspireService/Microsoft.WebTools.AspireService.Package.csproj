@@ -5,11 +5,11 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
     <IsSourcePackage>true</IsSourcePackage>
     <PackageId>Aspire.Tools.Service</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>

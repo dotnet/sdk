@@ -1,9 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -34,7 +36,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = Assets.Select(a => StaticWebAsset.FromV1TaskItem(a)).ToArray();
+        var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
         var endpointByAsset = endpoints
             .GroupBy(e => e.AssetFile, OSPath.PathComparer)

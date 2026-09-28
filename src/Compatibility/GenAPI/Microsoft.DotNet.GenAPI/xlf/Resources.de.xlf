@@ -12,6 +12,11 @@
         <target state="translated">Der Typ „{0}“ in der enthaltenden Assembly „{1}“ konnte nicht über die Typweiterleitung aufgelöst werden. Stellen Sie sicher, dass die Assembly als Verweis bereitgestellt wird und den Typ enthält.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Der Syntaxknoten wurde nicht gefunden.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

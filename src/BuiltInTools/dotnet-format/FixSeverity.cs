@@ -7,5 +7,6 @@ namespace Microsoft.CodeAnalysis.Tools
         public const string Error = "error";
         public const string Warn = "warn";
         public const string Info = "info";
+        public const string Hidden = "hidden";
     }
 }

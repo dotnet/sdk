@@ -40,6 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CreateWindowsSdkKnownFrameworkReferences
       UseWindowsSDKPreview="$(UseWindowsSDKPreview)"
       WindowsSdkPackageVersion="$(WindowsSdkPackageVersion)"
+      WindowsSdkPackageMinimumRevision="$(WindowsSdkPackageMinimumRevision)"
       TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
       TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
@@ -50,14 +51,25 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
- 
+  
+  <!-- TODO: https://github.com/dotnet/sdk/issues/49917 Remove the framework based condition when the data for netcoreapp2.1 and below is fixed-->
+  <!-- Package pruning is expected to be enable for all TFMs for multi-targeted projects, so still generate the pruning data when RestoreEnablePackagePruning is '' which implies a multi-targeted project. -->
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
-          Condition="'$(RestoreEnablePackagePruning)' == 'true'">
-
+          DependsOnTargets="ProcessFrameworkReferences"
+          Condition="'$(RestoreEnablePackagePruning)' == 'true' OR '$(RestoreEnablePackagePruning)' == ''">
+    <PropertyGroup>
+      <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
+      <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>
+      <AllowMissingPrunePackageData Condition="'$(AllowMissingPrunePackageData)' == ''">false</AllowMissingPrunePackageData>
+    </PropertyGroup>
+    
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                         FrameworkReferences="@(FrameworkReference)"
-                        TargetingPackRoot="$(NetCoreTargetingPackRoot)">
+                        TargetingPacks="@(TargetingPack)"
+                        TargetingPackRoots="$(PrunePackageTargetingPackRoots)"
+                        PrunePackageDataRoot="$(PrunePackageDataRoot)"
+                        AllowMissingPrunePackageData="$(AllowMissingPrunePackageData)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     
@@ -94,6 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <EnableTargetingPackDownload Condition="'$(EnableTargetingPackDownload)' == ''">true</EnableTargetingPackDownload>
       <EnableRuntimePackDownload Condition="'$(EnableRuntimePackDownload)' == ''">true</EnableRuntimePackDownload>
+      <RequiresAspNetWebAssets Condition="'$(RequiresAspNetWebAssets)' == ''">false</RequiresAspNetWebAssets>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -147,7 +160,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 KnownILLinkPacks="@(KnownILLinkPack)"
                                 KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
+                                KnownAspNetCorePacks="@(KnownAspNetCorePack)"
                                 UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
+                                RequiresAspNetWebAssets="$(RequiresAspNetWebAssets)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
@@ -455,8 +470,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- Default "off by default analyzer" settings for trimmed apps. -->
+  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
+    <!-- Enable the built-in source generators. -->
+    <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
+    <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+    <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+    <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
+    <InterceptorsPreviewNamespaces Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
+  </PropertyGroup>
+  
   <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
           Condition="'@(FrameworkReference)' != ''">
+    
     <ItemGroup>
       <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll"
                             IsEnabled="$(EnableRequestDelegateGenerator)"/>

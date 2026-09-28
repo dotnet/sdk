@@ -15,12 +15,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Hidden = true;
             Aliases.Add("-i");
 
-            parentCommand.AddNoLegacyUsageValidators(this, except: new CliOption[] { InteractiveOption, AddSourceOption });
+            parentCommand.AddNoLegacyUsageValidators(this, except: new Option[] { InteractiveOption, AddSourceOption });
         }
 
-        internal override CliOption<bool> InteractiveOption => ParentCommand.InteractiveOption;
+        internal override Option<bool> InteractiveOption => ParentCommand.InteractiveOption;
 
-        internal override CliOption<string[]> AddSourceOption => ParentCommand.AddSourceOption;
+        internal override Option<string[]> AddSourceOption => ParentCommand.AddSourceOption;
 
         protected override Task<NewCommandStatus> ExecuteAsync(InstallCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {

@@ -17,7 +17,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
         int ProgressBarTop;
         bool ForwardProgress;
         bool ActionDataEnabled;
-        string CurrentAction;
+        string? CurrentAction;
         bool ProgressDone;
 
         int ActionDataStep;
@@ -104,7 +104,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             Console.SetCursorPosition(0, top);
         }
 
-        void OnActionData(object sender, ActionDataEventArgs e)
+        void OnActionData(object? sender, ActionDataEventArgs e)
         {
             if (ActionDataEnabled)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             e.Result = DialogResult.IDOK;
         }
 
-        void OnActionStart(object send, ActionStartEventArgs e)
+        void OnActionStart(object? send, ActionStartEventArgs e)
         {
             if (ActionDataEnabled)
             {
@@ -134,7 +134,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             e.Result = DialogResult.IDOK;
         }
 
-        void OnProgress(object send, ProgressEventArgs e)
+        void OnProgress(object? send, ProgressEventArgs e)
         {
             e.Result = DialogResult.IDOK;
 

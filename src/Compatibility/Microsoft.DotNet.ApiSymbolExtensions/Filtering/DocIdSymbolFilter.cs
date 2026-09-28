@@ -9,9 +9,46 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the logic of filtering out api.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
-    public class DocIdSymbolFilter(string[] docIdsToExcludeFiles) : ISymbolFilter
+    public class DocIdSymbolFilter : ISymbolFilter
     {
-        private readonly HashSet<string> _docIdsToExclude = new(ReadDocIdsAttributes(docIdsToExcludeFiles));
+        private readonly HashSet<string> _docIdsToExclude;
+
+        /// <summary>
+        /// Creates a filter to exclude APIs using the DocIDs provided in the specified files.
+        /// </summary>
+        /// <param name="filesWithDocIdsToExclude">A collection of files each containing multiple DocIDs to exclude.</param>
+        /// <returns>An instance of the symbol filter.</returns>
+        public static DocIdSymbolFilter CreateFromFiles(params string[] filesWithDocIdsToExclude)
+        {
+            List<string> docIds = new();
+
+            foreach (string docIdsToExcludeFile in filesWithDocIdsToExclude)
+            {
+                if (string.IsNullOrWhiteSpace(docIdsToExcludeFile))
+                {
+                    continue;
+                }
+
+                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsToExcludeFile)))
+                {
+                    docIds.Add(docId);
+                }
+            }
+
+            return new DocIdSymbolFilter(docIds);
+        }
+
+        /// <summary>
+        /// Creates a filter to exclude APIs using the DocIDs provided in the specified list.
+        /// </summary>
+        /// <param name="docIdsToExclude">A collection of DocIDs to exclude.</param>
+        /// <returns>An instance of the symbol filter.</returns>
+        public static DocIdSymbolFilter CreateFromLists(params string[] docIdsToExclude)
+            => new DocIdSymbolFilter(ReadDocIdsFromList(docIdsToExclude));
+
+        // Private constructor to avoid creating an instance with an empty list.
+        private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)
+            => _docIdsToExclude = [.. docIdsToExclude];
 
         /// <summary>
         ///  Determines whether the <see cref="ISymbol"/> should be included.
@@ -29,20 +66,17 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             return true;
         }
 
-        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
+        private static IEnumerable<string> ReadDocIdsFromList(params string[] ids)
         {
-            foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
+            foreach (string id in ids)
             {
-                foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
-                {
 #if NET
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
+                if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
 #else
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
+                if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
 #endif
-                    {
-                        yield return id.Trim();
-                    }
+                {
+                    yield return id.Trim();
                 }
             }
         }

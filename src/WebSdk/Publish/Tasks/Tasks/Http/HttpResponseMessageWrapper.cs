@@ -9,12 +9,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks;
 internal class HttpResponseMessageWrapper : IHttpResponse
 {
     private readonly HttpResponseMessage _message;
-    private readonly Lazy<Task<Stream>> _responseBodyTask;
+    private readonly Lazy<Task<Stream>?> _responseBodyTask;
 
     public HttpResponseMessageWrapper(HttpResponseMessage message)
     {
         _message = message;
-        _responseBodyTask = new Lazy<Task<Stream>>(GetResponseStream);
+        _responseBodyTask = new Lazy<Task<Stream>?>(GetResponseStream);
 
         StatusCode = message?.StatusCode ?? HttpStatusCode.InternalServerError;
     }
@@ -23,7 +23,7 @@ internal class HttpResponseMessageWrapper : IHttpResponse
     public HttpStatusCode StatusCode { get; private set; }
 
     /// <inheritdoc/>
-    public async Task<Stream> GetResponseBodyAsync()
+    public async Task<Stream?> GetResponseBodyAsync()
     {
         return _responseBodyTask.Value is not null
             ? await _responseBodyTask.Value
@@ -35,7 +35,7 @@ internal class HttpResponseMessageWrapper : IHttpResponse
     {
         if (_message is not null
             && _message.Headers is not null
-            && _message.Headers.TryGetValues(name, out IEnumerable<string> values))
+            && _message.Headers.TryGetValues(name, out IEnumerable<string>? values))
         {
             return values;
         }
@@ -43,7 +43,7 @@ internal class HttpResponseMessageWrapper : IHttpResponse
         return [];
     }
 
-    private Task<Stream> GetResponseStream()
+    private Task<Stream>? GetResponseStream()
     {
         return _message is not null && _message.Content is not null
             ? _message.Content.ReadAsStreamAsync()

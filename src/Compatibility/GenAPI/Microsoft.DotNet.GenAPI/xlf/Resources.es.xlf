@@ -12,6 +12,11 @@
         <target state="translated">No se pudo resolver el tipo "{0}" en el ensamblado contenedor "{1}" mediante el reenvío de tipos. Asegúrese de que el ensamblado se proporciona como referencia y contiene el tipo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">No se encuentra el nodo de sintaxis.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

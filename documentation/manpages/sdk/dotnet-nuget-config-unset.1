@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-config-unset" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-nuget-config-unset" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet nuget config unset
 .PP
@@ -42,21 +42,17 @@ The \f[V]dotnet nuget config unset\f[R] unsets the values for NuGet configuratio
 The key of the settings that are to be removed.
 .RE
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
-.RS 2
 .PP
 The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Removes\[cq]s the \f[V]repositoryPath\f[R] config value from the specified configuration file:
@@ -64,7 +60,7 @@ Removes\[cq]s the \f[V]repositoryPath\f[R] config value from the specified confi
 .IP
 .nf
 \f[C]
-dotnet nuget config unset repositoryPath --configfile \[dq]C:/nugte.config\[dq]
+dotnet nuget config unset repositoryPath --configfile \[dq]C:/nuget.config\[dq]
 \f[R]
 .fi
 .RE

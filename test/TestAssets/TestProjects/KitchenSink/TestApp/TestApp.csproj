@@ -14,6 +14,7 @@
     <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
     <_DesignerHostSupport>true</_DesignerHostSupport>
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+    <_DataSetXmlSerializationSupport>true</_DataSetXmlSerializationSupport>
     <_ComObjectDescriptorSupport>false</_ComObjectDescriptorSupport>
     <DebuggerSupport>true</DebuggerSupport>
     <MetricsSupport>false</MetricsSupport>
@@ -21,13 +22,16 @@
     <EventSourceSupport>false</EventSourceSupport>
     <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <WasmEnableStreamingResponse>true</WasmEnableStreamingResponse>
     <_UseManagedNtlm>true</_UseManagedNtlm>
+    <Http3Support>false</Http3Support>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
@@ -48,6 +52,7 @@
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <UseSizeOptimizedLinq>true</UseSizeOptimizedLinq>
     <_ActiveXImplSupport>true</_ActiveXImplSupport>
     <_WinFormsBindingSupport>true</_WinFormsBindingSupport>
     <_WinFormsDesignTimeFeaturesSupport>true</_WinFormsDesignTimeFeaturesSupport>

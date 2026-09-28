@@ -18,7 +18,7 @@ internal interface IHttpResponse
     /// <summary>
     /// Gets the body of the response
     /// </summary>
-    Task<Stream> GetResponseBodyAsync();
+    Task<Stream?> GetResponseBodyAsync();
 
     /// <summary>
     /// Gets the value of an HTTP Response header

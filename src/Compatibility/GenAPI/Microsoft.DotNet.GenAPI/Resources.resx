@@ -123,4 +123,7 @@
   <data name="ResolveTypeForwardFailed" xml:space="preserve">
     <value>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</value>
   </data>
+  <data name="SyntaxNodeNotFound" xml:space="preserve">
+    <value>Syntax node not found.</value>
+  </data>
 </root>

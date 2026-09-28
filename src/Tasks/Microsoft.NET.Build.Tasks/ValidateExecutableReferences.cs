@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.Versioning;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -53,7 +56,7 @@ namespace Microsoft.NET.Build.Tasks
                 // We can only access TargetFrameworks and NearestTargetFramework to find the referenced project "TargetFramework".
                 // We rely on the nearest one because it will pick the lowest 'most-compatible' tfm for the referencer and referencee projects.
                 // Since 'younger' TFMs are the ones that would error and are generally also what gets picked as 'most-copmaptible,' we can use it.
-                FrameworkName? referencedProjectTargetFramework = null;
+                FrameworkName referencedProjectTargetFramework = null;
                 var targetFrameworkMonikerIndex = Array.FindIndex(project.GetMetadata("TargetFrameworks").Split(';'), targetFramework => targetFramework == nearestTargetFramework);
 
                 // Since TargetFrameworks can have aliases that aren't the real TFM, we need to uncover the potential alias to the raw TargetFramework in the TFMs by using its index

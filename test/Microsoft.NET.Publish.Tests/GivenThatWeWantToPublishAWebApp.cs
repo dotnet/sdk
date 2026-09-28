@@ -103,12 +103,14 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)
         {
+
+
             var tfm = "netcoreapp2.2";
 
             var testProject = new TestProject()

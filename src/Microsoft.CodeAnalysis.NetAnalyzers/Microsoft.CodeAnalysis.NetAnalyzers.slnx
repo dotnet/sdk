@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Microsoft.CodeAnalysis.CSharp.NetAnalyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers.Setup/Microsoft.CodeAnalysis.NetAnalyzers.Setup.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
+    <Project Path="src/Utilities/Compiler.CSharp/Analyzer.CSharp.Utilities.shproj" Id="be5fe32c-da73-4ec5-809e-e11b05aca398" />
+    <Project Path="src/Utilities/Compiler/Analyzer.Utilities.shproj" Id="ec946164-1e17-410b-b7d9-7de7e6268d63" />
+    <Project Path="src/Utilities/FlowAnalysis/FlowAnalysis.Utilities.shproj" Id="fcb56cba-fa35-46a8-86b7-bae5433197d9" />
+    <Project Path="src/Utilities/Workspaces/Workspaces.Utilities.shproj" Id="99f594b1-3916-471d-a761-a6731fc50e9a" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj" />
+    <Project Path="tests/Test.Utilities/Test.Utilities.csproj" />
+    <Project Path="tests/TestReferenceAssembly/TestReferenceAssembly.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj" />
+  </Folder>
+</Solution>
