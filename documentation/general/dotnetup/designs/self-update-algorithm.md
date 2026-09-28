@@ -10,6 +10,8 @@ The approach below applies to both stages unless noted. Stage A uses immediate f
 
 #### Stage A Update Logic
 
+<a id="self-update-definitions"></a>
+
 ##### Definitions
 
 Let `D/` be the directory containing the installed dotnetup executable, and let `D/dotnetup.exe` be that executable at its canonical path.
@@ -58,6 +60,8 @@ Lock ownership during command execution and cleanup:
 
 Because `S` holds neither lock, a self update can complete underneath it. `S` must cache image-derived values at startup, particularly the executable path and loaded version. Capturing a path does not identify the loaded image: the parent's version comes from its loaded assembly's informational version, never by querying that path. See [Program](../../../../src/Installer/dotnetup.Library/Program.cs) and [DotnetupProcessInfo](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs).
 
+<a id="lock-acquisition-algorithm"></a>
+
 ##### Algorithm 1 — Lock acquisition and the `non-safe` gate
 
 **Rule 1 — `P` acquires `U` before `A`.** `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update` or cleanup. `N` acquires only `A` at the gate; after passing its version check, it may also hold `U` briefly for cleanup under step 2.9.
@@ -77,6 +81,8 @@ Cleanup does not use these retry timeouts: it makes one nonblocking attempt to a
 
 ###### Lock Acquisition for `P`
 
+<a id="check-available-update"></a>
+
 **1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the version reported by the canonical executable's `--version` command. For versions in the same semantic channel—the first prerelease identifier, or stable when there is no prerelease identifier—the resolved version must be newer. A version from a different semantic channel is eligible even when its SemVer precedence is lower, so an explicit channel transition is not mistaken for a downgrade. If no update is eligible, `P` exits successfully without acquiring `U` or `A`.
 
 The canonical version query is advisory: it is never the basis for replacing or deleting an executable. A failed query, including an observation of the step 2.4 replacement window, falls through to step 1.1 and the authoritative check under both locks. Release resolution is different: a network or release-metadata failure stops the command before either lock is acquired. The resolved release, including `V_channel`, is pinned for the rest of the transaction. See [SelfUpdateWorkflow.Execute](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs).
@@ -92,6 +98,8 @@ The check is placed before both locks rather than between steps 1.1 and 1.2 deli
 **1.2 — `P` acquires `A` exclusively.** A busy `A` means at least one `N` is running. Per rule 2, `P` releases `U`, backs off, and retries the pair from step 1.1 for up to `X_A`. On expiry of `X_A`, `P` fails with `DotnetupBusyWithAnotherCommand` and reports that another dotnetup command is running, with guidance to retry after it completes.
 
 ###### Lock Acquisition for `N`
+
+<a id="non-safe-command-gate"></a>
 
 **1.3 — `N` passes the gate.** The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
 
@@ -114,6 +122,8 @@ The comparison is unconditional, even if acquiring `A` succeeded immediately: re
 
 Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
+<a id="pre-gate-work"></a>
+
 **1.6 — Work permitted before the gate.** Startup captures the executable path and informational version from the loaded assembly. Except for the telemetry drainer, [Program](../../../../src/Installer/dotnetup.Library/Program.cs) starts root telemetry before language and console setup, shows the first-run notice, and parses arguments. Command constructors must not access installation state or start network work. Program creates a [SelfUpdateInvocation](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) when [DotnetupProcessInfo.IsDirectExecution](../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs) identifies a directly launched dotnetup executable. The telemetry drainer reuses the same check: the entry assembly must be dotnetup and the captured executable must not be the `dotnet` host. Renamed executables are supported. Execution through `dotnet` and test hosts remains invocation-free and rejects self-update. This check identifies the host, not NativeAOT packaging; a managed dotnetup apphost can pass it. Self-update is supported for the published standalone executable, not for updating a managed deployment's collection of files.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
@@ -124,7 +134,11 @@ Root telemetry, the first-run telemetry notice, and its sentinel are permitted b
 
 ###### Common to `P` and `N`
 
+<a id="contention-reporting"></a>
+
 **1.7 — Reporting contention; holder identification deferred.** [NonSafeCommandGate](../../../../src/Installer/dotnetup.Library/SelfUpdate/NonSafeCommandGate.cs) and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) report the contention category and retry guidance using localized messages and distinct error codes. They do not query operating-system process information or append process names/PIDs. Optional cleanup skips contention silently.
+
+<a id="update-transaction-algorithm"></a>
 
 ##### Algorithm 2 — The update transaction
 
@@ -137,6 +151,8 @@ Step 2.1 is the authoritative check and is performed even when step 1.0 already 
 **2.2 — `P` clears stale artifacts.** `P` validates and removes `D/dotnetup.exe.new` and `D/dotnetup.exe.new.download` if present, and performs best-effort deletion of eligible backups subject to step 2.9. `P` uses its existing ownership of `U` and `A`; it does not reopen or release either lock for cleanup. Backup deletion failures are nonfatal. Unsafe or inaccessible staging files stop the update; the workflow maps I/O/access failures to `InstallFailed` rather than ignoring them.
 
 Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an older process cannot prevent a later transaction from staging.
+
+<a id="stage-and-validate-replacement"></a>
 
 **2.3 — `P` stages and validates the replacement.** The shared [DotnetDownloader](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs) writes network bytes or copied cache bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`. Committing the download is not replacement of the installed executable. Current daily builds are unsigned: the command emits the existing unsigned-source warning and honors the unsigned-download policy, including cache hits. Signed stable self-update metadata is future work, not the current delivery path. Neither staging path is executed.
 
@@ -163,11 +179,17 @@ File.Replace(
 
 On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving the installed executable to `D/dotnetup.exe.old.<t>` and assigning `D/dotnetup.exe` to the staged replacement. `P` continues executing its already-loaded old image. A process launched after the call succeeds resolves the replacement image, while there is no deliberate canonical-path gap between two managed calls.
 
+<a id="handle-replacement-failure"></a>
+
 **2.5 — `P` handles replacement failure.** `ReplaceFileW` is a single API call, not an ACID transaction. In addition to failures that leave all original names intact, Windows documents partial failures. [SelfUpdateReplacement](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs) records its transaction paths and replacement progress, then inspects the actual paths after failure without following reparse points. It attempts restoration from the transaction's backup without executing or reading a custom record from either image. An unrecoverable failure retains recovery artifacts, reports the paths, and directs the caller to reinstall.
+
+<a id="smoke-test-replacement"></a>
 
 **2.6 — `P` smoke-tests the replacement.** `P` runs `D/dotnetup.exe --version`, waits synchronously for up to `X_V`, and requires status `0` and nonempty parseable version output matching the selected release's SemVer precedence. A feed version with build metadata must match the full output exactly; otherwise an informational-version source revision suffix is permitted. The loaded-versus-installed comparisons in steps 1.4 and 2.9 always require full string equality. This tests startup and release consistency, not authenticated freshness.
 
 **2.7 — `P` reports success.** `P` prints the installed version and the existing [dotnetup installation link](https://aka.ms/dotnet/dotnetup) for installing older versions. Acquired locks remain held through root telemetry completion and flush, then are released as `Main` returns.
+
+<a id="rollback-replacement"></a>
 
 **2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child times out, does not exit with status `0`, or reports an invalid or unexpected version, `P` attempts to terminate the verification child if it is still running, then attempts to restore the backup while still holding both locks. A failed kill or termination wait does not suppress rollback. [SelfUpdateVerifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) preserves that failure in the exception chain, and [SelfUpdateWorkflow](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains it when reporting verification or rollback failure. Restoring the canonical path does not establish that the verification child exited; file sharing may permit rollback while it remains alive. The original updater process stays alive throughout recovery. Rollback never needs to query the failed replacement's version.
 
@@ -176,6 +198,8 @@ The two renames are not atomic together: the canonical path is absent between th
 If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
 
 Successful rollback restores the original executable at the canonical path. An `N` whose loaded full version matches that executable's `--version` output takes the matching branch of step 1.4; an `N` loaded from a different rejected version instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup in step 2.9.
+
+<a id="deferred-cleanup"></a>
 
 **2.9 — Deferred cleanup.** On later launches, [SelfUpdateCleanup](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateCleanup.cs) may remove `D/dotnetup.exe.old.*` backups, including rejected executables left by rollback. An `N` attempts cleanup only after acquiring `A` shared and taking the version-matches branch of step 1.4, retaining `A` throughout cleanup. Current safe commands perform no optional cleanup; `P` performs it only within the locked transaction, and `--version` never performs cleanup.
 
@@ -195,6 +219,8 @@ A dependent application — a long-running VS Code window, for example — may h
 
 After a crash, forced termination, or power loss, use the [get-dotnetup scripts](https://aka.ms/dotnet/dotnetup) to reinstall when the canonical executable is unavailable. Recovery still requires a writable, functioning filesystem; the protocol does not guarantee automatic recovery from every interruption.
 
+<a id="linux-replacement"></a>
+
 ## Linux:
 
 Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.8 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same `--version` query as Windows, not device/inode identity.
@@ -211,6 +237,8 @@ On a supported local Linux filesystem, new openers observe either the complete o
 Cross-filesystem `File.Move` may degrade to copy/delete behavior. Keeping all transaction files as siblings in a stable directory avoids that scenario; this is a layout requirement, not a custom native rename guarantee.
 
 The rollback move restores the old executable. Step 1.4 permits an `N` with the matching full loaded version to proceed and rejects or forwards one loaded from a different rejected version, exactly as on Windows.
+
+<a id="unix-locking-caveats"></a>
 
 #### Unix locking caveats
 
