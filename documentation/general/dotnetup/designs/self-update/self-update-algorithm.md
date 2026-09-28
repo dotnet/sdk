@@ -146,9 +146,7 @@ Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an o
 
 ###### Stage and validate the replacement
 
-**2.3 — `P` stages and validates the replacement.** `P` writes downloaded or cached bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`. Committing the download is not replacement of the installed executable. Current daily builds are unsigned: the command emits the existing unsigned-source warning and honors the unsigned-download policy, including cache hits. Signed stable self-update metadata is future work, not the current delivery path. Neither staging path is executed.
-
-The artifact RID is selected by the release resolver. There is no embedded version/RID scan. The installed replacement must execute and report `V_channel` during step 2.6; a wrong version or an executable that cannot run triggers rollback.
+**2.3 — `P` stages and validates the replacement.** `P` writes downloaded or cached bytes to `D/dotnetup.exe.new.download`, verifies the pinned SHA-512 hash, and commits those validated bytes to `D/dotnetup.exe.new`.
 
 Both staging paths are inside `D/` to keep the eventual replacement on the destination volume. Unvalidated bytes remain under `.new.download`; hash-validated bytes become `.new`. Step 2.2 clears both stale staging names when an update is needed. These protections require a trusted installation directory and stable paths; staging names alone are not a security boundary.
 
