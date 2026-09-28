@@ -43,6 +43,8 @@ The gate does not require the canonical executable name: a renamed executable, s
 
 The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
 
+The gate reads the installed version with `SelfUpdateVerifier.ReadInstalledVersion` in [SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs). On Windows it reads `FileVersionInfo.ProductVersion`, which NativeAOT populates from the informational version that `--version` prints, including the `+<commit>` suffix. Starting a `--version` child cost about 38 ms per command in Windows measurements, compared with under 1 ms for the resource read. Other platforms, and Windows files without a parseable resource, start the bounded `--version` child, which cost about 5 ms on Linux. Self-update's own installed-version queries, cleanup, and step 2.6 verification still start the child.
+
 Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
 
 ## Forwarding

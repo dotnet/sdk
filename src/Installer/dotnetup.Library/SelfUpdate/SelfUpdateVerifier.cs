@@ -3,7 +3,9 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
@@ -14,6 +16,43 @@ internal static class SelfUpdateVerifier
     private static readonly TimeSpan s_terminationTimeout = TimeSpan.FromSeconds(5);
 
     public static string ReadVersion(string installedPath) => ReadVersion(installedPath, TimeSpan.FromSeconds(15));
+
+    /// <summary>
+    /// Reads the installed version for identity comparisons without proving that the executable starts.
+    /// Windows reads the PE version resource in-process, whose product version is the same informational
+    /// version that <c>--version</c> prints; other platforms, and Windows files without a parseable
+    /// resource, run <c>--version</c>. Use <see cref="ReadVersion(string)"/> to verify startup.
+    /// </summary>
+    public static string ReadInstalledVersion(string installedPath)
+        => OperatingSystem.IsWindows() && TryReadVersionResource(installedPath, out var version)
+            ? version
+            : ReadVersion(installedPath);
+
+    private static bool TryReadVersionResource(string installedPath, [NotNullWhen(true)] out string? version)
+    {
+        version = null;
+        try
+        {
+            installedPath = SelfUpdatePaths.ResolvePath(installedPath);
+            using (SelfUpdatePaths.OpenFile(installedPath))
+            {
+            }
+
+            var productVersion = FileVersionInfo.GetVersionInfo(installedPath).ProductVersion;
+            if (productVersion is null || !ReleaseVersion.TryParse(productVersion, out _))
+            {
+                return false;
+            }
+
+            version = productVersion;
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            // ReadVersion repeats the file checks and reports the failure consistently.
+            return false;
+        }
+    }
 
     public static string ReadVersion(string installedPath, TimeSpan timeout)
     {

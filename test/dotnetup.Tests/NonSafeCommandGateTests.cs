@@ -72,6 +72,7 @@ public class NonSafeCommandGateTests
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
     public void InvalidVersionOutputReleasesActivityLock()
     {
         using var files = new SelfUpdateTestFiles(mode: "empty");
@@ -80,6 +81,32 @@ public class NonSafeCommandGateTests
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
         using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNotNull(update);
+    }
+
+    [TestMethod]
+    public void UnreadableInstalledVersionReleasesActivityLock()
+    {
+        using var files = new SelfUpdateTestFiles(executable: false);
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
+        using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
+        Assert.IsNotNull(update);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WindowsGateReadsVersionResourceWithoutStartingProcess()
+    {
+        // The version child would fail in this mode, so passing proves the gate did not start it.
+        using var files = new SelfUpdateTestFiles(mode: "nonzero");
+
+        using var lease = NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion);
+
+        Assert.IsFalse(File.Exists(files.Paths.InstalledPath + ".invocations"));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.ReplacementVersion));
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupExecutableChanged, exception.ErrorCode);
     }
 
     [TestMethod]
@@ -93,7 +120,8 @@ public class NonSafeCommandGateTests
         Assert.AreEqual(files.Paths.ActivityLockPath, renamed.ActivityLockPath);
         using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNull(update);
-        Assert.HasCount(1, File.ReadAllLines(renamed.InstalledPath + ".invocations"));
+        // Windows reads the version resource in-process; other platforms start one --version child.
+        Assert.AreEqual(!OperatingSystem.IsWindows(), File.Exists(renamed.InstalledPath + ".invocations"));
     }
 
     [TestMethod]

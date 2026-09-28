@@ -102,7 +102,7 @@ The check is placed before both locks rather than between steps 1.1 and 1.2 deli
 
 A busy `A` unambiguously means a transaction is in flight, because `A` is only ever held exclusively by `P`; another `N` holding `A` shared does not block this one.
 
-**1.4 — `N` checks the installed version.** After acquiring `A` shared, `N` runs the canonical executable with `--version` while retaining `A` and compares the result with its own cached loaded assembly version.
+**1.4 — `N` checks the installed version.** After acquiring `A` shared, `N` reads the canonical executable's full version while retaining `A` and compares the result with its own cached loaded assembly version. On Windows, `N` reads the product version from the executable's PE version resource in-process; it is the same informational version that `--version` prints. If the resource is missing or unparseable, and on other platforms, `N` runs the canonical executable with `--version`. This is an identity check only; step 2.6 still starts the replacement to prove it runs.
 
 - **Identity matches.** The loaded and installed builds agree, including after rollback to the loaded build. `N` proceeds to the command body.
 - **Identity differs.** The loaded build is no longer installed, so `N` must not execute its command body. In Stage A, `N` fails and instructs the caller to re-run the command. In Stage B, `N` forwards per step 1.5.
@@ -179,7 +179,7 @@ The two renames are not atomic together: the canonical path is absent between th
 
 If the first move fails, the rejected executable remains at the canonical path and the backup remains untouched. If the second move fails, the canonical path remains absent and both the backup and rejected executable are retained for recovery. `P` must not delete the backup on either failure; if restoration cannot be completed, `P` reports that dotnetup must be reinstalled.
 
-Successful rollback restores the original executable at the canonical path. An `N` whose loaded full version matches that executable's `--version` output takes the matching branch of step 1.4; an `N` loaded from a different rejected version instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup of a later self update under step 2.9.
+Successful rollback restores the original executable at the canonical path. An `N` whose loaded full version matches that executable's installed version takes the matching branch of step 1.4; an `N` loaded from a different rejected version instead fails or forwards according to its stage. The rejected executable is left for the best-effort `D/dotnetup.exe.old.*` cleanup of a later self update under step 2.9.
 
 ###### Deferred cleanup
 

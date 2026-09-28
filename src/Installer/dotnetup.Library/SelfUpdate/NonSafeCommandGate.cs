@@ -27,7 +27,7 @@ internal static class NonSafeCommandGate
             string installedVersion;
             try
             {
-                installedVersion = SelfUpdateVerifier.ReadVersion(paths.InstalledPath);
+                installedVersion = SelfUpdateVerifier.ReadInstalledVersion(paths.InstalledPath);
             }
             catch (DotnetInstallException exception)
             {
