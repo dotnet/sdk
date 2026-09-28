@@ -1,10 +1,10 @@
 # Self Update Broad Approach
 
-The approach below applies to both stages unless noted. Stage A uses immediate failure at the `non-safe` gate; Stage B adds bounded waiting and forwarding using the same locks and loaded-version check. Signed version manifests and monotonic update authorization are deferred to future stages: the current unsigned release metadata, checksums, and startup smoke check do not authenticate freshness or prevent replay.
-
 ## Self-update target
 
-`self update` targets the direct NativeAOT `dotnetup` executable that started the current process. Its path is captured from the loaded process at startup, and [SelfUpdatePaths](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs) derives the canonical executable, locks, staging file, and backups from that location. The command does not resolve a separate expected user-wide or system-wide installation path. Therefore, independently installed copies update themselves in place; a managed development host is not treated as an installed copy and rejects self-update.
+`self update` targets the direct NativeAOT `dotnetup` executable that started the current process. Its path is captured from the loaded process at startup.
+
+Therefore, independently installed copies update themselves in place; a managed development host is not treated as an installed copy and rejects self-update.
 
 ## Windows:
 
@@ -16,7 +16,7 @@ Let `D/` be the directory containing the installed dotnetup executable, and let 
 
 Let `t` be the transaction identifier: the first eight hexadecimal characters of a new GUID. An occupied backup path aborts replacement without overwriting the existing file.
 
-Let `D/dotnetup.exe.new.download` be the download temporary file, `D/dotnetup.exe.new` the hash-validated staged replacement, and `D/dotnetup.exe.old.<t>` the backup of the executable being replaced. All are siblings of `D/dotnetup.exe` on the same volume. [SelfUpdatePaths](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdatePaths.cs) derives these paths from the captured executable path.
+Let `D/dotnetup.exe.new.download` be the download temporary file, `D/dotnetup.exe.new` the hash-validated staged replacement, and `D/dotnetup.exe.old.<t>` the backup of the executable being replaced. All are siblings of `D/dotnetup.exe` on the same volume.
 
 Let `A` be the activity lock, the file `D/dotnetup.activity.lock`.
 
@@ -30,7 +30,7 @@ Let `N` be any `non-safe` dotnetup process.
 
 Let `S` be any `safe` dotnetup process other than `P`: `dotnetup dotnet` and the telemetry drain process. `self update` is classified `safe` as well, but `P` follows the update-lock acquisition protocol rather than the ordinary command gate. Parser-only actions such as help and version do not execute a command body and do not use that gate.
 
-Let `V_channel` be the full version resolved from the selected channel for the target RID, and let `V_installed` be the full version reported by `D/dotnetup.exe --version`. The [version-query contract](self-update-verification.md) requires bounded successful execution and valid version output. Equality is local consistency, not content identity or authenticated freshness; builds reporting identical full versions cannot be distinguished. There is no custom embedded version/RID record or identity sidecar.
+Let `V_channel` be the full version resolved from the selected channel for the target RID, and let `V_installed` be the full version reported by `D/dotnetup.exe --version`. We require successful execution and valid version output.
 
 Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of Algorithm 1.
 
@@ -41,7 +41,6 @@ Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of 
 | `A` | "a `non-safe` command is running" | "no `non-safe` command is running, and none may start from the current executable" |
 | `U` | unused; `U` is only ever opened exclusively | "a self-update transaction or best-effort cleanup owns the update artifacts" |
 
-`FileShare.Delete` is never requested on `A` or `U`.
 
 Lock ownership during command execution and cleanup:
 
@@ -56,7 +55,7 @@ Lock ownership during command execution and cleanup:
 
 `A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes self-update transactions and cleanup against each other. `N` does not acquire `U` to pass the gate or retain `U` for its command lifetime; its optional cleanup follows step 2.9.
 
-Because `S` holds neither lock, a self update can complete underneath it. `S` must cache image-derived values at startup, particularly the executable path and loaded version. Capturing a path does not identify the loaded image: the parent's version comes from its loaded assembly's informational version, never by querying that path. See [Program](../../../../../src/Installer/dotnetup.Library/Program.cs) and [DotnetupProcessInfo](../../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs).
+Because `S` holds neither lock, a self update can complete underneath it. `S` must cache image-derived values at startup, particularly the executable path and loaded version.
 
 ##### Lock acquisition and the `non-safe` gate
 
@@ -83,7 +82,7 @@ Cleanup does not use these retry timeouts: it makes one nonblocking attempt to a
 
 **1.0 — `P` checks for an available update before acquiring any lock.** `P` resolves `V_channel` and compares it with the version reported by the canonical executable's `--version` command. For versions in the same semantic channel—the first prerelease identifier, or stable when there is no prerelease identifier—the resolved version must be newer. A version from a different semantic channel is eligible even when its SemVer precedence is lower, so an explicit channel transition is not mistaken for a downgrade. If no update is eligible, `P` exits successfully without acquiring `U` or `A`.
 
-The canonical version query is advisory: it is never the basis for replacing or deleting an executable. A failed query, including an observation of the step 2.4 replacement window, falls through to step 1.1 and the authoritative check under both locks. Release resolution is different: a network or release-metadata failure stops the command before either lock is acquired. The resolved release, including `V_channel`, is pinned for the rest of the transaction. See [SelfUpdateWorkflow.Execute](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs).
+The canonical version query is advisory: it is never the basis for replacing or deleting an executable.
 
 Querying the canonical version without holding `U` is acceptable here and is not in step 2.9, because the two queries gate different actions. Step 2.9 uses the value to delete backups, which is irreversible, so it queries under `U`. Step 1.0 uses the value only to decide whether to continue; a transiently absent or unstartable canonical path cannot authorize replacement or cleanup.
 
@@ -107,9 +106,7 @@ A busy `A` unambiguously means a transaction is in flight, because `A` is only e
 
 Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
 
-**1.4 — `N` checks the installed version.** After acquiring `A` shared, `N` runs the canonical executable with `--version` while retaining `A` and compares the result with its own cached loaded assembly version. Comparison is ordinal equality of the full version string, including build metadata. The [version-query contract](self-update-verification.md) defines child startup, encoding, validation, and time limits. The child acquires neither lock and does not perform cleanup.
-
-The comparison is unconditional, even if acquiring `A` succeeded immediately: replacement may have completed before `N` reached the gate. `N` retains `A` through its command body or forwarding so a cooperating updater cannot change the canonical build underneath the check. Failed startup, timeout, nonzero exit, or invalid version output stop the command; an unknown version never compares equal.
+**1.4 — `N` checks the installed version.** After acquiring `A` shared, `N` runs the canonical executable with `--version` while retaining `A` and compares the result with its own cached loaded assembly version.
 
 - **Identity matches.** The loaded and installed builds agree, including after rollback to the loaded build. `N` proceeds to the command body.
 - **Identity differs.** The loaded build is no longer installed, so `N` must not execute its command body. In Stage A, `N` fails and instructs the caller to re-run the command. In Stage B, `N` forwards per step 1.5.
@@ -118,11 +115,14 @@ The comparison is unconditional, even if acquiring `A` succeeded immediately: re
 
 `D/dotnetup.exe` is resolved as the canonical, dotnetup-owned path and is not followed through an unexpected symbolic link or reparse point. Forwarding is capped at a `DOTNETUP_FORWARD_DEPTH` of 2; beyond that `N` fails rather than hopping again. `N` emits a telemetry event for the forward and does not emit a command-completion event, because the child emits one. Forwarding breaks if the replacement executable renamed or removed the command that `N` was invoked with.
 
-Forwarding is deferred to Stage B. `N` never executes the stale command body of `N` in either stage.
 
 ###### Work permitted before the gate
 
-**1.6 — Work permitted before the gate.** Startup captures the executable path and informational version from the loaded assembly. Except for the telemetry drainer, [Program](../../../../../src/Installer/dotnetup.Library/Program.cs) starts root telemetry before language and console setup, shows the first-run notice, and parses arguments. Command constructors must not access installation state or start network work. Program creates a [SelfUpdateInvocation](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) when [DotnetupProcessInfo.IsDirectExecution](../../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs) identifies a directly launched dotnetup executable. The telemetry drainer reuses the same check: the entry assembly must be dotnetup and the captured executable must not be the `dotnet` host. Renamed executables are supported. Execution through `dotnet` and test hosts remains invocation-free and rejects self-update. This check identifies the host, not NativeAOT packaging; a managed dotnetup apphost can pass it. Self-update is supported for the published standalone executable, not for updating a managed deployment's collection of files.
+**1.6 — Work permitted before the gate.**
+
+Except for the telemetry drainer, [Program](../../../../../src/Installer/dotnetup.Library/Program.cs) starts root telemetry before language and console setup, shows the first-run notice, and parses arguments.
+
+Command constructors must not access installation state or start network work. Program creates a [SelfUpdateInvocation](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateInvocation.cs) when [DotnetupProcessInfo.IsDirectExecution](../../../../../src/Installer/dotnetup.Library/DotnetupProcessInfo.cs) identifies a directly launched dotnetup executable. The telemetry drainer reuses the same check: the entry assembly must be dotnetup and the captured executable must not be the `dotnet` host. Renamed executables are supported. Execution through `dotnet` and test hosts remains invocation-free and rejects self-update. This check identifies the host, not NativeAOT packaging; a managed dotnetup apphost can pass it. Self-update is supported for the published standalone executable, not for updating a managed deployment's collection of files.
 
 Parsing must not read the manifest, enumerate `D/`, or touch the network.
 

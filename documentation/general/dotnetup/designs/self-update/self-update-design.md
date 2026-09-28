@@ -1,15 +1,16 @@
 # Self Update
 
-`dotnetup self update [--channel <daily|preview|stable>] [--no-progress]` updates the published NativeAOT `dotnetup`
-executable in place. Stage A is implemented; waiting and transparent forwarding of
-ordinary commands remain Stage B work. See [Stage A](self-update-stages.md#stage-a-success-criteria) and
-the [version-query contract](self-update-verification.md) for the current behavior and limitations.
+`dotnetup self update [--channel <daily|preview|stable>] [--no-progress]` updates the published NativeAOT `dotnetup` executable in place.
 
-The command resolves the latest release for the selected RID from the release channel. When
-`--channel` is omitted, [SelfUpdateDefaultChannel](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
+The command resolves the latest release for the selected RID from the release channel.
+
+When `--channel` is omitted, [SelfUpdateDefaultChannel](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
 derives it from the running build's SemVer prerelease label: no label selects `stable`, a
 `preview` label selects `preview`, and any other label (including local development builds)
-selects `daily`. This requires daily and preview builds to carry distinct prerelease labels.
+selects `daily`.
+
+
+This requires daily and preview builds to carry distinct prerelease labels.
 `--channel` can select `daily`, `preview`, or `stable` explicitly; `stable` is accepted so the
 command is ready when that channel starts publishing. An explicit `--channel` is the only
 way to move between channels. See [command usage](../../reference/dotnetup.md#self-update).
