@@ -175,7 +175,7 @@ On Windows, .NET maps this call to `ReplaceFileW`. The operation combines moving
 
 ###### Roll back
 
-**2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child times out, does not exit with status `0`, or reports an invalid or unexpected version, `P` attempts to terminate the verification child if it is still running, then attempts to restore the backup while still holding both locks. A failed kill or termination wait does not suppress rollback. Restoring the canonical path does not establish that the verification child exited; file sharing may permit rollback while it remains alive. The original updater process stays alive throughout recovery. Rollback never needs to query the failed replacement's version.
+**2.8 — `P` rolls back.** If `P` cannot start `D/dotnetup.exe`, the child times out, does not exit with status `0`, or reports an invalid or unexpected version, `P` attempts to terminate the verification child if it is still running, then attempts to restore the backup while still holding both locks. A failed kill or termination wait does not suppress rollback.
 
 The two renames are not atomic together: the canonical path is absent between them, and a crash or power loss can leave it absent. If the canonical path is already absent, `P` skips the first move and attempts only to restore the backup. `P` inspects paths without following unexpected reparse points and refuses occupied rollback destinations. It relies on the transaction and locks, not content identity, to identify its canonical candidate and backup.
 
