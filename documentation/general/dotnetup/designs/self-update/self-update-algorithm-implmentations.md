@@ -113,8 +113,8 @@ Cleanup resolves the containing directory using the same path logic as replaceme
 
 ## Unix replacement
 
-See the algorithm's [Linux replacement behavior](self-update-algorithm.md#linux)
-and [Unix locking caveats](self-update-algorithm.md#unix-locking-caveats).
+See the design's [Linux replacement behavior](self-update-design.md#linux)
+and [Unix locking caveats](self-update-design.md#unix-locking-caveats).
 
 The Unix forward switch uses the same managed `File.CreateHardLink` and `File.Move` APIs available to the rest of the installer. No dotnetup-specific `libc` imports or platform-specific native metadata layouts are needed.
 
