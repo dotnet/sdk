@@ -49,7 +49,7 @@
       ]
     },
     "wasi-experimental-${NetVersion}": {
-      "description": ".NET WASI experimental tooing for ${NetVersion}.0",
+      "description": ".NET WASI experimental tooling for ${NetVersion}.0",
       "packs": [
         "Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.wasi-wasm",
