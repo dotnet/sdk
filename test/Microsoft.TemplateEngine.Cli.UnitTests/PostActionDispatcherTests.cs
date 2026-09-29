@@ -13,6 +13,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
     [TestClass]
     public class PostActionDispatcherTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
         // mirrors the per-class lifetime that xUnit's IClassFixture provides.
         private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
@@ -56,7 +58,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
             Assert.HasCount(1, postActionProcessor.Calls);
             Assert.AreEqual(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
@@ -87,7 +89,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
             Assert.IsEmpty(postActionProcessor.Calls);
         }
@@ -113,7 +115,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
             Assert.AreEqual(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
             Assert.AreEqual(postAction, postActionProcessor.Calls.Single().PostAction);
@@ -144,7 +146,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
             Assert.IsEmpty(postActionProcessor.Calls);
         }
@@ -174,7 +176,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
             Assert.IsEmpty(postActionProcessor.Calls);
         }
@@ -200,7 +202,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
         }
 
@@ -241,7 +243,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes, TestContext.CancellationToken);
 
             // in case continue on error is true, success status is returned on failure
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
@@ -289,7 +291,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
 
             //only first post action was executed
@@ -325,7 +327,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes, TestContext.CancellationToken);
             //expect failure as post action fails
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
         }
@@ -357,7 +359,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => string.Empty);
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.No);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.No, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
         }
 
@@ -388,7 +390,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => "Y");  // the user allows to run post action
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
 
             //expect failure as post action fails
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
@@ -421,7 +423,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => "N"); // the user forbids to run post action
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
         }
 
@@ -453,11 +455,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => "N"); // the user forbids to run post action
 
             //run script setting doesn't matter for dry run
-            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
-            result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Yes);
+            result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Yes, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
-            result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.No);
+            result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.No, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
         }
 
@@ -498,7 +500,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => "N"); // the user forbids to run post action
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
             Assert.HasCount(1, postActionProcessor.Calls);
             Assert.AreEqual(postAction2, postActionProcessor.Calls.Single().PostAction);
@@ -541,7 +543,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 engineEnvironmentSettings,
                 () => "N"); // the user forbids to run post action
 
-            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
+            var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt, TestContext.CancellationToken);
             Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
             Assert.AreNotEqual(PostActionExecutionStatus.Failure, result);
             Assert.HasCount(1, postActionProcessor.Calls);
@@ -582,7 +584,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IPostAction action,
                 ICreationEffects creationEffects,
                 ICreationResult templateCreationResult,
-                string outputBasePath)
+                string outputBasePath,
+                CancellationToken cancellationToken = default)
             {
                 _receivedCalls.Add((environment, action, creationEffects, templateCreationResult, outputBasePath));
                 return _expectedResult;
@@ -598,7 +601,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IPostAction action,
                 ICreationEffects creationEffects,
                 ICreationResult templateCreationResult,
-                string outputBasePath)
+                string outputBasePath,
+                CancellationToken cancellationToken = default)
             {
                 throw new Exception("post action exception");
             }
