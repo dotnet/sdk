@@ -43,6 +43,9 @@ permissions:
   pull-requests: read
   copilot-requests: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 concurrency:
   # Distinct from the automatic workflow's group (`build-failure-analysis-<pr>`).
   # Concurrency groups are repository-global, so sharing the name made the two
