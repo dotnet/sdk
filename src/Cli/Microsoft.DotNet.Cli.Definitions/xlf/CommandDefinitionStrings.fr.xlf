@@ -1962,10 +1962,15 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">Désactive la vérification des mises à jour du package de modèles lors de l’instanciation d’un modèle.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Exécute le ou les tests, sans afficher la bannière Microsoft Testplatform</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Exécute le ou les tests, sans afficher la bannière Microsoft Testplatform</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>

@@ -1962,10 +1962,15 @@ O padrão é "false." No entanto, ao direcionar para .NET 7 ou inferior, o padr�
         <target state="translated">Desativa a verificação de atualizações de pacote de modelo ao instanciar um modelo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Executar testes, sem exibir a faixa do Microsoft Testplatform</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Executar testes, sem exibir a faixa do Microsoft Testplatform</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>

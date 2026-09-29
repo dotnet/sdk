@@ -51,7 +51,8 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void PackageReference()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
             #:package System.CommandLine@2.0.0-beta4.22272.1
             using System.CommandLine;
 
@@ -67,6 +68,97 @@ public sealed class RunFileTests_Directives : RunFileTestBase
                 Description:
                   Sample app for System.CommandLine
                 """);
+
+        // Package should have been restored.
+        var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        new FileInfo(Path.Join(artifactsPath, "obj", "project.assets.json"))
+            .Should().Contain("System.CommandLine/2.0.0-beta4.22272.1");
+    }
+
+    [TestMethod]
+    public void PackageReference_InRegion_Active()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #if true
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS9299: '#:' directives cannot be after '#if' directive
+            .And.HaveStdOutContaining("error CS9299:")
+            // The compiler stops after parsing when there are syntax errors, hence the following error is missing.
+            // NO error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.NotHaveStdOutContaining("error CS0234:");
+
+        // Package should not have been restored.
+        var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        new FileInfo(Path.Join(artifactsPath, "obj", "project.assets.json"))
+            .Should().NotContain("System.CommandLine");
+    }
+
+    [TestMethod]
+    public void PackageReference_InRegion_Conditional()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #if X
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:DefineConstants=X")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS9299: '#:' directives cannot be after '#if' directive
+            .And.HaveStdOutContaining("error CS9299:")
+            // The compiler stops after parsing when there are syntax errors, hence the following error is missing.
+            // NO error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.NotHaveStdOutContaining("error CS0234:");
+
+        // Package should not have been restored.
+        var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        new FileInfo(Path.Join(artifactsPath, "obj", "project.assets.json"))
+            .Should().NotContain("System.CommandLine");
+    }
+
+    [TestMethod]
+    public void PackageReference_InRegion_Inactive()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #if false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #endif
+            using System.CommandLine;
+            Console.WriteLine(typeof(RootCommand).Name);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // NO error CS9299: '#:' directives cannot be after '#if' directive
+            .And.NotHaveStdOutContaining("error CS9299:")
+            // error CS0234: The type or namespace name 'CommandLine' does not exist in the namespace 'System'
+            .And.HaveStdOutContaining("error CS0234:");
+
+        // Package should not have been restored.
+        var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        new FileInfo(Path.Join(artifactsPath, "obj", "project.assets.json"))
+            .Should().NotContain("System.CommandLine");
     }
 
     [TestMethod]
@@ -103,8 +195,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
     //  https://github.com/dotnet/sdk/issues/49665
     [TestMethod]
-
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/48990
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/48990
     public void SdkReference()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

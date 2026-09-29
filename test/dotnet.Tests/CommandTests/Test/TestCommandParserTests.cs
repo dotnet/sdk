@@ -114,6 +114,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
+        }
+
+        [TestMethod]
+        public void VSTestCommandUsesMicrosoftTestPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.VSTest();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying the Microsoft Test Platform banner");
+        }
+
+        [TestMethod]
         public void MTPCommandDoesNotDuplicateNoBannerOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -277,6 +293,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             parseResult.UnmatchedTokens.Should().Equal(
                 "--maximum-failed-tests", "2",
                 "--timeout", "10s");
+        }
+
+        [TestMethod]
+        [DataRow("--project", ".csproj", false)]
+        [DataRow("--project", ".csproj", true)]
+        [DataRow("--solution", ".sln", false)]
+        [DataRow("--solution", ".sln", true)]
+        [DataRow("--test-modules", ".dll", false)]
+        [DataRow("--test-modules", ".dll", true)]
+        public void MTPCommandDoesNotValidateForwardedPathsWhenBuildPathIsExplicit(
+            string buildPathOption,
+            string fileExtension,
+            bool useArgumentSeparator)
+        {
+            using var temp = new TempDirectory();
+            string selectedPath = Path.Combine(temp.Path, $"Selected{fileExtension}");
+            string forwardedPath = Path.Combine(temp.Path, $"Forwarded{fileExtension}");
+            File.WriteAllText(selectedPath, string.Empty);
+            File.WriteAllText(forwardedPath, string.Empty);
+
+            List<string> arguments =
+            [
+                buildPathOption, selectedPath,
+            ];
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(["--extension-option", forwardedPath]);
+
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([.. arguments]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).TestApplicationArguments.Should().Equal(
+                "--extension-option",
+                forwardedPath);
         }
 
         [TestMethod]

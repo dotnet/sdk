@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 extern alias MSTestFramework;
@@ -66,8 +66,9 @@ public class BuildProjects
         {
             SolutionFile = processSpec.Arguments.FirstOrDefault(a => a.EndsWith(".slnx"));
 
-            // Replace path to solution, which is a temp path, with placeholder to make assertions easier.
-            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a => a == SolutionFile ? "<solution>" : a)));
+            // Replace path to solution, which is a temp path, with a placeholder to make assertions easier.
+            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a =>
+                a == SolutionFile ? "<solution>" : a)));
         }
 
         public void Dispose()

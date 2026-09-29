@@ -602,11 +602,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                 return trimmedData;
             }
 
-            protected override PointsToAnalysisData GetInitialInterproceduralAnalysisData(
+            protected override (PointsToAnalysisData Data, bool IsTrimmed) GetInitialInterproceduralAnalysisData(
                 IMethodSymbol invokedMethod,
+                ControlFlowGraph invokedCfg,
                 (AnalysisEntity? Instance, PointsToAbstractValue PointsToValue)? invocationInstance,
                 (AnalysisEntity Instance, PointsToAbstractValue PointsToValue)? thisOrMeInstanceForCaller,
                 ImmutableDictionary<IParameterSymbol, ArgumentInfo<PointsToAbstractValue>> argumentValuesMap,
+                ImmutableDictionary<ISymbol, PointsToAbstractValue> capturedVariablesMap,
                 IDictionary<AnalysisEntity, PointsToAbstractValue>? pointsToValues,
                 IDictionary<AnalysisEntity, CopyAbstractValue>? copyValues,
                 IDictionary<AnalysisEntity, ValueContentAbstractValue>? valueContentValues,
@@ -614,10 +616,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                 bool hasParameterWithDelegateType)
             {
                 pointsToValues = CurrentAnalysisData.CoreAnalysisData;
-                var initialAnalysisData = base.GetInitialInterproceduralAnalysisData(invokedMethod,
-                    invocationInstance, thisOrMeInstanceForCaller, argumentValuesMap, pointsToValues,
+                var initialAnalysisData = base.GetInitialInterproceduralAnalysisData(invokedMethod, invokedCfg,
+                    invocationInstance, thisOrMeInstanceForCaller, argumentValuesMap, capturedVariablesMap, pointsToValues,
                     copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
-                AssertValidPointsToAnalysisData(initialAnalysisData);
+                AssertValidPointsToAnalysisData(initialAnalysisData.Data);
                 return initialAnalysisData;
             }
 
