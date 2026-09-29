@@ -33,10 +33,10 @@ internal sealed class SolutionMigrateCommand : CommandBase<SolutionMigrateComman
         string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
         try
         {
-            ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None).Wait();
+            ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, cancellationToken).GetAwaiter().GetResult();
             return 0;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new GracefulException(ex.Message, ex);
         }
@@ -44,7 +44,7 @@ internal sealed class SolutionMigrateCommand : CommandBase<SolutionMigrateComman
 
     private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(filePath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(filePath, cancellationToken);
         await SolutionSerializers.SlnXml.SaveAsync(slnxFilePath, solution, cancellationToken);
         _reporter.WriteLine(CliCommandStrings.SlnxGenerated, slnxFilePath);
     }

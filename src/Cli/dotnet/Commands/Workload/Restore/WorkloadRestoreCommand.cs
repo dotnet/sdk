@@ -46,7 +46,10 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         recorder.Run(() =>
         {
             // First discover projects. This may return an error if no projects are found, and we shouldn't delay until after Update if that's the case.
-            var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
+            var allProjects = DiscoverAllProjects(
+                Directory.GetCurrentDirectory(),
+                cancellationToken,
+                _slnOrProjectArgument).Distinct();
 
             // Then update manifests and install a workload set as necessary
             new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute(cancellationToken);
@@ -111,7 +114,9 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
     }
 
 
-    internal static List<string> DiscoverAllProjects(string currentDirectory,
+    internal static List<string> DiscoverAllProjects(
+        string currentDirectory,
+        CancellationToken cancellationToken,
         IEnumerable<string> slnOrProjectArgument = null)
     {
         var slnFiles = new List<string>();
@@ -133,7 +138,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
 
         foreach (string solutionFilePath in slnFiles)
         {
-            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, cancellationToken);
             projectFiles.AddRange(solutionFile.SolutionProjects.Select(
                 p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
         }

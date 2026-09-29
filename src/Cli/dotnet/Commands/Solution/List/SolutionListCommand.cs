@@ -26,18 +26,18 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         try
         {
-            ListAllProjectsAsync(solutionFileFullPath);
+            ListAllProjects(solutionFileFullPath, cancellationToken);
             return 0;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
         }
     }
 
-    private void ListAllProjectsAsync(string solutionFileFullPath)
+    private void ListAllProjects(string solutionFileFullPath, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath, cancellationToken);
         string[] paths;
         if (_displaySolutionFolders)
         {
