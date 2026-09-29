@@ -16,6 +16,8 @@
     </GenerateSdkBundleDependsOn>
     <!-- When building the sdk bundle only, the sdk and template msis are acquired via DownloadBundledComponents. -->
     <GenerateSdkBundleDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">$(GenerateSdkBundleDependsOn);GenerateSdkMsi;GenerateTemplatesMsis</GenerateSdkBundleDependsOn>
+    <_IncrementalLayoutStateDirectory Condition="'$(_IncrementalLayoutStateDirectory)' == ''">$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)', 'incremental-layout'))</_IncrementalLayoutStateDirectory>
+    <_TemplatesMsiGenerationInProgressFile>$(_IncrementalLayoutStateDirectory)templates-msi-generation-$(ProductMonikerRid).inprogress</_TemplatesMsiGenerationInProgressFile>
   </PropertyGroup>
 
   <!-- AcquireWix Properties -->
@@ -125,12 +127,8 @@
                          ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion)"/>
   </Target>
 
-  <Target Name="GenerateTemplatesMsis"
-          DependsOnTargets="GenerateInstallerLayout;MsiTargetsSetupInputOutputs;CalculateTemplatesVersions"
-          Inputs="@(TemplatesComponents);$(RepoRoot)src\Layout\pkg\windows\msis\**\*"
-          Returns="@(ChainMsi)"
-          Outputs="%(TemplatesComponents.MSIInstallerFile)">
-
+  <Target Name="_PrepareGenerateTemplatesMsis"
+          DependsOnTargets="GenerateInstallerLayout;MsiTargetsSetupInputOutputs;CalculateTemplatesVersions">
     <ItemGroup>
       <TemplatesMsi Include="@(TemplatesComponents)">
         <LayoutPath>$(IntermediateOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
@@ -141,16 +139,41 @@
       </TemplatesMsi>
     </ItemGroup>
 
+    <PropertyGroup>
+      <_TemplatesMsiBuildTarget>Build</_TemplatesMsiBuildTarget>
+      <!-- A failed MSBuild batch may stop at any template version. Rebuild the entire RID
+           batch on the next invocation because the marker cannot identify which children ran. -->
+      <_TemplatesMsiBuildTarget Condition="Exists('$(_TemplatesMsiGenerationInProgressFile)')">Rebuild</_TemplatesMsiBuildTarget>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GenerateTemplatesMsis"
+          DependsOnTargets="_PrepareGenerateTemplatesMsis"
+          Returns="@(ChainMsi)">
+
+    <WriteLinesToFile File="$(_TemplatesMsiGenerationInProgressFile)"
+                     Lines="in-progress"
+                     Overwrite="true" />
     <MSBuild Projects="%(TemplatesMsi.Project)"
-             Properties="InstallerPath=%(MSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion);
-                         OutputPath=$([System.IO.Path]::GetDirectoryName(%(MSIInstallerFile)));
-                         OutputName=$([System.IO.Path]::GetFileNameWithoutExtension(%(MSIInstallerFile)));
-                         DependencyKeyName=%(DependencyKeyName);TemplateLayoutDirectoryToHarvest=%(LayoutPath);
-                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode);
-                         DotnetSrc=%(LayoutPath)"/>
+             Targets="$(_TemplatesMsiBuildTarget)"
+             Properties="InstallerPath=%(TemplatesMsi.MSIInstallerFile);
+                        ProductVersion=$(ProductVersion);
+                        BundleVersion=$(BundleVersion);
+                        IntermediateOutputPath=$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)', 'templates-msi-build', '$(ProductMonikerRid)', '%(TemplatesMsi.TemplatesMajorMinorVersion)'));
+                        OutputPath=$([System.IO.Path]::GetDirectoryName(%(TemplatesMsi.MSIInstallerFile)));
+                        OutputName=$([System.IO.Path]::GetFileNameWithoutExtension(%(TemplatesMsi.MSIInstallerFile)));
+                        Version=$(Version);
+                        DependencyKeyName=%(TemplatesMsi.DependencyKeyName);
+                        TemplateLayoutDirectoryToHarvest=%(TemplatesMsi.LayoutPath);
+                        BrandName=%(TemplatesMsi.BrandName);
+                        UpgradeCode=%(TemplatesMsi.UpgradeCode);
+                        TemplateLayoutCompletionStamp=$(_TemplatesMsiLayoutCompletionStamp);
+                        DotnetSrc=%(TemplatesMsi.LayoutPath)" />
     <ItemGroup>
       <ChainMsi Include="%(TemplatesMsi.MSIInstallerFile)" />
     </ItemGroup>
+
+    <Delete Files="$(_TemplatesMsiGenerationInProgressFile)" />
   </Target>
 
   <Target Name="UnzipBuiltinWorkloadManifestMsiNuPkg">

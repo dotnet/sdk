@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,28 +31,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("sbyte", "")]
         public Task ConstReadOnlyArrayFields_Diagnostic_CS(string arrayType, string arrayInitializer)
         {
-            string testDeclaration = $"private static readonly {arrayType}[] {{|#0:_array|}} = new {arrayType}[] {{ {arrayInitializer} }};";
-            string fixedDeclaration = $"private static ReadOnlySpan<{arrayType}> _array => new {arrayType}[] {{ {arrayInitializer} }};";
-            string format = @"
-using System;
-public class C
-{{
-    {0}
-    private const byte ConstByte = 7;
-    private const sbyte ConstSByte = -7;
-    private const bool ConstBool = true;
-}}";
+            string testDeclaration = $$"""private static readonly {{arrayType}}[] {|#0:_array|} = new {{arrayType}}[] { {{arrayInitializer}} };""";
+            string fixedDeclaration = $$"""private static ReadOnlySpan<{{arrayType}}> _array => new {{arrayType}}[] { {{arrayInitializer}} };""";
+
+            static string CreateSource(string declaration) => $$"""
+                using System;
+                public class C
+                {
+                    {{declaration}}
+                    private const byte ConstByte = 7;
+                    private const sbyte ConstSByte = -7;
+                    private const bool ConstBool = true;
+                }
+                """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, testDeclaration) },
+                    Sources = { CreateSource(testDeclaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                     ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments(arrayType) }
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedDeclaration) },
+                    Sources = { CreateSource(fixedDeclaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 }
             };
@@ -74,28 +76,28 @@ public class C
             string arrayType,
             string arrayInitializer)
         {
-            string testDeclaration =
-                $"private static readonly {arrayType}[] {{|#0:_array|}} = new {arrayType}[] {{ {arrayInitializer} }};";
-            string fixedDeclaration =
-                $"private static ReadOnlySpan<{arrayType}> _array => new {arrayType}[] {{ {arrayInitializer} }};";
-            const string format = """
+            string testDeclaration = $$"""private static readonly {{arrayType}}[] {|#0:_array|} = new {{arrayType}}[] { {{arrayInitializer}} };""";
+            string fixedDeclaration = $$"""private static ReadOnlySpan<{{arrayType}}> _array => new {{arrayType}}[] { {{arrayInitializer}} };""";
+
+            static string CreateSource(string declaration) => $$"""
                 using System;
                 public class C
-                {{
-                    {0}
-                }}
+                {
+                    {{declaration}}
+                }
                 """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, testDeclaration) },
+                    Sources = { CreateSource(testDeclaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                     ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments(arrayType) },
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedDeclaration) },
+                    Sources = { CreateSource(fixedDeclaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
             };
@@ -422,68 +424,74 @@ public class C
         }
 
         [TestMethod]
-        [DataRow(@"
-    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 }, {|#1:b|} = new byte[] { 5, 7 };",
-            @"
-    private static ReadOnlySpan<byte> b => new byte[] { 5, 7 };
-    private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };", 2)]
-        [DataRow(@"
-    private static readonly byte[] {|#0:a|} = new byte[] { 1 }, b = new byte[] { field };",
-            @"
-    private static readonly byte[] b = new byte[] { field };
-    private static ReadOnlySpan<byte> a => new byte[] { 1 };")]
-        [DataRow(@"
-    private static readonly byte[] a = new byte[] { field }, {|#0:b|} = new byte[] { 1 };",
-            @"
-    private static readonly byte[] a = new byte[] { field };
-    private static ReadOnlySpan<byte> b => new byte[] { 1 };")]
-        [DataRow(@"
-    private static readonly byte[] a = new byte[] { 1, 2, field }, {|#0:b|} = new byte[] { 4, 5, 6 }, c = new byte[] { field, field };",
-            @"
-    private static readonly byte[] a = new byte[] { 1, 2, field }, c = new byte[] { field, field };
-    private static ReadOnlySpan<byte> b => new byte[] { 4, 5, 6 };")]
-        [DataRow(@"
-    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2 }, b = new byte[] { field, 4 }, {|#1:c|} = new byte[] { 5, 6, 7 };",
-            @"
-    private static readonly byte[] b = new byte[] { field, 4 };
-    private static ReadOnlySpan<byte> c => new byte[] { 5, 6, 7 };
-    private static ReadOnlySpan<byte> a => new byte[] { 1, 2 };", 2)]
-        [DataRow(@"
-    [Obsolete]
-    private static readonly byte[] {|#0:a|} = new byte[] { 1 }, b = new byte[] { field };",
-            @"
-    [Obsolete]
-    private static readonly byte[] b = new byte[] { field };
-    [Obsolete]
-    private static ReadOnlySpan<byte> a => new byte[] { 1 };")]
-        [DataRow(@"
-    [Obsolete]
-    private static readonly byte[] {|#0:a|} = new byte[] { 1 }, {|#1:b|} = new byte[] { 2 };",
-            @"
-    [Obsolete]
-    private static ReadOnlySpan<byte> b => new byte[] { 2 };
-    [Obsolete]
-    private static ReadOnlySpan<byte> a => new byte[] { 1 };", 2)]
+        [DataRow("private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 }, {|#1:b|} = new byte[] { 5, 7 };",
+            """
+            private static ReadOnlySpan<byte> b => new byte[] { 5, 7 };
+                private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+            """, 2)]
+        [DataRow("private static readonly byte[] {|#0:a|} = new byte[] { 1 }, b = new byte[] { field };",
+            """
+            private static readonly byte[] b = new byte[] { field };
+                private static ReadOnlySpan<byte> a => new byte[] { 1 };
+            """)]
+        [DataRow("private static readonly byte[] a = new byte[] { field }, {|#0:b|} = new byte[] { 1 };",
+            """
+            private static readonly byte[] a = new byte[] { field };
+                private static ReadOnlySpan<byte> b => new byte[] { 1 };
+            """)]
+        [DataRow("private static readonly byte[] a = new byte[] { 1, 2, field }, {|#0:b|} = new byte[] { 4, 5, 6 }, c = new byte[] { field, field };",
+            """
+            private static readonly byte[] a = new byte[] { 1, 2, field }, c = new byte[] { field, field };
+                private static ReadOnlySpan<byte> b => new byte[] { 4, 5, 6 };
+            """)]
+        [DataRow("private static readonly byte[] {|#0:a|} = new byte[] { 1, 2 }, b = new byte[] { field, 4 }, {|#1:c|} = new byte[] { 5, 6, 7 };",
+            """
+            private static readonly byte[] b = new byte[] { field, 4 };
+                private static ReadOnlySpan<byte> c => new byte[] { 5, 6, 7 };
+                private static ReadOnlySpan<byte> a => new byte[] { 1, 2 };
+            """, 2)]
+        [DataRow("""
+            [Obsolete]
+                private static readonly byte[] {|#0:a|} = new byte[] { 1 }, b = new byte[] { field };
+            """,
+            """
+            [Obsolete]
+                private static readonly byte[] b = new byte[] { field };
+                [Obsolete]
+                private static ReadOnlySpan<byte> a => new byte[] { 1 };
+            """)]
+        [DataRow("""
+            [Obsolete]
+                private static readonly byte[] {|#0:a|} = new byte[] { 1 }, {|#1:b|} = new byte[] { 2 };
+            """,
+            """
+            [Obsolete]
+                private static ReadOnlySpan<byte> b => new byte[] { 2 };
+                [Obsolete]
+                private static ReadOnlySpan<byte> a => new byte[] { 1 };
+            """, 2)]
         public Task MultipleFieldsDeclaredSingleLine_FixedCorrectly_CS(string declaration, string fixedDeclaration, int expectedDiagnostics = 1)
         {
-            string format = @"
-using System;
-public class C
-{{
-    private static byte field;
-    private static byte Method() => 6;
-{0}
-}}";
+            static string CreateSource(string declaration) => $$"""
+                using System;
+                public class C
+                {
+                    private static byte field;
+                    private static byte Method() => 6;
+                    {{declaration}}
+                }
+                """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, declaration) },
+                    Sources = { CreateSource(declaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedDeclaration) },
+                    Sources = { CreateSource(fixedDeclaration) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 }
             };
@@ -498,27 +506,29 @@ public class C
             const int DiagnosticCount = 2;
             string sourceFields = string.Join(
                 Environment.NewLine,
-                Enumerable.Range(0, DiagnosticCount).Select(i => $"    private static readonly byte[] {{|#{i}:a{i}|}} = new byte[] {{ {i} }};"));
+                Enumerable.Range(0, DiagnosticCount).Select(i => $$"""    private static readonly byte[] {|#{{i}}:a{{i}}|} = new byte[] { {{i}} };"""));
             string fixedFields = string.Join(
                 Environment.NewLine,
-                Enumerable.Range(0, DiagnosticCount).Select(i => $"    private static ReadOnlySpan<byte> a{i} => new byte[] {{ {i} }};"));
-            string format = """
+                Enumerable.Range(0, DiagnosticCount).Select(i => $$"""    private static ReadOnlySpan<byte> a{{i}} => new byte[] { {{i}} };"""));
+
+            static string CreateSource(string fields) => $$"""
                 using System;
                 public class C
-                {{
-                {0}
-                }}
+                {
+                {{fields}}
+                }
                 """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, sourceFields) },
+                    Sources = { CreateSource(sourceFields) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedFields) },
+                    Sources = { CreateSource(fixedFields) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 },
                 NumberOfFixAllIterations = 1
@@ -735,27 +745,29 @@ public class C
         [DataRow("int n = (a).Length;")]
         public Task LegalUsage_Diagnostic_CS(string code)
         {
-            string format = @"
-using System;
-public class C
-{{
-    private static {0} new byte[] {{ 2, 4, 8, 16 }};
-    public void M()
-    {{
-        {1}
-    }}
-}}";
+            static string CreateSource(string declaration, string code) => $$"""
+                using System;
+                public class C
+                {
+                    private static {{declaration}} new byte[] { 2, 4, 8, 16 };
+                    public void M()
+                    {
+                        {{code}}
+                    }
+                }
+                """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "readonly byte[] {|#0:a|} =", code) },
+                    Sources = { CreateSource("readonly byte[] {|#0:a|} =", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                     ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "ReadOnlySpan<byte> a =>", code) },
+                    Sources = { CreateSource("ReadOnlySpan<byte> a =>", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 }
             };
@@ -781,28 +793,30 @@ public class C
         [DataRow("({|#1:a|}).AsSpan()", "a")]
         public Task AsSpanCallToRosArgument_Diagnostic_CS(string code, string fixedCode)
         {
-            string format = @"
-using System;
-public class C
-{{
-    private static {0} new byte[] {{ 2, 4, 8, 16 }};
-    public void ConsumeRos(ReadOnlySpan<byte> ros) {{ }}
-    public void M()
-    {{
-        ConsumeRos({1});
-    }}
-}}";
+            static string CreateSource(string declaration, string code) => $$"""
+                using System;
+                public class C
+                {
+                    private static {{declaration}} new byte[] { 2, 4, 8, 16 };
+                    public void ConsumeRos(ReadOnlySpan<byte> ros) { }
+                    public void M()
+                    {
+                        ConsumeRos({{code}});
+                    }
+                }
+                """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "readonly byte[] {|#0:a|} =", code) },
+                    Sources = { CreateSource("readonly byte[] {|#0:a|} =", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                     ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "ReadOnlySpan<byte> a =>", fixedCode) },
+                    Sources = { CreateSource("ReadOnlySpan<byte> a =>", fixedCode) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 },
                 LanguageVersion = LanguageVersion.CSharp10
@@ -1113,29 +1127,31 @@ public class C
         [DataRow("a[..^0]")]
         public Task ArraySliceIndexer_Diagnostic_CS(string code)
         {
-            string format = @"
-using System;
-public class C
-{{
-    private static {0} new byte[] {{ 2, 4, 8, 16 }};
-    public void ConsumeRos(ReadOnlySpan<byte> ros) {{ }}
-    public void M()
-    {{
-        ConsumeRos({1});
-        ReadOnlySpan<byte> ros = {1};
-    }}
-}}";
+            static string CreateSource(string declaration, string code) => $$"""
+                using System;
+                public class C
+                {
+                    private static {{declaration}} new byte[] { 2, 4, 8, 16 };
+                    public void ConsumeRos(ReadOnlySpan<byte> ros) { }
+                    public void M()
+                    {
+                        ConsumeRos({{code}});
+                        ReadOnlySpan<byte> ros = {{code}};
+                    }
+                }
+                """;
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "readonly byte[] {|#0:a|} =", code) },
+                    Sources = { CreateSource("readonly byte[] {|#0:a|} =", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                     ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
                 },
                 FixedState =
                 {
-                    Sources = { string.Format(CultureInfo.InvariantCulture, format, "ReadOnlySpan<byte> a =>", code) },
+                    Sources = { CreateSource("ReadOnlySpan<byte> a =>", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 },
                 LanguageVersion = LanguageVersion.CSharp10
@@ -1153,17 +1169,18 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = $@"
-using System;
-public class C
-{{
-    private static byte[] GetBytes() => null;
-    private static byte GetByte() => 4;
-    private static readonly byte readOnlyByte = 7;
-    private static byte mutableByte = 6;
+                TestCode = $$"""
+                    using System;
+                    public class C
+                    {
+                        private static byte[] GetBytes() => null;
+                        private static byte GetByte() => 4;
+                        private static readonly byte readOnlyByte = 7;
+                        private static byte mutableByte = 6;
 
-    private static readonly byte[] a = {initializer};
-}}",
+                        private static readonly byte[] a = {{initializer}};
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1207,36 +1224,37 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = $@"
-using System;
-using System.Collections.Generic;
-public class C
-{{
-    private static readonly byte[] a = new byte[] {{ 1, 2, 3 }};
-    private static void ConsumeArray(byte[] bytes) {{ }}
-    private static void ConsumeEnumerable(IEnumerable<byte> bytes) {{ }}
-    private static void ConsumeSpan(Span<byte> bytes) {{ }}
-    private static void ConsumeByteRef(ref byte b) {{ }}
-    private static void ConsumeByteOut(out byte b) => b = default;
-    private static void ConsumeImplicit(Implicit i) {{ }}
-    private static void ConsumeExplicit(Explicit e) {{ }}
-    public C(byte[] bytes) {{ }}
+                TestCode = $$"""
+                    using System;
+                    using System.Collections.Generic;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                        private static void ConsumeArray(byte[] bytes) { }
+                        private static void ConsumeEnumerable(IEnumerable<byte> bytes) { }
+                        private static void ConsumeSpan(Span<byte> bytes) { }
+                        private static void ConsumeByteRef(ref byte b) { }
+                        private static void ConsumeByteOut(out byte b) => b = default;
+                        private static void ConsumeImplicit(Implicit i) { }
+                        private static void ConsumeExplicit(Explicit e) { }
+                        public C(byte[] bytes) { }
 
-    public void M(byte b, (byte x, byte y) t)
-    {{
-        {code}
-    }}
-}}
+                        public void M(byte b, (byte x, byte y) t)
+                        {
+                            {{code}}
+                        }
+                    }
 
-public class Implicit
-{{
-    public static implicit operator Implicit(byte[] operand) => new Implicit();
-}}
+                    public class Implicit
+                    {
+                        public static implicit operator Implicit(byte[] operand) => new Implicit();
+                    }
 
-public class Explicit
-{{
-    public static explicit operator Explicit(byte[] operand) => new Explicit();
-}}",
+                    public class Explicit
+                    {
+                        public static explicit operator Explicit(byte[] operand) => new Explicit();
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = LanguageVersion.CSharp10
             };
@@ -1250,15 +1268,16 @@ public class Explicit
             //  so a field used there must not be converted.
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-using System.Linq.Expressions;
-public class C
-{
-    private static readonly byte[] a = new byte[] { 1, 2, 3 };
-    public static Expression<Func<int>> Length() => () => a.Length;
-    public static Expression<Func<byte>> Element() => () => a[0];
-}",
+                TestCode = """
+                    using System;
+                    using System.Linq.Expressions;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                        public static Expression<Func<int>> Length() => () => a.Length;
+                        public static Expression<Func<byte>> Element() => () => a[0];
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = LanguageVersion.CSharp10
             };
@@ -1269,20 +1288,20 @@ public class C
         [DataRow("ConsumeSpan(a.AsSpan());")]
         public Task IllegalAsSpanResultUsage_NoDiagnostic_CS(string code)
         {
-            string format = @"
-using System;
-public class C
-{{
-    private static readonly byte[] a = new byte[] {{ 2, 4, 6, 8 }};
-    private void ConsumeSpan(Span<byte> span) {{ }}
-    public void M()
-    {{
-        {0}
-    }}
-}}";
             var test = new VerifyCS.Test
             {
-                TestCode = string.Format(CultureInfo.InvariantCulture, format, code),
+                TestCode = $$"""
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 2, 4, 6, 8 };
+                        private void ConsumeSpan(Span<byte> span) { }
+                        public void M()
+                        {
+                            {{code}}
+                        }
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1293,17 +1312,18 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-public class C
-{
-    private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
 
-    public ref byte M()
-    {
-        return ref a[1];
-    }
-}",
+                        public ref byte M()
+                        {
+                            return ref a[1];
+                        }
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1330,11 +1350,12 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = $@"
-public class C
-{{
-    {declaration}
-}}",
+                TestCode = $$"""
+                    public class C
+                    {
+                        {{declaration}}
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1351,21 +1372,22 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = $@"
-using System;
-public class C
-{{
-    private static readonly byte[] a = new byte[] {{ 1 }};
-    private static byte[] GetBytes() => new byte[1];
-    private static void ConsumeBytesRef(ref byte[] bytes) {{ }}
-    private static byte b;
-    private static (byte[], byte) t;
+                TestCode = $$"""
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1 };
+                        private static byte[] GetBytes() => new byte[1];
+                        private static void ConsumeBytesRef(ref byte[] bytes) { }
+                        private static byte b;
+                        private static (byte[], byte) t;
 
-    static C()
-    {{
-        {code}
-    }}
-}}",
+                        static C()
+                        {
+                            {{code}}
+                        }
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1376,16 +1398,17 @@ public class C
         [DataRow("Span<byte>")]
         public Task ReturnArrayOrSpan_NoDiagnostic_CS(string returnType)
         {
-            string source = $@"
-using System;
-public class C
-{{
-    private static readonly byte[] a = new byte[] {{ 1, 2, 3 }};
-    private {returnType} M()
-    {{
-        return a;
-    }}
-}}";
+            string source = $$"""
+                using System;
+                public class C
+                {
+                    private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                    private {{returnType}} M()
+                    {
+                        return a;
+                    }
+                }
+                """;
             var test = new VerifyCS.Test
             {
                 TestCode = source,
@@ -1399,18 +1422,19 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-public class C
-{
-    private static readonly byte[] a = new byte[] { 1, 2, 3 };
-    private static readonly byte[][] b = new byte[][]
-    {
-        a,
-        new byte[] { 4, 5, 6, 7 },
-        new byte[] { 8, 9 }
-    };
-}",
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                        private static readonly byte[][] b = new byte[][]
+                        {
+                            a,
+                            new byte[] { 4, 5, 6, 7 },
+                            new byte[] { 8, 9 }
+                        };
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);
@@ -1421,22 +1445,23 @@ public class C
         {
             var test = new VerifyCS.Test
             {
-                TestCode = @"
-using System;
-public class O
-{
-    public byte[] A { get; set; }
-    public int I { get; set; }
-}
+                TestCode = """
+                    using System;
+                    public class O
+                    {
+                        public byte[] A { get; set; }
+                        public int I { get; set; }
+                    }
 
-public class C
-{
-    private static readonly byte[] a = new byte[] { 1, 2, 3 };
-    public void M()
-    {
-        var o = new O { A = a, I = 12 };
-    }
-}",
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                        public void M()
+                        {
+                            var o = new O { A = a, I = 12 };
+                        }
+                    }
+                    """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync(CancellationToken.None);

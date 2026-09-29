@@ -38,7 +38,7 @@ internal sealed record EnvironmentOptions(
     bool SuppressBrowserRefresh = false,
     bool SuppressEmojis = false,
     bool RestartOnRudeEdit = false,
-    LogLevel? CliLogLevel = null,
+    bool CliContextVerbose = false,
     string? BrowserPath = null,
     WebSocketConfig BrowserWebSocketConfig = default,
     WebSocketConfig AgentWebSocketConfig = default,
@@ -58,10 +58,18 @@ internal sealed record EnvironmentOptions(
         SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
         SuppressEmojis: EnvironmentVariables.SuppressEmojis,
         RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
-        CliLogLevel: EnvironmentVariables.CliLogLevel,
+        CliContextVerbose: EnvironmentVariables.CliContextVerbose,
         BrowserPath: EnvironmentVariables.BrowserPath,
-        BrowserWebSocketConfig: new(EnvironmentVariables.BrowserWebSocketPort, EnvironmentVariables.BrowserWebSocketSecurePort, EnvironmentVariables.BrowserWebSocketHostName),
-        AgentWebSocketConfig: new(EnvironmentVariables.AgentWebSocketPort, EnvironmentVariables.AgentWebSocketSecurePort, hostName: null),
+        BrowserWebSocketConfig: new(
+            port: EnvironmentVariables.BrowserWebSocketPort,
+            securePort: EnvironmentVariables.BrowserWebSocketSecurePort,
+            hostName: EnvironmentVariables.BrowserWebSocketHostName,
+            additionalAllowedOrigins: EnvironmentVariables.DotNetWatchWebSocketAllowedOrigins),
+        AgentWebSocketConfig: new(
+            port: EnvironmentVariables.AgentWebSocketPort,
+            securePort: EnvironmentVariables.AgentWebSocketSecurePort,
+            hostName: null,
+            additionalAllowedOrigins: []),
         TestFlags: EnvironmentVariables.TestFlags,
         TestOutput: EnvironmentVariables.TestOutputDir
     );

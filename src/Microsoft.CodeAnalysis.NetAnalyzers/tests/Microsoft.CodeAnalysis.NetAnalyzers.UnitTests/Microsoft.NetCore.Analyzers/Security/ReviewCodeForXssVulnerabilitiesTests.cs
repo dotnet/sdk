@@ -24,17 +24,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        Response.Write(""<HTML>"" + input + ""</HTML>"");
-    }
-}",
+                            using System;
+
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    Response.Write("<HTML>" + input + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -54,19 +56,20 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
 
-        // Example usage of System.Web.HttpServerUtility.HtmlEncode().
-        Response.Write(""<HTML>"" + Server.HtmlEncode(input) + ""</HTML>"");
-    }
-}",
+                                    // Example usage of System.Web.HttpServerUtility.HtmlEncode().
+                                    Response.Write("<HTML>" + Server.HtmlEncode(input) + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -82,18 +85,20 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-Partial Public Class WebForm
-    Inherits System.Web.UI.Page
+                            Imports System
 
-    Protected Sub Page_Load(sender As Object, e As EventArgs)
-        Dim input As String = Me.Request.Form(""in"")
-        Me.Response.Write(""<HTML>"" + input + ""</HTML>"")
-    End Sub
-End Class
-",
+                            Partial Public Class WebForm
+                                Inherits System.Web.UI.Page
+
+                                Protected Sub Page_Load(sender As Object, e As EventArgs)
+                                    Dim input As String = Me.Request.Form("in")
+                                    Me.Response.Write("<HTML>" + input + "</HTML>")
+                                End Sub
+                            End Class
+
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -113,20 +118,20 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
+                            Imports System
 
-Partial Public Class WebForm
-    Inherits System.Web.UI.Page
+                            Partial Public Class WebForm
+                                Inherits System.Web.UI.Page
 
-    Protected Sub Page_Load(sender As Object, e As EventArgs)
-        Dim input As String = Me.Request.Form(""in"")
+                                Protected Sub Page_Load(sender As Object, e As EventArgs)
+                                    Dim input As String = Me.Request.Form("in")
 
-        ' Example usage of System.Web.HttpServerUtility.HtmlEncode().
-        Me.Response.Write(""<HTML>"" + Me.Server.HtmlEncode(input) + ""</HTML>"")
-    End Sub
-End Class
-",
+                                    ' Example usage of System.Web.HttpServerUtility.HtmlEncode().
+                                    Me.Response.Write("<HTML>" + Me.Server.HtmlEncode(input) + "</HTML>")
+                                End Sub
+                            End Class
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -142,18 +147,19 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        Response.Write(""<HTML><TITLE>test</TITLE><BODY>Hello world!</BODY></HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    Response.Write("<HTML><TITLE>test</TITLE><BODY>Hello world!</BODY></HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -169,19 +175,20 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        string integer = Int32.Parse(input).ToString();
-        Response.Write(""<HTML>"" + integer + ""</HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    string integer = Int32.Parse(input).ToString();
+                                    Response.Write("<HTML>" + integer + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -197,19 +204,20 @@ public partial class WebForm : System.Web.UI.Page
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Web;
+                        """
+                            using System;
+                            using System.Web;
 
-public partial class WebForm : System.Web.UI.Page
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        string input = Request.Form[""in""];
-        string encoded = Server.HtmlEncode(input);
-        Response.Write(""<HTML>"" + encoded + ""</HTML>"");
-    }
-}",
+                            public partial class WebForm : System.Web.UI.Page
+                            {
+                                protected void Page_Load(object sender, EventArgs e)
+                                {
+                                    string input = Request.Form["in"];
+                                    string encoded = Server.HtmlEncode(input);
+                                    Response.Write("<HTML>" + encoded + "</HTML>");
+                                }
+                            }
+                            """,
                     },
                 },
             }.RunAsync(CancellationToken.None);

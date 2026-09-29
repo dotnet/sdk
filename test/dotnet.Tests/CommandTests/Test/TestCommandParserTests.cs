@@ -125,6 +125,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
         {
             string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
@@ -170,6 +171,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             parseResult.Errors.Should().BeEmpty();
             parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
             parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("Minimal", (int)OutputOptions.Minimal)]
+        [DataRow("Normal", (int)OutputOptions.Normal)]
+        [DataRow("Detailed", (int)OutputOptions.Detailed)]
+        public void MTPCommandParsesOutputPreset(string value, int expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--output", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be((OutputOptions)expected);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandDefaultsToNormalOutputPreset()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.OutputOption).Should().Be(OutputOptions.Normal);
         }
 
         [TestMethod]
@@ -280,6 +305,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandAcceptsAffectedTestOptions(string option)
@@ -298,6 +324,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsAffectedTestOptionsTogether()
         {
             WithAffectedTestsFeature(enabled: true, () =>
@@ -311,6 +338,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandRejectsAffectedTestOptionsWhenFeatureIsDisabled(string option)
@@ -328,6 +356,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithParallelModules()
         {
             WithAffectedTestsFeature(enabled: true, () =>
@@ -588,24 +617,80 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [DataRow(false, 0, 0, true)]
-        [DataRow(true, 0, 0, false)]
-        [DataRow(false, 2, 2, true)]
-        [DataRow(true, 2, 2, true)]
-        [DataRow(true, 2, 1, false)]
+        [DataRow(false, false, 0, 0, true)]
+        [DataRow(true, false, 0, 0, false)]
+        [DataRow(false, false, 2, 2, false)]
+        [DataRow(false, true, 2, 2, true)]
+        [DataRow(true, true, 2, 2, true)]
+        [DataRow(true, false, 2, 2, false)]
+        [DataRow(true, true, 2, 1, false)]
         public void MTPCommandFailsOnlyForDisallowedEmptyOrAllSkippedRuns(
             bool isAffectedTestsMode,
+            bool failOnAllSkippedTests,
             int totalTests,
             int skippedTests,
             bool expectedFailure)
         {
             MicrosoftTestingPlatformTestCommand.ShouldFailForNoExecutedTests(
                 isAffectedTestsMode,
+                failOnAllSkippedTests,
                 totalTests,
                 skippedTests).Should().Be(expectedFailure);
         }
 
         [TestMethod]
+        public void MTPCommandReadsForwardedTestPolicies()
+        {
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy", "strict"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy=STRICT"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["-zero-tests-policy:strict"]).Should().BeTrue();
+            MicrosoftTestingPlatformTestCommand.IsStrictZeroTestsPolicy(
+                ["--zero-tests-policy", "allow-skipped"]).Should().BeFalse();
+
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "8;9"],
+                environmentValue: null).Should().Be("8;9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "8"],
+                environmentValue: "9").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["-ignore-exit-code:8"],
+                environmentValue: "").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                [],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("8");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: null,
+                configurationValue: "8").Should().Be("9");
+            MicrosoftTestingPlatformTestCommand.GetEffectiveIgnoredExitCodes(
+                ["--ignore-exit-code", "9"],
+                environmentValue: "10",
+                configurationValue: "8").Should().Be("10");
+        }
+
+        [TestMethod]
+        [DataRow(8, null, 8)]
+        [DataRow(8, "8", 0)]
+        [DataRow(8, "2; +8 ;9", 0)]
+        [DataRow(8, "2;9", 8)]
+        [DataRow(9, "8", 9)]
+        public void MTPCommandAppliesIgnoreExitCodePolicy(
+            int exitCode,
+            string? ignoredExitCodes,
+            int expectedExitCode)
+        {
+            MicrosoftTestingPlatformTestCommand.ApplyExitCodeIgnorePolicy(
+                exitCode,
+                ignoredExitCodes).Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithMinimumExpectedTests()
         {
             WithAffectedTestsFeature(enabled: true, () =>

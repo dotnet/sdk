@@ -320,7 +320,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -348,7 +347,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Subdirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
@@ -384,7 +382,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Errors(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
         var relativeFilePath = Path.Join(subdir, "Program.cs");
         var filePath = Path.Join(testInstance.Path, relativeFilePath);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -421,7 +418,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_InternalsNotAccessible()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -471,7 +467,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib2.cs"), """
             #:property OutputType=Library
@@ -518,7 +513,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_PathFormats(string arg)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         var libDir = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libDir);
@@ -568,7 +562,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Duplicate(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
         var relativeFilePath = Path.Join(subdir, "Program.cs");
         var filePath = Path.Join(testInstance.Path, relativeFilePath);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -624,64 +617,12 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     }
 
     /// <summary>
-    /// <c>#:ref</c> is an experimental feature that must be opted into.
-    /// Analogous to <see cref="IncludeDirective_FeatureFlags"/>.
-    /// </summary>
-    [TestMethod]
-    public void RefDirective_FeatureFlag()
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        var libPath = Path.Join(testInstance.Path, "lib.cs");
-        File.WriteAllText(libPath, """
-            #:property OutputType=Library
-            namespace MyLib;
-            public static class Greeter
-            {
-                public static string Greet() => "Hello!";
-            }
-            """);
-
-        var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, """
-            #!/usr/bin/env dotnet
-            #:ref lib.cs
-            Console.WriteLine(MyLib.Greeter.Greet());
-            """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErr($"""
-                {DirectiveError(programPath, 2, FileBasedProgramsResources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
-
-                {CliCommandStrings.RunCommandException}
-                """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello!");
-    }
-
-    /// <summary>
     /// Combining <c>#:ref</c> and <c>#:include</c> in the same file-based app.
     /// </summary>
     [TestMethod]
     public void RefDirective_WithInclude()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #!/usr/bin/env dotnet
@@ -740,7 +681,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_DifferentTargetFramework()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -783,7 +723,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Glob()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -815,7 +754,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_Cycle()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        EnableRefDirective(testInstance);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
             #:property OutputType=Library
@@ -854,14 +792,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_DuplicateRefFromIncludedFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library
@@ -911,14 +841,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_DuplicateRefFromIncludedFiles_Subdirectories()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         // lib.cs is in the root directory.
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
@@ -975,14 +897,6 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     public void RefDirective_IncludeAndRefSameFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
             #:property OutputType=Library

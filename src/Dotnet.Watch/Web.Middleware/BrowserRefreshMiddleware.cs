@@ -29,7 +29,7 @@ public sealed class BrowserRefreshMiddleware
         _next = next;
         _logger = logger;
 
-        logger.LogDebug("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}", _dotnetModifiableAssemblies, _aspnetcoreBrowserTools);
+        Log.MiddlewareLoaded(_logger, _dotnetModifiableAssemblies, _aspnetcoreBrowserTools);
     }
 
     private static string? GetNonEmptyEnvironmentVariableValue(string name)
@@ -97,12 +97,12 @@ public sealed class BrowserRefreshMiddleware
                 }
                 else
                 {
-                    _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
+                    Log.ModifiableAssembliesNotSet(_logger);
                 }
             }
             else
             {
-                _logger.LogDebug("DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
+                Log.ModifiableAssembliesHeaderAlreadySet(_logger);
             }
 
             if (!context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"))
@@ -113,12 +113,12 @@ public sealed class BrowserRefreshMiddleware
                 }
                 else
                 {
-                    _logger.LogDebug("__ASPNETCORE_BROWSER_TOOLS environment variable is not set. The browser refresh feature may not work as expected.");
+                    Log.BrowserToolsNotSet(_logger);
                 }
             }
             else
             {
-                _logger.LogDebug("ASPNETCORE-BROWSER-TOOLS header is already set.");
+                Log.BrowserToolsHeaderAlreadySet(_logger);
             }
 
             return Task.CompletedTask;
@@ -218,38 +218,70 @@ public sealed class BrowserRefreshMiddleware
 
     internal static class Log
     {
+        private const string Symbol = "🔃";
+
+        private static readonly Action<ILogger, string?, string?, Exception?> _middlewareLoaded = LoggerMessage.Define<string?, string?>(
+            LogLevel.Debug,
+            new EventId(0, "MiddlewareLoaded"),
+            $"{Symbol} Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={{ModifiableAssemblies}}, __ASPNETCORE_BROWSER_TOOLS={{BrowserTools}}");
+
         private static readonly Action<ILogger, Exception?> _setupResponseForBrowserRefresh = LoggerMessage.Define(
             LogLevel.Debug,
             new EventId(1, "SetUpResponseForBrowserRefresh"),
-            "Response markup is scheduled to include browser refresh script injection.");
+            $"{Symbol} Response markup is scheduled to include browser refresh script injection.");
 
         private static readonly Action<ILogger, Exception?> _browserConfiguredForRefreshes = LoggerMessage.Define(
             LogLevel.Debug,
             new EventId(2, "BrowserConfiguredForRefreshes"),
-            "Response markup was updated to include browser refresh script injection.");
+            $"{Symbol} Response markup was updated to include browser refresh script injection.");
 
         private static readonly Action<ILogger, Exception?> _failedToConfigureForRefreshes = LoggerMessage.Define(
             LogLevel.Warning,
             new EventId(3, "FailedToConfiguredForRefreshes"),
-            "Unable to configure browser refresh script injection on the response. " +
+            $"{Symbol} Unable to configure browser refresh script injection on the response. " +
             $"Consider manually adding '{ScriptInjectingStream.InjectedScript}' to the body of the page.");
 
         private static readonly Action<ILogger, StringValues, Exception?> _responseCompressionDetected = LoggerMessage.Define<StringValues>(
             LogLevel.Warning,
             new EventId(4, "ResponseCompressionDetected"),
-            "Unable to configure browser refresh script injection on the response. " +
+            $"{Symbol} Unable to configure browser refresh script injection on the response. " +
             $"This may have been caused by the response's {HeaderNames.ContentEncoding}: '{{encoding}}'. " +
             "Consider disabling response compression.");
 
         private static readonly Action<ILogger, int, string?, Exception?> _scriptInjectionSkipped = LoggerMessage.Define<int, string?>(
             LogLevel.Debug,
             new EventId(6, "ScriptInjectionSkipped"),
-            "Browser refresh script injection skipped. Status code: {StatusCode}, Content type: {ContentType}");
+            $"{Symbol} Browser refresh script injection skipped. Status code: {{StatusCode}}, Content type: {{ContentType}}");
 
+        private static readonly Action<ILogger, Exception?> _modifiableAssembliesNotSet = LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(7, "ModifiableAssembliesNotSet"),
+            $"{Symbol} DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
+
+        private static readonly Action<ILogger, Exception?> _modifiableAssembliesHeaderAlreadySet = LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(8, "ModifiableAssembliesHeaderAlreadySet"),
+            $"{Symbol} DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
+
+        private static readonly Action<ILogger, Exception?> _browserToolsNotSet = LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(9, "BrowserToolsNotSet"),
+            $"{Symbol} __ASPNETCORE_BROWSER_TOOLS environment variable is not set. The browser refresh feature may not work as expected.");
+
+        private static readonly Action<ILogger, Exception?> _browserToolsHeaderAlreadySet = LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(10, "BrowserToolsHeaderAlreadySet"),
+            $"{Symbol} ASPNETCORE-BROWSER-TOOLS header is already set.");
+
+        public static void MiddlewareLoaded(ILogger logger, string? modifiableAssemblies, string? browserTools) => _middlewareLoaded(logger, modifiableAssemblies, browserTools, null);
         public static void SetupResponseForBrowserRefresh(ILogger logger) => _setupResponseForBrowserRefresh(logger, null);
         public static void BrowserConfiguredForRefreshes(ILogger logger) => _browserConfiguredForRefreshes(logger, null);
         public static void FailedToConfiguredForRefreshes(ILogger logger) => _failedToConfigureForRefreshes(logger, null);
         public static void ResponseCompressionDetected(ILogger logger, StringValues encoding) => _responseCompressionDetected(logger, encoding, null);
         public static void ScriptInjectionSkipped(ILogger logger, int statusCode, string? contentType) => _scriptInjectionSkipped(logger, statusCode, contentType, null);
+        public static void ModifiableAssembliesNotSet(ILogger logger) => _modifiableAssembliesNotSet(logger, null);
+        public static void ModifiableAssembliesHeaderAlreadySet(ILogger logger) => _modifiableAssembliesHeaderAlreadySet(logger, null);
+        public static void BrowserToolsNotSet(ILogger logger) => _browserToolsNotSet(logger, null);
+        public static void BrowserToolsHeaderAlreadySet(ILogger logger) => _browserToolsHeaderAlreadySet(logger, null);
     }
 }

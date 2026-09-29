@@ -6,6 +6,7 @@
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
     [TestClass]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public class EnvironmentHelperTests
     {
         private const string TelemetryOptout = "DOTNET_CLI_TELEMETRY_OPTOUT";
@@ -22,17 +23,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         {
             // Arrange
             string originalValue = Environment.GetEnvironmentVariable(TelemetryOptout);
-            Environment.SetEnvironmentVariable(TelemetryOptout, value);
+            try
+            {
+                Environment.SetEnvironmentVariable(TelemetryOptout, value);
 
-            // Act
-            bool actualOutput = EnvironmentHelper.GetEnvironmentVariableAsBool(TelemetryOptout);
+                // Act
+                bool actualOutput = EnvironmentHelper.GetEnvironmentVariableAsBool(TelemetryOptout);
 
-
-            // Assert
-            Assert.AreEqual<bool>(expectedOutput, actualOutput);
-
-            // reset the value back to the original value
-            Environment.SetEnvironmentVariable(TelemetryOptout, originalValue);
+                // Assert
+                Assert.AreEqual<bool>(expectedOutput, actualOutput);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(TelemetryOptout, originalValue);
+            }
         }
     }
 }

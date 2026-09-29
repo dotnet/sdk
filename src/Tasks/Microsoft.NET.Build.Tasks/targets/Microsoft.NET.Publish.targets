@@ -148,11 +148,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_CorePublishTargets>
 
     <_PublishNoBuildAlternativeDependsOn>$(_BeforePublishNoBuildTargets);$(_CorePublishTargets)</_PublishNoBuildAlternativeDependsOn>
+
+    <!-- For AOT publish, we only need Compile (not full Build) since IlcCompile reads from
+         @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
+         unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
+         pack files) in the output directory that would confuse users and automation.
+         Set UseOptimizedPublish=false to restore the previous behavior of running full Build. -->
+    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseOptimizedPublish>
+    <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
+    <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
+    <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
+      BuildOnlySettings;
+      PrepareForBuild;
+      PrepareResources;
+      Compile;
+      CreateSatelliteAssemblies;
+    </_BeforeOptimizedPublishTargets>
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' != 'true'"
           DependsOnTargets="Build;$(_CorePublishTargets)" />
+
+  <!-- $(_AdditionalOptimizedPublishTargets) is an extension point for SDKs (e.g. Static Web Assets)
+       that hook additional work into the full Build via targets which the AOT-optimized path skips.
+       It runs after Compile so contributors can rely on the intermediate assembly, and before the core
+       publish targets that consume its outputs. -->
+  <Target Name="_PublishOptimizedBuildAlternative"
+          Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' == 'true'"
+          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets)" />
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -160,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="Publish"
           Condition="$(IsPublishable) == 'true'"
-          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative" >
+          DependsOnTargets="_PublishBuildAlternative;_PublishOptimizedBuildAlternative;_PublishNoBuildAlternative" >
 
     <!-- Ensure there is minimal verbosity output pointing to the publish directory and not just the
          build step's minimal output. Otherwise there is no indication at minimal verbosity of where

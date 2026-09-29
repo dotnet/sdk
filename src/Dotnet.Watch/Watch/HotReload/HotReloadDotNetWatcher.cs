@@ -40,7 +40,7 @@ internal sealed class HotReloadDotNetWatcher
         _selectionPrompt = selectionPrompt;
         if (!context.Options.NonInteractive)
         {
-            var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
+            var consoleInput = new ConsoleInputReader(_console, context.Options.GetEffectiveLogLevel(context.EnvironmentOptions), context.EnvironmentOptions.SuppressEmojis);
 
             var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
             if (noPrompt)

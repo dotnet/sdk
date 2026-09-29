@@ -93,12 +93,13 @@ internal sealed class HotReloadClients(
         browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
     }
 
+    /// <param name="environmentVariables">Environment variable to be set by the agent in the target process.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    internal void InitiateConnection(CancellationToken cancellationToken)
+    internal void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
     {
         foreach (var client in clients)
         {
-            client.InitiateConnection(cancellationToken);
+            client.InitiateConnection(environmentVariables, cancellationToken);
         }
     }
 

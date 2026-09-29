@@ -1,6 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 

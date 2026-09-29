@@ -45,7 +45,7 @@ Options:
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --no-artifact-post-processing                   Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications. [default: False]
-  --output <Detailed|Normal>                      Verbosity of test output.
+  --output <Detailed|Minimal|Normal>              Verbosity of test output.
   --list-tests <text|json>                        List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]

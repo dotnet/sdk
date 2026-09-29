@@ -14,6 +14,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class EndToEndTests : SdkTest, IDisposable
 {
     private TestLoggerFactory? _loggerFactory;
@@ -21,7 +22,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
     {
-        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository(callerMemberName);
+        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository($"{callerMemberName}-{TestSettings.TestRunId}");
         if (error is (var format, var args))
         {
             throw new ArgumentException(string.Format(Strings.ResourceManager.GetString(format)!, args));
@@ -684,7 +685,7 @@ public class EndToEndTests : SdkTest, IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = $"test-container-1-{projectType}-{addPackageReference}";
+        var containerName = $"test-container-1-{projectType}-{addPackageReference}-{TestSettings.TestRunId}";
         CommandResult processResult = ContainerCli.RunCommand(
             Log,
             [
@@ -834,7 +835,7 @@ public class EndToEndTests : SdkTest, IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = "test-container-2";
+        var containerName = $"test-container-2-{TestSettings.TestRunId}";
         CommandResult processResult = ContainerCli.RunCommand(
             Log,
             "--rm",
@@ -875,7 +876,7 @@ public class EndToEndTests : SdkTest, IDisposable
             Log,
             "--rm",
             "--name",
-            $"test-container-singlearch-norid",
+            $"test-container-singlearch-norid-{TestSettings.TestRunId}",
             $"{imageName}:{imageTag}")
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
@@ -991,8 +992,8 @@ public class EndToEndTests : SdkTest, IDisposable
     {
         string[] imageNames =
         [
-            "endtoendmultiarch-localregistry",
-            "myteam/endtoendmultiarch-localregistry"
+            $"endtoendmultiarch-localregistry-{TestSettings.TestRunId}",
+            $"myteam/endtoendmultiarch-localregistry-{TestSettings.TestRunId}"
         ];
 
         string[] localRegistries = [.. MultiArchLocalRegistryTestData.AvailableRuntimes()];

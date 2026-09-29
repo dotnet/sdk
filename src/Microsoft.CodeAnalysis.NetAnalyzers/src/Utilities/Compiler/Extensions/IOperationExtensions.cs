@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if HAS_IOPERATION
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -566,22 +564,10 @@ namespace Analyzer.Utilities.Extensions
         {
             return pattern switch
             {
-#if CODEANALYSIS_V3_OR_BETTER
                 IDeclarationPatternOperation declarationPattern => declarationPattern.MatchedType,
                 IRecursivePatternOperation recursivePattern => recursivePattern.MatchedType,
                 IDiscardPatternOperation discardPattern => discardPattern.InputType,
-#else
-                IDeclarationPatternOperation declarationPattern => declarationPattern.DeclaredSymbol switch
-                {
-                    ILocalSymbol local => local.Type,
-
-                    IDiscardSymbol discard => discard.Type,
-
-                    _ => null,
-                },
-#endif
                 IConstantPatternOperation constantPattern => constantPattern.Value.Type,
-
                 _ => null,
             };
         }
@@ -902,7 +888,6 @@ namespace Analyzer.Utilities.Extensions
 
         // Copied from roslyn https://github.com/dotnet/roslyn/blob/main/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/OperationExtensions.cs#L25
 
-#if CODEANALYSIS_V3_OR_BETTER
         /// <summary>
         /// Returns the <see cref="ValueUsageInfo"/> for the given operation.
         /// This extension can be removed once https://github.com/dotnet/roslyn/issues/25057 is implemented.
@@ -1150,8 +1135,5 @@ namespace Analyzer.Utilities.Extensions
                 ICompoundAssignmentOperation or ICoalesceAssignmentOperation => true,
                 _ => false,
             };
-#endif
     }
 }
-
-#endif
