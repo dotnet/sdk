@@ -135,11 +135,11 @@ public class MSBuildForwardingApp : CommandBase
 
     internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
 
-    public override int Execute() => Execute(workingDirectory: null);
+    public override int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
 
-    internal virtual int ExecuteOutOfProc(string workingDirectory) => Execute(workingDirectory);
+    internal virtual int ExecuteOutOfProc(string workingDirectory, CancellationToken cancellationToken) => Execute(workingDirectory, cancellationToken);
 
-    private int Execute(string? workingDirectory)
+    private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit

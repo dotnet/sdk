@@ -67,13 +67,13 @@ public static class RestoreCommand
     {
         DebugHelper.HandleDebugSwitch(ref args);
 
-        return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

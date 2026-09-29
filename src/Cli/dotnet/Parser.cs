@@ -588,7 +588,7 @@ public static class Parser
                 new MSBuildForwardingApp(
                     MSBuildArgs.ForHelp,
                     msbuildPath: null,
-                    CommandServices.CreateDefault()).Execute();
+                    CommandServices.CreateDefault()).Execute(CancellationToken.None);
                 context.Output.WriteLine();
                 additionalOption(context);
             }

@@ -48,6 +48,6 @@ public sealed class StoreCommand : MSBuildForwardingApp
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

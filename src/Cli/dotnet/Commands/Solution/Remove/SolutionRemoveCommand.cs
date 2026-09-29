@@ -25,7 +25,7 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         if (_projects.Count == 0)

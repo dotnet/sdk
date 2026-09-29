@@ -28,7 +28,7 @@ internal static class DotnetCommandCallbacks
         AddCommandParser.ConfigureCommand(addCommand);
 
         var addPackageReferenceCommand = new PackageAddCommand(addCommand.Parse([.. commandArgs]));
-        return addPackageReferenceCommand.Execute() == 0;
+        return addPackageReferenceCommand.Execute(CancellationToken.None) == 0;
     }
 
     internal static bool AddProjectReference(string projectPath, string projectToAdd)
@@ -41,7 +41,7 @@ internal static class DotnetCommandCallbacks
         AddCommandParser.ConfigureCommand(addCommand);
 
         var addProjectReferenceCommand = new ReferenceAddCommand(addCommand.Parse([.. commandArgs]));
-        return addProjectReferenceCommand.Execute() == 0;
+        return addProjectReferenceCommand.Execute(CancellationToken.None) == 0;
     }
 
     internal static bool RestoreProject(string pathToRestore)
@@ -70,6 +70,6 @@ internal static class DotnetCommandCallbacks
         SolutionCommandParser.ConfigureCommand(solutionCommand);
 
         var addProjectToSolutionCommand = new SolutionAddCommand(solutionCommand.Parse([.. commandArgs]));
-        return addProjectToSolutionCommand.Execute() == 0;
+        return addProjectToSolutionCommand.Execute(CancellationToken.None) == 0;
     }
 }

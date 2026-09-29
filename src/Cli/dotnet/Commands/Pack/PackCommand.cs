@@ -152,6 +152,6 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

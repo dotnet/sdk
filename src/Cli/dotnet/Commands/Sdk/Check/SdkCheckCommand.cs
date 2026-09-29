@@ -38,7 +38,7 @@ public class SdkCheckCommand : CommandBase
         _productCollectionProvider = productCollectionProvider == null ? new ProductCollectionProvider() : productCollectionProvider;
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_sdkCheckConfig != null && !string.IsNullOrEmpty(_sdkCheckConfig.CommandOutputReplacementString))
         {
@@ -80,12 +80,12 @@ public class SdkCheckCommand : CommandBase
         return 0;
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
 #if CLI_AOT
-        return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute();
+        return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute(cancellationToken);
 #else
-        return new SdkCheckCommand(parseResult).Execute();
+        return new SdkCheckCommand(parseResult).Execute(cancellationToken);
 #endif
     }
 }

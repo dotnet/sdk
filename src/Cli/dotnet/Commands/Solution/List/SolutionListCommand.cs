@@ -25,7 +25,7 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
         _format = parseResult.GetValue(Definition.FormatOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         try
