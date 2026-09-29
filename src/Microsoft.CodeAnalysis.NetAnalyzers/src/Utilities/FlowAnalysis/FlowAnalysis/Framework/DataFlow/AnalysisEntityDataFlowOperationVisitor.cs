@@ -752,17 +752,38 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
         private (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess) GetReferencedMembers(ControlFlowGraph invokedCfg)
         {
+            using var activeCfgs = PooledHashSet<ControlFlowGraph>.GetInstance();
+            return GetReferencedMembers(invokedCfg, activeCfgs, out _);
+        }
+
+        private (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess) GetReferencedMembers(
+            ControlFlowGraph invokedCfg,
+            PooledHashSet<ControlFlowGraph> activeCfgs,
+            out bool isComplete)
+        {
             if (_referencedMembersByCfg?.TryGetValue(invokedCfg, out var cached) == true)
             {
+                isComplete = true;
                 return cached;
             }
 
+            if (!activeCfgs.Add(invokedCfg))
+            {
+                isComplete = false;
+                return (ImmutableHashSet<ISymbol>.Empty, false);
+            }
+
             using var members = PooledHashSet<ISymbol>.GetInstance();
-            using var visitedMethods = PooledHashSet<IMethodSymbol>.GetInstance();
             var hasArrayAccess = false;
-            CollectReferencedMembers(invokedCfg, members, visitedMethods, ref hasArrayAccess);
+            isComplete = CollectReferencedMembers(invokedCfg, members, activeCfgs, ref hasArrayAccess);
+            activeCfgs.Remove(invokedCfg);
+
             var result = (ImmutableHashSet.CreateRange(SymbolEqualityComparer.Default, members), hasArrayAccess);
-            (_referencedMembersByCfg ??= new()).Add(invokedCfg, result);
+            if (isComplete)
+            {
+                (_referencedMembersByCfg ??= new()).Add(invokedCfg, result);
+            }
+
             return result;
         }
 
@@ -783,16 +804,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     owningMethod.Parameters.Any(parameter => parameter.Type.IsReferenceType && !parameter.Type.IsPrimitiveType());
             }
 
-            var worklist = new Stack<IOperation>();
-            worklist.Push(root);
-            while (worklist.Count > 0)
+            foreach (var operation in GetOperationsExcludingNestedFunctions(root))
             {
-                var operation = worklist.Pop();
-                if (operation != root && operation is ILocalFunctionOperation or IAnonymousFunctionOperation)
-                {
-                    continue;
-                }
-
                 switch (operation)
                 {
                     case IInvocationOperation invocation:
@@ -822,7 +835,24 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                         builder.Add(property);
                         break;
                 }
+            }
 
+            return _referencedStaticMembers = builder.ToImmutable();
+        }
+
+        private static IEnumerable<IOperation> GetOperationsExcludingNestedFunctions(IOperation root)
+        {
+            var worklist = new Stack<IOperation>();
+            worklist.Push(root);
+            while (worklist.Count > 0)
+            {
+                var operation = worklist.Pop();
+                if (operation != root && operation is ILocalFunctionOperation or IAnonymousFunctionOperation)
+                {
+                    continue;
+                }
+
+                yield return operation;
                 foreach (var child in operation.ChildOperations)
                 {
                     if (child is not null)
@@ -831,8 +861,6 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     }
                 }
             }
-
-            return _referencedStaticMembers = builder.ToImmutable();
         }
 
         private bool HasIndirectCapturePaths(
@@ -844,7 +872,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             // GetCaptures includes lexical captures, but not captures of other local functions
             // or delegates invoked from this function. Passing a delegate can invoke one too.
-            foreach (var operation in invokedCfg.OriginalOperation.Descendants())
+            foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
             {
                 if (operation is IInvocationOperation invocation)
                 {
@@ -902,11 +930,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 }
 
                 // Unknown static roots can be absent from points-to data even when the caller
-                // tracks their members, so a shared root must prevent trimming as well.
+                // tracks their members. A non-primitive root can also have caller aliases
+                // obtained through an ordinary method without a direct reference to its symbol.
                 if (operation is IFieldReferenceOperation { Field: { IsStatic: true } field } &&
-                    referencedStaticMembers.Contains(field) ||
+                    (referencedStaticMembers.Contains(field) ||
+                     _hasPotentialCallerAliases && !field.Type.IsPrimitiveType() && field.Type.TypeKind != TypeKind.Enum) ||
                     operation is IPropertyReferenceOperation { Property: { IsStatic: true } property } &&
-                    referencedStaticMembers.Contains(property))
+                    (referencedStaticMembers.Contains(property) ||
+                     _hasPotentialCallerAliases && !property.Type.IsPrimitiveType() && property.Type.TypeKind != TypeKind.Enum))
                 {
                     return true;
                 }
@@ -915,13 +946,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             return false;
         }
 
-        private void CollectReferencedMembers(
+        private bool CollectReferencedMembers(
             ControlFlowGraph invokedCfg,
             PooledHashSet<ISymbol> referencedMembers,
-            PooledHashSet<IMethodSymbol> visitedMethods,
+            PooledHashSet<ControlFlowGraph> activeCfgs,
             ref bool hasArrayAccess)
         {
-            foreach (var operation in invokedCfg.OriginalOperation.Descendants())
+            var isComplete = true;
+            foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
             {
                 switch (operation)
                 {
@@ -941,17 +973,22 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                         hasArrayAccess = true;
                         break;
 
-                    case IInvocationOperation { TargetMethod: { MethodKind: MethodKind.LocalFunction, IsStatic: true } target }
-                        when visitedMethods.Add(target):
+                    case IInvocationOperation { TargetMethod: { MethodKind: MethodKind.LocalFunction, IsStatic: true } target }:
                         var targetCfg = DataFlowAnalysisContext.GetLocalFunctionControlFlowGraph(target);
                         if (targetCfg is not null)
                         {
-                            CollectReferencedMembers(targetCfg, referencedMembers, visitedMethods, ref hasArrayAccess);
+                            var (members, targetHasArrayAccess) = GetReferencedMembers(targetCfg, activeCfgs, out var targetIsComplete);
+                            referencedMembers.UnionWith(members);
+                            hasArrayAccess |= targetHasArrayAccess;
+                            // A summary cut short by a recursive call cannot be reused for other callers.
+                            isComplete &= targetIsComplete;
                         }
 
                         break;
                 }
             }
+
+            return isComplete;
         }
 
         /// <summary>
