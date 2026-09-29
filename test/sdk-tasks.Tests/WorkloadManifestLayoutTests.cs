@@ -84,6 +84,47 @@ public class WorkloadManifestLayoutTests : SdkTest
         task.StaleOutputs.Select(item => item.ItemSpec).Should().Contain(Path.GetFullPath(existing));
     }
 
+    /// <summary>
+    /// Verifies noncanonical feature-band and version directories are not considered layout-owned.
+    /// </summary>
+    /// <param name="relativePath">A file beneath a noncanonical directory name.</param>
+    [TestMethod]
+    [DataRow("9.0.100-rtm.24476/test.manifest/1.0.0/WorkloadManifest.json")]
+    [DataRow("11.0.100/test.manifest/1.2.3-not valid/WorkloadManifest.json")]
+    public void DoesNotOwnDirectoriesWithNoncanonicalNames(string relativePath)
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string file = CreateFile(root, relativePath);
+        string versionDirectory = Path.GetDirectoryName(file)!;
+        var task = new GetWorkloadManifestLayout
+        {
+            LayoutRoot = root,
+            BuildEngine = new MockBuildEngine()
+        };
+
+        task.Execute().Should().BeTrue();
+        task.StaleOutputs.Select(item => item.ItemSpec).Should().NotContain(Path.GetFullPath(file));
+        task.OwnedDirectories.Select(item => item.ItemSpec).Should().NotContain(Path.GetFullPath(versionDirectory));
+    }
+
+    /// <summary>
+    /// Verifies canonical prerelease feature bands and four-part NuGet versions remain owned.
+    /// </summary>
+    [TestMethod]
+    public void OwnsDirectoriesWithCanonicalPrereleaseAndFourPartVersions()
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string file = CreateFile(root, "11.0.100-preview.2/test.manifest/1.2.3.4/WorkloadManifest.json");
+        var task = new GetWorkloadManifestLayout
+        {
+            LayoutRoot = root,
+            BuildEngine = new MockBuildEngine()
+        };
+
+        task.Execute().Should().BeTrue();
+        task.StaleOutputs.Select(item => item.ItemSpec).Should().Contain(Path.GetFullPath(file));
+    }
+
     private static TaskItem Input(string source, string destination)
     {
         var item = new TaskItem(source);

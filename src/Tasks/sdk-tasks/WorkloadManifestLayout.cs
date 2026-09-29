@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks;
 
@@ -227,9 +229,15 @@ public sealed partial class GetWorkloadManifestLayout : Task
             Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar,
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
-    private static bool IsFeatureBand(string value) => FeatureBandRegex().IsMatch(value);
+    private static bool IsFeatureBand(string value) =>
+        FeatureBandRegex().IsMatch(value)
+        && NuGetVersion.TryParse(value, out _)
+        && string.Equals(new SdkFeatureBand(value).ToString(), value, StringComparison.Ordinal);
 
-    private static bool IsVersion(string value) => VersionRegex().IsMatch(value);
+    private static bool IsVersion(string value) =>
+        VersionRegex().IsMatch(value)
+        && NuGetVersion.TryParse(value, out NuGetVersion? version)
+        && string.Equals(value, version.ToNormalizedString(), StringComparison.Ordinal);
 
     private static bool IsWorkloadSets(string value) =>
         string.Equals(value, WorkloadSetsDirectoryName, StringComparison.OrdinalIgnoreCase);
