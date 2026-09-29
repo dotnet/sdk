@@ -12,8 +12,10 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public static class Activities
 {
-    /// <summary>
-    /// Creates activities collected by the CLI's built-in telemetry.
+     /// <summary>
+    /// The main entrypoint for creating <see cref="Activity">Activities</see> in the .NET CLI.
+    /// Activities intended for collection by the SDK's built-in telemetry should use this
+    /// <see cref="ActivitySource"/>, allowing consumers to easily filter and trace CLI activities.
     /// </summary>
     public static ActivitySource Source { get; } = new("dotnet-cli", Product.Version);
 
@@ -31,10 +33,8 @@ public static class Activities
     private static readonly ActivityListener s_metricsListener = new()
     {
         ShouldListenTo = source => source.Name == Source.Name || source.Name == PerformanceSource.Name,
-        // Collect timings on demand without marking otherwise unsampled traces as recorded.
+        // Collect metrics on demand.
         Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
-            s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
-        SampleUsingParentId = (ref ActivityCreationOptions<string> _) =>
             s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
         ActivityStopped = activity =>
         {
