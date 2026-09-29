@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -872,8 +873,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             // GetCaptures includes lexical captures, but not captures of other local functions
             // or delegates invoked from this function. Passing a delegate can invoke one too.
+            var observer = AnalysisEntityDataFlowScanTestHook.Observer.Value;
             foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
             {
+                observer?.Invoke(this, AnalysisEntityDataFlowScanKind.IndirectCapture, operation);
                 if (operation is IInvocationOperation invocation)
                 {
                     var target = invocation.TargetMethod;
@@ -953,8 +956,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             ref bool hasArrayAccess)
         {
             var isComplete = true;
+            var observer = AnalysisEntityDataFlowScanTestHook.Observer.Value;
             foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
             {
+                observer?.Invoke(this, AnalysisEntityDataFlowScanKind.ReferencedMembers, operation);
                 switch (operation)
                 {
                     case IFieldReferenceOperation fieldReference:
@@ -1170,5 +1175,17 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         }
 
         #endregion
+    }
+
+    internal enum AnalysisEntityDataFlowScanKind
+    {
+        IndirectCapture,
+        ReferencedMembers,
+    }
+
+    internal static class AnalysisEntityDataFlowScanTestHook
+    {
+        // Keep parallel analyzer tests' observations in their own async flows.
+        internal static readonly AsyncLocal<Action<object, AnalysisEntityDataFlowScanKind, IOperation>?> Observer = new();
     }
 }
