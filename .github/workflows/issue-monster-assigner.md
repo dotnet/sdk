@@ -31,6 +31,9 @@ permissions:
   contents: read
   copilot-requests: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 # The PAT-backed API proxy cannot price the implicit `auto` alias. Pin the
 # explicitly priced Sol model for both this assignment workflow and the coding
 # agent session it starts.
