@@ -155,13 +155,6 @@ Run `dotnetup init` again to change the setup.
 - [CLI reference](reference/dotnetup.md)
 - [Scenarios](usecases/install-with-global-json.md)
 
-## Contribute to dotnetup
-
-All dotnetup product and documentation changes must target the
-[`release/dnup`](https://github.com/dotnet/sdk/tree/release/dnup) branch. Do not
-target `main`; dotnetup documentation is copied from `release/dnup` to `main`
-after changes merge.
-
 ## Maintainer documentation
 
 - [Design notes](designs/)
