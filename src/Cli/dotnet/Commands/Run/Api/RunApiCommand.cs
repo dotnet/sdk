@@ -20,25 +20,32 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
-        for (string? line; (line = Console.ReadLine()) != null;)
+        try
         {
-            if (string.IsNullOrWhiteSpace(line))
+            for (string? line; (line = Console.In.ReadLineAsync(cancellationToken).AsTask().GetAwaiter().GetResult()) != null;)
             {
-                continue;
-            }
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
 
-            try
-            {
-                RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
-                RunApiOutput output = input.Execute();
-                Respond(output);
+                try
+                {
+                    RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
+                    RunApiOutput output = input.Execute();
+                    Respond(output);
+                }
+                catch (Exception ex)
+                {
+                    Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
+                }
             }
-            catch (Exception ex)
-            {
-                Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
-            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The stdin read was cancelled (e.g. Ctrl+C/SIGTERM); exit the loop gracefully.
         }
 
         return 0;

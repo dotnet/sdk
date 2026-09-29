@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolPath = "tool-path-does-not-exist";
             var command = CreateCommand(store.Object, $"--tool-path {toolPath}", toolPath);
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>()
              .And
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolPath = Path.GetTempPath();
             var command = CreateCommand(store.Object, $"--tool-path {toolPath}", toolPath);
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 result,
                 toolListGlobalOrToolPathCommand);
 
-            toolListCommand.Execute().Should().Be(0);
+            toolListCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g --format json");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Count.Should().Be(1);
 
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "-g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(
                 EnumerateExpectedTableLines(store.Object).Prepend(
@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "test.tool -g");
 
-            command.Execute().Should().Be(0);
+            command.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object, new PackageId("test.tool")));
         }
@@ -307,7 +307,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = CreateCommand(store.Object, "not-installed-package -g");
 
-            command.Execute().Should().Be(1);
+            command.Execute(CancellationToken.None).Should().Be(1);
 
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object, new PackageId("not-installed-package")));
         }

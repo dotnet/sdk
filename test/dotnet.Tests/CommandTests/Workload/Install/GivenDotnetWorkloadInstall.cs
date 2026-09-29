@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--skip-manifest-update" });
             (_, var installManager, var installer, _, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
-            installManager.Execute()
+            installManager.Execute(CancellationToken.None)
                 .Should().Be(0);
 
             installer.GarbageCollectionCalled.Should().BeTrue();
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             (_, var installManager, var installer, var workloadResolver, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, failingWorkload: "xamarin-android-build", installedFeatureBand: sdkVersion);
 
-            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installManager.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installManager.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("Failing workload: xamarin-android-build");
 
             var expectedPacks = mockWorkloadIds
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             var installManager = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer);
 
-            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installManager.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installManager.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("Failing workload: xamarin-android-build");
             string.Join(" ", _reporter.Lines).Should().Contain("Rollback failure");
         }
@@ -132,8 +132,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
             (_, var installManager, var installer, _, var manifestUpdater, _, var resolverFactory) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
-            installManager.Execute()
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute(CancellationToken.None).Should().Be(0);
+            installManager.Execute(CancellationToken.None)
                 .Should().Be(0);
 
             installer.InstalledManifests.Should().BeEmpty(); // Didn't try to alter any installed manifests
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
             var installManager = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer);
 
-            installManager.Execute()
+            installManager.Execute(CancellationToken.None)
                 .Should()
                 .Be(0);
             string.Join(" ", _reporter.Lines).Should().Contain("Failing garbage collection");
@@ -221,8 +221,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (_, var installManager, var installer, _, _, _, var resolverFactory) =
                 GetTestInstallers(parseResult, userLocal, sdkVersion, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
-            installManager.Execute()
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute(CancellationToken.None).Should().Be(0);
+            installManager.Execute(CancellationToken.None)
                 .Should().Be(0);
 
             installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
@@ -253,8 +253,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (_, var installManager, var installer, _, _, _, var resolverFactory) = GetTestInstallers(parseResult, userLocal, sdkVersion,
                 tempDirManifestPath: _manifestPath, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
-            installManager.Execute();
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute(CancellationToken.None).Should().Be(0);
+            installManager.Execute(CancellationToken.None);
 
             installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             installer.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
@@ -273,7 +273,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--download-to-cache", cachePath });
             (_, var installManager, _, _, var manifestUpdater, var packageDownloader, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
 
-            installManager.Execute();
+            installManager.Execute(CancellationToken.None);
 
             // Manifest packages should have been 'downloaded' and used for pack resolution
             manifestUpdater.GetManifestPackageDownloadsCallCount.Should().Be(1);
@@ -297,7 +297,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--from-cache", cachePath });
             (_, var installManager, var installer, _, _, var nugetDownloader, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
-            installManager.Execute();
+            installManager.Execute(CancellationToken.None);
 
             installer.GarbageCollectionCalled.Should().BeTrue();
             installer.CachePath.Should().Contain(cachePath);
@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--print-download-link-only" });
             (_, var installManager, _, _, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
 
-            installManager.Execute();
+            installManager.Execute(CancellationToken.None);
 
             string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.sdk.8.4.7.nupkg");
             string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/mock-manifest-package.1.0.5.nupkg");
@@ -340,7 +340,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var command = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer,
                 nugetPackageDownloader: nugetDownloader, workloadManifestUpdater: manifestUpdater);
 
-            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => command.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => command.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Be(String.Format(CliCommandStrings.WorkloadInstallationFailed, String.Format(CliCommandStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId)));
         }
 
@@ -372,13 +372,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
 
             // Install a workload with a mocked nuget failure
             installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installCommand.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => installCommand.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("Test Failure");
 
             // Existing installation is still present
@@ -428,12 +428,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, prev7workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
 
             // Install workload for RC1
             installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, rc1WorkloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
 
             // Existing installation is present
             var prev7InstallRecordPath = Path.Combine(dotnetRoot, "metadata", "workloads", prev7FormattedFeatureVersion, "InstalledWorkloads");
@@ -519,7 +519,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 tempDirPath: testDirectory);
 
-            var ex = Assert.ThrowsExactly<GracefulException>(() => installCommand.Execute());
+            var ex = Assert.ThrowsExactly<GracefulException>(() => installCommand.Execute(CancellationToken.None));
             ex.Message.Should().StartWith("Workload installation failed:");
             string.Join(" ", _reporter.Lines).Should().Contain("Workload installation failed.");
         }
@@ -545,7 +545,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 tempDirPath: testDirectory);
 
-            installCommand.Execute().Should().Be(0);
+            installCommand.Execute(CancellationToken.None).Should().Be(0);
             string.Join(" ", _reporter.Lines).Should().Contain("Invalid rollback definition. The manifest IDs in rollback definition");
         }
 
@@ -567,7 +567,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workloadId });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute()
+            installCommand.Execute(CancellationToken.None)
                 .Should().Be(0);
             _reporter.Clear();
 
@@ -575,7 +575,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workloadId, "mock-2" });
             installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
-            installCommand.Execute()
+            installCommand.Execute(CancellationToken.None)
                 .Should().Be(0);
 
             // Install command warns
@@ -637,7 +637,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (_, var installManager, _, _, _, _, _) =
                 GetTestInstallers(parseResult, true, sdkFeatureBand, manifestUpdates: manifestsToUpdate);
 
-            installManager.Execute().Should().Be(0);
+            installManager.Execute(CancellationToken.None).Should().Be(0);
 
             string.Join(" ", _reporter.Lines).Should().Contain(CliCommandStrings.CheckForUpdatedWorkloadManifests);
             string.Join(" ", _reporter.Lines).Should().Contain(string.Format(CliCommandStrings.CheckForUpdatedWorkloadManifests, "mock-manifest"));

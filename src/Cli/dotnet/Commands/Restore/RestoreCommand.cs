@@ -62,17 +62,17 @@ public static class RestoreCommand
         return forwardingApp;
     }
 
-    public static int Run(string[] args)
+    public static int Run(string[] args, CancellationToken cancellationToken = default)
     {
         DebugHelper.HandleDebugSwitch(ref args);
 
-        return FromArgs(args).Execute();
+        return FromArgs(args).Execute(cancellationToken);
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 }

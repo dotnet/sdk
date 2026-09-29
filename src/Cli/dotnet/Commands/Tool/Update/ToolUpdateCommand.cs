@@ -111,7 +111,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         }
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -133,11 +133,11 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return _toolUpdateGlobalOrToolPathCommand.Execute();
+            return _toolUpdateGlobalOrToolPathCommand.Execute(cancellationToken);
         }
         else
         {
-            return _toolUpdateLocalCommand.Execute();
+            return _toolUpdateLocalCommand.Execute(cancellationToken);
         }
     }
 }

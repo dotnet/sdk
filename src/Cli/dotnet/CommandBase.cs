@@ -20,8 +20,7 @@ public abstract class CommandBase
 
     protected CommandBase() { }
 
-
-    public abstract int Execute();
+    public abstract int Execute(CancellationToken cancellationToken);
 }
 
 public abstract class CommandBase<TDefinition>(ParseResult parseResult) : CommandBase(parseResult)

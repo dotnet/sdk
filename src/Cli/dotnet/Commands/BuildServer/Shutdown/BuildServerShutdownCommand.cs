@@ -48,7 +48,7 @@ internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdo
         _reporter = reporter ?? Reporter.Output;
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var tasks = StartShutdown();
 

@@ -17,7 +17,7 @@ internal sealed class ToolSearchCommand(
     private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
     private readonly SearchResultPrinter _searchResultPrinter = new(Reporter.Output);
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var isDetailed = _parseResult.GetValue(Definition.DetailOption);
         if (!PathUtility.CheckForNuGetInNuGetConfig())

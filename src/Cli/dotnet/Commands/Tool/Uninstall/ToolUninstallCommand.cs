@@ -27,7 +27,7 @@ internal sealed class ToolUninstallCommand : CommandBase<ToolUninstallCommandDef
         _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -39,11 +39,11 @@ internal sealed class ToolUninstallCommand : CommandBase<ToolUninstallCommandDef
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return _toolUninstallGlobalOrToolPathCommand.Execute();
+            return _toolUninstallGlobalOrToolPathCommand.Execute(cancellationToken);
         }
         else
         {
-            return _toolUninstallLocalCommand.Execute();
+            return _toolUninstallLocalCommand.Execute(cancellationToken);
         }
     }
 }

@@ -27,7 +27,7 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
     private readonly CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var global = _parseResult.GetValue(Definition.LocationOptions.GlobalOption);
         var toolPath = _parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
