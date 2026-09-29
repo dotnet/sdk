@@ -16,12 +16,13 @@ internal sealed class TestApplicationHandler
     private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy;
-    private readonly TestApplicationSettings? _testApplicationSettings;
+    private readonly TestApplicationSettings _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
+    private bool _retryEnabled;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -38,7 +39,8 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
-        _testApplicationSettings = testApplicationSettings;
+        _testApplicationSettings = testApplicationSettings ?? TestApplicationSettings.Default;
+        _retryEnabled = _testApplicationSettings.LegacyRetryEnabled;
     }
 
     /// <summary>
@@ -109,11 +111,6 @@ internal sealed class TestApplicationHandler
 
         if (hostType == HandshakeMessageHostTypes.TestHost)
         {
-            if (_testApplicationSettings is { LegacyRetryEnabled: true })
-            {
-                _output.EnableRetry();
-            }
-
             int? attemptNumber = null;
             // Invalid values fall back to legacy instance-based inference. Testfx normalizes malformed
             // environment values to attempt 1 before sending them, and older hosts omit this property.
@@ -128,25 +125,14 @@ internal sealed class TestApplicationHandler
             // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
             // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            if (_testApplicationSettings is { } testApplicationSettings)
-            {
-                _output.AssemblyRunStarted(
-                    _module.TargetPath,
-                    handshakeInfo.TargetFramework,
-                    handshakeInfo.Architecture,
-                    handshakeInfo.ExecutionId,
-                    instanceId!,
-                    attemptNumber,
-                    testApplicationSettings);
-            }
-            else if (attemptNumber.HasValue)
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
-            }
-            else
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
-            }
+            _output.AssemblyRunStarted(
+                _module.TargetPath,
+                handshakeInfo.TargetFramework,
+                handshakeInfo.Architecture,
+                handshakeInfo.ExecutionId,
+                instanceId!,
+                attemptNumber,
+                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled });
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -172,7 +158,7 @@ internal sealed class TestApplicationHandler
             handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.OrchestratorFeature, out string? orchestratorFeature) &&
             string.Equals(orchestratorFeature, RetryOrchestratorFeature, StringComparison.Ordinal))
         {
-            _output.EnableRetry();
+            _retryEnabled = true;
         }
 
         if (!_options.IsArtifactPostProcessing)

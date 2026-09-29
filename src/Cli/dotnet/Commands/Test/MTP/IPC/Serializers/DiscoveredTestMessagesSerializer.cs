@@ -94,7 +94,10 @@ internal sealed class DiscoveredTestMessagesSerializer : BaseSerializer, INamedP
 
             if (fieldId == DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList)
             {
-                discoveredTestMessages = ReadDiscoveredTestMessagesPayload(stream);
+                discoveredTestMessages = ReadFieldPayload(
+                    stream,
+                    fieldSize,
+                    ReadDiscoveredTestMessagesPayload);
                 return true;
             }
 
@@ -108,7 +111,7 @@ internal sealed class DiscoveredTestMessagesSerializer : BaseSerializer, INamedP
     {
         List<DiscoveredTestMessage> discoveredTestMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null;
@@ -154,11 +157,14 @@ internal sealed class DiscoveredTestMessagesSerializer : BaseSerializer, INamedP
                         return true;
 
                     case DiscoveredTestMessageFieldsId.ParameterTypeFullNames:
-                        parameterTypeFullNames = ReadParameterTypeFullNamesPayload(stream);
+                        parameterTypeFullNames = ReadFieldPayload(
+                            stream,
+                            fieldSize,
+                            ReadParameterTypeFullNamesPayload);
                         return true;
 
                     case DiscoveredTestMessageFieldsId.Traits:
-                        traits = ReadTraitsPayload(stream);
+                        traits = ReadFieldPayload(stream, fieldSize, ReadTraitsPayload);
                         return true;
 
                     default:
@@ -174,7 +180,7 @@ internal sealed class DiscoveredTestMessagesSerializer : BaseSerializer, INamedP
 
     private static string[] ReadParameterTypeFullNamesPayload(Stream stream)
     {
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(int));
         string[] parameterTypeFullNames = new string[length];
 
         for (int i = 0; i < length; i++)
@@ -187,7 +193,7 @@ internal sealed class DiscoveredTestMessagesSerializer : BaseSerializer, INamedP
 
     private static TraitMessage[] ReadTraitsPayload(Stream stream)
     {
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         var traits = new TraitMessage[length];
         for (int i = 0; i < length; i++)
         {

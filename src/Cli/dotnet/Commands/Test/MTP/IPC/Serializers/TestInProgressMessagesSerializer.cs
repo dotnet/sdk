@@ -51,7 +51,10 @@ internal sealed class TestInProgressMessagesSerializer : BaseSerializer, INamedP
 
             if (fieldId == TestInProgressMessagesFieldsId.TestInProgressMessageList)
             {
-                inProgressMessages = ReadInProgressMessagesPayload(stream);
+                inProgressMessages = ReadFieldPayload(
+                    stream,
+                    fieldSize,
+                    ReadInProgressMessagesPayload);
                 return true;
             }
 
@@ -65,7 +68,7 @@ internal sealed class TestInProgressMessagesSerializer : BaseSerializer, INamedP
     {
         List<TestInProgressMessage> inProgressMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null, displayName = null;

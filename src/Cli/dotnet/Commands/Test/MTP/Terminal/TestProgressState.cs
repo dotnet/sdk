@@ -15,7 +15,8 @@ internal sealed class TestProgressState(
     bool isDiscovery,
     TestResultVisibility testResultVisibility = TestResultVisibility.All,
     int slowestTestsCount = 0,
-    bool showFlakyTests = true)
+    bool showFlakyTests = true,
+    bool isRetry = false)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
@@ -59,6 +60,7 @@ internal sealed class TestProgressState(
     private int _tryCount;
     private TestNodeResultsState? _testNodeResultsState;
     private bool _success;
+    private bool _isRetry = isRetry;
 
     public string Assembly { get; } = assembly;
 
@@ -244,6 +246,17 @@ internal sealed class TestProgressState(
 
     public bool ShowFlakyTests { get; } = showFlakyTests;
 
+    public bool IsRetry
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _isRetry;
+            }
+        }
+    }
+
     public int TryCount
     {
         get
@@ -252,6 +265,14 @@ internal sealed class TestProgressState(
             {
                 return _tryCount;
             }
+        }
+    }
+
+    internal void EnableRetry()
+    {
+        lock (_lock)
+        {
+            _isRetry = true;
         }
     }
 

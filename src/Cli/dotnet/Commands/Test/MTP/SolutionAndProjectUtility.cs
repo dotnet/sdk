@@ -157,15 +157,15 @@ internal static class SolutionAndProjectUtility
         return (true, string.Empty);
     }
 
-    private static string[] GetSolutionFilePaths(string directory) => [
-            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
-            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
-        ];
+    private static string[] GetSolutionFilePaths(string directory)
+        => GetFilesWithExtensions(directory, ".sln", ".slnx");
 
     private static string[] GetSolutionFilterFilePaths(string directory)
-    {
-        return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
-    }
+        => GetFilesWithExtensions(directory, ".slnf");
+
+    private static string[] GetFilesWithExtensions(string directory, params string[] extensions)
+        => [.. Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+            .Where(path => extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))];
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 

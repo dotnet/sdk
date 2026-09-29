@@ -78,7 +78,10 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
 
             if (fieldId == FileArtifactMessagesFieldsId.FileArtifactMessageList)
             {
-                fileArtifactMessages = ReadFileArtifactMessagesPayload(stream);
+                fileArtifactMessages = ReadFieldPayload(
+                    stream,
+                    fieldSize,
+                    ReadFileArtifactMessagesPayload);
                 return true;
             }
 
@@ -92,7 +95,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
     {
         List<FileArtifactMessage> fileArtifactMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? fullPath = null, displayName = null, description = null, testUid = null, testDisplayName = null, sessionUid = null, kind = null;
@@ -131,7 +134,10 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
                         return true;
 
                     case FileArtifactMessageFieldsId.InputArtifactPaths:
-                        inputArtifactPaths = ReadInputArtifactPathsPayload(stream);
+                        inputArtifactPaths = ReadFieldPayload(
+                            stream,
+                            fieldSize,
+                            ReadInputArtifactPathsPayload);
                         return true;
 
                     default:
@@ -155,7 +161,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
 
     private static string[] ReadInputArtifactPathsPayload(Stream stream)
     {
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(int));
         string[] inputArtifactPaths = new string[length];
         for (int i = 0; i < length; i++)
         {

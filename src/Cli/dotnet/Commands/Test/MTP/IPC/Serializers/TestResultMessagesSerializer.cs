@@ -132,11 +132,17 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
             switch (fieldId)
             {
                 case TestResultMessagesFieldsId.SuccessfulTestMessageList:
-                    successfulTestResultMessages = ReadSuccessfulTestMessagesPayload(stream);
+                    successfulTestResultMessages = ReadFieldPayload(
+                        stream,
+                        fieldSize,
+                        ReadSuccessfulTestMessagesPayload);
                     return true;
 
                 case TestResultMessagesFieldsId.FailedTestMessageList:
-                    failedTestResultMessages = ReadFailedTestMessagesPayload(stream);
+                    failedTestResultMessages = ReadFieldPayload(
+                        stream,
+                        fieldSize,
+                        ReadFailedTestMessagesPayload);
                     return true;
 
                 default:
@@ -155,7 +161,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         List<SuccessfulTestResultMessage> successfulTestResultMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null, displayName = null, reason = null, standardOutput = null, errorOutput = null, sessionUid = null;
@@ -213,7 +219,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         List<FailedTestResultMessage> failedTestResultMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null, expected = null, actual = null;
@@ -246,7 +252,10 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
                         return true;
 
                     case FailedTestResultMessageFieldsId.ExceptionMessageList:
-                        exceptionMessages = ReadExceptionMessagesPayload(stream);
+                        exceptionMessages = ReadFieldPayload(
+                            stream,
+                            fieldSize,
+                            ReadExceptionMessagesPayload);
                         return true;
 
                     case FailedTestResultMessageFieldsId.StandardOutput:
@@ -284,7 +293,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         var exceptionMessages = new List<ExceptionMessage>();
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? errorMessage = null;

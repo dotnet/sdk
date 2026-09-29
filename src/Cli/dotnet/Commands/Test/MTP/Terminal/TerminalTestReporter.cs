@@ -129,7 +129,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// because orchestrator and test-host handshakes can arrive on different connections.
     /// </summary>
     internal void EnableRetry()
-        => _isRetry = true;
+    {
+        _isRetry = true;
+        foreach (TestProgressState assembly in _assemblies.Values)
+        {
+            assembly.EnableRetry();
+        }
+    }
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
         => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null, settings: null);
@@ -173,14 +179,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // and later while preserving retry accounting.
         if (assemblyRun.TryCount > 1)
         {
-            EnableRetry();
+            assemblyRun.EnableRetry();
         }
 
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal =>
             {
-                if (_isRetry)
+                if (assemblyRun.IsRetry)
                 {
                     terminal.SetColor(TerminalColor.DarkGray);
                     terminal.Append($"({string.Format(CliCommandStrings.Try, currentAttemptNumber)}) ");
@@ -224,7 +230,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 _isDiscovery,
                 settings?.TestResultVisibility ?? _options.ShowTestResults,
                 settings?.SlowestTestsCount ?? _options.SlowestTestsCount,
-                settings?.ShowFlakyTests ?? _options.ShowFlakyTests);
+                settings?.ShowFlakyTests ?? _options.ShowFlakyTests,
+                settings?.LegacyRetryEnabled ?? _isRetry);
             int slotIndex = _terminalWithProgress.AddWorker(result);
             result.SlotIndex = slotIndex;
             _assemblies[executionId] = result;
@@ -793,6 +800,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 terminal,
                 assembly,
                 attempt,
+                asm.IsRetry,
                 targetFramework,
                 architecture,
                 displayName,
@@ -820,6 +828,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         ITerminal terminal,
         string assembly,
         int attempt,
+        bool isRetry,
         string? targetFramework,
         string? architecture,
         string displayName,
@@ -850,7 +859,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         terminal.SetColor(color);
         terminal.Append(outcomeText);
-        if (_isRetry)
+        if (isRetry)
         {
             terminal.SetColor(TerminalColor.DarkGray);
             terminal.Append($" ({string.Format(CliCommandStrings.Try, attempt)})");

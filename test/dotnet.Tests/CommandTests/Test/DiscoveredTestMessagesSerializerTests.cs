@@ -13,6 +13,30 @@ namespace dotnet.Tests.CommandTests.Test;
 public class DiscoveredTestMessagesSerializerTests
 {
     [TestMethod]
+    public void Deserialize_RejectsParameterTypeCountLargerThanItsField()
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((ushort)1);
+            writer.Write((ushort)DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList);
+            writer.Write(16);
+            writer.Write(1);
+            writer.Write((ushort)1);
+            writer.Write((ushort)DiscoveredTestMessageFieldsId.ParameterTypeFullNames);
+            writer.Write(sizeof(int));
+            writer.Write(int.MaxValue);
+        }
+
+        stream.Position = 0;
+        var serializer = new DiscoveredTestMessagesSerializer();
+
+        Action deserialize = () => serializer.Deserialize(stream);
+
+        deserialize.Should().Throw<InvalidDataException>();
+    }
+
+    [TestMethod]
     public void RoundTrip_AllFieldsPopulated_PreservesValues()
     {
         var original = new DiscoveredTestMessages(

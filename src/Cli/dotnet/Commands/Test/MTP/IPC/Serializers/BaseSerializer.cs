@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 internal abstract class BaseSerializer
 {
+    private const int MaximumCollectionLength = 1_000_000;
+
     protected static string ReadString(Stream stream)
     {
         Span<byte> len = stackalloc byte[sizeof(int)];
@@ -27,6 +29,7 @@ internal abstract class BaseSerializer
 
     protected static string ReadStringValue(Stream stream, int size)
     {
+        ValidatePayloadSize(stream, size);
         byte[] bytes = ArrayPool<byte>.Shared.Rent(size);
         try
         {
@@ -279,6 +282,101 @@ internal abstract class BaseSerializer
 
             SetPosition(stream, fieldEnd);
         }
+    }
+
+    protected static T ReadFieldPayload<T>(
+        Stream stream,
+        int fieldSize,
+        Func<Stream, T> readPayload)
+    {
+        ValidatePayloadSize(stream, fieldSize);
+        using var payloadStream = new BoundedReadStream(stream, fieldSize);
+        return readPayload(payloadStream);
+    }
+
+    protected static int ReadCollectionLength(Stream stream, int minimumBytesPerItem)
+    {
+        int length = ReadInt(stream);
+        long remainingBytes = stream.Length - stream.Position;
+        if (length < 0 ||
+            length > MaximumCollectionLength ||
+            minimumBytesPerItem <= 0 ||
+            length > remainingBytes / minimumBytesPerItem)
+        {
+            throw new InvalidDataException($"Collection length {length} is invalid for the remaining payload.");
+        }
+
+        return length;
+    }
+
+    private static void ValidatePayloadSize(Stream stream, int size)
+    {
+        if (size < 0 || size > stream.Length - stream.Position)
+        {
+            throw new InvalidDataException($"Payload size {size} is invalid for the remaining stream.");
+        }
+    }
+
+    private sealed class BoundedReadStream(Stream stream, long length) : Stream
+    {
+        private readonly long _start = stream.Position;
+
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length { get; } = length;
+
+        public override long Position
+        {
+            get => stream.Position - _start;
+            set
+            {
+                if (value < 0 || value > Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                stream.Position = _start + value;
+            }
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int bytesToRead = (int)Math.Min(count, Length - Position);
+            return bytesToRead == 0 ? 0 : stream.Read(buffer, offset, bytesToRead);
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            int bytesToRead = (int)Math.Min(buffer.Length, Length - Position);
+            return bytesToRead == 0 ? 0 : stream.Read(buffer[..bytesToRead]);
+        }
+
+        public override int ReadByte()
+            => Position == Length ? -1 : stream.ReadByte();
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            long position = origin switch
+            {
+                SeekOrigin.Begin => offset,
+                SeekOrigin.Current => Position + offset,
+                SeekOrigin.End => Length + offset,
+                _ => throw new ArgumentOutOfRangeException(nameof(origin)),
+            };
+            Position = position;
+            return Position;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override void SetLength(long value)
+            => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();
     }
 
     protected static void WriteListPayload<T>(Stream stream, ushort fieldId, T[]? list, Action<Stream, T> writeItem)

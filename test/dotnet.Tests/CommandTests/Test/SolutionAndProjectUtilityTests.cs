@@ -103,6 +103,9 @@ public sealed class SolutionAndProjectUtilityTests : SdkTest
     [DataRow("App.sln")]
     [DataRow("App.slnx")]
     [DataRow("App.slnf")]
+    [DataRow("App.SLN")]
+    [DataRow("App.SLNX")]
+    [DataRow("App.SLNF")]
     public void TryGetSolutionFilePath_WithSingleSolution_SelectsExpectedFile(string file)
     {
         string directory = CreateDirectoryWithFiles(file);
