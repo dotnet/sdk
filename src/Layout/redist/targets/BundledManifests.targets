@@ -57,9 +57,7 @@
     <_ManifestLayoutRoot>$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)', 'sdk-manifests'))</_ManifestLayoutRoot>
     <_ManifestLayoutStatePrefix>$(IntermediateOutputPath)incremental-layout\manifests-$(ProductMonikerRid)</_ManifestLayoutStatePrefix>
     <_ManifestLayoutInputManifest>$(_ManifestLayoutStatePrefix).inputs</_ManifestLayoutInputManifest>
-    <_ManifestLayoutOutputInventory>$(_ManifestLayoutStatePrefix).outputs</_ManifestLayoutOutputInventory>
     <_ManifestLayoutCompletionStamp>$(_ManifestLayoutStatePrefix).complete</_ManifestLayoutCompletionStamp>
-    <_ManifestLayoutTargets>$(MSBuildThisFileFullPath)</_ManifestLayoutTargets>
   </PropertyGroup>
 
   <Target Name="_PrepareLayoutManifests" DependsOnTargets="_PrepareBaselineWorkloadSet">
@@ -68,14 +66,14 @@
 
     <ItemGroup>
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
-                       Condition="Exists('%(BundledManifests.RestoredNupkgContentPath)\data')"
-                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())/%(BundledManifests.Version)"
-                       RestoredNupkgContentPath="%(BundledManifests.RestoredNupkgContentPath)"
-                       WorkloadManifestId="%(BundledManifests.Identity)" />
+                       Condition="Exists('%(RestoredNupkgContentPath)\data')"
+                       DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(Version)"
+                       RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
+                       WorkloadManifestId="%(Identity)" />
 
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
-                       Condition="Exists('%(BundledManifests.RestoredNupkgContentPath)\data\localize')"
-                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())/%(BundledManifests.Version)/localize" />
+                       Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
+                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
@@ -87,55 +85,46 @@
     </MSBuild>
 
     <ItemGroup>
-      <_DownloadedManifestLayoutInput Include="@(ManifestContent->'%(FullPath)')">
+      <_ManifestLayoutInput Include="@(ManifestContent->'%(FullPath)')">
         <DestinationPath>$([MSBuild]::NormalizePath('$(_ManifestLayoutRoot)', '%(ManifestContent.DestinationPath)', '%(ManifestContent.Filename)%(ManifestContent.Extension)'))</DestinationPath>
-      </_DownloadedManifestLayoutInput>
-    </ItemGroup>
-
-    <!-- Ownership comes from the staged payload directory shape, never from cached paths. -->
-    <GetWorkloadManifestLayout
-        LayoutRoot="$(_ManifestLayoutRoot)"
-        SourceFiles="@(_DownloadedManifestLayoutInput);@(_BuiltinManifestLayoutInput);@(_BaselineManifestLayoutInput)">
-      <Output TaskParameter="SourceFilesWithDestinations" ItemName="_ManifestLayoutInput" />
-      <Output TaskParameter="ExistingOutputs" ItemName="_ExistingManifestLayoutOutput" />
-      <Output TaskParameter="StaleOutputs" ItemName="_StaleManifestLayoutOutput" />
-      <Output TaskParameter="OwnedDirectories" ItemName="_ManifestLayoutDirectories" />
-      <Output TaskParameter="EmptyDirectories" ItemName="_EmptyManifestLayoutDirectories" />
-      <Output TaskParameter="InputManifestLines" ItemName="_ManifestLayoutInputLine" />
-      <Output TaskParameter="OutputInventoryLines" ItemName="_ManifestLayoutOutputLine" />
-    </GetWorkloadManifestLayout>
-
-    <ItemGroup>
+      </_ManifestLayoutInput>
+      <_ManifestLayoutInput Include="@(_BuiltinManifestLayoutInput);@(_BaselineManifestLayoutInput)" />
       <_ExpectedManifestLayoutOutput Include="@(_ManifestLayoutInput->'%(DestinationPath)')" />
       <_MissingManifestLayoutOutput Include="@(_ExpectedManifestLayoutOutput)" Condition="!Exists('%(Identity)')" />
     </ItemGroup>
 
+    <GetWorkloadManifestLayout LayoutRoot="$(_ManifestLayoutRoot)" SourceFiles="@(_ManifestLayoutInput)">
+      <Output TaskParameter="ExistingOutputs" ItemName="_ExistingManifestLayoutOutput" />
+      <Output TaskParameter="OwnedDirectories" ItemName="_ManifestLayoutDirectories" />
+    </GetWorkloadManifestLayout>
+
+    <ItemGroup>
+      <_StaleManifestLayoutOutput Include="@(_ExistingManifestLayoutOutput)" Exclude="@(_ExpectedManifestLayoutOutput)" />
+    </ItemGroup>
+
+    <!-- The inventory detects added, removed, and remapped inputs that timestamps cannot. The root
+         line records a destination change even when no manifests are mapped. -->
     <WriteLinesToFile File="$(_ManifestLayoutInputManifest)"
-                      Lines="@(_ManifestLayoutInputLine)"
+                      Lines="Root=$(_ManifestLayoutRoot);@(_ManifestLayoutInput->'%(FullPath)|%(DestinationPath)')"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
-    <WriteLinesToFile File="$(_ManifestLayoutOutputInventory)"
-                      Lines="@(_ManifestLayoutOutputLine)"
-                      Overwrite="true"
-                      WriteOnlyWhenDifferent="true" />
+
     <ReadLinesFromFile File="$(_ManifestLayoutCompletionStamp)"
                        Condition="Exists('$(_ManifestLayoutCompletionStamp)')">
       <Output TaskParameter="Lines" PropertyName="_ManifestLayoutCompletionValue" />
     </ReadLinesFromFile>
-    <Delete Files="$(_ManifestLayoutCompletionStamp)"
-            Condition="'@(_MissingManifestLayoutOutput)' != '' or '@(_StaleManifestLayoutOutput)' != '' or '@(_EmptyManifestLayoutDirectories)' != '' or (Exists('$(_ManifestLayoutCompletionStamp)') and '$(_ManifestLayoutCompletionValue)' != 'complete')" />
-    <OnError ExecuteTargets="_InvalidateManifestLayout" />
-  </Target>
 
-  <Target Name="_InvalidateManifestLayout">
-    <Delete Files="$(_ManifestLayoutCompletionStamp)" />
+    <!-- Missing or stale outputs, or a corrupt stamp, force LayoutManifests to run. -->
+    <Delete Files="$(_ManifestLayoutCompletionStamp)"
+            Condition="'@(_MissingManifestLayoutOutput)' != '' or '@(_StaleManifestLayoutOutput)' != '' or (Exists('$(_ManifestLayoutCompletionStamp)') and '$(_ManifestLayoutCompletionValue)' != 'complete')" />
   </Target>
 
   <Target Name="LayoutManifests"
           DependsOnTargets="_PrepareLayoutManifests"
-          Inputs="@(_ManifestLayoutInput);$(_ManifestLayoutInputManifest);$(_ManifestLayoutOutputInventory);$(_ManifestLayoutTargets);$(RepoRoot)src\Workloads\Manifests\Directory.Build.targets;$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj"
+          Inputs="@(_ManifestLayoutInput);$(_ManifestLayoutInputManifest)"
           Outputs="$(_ManifestLayoutCompletionStamp)">
     <Delete Files="$(_ManifestLayoutCompletionStamp)" />
+
     <PrepareIncrementalLayout
         SourceFiles="@(_ManifestLayoutInput)"
         DestinationFiles="@(_ExpectedManifestLayoutOutput)"
@@ -143,20 +132,24 @@
       <Output TaskParameter="ExpectedOutputs" ItemName="_PreparedManifestLayoutOutput" />
       <Output TaskParameter="StaleOutputs" ItemName="_PreparedStaleManifestLayoutOutput" />
     </PrepareIncrementalLayout>
+
     <Delete Files="@(_PreparedStaleManifestLayoutOutput)" />
     <Copy SourceFiles="@(_ManifestLayoutInput)"
           DestinationFiles="@(_PreparedManifestLayoutOutput)"
           SkipUnchangedFiles="true" />
-    <PruneEmptyLayoutDirectories LayoutRoot="$(_ManifestLayoutRoot)" Directories="@(_ManifestLayoutDirectories)" />
+
+    <!-- An empty manifest version directory would look like an installed manifest to the SDK. -->
+    <PruneEmptyLayoutDirectories Directories="@(_ManifestLayoutDirectories)" />
+
     <CompleteIncrementalLayout ExpectedOutputs="@(_PreparedManifestLayoutOutput)"
                                CompletionStampFile="$(_ManifestLayoutCompletionStamp)" />
   </Target>
-
   <PropertyGroup>
     <!-- NOTE: When setting this to true, we need to also add logic to include it in the exe installation bundle, either via a new MSI or by including it in an existing one. -->
     <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
   </PropertyGroup>
 
+  <!-- Kept as the entry point GenerateInstallerLayout.targets calls. The baseline is now written by LayoutManifests. -->
   <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" />
 
   <Target Name="_PrepareBaselineWorkloadSet" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
@@ -177,8 +170,7 @@
 
     <ItemGroup>
       <FormattedBaselineManifest Include="{" />
-      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/%(BundledManifests.FeatureBand)&quot;,"
-                                 Condition="'@(BundledManifests)' != ''" />
+      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/%(BundledManifests.FeatureBand)&quot;," />
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 

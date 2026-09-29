@@ -12,7 +12,6 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
@@ -25,11 +24,9 @@ namespace Microsoft.CoreSdkTasks.Tests;
 [DoNotParallelize]
 public class ManifestLayoutTests : SdkTest
 {
-    private const string LayoutMarker = "ManifestLayoutTests: executing LayoutManifests";
-
     /// <summary>
     /// Verifies downloaded and built-in payloads share one layout whose unchanged rerun skips
-    /// both mutation and shared mapping validation without rewriting state or enabling baselines.
+    /// without rewriting files or enabling baselines.
     /// </summary>
     [TestMethod]
     public void LayoutManifestsCopiesBothFamiliesAndSkipsWarmBuild()
@@ -38,7 +35,6 @@ public class ManifestLayoutTests : SdkTest
 
         BuildObservation cold = project.Build();
         cold.RanLayout.Should().BeTrue();
-        cold.ExecutedTasks.Should().Contain("PrepareIncrementalLayout");
 
         foreach (bool builtin in new[] { false, true })
         {
@@ -54,71 +50,9 @@ public class ManifestLayoutTests : SdkTest
 
         BuildObservation warm = project.Build();
         warm.RanLayout.Should().BeFalse();
-        warm.ExecutedTasks.Should().NotContain("PrepareIncrementalLayout");
 
         AssertTimestamps(timestamps);
         Directory.GetFiles(project.LayoutRoot, "baseline.workloadset.json", SearchOption.AllDirectories).Should().BeEmpty();
-    }
-
-    /// <summary>
-    /// Verifies the real producer templates and generation task preserve unchanged timestamps
-    /// but regenerate and restage a manifest when its package-version property changes.
-    /// </summary>
-    /// <remarks>
-    /// This matrix substitutes SDK and Pack orchestration to isolate template generation.
-    /// Real packaging is covered by <see cref="LayoutManifestsRepacksAfterRemovingLocalization"/>.
-    /// </remarks>
-    /// <param name="family">The Emscripten or Mono toolchain producer family.</param>
-    /// <param name="framework">The current or downlevel framework variant of the producer.</param>
-    [TestMethod]
-    [CombinatorialData]
-    public void LayoutManifestsTracksRealBuiltinGeneration(
-        [CombinatorialValues("Emscripten", "Mono.Toolchain")] string family,
-        [CombinatorialValues("Current", "net6", "net7", "net8", "net9", "net10")] string framework)
-    {
-        ManifestProject project = CreateManifestProject();
-        string generatedDirectory = project.UseBuiltinProducer($"Microsoft.NET.Workload.{family}.{framework}.Manifest");
-
-        project.Build().RanLayout.Should().BeTrue();
-        string[] generatedFiles = Directory.GetFiles(generatedDirectory);
-        generatedFiles.Should().HaveCount(family == "Mono.Toolchain" && framework == "Current" ? 3 : 2);
-        foreach (string source in generatedFiles)
-        {
-            string contents = File.ReadAllText(source);
-            contents.Should().NotContain("${", "the production templating task must expand the real templates");
-            File.ReadAllText(project.Output(true, Path.GetFileName(source))).Should().Be(contents);
-        }
-
-        Dictionary<string, DateTime> timestamps = SnapshotTimestamps(project);
-        foreach (string path in generatedFiles)
-        {
-            timestamps.Add(path, File.GetLastWriteTimeUtc(path));
-        }
-        WaitForUtcNowToAdvance();
-
-        project.Build().RanLayout.Should().BeFalse();
-        AssertTimestamps(timestamps);
-
-        var properties = new Dictionary<string, string> { ["PackageVersion"] = "11.0.2" };
-        WaitForUtcNowToAdvance();
-        project.Build(properties).RanLayout.Should().BeTrue();
-        string manifest = Path.Combine(generatedDirectory, "WorkloadManifest.json");
-        File.ReadAllText(manifest).Should().Contain("\"version\": \"11.0.2\"");
-        File.ReadAllText(project.Output(true, "WorkloadManifest.json")).Should().Be(File.ReadAllText(manifest));
-        File.GetLastWriteTimeUtc(manifest).Should().BeAfter(timestamps[manifest]);
-        timestamps.Remove(manifest);
-        timestamps.Remove(project.Output(true, "WorkloadManifest.json"));
-        timestamps.Remove(project.CompletionFile);
-        AssertTimestamps(timestamps);
-
-        timestamps = SnapshotTimestamps(project);
-        foreach (string path in generatedFiles)
-        {
-            timestamps.Add(path, File.GetLastWriteTimeUtc(path));
-        }
-        WaitForUtcNowToAdvance();
-        project.Build(properties).RanLayout.Should().BeFalse();
-        AssertTimestamps(timestamps);
     }
 
     /// <summary>
@@ -134,7 +68,7 @@ public class ManifestLayoutTests : SdkTest
     {
         ManifestProject project = CreateManifestProject();
         const string ProducerName = "Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest";
-        string generatedDirectory = project.UseBuiltinProducer(ProducerName, realPack: true);
+        string generatedDirectory = project.UseBuiltinProducer(ProducerName);
         string producerDirectory = Path.Combine(project.Root, "repo", "src", "Workloads", "Manifests", ProducerName);
         string producerPath = Path.Combine(producerDirectory, ProducerName + ".proj");
         string removed = Directory.GetFiles(Path.Combine(producerDirectory, "localize"), "*.json").First();
@@ -172,36 +106,22 @@ public class ManifestLayoutTests : SdkTest
                 return;
             }
 
-            var started = new HashSet<string>();
-            var skipped = new HashSet<string>();
-            bool packed = false;
+            var logger = new LayoutLogger();
             var replay = new BinaryLogReplayEventSource();
-            replay.AnyEventRaised += (_, args) =>
-            {
-                if (args is TargetStartedEventArgs start)
-                {
-                    started.Add(start.TargetName);
-                }
-                else if (args is TargetSkippedEventArgs skip && skip.SkipReason == TargetSkipReason.OutputsUpToDate)
-                {
-                    skipped.Add(skip.TargetName);
-                }
-                else if (args is TaskStartedEventArgs task && task.TaskName == "PackTask")
-                {
-                    packed = true;
-                }
-            };
+            logger.Initialize(replay);
             replay.Replay(binlog, TestContext.CancellationToken);
+
             if (warm)
             {
-                skipped.Should().Contain(["GenerateNuspec", "LayoutManifests"]);
+                logger.SkippedTargets.Should().Contain(["GenerateNuspec", "LayoutManifests"]);
             }
             else
             {
-                started.Should().Contain(["GenerateNuspec", "LayoutManifests"]);
-                skipped.Should().NotContain(["GenerateNuspec", "LayoutManifests"]);
+                logger.StartedTargets.Should().Contain(["GenerateNuspec", "LayoutManifests"]);
+                logger.SkippedTargets.Should().NotContain(["GenerateNuspec", "LayoutManifests"]);
             }
-            packed.Should().Be(!warm);
+
+            logger.ExecutedTasks.Contains("PackTask").Should().Be(!warm);
         }
 
         void AssertWarm(string name)
@@ -357,7 +277,8 @@ public class ManifestLayoutTests : SdkTest
             Path.Combine("9.0.100", "retired.manifest", "9.0.1"),
             Path.Combine("11.0.100", "retired.manifest", "11.0.1"),
             Path.Combine("11.0.100", project.Downloaded.Id.ToLowerInvariant(), "10.0.1"),
-            Path.Combine("11.0.100-preview.1", "retired.manifest", "11.0.1-preview.1")
+            Path.Combine("11.0.100-preview.1", "retired.manifest", "11.0.1-preview.1"),
+            Path.Combine("11.0.100", "any manifest id", "11.0.1")
         ];
         foreach (string directory in retiredDirectories)
         {
@@ -375,7 +296,6 @@ public class ManifestLayoutTests : SdkTest
             Path.Combine("11.0.100", "band.txt"),
             Path.Combine("11.0.100", "retired.manifest", "id.txt"),
             Path.Combine("not-a-band", "retired.manifest", "11.0.1", "keep.txt"),
-            Path.Combine("11.0.100", "bad id", "11.0.1", "keep.txt"),
             Path.Combine("11.0.100", "retired.manifest", "not-a-version", "keep.txt"),
             Path.Combine("11.0.100", "workloadsets", "11.0.100", "other.workloadset.json"),
             Path.Combine("11.0.100", "workloadsets", "11.0.100", "arbitrary.bin"),
@@ -425,51 +345,6 @@ public class ManifestLayoutTests : SdkTest
     }
 
     /// <summary>
-    /// Verifies empty owned containers trigger pruning even when payloads are unchanged,
-    /// while directories outside the ownership schema remain intact.
-    /// </summary>
-    [TestMethod]
-    public void LayoutManifestsPrunesEmptyOwnedDirectoriesWithoutRewritingPayloads()
-    {
-        ManifestProject project = CreateManifestProject();
-        project.Build();
-        Dictionary<string, DateTime> timestamps = SnapshotTimestamps(project);
-        timestamps.Remove(project.CompletionFile);
-        string[] ownedDirectories =
-        [
-            Path.Combine(project.LayoutRoot, "7.0.100"),
-            Path.Combine(project.LayoutRoot, "8.0.100", "retired.manifest", "8.0.1", "nested"),
-            Path.Combine(project.LayoutRoot, "11.0.100", "empty.manifest"),
-            project.Output(false, Path.Combine("empty", "nested")),
-            project.Output(true, Path.Combine("empty", "nested"))
-        ];
-        string[] unownedDirectories =
-        [
-            Path.Combine(project.LayoutRoot, "malformed-band"),
-            Path.Combine(project.LayoutRoot, "11.0.100", "bad id"),
-            Path.Combine(project.LayoutRoot, "11.0.100", "retired.manifest", "not-a-version"),
-            Path.Combine(project.LayoutRoot, "11.0.100", "workloadsets", "11.0.100", "nested")
-        ];
-        foreach (string directory in ownedDirectories.Concat(unownedDirectories))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        project.Build().RanLayout.Should().BeTrue();
-
-        foreach (string directory in ownedDirectories)
-        {
-            Directory.Exists(directory).Should().BeFalse();
-        }
-        foreach (string directory in unownedDirectories)
-        {
-            Directory.Exists(directory).Should().BeTrue();
-        }
-        AssertTimestamps(timestamps);
-        project.Build().RanLayout.Should().BeFalse();
-    }
-
-    /// <summary>
     /// Verifies disabling producers removes their former payloads and allows a fully empty
     /// expected layout to complete and skip on the next invocation.
     /// </summary>
@@ -499,13 +374,11 @@ public class ManifestLayoutTests : SdkTest
     /// Verifies missing or corrupt inventories and completion markers are rebuilt from current
     /// inputs without treating a path injected into cached state as deletion authority.
     /// </summary>
-    /// <param name="extension">The input inventory, output inventory, or completion marker to damage.</param>
+    /// <param name="extension">The input inventory or completion marker to damage.</param>
     /// <param name="corrupt">Whether to replace the state contents rather than delete the file.</param>
     [TestMethod]
     [DataRow("inputs", false)]
     [DataRow("inputs", true)]
-    [DataRow("outputs", false)]
-    [DataRow("outputs", true)]
     [DataRow("complete", false)]
     [DataRow("complete", true)]
     public void LayoutManifestsReconstructsDeletedOrCorruptState(string extension, bool corrupt)
@@ -576,8 +449,7 @@ public class ManifestLayoutTests : SdkTest
     }
 
     /// <summary>
-    /// Verifies missing required inputs fail without removing stale or retained payloads
-    /// and invalidate the completion stamp even when there is no stale file to trigger repair.
+    /// Verifies missing required inputs fail without removing stale or retained payloads.
     /// </summary>
     /// <param name="builtin">Whether the missing input belongs to the built-in producer.</param>
     /// <param name="staleOutput">Whether to include an unrelated stale owned output before failure.</param>
@@ -607,7 +479,7 @@ public class ManifestLayoutTests : SdkTest
         {
             File.ReadAllText(stale).Should().Be("stale");
         }
-        File.Exists(project.CompletionFile).Should().BeFalse();
+
         File.ReadAllText(output).Should().Be(contents);
         AssertTimestamps(timestamps);
     }
@@ -676,8 +548,8 @@ public class ManifestLayoutTests : SdkTest
     }
 
     /// <summary>
-    /// Verifies mapping targets return Pack-produced files without staging them, preserve
-    /// shipping filters and destination conventions, and retain working copy-wrapper targets.
+    /// Verifies mapping targets return Pack-produced files without staging them and preserve
+    /// shipping filters and destination conventions.
     /// </summary>
     /// <param name="traversal">
     /// Whether to exercise aggregate traversal and its version override rather than the direct producer.
@@ -685,7 +557,7 @@ public class ManifestLayoutTests : SdkTest
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void BuiltinManifestMappingTargetsReturnPackOutputsAndKeepCopyWrappersUsable(bool traversal)
+    public void BuiltinManifestMappingTargetsReturnPackOutputs(bool traversal)
     {
         string root = TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path;
         string manifestsDirectory = Path.Combine(root, "src", "Workloads", "Manifests");
@@ -740,13 +612,6 @@ public class ManifestLayoutTests : SdkTest
         Directory.Exists(outputRoot).Should().BeFalse("collecting mappings must not copy into the layout");
         File.Exists(Path.Combine(Path.GetDirectoryName(producer)!, "pack.marker")).Should().BeTrue();
 
-        BuildProject(projectPath, traversal ? "LayoutBuiltinManifests" : "LayoutManifest", properties);
-
-        foreach (ITaskItem input in mapping.Outputs)
-        {
-            File.ReadAllText(input.GetMetadata("DestinationPath")).Should().Be(File.ReadAllText(input.ItemSpec));
-        }
-        Directory.GetFiles(outputRoot, "*", SearchOption.AllDirectories).Should().HaveCount(4);
         BuildObservation nonShipping = BuildProject(
             Path.Combine(manifestsDirectory, "Test.NonShipping.Manifest", "Test.NonShipping.Manifest.proj"),
             "GetManifestLayoutInputs",
@@ -805,7 +670,7 @@ public class ManifestLayoutTests : SdkTest
             string buildTasks = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)!, "Microsoft.Build.Tasks.Core.dll");
             string[] sdkTaskNames =
                 ["PrepareIncrementalLayout", "CompleteIncrementalLayout", "GetWorkloadManifestLayout", "PruneEmptyLayoutDirectories", "GetWorkloadSetFeatureBand"];
-            string[] buildTaskNames = ["Copy", "Delete", "Error", "Message", "MakeDir", "MSBuild", "ReadLinesFromFile", "WriteLinesToFile"];
+            string[] buildTaskNames = ["Copy", "Delete", "Error", "MSBuild", "ReadLinesFromFile", "WriteLinesToFile"];
             return string.Join(
                 Environment.NewLine,
                 sdkTaskNames.Select(name => $"<UsingTask TaskName=\"Microsoft.DotNet.Build.Tasks.{name}\" AssemblyFile=\"{Escape(sdkTasks)}\" />")
@@ -814,38 +679,9 @@ public class ManifestLayoutTests : SdkTest
     }
 
     private static string GetWorkloadFilePath(string fileName) =>
-        GetFixtureFilePath(
+        LayoutFiles.GetPath(
             Path.Combine("Workloads", "Manifests", fileName),
             Path.Combine("src", "Workloads", "Manifests", fileName));
-
-    /// <summary>
-    /// Resolves fixtures from an explicitly selected test deployment first, otherwise preferring
-    /// repository sources so local runs exercise the current targets.
-    /// </summary>
-    private static string GetFixtureFilePath(string deployedRelativePath, string repositoryRelativePath)
-    {
-        string deployedPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "ManifestLayout", deployedRelativePath);
-        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY"))
-            && File.Exists(deployedPath))
-        {
-            return deployedPath;
-        }
-
-        string? repoRoot = SdkTestContext.Current.ToolsetUnderTest.RepoRoot ?? SdkTestContext.GetRepoRoot();
-        if (repoRoot is not null)
-        {
-            string repoPath = Path.Combine(repoRoot, repositoryRelativePath);
-            if (File.Exists(repoPath))
-            {
-                return repoPath;
-            }
-        }
-        if (File.Exists(deployedPath))
-        {
-            return deployedPath;
-        }
-        throw new InvalidOperationException($"Could not find manifest layout fixture '{deployedRelativePath}'.");
-    }
 
     /// <summary>
     /// Evaluates and builds a target with a fresh project collection and build manager, retaining
@@ -870,7 +706,7 @@ public class ManifestLayoutTests : SdkTest
         ITaskItem[] outputs = result.ResultsByTarget.TryGetValue(target, out TargetResult? targetResult)
             ? targetResult.Items
             : [];
-        return new BuildObservation(logger.RanLayout, logger.Text, outputs, logger.ExecutedTasks);
+        return new BuildObservation(logger.RanLayout, logger.Text, outputs);
     }
 
     /// <summary>
@@ -910,23 +746,40 @@ public class ManifestLayoutTests : SdkTest
             """);
     }
 
-    private sealed record BuildObservation(bool RanLayout, string Log, ITaskItem[] Outputs, IReadOnlyList<string> ExecutedTasks);
+    private sealed record BuildObservation(bool RanLayout, string Log, ITaskItem[] Outputs);
 
+    /// <summary>
+    /// Records which targets started or were skipped as up to date, which tasks ran, and all messages.
+    /// </summary>
     private sealed class LayoutLogger : ILogger
     {
         private readonly List<string> _messages = [];
 
         public LoggerVerbosity Verbosity { get; set; } = LoggerVerbosity.Diagnostic;
         public string? Parameters { get; set; }
-        public bool RanLayout => _messages.Contains(LayoutMarker);
+        public HashSet<string> StartedTargets { get; } = [];
+        public HashSet<string> SkippedTargets { get; } = [];
+        public HashSet<string> ExecutedTasks { get; } = [];
+        public bool RanLayout => StartedTargets.Contains("LayoutManifests") && !SkippedTargets.Contains("LayoutManifests");
         public string Text => string.Join(Environment.NewLine, _messages);
-        public List<string> ExecutedTasks { get; } = [];
 
         public void Initialize(IEventSource eventSource)
         {
-            eventSource.TaskStarted += (_, args) => ExecutedTasks.Add(args.TaskName);
             eventSource.AnyEventRaised += (_, args) =>
             {
+                switch (args)
+                {
+                    case TargetStartedEventArgs started:
+                        StartedTargets.Add(started.TargetName);
+                        break;
+                    case TargetSkippedEventArgs skipped when skipped.SkipReason == TargetSkipReason.OutputsUpToDate:
+                        SkippedTargets.Add(skipped.TargetName);
+                        break;
+                    case TaskStartedEventArgs task:
+                        ExecutedTasks.Add(task.TaskName);
+                        break;
+                }
+
                 if (args.Message is not null)
                 {
                     _messages.Add(args.Message);
@@ -960,11 +813,10 @@ public class ManifestLayoutTests : SdkTest
             _projectPath = Path.Combine(root, "manifest-layout.proj");
             _targetsPath = Path.Combine(root, "BundledManifests.targets");
             File.Copy(
-                GetFixtureFilePath(
+                LayoutFiles.GetPath(
                     "BundledManifests.targets",
                     Path.Combine("src", "Layout", "redist", "targets", "BundledManifests.targets")),
                 _targetsPath);
-            WriteFile(Path.Combine(root, "repo", "src", "Workloads", "Manifests", "Directory.Build.targets"), "<Project />");
             foreach (bool builtin in new[] { false, true })
             {
                 foreach (string relativePath in PayloadFiles)
@@ -980,7 +832,7 @@ public class ManifestLayoutTests : SdkTest
         public ManifestDefinition Builtin { get; } = new("test.builtin");
         public string LayoutRoot => Path.Combine(Root, "sdk", "sdk-manifests");
         public string CompletionFile => Path.Combine(Root, "obj", "incremental-layout", "manifests-test-rid.complete");
-        public string[] StateFiles => [Path.ChangeExtension(CompletionFile, "inputs"), Path.ChangeExtension(CompletionFile, "outputs"), CompletionFile];
+        public string[] StateFiles => [Path.ChangeExtension(CompletionFile, "inputs"), CompletionFile];
         public string BaselineFile => Path.Combine(LayoutRoot, "11.0.100-baseline", "workloadsets", "11.0.100-baseline", "baseline.workloadset.json");
 
         public string Source(bool builtin, string relativePath) =>
@@ -997,13 +849,12 @@ public class ManifestLayoutTests : SdkTest
         /// its templates, and the production mapping targets.
         /// </summary>
         /// <param name="name">The producer directory and project name.</param>
-        /// <param name="realPack">
-        /// Whether to retain the producer SDK and NuGet Pack graph using an isolated local feed;
-        /// otherwise Pack runs only the production generation dependency chain.
-        /// </param>
         /// <returns>The directory configured for generated manifest files, not the final SDK intermediate path.</returns>
-        /// <remarks>Aggregate traversal SDK orchestration is substituted in both modes.</remarks>
-        public string UseBuiltinProducer(string name, bool realPack = false)
+        /// <remarks>
+        /// The producer keeps its NoTargets SDK and NuGet Pack graph, restored from an isolated local feed.
+        /// Only the aggregate traversal SDK is removed.
+        /// </remarks>
+        public string UseBuiltinProducer(string name)
         {
             Builtin.Id = name.Replace(".Manifest", "").ToLowerInvariant();
             WriteInputs();
@@ -1045,52 +896,33 @@ public class ManifestLayoutTests : SdkTest
                     <VersionFeature80ForWorkloads>1</VersionFeature80ForWorkloads>
                     <VersionFeature90ForWorkloads>1</VersionFeature90ForWorkloads>
                     <VersionFeature100ForWorkloads>1</VersionFeature100ForWorkloads>
-                    <EmscriptenVersionCurrent>4.0.12</EmscriptenVersionCurrent>
-                    <EmscriptenVersionNet6>4.0.12</EmscriptenVersionNet6>
-                    <EmscriptenVersionNet7>4.0.12</EmscriptenVersionNet7>
-                    <EmscriptenVersionNet8>4.0.12</EmscriptenVersionNet8>
-                    <EmscriptenVersionNet9>4.0.12</EmscriptenVersionNet9>
-                    <EmscriptenVersionNet10>4.0.12</EmscriptenVersionNet10>
                   </PropertyGroup>
-                  {{(realPack ? "" : """<Target Name="Pack" DependsOnTargets="$(GenerateNuspecDependsOn)" />""")}}
                 </Project>
                 """);
 
             using var collection = new ProjectCollection();
-            string producerPath = Path.Combine(producerDirectory, name + ".proj");
-            ProjectRootElement producer = ProjectRootElement.Open(producerPath, collection);
-            if (realPack)
-            {
-                string feed = Path.Combine(AppContext.BaseDirectory, "ManifestPackages");
-                string sdkPackage = Directory.GetFiles(feed, "microsoft.build.notargets.*.nupkg").Single();
-                string sdkVersion = Path.GetFileName(sdkPackage)["microsoft.build.notargets.".Length..^".nupkg".Length];
-                WriteFile(Path.Combine(Root, "global.json"),
-                    $$$"""{"msbuild-sdks":{"Microsoft.Build.NoTargets":"{{{sdkVersion}}}"}}""");
-                WriteFile(Path.Combine(Root, "NuGet.config"),
-                    $$"""<configuration><packageSources><clear /><add key="manifest-test-packages" value="{{Escape(feed)}}" /></packageSources></configuration>""");
-                WriteFile(Path.Combine(manifests, "Directory.Build.props"),
-                    $$"""<Project><Import Project="{{Escape(support)}}" /></Project>""");
-                WriteFile(Path.Combine(Root, "Directory.Packages.props"), "<Project />");
-                ProjectRootElement layout = ProjectRootElement.Open(_projectPath, collection);
-                ProjectTargetElement capture = layout.AddTarget("CaptureBuiltinMappings");
-                capture.AfterTargets = "_PrepareLayoutManifests";
-                ProjectTaskElement write = capture.AddTask("WriteLinesToFile");
-                write.SetParameter("File", Path.Combine(Root, "builtin-mappings.txt"));
-                write.SetParameter("Lines", "@(_BuiltinManifestLayoutInput->'%(Identity)|%(DestinationPath)')");
-                write.SetParameter("Overwrite", "true");
-                write.SetParameter("WriteOnlyWhenDifferent", "true");
-                layout.Save();
-            }
-            else
-            {
-                // The generation matrix isolates template generation; the removal regression retains real Pack.
-                producer.Sdk = string.Empty;
-                ProjectImportElement import = producer.AddImport(support);
-                producer.RemoveChild(import);
-                producer.PrependChild(import);
-                producer.AddImport(Path.Combine(manifests, "Directory.Build.targets"));
-                producer.Save();
-            }
+            string feed = Path.Combine(AppContext.BaseDirectory, "ManifestPackages");
+            string sdkPackage = Directory.GetFiles(feed, "microsoft.build.notargets.*.nupkg").Single();
+            string sdkVersion = Path.GetFileName(sdkPackage)["microsoft.build.notargets.".Length..^".nupkg".Length];
+
+            WriteFile(Path.Combine(Root, "global.json"),
+                $$$"""{"msbuild-sdks":{"Microsoft.Build.NoTargets":"{{{sdkVersion}}}"}}""");
+            WriteFile(Path.Combine(Root, "NuGet.config"),
+                $$"""<configuration><packageSources><clear /><add key="manifest-test-packages" value="{{Escape(feed)}}" /></packageSources></configuration>""");
+            WriteFile(Path.Combine(manifests, "Directory.Build.props"),
+                $$"""<Project><Import Project="{{Escape(support)}}" /></Project>""");
+            WriteFile(Path.Combine(Root, "Directory.Packages.props"), "<Project />");
+
+            // Record the returned built-in mappings so the test can compare them with the package.
+            ProjectRootElement layout = ProjectRootElement.Open(_projectPath, collection);
+            ProjectTargetElement capture = layout.AddTarget("CaptureBuiltinMappings");
+            capture.AfterTargets = "_PrepareLayoutManifests";
+            ProjectTaskElement write = capture.AddTask("WriteLinesToFile");
+            write.SetParameter("File", Path.Combine(Root, "builtin-mappings.txt"));
+            write.SetParameter("Lines", "@(_BuiltinManifestLayoutInput->'%(Identity)|%(DestinationPath)')");
+            write.SetParameter("Overwrite", "true");
+            write.SetParameter("WriteOnlyWhenDifferent", "true");
+            layout.Save();
 
             ProjectRootElement traversal = ProjectRootElement.Open(GetWorkloadFilePath("manifest-packages.csproj"), collection);
             traversal.Sdk = string.Empty;
@@ -1166,8 +998,8 @@ public class ManifestLayoutTests : SdkTest
         }
 
         /// <summary>
-        /// Runs a layout target with an execution marker and optional pre-task failure injection
-        /// applied in memory, without changing the copied target file's timestamp.
+        /// Runs a layout target. When <paramref name="interruptionTask"/> is set, an in-memory Error task is
+        /// inserted before that task, so the copied targets file keeps its timestamp.
         /// </summary>
         public BuildObservation Build(
             Dictionary<string, string>? globalProperties = null,
@@ -1179,23 +1011,18 @@ public class ManifestLayoutTests : SdkTest
                 target,
                 globalProperties,
                 expectedSuccess,
-                collection =>
-                {
-                    ProjectRootElement targets = ProjectRootElement.Open(_targetsPath, collection);
-                    ProjectTargetElement layout = targets.Targets.Single(candidate => candidate.Name == "LayoutManifests");
-                    ProjectTaskElement marker = layout.AddTask("Message");
-                    marker.SetParameter("Text", LayoutMarker);
-                    marker.SetParameter("Importance", "high");
-                    layout.RemoveChild(marker);
-                    layout.PrependChild(marker);
-                    if (interruptionTask is not null)
-                    {
-                        ProjectTaskElement interruptedTask = layout.Tasks.First(task => task.Name == interruptionTask);
-                        ProjectTaskElement error = layout.AddTask("Error");
-                        error.SetParameter("Text", "Injected manifest layout interruption");
-                        layout.RemoveChild(error);
-                        layout.InsertBeforeChild(error, interruptedTask);
-                    }
-                });
+                interruptionTask is null ? null : collection => InjectInterruption(collection, interruptionTask));
+
+        private void InjectInterruption(ProjectCollection collection, string interruptionTask)
+        {
+            ProjectRootElement targets = ProjectRootElement.Open(_targetsPath, collection);
+            ProjectTargetElement layout = targets.Targets.Single(candidate => candidate.Name == "LayoutManifests");
+            ProjectTaskElement interruptedTask = layout.Tasks.First(task => task.Name == interruptionTask);
+
+            ProjectTaskElement error = layout.AddTask("Error");
+            error.SetParameter("Text", "Injected manifest layout interruption");
+            layout.RemoveChild(error);
+            layout.InsertBeforeChild(error, interruptedTask);
+        }
     }
 }

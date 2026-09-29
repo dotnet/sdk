@@ -17,10 +17,4 @@
     </MSBuild>
   </Target>
 
-  <Target Name="LayoutBuiltinManifests" DependsOnTargets="GetBuiltinManifestLayoutInputs">
-    <Copy SourceFiles="@(_BuiltinManifestLayoutInput)"
-          DestinationFiles="@(_BuiltinManifestLayoutInput->'%(DestinationPath)')"
-          SkipUnchangedFiles="true" />
-  </Target>
-
 </Project>

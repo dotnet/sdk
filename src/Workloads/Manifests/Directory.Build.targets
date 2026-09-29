@@ -1,6 +1,11 @@
 <Project>
 
-  <!-- NuGet's timestamp inputs cannot detect removed glob members when generated files stay unchanged. -->
+  <!-- Pack skips when its inputs are no newer than the package. Generated manifest files keep their
+       timestamps when their content is unchanged (SkipUnchanged), so removing a file such as a
+       localization would otherwise leave it in the package. This inventory changes when package
+       membership changes, which makes Pack rerun.
+       _PackageFiles and _CalculateInputsOutputsForPack are internal to NuGet's pack targets; if
+       NuGet renames them, this target stops running and removals are missed again. -->
   <Target Name="_TrackManifestPackageInputs"
           BeforeTargets="_CalculateInputsOutputsForPack"
           Condition="'$(IsPackable)' == 'true'">
@@ -8,8 +13,7 @@
       <_ManifestPackageInputInventory>$(IntermediateOutputPath)manifest-package.inputs</_ManifestPackageInputInventory>
     </PropertyGroup>
     <ItemGroup>
-      <_ManifestPackageInputLine Include="@(_PackageFiles->'file|%(FullPath)|%(PackagePath)|%(RecursiveDir)|%(NuGetRecursiveDir)|%(TargetPath)|%(BuildAction)')" />
-      <_ManifestPackageInputLine Include="@(_PackageFilesToExclude->'exclude|%(FullPath)')" />
+      <_ManifestPackageInputLine Include="@(_PackageFiles->'%(FullPath)|%(PackagePath)')" />
     </ItemGroup>
     <WriteLinesToFile File="$(_ManifestPackageInputInventory)"
                       Lines="@(_ManifestPackageInputLine)"
@@ -39,12 +43,6 @@
         <DestinationPath>$([MSBuild]::NormalizePath('$(_manifestTargetDirectory)', 'localize', '%(_manifestFilesLocalize.Filename)%(_manifestFilesLocalize.Extension)'))</DestinationPath>
       </_ManifestLayoutInput>
     </ItemGroup>
-  </Target>
-
-  <Target Name="LayoutManifest" DependsOnTargets="GetManifestLayoutInputs" Condition="'$(IsShipping)' == 'true'">
-    <Copy SourceFiles="@(_ManifestLayoutInput)"
-          DestinationFiles="@(_ManifestLayoutInput->'%(DestinationPath)')"
-          SkipUnchangedFiles="true" />
   </Target>
 
   <Import Project="..\..\..\Directory.Build.targets" />

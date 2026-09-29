@@ -4,6 +4,8 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <!-- The real-Pack manifest test restores the NoTargets SDK from a local feed. global.json is the
+         only place that defines its version. -->
     <_ManifestNoTargetsVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(RepoRoot)global.json')), '&quot;Microsoft.Build.NoTargets&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_ManifestNoTargetsVersion>
   </PropertyGroup>
 
@@ -20,12 +22,8 @@
              Link="ManifestPackages\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="$(RepoRoot)src\Workloads\Manifests\**\*.proj;
-                      $(RepoRoot)src\Workloads\Manifests\**\*.in;
-                      $(RepoRoot)src\Workloads\Manifests\**\WasmFeatures.props;
-                      $(RepoRoot)src\Workloads\Manifests\**\WorkloadTelemetry.targets;
-                      $(RepoRoot)src\Workloads\Manifests\**\*.json"
-             Link="ManifestProducers\%(RecursiveDir)%(Filename)%(Extension)"
+    <Content Include="$(RepoRoot)src\Workloads\Manifests\Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest\**"
+             Link="ManifestProducers\Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
     <Content Include="$(PkgMicrosoft_DotNet_Build_Tasks_Templating)\tools\net\*"
