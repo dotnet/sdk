@@ -324,11 +324,12 @@ test('missing cache is normal but malformed/schema-invalid/forged caches are exp
         'invalid JSON', {}, { ...good, schemaVersion: 2 }, { ...good, cursor: -1 },
         { ...good, entries: [] }, { ...good, remoteStates: {} },
         { ...good, entries: { ['0'.repeat(64)]: null } },
-        { ...good, rulesHash: 'outdated', entries: { ['0'.repeat(64)]: {} } },
         { ...good, entries: { [candidate.id]: { ...validated[0], status: 'insufficient_context' } } },
     ]) {
         assert.throws(() => selectBatch(f.manifest, cache), /Invalid interpretation cache/);
     }
+    const outdated = { ...good, rulesHash: 'outdated', entries: { ['0'.repeat(64)]: {} } };
+    assert.equal(selectBatch(f.manifest, outdated).batch.candidates.length, 1);
     const forged = structuredClone(good);
     forged.entries[candidate.id].actions[0].path = 'invented.cs';
     assert.throws(() => getCachedResults(forged, f.manifest), /provenance/);

@@ -249,6 +249,9 @@ function compatibleCache(cache, manifest, candidates) {
         text(cache.rulesHash, 'Cache rulesHash', 256);
         object(cache.entries, 'Cache entries');
         requireCondition(Number.isSafeInteger(cache.cursor) && cache.cursor >= 0, 'Invalid cache cursor.');
+        // Check rulesHash before validating entries: a rules change may also change the
+        // entry schema, and an outdated cache must be dropped rather than fail the run.
+        if (cache.rulesHash !== manifest.rulesHash) return empty;
         for (const [id, result] of Object.entries(cache.entries)) {
             requireCondition(/^[a-f0-9]{64}$/.test(id), 'Invalid cache entry identity.');
             keys(result, ['candidateId', 'status', 'reason', 'actions', 'contextExpansions'], 'Cached result');
@@ -272,7 +275,6 @@ function compatibleCache(cache, manifest, candidates) {
             requireCondition(result.contextExpansions === undefined
                 || (Array.isArray(result.contextExpansions) && result.contextExpansions.length <= 2), 'Invalid cached context expansions.');
         }
-        if (cache.rulesHash !== manifest.rulesHash) return empty;
         const entries = {};
         for (const [id, result] of Object.entries(cache.entries)) {
             if (!candidates.has(id)) continue;
