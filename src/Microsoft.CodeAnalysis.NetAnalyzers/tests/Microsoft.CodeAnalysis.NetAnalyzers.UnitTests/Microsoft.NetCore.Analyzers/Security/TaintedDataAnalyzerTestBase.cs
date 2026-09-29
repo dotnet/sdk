@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 
@@ -13,8 +13,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
     [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.TaintedDataAnalysis)]
     public abstract class TaintedDataAnalyzerTestBase<TCSharpAnalyzer, TVisualBasicAnalyzer>
-        where TCSharpAnalyzer : DiagnosticAnalyzer, new()
-        where TVisualBasicAnalyzer : DiagnosticAnalyzer, new()
+        where TCSharpAnalyzer : SourceTriggeredTaintedDataAnalyzerBase, new()
+        where TVisualBasicAnalyzer : SourceTriggeredTaintedDataAnalyzerBase, new()
     {
         protected abstract DiagnosticDescriptor Rule { get; }
 
@@ -75,6 +75,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                     }
                 }
                 """;
+        }
+
+        protected async Task<int> GetCSharpDataflowCountAsync(
+            string source, bool withDependencies = false, params DiagnosticResult[] expected)
+        {
+            int count = 0;
+            var test = new CountingCSharpSecurityAnalyzerTest<TCSharpAnalyzer>(() =>
+                new TCSharpAnalyzer { DataflowAnalysisStarted = () => Interlocked.Increment(ref count) })
+            {
+                TestCode = source,
+            };
+            if (withDependencies)
+            {
+                test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
+                test.TestState.AdditionalReferences.Add(AdditionalMetadataReferences.TestReferenceAssembly);
+            }
+
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+            return Volatile.Read(ref count);
         }
 
         protected const string WebInputWithSinkReachedThroughMethod = """

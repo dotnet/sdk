@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task RepeatedWebInputWithoutReachableSinkAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(RepeatedWebInputWithoutReachableSink());
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedWebInputWithoutReachableSink(), withDependencies: true));
         }
 
         [TestMethod]

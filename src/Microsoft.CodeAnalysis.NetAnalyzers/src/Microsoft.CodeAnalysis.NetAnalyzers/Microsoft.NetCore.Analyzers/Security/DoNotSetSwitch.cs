@@ -57,6 +57,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }.Select(
                     (o) => new KeyValuePair<string, (bool, DiagnosticDescriptor)>(o.Item1, o.Item2)));
 
+        // Per-analyzer observer keeps performance assertions isolated across concurrent tests.
+        internal Action? ValueContentAnalysisStarted { get; set; }
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             DoNotDisableSchUseStrongCryptoRule,
             DoNotDisableSpmSecurityProtocolsRule);
@@ -137,6 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     }
                     else if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                     {
+                        ValueContentAnalysisStarted?.Invoke();
                         var valueContentResult = ValueContentAnalysis.TryGetOrComputeResult(
                             cfg,
                             operationAnalysisContext.ContainingSymbol,

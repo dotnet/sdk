@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -21,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task UnrelatedSwitchOrBenignValue_CSharp_NoDiagnosticAsync()
         {
             string calls = string.Concat(Enumerable.Repeat("Bytes(1, 2, 3, 4);\n", 64));
-            await VerifyCS.VerifyAnalyzerAsync($$"""
+            Assert.AreEqual(0, await GetValueContentAnalysisCountAsync($$"""
                 using System;
 
                 class TestClass
@@ -35,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                         AppContext.SetSwitch(name, false);
                     }
                 }
-                """);
+                """));
         }
 
         [TestMethod]
@@ -56,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task KnownSwitchWithComputedValue_CSharp_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            int count = await GetValueContentAnalysisCountAsync("""
                 using System;
 
                 class TestClass
@@ -69,6 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """,
                 GetCSharpResultAt(8, 9, "SetSwitch"));
+            Assert.IsGreaterThan(0, count);
         }
 
         [TestMethod]
@@ -345,6 +347,19 @@ class TestClass
             }
 
             await test.RunAsync(CancellationToken.None);
+        }
+
+        private static async Task<int> GetValueContentAnalysisCountAsync(string source, params DiagnosticResult[] expected)
+        {
+            int count = 0;
+            var test = new CountingCSharpSecurityAnalyzerTest<DoNotSetSwitch>(() =>
+                new DoNotSetSwitch { ValueContentAnalysisStarted = () => Interlocked.Increment(ref count) })
+            {
+                TestCode = source,
+            };
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+            return Volatile.Read(ref count);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
