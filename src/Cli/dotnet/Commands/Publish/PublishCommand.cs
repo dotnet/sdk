@@ -23,13 +23,21 @@ public class PublishCommand : RestoringCommand
     {
     }
 
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
+    public static CommandBase FromArgs(
+        string[] args,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
-        return FromParseResult(parseResult, msbuildPath, services);
+        return FromParseResult(parseResult, cancellationToken, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
+    public static CommandBase FromParseResult(
+        ParseResult parseResult,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 
@@ -78,17 +86,21 @@ public class PublishCommand : RestoringCommand
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );
-                var projectLocator = new ReleasePropertyProjectLocator(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                var projectLocator = new ReleasePropertyProjectLocator(
+                    msbuildArgs.GlobalProperties,
+                    MSBuildPropertyNames.PUBLISH_RELEASE,
+                    options,
+                    cancellationToken);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties);
             }
         );
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
+        return FromParseResult(parseResult, cancellationToken, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

@@ -70,12 +70,12 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         // Check if we're working with a solution filter file
         if (_solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
         {
-            AddProjectsToSolutionFilter(fullProjectPaths);
+            AddProjectsToSolutionFilter(fullProjectPaths, cancellationToken);
         }
         else
         {
             // Add projects to the solution
-            AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            AddProjectsToSolutionAsync(fullProjectPaths, cancellationToken).GetAwaiter().GetResult();
         }
         return 0;
     }
@@ -128,7 +128,7 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
 
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath, cancellationToken);
         Debug.Assert(solution.SerializerExtension is not null);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
@@ -280,7 +280,9 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         }
     }
 
-    private void AddProjectsToSolutionFilter(IEnumerable<string> projectPaths)
+    private void AddProjectsToSolutionFilter(
+        IEnumerable<string> projectPaths,
+        CancellationToken cancellationToken)
     {
         // Solution filter files don't support --in-root or --solution-folder options
         if (_inRoot || !string.IsNullOrEmpty(_solutionFolderPath))
@@ -289,11 +291,11 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         }
 
         // Load the filtered solution to get the parent solution path and existing projects
-        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(_solutionFileFullPath);
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(_solutionFileFullPath, cancellationToken);
         string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
 
         // Load the parent solution to validate projects exist in it
-        SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
+        SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath, cancellationToken);
 
         // Get existing projects in the filter (already normalized to OS separator by CreateFromFilteredSolutionFile)
         var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();

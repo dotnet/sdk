@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PackCommand)PackCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+                var command = (PackCommand)PackCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : [.. ExpectedPrefix, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
 
                 command.SeparateRestoreCommand.Should().BeNull();
