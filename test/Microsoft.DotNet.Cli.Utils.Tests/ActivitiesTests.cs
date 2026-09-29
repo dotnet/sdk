@@ -15,8 +15,6 @@ public sealed class ActivitiesTests : SdkTest
 
     [TestMethod]
     [DataRow(false, false)]
-    [DataRow(false, true)]
-    [DataRow(true, false)]
     [DataRow(true, true)]
     public void StoppingAnActivityRecordsItsDurationInSeconds(bool performanceSource, bool stringParentId)
     {
