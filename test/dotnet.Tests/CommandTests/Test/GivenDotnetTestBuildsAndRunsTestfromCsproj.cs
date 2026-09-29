@@ -348,6 +348,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
+                                        .WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "false")
                                         .Execute("-v", verbosity);
 
             // Verify
