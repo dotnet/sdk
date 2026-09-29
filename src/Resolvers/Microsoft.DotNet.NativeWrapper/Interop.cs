@@ -284,6 +284,7 @@ namespace Microsoft.DotNet.NativeWrapper
             hostfxr_get_dotnet_environment_info_result_fn result,
             nint resultContext);
 
+#if !NET
         /// <summary>
         ///  Callback delegate for receiving error messages from the hosting layer.
         /// </summary>
@@ -295,7 +296,6 @@ namespace Microsoft.DotNet.NativeWrapper
         ///   or custom logging scenarios.
         ///  </para>
         /// </remarks>
-#if !NET
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void hostfxr_error_writer_fn(PlatformString message);
 #endif
