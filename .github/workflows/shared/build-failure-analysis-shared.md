@@ -4,7 +4,7 @@
 # Imported by build-failure-analysis.md (check_run + workflow_dispatch
 # triggers) and build-failure-analysis-command.md (slash command). Holds the
 # analysis prompt plus every frontmatter field gh-aw merges from imports and
-# that both callers configure identically: `network`, `mcp-servers`, `tools`
+# that both callers configure identically: `model`, `network`, `mcp-servers`, `tools`
 # and `safe-outputs`.
 #
 # What deliberately stays in each caller, because gh-aw cannot take it from an
@@ -28,6 +28,9 @@
 # The compiler resolves the action tag to immutable setup-action pins.
 
 description: "Shared body for build-failure-analysis workflows"
+
+# Threat detection inherits this model. Preserve the agent/default overrides.
+model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'gpt-5.6-sol' }}
 
 network:
   allowed:
