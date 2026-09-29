@@ -73,7 +73,7 @@ graph TD
         AotCheck{"DOTNET_CLI_ENABLEAOT<br/>not disabled?"}
         Parse["Parser.Parse(args)"]
         Fast{"Command handled<br/>by AOT path?"}
-        Invoke["Parser.Invoke()"]
+        Invoke["Parser.InvokeAsync(..., lifecycleToken)"]
         HostInit["ManagedHost.RunApp()"]
         Entry --> AotCheck
         AotCheck -- "Yes" --> Parse --> Fast
@@ -137,7 +137,7 @@ command, ...) or an implicit file-based app (`dotnet app.cs`). The bridge's
 the managed CLI uses — minus the MSBuild/NuGet project-tools resolver — via
 `CommandResolver.TryResolveCommandSpec(new DefaultCommandResolverPolicy(), ...)`,
 then invokes the resolved `CommandSpec` out-of-process through
-`CommandFactoryUsingResolver` + `Command.Execute()`. The resolution step is
+`CommandFactoryUsingResolver` + `Command.Execute(lifecycleToken)`. The resolution step is
 side-effect free, so the bridge defers to the managed CLI whenever it cannot
 handle the invocation: unsupported implicit file-based shapes, commands that only the full
 project-tools resolver can find, anything that does
@@ -210,11 +210,11 @@ sequenceDiagram
     alt DOTNET_CLI_ENABLEAOT enabled (default)
         aot->>aot: Parser.Parse(args)
         alt Built-in command handled by AOT
-            aot->>aot: Parser.Invoke(parseResult)
+            aot->>aot: Parser.InvokeAsync(parseResult, lifecycleToken)
             aot-->>dn: exit code
         else External command that resolves in AOT (tool / PATH / app-base)
             aot->>aot: TryInvokeExternalCommand → TryResolveCommandSpec
-            aot->>tool: Command.Execute() (out of process)
+            aot->>tool: Command.Execute(lifecycleToken) (out of process)
             tool-->>aot: exit code
             aot-->>dn: exit code
         else Command not handled, unresolved, or unsupported file-based shape

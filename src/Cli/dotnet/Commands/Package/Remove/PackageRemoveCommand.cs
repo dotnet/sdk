@@ -50,7 +50,7 @@ internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBas
             projectFilePath = Path.GetFullPath(projectFilePath);
         }
 
-        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), isFileBasedApp);
+        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath), cancellationToken, isFileBasedApp);
 
         return result;
     }

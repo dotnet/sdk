@@ -103,7 +103,12 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _toolManifestFinder,
                     localToolsResolverCache);
 
-                return ToolRunCommand.ExecuteCommand(localToolsCommandResolver, toolManifestPackage.CommandNames.Single().Value, _forwardArguments, _allowRollForward);
+                return ToolRunCommand.ExecuteCommand(
+                    localToolsCommandResolver,
+                    toolManifestPackage.CommandNames.Single().Value,
+                    _forwardArguments,
+                    _allowRollForward,
+                    cancellationToken);
             }
         }
 

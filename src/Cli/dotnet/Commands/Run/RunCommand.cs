@@ -246,7 +246,7 @@ public class RunCommand
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            return targetCommand.Execute().ExitCode;
+            return targetCommand.Execute(cancellationToken).ExitCode;
         }
         catch (InvalidProjectFileException e)
         {

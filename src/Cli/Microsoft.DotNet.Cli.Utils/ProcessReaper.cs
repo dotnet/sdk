@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
+    private readonly IDisposable _processLifecycleCancellationSuppression;
 
 #if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
@@ -249,6 +250,9 @@ internal class ProcessReaper : IDisposable
     private ProcessReaper(Process process)
     {
         _process = process;
+        // The reaper forwards Ctrl+C to the child, so the process-wide lifecycle token must not
+        // race that forwarding and terminate a child that is shutting down cooperatively.
+        _processLifecycleCancellationSuppression = ProcessLifecycle.SuppressCancelKeyPressCancellation();
 
         // The tests need the event handlers registered prior to spawning the child to prevent a race
         // where the child writes output the test expects before the intermediate dotnet process
@@ -273,6 +277,7 @@ internal class ProcessReaper : IDisposable
     public virtual void Dispose()
     {
         Console.CancelKeyPress -= HandleCancelKeyPress;
+        _processLifecycleCancellationSuppression.Dispose();
     }
 
     private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)

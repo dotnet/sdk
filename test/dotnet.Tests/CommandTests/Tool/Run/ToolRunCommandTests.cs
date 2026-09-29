@@ -83,6 +83,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.Args.Should().NotContain("--roll-forward", "Major");
         }
 
+        [TestMethod]
+        public void PreCanceledTokenDoesNotLaunchTool()
+        {
+            (_, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(() =>
+                ToolRunCommand.ExecuteCommand(
+                    localToolsCommandResolver,
+                    "a",
+                    [],
+                    allowRollForward: false,
+                    cancellationSource.Token));
+        }
+
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
             var testDirectoryRoot = TestAssetsManager.CreateTestDirectory();

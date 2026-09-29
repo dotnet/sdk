@@ -50,7 +50,7 @@ public class TestCommand(
         // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
         if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
         {
-            return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
+            return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId, cancellationToken);
         }
 
         return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId, cancellationToken);
@@ -128,7 +128,11 @@ public class TestCommand(
             int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute(cancellationToken);
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
+            exitCode |= RunArtifactPostProcessingIfNeeded(
+                testSessionCorrelationId,
+                parseResult.GetValue(definition.DiagOption),
+                FeatureFlag.Instance,
+                cancellationToken);
 
             return exitCode;
         }
@@ -148,7 +152,12 @@ public class TestCommand(
         }
     }
 
-    private static int ForwardToVSTestConsole(ParseResult parseResult, string[] args, string[] settings, string testSessionCorrelationId)
+    private static int ForwardToVSTestConsole(
+        ParseResult parseResult,
+        string[] args,
+        string[] settings,
+        string testSessionCorrelationId,
+        CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 
@@ -169,10 +178,14 @@ public class TestCommand(
             convertedArgs.Add($"--testSessionCorrelationId:{testSessionCorrelationId}");
         }
 
-        int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
+        int exitCode = new VSTestForwardingApp(convertedArgs).Execute(cancellationToken);
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
+        exitCode |= RunArtifactPostProcessingIfNeeded(
+            testSessionCorrelationId,
+            parseResult.GetValue(definition.DiagOption),
+            FeatureFlag.Instance,
+            cancellationToken);
 
         return exitCode;
     }
@@ -276,7 +289,11 @@ public class TestCommand(
         return testCommand;
     }
 
-    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, string? diag, FeatureFlag disableFeatureFlag)
+    internal static int RunArtifactPostProcessingIfNeeded(
+        string testSessionCorrelationId,
+        string? diag,
+        FeatureFlag disableFeatureFlag,
+        CancellationToken cancellationToken)
     {
         if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
         {
@@ -302,7 +319,7 @@ public class TestCommand(
 
         try
         {
-            return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
+            return new VSTestForwardingApp(artifactsPostProcessArgs).Execute(cancellationToken);
         }
         finally
         {

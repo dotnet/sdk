@@ -25,6 +25,6 @@ internal sealed class PackageSearchCommand(ParseResult parseResult)
         }
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(Definition));
-        return NuGetCommand.Run([.. args]);
+        return NuGetCommand.Run([.. args], cancellationToken);
     }
 }
