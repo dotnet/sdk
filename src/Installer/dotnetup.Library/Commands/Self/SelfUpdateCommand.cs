@@ -15,6 +15,11 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     private readonly string? _channel = result.GetValue(SelfCommandParser.ChannelOption);
     private readonly bool _force = result.GetValue(SelfCommandParser.ForceOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    // Null unless --nowarn was passed; '--nowarn false' turns notifications back on. Boolean options
+    // always have an implicit result, so only an explicit one counts.
+    private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.NoWarnOption) is { Implicit: false }
+        ? !result.GetValue(SelfCommandParser.NoWarnOption)
+        : null;
     private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
 
     internal SelfUpdateCommand(ParseResult result, Func<DotnetDownloader> createDownloader) : this(result)
@@ -27,6 +32,13 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
 
     protected override void ExecuteCore()
     {
+        if (_updateNotifications is bool enabled)
+        {
+            DotnetupConfig.SetUpdateNotifications(enabled);
+            Console.WriteLine(enabled ? Strings.SelfUpdateNotificationsEnabled : Strings.SelfUpdateNotificationsDisabled);
+            return;
+        }
+
         var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
         var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
