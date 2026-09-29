@@ -4,15 +4,23 @@
     <ProjectReference Include="**\*.Manifest.proj" />
   </ItemGroup>
 
-  <Target Name="LayoutBuiltinManifests">
+  <Target Name="GetBuiltinManifestLayoutInputs" Returns="@(_BuiltinManifestLayoutInput)">
 
     <PropertyGroup>
       <_VersionOverride Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">Version=$(DotNet1xxWorkloadManifestVersion)</_VersionOverride>
     </PropertyGroup>
 
     <MSBuild Projects="@(ProjectReference)"
-             Targets="LayoutManifest"
-             Properties="ManifestDirectory=$(ManifestDirectory);$(_VersionOverride)" />
+             Targets="GetManifestLayoutInputs"
+             Properties="ManifestDirectory=$(ManifestDirectory);$(_VersionOverride)">
+      <Output TaskParameter="TargetOutputs" ItemName="_BuiltinManifestLayoutInput" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="LayoutBuiltinManifests" DependsOnTargets="GetBuiltinManifestLayoutInputs">
+    <Copy SourceFiles="@(_BuiltinManifestLayoutInput)"
+          DestinationFiles="@(_BuiltinManifestLayoutInput->'%(DestinationPath)')"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

@@ -35,3 +35,15 @@ Two families of targets:
   PackageVersion="$(...)"/>` item whose version is defined in `Version.Details`.)
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
+
+### Workload manifest layout ownership
+
+[`LayoutManifests`](redist/targets/BundledManifests.targets) may only delete the
+workload manifest files it owns; leave all other files in the layout alone. See
+[`WorkloadManifestLayout.cs`](../Tasks/sdk-tasks/WorkloadManifestLayout.cs) for
+which paths count as owned.
+
+Test stale-file cleanup by running `LayoutManifests` directly. A full installer
+build first deletes the whole destination in
+[`LayoutBundledComponents`](redist/targets/GenerateInstallerLayout.targets), which
+hides cleanup bugs.
