@@ -172,11 +172,12 @@ these measurements; the instrumentation itself does not configure an exporter or
 network requests, and does not require the SDK's telemetry exporters to be enabled.
 
 When explicitly enabled, performance activities participate in the current trace context
-and can parent existing CLI and MSBuild activities. Collect both activity sources when
-the complete trace hierarchy is needed.
+and can parent existing in-process CLI and MSBuild activities. The timing scopes do not
+change the trace context forwarded to child processes or MSBuild servers; those spans
+are not explicitly reparented under `msbuild-submission`.
 
 Activity durations are inclusive: `invocation` includes its `msbuild-submission`
-children, and a submission can contain the logger's separate `msbuild` activity.
+children, and an in-process submission can contain the logger's separate `msbuild` activity.
 Do not add these nested durations together. Subtracting non-overlapping submission
 durations from their enclosing command measures work outside those submissions,
 including work afterward or between submissions, not strictly time before the first

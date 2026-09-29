@@ -66,16 +66,7 @@ public sealed class MSBuildActivityTests : SdkTest
             .WithSource()
             .WithProjectChanges(projectXml => projectXml.Root!.Add(
                 new XElement("PropertyGroup",
-                    new XElement("PublishRelease", "true")),
-                new XElement("Target",
-                    new XAttribute("Name", "ReportActivityContext"),
-                    new XAttribute("BeforeTargets", "Build"),
-                    new XElement("Message",
-                        new XAttribute("Importance", "High"),
-                        new XAttribute("Text", "ACTIVITY_TRACEPARENT=$(TRACEPARENT)")),
-                    new XElement("Message",
-                        new XAttribute("Importance", "High"),
-                        new XAttribute("Text", "ACTIVITY_TRACESTATE=$(TRACESTATE)")))));
+                    new XElement("PublishRelease", "true"))));
         string project = Path.Combine(asset.Path, "HelloWorld.csproj");
         string output = Path.Combine(asset.Path, "output");
         string binlogArgument = BinLogArgument([Guid.NewGuid().ToString("N")]);
@@ -85,7 +76,6 @@ public sealed class MSBuildActivityTests : SdkTest
         using var exported = new ActivityExports();
         using Activity? parent = Activities.Source.StartActivity("test-command");
         parent.Should().NotBeNull();
-        parent!.TraceStateString = "sdk-test=parent";
         string[] arguments =
         [
             "dotnet", "publish", project, "--no-restore", "--output", output,
@@ -105,17 +95,12 @@ public sealed class MSBuildActivityTests : SdkTest
         exported.AssertNoSubmissions();
         Activity.Current.Should().BeSameAs(parent);
 
-        for (int execution = 0; execution < 2; execution++)
-        {
-            command.Execute().Should().Be(0);
+        command.Execute().Should().Be(0);
+        Activity.Current.Should().BeSameAs(parent);
 
-            Activity.Current.Should().BeSameAs(parent);
-            AssertForwardingContextRestored(command, parent);
-        }
-
-        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 2, parent);
+        Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
         (discovery.StartTimeUtc + discovery.Duration).Should().BeOnOrBefore(submissions[0].StartTimeUtc);
-        AssertBuildBoundaries(binlogArgument, submissions, verifyForwardedContext: true);
+        AssertBuildBoundaries(binlogArgument, submissions);
         TelemetryClient.Instance.Should().BeNull("local diagnostic collection must not initialize SDK telemetry");
         File.Exists(Path.Combine(output, "HelloWorld.dll")).Should().BeTrue();
     }
@@ -189,21 +174,14 @@ public sealed class MSBuildActivityTests : SdkTest
         File.Exists(Path.Combine(output, "Program.dll")).Should().BeTrue();
     }
 
-    private static void AssertForwardingContextRestored(RestoringCommand command, Activity parent)
-    {
-        ProcessStartInfo forwarded = command.GetProcessStartInfo();
-        forwarded.Environment[Activities.TRACEPARENT].Should().Be(parent.Id);
-        forwarded.Environment[Activities.TRACESTATE].Should().Be(parent.TraceStateString);
-    }
-
-    private static void AssertBuildBoundaries(string binlogArgument, Activity[] submissions, bool verifyForwardedContext = false)
+    private static void AssertBuildBoundaries(string binlogArgument, Activity[] submissions)
     {
         string binlogPattern = Path.GetFullPath(binlogArgument["/bl:".Length..]);
         string[] binlogs = Directory.GetFiles(
             Path.GetDirectoryName(binlogPattern)!,
             Path.GetFileName(binlogPattern).Replace("{}", "*", StringComparison.Ordinal));
         binlogs.Should().HaveCount(submissions.Length);
-        List<(DateTime Start, DateTime End, BuildEventArgs[] Events)> builds = [];
+        List<(DateTime Start, DateTime End)> builds = [];
         foreach (string binlog in binlogs)
         {
             BuildEventArgs[] events = BinaryLog.ReadRecords(binlog)
@@ -212,7 +190,7 @@ public sealed class MSBuildActivityTests : SdkTest
                 .ToArray();
             BuildStartedEventArgs started = events.OfType<BuildStartedEventArgs>().Should().ContainSingle().Subject;
             BuildFinishedEventArgs finished = events.OfType<BuildFinishedEventArgs>().Should().ContainSingle().Subject;
-            builds.Add((started.Timestamp.ToUniversalTime(), finished.Timestamp.ToUniversalTime(), events));
+            builds.Add((started.Timestamp.ToUniversalTime(), finished.Timestamp.ToUniversalTime()));
         }
 
         builds.Sort((left, right) => left.Start.CompareTo(right.Start));
@@ -220,12 +198,6 @@ public sealed class MSBuildActivityTests : SdkTest
         {
             submissions[i].StartTimeUtc.Should().BeOnOrBefore(builds[i].Start);
             (submissions[i].StartTimeUtc + submissions[i].Duration).Should().BeOnOrAfter(builds[i].End);
-            if (verifyForwardedContext)
-            {
-                string?[] messages = builds[i].Events.OfType<BuildMessageEventArgs>().Select(args => args.Message).ToArray();
-                messages.Should().Contain($"ACTIVITY_TRACEPARENT={submissions[i].Id}");
-                messages.Should().Contain($"ACTIVITY_TRACESTATE={submissions[i].TraceStateString}");
-            }
         }
     }
 

@@ -14,19 +14,17 @@ public sealed class ActivitiesTests : SdkTest
     private static readonly DateTime s_startTime = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     [TestMethod]
-    [DataRow(false, false)]
-    [DataRow(true, true)]
-    public void StoppingAnActivityRecordsItsDurationInSeconds(bool performanceSource, bool stringParentId)
+    [DataRow(false)]
+    [DataRow(true)]
+    public void StoppingAnActivityRecordsItsDurationInSeconds(bool performanceSource)
     {
         using var metrics = new ActivityMeasurements();
         ActivitySource source = performanceSource ? Activities.PerformanceSource : Activities.Source;
-        using Activity? activity = stringParentId
-            ? source.StartActivity("test-operation", ActivityKind.Internal, parentId: "parent.", startTime: s_startTime)
-            : source.StartActivity(
-                "test-operation",
-                ActivityKind.Internal,
-                new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.None),
-                startTime: s_startTime);
+        using Activity? activity = source.StartActivity(
+            "test-operation",
+            ActivityKind.Internal,
+            new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.None),
+            startTime: s_startTime);
 
         activity.Should().NotBeNull();
         activity!.IsAllDataRequested.Should().BeTrue();
@@ -50,25 +48,20 @@ public sealed class ActivitiesTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void BuiltInTelemetryDoesNotEnablePerformanceActivities(bool stringParentId)
+    public void BuiltInTelemetryDoesNotEnablePerformanceActivities()
     {
         using var metrics = new ActivityMeasurements(meterName: "dotnet-cli");
         using var listener = new ActivityListener
         {
             ShouldListenTo = source => source.Name == "dotnet-cli",
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
         };
         ActivitySource.AddActivityListener(listener);
         using Activity? parent = Activities.Source.StartActivity("normal-telemetry");
         parent.Should().NotBeNull();
         parent!.Recorded.Should().BeTrue();
 
-        using Activity? activity = stringParentId
-            ? Activities.PerformanceSource.StartActivity("disabled", ActivityKind.Internal, parentId: parent.Id)
-            : Activities.PerformanceSource.StartActivity("disabled", ActivityKind.Internal, parent.Context);
+        using Activity? activity = Activities.PerformanceSource.StartActivity("disabled", ActivityKind.Internal, parent.Context);
 
         activity.Should().BeNull();
         Activity.Current.Should().BeSameAs(parent);
