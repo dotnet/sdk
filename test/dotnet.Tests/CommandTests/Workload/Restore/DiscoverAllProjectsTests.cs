@@ -90,6 +90,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
 
             var result =
                 WorkloadRestoreCommand.DiscoverAllProjects("",
+                    TestContext.CancellationToken,
                     [Path.Combine(projectDirectory, "SolutionFilter", "OtherTestProjects.slnf")]);
 
             result.Should().BeEquivalentTo(

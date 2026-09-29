@@ -245,6 +245,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
+                    cancellationToken: cancellationToken,
                     versionRange: versionRange,
                     targetFramework: _framework,
                     verbosity: _verbosity,
@@ -267,7 +268,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     framework = string.IsNullOrEmpty(_framework) ? null : NuGetFramework.Parse(_framework);
                 }
                 var shimActivity = Activities.Source.StartActivity("create-shell-shim");
-                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture).Result;
+                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(
+                    _architecture,
+                    framework,
+                    RuntimeInformation.ProcessArchitecture,
+                    cancellationToken).Result;
 
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();

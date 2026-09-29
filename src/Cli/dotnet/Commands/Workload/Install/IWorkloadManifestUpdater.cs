@@ -10,9 +10,13 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal interface IWorkloadManifestUpdater
 {
-    Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null);
+    Task UpdateAdvertisingManifestsAsync(
+        CancellationToken cancellationToken,
+        bool includePreviews,
+        bool useWorkloadSets = false,
+        DirectoryPath? offlineCache = null);
 
-    Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+    Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(CancellationToken cancellationToken);
 
     IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
@@ -21,7 +25,11 @@ internal interface IWorkloadManifestUpdater
     IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state);
     IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet);
 
-    Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
+    Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(
+        CancellationToken cancellationToken,
+        bool includePreviews,
+        SdkFeatureBand providedSdkFeatureBand,
+        SdkFeatureBand installedSdkFeatureBand);
 
     IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 

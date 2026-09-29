@@ -69,6 +69,7 @@ internal class ToolPackageRestorer
                         sourceFeedOverrides: _overrideSources,
                         rootConfigDirectory: package.FirstEffectDirectory),
                     package.PackageId,
+                    cancellationToken,
                     verbosity: _verbosity,
                     ToVersionRangeWithOnlyOneVersion(package.Version),
                     targetFramework,

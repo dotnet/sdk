@@ -13,6 +13,7 @@ internal interface IToolPackageDownloader
 {
     IToolPackage InstallPackage(PackageLocation packageLocation,
         PackageId packageId,
+        CancellationToken cancellationToken,
         VerbosityOptions verbosity,
         VersionRange? versionRange = null,
         string? targetFramework = null,

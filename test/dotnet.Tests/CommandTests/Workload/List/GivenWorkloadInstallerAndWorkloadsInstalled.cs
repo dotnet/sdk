@@ -128,7 +128,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             Setup();
             WorkloadListCommand.UpdateAvailableEntry[] result =
-                _workloadListCommand.GetUpdateAvailable(new List<WorkloadId> { new("xamarin-android") }).ToArray();
+                _workloadListCommand.GetUpdateAvailable(
+                    new List<WorkloadId> { new("xamarin-android") },
+                    TestContext.CancellationToken).ToArray();
 
             result.Should().NotBeEmpty();
             result[0].WorkloadId.Should().Be(InstallingWorkload, "Only should installed workload");

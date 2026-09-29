@@ -112,8 +112,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
-            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
+            NuGetVersion packageVersion, CancellationToken cancellationToken, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
         {
+            cancellationToken.ThrowIfCancellationRequested();
 
             var package = GetPackage(packageId, packageVersion);
             if (package == null)

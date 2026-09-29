@@ -72,7 +72,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 workloadManifestUpdater: new MockWorkloadManifestUpdater(),
                 tempDirPath: testDirectory);
 
-            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => command.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(
+                () => command.Execute(TestContext.CancellationToken));
             exceptionThrown.Message.Should().Be(string.Format(CliCommandStrings.WorkloadNotRecognized, invalidWorkloadId));
         }
 

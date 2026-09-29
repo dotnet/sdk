@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public async Task GivenUninstallInProgressAnotherInstallWaitsBeforeReinstalling()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(TestContext.CancellationToken).Should().Be(0);
             _reporter.Lines.Clear();
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
@@ -118,10 +118,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem)),
                 new BufferedReporter());
 
-            Task<int> uninstall = Task.Run(uninstallCommand.Execute, TestContext.CancellationToken);
+            Task<int> uninstall = Task.Run(
+                () => uninstallCommand.Execute(TestContext.CancellationToken),
+                TestContext.CancellationToken);
             await blockingUninstaller.UninstallStarted;
             Task<int> reinstall = Task.Run(
-                () => CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(),
+                () => CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(TestContext.CancellationToken),
                 TestContext.CancellationToken);
 
             Task firstCompleted = await Task.WhenAny(
@@ -148,7 +150,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public async Task GivenPackageMutationInProgressUninstallWaitsBeforeReadingInstalledState()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(TestContext.CancellationToken).Should().Be(0);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
             IToolPackage package = store.EnumeratePackageVersions(new PackageId(PackageId)).Single();
@@ -161,7 +163,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             try
             {
                 Task<int> uninstall = Task.Run(
-                    () => CreateUninstallCommand($"-g {PackageId}").Execute(),
+                    () => CreateUninstallCommand($"-g {PackageId}").Execute(TestContext.CancellationToken),
                     TestContext.CancellationToken);
                 Task firstCompleted = await Task.WhenAny(
                     uninstall,

@@ -93,7 +93,10 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
 
         foreach (var manifestUpdate in manifestUpdates)
         {
-            _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context);
+            _workloadInstaller.InstallWorkloadManifest(
+                manifestUpdate,
+                context,
+                ProcessLifecycle.CancellationToken);
         }
 
     }

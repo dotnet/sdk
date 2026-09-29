@@ -25,7 +25,19 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     {
         return Execute(null);
     }
-    public CommandResult Execute(Action<Process>? processStarted)
+
+    public CommandResult Execute(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        CommandResult result = Execute(processStarted: null, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    public CommandResult Execute(Action<Process>? processStarted) =>
+        Execute(processStarted, cancellationToken: null);
+
+    private CommandResult Execute(Action<Process>? processStarted, CancellationToken? cancellationToken)
     {
         Reporter.Verbose.WriteLine(string.Format(
             LocalizableStrings.RunningFileNameArguments,
@@ -58,12 +70,21 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
-            _process.WaitForExit();
+
+            while (!_process.WaitForExit(milliseconds: 100))
+            {
+                if (cancellationToken?.IsCancellationRequested == true)
+                {
+                    TerminateProcess(reaper, _process);
+                    break;
+                }
+            }
 
             taskOut?.Wait();
             taskErr?.Wait();
         }
 
+        cancellationToken?.ThrowIfCancellationRequested();
         var exitCode = _process.ExitCode;
 
         if (CommandLoggingContext.IsVerbose)
@@ -89,6 +110,24 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             exitCode,
             _stdOut?.CapturedOutput,
             _stdErr?.CapturedOutput);
+    }
+
+    private static void TerminateProcess(ProcessReaper reaper, Process process)
+    {
+        try
+        {
+            reaper.TerminateProcess();
+        }
+        catch (InvalidOperationException) when (process.HasExited)
+        {
+            // The process exited before termination reached it.
+        }
+        catch (System.ComponentModel.Win32Exception) when (process.HasExited)
+        {
+            // The process exited while its process tree was being enumerated.
+        }
+
+        process.WaitForExit();
     }
 
     public ICommand WorkingDirectory(string? projectDirectory)
