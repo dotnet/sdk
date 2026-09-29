@@ -353,9 +353,10 @@ public static class Parser
     public static InvocationConfiguration InvocationConfiguration { get; } = new()
     {
         EnableDefaultExceptionHandler = false,
-        // ProcessLifecycle owns process-exit cancellation, while ProcessReaper owns forwarding
-        // Ctrl+C to child processes. Avoid a second System.CommandLine signal handler that would
-        // cancel an action while its child is handling Ctrl+C.
+        // ProcessLifecycle owns Ctrl+C, SIGTERM, and process-exit cancellation, while
+        // ProcessReaper owns forwarding Ctrl+C to child processes. Avoid a second
+        // System.CommandLine signal handler that would cancel an action while its child is
+        // handling Ctrl+C.
         ProcessTerminationTimeout = null,
     };
 
@@ -483,7 +484,7 @@ public static class Parser
                 new MSBuildForwardingApp(
                     MSBuildArgs.ForHelp,
                     msbuildPath: null,
-                    CommandServices.CreateDefault()).Execute(CancellationToken.None);
+                    CommandServices.CreateDefault()).Execute(ProcessLifecycle.CancellationToken);
                 context.Output.WriteLine();
                 additionalOption(context);
             }
