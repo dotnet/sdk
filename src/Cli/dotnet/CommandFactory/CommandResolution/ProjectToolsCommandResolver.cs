@@ -400,7 +400,7 @@ public class ProjectToolsCommandResolver(
         {
             result = forwardingAppWithoutLogging
                 .GetProcessStartInfo()
-                .ExecuteAndCaptureOutput(out stdOut, out stdErr);
+                .ExecuteAndCaptureOutput(out stdOut, out stdErr, ProcessLifecycle.CancellationToken);
         }
         else
         {
@@ -414,7 +414,7 @@ public class ProjectToolsCommandResolver(
                 Console.SetOut(outWriter);
                 Console.SetError(errWriter);
 
-                result = forwardingAppWithoutLogging.Execute();
+                result = forwardingAppWithoutLogging.Execute(ProcessLifecycle.CancellationToken);
 
                 stdOut = outWriter.ToString();
                 stdErr = errWriter.ToString();

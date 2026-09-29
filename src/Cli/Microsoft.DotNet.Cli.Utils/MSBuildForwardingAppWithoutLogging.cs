@@ -180,13 +180,13 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// <summary>
     /// Run the MSBuild arguments that have been previously specified.
     /// </summary>
-    public int Execute() => Execute(workingDirectory: null);
+    public int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
 
-    /// <inheritdoc cref="Execute()"/>
+    /// <inheritdoc cref="Execute(CancellationToken)"/>
     /// <param name="workingDirectory">
     /// When specified, run out-of-process in this directory without changing the caller's directory.
     /// </param>
-    public int Execute(string? workingDirectory)
+    public int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
         using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
 
@@ -203,13 +203,13 @@ internal sealed class MSBuildForwardingAppWithoutLogging
                 startInfo.WorkingDirectory = workingDirectory;
             }
 
-            return startInfo.Execute();
+            return startInfo.Execute(cancellationToken);
         }
         else
         {
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
-                return ExecuteInProc(GetAllArguments());
+                return ExecuteInProc(GetAllArguments(), cancellationToken);
             }
             else
             {
@@ -224,13 +224,24 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
     /// </summary>
     [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
-    public int ExecuteInProc(string[] arguments)
+    public int ExecuteInProc(string[] arguments, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var _ = SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+        using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
+            static () => Build.Execution.BuildManager.DefaultBuildManager.CancelAllSubmissions());
+
         try
         {
             // Execute MSBuild in the current process by calling its Main method.
-            return Build.CommandLine.MSBuildApp.Main(arguments);
+            int exitCode = Build.CommandLine.MSBuildApp.Main(arguments);
+            cancellationToken.ThrowIfCancellationRequested();
+            return exitCode;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception exception)
         {
