@@ -2992,6 +2992,107 @@ public static class C
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
+        public async Task LocalFunctionInvocation_UnusedNestedBodiesDoNotAffectCallerAsync()
+        {
+            await VerifyCSharp8AnalyzerAsync("""
+                using System;
+
+                class Test
+                {
+                    static int state;
+
+                    void M(int input)
+                    {
+                        int captured = 1;
+                        int unrelated = 7;
+                        void Local(int value)
+                        {
+                            static void Unused(Action callback)
+                            {
+                                callback();
+                                state++;
+                            }
+                            captured = value;
+                            Action unusedLambda = () => state++;
+                        }
+                        Local(2);
+                        if (captured == 2) { }
+                        Local(input);
+                        if (unrelated == 7) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(22, 13, "captured == 2", "true"),
+                GetCSharpResultAt(24, 13, "unrelated == 7", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_SharedStaticLocalGraphUpdatesCapturedValueAsync()
+        {
+            await VerifyCSharp8AnalyzerAsync("""
+                class Test
+                {
+                    static int state;
+
+                    static void M(int input)
+                    {
+                        int captured = 1;
+                        void Local(int value)
+                        {
+                            static int Leaf(int v)
+                            {
+                                state = v;
+                                return v;
+                            }
+                            static int First(int v) => Leaf(v);
+                            static int Second(int v) => Leaf(v);
+                            captured = First(value) + Second(value);
+                        }
+                        Local(2);
+                        if (captured == 4) { }
+                        Local(input);
+                        if (captured == 4) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(20, 13, "captured == 4", "true"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_SharedStaticLocalGraphPreservesCallerAliasAsync()
+        {
+            await VerifyCSharpContextSensitiveAnalyzerAsync("""
+                class Box { public Box Next; public int Value; }
+
+                class Test
+                {
+                    static Box Root { get; } = new Box();
+                    static Box GetRoot() => Root;
+
+                    bool M(int input)
+                    {
+                        var alias = GetRoot();
+                        alias.Next = new Box();
+                        alias.Next.Value = 1;
+                        static void Set(int value) => Root.Next.Value = value;
+                        static void First(int value) => Set(value);
+                        static void Second(int value) => Set(value);
+                        void Local(int value)
+                        {
+                            First(value);
+                            Second(value);
+                        }
+                        Local(input);
+                        return alias.Next.Value == 1;
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
         public async Task LocalFunctionInvocation_StaticLocalReturnsOrdinaryMethodFieldAliasAsync()
         {
             await VerifyCSharpContextSensitiveAnalyzerAsync("""
