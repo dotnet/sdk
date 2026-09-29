@@ -11,5 +11,5 @@ internal interface IBuildServer
 
     string Name { get; }
 
-    void Shutdown();
+    void Shutdown(CancellationToken cancellationToken);
 }
