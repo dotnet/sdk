@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        public void It_uses_wasm_paths_for_the_composite_owner_without_changing_components()
+        public void It_uses_wasm_paths_for_the_composite_owner_and_component_stubs()
         {
             string outputPath = Path.Combine("obj", "r2r");
             TaskItem component = CreateAssemblyItem("sub/Component.dll");
@@ -87,8 +87,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             owner.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
 
             ITaskItem componentFileToPublish = task.ReadyToRunFilesToPublish
-                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "sub/Component.dll");
-            componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.dll"));
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "sub/Component.wasm");
+            componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.wasm"));
             componentFileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
             componentFileToPublish.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
             task.ReadyToRunCompositeBuildInput.Should().ContainSingle()

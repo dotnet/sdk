@@ -174,7 +174,9 @@ namespace Microsoft.NET.Build.Tasks
                     ItemSpec = outputR2RImage
                 };
 
-                if (eligibility.CompileSeparately)
+                // WebAssembly composite compilation emits a .wasm component stub for each input.
+                // Mach-O composite components remain PE files that point to the composite image.
+                if (eligibility.CompileSeparately || Crossgen2ContainerFormat == "wasm")
                 {
                     r2rFileToPublish = CreateReadyToRunFileToPublish(
                         file,
