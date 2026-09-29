@@ -20,7 +20,9 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
                 .WithSource()
                 .Path;
 
-            var result = WorkloadRestoreCommand.DiscoverAllProjects(projectDirectory);
+            var result = WorkloadRestoreCommand.DiscoverAllProjects(
+                projectDirectory,
+                TestContext.CancellationToken);
             result.Should().Contain(f => Path.GetFileName(f) == "App.csproj");
         }
 
@@ -34,6 +36,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
 
             var result =
                 WorkloadRestoreCommand.DiscoverAllProjects("",
+                    TestContext.CancellationToken,
                     new[]
                     {
                         Path.Combine(projectDirectory, "App.sln"),
@@ -54,7 +57,9 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
                 .Path;
 
             var result =
-                WorkloadRestoreCommand.DiscoverAllProjects(Path.Combine(projectDirectory, "Multiple"));
+                WorkloadRestoreCommand.DiscoverAllProjects(
+                    Path.Combine(projectDirectory, "Multiple"),
+                    TestContext.CancellationToken);
 
             result.Should().Contain(f => Path.GetFileName(f) == "First.csproj");
             result.Should().Contain(f => Path.GetFileName(f) == "Second.csproj");
@@ -70,6 +75,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
 
             var result =
                 WorkloadRestoreCommand.DiscoverAllProjects("",
+                    TestContext.CancellationToken,
                     new[]
                     {
                         Path.Combine(projectDirectory, "App.sln"),

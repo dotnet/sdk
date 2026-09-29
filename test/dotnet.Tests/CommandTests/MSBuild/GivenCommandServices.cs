@@ -96,8 +96,8 @@ public class GivenCommandServices : SdkTest
             "build" => BuildCommand.FromArgs(args, msbuildPath, services),
             "clean" => CleanCommand.FromArgs(args, msbuildPath, services),
             "msbuild" => MSBuildCommand.FromArgs(args, msbuildPath, services),
-            "pack" => PackCommand.FromArgs(args, msbuildPath, services),
-            "publish" => PublishCommand.FromArgs(args, msbuildPath, services),
+            "pack" => PackCommand.FromArgs(args, CancellationToken.None, msbuildPath, services),
+            "publish" => PublishCommand.FromArgs(args, CancellationToken.None, msbuildPath, services),
             "restore" => RestoreCommand.FromArgs(args, msbuildPath, services),
             "store" => StoreCommand.FromArgs(["--manifest", "manifest.xml", .. args], msbuildPath, services),
             _ => throw new ArgumentOutOfRangeException(nameof(commandName), commandName, "Unknown command.")

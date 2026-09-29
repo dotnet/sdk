@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         {
             RestoringCommand command = buildCommand ?
                 (RestoringCommand)BuildCommand.FromArgs(arguments, msbuildPath: null, services: TestCommandServices.CreateNonLLM()) :
-                (RestoringCommand)PublishCommand.FromArgs(arguments, msbuildPath: null, services: TestCommandServices.CreateNonLLM());
+                (RestoringCommand)PublishCommand.FromArgs(arguments, TestContext.CancellationToken, msbuildPath: null, services: TestCommandServices.CreateNonLLM());
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
 
