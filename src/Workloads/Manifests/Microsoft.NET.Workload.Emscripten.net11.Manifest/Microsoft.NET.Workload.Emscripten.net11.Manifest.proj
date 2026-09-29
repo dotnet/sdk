@@ -18,7 +18,7 @@
     <ItemGroup>
       <_WorkloadManifestValues Include="NetVersion" Value="net11" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="EmsdkVersion" Value="11.0.0-rc.1.26453.118" />
+      <_WorkloadManifestValues Include="EmsdkVersion" Value="11.0.$(VersionFeature110ForWorkloads)" />
       <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionNet11)" />
     </ItemGroup>
 

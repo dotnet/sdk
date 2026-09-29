@@ -44,6 +44,8 @@
     <VersionFeature80ForWorkloads>$(VersionFeature80)</VersionFeature80ForWorkloads>
     <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
     <VersionFeature100ForWorkloads>$(VersionFeature100)</VersionFeature100ForWorkloads>
+    <!-- NetTFMUpdate: After .NET 11 GA, use $(VersionFeature110). See https://github.com/dotnet/sdk/issues/55851. -->
+    <VersionFeature110ForWorkloads>0-rc.1.26453.118</VersionFeature110ForWorkloads>
   </PropertyGroup>
   <PropertyGroup Label="Production dependencies">
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>

@@ -143,8 +143,14 @@ dependency-flow process so versions, manifests, and feeds remain consistent.
     changes made while it was current.
   - Register the new versioned manifests in
     [`BundledManifests.targets`](../../src/Layout/redist/targets/BundledManifests.targets).
-  - If net(N-1) is still prerelease, temporarily freeze its workload pack versions to the
-    exact flowed versions and replace them with `VersionFeature...ForWorkloads` after GA.
+  - Centralize the previous TFM's workload pack versions through its
+    `VersionFeature...ForWorkloads` property in [`eng/Versions.props`](../../eng/Versions.props).
+    Use that property in both versioned manifest projects and the `.Current` manifest's
+    previous-TFM runtime version entry. If net(N-1) is still prerelease, temporarily pin
+    the property to the suffix of the exact flowed version (for example,
+    `0-rc.1.26453.118` for `11.0.0-rc.1.26453.118`). After GA, reference the corresponding
+    `VersionFeature...` servicing property instead. Keep the previous TFM independent of
+    live netN dependency versions.
 
 Use `PreviousTargetFramework` for tests that must temporarily remain on `N-1`. Mark
 temporary transition changes with `NetTFMUpdate` so they can be found and removed later.

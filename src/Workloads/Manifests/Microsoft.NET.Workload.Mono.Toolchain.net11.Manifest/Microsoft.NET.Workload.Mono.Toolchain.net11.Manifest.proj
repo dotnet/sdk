@@ -19,7 +19,7 @@
     <ItemGroup>
       <_WorkloadManifestValues Include="NetVersion" Value="net11" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="RuntimeVersion" Value="11.0.0-rc.1.26453.118" />
+      <_WorkloadManifestValues Include="RuntimeVersion" Value="11.0.$(VersionFeature110ForWorkloads)" />
     </ItemGroup>
 
     <Error Condition="'%(_WorkloadManifestValues.Value)' == ''"
