@@ -164,6 +164,30 @@
     <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
     <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
   </data>
+  <data name="SelfUpdateAvailableNotice" xml:space="preserve">
+    <value>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --nowarn'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --nowarn'"}</comment>
+  </data>
+  <data name="SelfUpdateNoWarnOptionDescription" xml:space="preserve">
+    <value>Stop mentioning available dotnetup updates after install and update commands, without updating dotnetup. Pass 'false' to show them again.</value>
+    <comment>{Locked="dotnetup"} {Locked="'false'"}</comment>
+  </data>
+  <data name="SelfUpdateNoWarnConflict" xml:space="preserve">
+    <value>'--nowarn' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</value>
+    <comment>{Locked="'--nowarn'"} {Locked="'--channel'"} {Locked="'--force'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsDisabled" xml:space="preserve">
+    <value>dotnetup will no longer mention available updates. To show them again, run 'dotnetup self update --nowarn false'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update --nowarn false'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsEnabled" xml:space="preserve">
+    <value>dotnetup will mention available updates after install and update commands.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConfigUnreadable" xml:space="preserve">
+    <value>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</value>
+    <comment>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</comment>
+  </data>
   <data name="SelfUpdateSucceeded" xml:space="preserve">
     <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>
     <comment>{Locked="Dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup version.</comment>
