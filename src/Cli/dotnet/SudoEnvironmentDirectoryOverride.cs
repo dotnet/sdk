@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.InternalAbstractions;
-using NuGet.Common;
 using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli;
@@ -38,13 +37,11 @@ public static class SudoEnvironmentDirectoryOverride
         if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
         {
             string sudoHome = TemporaryDirectory.CreateSubdirectory();
-            var homeBeforeOverride = Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
+            var homeBeforeOverride = CliFolderPathCalculator.DotnetHomePath;
             Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
 
-            if (homeBeforeOverride is not null)
-            {
-                CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
-            }
+            CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride, sudoHome);
+            CopyUserNuGetPluginsToOverriddenHome(homeBeforeOverride, sudoHome);
         }
     }
 
@@ -54,7 +51,7 @@ public static class SudoEnvironmentDirectoryOverride
     /// Try to delete the existing NuGet config file in "/tmp/dotnet_sudo_home/"
     /// to avoid different user's NuGet config getting mixed.
     /// </summary>
-    private static void CopyUserNuGetConfigToOverriddenHome(string homeBeforeOverride)
+    private static void CopyUserNuGetConfigToOverriddenHome(string homeBeforeOverride, string sudoHome)
     {
         // https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Common/PathUtil/NuGetEnvironment.cs#L139
         // home is cache in NuGet we cannot directly use the call
@@ -64,7 +61,7 @@ public static class SudoEnvironmentDirectoryOverride
             .Select(fileName => Path.Combine(userSettingsDir, fileName))
             .FirstOrDefault(f => File.Exists(f));
 
-        var overriddenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        var overriddenSettingsDir = Path.Combine(sudoHome, ".nuget", "NuGet");
         var overriddenNugetConfig = Path.Combine(overriddenSettingsDir, Settings.DefaultSettingsFileName);
 
         if (File.Exists(overriddenNugetConfig))
@@ -84,6 +81,7 @@ public static class SudoEnvironmentDirectoryOverride
         {
             try
             {
+                Directory.CreateDirectory(overriddenSettingsDir);
                 FileAccessRetrier.RetryOnIOException(
                     () => File.Copy(userNuGetConfig, overriddenNugetConfig, overwrite: true));
             }
@@ -91,6 +89,37 @@ public static class SudoEnvironmentDirectoryOverride
             {
                 // best effort to copy
             }
+        }
+    }
+
+    private static void CopyUserNuGetPluginsToOverriddenHome(string homeBeforeOverride, string sudoHome)
+    {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_NETCORE_PLUGIN_PATHS")) ||
+            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")))
+        {
+            return;
+        }
+
+        var userPluginsDir = Path.Combine(homeBeforeOverride, ".nuget", "plugins", "netcore");
+        if (!Directory.Exists(userPluginsDir))
+        {
+            return;
+        }
+
+        var overriddenPluginsDir = Path.Combine(sudoHome, ".nuget", "plugins", "netcore");
+        try
+        {
+            // Preserve NuGet's default discovery, including PATH plugins, and isolate any plugin writes.
+            foreach (var file in Directory.EnumerateFiles(userPluginsDir, "*", SearchOption.AllDirectories))
+            {
+                var destination = Path.Combine(overriddenPluginsDir, Path.GetRelativePath(userPluginsDir, file));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination));
+                FileAccessRetrier.RetryOnIOException(() => File.Copy(file, destination, overwrite: true));
+            }
+        }
+        catch
+        {
+            // best effort to copy
         }
     }
 

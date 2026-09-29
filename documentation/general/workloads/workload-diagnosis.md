@@ -20,6 +20,12 @@ _Workload installation failed: One or more errors occurred. (microsoft.netcore.a
 2. Mismatched workload manifest versions. This is likely because your feed had a workload from runtime but not the matching workload from dotnet/emsdk. If you're not using any special feeds, that probably means it's release day and the emsdk workload is in the process of being released. We've been trying to improve this process with each release to avoid this issue.
 _Installation rollback failed: Workload manifest dependency 'Microsoft.NET.Workload.Emscripten.Current' version '8.0.3' is lower than version '8.0.4' required by manifest 'microsoft.net.workload.mono.toolchain.current'_
 
+### Authenticated Feeds Under sudo
+
+On macOS and Linux, workload commands run under `sudo` use a temporary `DOTNET_CLI_HOME` to avoid creating root-owned files in the original CLI home. The SDK copies the user NuGet configuration and conventionally installed .NET credential providers (`.nuget/plugins/netcore`) into that temporary home. The source is the original `DOTNET_CLI_HOME`, or the user home visible to the process when that variable is unset.
+
+Explicit `NUGET_NETCORE_PLUGIN_PATHS` and `NUGET_PLUGIN_PATHS` settings remain unchanged. Provider discovery does not guarantee a cached sign-in; pass `--interactive` when authentication requires user interaction. See [sudo environment preparation](../../../src/Cli/dotnet/SudoEnvironmentDirectoryOverride.cs) for the implementation.
+
 ## Diagnosing Issues With Installed Workloads
 
 ### Common Workload State Failures
