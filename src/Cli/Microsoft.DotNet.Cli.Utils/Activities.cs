@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public static class Activities
 {
-     /// <summary>
+    /// <summary>
     /// The main entrypoint for creating <see cref="Activity">Activities</see> in the .NET CLI.
     /// Activities intended for collection by the SDK's built-in telemetry should use this
     /// <see cref="ActivitySource"/>, allowing consumers to easily filter and trace CLI activities.
