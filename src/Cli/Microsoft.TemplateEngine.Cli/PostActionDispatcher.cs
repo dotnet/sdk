@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Cli
         /// If the user cancelled post action with <see cref="IPostAction.ContinueOnError"/> set to true, the result will be <see cref="PostActionExecutionStatus.Cancelled"></see> anyway.<br />
         /// Note that <see cref="PostActionExecutionStatus"/> is a flags enum, and can contain multiple status if multiple post actions failed with different reason.
         /// </returns>
-        internal PostActionExecutionStatus Process(ITemplateCreationResult creationResult, bool isDryRun, AllowRunScripts canRunScripts)
+        internal PostActionExecutionStatus Process(ITemplateCreationResult creationResult, bool isDryRun, AllowRunScripts canRunScripts, CancellationToken cancellationToken = default)
         {
             _ = creationResult ?? throw new ArgumentNullException(nameof(creationResult));
             _ = creationResult.CreationEffects ?? throw new ArgumentNullException(nameof(creationResult.CreationEffects));
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Cli
                     }
                     else if (canRunScripts == AllowRunScripts.Yes)
                     {
-                        result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor);
+                        result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor, cancellationToken);
                     }
                     else if (canRunScripts == AllowRunScripts.Prompt)
                     {
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Cli
                         // Otherwise return cancelled, indicating the action was not run.
                         if (AskUserIfActionShouldRun(action))
                         {
-                            result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor);
+                            result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor, cancellationToken);
                         }
                         else
                         {
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Cli
                 }
                 else // other post action
                 {
-                    result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor);
+                    result |= ProcessAction(creationResult.CreationEffects, creationResult.CreationResult!, creationResult.OutputBaseDirectory, action, actionProcessor, cancellationToken);
                 }
                 if (result != PostActionExecutionStatus.Success)
                 {
@@ -213,13 +213,14 @@ namespace Microsoft.TemplateEngine.Cli
             ICreationResult creationResult,
             string outputBaseDirectory,
             IPostAction action,
-            IPostActionProcessor actionProcessor)
+            IPostActionProcessor actionProcessor,
+            CancellationToken cancellationToken)
         {
             //catch all exceptions on post action execution
             //post actions can be added using components and it's not sure if they handle exceptions properly
             try
             {
-                if (actionProcessor.Process(_environment, action, creationEffects, creationResult, outputBaseDirectory))
+                if (actionProcessor.Process(_environment, action, creationEffects, creationResult, outputBaseDirectory, cancellationToken))
                 {
                     return PostActionExecutionStatus.Success;
                 }
