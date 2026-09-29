@@ -32,6 +32,11 @@ public abstract class CommandBase
 
     protected virtual bool SafeDuringSelfUpdate => false;
 
+    /// <summary>
+    /// Whether an interactive, successful run ends with a notice when a newer dotnetup is available.
+    /// </summary>
+    protected virtual bool ShowsUpdateNotification => false;
+
     public int Execute()
     {
         _exitCode = 1;
@@ -40,12 +45,21 @@ public abstract class CommandBase
         {
             SelfUpdateInvocation.Current?.EnterCommand(SafeDuringSelfUpdate);
             RecordOptionUsage();
+            // Start before the command's work so a background refresh can finish while it runs.
+            var updateNotifier = ShowsUpdateNotification
+                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult))
+                : null;
             // Default success exit code; ExecuteCore can overwrite via
             // SetExitCode() (e.g. DotnetCommand forwarding a child process
             // exit code) or throw to signal failure (which leaves _exitCode
             // at its outer initialization of 1).
             _exitCode = 0;
             ExecuteCore();
+            if (_exitCode == 0)
+            {
+                updateNotifier?.ShowIfUpdateAvailable();
+            }
+
             return _exitCode;
         }
         catch (Exception ex)
