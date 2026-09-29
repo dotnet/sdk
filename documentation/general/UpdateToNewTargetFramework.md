@@ -198,7 +198,11 @@ and test-app ASP.NET package references on `N-1`: netN templates generate projec
 that the bundled SDK cannot build, and netN ASP.NET packages may no longer support
 net(N-1) test apps. Keep the temporary versions in `eng/ManualVersions.props` rather
 than changing Maestro-generated dependency versions, and advance them together once
-the SDK supports targeting netN.
+the SDK supports targeting netN. The Windows SDK bundle must also select the template
+MSI for `TemplateFrameworkVersion`, which can differ from the SDK's product version
+during this transition. Keep the shared MSI filename aligned for the SDK bundle and
+Visual Studio redist package ([`GenerateMSIs.targets`](../../src/Layout/redist/targets/GenerateMSIs.targets),
+[`VS.Redist.Common.NetCore.Templates.proj`](../../src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj)).
 
 Default-template tests should compare against `ToolsetInfo.CurrentTargetFramework`,
 not the newest installed runtime, which can already be netN during this transition

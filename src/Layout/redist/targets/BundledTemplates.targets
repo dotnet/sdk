@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- NetTFMUpdate: Keep templates on net11 until the bundled packs support targeting net12. -->
-    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
     <_IncrementalLayoutStateDirectory>$(IntermediateOutputPath)incremental-layout\</_IncrementalLayoutStateDirectory>
     <_TemplatesSdkLayoutStatePrefix>$(_IncrementalLayoutStateDirectory)templates-sdk-$(ProductMonikerRid)</_TemplatesSdkLayoutStatePrefix>
     <_TemplatesSdkLayoutInputManifest>$(_TemplatesSdkLayoutStatePrefix).inputs</_TemplatesSdkLayoutInputManifest>
