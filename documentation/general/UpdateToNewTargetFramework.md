@@ -193,6 +193,16 @@ temporary transition changes with `NetTFMUpdate` so they can be found and remove
 
 Templates from other repositories, such as WindowsDesktop templates, may need to remain
 pinned to `N-1` until their netN packages are available.
+If the bundled SDK still supports only `N-1`, also keep the bundled web/MCP templates
+and test-app ASP.NET package references on `N-1`: netN templates generate projects
+that the bundled SDK cannot build, and netN ASP.NET packages may no longer support
+net(N-1) test apps. Keep the temporary versions in `eng/ManualVersions.props` rather
+than changing Maestro-generated dependency versions, and advance them together once
+the SDK supports targeting netN.
+
+Default-template tests should compare against `ToolsetInfo.CurrentTargetFramework`,
+not the newest installed runtime, which can already be netN during this transition
+(see [`ProjectBuildTests`](../../test/EndToEnd.Tests/ProjectBuildTests.cs)).
 
 ### 6. Unwind temporary transition changes
 
