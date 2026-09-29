@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         public override Guid Id => ActionProcessorId;
 
-        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
         {
             Reporter.Output.WriteLine(LocalizableStrings.PostActionDescription, actionConfig.Description);
             Reporter.Output.WriteLine(LocalizableStrings.PostActionInstructions, actionConfig.ManualInstructions);

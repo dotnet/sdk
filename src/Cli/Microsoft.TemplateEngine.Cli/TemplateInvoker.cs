@@ -218,7 +218,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Reporter.Output.WriteLine(LocalizableStrings.ThirdPartyNotices, templateArgs.Template.ThirdPartyNotices);
                     }
 
-                    return HandlePostActions(instantiateResult, templateArgs);
+                    return HandlePostActions(instantiateResult, templateArgs, cancellationToken);
                 case CreationResultStatus.CreateFailed:
                 case CreationResultStatus.CondtionsEvaluationMismatch:
                     Reporter.Error.WriteLine(string.Format(LocalizableStrings.CreateFailed, resultTemplateName, instantiateResult.ErrorMessage).Bold().Red());
@@ -308,10 +308,10 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        private NewCommandStatus HandlePostActions(ITemplateCreationResult creationResult, TemplateCommandArgs args)
+        private NewCommandStatus HandlePostActions(ITemplateCreationResult creationResult, TemplateCommandArgs args, CancellationToken cancellationToken)
         {
             using var postActionActivity = Activities.Source.StartActivity("post-actions");
-            PostActionExecutionStatus result = _postActionDispatcher.Process(creationResult, args.IsDryRun, args.AllowScripts ?? AllowRunScripts.Prompt);
+            PostActionExecutionStatus result = _postActionDispatcher.Process(creationResult, args.IsDryRun, args.AllowScripts ?? AllowRunScripts.Prompt, cancellationToken);
 
             return result switch
             {
