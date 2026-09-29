@@ -391,6 +391,10 @@ export async function finalize({
                 result.skipped.push(skip);
                 continue;
             }
+            if (openCapCount() >= maximumOpenIssues) {
+                result.skipped.push({ candidateIds: group.candidateIds, reason: 'open-issue-cap' });
+                continue;
+            }
         }
         const history = closedHistory(tracking.closed, group, evidenceFingerprint(group, references)).history;
         const proposal = buildProposal({ repository, targetBranch, headSha, group, references, history });

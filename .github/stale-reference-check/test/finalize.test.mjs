@@ -340,6 +340,23 @@ test('the cap is based on total open cap-labeled issues across runs, not this ru
     assert.equal(result.skipped[0].reason, 'open-issue-cap');
 });
 
+test('the cap is re-checked against the refreshed listing before creation', async () => {
+    const capped = count => Array.from({ length: count }, (_, i) => ({
+        number: 500 + i, state: 'open', body: `pre-existing ${i}`, labels: ['stale-issue-detection'],
+    }));
+    let openLists = 0;
+    const api = mock({ paginate: async args => {
+        if (args.state === 'closed') {
+            return [];
+        }
+        return capped(++openLists === 1 ? 4 : 5);
+    } });
+    const result = await run(api, [action()]);
+    assert.equal(openLists, 2);
+    assert.equal(api.calls.writes.length, 0);
+    assert.equal(result.skipped[0].reason, 'open-issue-cap');
+});
+
 test('closing a capped issue frees a slot on a later run', async () => {
     const existing = Array.from({ length: 5 }, (_, i) => ({
         number: 500 + i, state: 'open', body: `pre-existing ${i}`, labels: ['stale-issue-detection'],
