@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -67,6 +68,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await csharpTest.RunAsync(CancellationToken.None);
         }
 
+        private static async Task<int> GetCSharpValueContentCountAsync(string source, params DiagnosticResult[] expected)
+        {
+            int count = 0;
+            var test = new CountingCSharpSecurityAnalyzerTest<UseSharedAccessProtocolHttpsOnly>(() =>
+                new UseSharedAccessProtocolHttpsOnly { ValueContentAnalysisStarted = () => Interlocked.Increment(ref count) })
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAzureStorage,
+                TestCode = source,
+            };
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+            return Volatile.Read(ref count);
+        }
+
         protected async Task VerifyCSharpWithDependenciesAsync(string source, string editorConfigText, params DiagnosticResult[] expected)
         {
             var csharpTest = new VerifyCS.Test
@@ -93,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            int count = await GetCSharpValueContentCountAsync("""
 
                 using System;
                 using Microsoft.WindowsAzure.Storage;
@@ -110,12 +125,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """,
             GetCSharpResultAt(12, 9));
+            Assert.IsGreaterThan(0, count);
         }
 
         [TestMethod]
         public async Task TestPropertyInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            int count = await GetCSharpValueContentCountAsync("""
 
                 using System;
                 using Microsoft.WindowsAzure.Storage;
@@ -127,6 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
                 """,
             GetCSharpResultAt(8, 34));
+            Assert.AreEqual(0, count);
         }
 
         [TestMethod]

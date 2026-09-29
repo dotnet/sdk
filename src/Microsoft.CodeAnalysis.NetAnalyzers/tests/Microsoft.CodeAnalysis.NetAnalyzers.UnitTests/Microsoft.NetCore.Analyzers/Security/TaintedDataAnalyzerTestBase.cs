@@ -80,9 +80,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected async Task<int> GetCSharpDataflowCountAsync(
             string source, bool withDependencies = false, params DiagnosticResult[] expected)
         {
-            int count = 0;
+            return (await GetCSharpFlowCountsAsync(source, withDependencies, expected)).DataflowCount;
+        }
+
+        protected async Task<(int DataflowCount, int ValueContentCount)> GetCSharpFlowCountsAsync(
+            string source, bool withDependencies = false, params DiagnosticResult[] expected)
+        {
+            int dataflowCount = 0;
+            int valueContentCount = 0;
             var test = new CountingCSharpSecurityAnalyzerTest<TCSharpAnalyzer>(() =>
-                new TCSharpAnalyzer { DataflowAnalysisStarted = () => Interlocked.Increment(ref count) })
+                new TCSharpAnalyzer
+                {
+                    DataflowAnalysisStarted = () => Interlocked.Increment(ref dataflowCount),
+                    ValueContentAnalysisStarted = () => Interlocked.Increment(ref valueContentCount),
+                })
             {
                 TestCode = source,
             };
@@ -90,11 +101,18 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             {
                 test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
                 test.TestState.AdditionalReferences.Add(AdditionalMetadataReferences.TestReferenceAssembly);
+                if (AdditionalCSharpSources is not null)
+                {
+                    foreach (string additionalSource in AdditionalCSharpSources)
+                    {
+                        test.TestState.Sources.Add(additionalSource);
+                    }
+                }
             }
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync(CancellationToken.None);
-            return Volatile.Read(ref count);
+            return (Volatile.Read(ref dataflowCount), Volatile.Read(ref valueContentCount));
         }
 
         protected const string WebInputWithSinkReachedThroughMethod = """
