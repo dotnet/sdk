@@ -11,7 +11,7 @@ The `list` command displays all .NET SDKs and runtimes that are managed by dotne
 dotnetup list
 
 # Machine-readable JSON output
-dotnetup list --json
+dotnetup list --format json
 
 # Skip verification (faster, reads manifest only)
 dotnetup list --no-verify
@@ -21,7 +21,7 @@ dotnetup list --no-verify
 
 | Option | Description |
 |--------|-------------|
-| `--json` | Output list in JSON format |
+| `--format json` | Output list in JSON format |
 | `--no-verify` | Skip verifying each installation exists on disk (faster) |
 
 ## Output Information
@@ -62,9 +62,9 @@ Installed .NET (managed by dotnetup):
 Total: 0
 ```
 
-## JSON Output (`--json`)
+## JSON Output (`--format json`)
 
-The `--json` option outputs the list in a machine-readable JSON format:
+The `--format json` option outputs the list in a machine-readable JSON format:
 
 ```json
 {
@@ -178,12 +178,12 @@ Total: 1
 
 ```bash
 # PowerShell - count SDK installations
-$list = dotnetup list --json | ConvertFrom-Json
+$list = dotnetup list --format json | ConvertFrom-Json
 $sdkCount = ($list.installations | Where-Object { $_.component -eq 'sdk' }).Count
 Write-Host "You have $sdkCount SDK(s) installed"
 
 # Bash with jq - get all versions
-dotnetup list --json | jq -r '.installations[].version'
+dotnetup list --format json | jq -r '.installations[].version'
 ```
 
 ### Skip Verification for Speed
