@@ -129,9 +129,18 @@ public sealed partial class GetWorkloadManifestLayout : Task
 
             if (flipped != name)
             {
-                return Directory.Exists(Path.Combine(Path.GetDirectoryName(directory)!, flipped))
-                    ? StringComparer.OrdinalIgnoreCase
-                    : StringComparer.Ordinal;
+                string parent = Path.GetDirectoryName(directory)!;
+                string flippedPath = Path.Combine(parent, flipped);
+
+                if (Directory.Exists(flippedPath))
+                {
+                    bool distinctSiblingExists = Directory.EnumerateDirectories(parent)
+                        .Any(path => string.Equals(Path.GetFileName(path), flipped, StringComparison.Ordinal));
+
+                    return distinctSiblingExists ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+                }
+
+                return StringComparer.Ordinal;
             }
         }
 

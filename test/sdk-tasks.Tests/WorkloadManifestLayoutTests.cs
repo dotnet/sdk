@@ -53,6 +53,37 @@ public class WorkloadManifestLayoutTests : SdkTest
         task.Execute().Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies directories whose names differ only in case remain distinct on case-sensitive
+    /// file systems when identifying stale outputs.
+    /// </summary>
+    [TestMethod]
+    public void TreatsCaseVariantDirectoriesAsDistinctOnCaseSensitiveFileSystems()
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        const string lowerBand = "11.0.100-alpha";
+        const string upperBand = "11.0.100-ALPHA";
+        string existing = CreateFile(root, Path.Combine(lowerBand, "test.manifest", "1.0.0", "WorkloadManifest.json"));
+        Directory.CreateDirectory(Path.Combine(root, upperBand, "test.manifest", "1.0.0"));
+
+        string[] bands = Directory.EnumerateDirectories(root).Select(Path.GetFileName).ToArray()!;
+        if (!bands.Contains(lowerBand, StringComparer.Ordinal) || !bands.Contains(upperBand, StringComparer.Ordinal))
+        {
+            Assert.Inconclusive("The file system does not support distinct case-variant directories.");
+        }
+
+        string source = CreateFile(root, "input");
+        var task = new GetWorkloadManifestLayout
+        {
+            LayoutRoot = root,
+            SourceFiles = [Input(source, Path.Combine(root, upperBand, "test.manifest", "1.0.0", "WorkloadManifest.json"))],
+            BuildEngine = new MockBuildEngine()
+        };
+
+        task.Execute().Should().BeTrue();
+        task.StaleOutputs.Select(item => item.ItemSpec).Should().Contain(Path.GetFullPath(existing));
+    }
+
     private static TaskItem Input(string source, string destination)
     {
         var item = new TaskItem(source);
