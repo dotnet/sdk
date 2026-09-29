@@ -204,7 +204,14 @@ internal class ProcessReaper : IDisposable
                         _process.SafeHandle.Signal(PosixSignal.SIGTERM);
                     }
 
-                    // If SIGTERM was ignored by the target, then we'll still wait.
+                    if (ProcessLifecycle.IsSignalTerminationRequested &&
+                        !_process.WaitForExit((int)ProcessLifecycle.SignalTerminationTimeout.TotalMilliseconds))
+                    {
+                        TerminateProcess();
+                    }
+
+                    // For non-signal process exits, preserve the existing behavior of waiting
+                    // for the child after forwarding SIGTERM.
                     _process.WaitForExit();
 
                     Environment.ExitCode = _process.ExitCode;
@@ -250,9 +257,10 @@ internal class ProcessReaper : IDisposable
     private ProcessReaper(Process process)
     {
         _process = process;
-        // The reaper forwards Ctrl+C to the child, so the process-wide lifecycle token must not
-        // race that forwarding and terminate a child that is shutting down cooperatively.
-        _processLifecycleCancellationSuppression = ProcessLifecycle.SuppressCancelKeyPressCancellation();
+        // The reaper forwards termination signals to the child, so the process-wide lifecycle
+        // token must not race that forwarding and terminate a child that is shutting down
+        // cooperatively.
+        _processLifecycleCancellationSuppression = ProcessLifecycle.SuppressTerminationCancellation();
 
         // The tests need the event handlers registered prior to spawning the child to prevent a race
         // where the child writes output the test expects before the intermediate dotnet process

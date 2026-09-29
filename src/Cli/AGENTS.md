@@ -20,6 +20,13 @@ MSBuild emits final telemetry after `BuildFinished`. `Shutdown` completes one lo
 instance. It does not necessarily end the process. Refresh the environment and trace
 context for each persistent-server request.
 
+Managed and Native AOT command execution use
+`Microsoft.DotNet.Cli.Utils/ProcessLifecycle.cs` as the shared owner of Ctrl+C,
+SIGTERM, and process-exit cancellation. Pass its token through System.CommandLine
+invocation and command operations. `ProcessReaper.cs` owns child-process signal
+forwarding and cleanup; do not add a competing command-line termination handler for
+those signals.
+
 ## Three-project command split
 
 A `dotnet` command or option spans three cooperating projects:
