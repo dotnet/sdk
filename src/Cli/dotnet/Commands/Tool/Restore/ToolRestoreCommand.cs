@@ -112,7 +112,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         ToolRestoreResult[] toolRestoreResults =
             [.. packagesFromManifest
                 .AsEnumerable()
-                .Select(package => toolPackageRestorer.InstallPackage(package, configFile))];
+                .Select(package => toolPackageRestorer.InstallPackage(package, configFile, cancellationToken))];
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.Select(result => result.SaveToCache)

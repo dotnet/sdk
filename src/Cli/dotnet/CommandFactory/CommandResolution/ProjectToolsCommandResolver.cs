@@ -233,7 +233,7 @@ public class ProjectToolsCommandResolver(
         return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
             path,
             lockedToken => Task.FromResult(File.Exists(path)),
-            CancellationToken.None);
+            ProcessLifecycle.CancellationToken);
     }
 
     private bool TryGetToolLockFile(
@@ -245,7 +245,7 @@ public class ProjectToolsCommandResolver(
         lockFile = null;
         var lockFilePath = GetToolLockFilePath(toolLibrary, framework, nugetPackagesRoot);
 
-        if (!FileExistsWithLock(lockFilePath).Result)
+        if (!FileExistsWithLock(lockFilePath).GetAwaiter().GetResult())
         {
             return false;
         }
@@ -253,8 +253,9 @@ public class ProjectToolsCommandResolver(
         try
         {
             lockFile = new LockFileFormat()
-                .ReadWithLock(lockFilePath)
-                .Result;
+                .ReadWithLock(lockFilePath, ProcessLifecycle.CancellationToken)
+                .GetAwaiter()
+                .GetResult();
         }
         catch (FileFormatException)
         {

@@ -426,7 +426,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
         {
             var tempDir = TestAssetsManager.CreateTestDirectory(identifier: tfm).Path;
             var templateFinder = new ShellShimTemplateFinder(new MockNuGetPackageDownloader(), new DirectoryPath(tempDir), null);
-            var path = templateFinder.ResolveAppHostSourceDirectoryAsync(null, NuGetFramework.Parse(tfm), Architecture.Arm64).Result;
+            var path = templateFinder.ResolveAppHostSourceDirectoryAsync(
+                null,
+                NuGetFramework.Parse(tfm),
+                Architecture.Arm64,
+                TestContext.CancellationToken).Result;
             path.Should().Contain(tfm.Equals("net5.0") ? "AppHostTemplate" : "win-x64");
         }
 

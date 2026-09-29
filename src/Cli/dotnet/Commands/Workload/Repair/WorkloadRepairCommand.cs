@@ -77,16 +77,21 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
 
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand);
+                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand, cancellationToken);
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                WorkloadInstallCommand.TryRunGarbageCollection(
+                    _workloadInstaller,
+                    Reporter,
+                    Verbosity,
+                    workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                    cancellationToken);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairSucceeded, string.Join(" ", workloadIds)));
                 Reporter.WriteLine();
             });
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             // Don't show entire stack trace
             throw new GracefulException(string.Format(CliCommandStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
@@ -99,9 +104,12 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         return _workloadInstaller.ExitCode;
     }
 
-    private void ReinstallWorkloadsBasedOnCurrentManifests(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand)
+    private void ReinstallWorkloadsBasedOnCurrentManifests(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        CancellationToken cancellationToken)
     {
-        _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand);
+        _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand, cancellationToken);
     }
 
 }

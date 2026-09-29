@@ -91,7 +91,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
             List<string> versions;
             try
             {
-                versions = GetVersions(_numberOfWorkloadSetsToTake);
+                versions = GetVersions(_numberOfWorkloadSetsToTake, cancellationToken);
             }
             catch (NuGetPackageNotFoundException)
             {
@@ -113,7 +113,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         }
         else if (_workloadVersion.Any(v => v.Contains('@')))
         {
-            var versions = FindBestWorkloadSetsFromComponents()?.Take(_numberOfWorkloadSetsToTake);
+            var versions = FindBestWorkloadSetsFromComponents(cancellationToken)?.Take(_numberOfWorkloadSetsToTake);
             if (versions is null)
             {
                 return 0;
@@ -134,7 +134,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         }
         else
         {
-            var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion.Single());
+            var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion.Single(), cancellationToken);
             if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
                 var set = new WorkloadSet() { ManifestVersions = workloadSet.ManifestVersions };
@@ -156,34 +156,74 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         return 0;
     }
 
-    private List<string> GetVersions(int numberOfWorkloadSetsToTake)
+    private List<string> GetVersions(
+        int numberOfWorkloadSetsToTake,
+        CancellationToken cancellationToken)
     {
-        return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _resolver, _packageSourceLocation, RestoreActionConfiguration);
+        return GetVersions(
+            numberOfWorkloadSetsToTake,
+            new SdkFeatureBand(_sdkVersion),
+            _installer,
+            _includePreviews,
+            PackageDownloader,
+            _resolver,
+            cancellationToken,
+            _packageSourceLocation,
+            RestoreActionConfiguration);
     }
 
-    private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver, PackageSourceLocation packageSourceLocation, RestoreActionConfig restoreActionConfig)
+    private static List<string> GetVersions(
+        int numberOfWorkloadSetsToTake,
+        SdkFeatureBand featureBand,
+        IInstaller installer,
+        bool includePreviews,
+        INuGetPackageDownloader packageDownloader,
+        IWorkloadResolver resolver,
+        CancellationToken cancellationToken,
+        PackageSourceLocation packageSourceLocation,
+        RestoreActionConfig restoreActionConfig)
     {
         installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, packageSourceLocation, restoreActionConfig);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
-        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: packageSourceLocation, includePreview: includePreviews)
+        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, cancellationToken, packageSourceLocation: packageSourceLocation, includePreview: includePreviews)
             .GetAwaiter().GetResult()
             .Select(version => featureBand.GetWorkloadSetPackageVersion(version.ToString()))];
     }
 
-    private IEnumerable<string> FindBestWorkloadSetsFromComponents()
+    private IEnumerable<string> FindBestWorkloadSetsFromComponents(CancellationToken cancellationToken)
     {
-        return FindBestWorkloadSetsFromComponents(new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _workloadVersion, _resolver, _numberOfWorkloadSetsToTake, _packageSourceLocation, RestoreActionConfiguration);
+        return FindBestWorkloadSetsFromComponents(
+            new SdkFeatureBand(_sdkVersion),
+            _installer,
+            _includePreviews,
+            PackageDownloader,
+            _workloadVersion,
+            _resolver,
+            _numberOfWorkloadSetsToTake,
+            cancellationToken,
+            _packageSourceLocation,
+            RestoreActionConfiguration);
     }
 
-    public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake, PackageSourceLocation packageSourceLocation = null, RestoreActionConfig restoreActionConfig = null)
+    public static IEnumerable<string> FindBestWorkloadSetsFromComponents(
+        SdkFeatureBand featureBand,
+        IInstaller installer,
+        bool includePreviews,
+        INuGetPackageDownloader packageDownloader,
+        IEnumerable<string> workloadVersions,
+        IWorkloadResolver resolver,
+        int numberOfWorkloadSetsToTake,
+        CancellationToken cancellationToken,
+        PackageSourceLocation packageSourceLocation = null,
+        RestoreActionConfig restoreActionConfig = null)
     {
         installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, packageSourceLocation, restoreActionConfig);
         List<string> versions;
         try
         {
             // 0 indicates 'give all versions'. Not all will match, so we don't know how many we will need
-            versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader, resolver, packageSourceLocation, restoreActionConfig);
+            versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader, resolver, cancellationToken, packageSourceLocation, restoreActionConfig);
         }
         catch (NuGetPackageNotFoundException)
         {
@@ -200,7 +240,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         // Since these are ordered by version (descending), the first is the highest version
         return versions.Where(version =>
         {
-            var manifestVersions = installer.GetWorkloadSetContents(version).ManifestVersions;
+            var manifestVersions = installer.GetWorkloadSetContents(version, cancellationToken).ManifestVersions;
             return manifestIdsAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
         }).Take(numberOfWorkloadSetsToTake);
     }

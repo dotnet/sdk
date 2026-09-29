@@ -38,7 +38,11 @@ internal static class WorkloadIntegrityChecker
         if (installedWorkloads.Any())
         {
             reporter.WriteLine(CliCommandStrings.WorkloadIntegrityCheck);
-            CliTransaction.RunNew(context => installer.InstallWorkloads(installedWorkloads, sdkFeatureBand, context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                installedWorkloads,
+                sdkFeatureBand,
+                context,
+                ProcessLifecycle.CancellationToken));
             reporter.WriteLine("----------------");
         }
     }

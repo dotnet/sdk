@@ -14,17 +14,38 @@ internal interface IInstaller : IWorkloadManifestInstaller
 {
     int ExitCode { get; }
 
-    WorkloadSet GetWorkloadSetContents(string workloadVersion);
+    WorkloadSet GetWorkloadSetContents(string workloadVersion, CancellationToken cancellationToken);
 
-    void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
+    void InstallWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null);
 
-    void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null);
+    void RepairWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null);
 
-    void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false);
+    void GarbageCollect(
+        Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null,
+        bool cleanAllPacks = false);
 
-    WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null);
+    WorkloadSet InstallWorkloadSet(
+        ITransactionContext context,
+        string workloadSetVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null);
 
-    void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
+    void InstallWorkloadManifest(
+        ManifestVersionUpdate manifestUpdate,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null);
 
     IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository();
 

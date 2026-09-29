@@ -10,5 +10,5 @@ internal interface IWorkloadManifestInstaller
 {
     PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand);
 
-    Task ExtractManifestAsync(string nupkgPath, string targetPath);
+    Task ExtractManifestAsync(string nupkgPath, string targetPath, CancellationToken cancellationToken);
 }

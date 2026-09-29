@@ -69,6 +69,17 @@ internal class ProcessReaper : IDisposable
             }
         }
 
+        public override void TerminateProcess()
+        {
+            if (_job is not null &&
+                PInvoke.TerminateJobObject((HANDLE)_job.DangerousGetHandle(), uint.MaxValue))
+            {
+                return;
+            }
+
+            base.TerminateProcess();
+        }
+
         private static SafeWaitHandle? AssignProcessToJobObject(HANDLE process)
         {
             HANDLE job = PInvoke.CreateJobObject(null, null);
@@ -249,6 +260,15 @@ internal class ProcessReaper : IDisposable
     ///  Call to notify the reaper that the process has started.
     /// </summary>
     public virtual void NotifyProcessStarted() { }
+
+    public virtual void TerminateProcess()
+    {
+#if NET
+        _process.Kill(entireProcessTree: true);
+#else
+        _process.Kill();
+#endif
+    }
 
     public virtual void Dispose()
     {

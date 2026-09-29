@@ -56,6 +56,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         PackageSourceLocation packageSourceLocation,
         VerbosityOptions verbosity,
         bool includeUnlisted = false
@@ -68,7 +69,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         {
             var _downloadActivity = Activities.Source.StartActivity("download-tool");
             _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
-            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
+            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, cancellationToken, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
             _downloadActivity?.Stop();
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
@@ -95,7 +96,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             // Extract the package
             var _extractActivity = Activities.Source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
-            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
+            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir), cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
             _extractActivity?.Stop();
 
             return version;

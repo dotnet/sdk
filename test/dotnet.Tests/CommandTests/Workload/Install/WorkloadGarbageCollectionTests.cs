@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.CreateDirectory(workloadsRecordPath);
             File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build")).Close();
 
-            installer.GarbageCollect(getResolver);
+            installer.GarbageCollect(getResolver, TestContext.CancellationToken);
 
             foreach (var pack in packsToCollect)
             {
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 }
             }
 
-            installer.GarbageCollect(getResolver);
+            installer.GarbageCollect(getResolver, TestContext.CancellationToken);
 
             Directory.EnumerateFileSystemEntries(installedPacksPath)
                 .Should()
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
 
             //  ACT: garbage collect
-            installer.GarbageCollect(getResolver);
+            installer.GarbageCollect(getResolver, TestContext.CancellationToken);
 
             //  ASSERT
 
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
 
             //  ACT: garbage collect
-            installer.GarbageCollect(getResolver);
+            installer.GarbageCollect(getResolver, TestContext.CancellationToken);
 
             //  ASSERT
 

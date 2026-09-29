@@ -97,6 +97,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+            CancellationToken cancellationToken,
             VerbosityOptions verbosity,
             VersionRange? versionRange = null,
             string? targetFramework = null,
@@ -106,6 +107,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             RestoreActionConfig? restoreActionConfig = null
             )
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string? rollbackDirectory = null;
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
 
@@ -314,10 +316,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public (NuGetVersion version, PackageSource source) GetNuGetVersion(
             PackageLocation packageLocation,
             PackageId packageId,
+            CancellationToken cancellationToken,
             VerbosityOptions verbosity,
             VersionRange? versionRange = null,
             RestoreActionConfig? restoreActionConfig = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
             if (string.IsNullOrEmpty(packageId.ToString()))

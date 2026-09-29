@@ -155,6 +155,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,
+        CancellationToken cancellationToken,
         NuGetVersion packageVersion = null,
         PackageSourceLocation packageSourceLocation = null,
         bool includePreview = false,
@@ -162,10 +163,14 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         DirectoryPath? downloadFolder = null,
         PackageSourceMapping packageSourceMapping = null)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
-
-        (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-            packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
+        (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(
+            packageId,
+            cancellationToken,
+            packageVersion,
+            packageSourceLocation,
+            includePreview,
+            includeUnlisted ?? packageVersion is not null,
+            packageSourceMapping).ConfigureAwait(false);
 
         FindPackageByIdResource resource = null;
         SourceRepository repository = GetSourceRepository(source);
@@ -196,7 +201,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             destinationStream,
             _cacheSettings,
             _verboseLogger,
-            cancellationToken));
+            cancellationToken),
+            cancellationToken,
+            timer: _retryTimer ?? (() => ExponentialRetry.Timer(ExponentialRetry.Intervals, cancellationToken)));
         destinationStream.Close();
 
         if (!success)
@@ -209,7 +216,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         // Delete file if verification fails
         try
         {
-            await VerifySigning(nupkgPath, repository);
+            await VerifySigning(nupkgPath, repository, cancellationToken);
         }
         catch (NuGetPackageInstallerException)
         {
@@ -249,7 +256,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// </remarks>
     /// <param name="nupkgPath">Full path to the downloaded <c>.nupkg</c> file.</param>
     /// <param name="repository">The NuGet source repository the package was downloaded from.</param>
-    private async Task VerifySigning(string nupkgPath, SourceRepository repository)
+    private async Task VerifySigning(string nupkgPath, SourceRepository repository, CancellationToken cancellationToken)
     {
         if (!_verifySignatures && !_validationMessagesDisplayed)
         {
@@ -266,7 +273,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
 
         if (repository is not null &&
-            await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
+            await repository.GetResourceAsync<RepositorySignatureResource>(cancellationToken).ConfigureAwait(false) is RepositorySignatureResource resource &&
             resource.AllRepositorySigned)
         {
             string commandOutput;
@@ -278,8 +285,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             //
             // With source mapping:    NuGetVerify() = valid NuGet signature (any trusted signer)
             //   -> Package source mapping already constrains feeds, so first-party requirement is relaxed.
-            if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
-                (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
+            if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), cancellationToken, out commandOutput)) ||
+                (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), cancellationToken, out commandOutput, _currentWorkingDirectory)))
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToValidatePackageSigning, commandOutput));
             }
@@ -297,11 +304,12 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     }
 
     public async Task<string> GetPackageUrl(PackageId packageId,
+        CancellationToken cancellationToken,
         NuGetVersion packageVersion = null,
         PackageSourceLocation packageSourceLocation = null,
         bool includePreview = false)
     {
-        (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview).ConfigureAwait(false);
+        (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, cancellationToken, packageVersion, packageSourceLocation, includePreview).ConfigureAwait(false);
 
         SourceRepository repository = GetSourceRepository(source);
         if (repository.PackageSource.IsLocal)
@@ -312,14 +320,17 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             );
         }
 
-        ServiceIndexResourceV3 serviceIndexResource = repository.GetResourceAsync<ServiceIndexResourceV3>().Result;
+        ServiceIndexResourceV3 serviceIndexResource = await repository.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken).ConfigureAwait(false);
         IReadOnlyList<Uri> packageBaseAddress =
             serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 
         return GetNupkgUrl(packageBaseAddress[0].ToString(), packageId, resolvedPackageVersion);
     }
 
-    public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+    public async Task<IEnumerable<string>> ExtractPackageAsync(
+        string packagePath,
+        DirectoryPath targetFolder,
+        CancellationToken cancellationToken)
     {
         await using FileStream packageStream = File.OpenRead(packagePath);
         PackageFolderReader packageReader = new(targetFolder.Value);
@@ -329,8 +340,6 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             null,
             _verboseLogger);
         NuGetPackagePathResolver packagePathResolver = new(targetFolder.Value);
-        CancellationToken cancellationToken = CancellationToken.None;
-
         var allFilesInPackage = await PackageExtractor.ExtractPackageAsync(
             targetFolder.Value,
             packageStream,
@@ -370,21 +379,24 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return allFilesInPackage;
     }
 
-    public async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionsOfPackage(string packageId, bool includePreview, int numberOfResults)
+    public async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionsOfPackage(
+        string packageId,
+        bool includePreview,
+        int numberOfResults,
+        CancellationToken cancellationToken)
     {
         IEnumerable<PackageSource> packageSources = LoadNuGetSources(new PackageId(packageId), null, null);
-        return (await GetLatestVersionsInternalAsync(packageId, packageSources, includePreview, CancellationToken.None, numberOfResults)).Select(result => result.Item2);
+        return (await GetLatestVersionsInternalAsync(packageId, packageSources, includePreview, cancellationToken, numberOfResults)).Select(result => result.Item2);
     }
 
     private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
+         CancellationToken cancellationToken,
          NuGetVersion packageVersion = null,
          PackageSourceLocation packageSourceLocation = null,
          bool includePreview = false,
          bool includeUnlisted = false,
          PackageSourceMapping packageSourceMapping = null)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
-
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
@@ -794,6 +806,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
+        CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null)
     {
         if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
@@ -801,16 +814,16 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             return versionRange.MinVersion;
         }
 
-        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)
+        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, cancellationToken, packageSourceLocation)
             .ConfigureAwait(false))
             .version;
     }
 
     public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
+        CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
@@ -946,15 +959,20 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     }
 
     public async Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
+         CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null,
          bool includePreview = false)
     {
-        return (await GetLatestPackageVersions(packageId, numberOfResults: 1, packageSourceLocation, includePreview)).First();
+        return (await GetLatestPackageVersions(packageId, numberOfResults: 1, cancellationToken, packageSourceLocation, includePreview)).First();
     }
 
-    public async Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+    public async Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
+        PackageId packageId,
+        int numberOfResults,
+        CancellationToken cancellationToken,
+        PackageSourceLocation packageSourceLocation = null,
+        bool includePreview = false)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
         return (await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
