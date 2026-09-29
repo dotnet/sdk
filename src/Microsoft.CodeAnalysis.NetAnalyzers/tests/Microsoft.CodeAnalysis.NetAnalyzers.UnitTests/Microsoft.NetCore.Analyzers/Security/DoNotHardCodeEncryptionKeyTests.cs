@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task RepeatedByteArraySourcesWithoutReachableSinkAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(RepeatedByteArraySourcesWithoutReachableSink());
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedByteArraySourcesWithoutReachableSink()));
         }
 
         [TestMethod]

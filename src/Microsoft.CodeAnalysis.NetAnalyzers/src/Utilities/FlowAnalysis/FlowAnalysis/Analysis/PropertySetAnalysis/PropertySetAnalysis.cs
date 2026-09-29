@@ -49,6 +49,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
         /// <param name="hazardousUsageEvaluators">When and how to evaluate <see cref="PropertySetAbstractValueKind"/>s to for hazardous usages.</param>
         /// <param name="interproceduralAnalysisConfig">Interprocedural dataflow analysis configuration.</param>
         /// <param name="pessimisticAnalysis">Whether to be pessimistic.</param>
+        /// <param name="onValueContentAnalysis">Optional observer for value-content analysis.</param>
         /// <returns>Property set analysis result.</returns>
         internal static PropertySetAnalysisResult? GetOrComputeResult(
             ControlFlowGraph cfg,
@@ -60,7 +61,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             PropertyMapperCollection propertyMappers,
             HazardousUsageEvaluatorCollection hazardousUsageEvaluators,
             InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
-            bool pessimisticAnalysis = false)
+            bool pessimisticAnalysis = false,
+            Action? onValueContentAnalysis = null)
         {
             if (constructorMapper == null)
             {
@@ -128,6 +130,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             }
             else
             {
+                onValueContentAnalysis?.Invoke();
                 valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                     cfg,
                     owningSymbol,
@@ -345,6 +348,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
         /// <param name="hazardousUsageEvaluators">When and how to evaluate <see cref="PropertySetAbstractValueKind"/>s to for hazardous usages.</param>
         /// <param name="interproceduralAnalysisConfig">Interprocedural dataflow analysis configuration.</param>
         /// <param name="pessimisticAnalysis">Whether to be pessimistic.</param>
+        /// <param name="onValueContentAnalysis">Optional observer for value-content analysis.</param>
         /// <returns>Dictionary of <see cref="Location"/> and <see cref="IMethodSymbol"/> pairs mapping to the kind of hazardous usage (Flagged or MaybeFlagged).  The method in the key is null for return/initialization statements.</returns>
         /// <remarks>Unlike <see cref="GetOrComputeResult"/>, this overload also performs DFA on all descendant local and anonymous functions.</remarks>
         public static PooledDictionary<(Location Location, IMethodSymbol? Method), HazardousUsageEvaluationResult>? BatchGetOrComputeHazardousUsages(
@@ -356,7 +360,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             PropertyMapperCollection propertyMappers,
             HazardousUsageEvaluatorCollection hazardousUsageEvaluators,
             InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
-            bool pessimisticAnalysis = false)
+            bool pessimisticAnalysis = false,
+            Action? onValueContentAnalysis = null)
         {
             return BatchGetOrComputeHazardousUsages(
                 compilation,
@@ -367,7 +372,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
                 propertyMappers,
                 hazardousUsageEvaluators,
                 interproceduralAnalysisConfig,
-                pessimisticAnalysis);
+                pessimisticAnalysis,
+                onValueContentAnalysis);
         }
 
         /// <summary>
@@ -381,6 +387,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
         /// <param name="hazardousUsageEvaluators">When and how to evaluate <see cref="PropertySetAbstractValueKind"/>s to for hazardous usages.</param>
         /// <param name="interproceduralAnalysisConfig">Interprocedural dataflow analysis configuration.</param>
         /// <param name="pessimisticAnalysis">Whether to be pessimistic.</param>
+        /// <param name="onValueContentAnalysis">Optional observer for value-content analysis.</param>
         /// <returns>Dictionary of <see cref="Location"/> and <see cref="IMethodSymbol"/> pairs mapping to the kind of hazardous usage (Flagged or MaybeFlagged).  The method in the key is null for return/initialization statements.</returns>
         /// <remarks>Unlike <see cref="GetOrComputeResult"/>, this overload also performs DFA on all descendant local and anonymous functions.</remarks>
         public static PooledDictionary<(Location Location, IMethodSymbol? Method), HazardousUsageEvaluationResult>? BatchGetOrComputeHazardousUsages(
@@ -392,7 +399,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             PropertyMapperCollection propertyMappers,
             HazardousUsageEvaluatorCollection hazardousUsageEvaluators,
             InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
-            bool pessimisticAnalysis = false)
+            bool pessimisticAnalysis = false,
+            Action? onValueContentAnalysis = null)
         {
             PooledDictionary<(Location Location, IMethodSymbol? Method), HazardousUsageEvaluationResult>? allResults = null;
             foreach ((IOperation Operation, ISymbol ContainingSymbol) in rootOperationsNeedingAnalysis)
@@ -453,7 +461,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
                         propertyMappers,
                         hazardousUsageEvaluators,
                         interproceduralAnalysisConfig,
-                        pessimisticAnalysis);
+                        pessimisticAnalysis,
+                        onValueContentAnalysis);
                 if (propertySetAnalysisResult == null || propertySetAnalysisResult.HazardousUsages.IsEmpty)
                 {
                     return propertySetAnalysisResult;

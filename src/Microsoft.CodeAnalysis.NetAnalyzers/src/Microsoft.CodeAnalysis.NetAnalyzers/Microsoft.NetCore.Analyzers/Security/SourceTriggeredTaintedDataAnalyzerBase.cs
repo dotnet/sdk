@@ -49,6 +49,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         protected virtual bool RequiresReachableSink => true;
 
+        // Per-analyzer observer keeps performance assertions isolated across concurrent tests.
+        internal Action? DataflowAnalysisStarted { get; set; }
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TaintedDataEnteringSinkDescriptor);
 
         public override void Initialize(AnalysisContext context)
@@ -235,6 +238,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             MayRequireValueContentAnalysis(operationBlockStartContext.OperationBlocks,
                                                 compilation, sourceInfoSymbolMap, valueContentAnalysisCache,
                                                 cancellationToken));
+                                    DataflowAnalysisStarted?.Invoke();
                                     TaintedDataAnalysisResult? taintedDataAnalysisResult = TaintedDataAnalysis.TryGetOrComputeResult(
                                         controlFlowGraphFactory.Value,
                                         operationBlockAnalysisContext.Compilation,
