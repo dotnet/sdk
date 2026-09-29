@@ -17,7 +17,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
 
-    public bool Initialize()
+    public bool Initialize(CancellationToken cancellationToken = default)
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 
@@ -27,8 +27,8 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
         }
 
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions, _buildSession) :
-            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions, _buildSession);
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions, _buildSession, cancellationToken) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions, _buildSession, cancellationToken);
 
         LogProjectProperties(projects);
 
