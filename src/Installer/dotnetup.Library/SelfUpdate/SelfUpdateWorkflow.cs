@@ -150,7 +150,7 @@ internal class SelfUpdateWorkflow
         => !HasSameSemanticChannel(installedVersion, availableVersion) ||
             availableVersion.ComparePrecedenceTo(installedVersion) > 0;
 
-    private static bool HasSameSemanticChannel(ReleaseVersion left, ReleaseVersion right)
+    internal static bool HasSameSemanticChannel(ReleaseVersion left, ReleaseVersion right)
         => string.Equals(GetSemanticChannel(left), GetSemanticChannel(right), StringComparison.OrdinalIgnoreCase);
 
     private static string GetSemanticChannel(ReleaseVersion version)
