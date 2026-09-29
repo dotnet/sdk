@@ -1,7 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
@@ -2596,6 +2601,23 @@ public static class C
             await test.RunAsync(CancellationToken.None);
         }
 
+        private static async Task VerifyCSharp8AnalyzerWithScanObserverAsync(
+            string source,
+            Action<object, AnalysisEntityDataFlowScanKind, IOperation> observer,
+            params DiagnosticResult[] expected)
+        {
+            var previous = AnalysisEntityDataFlowScanTestHook.Observer.Value;
+            try
+            {
+                AnalysisEntityDataFlowScanTestHook.Observer.Value = observer;
+                await VerifyCSharp8AnalyzerAsync(source, expected);
+            }
+            finally
+            {
+                AnalysisEntityDataFlowScanTestHook.Observer.Value = previous;
+            }
+        }
+
         private static async Task VerifyCSharpContextSensitiveAnalyzerAsync(string source)
         {
             await new VerifyCS.Test
@@ -2994,7 +3016,9 @@ public static class C
         [TestMethod]
         public async Task LocalFunctionInvocation_UnusedNestedBodiesDoNotAffectCallerAsync()
         {
-            await VerifyCSharp8AnalyzerAsync("""
+            var scans = new ConcurrentDictionary<AnalysisEntityDataFlowScanKind, int>();
+            var nestedOperations = new ConcurrentBag<IOperation>();
+            await VerifyCSharp8AnalyzerWithScanObserverAsync("""
                 using System;
 
                 class Test
@@ -3022,15 +3046,30 @@ public static class C
                     }
                 }
                 """,
+                (_, kind, operation) =>
+                {
+                    scans.AddOrUpdate(kind, 1, (_, count) => count + 1);
+                    if (operation is IFieldReferenceOperation { Field.Name: "state" } ||
+                        operation is IInvocationOperation { TargetMethod.MethodKind: MethodKind.DelegateInvoke })
+                    {
+                        nestedOperations.Add(operation);
+                    }
+                },
                 GetCSharpResultAt(22, 13, "captured == 2", "true"),
                 GetCSharpResultAt(24, 13, "unrelated == 7", "true"));
+
+            Assert.IsTrue(scans.ContainsKey(AnalysisEntityDataFlowScanKind.IndirectCapture));
+            Assert.IsTrue(scans.ContainsKey(AnalysisEntityDataFlowScanKind.ReferencedMembers));
+            Assert.IsEmpty(nestedOperations);
         }
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
         public async Task LocalFunctionInvocation_SharedStaticLocalGraphUpdatesCapturedValueAsync()
         {
-            await VerifyCSharp8AnalyzerAsync("""
+            var stateScansByVisitor = new ConcurrentDictionary<object, int>();
+            var leafCallsByVisitor = new ConcurrentDictionary<object, int>();
+            await VerifyCSharp8AnalyzerWithScanObserverAsync("""
                 class Test
                 {
                     static int state;
@@ -3056,7 +3095,28 @@ public static class C
                     }
                 }
                 """,
+                (visitor, kind, operation) =>
+                {
+                    if (kind == AnalysisEntityDataFlowScanKind.ReferencedMembers)
+                    {
+                        if (operation is IFieldReferenceOperation { Field.Name: "state" })
+                        {
+                            stateScansByVisitor.AddOrUpdate(visitor, 1, (_, count) => count + 1);
+                        }
+                        else if (operation is IInvocationOperation { TargetMethod.Name: "Leaf" })
+                        {
+                            leafCallsByVisitor.AddOrUpdate(visitor, 1, (_, count) => count + 1);
+                        }
+                    }
+                },
                 GetCSharpResultAt(20, 13, "captured == 4", "true"));
+
+            Assert.IsNotEmpty(stateScansByVisitor);
+            foreach (var (visitor, count) in stateScansByVisitor)
+            {
+                Assert.AreEqual(1, count);
+                Assert.AreEqual(2, leafCallsByVisitor[visitor]);
+            }
         }
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
