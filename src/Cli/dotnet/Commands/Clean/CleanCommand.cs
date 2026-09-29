@@ -49,7 +49,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
         );
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
         return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);

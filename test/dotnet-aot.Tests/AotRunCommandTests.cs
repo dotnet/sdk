@@ -99,8 +99,8 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
-                fixture.TestDirectory,
-                cancellationToken: TestContext.CancellationToken);
+                TestContext.CancellationToken,
+                fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
             Assert.IsNotNull(invocation);
@@ -150,8 +150,8 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
-                fixture.TestDirectory,
-                cancellationToken: TestContext.CancellationToken);
+                TestContext.CancellationToken,
+                fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
             Assert.IsNotNull(invocation);
@@ -181,8 +181,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
         }
@@ -213,8 +213,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
         }
@@ -237,8 +237,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
 
             Assert.AreEqual(
                 string.Format(CliCommandStrings.RunCommandExceptionNoProjects, fixture.TestDirectory, "--project"),
@@ -265,8 +265,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
 
             Assert.AreEqual(
                 string.Format(CliCommandStrings.RunCommandExceptionMultipleProjects, fixture.TestDirectory),
@@ -317,8 +317,8 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
-                fixture.TestDirectory,
-                cancellationToken: TestContext.CancellationToken);
+                TestContext.CancellationToken,
+                fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
             Assert.IsNotNull(invocation);
@@ -369,8 +369,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
         }
         finally
         {
@@ -411,8 +411,8 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
-                    fixture.TestDirectory,
-                    cancellationToken: TestContext.CancellationToken));
+                    TestContext.CancellationToken,
+                    fixture.TestDirectory));
         }
         finally
         {
@@ -464,8 +464,8 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
-                fixture.TestDirectory,
-                cancellationToken: TestContext.CancellationToken);
+                TestContext.CancellationToken,
+                fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
             Assert.IsNotNull(invocation);

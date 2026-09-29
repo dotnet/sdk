@@ -80,7 +80,7 @@ public class SdkCheckCommand : CommandBase
         return 0;
     }
 
-    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
 #if CLI_AOT
         return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute(cancellationToken);
