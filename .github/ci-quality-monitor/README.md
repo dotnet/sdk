@@ -61,6 +61,11 @@ Azure DevOps build ID. The daily routine reconciles stable-branch events and
 heartbeat state. Manual dispatch ignores the processed-build ledger for the
 selected build, which makes repeatable validation possible.
 
+Merged-PR delivery uses `pull_request_target` so protected environments evaluate
+the trusted base branch instead of `refs/pull/<number>/merge`. Both generated
+and explicit checkouts are restricted to the workflow repository in the
+base-branch context; pull request head code is never checked out or executed.
+
 ## Public Data Boundary
 
 Anonymous access currently works for public SDK build metadata and timeline

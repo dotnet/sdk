@@ -63,7 +63,11 @@ test("merged pull requests pass stable-target metadata to the collector", async 
 {
     const workflow = await readFile(workflowUrl, "utf8");
 
-    assert.match(workflow, /pull_request:\s*\n\s*types: \[closed\]/);
+    assert.match(workflow, /pull_request_target:\s*\n\s*types: \[closed\]/);
+    assert.doesNotMatch(workflow, /^\s*pull_request:\s*$/m);
+    assert.match(workflow, /Never check out or execute PR code\./);
+    assert.match(workflow, /checkout:\s*\n\s*repository: \$\{\{ github\.repository \}\}/);
+    assert.match(workflow, /job-discriminator: \$\{\{ github\.run_id \}\}/);
     assert.match(workflow, /github\.event\.pull_request\.merged == true/);
     assert.match(workflow, /MERGED_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
     assert.match(workflow, /MERGED_PR_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.ref \}\}/);
