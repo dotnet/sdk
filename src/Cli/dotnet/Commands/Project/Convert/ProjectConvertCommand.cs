@@ -38,7 +38,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
     public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
 
-    public async ValueTask<int> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

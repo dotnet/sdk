@@ -310,6 +310,41 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual("System.Net.Json", callback.Reference);
         }
 
+        [TestMethod]
+        [DataRow("package")]
+        [DataRow("project")]
+        public void AddRefPropagatesCancellation(string referenceType)
+        {
+            DotnetAddPostActionProcessor actionProcessor = new(
+                (_, _, _, cancellationToken) => throw new OperationCanceledException(cancellationToken),
+                (_, _, cancellationToken) => throw new OperationCanceledException(cancellationToken));
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" },
+                { "referenceType", referenceType },
+                { "reference", referenceType == "package" ? "System.Net.Json" : "./Reference.csproj" },
+            };
+            var postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ActionId = DotnetAddPostActionProcessor.ActionProcessorId,
+                Args = args,
+            };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(() => actionProcessor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                creationEffects,
+                new MockCreationResult(),
+                targetBasePath,
+                cancellationTokenSource.Token));
+        }
+
         private class MockAddProjectReferenceCallback
         {
             public string? Target { get; private set; }

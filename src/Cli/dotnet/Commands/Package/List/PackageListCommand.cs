@@ -83,9 +83,10 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             exitCode = command.Execute(cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             exitCode = 1;
         }

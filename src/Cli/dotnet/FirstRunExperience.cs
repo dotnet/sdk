@@ -152,11 +152,7 @@ internal static class FirstRunExperience
             {
                 WorkloadIntegrityChecker.RunFirstUseCheck(reporter);
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // If the workload check fails for any reason, we want to eat the failure and continue running the command.
                 reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());

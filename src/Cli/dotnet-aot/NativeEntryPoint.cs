@@ -407,11 +407,7 @@ static unsafe partial class NativeEntryPoint
                 {
                     return false;
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     exitCode = Parser.ExceptionHandler(exception, fileBasedRunParseResult);
                     success = false;
@@ -451,11 +447,7 @@ static unsafe partial class NativeEntryPoint
                 success = true;
                 return true;
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // The command was resolved and may have already executed, so it must not be re-run via
                 // the managed CLI. Report the failure exactly as the managed invocation path would.

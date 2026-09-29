@@ -188,6 +188,27 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         }
 
         [TestMethod]
+        public void RestorePropagatesCancellation()
+        {
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            string projectPath = Path.Combine(testDirectory.Path, "Test.csproj");
+            File.WriteAllText(projectPath, """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                  </PropertyGroup>
+                </Project>
+                """);
+            var parseResult = Parser.Parse(["dotnet", "package", "list", "--project", projectPath]);
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(
+                () => new Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand(parseResult)
+                    .Execute(cancellationTokenSource.Token));
+        }
+
+        [TestMethod]
         public void ItListsTransitivePackage()
         {
             var testProject = new TestProject

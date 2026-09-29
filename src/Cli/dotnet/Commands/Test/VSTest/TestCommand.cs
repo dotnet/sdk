@@ -19,7 +19,7 @@ public class TestCommand(
     bool noRestore,
     string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
@@ -76,7 +76,7 @@ public class TestCommand(
         return settings.Length - 1;
     }
 
-    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId, CancellationToken cancellationToken = default)
+    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId, CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 

@@ -40,7 +40,7 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         _testModulePaths = GetMatchedModulePaths(_testModules, _testModulesRoot);
     }
 
-    public bool Initialize(CancellationToken cancellationToken = default)
+    public bool Initialize(CancellationToken cancellationToken)
     {
         // If the root directory is not valid, we simply return
         if (string.IsNullOrEmpty(_testModulesRoot) || !Directory.Exists(_testModulesRoot))
