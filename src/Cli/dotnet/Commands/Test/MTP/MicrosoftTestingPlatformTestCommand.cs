@@ -102,7 +102,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
 #if CLI_AOT
         var testHandler = new TestModulesFilterHandler(buildOptions.PathOptions.TestModules!, parseResult);
-        if (!testHandler.Initialize())
+        if (!testHandler.Initialize(cancellationToken))
         {
             return ExitCode.GenericFailure;
         }
@@ -154,7 +154,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, buildSession)
                     : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
-            if (!testHandler.Initialize())
+            if (!testHandler.Initialize(cancellationToken))
             {
                 return ExitCode.GenericFailure;
             }

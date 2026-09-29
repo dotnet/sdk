@@ -79,8 +79,10 @@ internal sealed partial class CSharpCompilerCommand
     /// <param name="fallbackToNormalBuild">
     /// Whether the returned error code should not cause the build to fail but instead fallback to full MSBuild.
     /// </param>
-    public int Execute(out bool fallbackToNormalBuild)
+    public int Execute(CancellationToken cancellationToken, out bool fallbackToNormalBuild)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Write .rsp file and other intermediate build outputs.
         if (!TryPrepareAuxiliaryFiles(out string rspPath, out string? missingPackPath))
         {
@@ -120,12 +122,13 @@ internal sealed partial class CSharpCompilerCommand
             clientDirectory: ClientDirectory,
             buildEnvironment: StandardBuildEnvironment.Instance,
             logger,
-            cancellationToken: default);
+            cancellationToken);
 
         // Process the response.
-        var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+        var exitCode = ProcessBuildResponse(responseTask.GetAwaiter().GetResult(), out fallbackToNormalBuild);
 
         // Copy from obj to bin only if the build succeeded.
+        cancellationToken.ThrowIfCancellationRequested();
         if (exitCode == 0 &&
             BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
