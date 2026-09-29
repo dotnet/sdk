@@ -126,6 +126,18 @@ function escapeRegex(value) {
 
 function checkTestNames(action, source, candidate, evidence) {
     stringList(action.testNames, 'testNames', { max: 100, length: 512, required: true });
+    const fromSeed = [...evidence].filter(([line]) => line >= candidate.seedLine).sort((a, b) => a[0] - b[0]).map(entry => entry[1]).join('\n');
+    const after = fromSeed.replace(/^[\s\S]*?\bIgnore(?:Attribute)?\b[\s\S]*?(?:\]|>)/, '');
+    const declaration = /(?:\b(class|struct)\s+(\w+)|\b(?:void|Task|ValueTask)(?:<[^>]+>)?\s+(\w+)\s*\()/im.exec(after);
+    // The owning type is the class the Ignore decorates, or else the nearest type declared
+    // before the seed. Evidence windows are not contiguous, so brace-accurate nesting can't
+    // be proven; a closed nested type before the seed makes this reject, never over-accept.
+    const owner = declaration?.[1]
+        ? declaration[2]
+        : [...evidence].filter(([line]) => line < candidate.seedLine).sort((a, b) => a[0] - b[0])
+            .flatMap(([, line]) => [...line.matchAll(/\b(?:class|struct|Class|Module)\s+(\w+)/g)].map(match => match[1]))
+            .at(-1);
+    requireCondition(owner !== undefined, 'No containing type declaration precedes the Ignore; request context or defer.');
     for (const name of action.testNames) {
         requireCondition(/^(?:@?[A-Za-z_]\w*\.){2,}@?[A-Za-z_]\w*(?:\([^()\r\n]*\))?$/.test(name),
             'Ignore testNames must be fully qualified declaration identities, not data-row names.');
@@ -135,6 +147,7 @@ function checkTestNames(action, source, candidate, evidence) {
         requireCondition(new RegExp(`\\b(?:class|struct|Class|Module)\\s+${escapeRegex(type)}\\b`).test(source)
             && new RegExp(`\\b${escapeRegex(method)}\\s*(?:<[^>]+>)?\\s*\\(`).test(source),
         'Test identity has no declaration in supplied evidence.');
+        requireCondition(type.replace(/^@/, '') === owner, 'Test identity names a type that does not contain the Ignore.');
         const namespaces = [...source.matchAll(/\bnamespace\s+([\w.]+)|\bNamespace\s+([\w.]+)/g)]
             .flatMap(match => (match[1] ?? match[2]).split('.'));
         requireCondition(namespaces.length > 0 && segments[0] === namespaces[0]
@@ -143,9 +156,6 @@ function checkTestNames(action, source, candidate, evidence) {
         'Test namespace or containing type is not present in supplied evidence; request context or defer.');
     }
     // Class ignores need complete, unambiguous coverage. Do not guess inherited or nested tests.
-    const fromSeed = [...evidence].filter(([line]) => line >= candidate.seedLine).sort((a, b) => a[0] - b[0]).map(entry => entry[1]).join('\n');
-    const after = fromSeed.replace(/^[\s\S]*?\bIgnore(?:Attribute)?\b[\s\S]*?(?:\]|>)/, '');
-    const declaration = /(?:\b(class|struct)\s+(\w+)|\b(?:void|Task|ValueTask)(?:<[^>]+>)?\s+(\w+)\s*\()/im.exec(after);
     if (declaration?.[1]) {
         requireCondition(evidence.size === candidate.sourceLineCount
             && [...source.matchAll(/\b(?:class|struct)\s+\w+/gi)].length === 1

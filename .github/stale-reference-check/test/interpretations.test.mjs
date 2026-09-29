@@ -176,6 +176,24 @@ test('rejects non-qualified, invented and wrong following test identities', asyn
     }
 });
 
+test('test identities must name the type that contains the Ignore', async t => {
+    const f = await fixture(t, [
+        'namespace Sample.Tests;',
+        'class Other {',
+        'public void Helper() {}',
+        '}',
+        'class Cases {',
+        `[Ignore("${url}")]`,
+        '[TestMethod]',
+        'public void Run() {}',
+        '}',
+    ].join('\n'));
+    const candidate = f.manifest.candidates[0];
+    await assert.rejects(validate(f, [result(candidate, [action(candidate, { testNames: ['Sample.Tests.Other.Run'] })])]),
+        /does not contain the Ignore/);
+    assert.equal((await validate(f, [result(candidate, [action(candidate)])]))[0].actions[0].testNames[0], 'Sample.Tests.Cases.Run');
+});
+
 test('source edits outside snippets, forged evidence, traversal and sibling prefixes are rejected', async t => {
     const f = await fixture(t, [`// TODO ${url}`, ...Array(100).fill('// spacer')].join('\n'));
     const candidate = f.manifest.candidates[0];
