@@ -109,20 +109,28 @@ log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable i
 
 ## CLI Activity Duration Metrics
 
-The CLI bridges completed activities from its `dotnet-cli` activity source to a
-`System.Diagnostics.Metrics` histogram:
+The CLI separates its existing telemetry activities (`dotnet-cli`) from detailed,
+opt-in performance activities (`dotnet-cli-perf`). The performance source contains
+`msbuild-submission`, `release-property-discovery`, and the run/test discovery
+activities described below. Built-in SDK telemetry continues to subscribe only to
+`dotnet-cli`; it does not enable or export the performance activities.
+
+For explicit performance collection, the CLI bridges completed activities from both
+sources to a `System.Diagnostics.Metrics` histogram:
 
 | Meter | Instrument | Unit | Tag |
 | --- | --- | --- | --- |
-| `dotnet-cli` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
+| `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
 
 Each stopped activity records one measurement equal to its `Activity.Duration.TotalSeconds`.
 The `activity.name` tag contains the operation name, such as `main`, `first-time-use`,
 `parse`, `invocation`, `release-property-discovery`, or `msbuild-submission`, rather than
 the display name or command-line arguments.
-The bridge requests activities only while a metric collector enables the histogram.
-Existing trace listeners can independently request activities. Metric collection does
-not mark otherwise unsampled traces as recorded.
+The bridge requests activities only while a metric collector explicitly enables this
+histogram. Trace listeners can independently request activities from either source.
+Metric collection does not mark otherwise unsampled traces as recorded. Without a
+collector for the performance source or histogram, the new scopes do not allocate
+activities or record durations; initialization and sampling checks still have a cost.
 
 The `release-property-discovery` activity covers project or solution discovery,
 evaluation, and reading `PackRelease` or `PublishRelease` to select the default
@@ -155,11 +163,17 @@ starts immediately before `BuildManager.BeginBuild` and remains open through
 `BuildManager.EndBuild`; paths that skip MSBuild, such as an up-to-date file-based
 application, do not emit it. Failed invocations also stop and record their activity.
 
-The CLI's existing metric provider collects this meter. To export measurements, use the
-[OTLP exporter configuration](#opentelemetry-otlp-exporter), with CLI telemetry enabled.
-The provider flushes the final measurements during shutdown. An explicitly attached
-metric collector can also subscribe without enabling the CLI's telemetry exporters;
-the instrumentation itself does not configure an exporter or send network requests.
+Performance collectors, such as PerfStar, must explicitly subscribe to the
+`dotnet-cli-perf` meter to collect durations. To collect the activity spans themselves,
+subscribe to the `dotnet-cli-perf` activity source as well as `dotnet-cli` for the
+existing CLI phases. Enabling the SDK's built-in telemetry or its OTLP exporter alone
+does not opt into this collection. The performance collector owns exporting and flushing
+these measurements; the instrumentation itself does not configure an exporter or send
+network requests, and does not require the SDK's telemetry exporters to be enabled.
+
+When explicitly enabled, performance activities participate in the current trace context
+and can parent existing CLI and MSBuild activities. Collect both activity sources when
+the complete trace hierarchy is needed.
 
 Activity durations are inclusive: `invocation` includes its `msbuild-submission`
 children, and a submission can contain the logger's separate `msbuild` activity.

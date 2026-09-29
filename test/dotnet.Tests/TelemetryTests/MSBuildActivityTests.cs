@@ -544,13 +544,13 @@ public sealed class MSBuildActivityTests : SdkTest
         public ActivityExports()
         {
             _traces = Sdk.CreateTracerProviderBuilder()
-                .AddSource(Activities.Source.Name)
+                .AddSource(Activities.Source.Name, Activities.PerformanceSource.Name)
                 .SetSampler(new AlwaysOnSampler())
                 .AddInMemoryExporter(_activities)
                 .Build();
             // A manual reader collects once, without periodic snapshots or timer-based assertions.
             _meter = Sdk.CreateMeterProviderBuilder()
-                .AddMeter(Activities.Source.Name)
+                .AddMeter(Activities.PerformanceSource.Name)
                 .AddReader(new BaseExportingMetricReader(new InMemoryExporter<Metric>(_metrics)))
                 .Build();
         }
@@ -565,6 +565,7 @@ public sealed class MSBuildActivityTests : SdkTest
         {
             Activity discovery = _activities.Should().ContainSingle(
                 activity => activity.OperationName == "release-property-discovery").Subject;
+            discovery.Source.Should().BeSameAs(Activities.PerformanceSource);
             discovery.ParentSpanId.Should().Be(parent?.SpanId ?? default);
             return discovery;
         }
@@ -579,6 +580,7 @@ public sealed class MSBuildActivityTests : SdkTest
             ActivitySpanId parentSpanId = parent?.SpanId ?? default;
             foreach (Activity activity in activities)
             {
+                activity.Source.Should().BeSameAs(Activities.PerformanceSource);
                 activity.ParentSpanId.Should().Be(parentSpanId);
             }
             return activities;
@@ -598,7 +600,7 @@ public sealed class MSBuildActivityTests : SdkTest
 
             Metric metric = _metrics.Should().ContainSingle(
                 metric => metric.Name == "dotnet.cli.activity.duration").Subject;
-            metric.MeterName.Should().Be("dotnet-cli");
+            metric.MeterName.Should().Be("dotnet-cli-perf");
             metric.Unit.Should().Be("s");
             metric.MetricType.Should().Be(MetricType.Histogram);
 

@@ -195,7 +195,7 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     private bool OpenProjectIfNeeded([NotNullWhen(true)] out ProjectInstance? projectInstance)
     {
-        using var activity = Activities.Source.StartActivity("project-selection");
+        using var activity = Activities.PerformanceSource.StartActivity("project-selection");
         if (_project is null)
         {
             try
@@ -376,7 +376,7 @@ internal sealed class RunCommandSelector : IDisposable
             return false;
         }
 
-        using var activity = Activities.Source.StartActivity("device-discovery");
+        using var activity = Activities.PerformanceSource.StartActivity("device-discovery");
 
         // If restore is allowed, run restore first so device computation sees the restored assets
         if (!noRestore)

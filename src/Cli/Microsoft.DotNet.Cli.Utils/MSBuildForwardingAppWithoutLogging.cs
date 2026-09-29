@@ -182,7 +182,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     public int Execute()
     {
-        using var activity = Activities.Source.StartActivity("msbuild-submission");
+        using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
         if (activity is null)
         {
             return ExecuteCore();

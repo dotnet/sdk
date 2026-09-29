@@ -14,14 +14,17 @@ public sealed class ActivitiesTests : SdkTest
     private static readonly DateTime s_startTime = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void StoppingAnActivityRecordsItsDurationInSeconds(bool stringParentId)
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void StoppingAnActivityRecordsItsDurationInSeconds(bool performanceSource, bool stringParentId)
     {
         using var metrics = new ActivityMeasurements();
+        ActivitySource source = performanceSource ? Activities.PerformanceSource : Activities.Source;
         using Activity? activity = stringParentId
-            ? Activities.Source.StartActivity("test-operation", ActivityKind.Internal, parentId: "parent.", startTime: s_startTime)
-            : Activities.Source.StartActivity(
+            ? source.StartActivity("test-operation", ActivityKind.Internal, parentId: "parent.", startTime: s_startTime)
+            : source.StartActivity(
                 "test-operation",
                 ActivityKind.Internal,
                 new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.None),
@@ -39,7 +42,7 @@ public sealed class ActivitiesTests : SdkTest
 
         Measurement measurement = metrics.Measurements.Should().ContainSingle().Subject;
         measurement.Instrument.Should().BeOfType<Histogram<double>>();
-        measurement.Instrument.Meter.Name.Should().Be("dotnet-cli");
+        measurement.Instrument.Meter.Name.Should().Be("dotnet-cli-perf");
         measurement.Instrument.Name.Should().Be("dotnet.cli.activity.duration");
         measurement.Instrument.Unit.Should().Be("s");
         measurement.Duration.Should().Be(1.25);
@@ -51,13 +54,28 @@ public sealed class ActivitiesTests : SdkTest
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void DisabledMeasurementsDoNotForceActivities(bool stringParentId)
+    public void BuiltInTelemetryDoesNotEnablePerformanceActivities(bool stringParentId)
     {
+        using var metrics = new ActivityMeasurements(meterName: "dotnet-cli");
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "dotnet-cli",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+        using Activity? parent = Activities.Source.StartActivity("normal-telemetry");
+        parent.Should().NotBeNull();
+        parent!.Recorded.Should().BeTrue();
+
         using Activity? activity = stringParentId
-            ? Activities.Source.StartActivity("disabled", ActivityKind.Internal, parentId: "parent.")
-            : Activities.Source.StartActivity("disabled", ActivityKind.Internal, default(ActivityContext));
+            ? Activities.PerformanceSource.StartActivity("disabled", ActivityKind.Internal, parentId: parent.Id)
+            : Activities.PerformanceSource.StartActivity("disabled", ActivityKind.Internal, parent.Context);
 
         activity.Should().BeNull();
+        Activity.Current.Should().BeSameAs(parent);
+        parent.Stop();
+        metrics.Measurements.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -85,13 +103,13 @@ public sealed class ActivitiesTests : SdkTest
 
         public List<Measurement> Measurements { get; } = [];
 
-        public ActivityMeasurements()
+        public ActivityMeasurements(string meterName = "dotnet-cli-perf")
         {
             // Initialize the production source and its bridge before discovering instruments.
             _ = Activities.Source;
             _listener.InstrumentPublished = (instrument, listener) =>
             {
-                if (instrument.Meter.Name == "dotnet-cli" && instrument.Name == "dotnet.cli.activity.duration")
+                if (instrument.Meter.Name == meterName && instrument.Name == "dotnet.cli.activity.duration")
                 {
                     listener.EnableMeasurementEvents(instrument);
                 }

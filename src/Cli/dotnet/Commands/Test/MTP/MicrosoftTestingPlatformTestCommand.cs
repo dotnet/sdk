@@ -1247,7 +1247,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 ToolsetDefinitionLocations.Default);
             string targetFramework;
             string targetFrameworks;
-            using (Activities.Source.StartActivity("test-target-framework-discovery"))
+            using (Activities.PerformanceSource.StartActivity("test-target-framework-discovery"))
             {
                 var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
                 {

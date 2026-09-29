@@ -497,7 +497,7 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        using var activity = Activities.Source.StartActivity("test-project-discovery");
+        using var activity = Activities.PerformanceSource.StartActivity("test-project-discovery");
 
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);

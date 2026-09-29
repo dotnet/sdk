@@ -235,7 +235,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 MultiThreaded = multiThreaded,
             };
 
-            using var activity = Activities.Source.StartActivity("msbuild-submission");
+            using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
