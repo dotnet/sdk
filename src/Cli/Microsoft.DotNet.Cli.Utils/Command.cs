@@ -21,6 +21,8 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private readonly bool _trimTrailingNewlines = trimTrailingNewlines;
 
+    private bool _logProcess = true;
+
     public CommandResult Execute()
     {
         return Execute(null);
@@ -37,12 +39,22 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     public CommandResult Execute(Action<Process>? processStarted) =>
         Execute(processStarted, cancellationToken: null);
 
+    internal Command WithoutProcessLogging()
+    {
+        ThrowIfRunning();
+        _logProcess = false;
+        return this;
+    }
+
     private CommandResult Execute(Action<Process>? processStarted, CancellationToken? cancellationToken)
     {
-        Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.RunningFileNameArguments,
-            _process.StartInfo.FileName,
-            _process.StartInfo.Arguments));
+        if (_logProcess)
+        {
+            Reporter.Verbose.WriteLine(string.Format(
+                LocalizableStrings.RunningFileNameArguments,
+                _process.StartInfo.FileName,
+                _process.StartInfo.Arguments));
+        }
 
         ThrowIfRunning();
 
@@ -51,7 +63,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         _process.EnableRaisingEvents = true;
 
         Stopwatch? sw = null;
-        if (CommandLoggingContext.IsVerbose)
+        if (_logProcess && CommandLoggingContext.IsVerbose)
         {
             sw = Stopwatch.StartNew();
 
@@ -64,19 +76,29 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             processStarted?.Invoke(_process);
             reaper.NotifyProcessStarted();
 
-            Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.ProcessId,
-                _process.Id));
+            if (_logProcess)
+            {
+                Reporter.Verbose.WriteLine(string.Format(
+                    LocalizableStrings.ProcessId,
+                    _process.Id));
+            }
 
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
 
-            while (!_process.WaitForExit(milliseconds: 100))
+            if (cancellationToken is null)
             {
-                if (cancellationToken?.IsCancellationRequested == true)
+                _process.WaitForExit();
+            }
+            else
+            {
+                while (!_process.WaitForExit(milliseconds: 100))
                 {
-                    TerminateProcess(reaper, _process);
-                    break;
+                    if (cancellationToken.Value.IsCancellationRequested)
+                    {
+                        TerminateProcess(reaper, _process);
+                        break;
+                    }
                 }
             }
 
@@ -87,7 +109,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         cancellationToken?.ThrowIfCancellationRequested();
         var exitCode = _process.ExitCode;
 
-        if (CommandLoggingContext.IsVerbose)
+        if (_logProcess && CommandLoggingContext.IsVerbose)
         {
             Debug.Assert(sw is not null);
             var message = string.Format(

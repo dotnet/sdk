@@ -39,7 +39,7 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         }
 
         return restoreExitCode == 0
-            ? NuGetCommand.Run(TransformArgs(projectFile), isFileBasedApp)
+            ? NuGetCommand.Run(TransformArgs(projectFile), cancellationToken, isFileBasedApp)
             : restoreExitCode;
     }
 

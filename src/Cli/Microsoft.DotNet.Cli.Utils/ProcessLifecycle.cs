@@ -6,14 +6,17 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal static class ProcessLifecycle
 {
     private static readonly CancellationTokenSource s_cancellationTokenSource = new();
+    private static int s_cancelKeyPressCancellationSuppressionCount;
 
     static ProcessLifecycle()
     {
         Console.CancelKeyPress += (_, eventArgs) =>
         {
-            if (!s_cancellationTokenSource.IsCancellationRequested)
+            eventArgs.Cancel = true;
+
+            if (Volatile.Read(ref s_cancelKeyPressCancellationSuppressionCount) == 0 &&
+                !s_cancellationTokenSource.IsCancellationRequested)
             {
-                eventArgs.Cancel = true;
                 s_cancellationTokenSource.Cancel();
             }
         };
@@ -21,4 +24,23 @@ internal static class ProcessLifecycle
     }
 
     public static CancellationToken CancellationToken => s_cancellationTokenSource.Token;
+
+    internal static IDisposable SuppressCancelKeyPressCancellation()
+    {
+        Interlocked.Increment(ref s_cancelKeyPressCancellationSuppressionCount);
+        return new CancelKeyPressCancellationSuppression();
+    }
+
+    private sealed class CancelKeyPressCancellationSuppression : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                Interlocked.Decrement(ref s_cancelKeyPressCancellationSuppressionCount);
+            }
+        }
+    }
 }

@@ -23,6 +23,41 @@ public class AotRunCommandTests
 {
     public TestContext TestContext { get; set; } = null!;
 
+    [TestMethod]
+    public void PreCanceledTokenDoesNotCallLauncher()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            var parseResult = Parser.Parse([
+                "run",
+                "--file", fixture.EntryPointPath,
+                "--no-build",
+                "--no-launch-profile",
+            ]);
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+            bool launcherCalled = false;
+
+            Assert.ThrowsExactly<OperationCanceledException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    _ =>
+                    {
+                        launcherCalled = true;
+                        return 0;
+                    },
+                    cancellationSource.Token,
+                    fixture.TestDirectory));
+
+            Assert.IsFalse(launcherCalled);
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that an explicit no-build invocation reaches the launcher without prevalidating output.</summary>
     [TestMethod]
     public void EligibleSyntheticNoBuildProducesLaunchInvocation()

@@ -145,7 +145,7 @@ public class Program
 
         try
         {
-            return ExecuteExternalCommand(args, parseResult);
+            return ExecuteExternalCommand(args, parseResult, ProcessLifecycle.CancellationToken);
         }
         catch (CommandUnknownException e)
         {
@@ -171,7 +171,10 @@ public class Program
         }
     }
 
-    private static int ExecuteExternalCommand(string[] args, ParseResult parseResult)
+    internal static int ExecuteExternalCommand(
+        string[] args,
+        ParseResult parseResult,
+        CancellationToken cancellationToken)
     {
         string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         CommandSpec? resolvedCommandSpec = null;
@@ -192,7 +195,7 @@ public class Program
 
         var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
         using var __ = Activities.Source.StartActivity("execute-extensible-command");
-        return resolvedCommand.Execute().ExitCode;
+        return resolvedCommand.Execute(cancellationToken).ExitCode;
     }
 
     private static int? TryRunFileBasedApp(ParseResult parseResult)
