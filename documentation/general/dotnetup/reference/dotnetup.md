@@ -18,6 +18,7 @@ dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
 dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]
+dotnetup self update --nowarn [<true|false>]
 ```
 
 ## Description
@@ -122,6 +123,31 @@ Self-update does not update managed SDK/runtime installations; use
 [`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
 reinstallation after unrecoverable interruption, use the existing
 [installation guidance](https://aka.ms/dotnet/dotnetup).
+
+### Update notifications
+
+After a successful interactive `dotnetup`, `install`, `sdk install`, `runtime install`,
+`update`, `sdk update`, or `runtime update`, dotnetup writes a notice to standard output
+when a newer build is available on the running build's channel:
+
+```console
+An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --nowarn'.
+```
+
+The notice is skipped in CI, when output is redirected (even with `--interactive true`), with
+`--interactive false`, when a build uses a different prerelease label from the channel (such as
+a local build), when the executable is renamed or in a location self-update rejects, and when
+the unsigned-download policy blocks self-update. The check never delays a command. At most
+once every 24 hours, a command starts a background lookup that sends an HTTP `HEAD` request to
+the channel's redirect URL and reads the version from the final URL, so dotnetup itself is not
+downloaded. The result is saved in `dotnetup.update-check.json` in the data directory, and the
+notice reads only that saved result. A lookup that fails with a network error, or that is cut
+short when the command exits, is retried by a later command.
+See [SelfUpdateNotifier](../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateNotifier.cs).
+
+`dotnetup self update --nowarn` turns the notice off by setting `updateNotifications` to
+`false` in `dotnetup.config.json`. It does not update dotnetup and cannot be combined with
+`--channel` or `--force`. `dotnetup self update --nowarn false` turns the notice back on.
 
 ## Examples
 
