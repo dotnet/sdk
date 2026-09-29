@@ -181,8 +181,9 @@ namespace Microsoft.NET.Build.Tasks
                     r2rFileToPublish = CreateReadyToRunFileToPublish(
                         file,
                         outputR2RImageRelativePath,
-                        out outputR2RImageRelativePath,
-                        out outputR2RImage);
+                        isCompositeImage: false,
+                        compilerOutputRelativePath: out outputR2RImageRelativePath,
+                        compilerOutputPath: out outputR2RImage);
                 }
 
                 string outputPDBImage = null;
@@ -314,8 +315,9 @@ namespace Microsoft.NET.Build.Tasks
                 TaskItem compositeR2RFileToPublish = CreateReadyToRunFileToPublish(
                     MainAssembly,
                     compositeR2RImageBaseRelativePath,
-                    out string compositeR2RImageRelativePath,
-                    out string compositeR2RImageOutputPath);
+                    isCompositeImage: true,
+                    compilerOutputRelativePath: out string compositeR2RImageRelativePath,
+                    compilerOutputPath: out string compositeR2RImageOutputPath);
 
                 TaskItem r2rCompilationEntry = new(MainAssembly);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImageOutputPath);
@@ -371,9 +373,17 @@ namespace Microsoft.NET.Build.Tasks
         private TaskItem CreateReadyToRunFileToPublish(
             ITaskItem inputFile,
             string relativePath,
+            bool isCompositeImage,
             out string compilerOutputRelativePath,
             out string compilerOutputPath)
         {
+            if (isCompositeImage && Crossgen2ContainerFormat == "wasm" &&
+                Crossgen2Tool?.GetMetadata(MetadataKeys.TargetOS) == "wasi")
+            {
+                // The WASI composition pipeline consumes this fixed composite image name.
+                relativePath = "composite-r2r.wasm";
+            }
+
             // Crossgen2 emits WebAssembly directly, while Mach-O output is an object file
             // that must be linked into the dylib published by the SDK.
             (string compilerExtension, string publishExtension) = Crossgen2ContainerFormat switch

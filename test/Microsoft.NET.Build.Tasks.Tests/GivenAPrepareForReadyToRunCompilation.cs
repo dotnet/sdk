@@ -94,6 +94,28 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Component.dll");
         }
 
+        [TestMethod]
+        public void It_uses_the_fixed_wasm_path_for_a_wasi_composite_owner()
+        {
+            string outputPath = Path.Combine("obj", "r2r");
+            TaskItem component = CreateAssemblyItem("sub/Component.dll");
+            PrepareForReadyToRunCompilation task = CreateTask(outputPath, "wasm", composite: true, component);
+            task.Crossgen2Tool.SetMetadata(MetadataKeys.TargetOS, "wasi");
+
+            task.Execute().Should().BeTrue();
+
+            task.ReadyToRunCompileList.Should().ContainSingle()
+                .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, "composite-r2r.wasm"));
+
+            ITaskItem owner = task.ReadyToRunFilesToPublish
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "composite-r2r.wasm");
+            owner.ItemSpec.Should().Be(Path.Combine(outputPath, "composite-r2r.wasm"));
+
+            ITaskItem componentFileToPublish = task.ReadyToRunFilesToPublish
+                .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == "sub/Component.wasm");
+            componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.wasm"));
+        }
+
         private static PrepareForReadyToRunCompilation CreateTask(string outputPath, string containerFormat, bool composite, params ITaskItem[] assemblies)
         {
             TaskItem crossgen2Tool = new("crossgen2");
