@@ -66,10 +66,41 @@ test("merged pull requests pass stable-target metadata to the collector", async 
     assert.match(workflow, /pull_request_target:\s*\n\s*types: \[closed\]/);
     assert.doesNotMatch(workflow, /^\s*pull_request:\s*$/m);
     assert.match(workflow, /Never check out or execute PR code\./);
-    assert.match(workflow, /checkout:\s*\n\s*repository: \$\{\{ github\.repository \}\}/);
+    assert.match(workflow, /^checkout: false$/m);
     assert.match(workflow, /job-discriminator: \$\{\{ github\.run_id \}\}/);
     assert.match(workflow, /github\.event\.pull_request\.merged == true/);
     assert.match(workflow, /MERGED_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
     assert.match(workflow, /MERGED_PR_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.ref \}\}/);
     assert.match(workflow, /MERGED_PR_COMMIT_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+});
+
+test("monitor helpers and the agent source checkout use main", async () =>
+{
+    const workflow = await readFile(workflowUrl, "utf8");
+
+    assert.match(workflow, /^checkout: false$/m);
+    const checkouts = workflow.match(
+        /(?<indent> +)- name: Check out monitor (?:configuration|dispatch helper|source)\r?\n(?:\k<indent> {2}[^\r\n]*\r?\n)+/g);
+    assert.equal(checkouts?.length, 3);
+    for (const checkout of checkouts)
+    {
+        assert.match(checkout, /^\s+repository: \$\{\{ github\.repository \}\}$/m);
+        assert.match(checkout, /^\s+ref: main$/m);
+    }
+});
+
+test("compiled monitor checkouts preserve the main pin", async () =>
+{
+    const workflow = await readFile(new URL("../../workflows/ci-quality-monitor.lock.yml", import.meta.url), "utf8");
+    const checkouts = workflow.match(
+        /      - name: Check out monitor (?:configuration|dispatch helper|source)\r?\n(?: {8}[^\r\n]*\r?\n)+/g);
+
+    assert.equal(checkouts?.length, 3);
+    for (const checkout of checkouts)
+    {
+        assert.match(checkout, /^\s+repository: \$\{\{ github\.repository \}\}$/m);
+        assert.match(checkout, /^\s+ref: main$/m);
+    }
+    assert.doesNotMatch(workflow, /- name: Checkout PR branch/);
+    assert.doesNotMatch(workflow, /- name: Checkout repository\r?\n/);
 });

@@ -19,8 +19,9 @@ on:
         type: string
   permissions: {}
 
-checkout:
-  repository: ${{ github.repository }}
+# Use explicit main-only checkouts; gh-aw rejects literal refs in its
+# top-level checkout configuration for pull_request_target.
+checkout: false
 
 concurrency:
   # GitHub evaluates workflow concurrency before any job-level `if`. Give
@@ -58,6 +59,7 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           repository: ${{ github.repository }}
+          ref: main
       - name: Resolve Azure build from completed check suite
         if: github.event_name == 'check_suite'
         id: resolve-check-suite
@@ -170,6 +172,8 @@ jobs:
       - name: Check out monitor dispatch helper
         uses: actions/checkout@v7.0.1
         with:
+          repository: ${{ github.repository }}
+          ref: main
           persist-credentials: false
       - name: Dispatch Issue Monster for created issues
         uses: actions/github-script@v9.0.0
@@ -231,6 +235,12 @@ network:
 pre-steps:
   - name: Force fresh Copilot CLI install
     run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+  - name: Check out monitor source
+    uses: actions/checkout@v7.0.1
+    with:
+      repository: ${{ github.repository }}
+      ref: main
+      persist-credentials: false
 
 tools:
   # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the

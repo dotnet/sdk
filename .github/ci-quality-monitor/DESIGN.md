@@ -50,6 +50,12 @@ environments against the base branch rather than the synthetic PR merge ref.
 The workflow treats pull request metadata as untrusted and never checks out or
 executes code from the pull request head.
 
+The collector, agent source checkout, and dispatch helper are pinned
+to `main` in the workflow repository so they do not depend on unserviced monitor
+copies on release branches. Build selection still uses the event's branch and
+commit metadata. The checkout pins do not override the triggering workflow ref
+or the protected environment's branch policy.
+
 ## Failure Model
 
 Each observation has independent fields:
