@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis;
@@ -33,12 +34,13 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             TaintedDataSymbolMap<SourceInfo> taintedSourceInfos,
             TaintedDataSymbolMap<SanitizerInfo> taintedSanitizerInfos,
             TaintedDataSymbolMap<SinkInfo> taintedSinkInfos,
-            bool performValueContentAnalysis)
+            bool performValueContentAnalysis,
+            Action? onValueContentAnalysis = null)
         {
             var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                 analyzerOptions, rule, cfg, compilation, InterproceduralAnalysisKind.ContextSensitive);
             return TryGetOrComputeResult(cfg, compilation, containingMethod, analyzerOptions, taintedSourceInfos,
-                taintedSanitizerInfos, taintedSinkInfos, interproceduralAnalysisConfig, performValueContentAnalysis);
+                taintedSanitizerInfos, taintedSinkInfos, interproceduralAnalysisConfig, performValueContentAnalysis, onValueContentAnalysis);
         }
 
         private static TaintedDataAnalysisResult? TryGetOrComputeResult(
@@ -50,7 +52,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             TaintedDataSymbolMap<SanitizerInfo> taintedSanitizerInfos,
             TaintedDataSymbolMap<SinkInfo> taintedSinkInfos,
             InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
-            bool performValueContentAnalysis)
+            bool performValueContentAnalysis,
+            Action? onValueContentAnalysis)
         {
             if (cfg == null)
             {
@@ -65,6 +68,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             if (performValueContentAnalysis &&
                 (taintedSourceInfos.RequiresValueContentAnalysis || taintedSanitizerInfos.RequiresValueContentAnalysis || taintedSinkInfos.RequiresValueContentAnalysis))
             {
+                onValueContentAnalysis?.Invoke();
                 valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                     cfg,
                     containingMethod,

@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task LiteralSourceOnInfeasibleBranch_CSharp_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            var counts = await GetCSharpFlowCountsAsync("""
                 using System.Security.Cryptography;
 
                 class TestClass
@@ -34,6 +34,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                     }
                 }
                 """);
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
         }
 
         [TestMethod]
@@ -61,6 +63,32 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         public async Task RepeatedByteArraySourcesWithoutReachableSinkAsync()
         {
             Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedByteArraySourcesWithoutReachableSink()));
+        }
+
+        [TestMethod]
+        public async Task AttributeAndMethodBodySourcesWithReachableSinkAnalyzeOnceAsync()
+        {
+            int count = await GetCSharpDataflowCountAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                sealed class BytesAttribute : Attribute
+                {
+                    public BytesAttribute(byte[] values) { }
+                }
+
+                class TestClass
+                {
+                    [Bytes(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 })]
+                    public void Emit(SymmetricAlgorithm algorithm, byte[] supplied)
+                    {
+                        byte[] other = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        algorithm.Key = supplied;
+                    }
+                }
+                """);
+            // The attribute and method body are distinct source roots in the same analysis block.
+            Assert.AreEqual(1, count);
         }
 
         [TestMethod]
@@ -313,19 +341,24 @@ class TestClass
         [TestMethod]
         public async Task Test_AesGcmWithByteArrayParameter_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Security.Cryptography;
+            var counts = await GetCSharpFlowCountsAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-        AesGcm aesGcm = new AesGcm(key);
-    }
-}",
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        AesGcm aesGcm = new AesGcm(key);
+                    }
+                }
+                """,
+            true,
             GetCSharpResultAt(10, 25, 9, 22, "AesGcm.AesGcm(byte[] key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.AreEqual(0, counts.ValueContentCount);
         }
 
         [TestMethod]

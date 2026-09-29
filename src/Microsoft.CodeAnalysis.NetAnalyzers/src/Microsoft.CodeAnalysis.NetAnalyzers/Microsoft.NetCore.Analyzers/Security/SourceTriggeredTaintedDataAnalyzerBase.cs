@@ -51,6 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         // Per-analyzer observer keeps performance assertions isolated across concurrent tests.
         internal Action? DataflowAnalysisStarted { get; set; }
+        internal Action? ValueContentAnalysisStarted { get; set; }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TaintedDataEnteringSinkDescriptor);
 
@@ -248,7 +249,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         sourceInfoSymbolMap,
                                         sanitizerInfoSymbolMap,
                                         sinkInfoSymbolMap,
-                                        performValueContentAnalysis);
+                                        performValueContentAnalysis,
+                                        onValueContentAnalysis: ValueContentAnalysisStarted);
                                     if (taintedDataAnalysisResult == null)
                                     {
                                         return;
