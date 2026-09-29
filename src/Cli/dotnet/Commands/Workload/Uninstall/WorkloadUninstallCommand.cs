@@ -74,7 +74,9 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
 
-                _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                _workloadInstaller.GarbageCollect(
+                    workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                    cancellationToken);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));

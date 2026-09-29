@@ -187,6 +187,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,
                 packageId: packageId,
+                cancellationToken: cancellationToken,
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion!, true, bestVersion!, true),
                 isGlobalToolRollForward: false,

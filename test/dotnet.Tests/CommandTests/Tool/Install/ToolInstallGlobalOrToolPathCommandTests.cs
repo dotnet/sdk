@@ -316,9 +316,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(new BufferedReporter(), _pathToPlaceShim, true),
                 new BufferedReporter());
 
-            Task<int> firstInstall = Task.Run(firstCommand.Execute, TestContext.CancellationToken);
+            Task<int> firstInstall = Task.Run(
+                () => firstCommand.Execute(TestContext.CancellationToken),
+                TestContext.CancellationToken);
             await blockingShellShimRepository.CreateStarted;
-            Task<int> secondInstall = Task.Run(secondCommand.Execute, TestContext.CancellationToken);
+            Task<int> secondInstall = Task.Run(
+                () => secondCommand.Execute(TestContext.CancellationToken),
+                TestContext.CancellationToken);
 
             Task firstCompleted = await Task.WhenAny(
                 secondInstall,
@@ -490,7 +494,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             Func<Task> execute = () => command.ExecuteAsync(new CancellationToken(canceled: true));
 

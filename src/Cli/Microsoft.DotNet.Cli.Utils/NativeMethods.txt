@@ -36,6 +36,7 @@ SafeArrayUnlock
 SendMessageTimeout
 SetInformationJobObject
 SetConsoleCtrlHandler
+TerminateJobObject
 WinVerifyTrust
 
 // Interfaces

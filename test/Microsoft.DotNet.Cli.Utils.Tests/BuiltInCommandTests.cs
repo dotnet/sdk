@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.Utils
     [TestClass]
     public class BuiltInCommandTests
     {
+        public TestContext TestContext { get; set; }
+
         /// <summary>
         /// Tests that BuiltInCommand.Execute returns the correct exit code and a
         /// valid StartInfo FileName and Arguments.
@@ -19,11 +21,30 @@ namespace Microsoft.DotNet.Cli.Utils
             string[] testCommandArgs = new[] { "1", "2" };
 
             var builtInCommand = new BuiltInCommand("fakeCommand", testCommandArgs, testCommand, new TestBuiltInCommandEnvironment());
-            CommandResult result = builtInCommand.Execute();
+            CommandResult result = builtInCommand.Execute(TestContext.CancellationToken);
 
             Assert.AreEqual(testCommandArgs.Length, result.ExitCode);
             Assert.AreEqual(new Muxer().MuxerPath, result.StartInfo.FileName);
             Assert.AreEqual("fakeCommand 1 2", result.StartInfo.Arguments);
+        }
+
+        [TestMethod]
+        public void ExecuteWithCanceledTokenDoesNotInvokeCommand()
+        {
+            bool invoked = false;
+            var builtInCommand = new BuiltInCommand(
+                "fakeCommand",
+                [],
+                _ =>
+                {
+                    invoked = true;
+                    return 0;
+                },
+                new TestBuiltInCommandEnvironment());
+
+            Assert.ThrowsExactly<OperationCanceledException>(
+                () => builtInCommand.Execute(new CancellationToken(canceled: true)));
+            Assert.IsFalse(invoked);
         }
 
         /// <summary>
@@ -81,7 +102,7 @@ namespace Microsoft.DotNet.Cli.Utils
                         Assert.AreEqual($"fifth", line);
                     }
                 })
-                .Execute();
+                .Execute(TestContext.CancellationToken);
 
             Assert.AreEqual(exitCode, result.ExitCode);
             Assert.AreEqual(2, onOutputLineCallCount);
