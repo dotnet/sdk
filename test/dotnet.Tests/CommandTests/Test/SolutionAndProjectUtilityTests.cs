@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -101,6 +102,7 @@ public sealed class SolutionAndProjectUtilityTests : SdkTest
     [TestMethod]
     [DataRow("App.sln")]
     [DataRow("App.slnx")]
+    [DataRow("App.slnf")]
     public void TryGetSolutionFilePath_WithSingleSolution_SelectsExpectedFile(string file)
     {
         string directory = CreateDirectoryWithFiles(file);
@@ -115,7 +117,7 @@ public sealed class SolutionAndProjectUtilityTests : SdkTest
     [TestMethod]
     public void TryGetSolutionFilePath_WithNoSolution_ReturnsError()
     {
-        string directory = CreateDirectoryWithFiles("App.csproj", "App.slnf");
+        string directory = CreateDirectoryWithFiles("App.csproj");
 
         var result = SolutionAndProjectUtility.TryGetSolutionFilePath(directory, out string selectedFile);
 
@@ -127,7 +129,7 @@ public sealed class SolutionAndProjectUtilityTests : SdkTest
     [TestMethod]
     public void TryGetSolutionFilePath_WithMultipleSolutions_ReturnsError()
     {
-        string directory = CreateDirectoryWithFiles("App.sln", "Other.slnx");
+        string directory = CreateDirectoryWithFiles("App.sln", "Other.slnx", "Filtered.slnf");
 
         var result = SolutionAndProjectUtility.TryGetSolutionFilePath(directory, out string selectedFile);
 
@@ -146,6 +148,42 @@ public sealed class SolutionAndProjectUtilityTests : SdkTest
         result.SolutionFileFound.Should().BeFalse();
         result.Message.Should().Contain(directory);
         selectedFile.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void ValidateBuildPathOptionsAcceptsUppercaseSolutionExtension()
+    {
+        string directory = TestAssetsManager.CreateTestDirectory().Path;
+        string solution = Path.Combine(directory, "Tests.SLNX");
+        File.WriteAllText(solution, "<Solution />");
+        var pathOptions = new PathOptions(
+            ProjectOrSolutionPath: null,
+            SolutionPath: solution,
+            TestModules: null,
+            ResultsDirectoryPath: null,
+            ResultsDirectoryLayout.Flat,
+            ConfigFilePath: null,
+            DiagnosticOutputDirectoryPath: null);
+
+        bool valid = ValidationUtility.ValidateBuildPathOptions(
+            pathOptions,
+            out string? selectedPath,
+            out bool isSolution);
+
+        valid.Should().BeTrue();
+        isSolution.Should().BeTrue();
+        selectedPath.Should().Be(solution);
+    }
+
+    [TestMethod]
+    public void TraversalProjectVisitSetUsesFileSystemCaseSensitivity()
+    {
+        HashSet<string> visited = SolutionAndProjectUtility.CreateTraversalProjectVisitSet();
+
+        visited.Add(Path.Combine("repo", "Tests", "Project.csproj")).Should().BeTrue();
+        bool addedDifferentCase = visited.Add(Path.Combine("repo", "tests", "project.csproj"));
+
+        addedDifferentCase.Should().Be(FileUtilities.GetIsFileSystemCaseSensitive());
     }
 
     private string CreateDirectoryWithFiles(params string[] files)

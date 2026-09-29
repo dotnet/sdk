@@ -6,7 +6,16 @@ using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptN
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
+internal sealed class TestProgressState(
+    long id,
+    string assembly,
+    string? targetFramework,
+    string? architecture,
+    IStopwatch stopwatch,
+    bool isDiscovery,
+    TestResultVisibility testResultVisibility = TestResultVisibility.All,
+    int slowestTestsCount = 0,
+    bool showFlakyTests = true)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
@@ -228,6 +237,12 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     public int? ExitCode { get; internal set; }
 
     public bool IsDiscovery { get; } = isDiscovery;
+
+    public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;
+
+    public int SlowestTestsCount { get; } = slowestTestsCount;
+
+    public bool ShowFlakyTests { get; } = showFlakyTests;
 
     public int TryCount
     {

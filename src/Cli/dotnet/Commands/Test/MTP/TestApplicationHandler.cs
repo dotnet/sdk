@@ -16,6 +16,7 @@ internal sealed class TestApplicationHandler
     private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy;
+    private readonly TestApplicationSettings? _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
@@ -28,7 +29,8 @@ internal sealed class TestApplicationHandler
         TestOptions options,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
         ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
-        TestRunPolicy? testRunPolicy = null)
+        TestRunPolicy? testRunPolicy = null,
+        TestApplicationSettings? testApplicationSettings = null)
     {
         _output = output;
         _module = module;
@@ -36,6 +38,7 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
+        _testApplicationSettings = testApplicationSettings;
     }
 
     /// <summary>
@@ -106,6 +109,11 @@ internal sealed class TestApplicationHandler
 
         if (hostType == HandshakeMessageHostTypes.TestHost)
         {
+            if (_testApplicationSettings is { LegacyRetryEnabled: true })
+            {
+                _output.EnableRetry();
+            }
+
             int? attemptNumber = null;
             // Invalid values fall back to legacy instance-based inference. Testfx normalizes malformed
             // environment values to attempt 1 before sending them, and older hosts omit this property.
@@ -120,7 +128,18 @@ internal sealed class TestApplicationHandler
             // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
             // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            if (attemptNumber.HasValue)
+            if (_testApplicationSettings is { } testApplicationSettings)
+            {
+                _output.AssemblyRunStarted(
+                    _module.TargetPath,
+                    handshakeInfo.TargetFramework,
+                    handshakeInfo.Architecture,
+                    handshakeInfo.ExecutionId,
+                    instanceId!,
+                    attemptNumber,
+                    testApplicationSettings);
+            }
+            else if (attemptNumber.HasValue)
             {
                 _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
             }
@@ -394,13 +413,28 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestInProgressMessages)));
         }
 
-        if (testInProgressMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        if (!_receivedTestHostHandshake)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(TestInProgressMessages)));
+        }
+
+        string executionId = ValidateRequiredMessageProperty(
+            testInProgressMessages.ExecutionId,
+            nameof(TestInProgressMessages.ExecutionId),
+            nameof(TestInProgressMessages));
+
+        if (executionId != _handshakeInfo.Value.ExecutionId)
         {
             // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
-            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, testInProgressMessages.ExecutionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, executionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
+        string instanceId = ValidateRequiredMessageProperty(
+            testInProgressMessages.InstanceId,
+            nameof(TestInProgressMessages.InstanceId),
+            nameof(TestInProgressMessages));
+
         foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
         {
             _output.TestInProgress(
@@ -408,9 +442,9 @@ internal sealed class TestApplicationHandler
                 handshakeInfo.TargetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
-                testInProgressMessages.InstanceId!,
-                inProgressMessage.Uid!,
-                inProgressMessage.DisplayName!);
+                instanceId,
+                ValidateRequiredMessageProperty(inProgressMessage.Uid, nameof(TestInProgressMessage.Uid), nameof(TestInProgressMessage)),
+                ValidateRequiredMessageProperty(inProgressMessage.DisplayName, nameof(TestInProgressMessage.DisplayName), nameof(TestInProgressMessage)));
         }
     }
 

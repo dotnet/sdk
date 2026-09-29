@@ -13,11 +13,14 @@ internal class TestApplicationActionQueue
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
     private readonly CancellationToken _cancellationToken;
-    private readonly TestApplicationPolicy _fallbackTestApplicationPolicy;
+    private readonly TestApplicationSettings _fallbackTestApplicationSettings;
     private readonly BuildOptions _buildOptions;
+    private readonly OutputOptions _outputOptions;
+    private readonly bool _outputOptionSpecified;
 
     private int? _aggregateExitCode;
     private readonly List<TestApplicationPolicy> _effectivePolicies = [];
+    private readonly Dictionary<TestModule, TestApplicationSettings> _effectiveSettings = [];
 
     private readonly Lock _lock = new();
 
@@ -32,13 +35,17 @@ internal class TestApplicationActionQueue
         ArtifactPostProcessingManager artifactPostProcessingManager,
         TestRunPolicy testRunPolicy,
         CancellationToken cancellationToken,
-        TestApplicationPolicy fallbackTestApplicationPolicy = default)
+        OutputOptions outputOptions,
+        bool outputOptionSpecified,
+        TestApplicationSettings fallbackTestApplicationSettings)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
         _cancellationToken = cancellationToken;
-        _fallbackTestApplicationPolicy = fallbackTestApplicationPolicy;
+        _fallbackTestApplicationSettings = fallbackTestApplicationSettings;
         _buildOptions = buildOptions;
+        _outputOptions = outputOptions;
+        _outputOptionSpecified = outputOptionSpecified;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -60,10 +67,14 @@ internal class TestApplicationActionQueue
         {
             foreach (TestModule module in testApplication)
             {
-                _effectivePolicies.Add(
-                    MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationPolicy(
+                TestApplicationSettings settings =
+                    MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
                         module,
-                        _buildOptions));
+                        _buildOptions,
+                        _outputOptions,
+                        _outputOptionSpecified);
+                _effectiveSettings[module] = settings;
+                _effectivePolicies.Add(settings.Policy);
             }
         }
 
@@ -117,7 +128,8 @@ internal class TestApplicationActionQueue
                         output,
                         onHelpRequested,
                         artifactPostProcessingManager,
-                        testRunPolicy: testRunPolicy);
+                        testRunPolicy: testRunPolicy,
+                        testApplicationSettings: GetEffectiveSettings(module));
                     try
                     {
                         using (testApp)
@@ -222,8 +234,18 @@ internal class TestApplicationActionQueue
 
     private IReadOnlyList<TestApplicationPolicy> GetEffectivePolicies()
         => _effectivePolicies.Count == 0
-            ? [_fallbackTestApplicationPolicy]
+            ? [_fallbackTestApplicationSettings.Policy]
             : _effectivePolicies;
+
+    private TestApplicationSettings GetEffectiveSettings(TestModule module)
+    {
+        lock (_lock)
+        {
+            return _effectiveSettings.TryGetValue(module, out TestApplicationSettings settings)
+                ? settings
+                : _fallbackTestApplicationSettings;
+        }
+    }
 
     internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
     {
