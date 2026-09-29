@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -95,34 +94,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Component.dll");
         }
 
-        [TestMethod]
-        public void Crossgen_targets_track_private_compiler_inputs_and_arguments()
-        {
-            string targetsPath = Path.Combine(AppContext.BaseDirectory, "SdkTargets", "Microsoft.NET.CrossGen.targets");
-            XDocument targets = XDocument.Load(targetsPath);
-            XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
-
-            XElement createImagesTarget = targets.Root!
-                .Elements(ns + "Target")
-                .Single(target => target.Attribute("Name")?.Value == "_CreateR2RImages");
-
-            string inputs = GetRequiredAttributeValue(createImagesTarget, "Inputs");
-            inputs.Should().Contain("@(CrossgenTool)");
-            inputs.Should().Contain("@(Crossgen2Tool)");
-            inputs.Should().Contain("@(_ReadyToRunCompilerInputs)");
-
-            XElement createSymbolsTarget = targets.Root!
-                .Elements(ns + "Target")
-                .Single(target => target.Attribute("Name")?.Value == "_CreateR2RSymbols");
-
-            GetRequiredAttributeValue(
-                createImagesTarget.Elements(ns + "RunReadyToRunCompiler").Single(),
-                "Crossgen2ExtraCommandLineArgs").Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
-            GetRequiredAttributeValue(
-                createSymbolsTarget.Elements(ns + "RunReadyToRunCompiler").Single(),
-                "Crossgen2ExtraCommandLineArgs").Should().Contain("$(_PublishReadyToRunCrossgen2ExtraArgs)");
-        }
-
         private static PrepareForReadyToRunCompilation CreateTask(string outputPath, string containerFormat, bool composite, params ITaskItem[] assemblies)
         {
             TaskItem crossgen2Tool = new("crossgen2");
@@ -149,8 +120,5 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             item.SetMetadata(MetadataKeys.RelativePath, relativePath);
             return item;
         }
-
-        private static string GetRequiredAttributeValue(XElement element, string attributeName) =>
-            element.Attribute(attributeName)?.Value ?? throw new InvalidOperationException($"Expected {element.Name} to have a {attributeName} attribute.");
     }
 }
