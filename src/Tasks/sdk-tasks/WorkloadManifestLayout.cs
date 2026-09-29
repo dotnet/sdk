@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Build.Tasks;
 /// under <c>&lt;feature-band&gt;/&lt;manifest-ID&gt;/&lt;version&gt;/</c>, except that a
 /// <c>workloadsets</c> version owns only its <c>baseline.workloadset.json</c>.
 /// </remarks>
-public sealed class GetWorkloadManifestLayout : Task
+public sealed partial class GetWorkloadManifestLayout : Task
 {
     private const string WorkloadSetsDirectoryName = "workloadsets";
     private const string BaselineFileName = "baseline.workloadset.json";
@@ -33,8 +33,8 @@ public sealed class GetWorkloadManifestLayout : Task
     public ITaskItem[] SourceFiles { get; set; } = [];
 
     /// <summary>
-    /// Gets the owned files that the current mappings don't produce. On a case-insensitive
-    /// comparison, this includes files whose name, or whose version directory's name, differs from
+    /// Gets the owned files that the current mappings don't produce. When the layout's file system
+    /// ignores case, this includes files whose name, or whose version directory's name, differs from
     /// the mapped destination only in case, because copying over them would keep the old name.
     /// </summary>
     [Output]
@@ -61,7 +61,7 @@ public sealed class GetWorkloadManifestLayout : Task
                 return false;
             }
 
-            Dictionary<string, string> destinations = ValidateMappings(root);
+            List<string> destinationPaths = ValidateMappings(root);
 
             if (Log.HasLoggedErrors)
             {
@@ -76,15 +76,12 @@ public sealed class GetWorkloadManifestLayout : Task
                 FindOwnedPaths(root, files, directories);
             }
 
-            StaleOutputs = files
-                .Where(path => !destinations.TryGetValue(path, out string? destination) || !HasSameOwnedCasing(root, path, destination))
-                .Select(path => (ITaskItem)new TaskItem(path))
-                .ToArray();
-            OwnedDirectories = directories.Select(path => (ITaskItem)new TaskItem(path)).ToArray();
-            EmptyDirectories = directories
-                .Where(path => !Directory.EnumerateFileSystemEntries(path).Any())
-                .Select(path => (ITaskItem)new TaskItem(path))
-                .ToArray();
+            var destinations = new HashSet<string>(destinationPaths, GetFileSystemComparer(directories));
+
+            StaleOutputs = ToItems(files.Where(path =>
+                !destinations.TryGetValue(path, out string? destination) || !HasSameOwnedCasing(root, path, destination)));
+            OwnedDirectories = ToItems(directories);
+            EmptyDirectories = ToItems(directories.Where(path => !Directory.EnumerateFileSystemEntries(path).Any()));
             return true;
         }
         catch (Exception exception)
@@ -94,9 +91,9 @@ public sealed class GetWorkloadManifestLayout : Task
         }
     }
 
-    private Dictionary<string, string> ValidateMappings(string root)
+    private List<string> ValidateMappings(string root)
     {
-        var destinations = new Dictionary<string, string>(IncrementalLayoutState.PathComparer);
+        var destinations = new List<string>();
 
         foreach (ITaskItem source in SourceFiles)
         {
@@ -114,10 +111,31 @@ public sealed class GetWorkloadManifestLayout : Task
                 Log.LogError($"Invalid workload manifest layout mapping '{sourcePath}' to '{destination}' under '{root}'.");
             }
 
-            destinations.TryAdd(destination, destination);
+            destinations.Add(destination);
         }
 
         return destinations;
+    }
+
+    // The operating system doesn't determine case sensitivity: macOS usually ignores case, and a
+    // Windows directory can be case-sensitive. Looking up an owned directory by a name with every
+    // letter's case flipped shows how the layout's files will be found.
+    private static StringComparer GetFileSystemComparer(IEnumerable<string> directories)
+    {
+        foreach (string directory in directories)
+        {
+            string name = Path.GetFileName(directory);
+            string flipped = string.Concat(name.Select(c => char.IsUpper(c) ? char.ToLowerInvariant(c) : char.ToUpperInvariant(c)));
+
+            if (flipped != name)
+            {
+                return Directory.Exists(Path.Combine(Path.GetDirectoryName(directory)!, flipped))
+                    ? StringComparer.OrdinalIgnoreCase
+                    : StringComparer.Ordinal;
+            }
+        }
+
+        return IncrementalLayoutState.PathComparer;
     }
 
     // Compares case only from the version directory down (just the file name for workload sets).
@@ -200,16 +218,23 @@ public sealed class GetWorkloadManifestLayout : Task
             Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar,
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
-    // SDK feature bands have a patch number that is a multiple of 100, such as 11.0.100 or 11.0.200-preview.2.
-    private static bool IsFeatureBand(string value) =>
-        Regex.IsMatch(value, @"\A[0-9]+\.[0-9]+\.[0-9]*00(?:-.+)?\z", RegexOptions.CultureInvariant);
+    private static bool IsFeatureBand(string value) => FeatureBandRegex().IsMatch(value);
 
-    // Manifest and workload-set versions are NuGet versions with three or four numeric parts.
-    private static bool IsVersion(string value) =>
-        Regex.IsMatch(value, @"\A[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:[-+].+)?\z", RegexOptions.CultureInvariant);
+    private static bool IsVersion(string value) => VersionRegex().IsMatch(value);
 
     private static bool IsWorkloadSets(string value) =>
         string.Equals(value, WorkloadSetsDirectoryName, StringComparison.OrdinalIgnoreCase);
+
+    private static ITaskItem[] ToItems(IEnumerable<string> paths) =>
+        paths.Select(ITaskItem (path) => new TaskItem(path)).ToArray();
+
+    // SDK feature bands have a patch number that is a multiple of 100, such as 11.0.100 or 11.0.200-preview.2.
+    [GeneratedRegex(@"\A[0-9]+\.[0-9]+\.[0-9]*00(?:-.+)?\z", RegexOptions.CultureInvariant)]
+    private static partial Regex FeatureBandRegex();
+
+    // Manifest and workload-set versions are NuGet versions with three or four numeric parts.
+    [GeneratedRegex(@"\A[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:[-+].+)?\z", RegexOptions.CultureInvariant)]
+    private static partial Regex VersionRegex();
 }
 
 /// <summary>

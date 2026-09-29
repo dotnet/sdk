@@ -395,6 +395,30 @@ public class ManifestLayoutTests : SdkTest
     }
 
     /// <summary>
+    /// Verifies that when a feature band folder's name changes only in case and the folder also
+    /// holds a file the layout doesn't own, the layout keeps that file and skips the next build.
+    /// </summary>
+    [TestMethod]
+    public void LayoutManifestsIgnoresFeatureBandCaseChangeWithUnownedFile()
+    {
+        ManifestProject project = CreateManifestProject();
+        project.Downloaded.FeatureBand = "11.0.100-preview.1";
+        project.WriteInputs();
+        project.Build();
+        string unownedFile = Path.Combine(project.LayoutRoot, "11.0.100-preview.1", "band.txt");
+        WriteFile(unownedFile, "unowned");
+        project.Downloaded.FeatureBand = "11.0.100-Preview.1";
+        project.WriteInputs();
+
+        project.Build().RanLayout.Should().BeTrue();
+
+        File.Exists(unownedFile).Should().BeTrue();
+        File.Exists(project.Output(false, "WorkloadManifest.json")).Should().BeTrue();
+        Directory.GetFiles(project.LayoutRoot, "WorkloadManifest.json", SearchOption.AllDirectories).Should().HaveCount(2);
+        project.Build().RanLayout.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies disabling producers removes their former payloads and allows a fully empty
     /// expected layout to complete and skip on the next invocation.
     /// </summary>
