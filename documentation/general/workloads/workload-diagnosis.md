@@ -22,7 +22,7 @@ _Installation rollback failed: Workload manifest dependency 'Microsoft.NET.Workl
 
 ### Authenticated Feeds Under sudo
 
-On macOS and Linux, workload commands run under `sudo` use a temporary `DOTNET_CLI_HOME` to avoid creating root-owned files in the original CLI home. The SDK copies the user NuGet configuration and conventionally installed .NET credential providers (`.nuget/plugins/netcore`) into that temporary home. The source is the original `DOTNET_CLI_HOME`, or the user home visible to the process when that variable is unset.
+On macOS and Linux, workload commands run under `sudo` use a temporary directory for `DOTNET_CLI_HOME` and `HOME` to avoid creating root-owned CLI files and home-based credential-provider caches in the original home. The SDK copies the user NuGet configuration and conventionally installed .NET credential providers (`.nuget/plugins/netcore`) into that temporary home. The source is the original `DOTNET_CLI_HOME`, or the user home visible to the process when that variable is unset.
 
 Explicit `NUGET_NETCORE_PLUGIN_PATHS` and `NUGET_PLUGIN_PATHS` settings remain unchanged. Provider discovery does not guarantee a cached sign-in; pass `--interactive` when authentication requires user interaction. See [sudo environment preparation](../../../src/Cli/dotnet/SudoEnvironmentDirectoryOverride.cs) for the implementation.
 

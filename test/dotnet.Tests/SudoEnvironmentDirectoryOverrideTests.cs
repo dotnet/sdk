@@ -17,7 +17,7 @@ public class SudoEnvironmentDirectoryOverrideTests : SdkTest
     [TestInitialize]
     public void InitializeEnvironment()
     {
-        foreach (string name in new[] { "HOME", "DOTNET_CLI_HOME", "SUDO_UID", "NUGET_PLUGIN_PATHS", "NUGET_NETCORE_PLUGIN_PATHS" })
+        foreach (string name in new[] { "HOME", "DOTNET_CLI_HOME", "SUDO_UID", "NUGET_PLUGIN_PATHS", "NUGET_NETCORE_PLUGIN_PATHS", "XDG_DATA_HOME" })
         {
             _originalEnvironment[name] = Environment.GetEnvironmentVariable(name);
             Environment.SetEnvironmentVariable(name, null);
@@ -66,6 +66,7 @@ public class SudoEnvironmentDirectoryOverrideTests : SdkTest
 
         string overriddenHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")!;
         overriddenHome.Should().NotBe(_home);
+        Environment.GetEnvironmentVariable("HOME").Should().Be(overriddenHome);
         Environment.GetEnvironmentVariable("NUGET_PLUGIN_PATHS").Should().BeNull();
         Environment.GetEnvironmentVariable("NUGET_NETCORE_PLUGIN_PATHS").Should().BeNull();
         string copiedFirstPlugin = Path.Combine(overriddenHome, Path.GetRelativePath(_home, firstPlugin));
@@ -109,8 +110,24 @@ public class SudoEnvironmentDirectoryOverrideTests : SdkTest
         SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(Parser.Parse(["workload", "list"]));
 
         Environment.GetEnvironmentVariable("DOTNET_CLI_HOME").Should().NotBe(_home);
-        Environment.GetEnvironmentVariable("HOME").Should().Be(_home);
+        Environment.GetEnvironmentVariable("HOME").Should().Be(Environment.GetEnvironmentVariable("DOTNET_CLI_HOME"));
         Environment.GetEnvironmentVariable("NUGET_NETCORE_PLUGIN_PATHS").Should().BeNull();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
+    public void IsolatesDefaultCredentialProviderCache()
+    {
+        SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(Parser.Parse(["workload", "update"]));
+
+        string overriddenHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")!;
+        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
+        localAppData.Should().Be(Path.Combine(overriddenHome, ".local", "share"));
+
+        string cacheDirectory = Path.Combine(localAppData, "MicrosoftCredentialProvider");
+        Directory.CreateDirectory(cacheDirectory);
+        File.WriteAllText(Path.Combine(cacheDirectory, "SessionTokenCache.dat"), "cache");
+        Directory.Exists(Path.Combine(_home, ".local")).Should().BeFalse();
     }
 
     [TestMethod]

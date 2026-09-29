@@ -39,6 +39,8 @@ public static class SudoEnvironmentDirectoryOverride
             string sudoHome = TemporaryDirectory.CreateSubdirectory();
             var homeBeforeOverride = CliFolderPathCalculator.DotnetHomePath;
             Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
+            // Credential providers can use HOME instead of DOTNET_CLI_HOME for their caches.
+            Environment.SetEnvironmentVariable("HOME", sudoHome);
 
             CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride, sudoHome);
             CopyUserNuGetPluginsToOverriddenHome(homeBeforeOverride, sudoHome);
