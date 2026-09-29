@@ -13,8 +13,10 @@ internal class MSBuildServer : IBuildServer
 
     public string Name => CliStrings.MSBuildServer;
 
-    public void Shutdown()
+    public void Shutdown(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         BuildManager.DefaultBuildManager.ShutdownAllNodes();
+        cancellationToken.ThrowIfCancellationRequested();
     }
 }
