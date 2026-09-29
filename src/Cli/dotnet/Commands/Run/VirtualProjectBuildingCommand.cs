@@ -340,11 +340,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             return exitCode;
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
                 e.ToString().Red().Bold() :

@@ -207,6 +207,36 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         }
 
         [TestMethod]
+        public void PropagatesCancellationFromPostAction()
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            engineEnvironmentSettings.Components.AddComponent(typeof(IPostActionProcessor), new ThrowCancellationPostAction());
+            var postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ContinueOnError = true,
+            };
+
+            MockCreationResult creationResult = new(new List<IPostAction>() { postAction });
+            MockCreationEffects creationEffects = new();
+            var templateCreationResult = new TemplateCreationResult(
+                CreationResultStatus.Success,
+                "TestTemplate",
+                null,
+                creationResult,
+                "TestPath",
+                creationEffects);
+
+            PostActionDispatcher dispatcher = new(
+                engineEnvironmentSettings,
+                () => string.Empty);
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(
+                () => dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes, cancellationTokenSource.Token));
+        }
+
+        [TestMethod]
         public void CanContinueOnErrorWhenConfigured()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -605,6 +635,23 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 CancellationToken cancellationToken = default)
             {
                 throw new Exception("post action exception");
+            }
+        }
+
+        private class ThrowCancellationPostAction : IPostActionProcessor
+        {
+            public Guid Id => Guid.Empty;
+
+            public bool Process(
+                IEngineEnvironmentSettings environment,
+                IPostAction action,
+                ICreationEffects creationEffects,
+                ICreationResult templateCreationResult,
+                string outputBasePath,
+                CancellationToken cancellationToken = default)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
             }
         }
     }

@@ -97,11 +97,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return true;
                 }
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CommandFailed);
                 Reporter.Error.WriteLine(ex.Message);
